@@ -56,6 +56,11 @@ class AddPartitionsRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        7 => array(
+            'var' => 'validWriteIdList',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -82,6 +87,10 @@ class AddPartitionsRequest
      * @var string
      */
     public $catName = null;
+    /**
+     * @var string
+     */
+    public $validWriteIdList = null;
 
     public function __construct($vals = null)
     {
@@ -103,6 +112,9 @@ class AddPartitionsRequest
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['validWriteIdList'])) {
+                $this->validWriteIdList = $vals['validWriteIdList'];
             }
         }
     }
@@ -143,14 +155,14 @@ class AddPartitionsRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->parts = array();
-                        $_size433 = 0;
-                        $_etype436 = 0;
-                        $xfer += $input->readListBegin($_etype436, $_size433);
-                        for ($_i437 = 0; $_i437 < $_size433; ++$_i437) {
-                            $elem438 = null;
-                            $elem438 = new \metastore\Partition();
-                            $xfer += $elem438->read($input);
-                            $this->parts []= $elem438;
+                        $_size440 = 0;
+                        $_etype443 = 0;
+                        $xfer += $input->readListBegin($_etype443, $_size440);
+                        for ($_i444 = 0; $_i444 < $_size440; ++$_i444) {
+                            $elem445 = null;
+                            $elem445 = new \metastore\Partition();
+                            $xfer += $elem445->read($input);
+                            $this->parts []= $elem445;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -174,6 +186,13 @@ class AddPartitionsRequest
                 case 6:
                     if ($ftype == TType::STRING) {
                         $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->validWriteIdList);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -208,8 +227,8 @@ class AddPartitionsRequest
             }
             $xfer += $output->writeFieldBegin('parts', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->parts));
-            foreach ($this->parts as $iter439) {
-                $xfer += $iter439->write($output);
+            foreach ($this->parts as $iter446) {
+                $xfer += $iter446->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -227,6 +246,11 @@ class AddPartitionsRequest
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 6);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->validWriteIdList !== null) {
+            $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
+            $xfer += $output->writeString($this->validWriteIdList);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

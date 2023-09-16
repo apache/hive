@@ -80,6 +80,16 @@ class Partition
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        10 => array(
+            'var' => 'writeId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
+        11 => array(
+            'var' => 'isStatsCompliant',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -118,6 +128,14 @@ class Partition
      * @var string
      */
     public $catName = null;
+    /**
+     * @var int
+     */
+    public $writeId = -1;
+    /**
+     * @var bool
+     */
+    public $isStatsCompliant = null;
 
     public function __construct($vals = null)
     {
@@ -149,6 +167,12 @@ class Partition
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
             }
+            if (isset($vals['writeId'])) {
+                $this->writeId = $vals['writeId'];
+            }
+            if (isset($vals['isStatsCompliant'])) {
+                $this->isStatsCompliant = $vals['isStatsCompliant'];
+            }
         }
     }
 
@@ -174,13 +198,13 @@ class Partition
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->values = array();
-                        $_size199 = 0;
-                        $_etype202 = 0;
-                        $xfer += $input->readListBegin($_etype202, $_size199);
-                        for ($_i203 = 0; $_i203 < $_size199; ++$_i203) {
-                            $elem204 = null;
-                            $xfer += $input->readString($elem204);
-                            $this->values []= $elem204;
+                        $_size206 = 0;
+                        $_etype209 = 0;
+                        $xfer += $input->readListBegin($_etype209, $_size206);
+                        for ($_i210 = 0; $_i210 < $_size206; ++$_i210) {
+                            $elem211 = null;
+                            $xfer += $input->readString($elem211);
+                            $this->values []= $elem211;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -226,16 +250,16 @@ class Partition
                 case 7:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size205 = 0;
-                        $_ktype206 = 0;
-                        $_vtype207 = 0;
-                        $xfer += $input->readMapBegin($_ktype206, $_vtype207, $_size205);
-                        for ($_i209 = 0; $_i209 < $_size205; ++$_i209) {
-                            $key210 = '';
-                            $val211 = '';
-                            $xfer += $input->readString($key210);
-                            $xfer += $input->readString($val211);
-                            $this->parameters[$key210] = $val211;
+                        $_size212 = 0;
+                        $_ktype213 = 0;
+                        $_vtype214 = 0;
+                        $xfer += $input->readMapBegin($_ktype213, $_vtype214, $_size212);
+                        for ($_i216 = 0; $_i216 < $_size212; ++$_i216) {
+                            $key217 = '';
+                            $val218 = '';
+                            $xfer += $input->readString($key217);
+                            $xfer += $input->readString($val218);
+                            $this->parameters[$key217] = $val218;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -253,6 +277,20 @@ class Partition
                 case 9:
                     if ($ftype == TType::STRING) {
                         $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 10:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->writeId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 11:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->isStatsCompliant);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -277,8 +315,8 @@ class Partition
             }
             $xfer += $output->writeFieldBegin('values', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->values));
-            foreach ($this->values as $iter212) {
-                $xfer += $output->writeString($iter212);
+            foreach ($this->values as $iter219) {
+                $xfer += $output->writeString($iter219);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -317,9 +355,9 @@ class Partition
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 7);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter213 => $viter214) {
-                $xfer += $output->writeString($kiter213);
-                $xfer += $output->writeString($viter214);
+            foreach ($this->parameters as $kiter220 => $viter221) {
+                $xfer += $output->writeString($kiter220);
+                $xfer += $output->writeString($viter221);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
@@ -335,6 +373,16 @@ class Partition
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 9);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->writeId !== null) {
+            $xfer += $output->writeFieldBegin('writeId', TType::I64, 10);
+            $xfer += $output->writeI64($this->writeId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->isStatsCompliant !== null) {
+            $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 11);
+            $xfer += $output->writeBool($this->isStatsCompliant);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -69,14 +69,14 @@ class AddCheckConstraintRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->checkConstraintCols = array();
-                        $_size368 = 0;
-                        $_etype371 = 0;
-                        $xfer += $input->readListBegin($_etype371, $_size368);
-                        for ($_i372 = 0; $_i372 < $_size368; ++$_i372) {
-                            $elem373 = null;
-                            $elem373 = new \metastore\SQLCheckConstraint();
-                            $xfer += $elem373->read($input);
-                            $this->checkConstraintCols []= $elem373;
+                        $_size375 = 0;
+                        $_etype378 = 0;
+                        $xfer += $input->readListBegin($_etype378, $_size375);
+                        for ($_i379 = 0; $_i379 < $_size375; ++$_i379) {
+                            $elem380 = null;
+                            $elem380 = new \metastore\SQLCheckConstraint();
+                            $xfer += $elem380->read($input);
+                            $this->checkConstraintCols []= $elem380;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class AddCheckConstraintRequest
             }
             $xfer += $output->writeFieldBegin('checkConstraintCols', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->checkConstraintCols));
-            foreach ($this->checkConstraintCols as $iter374) {
-                $xfer += $iter374->write($output);
+            foreach ($this->checkConstraintCols as $iter381) {
+                $xfer += $iter381->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

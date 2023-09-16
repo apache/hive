@@ -109,6 +109,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   // The FSOP configuration for the FSOP that is going to write initial data during ctas.
   // This is not needed beyond compilation, so it is transient.
   private transient FileSinkDesc writer;
+  private Long replWriteId; // to be used by repl task to get the txn and valid write id list
 
   public CreateTableDesc() {
   }
@@ -901,5 +902,13 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
   public void setWriter(FileSinkDesc writer) {
     this.writer = writer;
+  }
+
+  public Long getReplWriteId() {
+    return replWriteId;
+  }
+
+  public void setReplWriteId(Long replWriteId) {
+    this.replWriteId = replWriteId;
   }
 }

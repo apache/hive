@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.session.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.TException;
@@ -864,12 +865,30 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   public long getTableWriteId(String dbName, String tableName) throws LockException {
     assert isTxnOpen();
+    return getTableWriteId(dbName, tableName, true);
+  }
+
+  @Override
+  public long getAllocatedTableWriteId(String dbName, String tableName) throws LockException {
+    assert isTxnOpen();
+    // Calls getTableWriteId() with allocateIfNotYet being false
+    // to return 0 if the dbName:tableName's writeId is yet allocated.
+    // This happens when the current context is before
+    // Driver.acquireLocks() is called.
+    return getTableWriteId(dbName, tableName, false);
+  }
+
+  private long getTableWriteId(
+      String dbName, String tableName, boolean allocateIfNotYet) throws LockException {
     String fullTableName = AcidUtils.getFullTableName(dbName, tableName);
     if (tableWriteIds.containsKey(fullTableName)) {
       return tableWriteIds.get(fullTableName);
+    } else if (!allocateIfNotYet) {
+      return 0;
     }
     try {
       long writeId = getMS().allocateTableWriteId(txnId, dbName, tableName);
+      LOG.debug("Allocated write ID {} for {}.{}", writeId, dbName, tableName);
       tableWriteIds.put(fullTableName, writeId);
       return writeId;
     } catch (TException e) {

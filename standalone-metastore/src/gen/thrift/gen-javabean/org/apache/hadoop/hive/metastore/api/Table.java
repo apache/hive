@@ -29,6 +29,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField CREATION_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("creationMetadata", org.apache.thrift.protocol.TType.STRUCT, (short)16);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)17);
   private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)18);
+  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)19);
+  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)20);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TableStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TableTupleSchemeFactory();
@@ -51,6 +53,8 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable CreationMetadata creationMetadata; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
   private @org.apache.thrift.annotation.Nullable PrincipalType ownerType; // optional
+  private long writeId; // optional
+  private boolean isStatsCompliant; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -75,7 +79,9 @@ package org.apache.hadoop.hive.metastore.api;
      * 
      * @see PrincipalType
      */
-    OWNER_TYPE((short)18, "ownerType");
+    OWNER_TYPE((short)18, "ownerType"),
+    WRITE_ID((short)19, "writeId"),
+    IS_STATS_COMPLIANT((short)20, "isStatsCompliant");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -127,6 +133,10 @@ package org.apache.hadoop.hive.metastore.api;
           return CAT_NAME;
         case 18: // OWNER_TYPE
           return OWNER_TYPE;
+        case 19: // WRITE_ID
+          return WRITE_ID;
+        case 20: // IS_STATS_COMPLIANT
+          return IS_STATS_COMPLIANT;
         default:
           return null;
       }
@@ -173,8 +183,10 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __RETENTION_ISSET_ID = 2;
   private static final int __TEMPORARY_ISSET_ID = 3;
   private static final int __REWRITEENABLED_ISSET_ID = 4;
+  private static final int __WRITEID_ISSET_ID = 5;
+  private static final int __ISSTATSCOMPLIANT_ISSET_ID = 6;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA,_Fields.CAT_NAME,_Fields.OWNER_TYPE};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA,_Fields.CAT_NAME,_Fields.OWNER_TYPE,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -217,6 +229,10 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.OWNER_TYPE, new org.apache.thrift.meta_data.FieldMetaData("ownerType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
+    tmpMap.put(_Fields.WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("writeId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -225,6 +241,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.temporary = false;
 
     this.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.USER;
+
+    this.writeId = -1L;
 
   }
 
@@ -314,6 +332,8 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetOwnerType()) {
       this.ownerType = other.ownerType;
     }
+    this.writeId = other.writeId;
+    this.isStatsCompliant = other.isStatsCompliant;
   }
 
   public Table deepCopy() {
@@ -346,6 +366,10 @@ package org.apache.hadoop.hive.metastore.api;
     this.catName = null;
     this.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.USER;
 
+    this.writeId = -1L;
+
+    setIsStatsCompliantIsSet(false);
+    this.isStatsCompliant = false;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -805,6 +829,50 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public long getWriteId() {
+    return this.writeId;
+  }
+
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+    setWriteIdIsSet(true);
+  }
+
+  public void unsetWriteId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  }
+
+  /** Returns true if field writeId is set (has been assigned a value) and false otherwise */
+  public boolean isSetWriteId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  }
+
+  public void setWriteIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __WRITEID_ISSET_ID, value);
+  }
+
+  public boolean isIsStatsCompliant() {
+    return this.isStatsCompliant;
+  }
+
+  public void setIsStatsCompliant(boolean isStatsCompliant) {
+    this.isStatsCompliant = isStatsCompliant;
+    setIsStatsCompliantIsSet(true);
+  }
+
+  public void unsetIsStatsCompliant() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  /** Returns true if field isStatsCompliant is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsStatsCompliant() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  public void setIsStatsCompliantIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -951,6 +1019,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case WRITE_ID:
+      if (value == null) {
+        unsetWriteId();
+      } else {
+        setWriteId((java.lang.Long)value);
+      }
+      break;
+
+    case IS_STATS_COMPLIANT:
+      if (value == null) {
+        unsetIsStatsCompliant();
+      } else {
+        setIsStatsCompliant((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -1011,6 +1095,12 @@ package org.apache.hadoop.hive.metastore.api;
     case OWNER_TYPE:
       return getOwnerType();
 
+    case WRITE_ID:
+      return getWriteId();
+
+    case IS_STATS_COMPLIANT:
+      return isIsStatsCompliant();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1058,6 +1148,10 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetCatName();
     case OWNER_TYPE:
       return isSetOwnerType();
+    case WRITE_ID:
+      return isSetWriteId();
+    case IS_STATS_COMPLIANT:
+      return isSetIsStatsCompliant();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1239,6 +1333,24 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_writeId = true && this.isSetWriteId();
+    boolean that_present_writeId = true && that.isSetWriteId();
+    if (this_present_writeId || that_present_writeId) {
+      if (!(this_present_writeId && that_present_writeId))
+        return false;
+      if (this.writeId != that.writeId)
+        return false;
+    }
+
+    boolean this_present_isStatsCompliant = true && this.isSetIsStatsCompliant();
+    boolean that_present_isStatsCompliant = true && that.isSetIsStatsCompliant();
+    if (this_present_isStatsCompliant || that_present_isStatsCompliant) {
+      if (!(this_present_isStatsCompliant && that_present_isStatsCompliant))
+        return false;
+      if (this.isStatsCompliant != that.isStatsCompliant)
+        return false;
+    }
+
     return true;
   }
 
@@ -1311,6 +1423,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetOwnerType()) ? 131071 : 524287);
     if (isSetOwnerType())
       hashCode = hashCode * 8191 + ownerType.getValue();
+
+    hashCode = hashCode * 8191 + ((isSetWriteId()) ? 131071 : 524287);
+    if (isSetWriteId())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(writeId);
+
+    hashCode = hashCode * 8191 + ((isSetIsStatsCompliant()) ? 131071 : 524287);
+    if (isSetIsStatsCompliant())
+      hashCode = hashCode * 8191 + ((isStatsCompliant) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -1503,6 +1623,26 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetWriteId()).compareTo(other.isSetWriteId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWriteId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeId, other.writeId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetIsStatsCompliant()).compareTo(other.isSetIsStatsCompliant());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsStatsCompliant()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isStatsCompliant, other.isStatsCompliant);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1659,6 +1799,18 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetWriteId()) {
+      if (!first) sb.append(", ");
+      sb.append("writeId:");
+      sb.append(this.writeId);
+      first = false;
+    }
+    if (isSetIsStatsCompliant()) {
+      if (!first) sb.append(", ");
+      sb.append("isStatsCompliant:");
+      sb.append(this.isStatsCompliant);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1773,14 +1925,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 8: // PARTITION_KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list206 = iprot.readListBegin();
-                struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list206.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem207;
-                for (int _i208 = 0; _i208 < _list206.size; ++_i208)
+                org.apache.thrift.protocol.TList _list214 = iprot.readListBegin();
+                struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list214.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem215;
+                for (int _i216 = 0; _i216 < _list214.size; ++_i216)
                 {
-                  _elem207 = new FieldSchema();
-                  _elem207.read(iprot);
-                  struct.partitionKeys.add(_elem207);
+                  _elem215 = new FieldSchema();
+                  _elem215.read(iprot);
+                  struct.partitionKeys.add(_elem215);
                 }
                 iprot.readListEnd();
               }
@@ -1792,15 +1944,15 @@ package org.apache.hadoop.hive.metastore.api;
           case 9: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map209 = iprot.readMapBegin();
-                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map209.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key210;
-                @org.apache.thrift.annotation.Nullable java.lang.String _val211;
-                for (int _i212 = 0; _i212 < _map209.size; ++_i212)
+                org.apache.thrift.protocol.TMap _map217 = iprot.readMapBegin();
+                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map217.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key218;
+                @org.apache.thrift.annotation.Nullable java.lang.String _val219;
+                for (int _i220 = 0; _i220 < _map217.size; ++_i220)
                 {
-                  _key210 = iprot.readString();
-                  _val211 = iprot.readString();
-                  struct.parameters.put(_key210, _val211);
+                  _key218 = iprot.readString();
+                  _val219 = iprot.readString();
+                  struct.parameters.put(_key218, _val219);
                 }
                 iprot.readMapEnd();
               }
@@ -1883,6 +2035,22 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 19: // WRITE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.writeId = iprot.readI64();
+              struct.setWriteIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 20: // IS_STATS_COMPLIANT
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isStatsCompliant = iprot.readBool();
+              struct.setIsStatsCompliantIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1929,9 +2097,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter213 : struct.partitionKeys)
+          for (FieldSchema _iter221 : struct.partitionKeys)
           {
-            _iter213.write(oprot);
+            _iter221.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1941,10 +2109,10 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter214 : struct.parameters.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter222 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter214.getKey());
-            oprot.writeString(_iter214.getValue());
+            oprot.writeString(_iter222.getKey());
+            oprot.writeString(_iter222.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -2002,6 +2170,16 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeI32(struct.ownerType.getValue());
           oprot.writeFieldEnd();
         }
+      }
+      if (struct.isSetWriteId()) {
+        oprot.writeFieldBegin(WRITE_ID_FIELD_DESC);
+        oprot.writeI64(struct.writeId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
+        oprot.writeBool(struct.isStatsCompliant);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -2075,7 +2253,13 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetOwnerType()) {
         optionals.set(17);
       }
-      oprot.writeBitSet(optionals, 18);
+      if (struct.isSetWriteId()) {
+        optionals.set(18);
+      }
+      if (struct.isSetIsStatsCompliant()) {
+        optionals.set(19);
+      }
+      oprot.writeBitSet(optionals, 20);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -2100,19 +2284,19 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPartitionKeys()) {
         {
           oprot.writeI32(struct.partitionKeys.size());
-          for (FieldSchema _iter215 : struct.partitionKeys)
+          for (FieldSchema _iter223 : struct.partitionKeys)
           {
-            _iter215.write(oprot);
+            _iter223.write(oprot);
           }
         }
       }
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter216 : struct.parameters.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter224 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter216.getKey());
-            oprot.writeString(_iter216.getValue());
+            oprot.writeString(_iter224.getKey());
+            oprot.writeString(_iter224.getValue());
           }
         }
       }
@@ -2143,12 +2327,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetOwnerType()) {
         oprot.writeI32(struct.ownerType.getValue());
       }
+      if (struct.isSetWriteId()) {
+        oprot.writeI64(struct.writeId);
+      }
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeBool(struct.isStatsCompliant);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(18);
+      java.util.BitSet incoming = iprot.readBitSet(20);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -2180,29 +2370,29 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list217 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list217.size);
-          @org.apache.thrift.annotation.Nullable FieldSchema _elem218;
-          for (int _i219 = 0; _i219 < _list217.size; ++_i219)
+          org.apache.thrift.protocol.TList _list225 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list225.size);
+          @org.apache.thrift.annotation.Nullable FieldSchema _elem226;
+          for (int _i227 = 0; _i227 < _list225.size; ++_i227)
           {
-            _elem218 = new FieldSchema();
-            _elem218.read(iprot);
-            struct.partitionKeys.add(_elem218);
+            _elem226 = new FieldSchema();
+            _elem226.read(iprot);
+            struct.partitionKeys.add(_elem226);
           }
         }
         struct.setPartitionKeysIsSet(true);
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TMap _map220 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map220.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key221;
-          @org.apache.thrift.annotation.Nullable java.lang.String _val222;
-          for (int _i223 = 0; _i223 < _map220.size; ++_i223)
+          org.apache.thrift.protocol.TMap _map228 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map228.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key229;
+          @org.apache.thrift.annotation.Nullable java.lang.String _val230;
+          for (int _i231 = 0; _i231 < _map228.size; ++_i231)
           {
-            _key221 = iprot.readString();
-            _val222 = iprot.readString();
-            struct.parameters.put(_key221, _val222);
+            _key229 = iprot.readString();
+            _val230 = iprot.readString();
+            struct.parameters.put(_key229, _val230);
           }
         }
         struct.setParametersIsSet(true);
@@ -2244,6 +2434,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(17)) {
         struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
         struct.setOwnerTypeIsSet(true);
+      }
+      if (incoming.get(18)) {
+        struct.writeId = iprot.readI64();
+        struct.setWriteIdIsSet(true);
+      }
+      if (incoming.get(19)) {
+        struct.isStatsCompliant = iprot.readBool();
+        struct.setIsStatsCompliantIsSet(true);
       }
     }
   }

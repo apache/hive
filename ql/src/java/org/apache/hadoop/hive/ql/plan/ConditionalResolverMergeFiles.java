@@ -186,7 +186,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           }
         }
       } else {
-        Utilities.FILE_OP_LOGGER.info("Resolver returning movetask for " + dirPath, new Exception());
+        Utilities.FILE_OP_LOGGER.info("Resolver returning movetask for " + dirPath);
         resTsks.add(mvTask);
       }
     } catch (IOException e) {

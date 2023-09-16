@@ -102,91 +102,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return tableExists;
   }
 
-  @Override
-  public void analyzeInternal(ASTNode ast) throws SemanticException {
-    try {
-      Tree fromTree = ast.getChild(0);
-
-      boolean isLocationSet = false;
-      boolean isExternalSet = false;
-      boolean isPartSpecSet = false;
-      String parsedLocation = null;
-      String parsedTableName = null;
-      String parsedDbName = null;
-      LinkedHashMap<String, String> parsedPartSpec = new LinkedHashMap<String, String>();
-
-      // waitOnPrecursor determines whether or not non-existence of
-      // a dependent object is an error. For regular imports, it is.
-      // for now, the only thing this affects is whether or not the
-      // db exists.
-      boolean waitOnPrecursor = false;
-
-      for (int i = 1; i < ast.getChildCount(); ++i){
-        ASTNode child = (ASTNode) ast.getChild(i);
-        switch (child.getToken().getType()){
-          case HiveParser.KW_EXTERNAL:
-            isExternalSet = true;
-            break;
-          case HiveParser.TOK_TABLELOCATION:
-            isLocationSet = true;
-            parsedLocation = EximUtil.relativeToAbsolutePath(conf, unescapeSQLString(child.getChild(0).getText()));
-            break;
-          case HiveParser.TOK_TAB:
-            ASTNode tableNameNode = (ASTNode) child.getChild(0);
-            Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableNameNode);
-            parsedDbName = dbTablePair.getKey();
-            parsedTableName = dbTablePair.getValue();
-            // get partition metadata if partition specified
-            if (child.getChildCount() == 2) {
-              @SuppressWarnings("unused")
-              ASTNode partspec = (ASTNode) child.getChild(1);
-              isPartSpecSet = true;
-              parsePartitionSpec(child, parsedPartSpec);
-            }
-            break;
-        }
-      }
-
-      if (StringUtils.isEmpty(parsedDbName)) {
-        parsedDbName = SessionState.get().getCurrentDatabase();
-      }
-      // parsing statement is now done, on to logic.
-      tableExists = prepareImport(true,
-          isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
-          parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
-          new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
-          null, getTxnMgr());
-
-    } catch (SemanticException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.IMPORT_SEMANTIC_ERROR.getMsg(), e);
-    }
-  }
-
-  private void parsePartitionSpec(ASTNode tableNode, LinkedHashMap<String, String> partSpec) throws SemanticException {
-    // get partition metadata if partition specified
-    if (tableNode.getChildCount() == 2) {
-      ASTNode partspec = (ASTNode) tableNode.getChild(1);
-      // partSpec is a mapping from partition column name to its value.
-      for (int j = 0; j < partspec.getChildCount(); ++j) {
-        ASTNode partspec_val = (ASTNode) partspec.getChild(j);
-        String val = null;
-        String colName = unescapeIdentifier(partspec_val.getChild(0)
-            .getText().toLowerCase());
-        if (partspec_val.getChildCount() < 2) { // DP in the form of T
-          // partition (ds, hr)
-          throw new SemanticException(
-              ErrorMsg.INVALID_PARTITION
-                  .getMsg(" - Dynamic partitions not allowed"));
-        } else { // in the form of T partition (ds="2010-03-03")
-          val = stripQuotes(partspec_val.getChild(1).getText());
-        }
-        partSpec.put(colName, val);
-      }
-    }
-  }
-
   /**
    * The same code is used from both the "repl load" as well as "import".
    * Given that "repl load" now supports two modes "repl load dbName [location]" and
@@ -201,7 +116,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       String parsedLocation, String parsedTableName, String overrideDBName,
       LinkedHashMap<String, String> parsedPartSpec,
       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
-      UpdatedMetaDataTracker updatedMetadata, HiveTxnManager txnMgr
+      UpdatedMetaDataTracker updatedMetadata, HiveTxnManager txnMgr,
+                                      long writeId // Initialize with 0 for non-ACID and non-MM tables.
   ) throws IOException, MetaException, HiveException, URISyntaxException {
 
     // initialize load path
@@ -255,6 +171,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       tblDesc.setReplicationSpec(replicationSpec);
       StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
       inReplicationScope = true;
+      tblDesc.setReplWriteId(writeId);
     }
 
     if (isExternalSet) {
@@ -330,7 +247,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       AcidUtils.setNonTransactional(tblDesc.getTblProps());
     }
 
-    Long writeId = 0L; // Initialize with 0 for non-ACID and non-MM tables.
     int stmtId = 0;
     if (!replicationSpec.isInReplicationScope()
             && ((tableExists && AcidUtils.isTransactionalTable(table))
@@ -357,6 +273,91 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           fromURI, fs, wh, x, writeId, stmtId, updatedMetadata);
     }
     return tableExists;
+  }
+
+  private void parsePartitionSpec(ASTNode tableNode, LinkedHashMap<String, String> partSpec) throws SemanticException {
+    // get partition metadata if partition specified
+    if (tableNode.getChildCount() == 2) {
+      ASTNode partspec = (ASTNode) tableNode.getChild(1);
+      // partSpec is a mapping from partition column name to its value.
+      for (int j = 0; j < partspec.getChildCount(); ++j) {
+        ASTNode partspec_val = (ASTNode) partspec.getChild(j);
+        String val = null;
+        String colName = unescapeIdentifier(partspec_val.getChild(0)
+            .getText().toLowerCase());
+        if (partspec_val.getChildCount() < 2) { // DP in the form of T
+          // partition (ds, hr)
+          throw new SemanticException(
+              ErrorMsg.INVALID_PARTITION
+                  .getMsg(" - Dynamic partitions not allowed"));
+        } else { // in the form of T partition (ds="2010-03-03")
+          val = stripQuotes(partspec_val.getChild(1).getText());
+        }
+        partSpec.put(colName, val);
+      }
+    }
+  }
+
+  @Override
+  public void analyzeInternal(ASTNode ast) throws SemanticException {
+    try {
+      Tree fromTree = ast.getChild(0);
+
+      boolean isLocationSet = false;
+      boolean isExternalSet = false;
+      boolean isPartSpecSet = false;
+      String parsedLocation = null;
+      String parsedTableName = null;
+      String parsedDbName = null;
+      LinkedHashMap<String, String> parsedPartSpec = new LinkedHashMap<String, String>();
+
+      // waitOnPrecursor determines whether or not non-existence of
+      // a dependent object is an error. For regular imports, it is.
+      // for now, the only thing this affects is whether or not the
+      // db exists.
+      boolean waitOnPrecursor = false;
+
+      for (int i = 1; i < ast.getChildCount(); ++i){
+        ASTNode child = (ASTNode) ast.getChild(i);
+        switch (child.getToken().getType()){
+          case HiveParser.KW_EXTERNAL:
+            isExternalSet = true;
+            break;
+          case HiveParser.TOK_TABLELOCATION:
+            isLocationSet = true;
+            parsedLocation = EximUtil.relativeToAbsolutePath(conf, unescapeSQLString(child.getChild(0).getText()));
+            break;
+          case HiveParser.TOK_TAB:
+            ASTNode tableNameNode = (ASTNode) child.getChild(0);
+            Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableNameNode);
+            parsedDbName = dbTablePair.getKey();
+            parsedTableName = dbTablePair.getValue();
+            // get partition metadata if partition specified
+            if (child.getChildCount() == 2) {
+              @SuppressWarnings("unused")
+              ASTNode partspec = (ASTNode) child.getChild(1);
+              isPartSpecSet = true;
+              parsePartitionSpec(child, parsedPartSpec);
+            }
+            break;
+        }
+      }
+
+      if (StringUtils.isEmpty(parsedDbName)) {
+        parsedDbName = SessionState.get().getCurrentDatabase();
+      }
+      // parsing statement is now done, on to logic.
+      tableExists = prepareImport(true,
+          isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
+          parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
+          new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
+          null, getTxnMgr(), 0);
+
+    } catch (SemanticException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.IMPORT_SEMANTIC_ERROR.getMsg(), e);
+    }
   }
 
   private static AddPartitionDesc getBaseAddPartitionDescFromPartition(

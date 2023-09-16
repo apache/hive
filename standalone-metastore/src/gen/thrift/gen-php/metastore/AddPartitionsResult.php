@@ -31,18 +31,30 @@ class AddPartitionsResult
                 'class' => '\metastore\Partition',
                 ),
         ),
+        2 => array(
+            'var' => 'isStatsCompliant',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
      * @var \metastore\Partition[]
      */
     public $partitions = null;
+    /**
+     * @var bool
+     */
+    public $isStatsCompliant = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['partitions'])) {
                 $this->partitions = $vals['partitions'];
+            }
+            if (isset($vals['isStatsCompliant'])) {
+                $this->isStatsCompliant = $vals['isStatsCompliant'];
             }
         }
     }
@@ -69,16 +81,23 @@ class AddPartitionsResult
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size426 = 0;
-                        $_etype429 = 0;
-                        $xfer += $input->readListBegin($_etype429, $_size426);
-                        for ($_i430 = 0; $_i430 < $_size426; ++$_i430) {
-                            $elem431 = null;
-                            $elem431 = new \metastore\Partition();
-                            $xfer += $elem431->read($input);
-                            $this->partitions []= $elem431;
+                        $_size433 = 0;
+                        $_etype436 = 0;
+                        $xfer += $input->readListBegin($_etype436, $_size433);
+                        for ($_i437 = 0; $_i437 < $_size433; ++$_i437) {
+                            $elem438 = null;
+                            $elem438 = new \metastore\Partition();
+                            $xfer += $elem438->read($input);
+                            $this->partitions []= $elem438;
                         }
                         $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 2:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->isStatsCompliant);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -103,10 +122,15 @@ class AddPartitionsResult
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter432) {
-                $xfer += $iter432->write($output);
+            foreach ($this->partitions as $iter439) {
+                $xfer += $iter439->write($output);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->isStatsCompliant !== null) {
+            $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
+            $xfer += $output->writeBool($this->isStatsCompliant);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

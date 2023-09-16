@@ -985,6 +985,8 @@ public class MetastoreConf {
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", "hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
             "A ZooKeeper instance must be up and running when using zookeeper Hive lock manager "),
+    HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
+        "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

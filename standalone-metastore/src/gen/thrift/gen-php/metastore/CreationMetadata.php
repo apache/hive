@@ -149,13 +149,13 @@ class CreationMetadata
                 case 4:
                     if ($ftype == TType::SET) {
                         $this->tablesUsed = array();
-                        $_size175 = 0;
-                        $_etype178 = 0;
-                        $xfer += $input->readSetBegin($_etype178, $_size175);
-                        for ($_i179 = 0; $_i179 < $_size175; ++$_i179) {
-                            $elem180 = null;
-                            $xfer += $input->readString($elem180);
-                            $this->tablesUsed[$elem180] = true;
+                        $_size182 = 0;
+                        $_etype185 = 0;
+                        $xfer += $input->readSetBegin($_etype185, $_size182);
+                        for ($_i186 = 0; $_i186 < $_size182; ++$_i186) {
+                            $elem187 = null;
+                            $xfer += $input->readString($elem187);
+                            $this->tablesUsed[$elem187] = true;
                         }
                         $xfer += $input->readSetEnd();
                     } else {
@@ -211,8 +211,8 @@ class CreationMetadata
             }
             $xfer += $output->writeFieldBegin('tablesUsed', TType::SET, 4);
             $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
-            foreach ($this->tablesUsed as $iter181 => $iter182) {
-                $xfer += $output->writeString($iter181);
+            foreach ($this->tablesUsed as $iter188 => $iter189) {
+                $xfer += $output->writeString($iter188);
             }
             $output->writeSetEnd();
             $xfer += $output->writeFieldEnd();
