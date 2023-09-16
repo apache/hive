@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
@@ -59,10 +58,11 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
   private transient RangerRestClient rangerRestClient;
 
   private transient ReplLogger replLogger;
-  private transient ReplLoggerFactory replLoggerFactory;
+  private final ReplLoggerFactory replLoggerFactory;
 
-  public RangerLoadTask(RangerRestClientImpl mockClient, HiveConf conf, RangerLoadWork work) {
+  public RangerLoadTask() {
     super();
+    this.replLoggerFactory = ReplLoggerFactory.getInstance();
   }
 
   @VisibleForTesting

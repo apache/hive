@@ -59,10 +59,11 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final transient Logger LOG = LoggerFactory.getLogger(AtlasLoadTask.class);
 
-  private ReplLoggerFactory replLoggerFactory = ReplLoggerFactory.getInstance();
+  private final ReplLoggerFactory replLoggerFactory;
 
   public AtlasLoadTask() {
     super();
+    replLoggerFactory = ReplLoggerFactory.getInstance();
   }
 
   @VisibleForTesting

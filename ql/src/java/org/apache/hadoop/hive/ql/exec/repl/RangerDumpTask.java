@@ -60,10 +60,11 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
 
   private transient ReplLogger replLogger;
 
-  private ReplLoggerFactory replLoggerFactory = ReplLoggerFactory.getInstance();
+  private final ReplLoggerFactory replLoggerFactory;
 
   public RangerDumpTask() {
     super();
+    replLoggerFactory = ReplLoggerFactory.getInstance();
   }
 
   @VisibleForTesting
