@@ -33,6 +33,12 @@ where age not in (23,22, null );
 explain select * from t3
         where age not in (select distinct(age) age from t4);
 
+explain select * from t3
+where age not in (select distinct(ages) ages from t5 );
+
+explain select * from t3
+        where age not in (select distinct(ages) ages from t5 where t5.ages is not null);
+
 select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10);
 
@@ -60,6 +66,12 @@ where age not in (23,22, null );
 
 explain select * from t3
         where age not in (select distinct(age) age from t4);
+
+explain select * from t3
+where age not in (select distinct(ages) ages from t5 );
+
+explain select * from t3
+        where age not in (select distinct(ages) ages from t5 where t5.ages is not null);
 
 select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10);
