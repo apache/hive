@@ -178,12 +178,15 @@ public class HiveConnection implements java.sql.Connection {
   private TProtocolVersion protocol;
   private final int initFetchSize;
   private int defaultFetchSize;
+  private int fetchThreads;
   private String initFile = null;
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
   private Subject loggedInSubject;
   private int maxRetries = 1;
   private IJdbcBrowserClient browserClient;
+
+  public TCLIService.Iface GetClient() { return client; }
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -286,6 +289,20 @@ public class HiveConnection implements java.sql.Connection {
     this(uri, info, HiveJdbcBrowserClientFactory.get());
   }
 
+  /**
+   * Create a new connection that shares the same session ID as the current connection.
+   */
+  public HiveConnection Clone() throws SQLException {
+    HiveConnection cloneConn = new HiveConnection(getConnectedUrl(),
+        getClientInfo(), HiveJdbcBrowserClientFactory.get(), false);
+    // These are set/updated when the session is established.
+    cloneConn.sessHandle = this.sessHandle;
+    cloneConn.connParams = this.connParams;
+    cloneConn.protocol = this.protocol;
+    cloneConn.defaultFetchSize = this.defaultFetchSize;
+    return cloneConn;
+  }
+
   @VisibleForTesting
   protected int getNumRetries() {
     return maxRetries;
@@ -294,6 +311,13 @@ public class HiveConnection implements java.sql.Connection {
   @VisibleForTesting
   protected HiveConnection(String uri, Properties info,
       IJdbcBrowserClientFactory browserClientFactory) throws SQLException {
+    this(uri, info, browserClientFactory, true);
+  }
+
+  @VisibleForTesting
+  protected HiveConnection(String uri, Properties info,
+      IJdbcBrowserClientFactory browserClientFactory,
+      boolean initSession) throws SQLException {
     try {
       connParams = Utils.parseURL(uri, info);
     } catch (ZooKeeperHiveClientException e) {
@@ -329,6 +353,7 @@ public class HiveConnection implements java.sql.Connection {
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     initFetchSize = Integer.parseInt(sessConfMap.getOrDefault(JdbcConnectionParams.FETCH_SIZE, "0"));
+    fetchThreads = Integer.parseInt(sessConfMap.getOrDefault(JdbcConnectionParams.FETCH_THREADS, "1"));
 
     if (sessConfMap.containsKey(JdbcConnectionParams.INIT_FILE)) {
       initFile = sessConfMap.get(JdbcConnectionParams.INIT_FILE);
@@ -368,8 +393,10 @@ public class HiveConnection implements java.sql.Connection {
         throw new SQLException(new IllegalArgumentException(
             "Browser mode is not supported in embedded mode"));
       }
-      openSession();
-      executeInitSql();
+      if (initSession) {
+        openSession();
+        executeInitSql();
+      }
     } else {
       long retryInterval = 1000L;
       try {
@@ -391,8 +418,10 @@ public class HiveConnection implements java.sql.Connection {
           // set up the client
           client = new TCLIService.Client(new TBinaryProtocol(transport));
           // open client session
-          openSession();
-          executeInitSql();
+          if (initSession) {
+            openSession();
+            executeInitSql();
+          }
 
           break;
         } catch (Exception e) {
@@ -1587,7 +1616,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Can't create Statement, connection is closed");
     }
-    return new HiveStatement(this, client, sessHandle, false, initFetchSize, defaultFetchSize);
+    return new HiveStatement(this, client, sessHandle, false, initFetchSize, defaultFetchSize, fetchThreads);
   }
 
   /*
@@ -1611,7 +1640,7 @@ public class HiveConnection implements java.sql.Connection {
       throw new SQLException("Connection is closed");
     }
     return new HiveStatement(this, client, sessHandle, resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE,
-        initFetchSize, defaultFetchSize);
+        initFetchSize, defaultFetchSize, fetchThreads);
   }
 
   /*
@@ -1873,7 +1902,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    return new HivePreparedStatement(this, client, sessHandle, sql);
+    return new HivePreparedStatement(this, client, sessHandle, sql, initFetchSize, fetchThreads);
   }
 
   /*
@@ -1888,7 +1917,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    return new HivePreparedStatement(this, client, sessHandle, sql);
+    return new HivePreparedStatement(this, client, sessHandle, sql, initFetchSize, fetchThreads);
   }
 
   /*
@@ -1930,7 +1959,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    return new HivePreparedStatement(this, client, sessHandle, sql);
+    return new HivePreparedStatement(this, client, sessHandle, sql, initFetchSize, fetchThreads);
   }
 
   /*

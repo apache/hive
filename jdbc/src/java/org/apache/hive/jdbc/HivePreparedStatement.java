@@ -66,6 +66,12 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
     this.sql = sql;
   }
 
+  public HivePreparedStatement(HiveConnection connection, TCLIService.Iface client,
+      TSessionHandle sessHandle, String sql, int fetchSize, int fetchThreads) {
+    super(connection, client, sessHandle, fetchSize, fetchThreads);
+    this.sql = sql;
+  }
+
   @Override
   public void addBatch() throws SQLException {
     throw new SQLFeatureNotSupportedException("Method not supported");
