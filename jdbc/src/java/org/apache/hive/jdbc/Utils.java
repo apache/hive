@@ -166,6 +166,7 @@ public class Utils {
     // Set the fetchSize
     static final String FETCH_SIZE = "fetchSize";
     static final String INIT_FILE = "initFile";
+    static final String FETCH_THREADS = "fetchThreads";
     static final String WM_POOL = "wmPool";
     // Cookie prefix
     static final String HTTP_COOKIE_PREFIX = "http.cookie.";
@@ -219,6 +220,16 @@ public class Utils {
     // HiveConf parameters
     public static final String HIVE_DEFAULT_NULLS_LAST_KEY =
         HIVE_CONF_PREFIX + HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
+
+    private static String getFetchThreadsVarname() {
+      try {
+        return HiveConf.ConfVars.HIVE_JDBC_FETCH_THREADS.varname;
+      } catch(java.lang.NoSuchFieldError e) {
+        return "hive.jdbc.fetch.threads";
+      }
+    }
+    public static final String HIVE_HIVE_JDBC_FETCH_THREADS_KEY =
+        HIVE_CONF_PREFIX + getFetchThreadsVarname();
 
     public JdbcConnectionParams() {
     }
