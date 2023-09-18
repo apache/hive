@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.DERBY_TYPE;
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.HIVE_JDBC_TYPE;
 import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.MSSQL_TYPE;
 import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.MYSQL_TYPE;
 import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.ORACLE_TYPE;
@@ -98,6 +99,7 @@ public class DataConnectorProviderFactory {
     String type = connector.getType();
     switch (type) {
     case DERBY_TYPE:
+    case HIVE_JDBC_TYPE:
     case MSSQL_TYPE:
     case MYSQL_TYPE:
     case ORACLE_TYPE:

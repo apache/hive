@@ -75,7 +75,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   private static final String JDBC_INPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcInputFormat".intern();
   private static final String JDBC_OUTPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcOutputFormat".intern();
 
-  String type = null; // MYSQL, POSTGRES, ORACLE, DERBY, MSSQL, DB2 etc.
+  String type = null; // MYSQL, POSTGRES, ORACLE, DERBY, MSSQL, DB2, HIVEJDBC etc.
   String jdbcUrl = null;
   String username = null;
   String password = null; // TODO convert to byte array
@@ -270,7 +270,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
       table = buildTableFromColsList(tableName, cols);
       //Setting the table properties.
-      table.getParameters().put(JDBC_DATABASE_TYPE, this.type);
+      table.getParameters().put(JDBC_DATABASE_TYPE, getDatasourceType());
       table.getParameters().put(JDBC_DRIVER, this.driverClassName);
       table.getParameters().put(JDBC_TABLE, tableName);
       table.getParameters().put(JDBC_SCHEMA, scoped_db);
@@ -415,4 +415,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     connectorPropMap.forEach((k, v) -> connectionProperties.put(k, v));
     return connectionProperties;
   }
+
+  @Override
+  protected String getDatasourceType() { return type; };
 }
