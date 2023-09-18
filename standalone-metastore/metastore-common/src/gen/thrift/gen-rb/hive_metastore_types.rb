@@ -7652,6 +7652,8 @@ class PartitionsRequest
   VALIDWRITEIDLIST = 5
   ID = 6
   SKIPCOLUMNSCHEMAFORPARTITION = 7
+  INCLUDEPARAMKEYPATTERN = 8
+  EXCLUDEPARAMKEYPATTERN = 9
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -7660,7 +7662,9 @@ class PartitionsRequest
     MAXPARTS => {:type => ::Thrift::Types::I16, :name => 'maxParts', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true},
-    SKIPCOLUMNSCHEMAFORPARTITION => {:type => ::Thrift::Types::BOOL, :name => 'skipColumnSchemaForPartition', :optional => true}
+    SKIPCOLUMNSCHEMAFORPARTITION => {:type => ::Thrift::Types::BOOL, :name => 'skipColumnSchemaForPartition', :optional => true},
+    INCLUDEPARAMKEYPATTERN => {:type => ::Thrift::Types::STRING, :name => 'includeParamKeyPattern', :optional => true},
+    EXCLUDEPARAMKEYPATTERN => {:type => ::Thrift::Types::STRING, :name => 'excludeParamKeyPattern', :optional => true}
   }
 
   def struct_fields; FIELDS; end

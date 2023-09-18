@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -113,6 +115,24 @@ public class JavaUtils {
       LOG.error("Unable to resolve my host name " + e.getMessage());
       throw new RuntimeException(e);
     }
+  }
+
+  public static <T> T setField(T req, String methodName, Object... values) {
+    try {
+      Class[] argsCls = values == null ? new Class[0] : new Class[values.length];
+      for (int i = 0; i < argsCls.length; i++) {
+        argsCls[i] = values[i].getClass();
+      }
+      Method method = req.getClass().getDeclaredMethod(methodName, argsCls);
+      if (method != null) {
+        method.setAccessible(true);
+        method.invoke(req, values);
+      }
+    } catch (Exception e) {
+      LOG.error("Unable to inject fields: {} to the instance: {}, message: {}", values, req, e.getMessage());
+      throw new RuntimeException(e);
+    }
+    return req;
   }
 
   /**

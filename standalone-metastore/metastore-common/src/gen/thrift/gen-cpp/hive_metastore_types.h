@@ -19273,12 +19273,14 @@ void swap(GetPartitionResponse &a, GetPartitionResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetPartitionResponse& obj);
 
 typedef struct _PartitionsRequest__isset {
-  _PartitionsRequest__isset() : catName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false) {}
+  _PartitionsRequest__isset() : catName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool catName :1;
   bool maxParts :1;
   bool validWriteIdList :1;
   bool id :1;
   bool skipColumnSchemaForPartition :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
 } _PartitionsRequest__isset;
 
 class PartitionsRequest : public virtual ::apache::thrift::TBase {
@@ -19293,7 +19295,9 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
                       maxParts(-1),
                       validWriteIdList(),
                       id(-1LL),
-                      skipColumnSchemaForPartition(0) {
+                      skipColumnSchemaForPartition(0),
+                      includeParamKeyPattern(),
+                      excludeParamKeyPattern() {
   }
 
   virtual ~PartitionsRequest() noexcept;
@@ -19304,6 +19308,8 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
   std::string validWriteIdList;
   int64_t id;
   bool skipColumnSchemaForPartition;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
 
   _PartitionsRequest__isset __isset;
 
@@ -19320,6 +19326,10 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
   void __set_id(const int64_t val);
 
   void __set_skipColumnSchemaForPartition(const bool val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
 
   bool operator == (const PartitionsRequest & rhs) const
   {
@@ -19346,6 +19356,14 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
     if (__isset.skipColumnSchemaForPartition != rhs.__isset.skipColumnSchemaForPartition)
       return false;
     else if (__isset.skipColumnSchemaForPartition && !(skipColumnSchemaForPartition == rhs.skipColumnSchemaForPartition))
+      return false;
+    if (__isset.includeParamKeyPattern != rhs.__isset.includeParamKeyPattern)
+      return false;
+    else if (__isset.includeParamKeyPattern && !(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (__isset.excludeParamKeyPattern != rhs.__isset.excludeParamKeyPattern)
+      return false;
+    else if (__isset.excludeParamKeyPattern && !(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
       return false;
     return true;
   }

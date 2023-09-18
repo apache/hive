@@ -48940,6 +48940,16 @@ void PartitionsRequest::__set_skipColumnSchemaForPartition(const bool val) {
   this->skipColumnSchemaForPartition = val;
 __isset.skipColumnSchemaForPartition = true;
 }
+
+void PartitionsRequest::__set_includeParamKeyPattern(const std::string& val) {
+  this->includeParamKeyPattern = val;
+__isset.includeParamKeyPattern = true;
+}
+
+void PartitionsRequest::__set_excludeParamKeyPattern(const std::string& val) {
+  this->excludeParamKeyPattern = val;
+__isset.excludeParamKeyPattern = true;
+}
 std::ostream& operator<<(std::ostream& out, const PartitionsRequest& obj)
 {
   obj.printTo(out);
@@ -49026,6 +49036,22 @@ uint32_t PartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->includeParamKeyPattern);
+          this->__isset.includeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->excludeParamKeyPattern);
+          this->__isset.excludeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -49080,6 +49106,16 @@ uint32_t PartitionsRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeBool(this->skipColumnSchemaForPartition);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.includeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->includeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.excludeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->excludeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -49094,6 +49130,8 @@ void swap(PartitionsRequest &a, PartitionsRequest &b) {
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.id, b.id);
   swap(a.skipColumnSchemaForPartition, b.skipColumnSchemaForPartition);
+  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
+  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
   swap(a.__isset, b.__isset);
 }
 
@@ -49105,6 +49143,8 @@ PartitionsRequest::PartitionsRequest(const PartitionsRequest& other1721) {
   validWriteIdList = other1721.validWriteIdList;
   id = other1721.id;
   skipColumnSchemaForPartition = other1721.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1721.includeParamKeyPattern;
+  excludeParamKeyPattern = other1721.excludeParamKeyPattern;
   __isset = other1721.__isset;
 }
 PartitionsRequest& PartitionsRequest::operator=(const PartitionsRequest& other1722) {
@@ -49115,6 +49155,8 @@ PartitionsRequest& PartitionsRequest::operator=(const PartitionsRequest& other17
   validWriteIdList = other1722.validWriteIdList;
   id = other1722.id;
   skipColumnSchemaForPartition = other1722.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1722.includeParamKeyPattern;
+  excludeParamKeyPattern = other1722.excludeParamKeyPattern;
   __isset = other1722.__isset;
   return *this;
 }
@@ -49128,6 +49170,8 @@ void PartitionsRequest::printTo(std::ostream& out) const {
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "skipColumnSchemaForPartition="; (__isset.skipColumnSchemaForPartition ? (out << to_string(skipColumnSchemaForPartition)) : (out << "<null>"));
+  out << ", " << "includeParamKeyPattern="; (__isset.includeParamKeyPattern ? (out << to_string(includeParamKeyPattern)) : (out << "<null>"));
+  out << ", " << "excludeParamKeyPattern="; (__isset.excludeParamKeyPattern ? (out << to_string(excludeParamKeyPattern)) : (out << "<null>"));
   out << ")";
 }
 

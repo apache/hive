@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.createGetPartitionsReq;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
@@ -2188,12 +2189,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (db_name == null || tbl_name == null) {
       throw new MetaException("Database name/Table name should not be null");
     }
-    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
     // TODO should we add capabilities here as well as it returns Partition objects
-    PartitionsRequest req = new PartitionsRequest(db_name, tbl_name);
+    PartitionsRequest req = createGetPartitionsReq(PartitionsRequest.class, conf);
+    req.setDbName(db_name);
+    req.setTblName(tbl_name);
     req.setCatName(catName);
     req.setMaxParts(shrinkMaxtoShort(max_parts));
-    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     List<Partition> parts = client.get_partitions_req(req).getPartitions();
     return deepCopyPartitions(
         FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));

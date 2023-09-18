@@ -2306,7 +2306,9 @@ struct PartitionsRequest { // Not using Get prefix as that name is already used 
    4: optional i16 maxParts=-1,
    5: optional string validWriteIdList,
    6: optional i64 id=-1, // table id
-   7: optional bool skipColumnSchemaForPartition
+   7: optional bool skipColumnSchemaForPartition,
+   8: optional string includeParamKeyPattern,
+   9: optional string excludeParamKeyPattern
 }
 
 struct PartitionsResponse { // Not using Get prefix as that name is already used for a different method

@@ -1127,6 +1127,14 @@ public class MetastoreConf {
                     + "table carries the field schema that is same as that of table schema. For a table with \n"
                     + "wider partitions fetching duplicated field schema in every partition increases memory footprint\n"
                     + "and thrift communication timeout errors. Set this config to 'true' to ignore column schema in partitions."),
+    METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN("metastore.partitions.parameters.exclude.patterns",
+        "hive.metastore.partitions.parameters.exclude.patterns", null,
+        "List of comma-separated regexes that are used to reduce the response size of HMS partitions API. \n"
+            + "Any key-value pair whose key is matched with any regex will be removed from the parameters of the Partition.\n"),
+    METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN("metastore.partitions.parameters.include.patterns",
+        "hive.metastore.partitions.parameters.include.patterns", null,
+        "List of comma-separated regexes that are used to select the matched parameters of the Partition. \n"
+            + "Any key-value pair whose key is matched with any regex will be included in the parameters of the Partition.\n"),
     METASTORE_CLIENT_FILTER_ENABLED("metastore.client.filter.enabled", "hive.metastore.client.filter.enabled", true,
         "Enable filtering the metadata read results at HMS client. Default is true."),
     METASTORE_SERVER_FILTER_ENABLED("metastore.server.filter.enabled", "hive.metastore.server.filter.enabled", false,
