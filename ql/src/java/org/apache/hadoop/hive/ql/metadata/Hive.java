@@ -5107,7 +5107,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
     } catch (Exception e) {
-      throw getHiveException(e, msg);
+      throw getHiveException(e, e.getMessage(), msg);
     }
   }
 
