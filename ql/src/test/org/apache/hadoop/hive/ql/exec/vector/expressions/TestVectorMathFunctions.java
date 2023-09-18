@@ -118,6 +118,14 @@ public class TestVectorMathFunctions {
 
   static int DAYS_LIMIT = 365 * 9999;
 
+  public static VectorizedRowBatch getVectorizedRowBatchDateInStringOut(int[] intValues) {
+    // get date in timestamp out, and change timestamp out to string out
+    VectorizedRowBatch batch =  getVectorizedRowBatchDateInTimestampOut(intValues);
+    BytesColumnVector outV = new BytesColumnVector(intValues.length);
+    batch.cols[1] = outV;
+    return batch;
+  }
+
   public static VectorizedRowBatch getVectorizedRowBatchDateInTimestampOut(int[] intValues) {
     Random r = new Random(12099);
     VectorizedRowBatch batch = new VectorizedRowBatch(2);

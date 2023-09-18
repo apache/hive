@@ -40,6 +40,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -393,6 +394,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   final ASTSearcher astSearcher = new ASTSearcher();
 
   protected AnalyzeRewriteContext analyzeRewrite;
+
+  private WriteEntity acidAnalyzeTable;
 
   // A mapping from a tableName to a table object in metastore.
   Map<String, Table> tabNameToTabObject;
@@ -2585,7 +2588,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         stagingPath = ctx.getMRTmpPath(tablePath.toUri());
       }
     } else {
-      stagingPath = ctx.getMRTmpPath();
+      stagingPath = ctx.getMRTmpPath(false);
     }
 
     return stagingPath;
@@ -11351,64 +11354,76 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // if it is not analyze command and not column stats, then do not gatherstats
     if (!qbp.isAnalyzeCommand() && qbp.getAnalyzeRewrite() == null) {
       tsDesc.setGatherStats(false);
-    } else {
-      if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-        String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
-        LOG.debug("Set stats collection dir : " + statsTmpLoc);
-        tsDesc.setTmpStatsDir(statsTmpLoc);
+      return;
+    }
+
+    if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
+      String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
+      LOG.debug("Set stats collection dir : " + statsTmpLoc);
+      tsDesc.setTmpStatsDir(statsTmpLoc);
+    }
+    tsDesc.setGatherStats(true);
+    tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+
+    // append additional virtual columns for storing statistics
+    Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
+    List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
+    while (vcs.hasNext()) {
+      VirtualColumn vc = vcs.next();
+      rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
+          vc.getTypeInfo(), alias, true, vc.getIsHidden()));
+      vcList.add(vc);
+    }
+    tsDesc.addVirtualCols(vcList);
+
+    String tblName = tab.getTableName();
+    // Theoretically the key prefix could be any unique string shared
+    // between TableScanOperator (when publishing) and StatsTask (when aggregating).
+    // Here we use
+    // db_name.table_name + partitionSec
+    // as the prefix for easy of read during explain and debugging.
+    // Currently, partition spec can only be static partition.
+    String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
+
+    // set up WriteEntity for replication and txn stats
+    WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);
+    we.setTxnAnalyze(true);
+    outputs.add(we);
+    if (AcidUtils.isTransactionalTable(tab)) {
+      if (acidAnalyzeTable != null) {
+        throw new IllegalStateException("Multiple ACID tables in analyze: "
+            + we + ", " + acidAnalyzeTable);
       }
-      tsDesc.setGatherStats(true);
-      tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+      acidAnalyzeTable = we;
+    }
 
-      // append additional virtual columns for storing statistics
-      Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
-      List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
-      while (vcs.hasNext()) {
-        VirtualColumn vc = vcs.next();
-        rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
-            vc.getTypeInfo(), alias, true, vc.getIsHidden()));
-        vcList.add(vc);
+    // add WriteEntity for each matching partition
+    if (tab.isPartitioned()) {
+      List<String> cols = new ArrayList<String>();
+      if (qbp.getAnalyzeRewrite() != null) {
+        List<FieldSchema> partitionCols = tab.getPartCols();
+        for (FieldSchema fs : partitionCols) {
+          cols.add(fs.getName());
+        }
+        tsDesc.setPartColumns(cols);
+        return;
       }
-      tsDesc.addVirtualCols(vcList);
-
-      String tblName = tab.getTableName();
-      // Theoretically the key prefix could be any unique string shared
-      // between TableScanOperator (when publishing) and StatsTask (when aggregating).
-      // Here we use
-      // db_name.table_name + partitionSec
-      // as the prefix for easy of read during explain and debugging.
-      // Currently, partition spec can only be static partition.
-      String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
-      tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
-
-      // set up WriteEntity for replication
-      outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
-
-      // add WriteEntity for each matching partition
-      if (tab.isPartitioned()) {
-        List<String> cols = new ArrayList<String>();
-        if (qbp.getAnalyzeRewrite() != null) {
-          List<FieldSchema> partitionCols = tab.getPartCols();
-          for (FieldSchema fs : partitionCols) {
-            cols.add(fs.getName());
-          }
-          tsDesc.setPartColumns(cols);
-          return;
-        }
-        TableSpec tblSpec = qbp.getTableSpec(alias);
-        Map<String, String> partSpec = tblSpec.getPartSpec();
-        if (partSpec != null) {
-          cols.addAll(partSpec.keySet());
-          tsDesc.setPartColumns(cols);
-        } else {
-          throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
-        }
-        List<Partition> partitions = qbp.getTableSpec().partitions;
-        if (partitions != null) {
-          for (Partition partn : partitions) {
-            // inputs.add(new ReadEntity(partn)); // is this needed at all?
-            outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
-          }
+      TableSpec tblSpec = qbp.getTableSpec(alias);
+      Map<String, String> partSpec = tblSpec.getPartSpec();
+      if (partSpec != null) {
+        cols.addAll(partSpec.keySet());
+        tsDesc.setPartColumns(cols);
+      } else {
+        throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
+      }
+      List<Partition> partitions = qbp.getTableSpec().partitions;
+      if (partitions != null) {
+        for (Partition partn : partitions) {
+          // inputs.add(new ReadEntity(partn)); // is this needed at all?
+          WriteEntity pwe = new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK);
+          pwe.setTxnAnalyze(true);
+          outputs.add(pwe);
         }
       }
     }
@@ -12082,8 +12097,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // the table needs to be masked or filtered.
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
-  protected static ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
-                                                       Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
+  protected ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
+                                                Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
     // The base table of CTE should be masked.
@@ -12124,6 +12139,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // 2. rewrite the AST, replace TABREF with masking/filtering
     if (tableMask.needsRewrite()) {
+      quoteIdentifierTokens(tokenRewriteStream);
       tableMask.applyTranslations(tokenRewriteStream);
       String rewrittenQuery = tokenRewriteStream.toString(
           ast.getTokenStartIndex(), ast.getTokenStopIndex());
@@ -12458,7 +12474,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           queryState.getLineageState()
               .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
         }
-        return;
+        if (getColumnAccessInfo() != null) {
+          return;
+        }
       }
     }
 
@@ -12493,6 +12511,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
       // view column access info is carried by this.getColumnAccessInfo().
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+    }
+
+    if (getQB().isView()) {
+      return;
     }
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
@@ -12956,7 +12978,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void validate() throws SemanticException {
-    LOG.debug("validation start");
     boolean wasAcidChecked = false;
     // Validate inputs and outputs have right protectmode to execute the query
     for (ReadEntity readEntity : getInputs()) {
@@ -13064,10 +13085,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          property map
    * @return Modified table property map
    */
-  private Map<String, String> addDefaultProperties(
+  private Map<String, String> validateAndAddDefaultProperties(
       Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
       String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable) {
+      boolean isTemporaryTable, boolean isTransactional) throws SemanticException {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -13098,42 +13119,49 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
         HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
         DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
-    if ((makeInsertOnly || makeAcid)
+    if ((makeInsertOnly || makeAcid || isTransactional)
         && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
-      if (makeInsertOnly) {
+      if (makeInsertOnly || isTransactional) {
         retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
         retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      if (makeAcid) {
-        /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
-         so the initial write ends up running as non-acid...*/
-        try {
-          Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
-              Class.forName(storageFormat.getInputFormat());
-          Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
-              Class.forName(storageFormat.getOutputFormat());
-          if (inputFormatClass == null || outputFormatClass == null ||
-              !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
-              !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
-            return retValue;
-          }
-        } catch (ClassNotFoundException e) {
-          LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
-              storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
-          return retValue;
-        }
-        if(sortCols != null && !sortCols.isEmpty()) {
-          return retValue;
-        }
-        retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-        retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
-            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
-        LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
+      if (makeAcid || isTransactional) {
+        retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
+    return retValue;
+  }
+
+  private Map<String, String> convertToAcidByDefault(
+      StorageFormat storageFormat, String qualifiedTableName, List<Order> sortCols,
+      Map<String, String> retValue) {
+    /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
+     so the initial write ends up running as non-acid...*/
+    try {
+      Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
+          Class.forName(storageFormat.getInputFormat());
+      Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
+          Class.forName(storageFormat.getOutputFormat());
+      if (inputFormatClass == null || outputFormatClass == null ||
+          !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
+          !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+        return retValue;
+      }
+    } catch (ClassNotFoundException e) {
+      LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
+          storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
+      return retValue;
+    }
+    if(sortCols != null && !sortCols.isEmpty()) {
+      return retValue;
+    }
+    retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
+    LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
     return retValue;
   }
 
@@ -13201,10 +13229,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isExt = false;
     boolean isTemporary = false;
     boolean isMaterialization = false;
+    boolean isTransactional = false;
     ASTNode selectStmt = null;
     final int CREATE_TABLE = 0; // regular CREATE TABLE
     final int CTLT = 1; // CREATE TABLE LIKE ... (CTLT)
     final int CTAS = 2; // CREATE TABLE AS SELECT ... (CTAS)
+    final int ctt = 3; // CREATE TRANSACTIONAL TABLE
     int command_type = CREATE_TABLE;
     List<String> skewedColNames = new ArrayList<String>();
     List<List<String>> skewedValues = new ArrayList<List<String>>();
@@ -13240,6 +13270,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.KW_TEMPORARY:
         isTemporary = true;
         isMaterialization = MATERIALIZATION_MARKER.equals(child.getText());
+        break;
+      case HiveParser.KW_TRANSACTIONAL:
+        isTransactional = true;
+        command_type = ctt;
         break;
       case HiveParser.TOK_LIKETABLE:
         if (child.getChildCount() > 0) {
@@ -13351,7 +13385,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if (command_type == CREATE_TABLE || command_type == CTLT) {
+    if (command_type == CREATE_TABLE || command_type == CTLT || command_type == ctt) {
       queryState.setCommandType(HiveOperation.CREATETABLE);
     } else if (command_type == CTAS) {
       queryState.setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
@@ -13412,8 +13446,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(
             "Partition columns can only declared using their name and types in regular CREATE TABLE statements");
       }
-      tblProps = addDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
+      tblProps = validateAndAddDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
@@ -13434,10 +13468,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             crtTblDesc)));
       break;
+    case ctt: // CREATE TRANSACTIONAL TABLE
+      if (isExt) {
+        throw new SemanticException(
+            qualifiedTabName[1] + " cannot be declared transactional because it's an external table");
+      }
+      tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
+          isTemporary, isTransactional);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, false, tblProps);
+
+      CreateTableDesc crtTranTblDesc =
+          new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols, bucketCols, sortCols, numBuckets,
+              rowFormatParams.fieldDelim, rowFormatParams.fieldEscape, rowFormatParams.collItemDelim,
+              rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment, storageFormat.getInputFormat(),
+              storageFormat.getOutputFormat(), location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
+              storageFormat.getSerdeProps(), tblProps, ifNotExists, skewedColNames, skewedValues, primaryKeys,
+              foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+      crtTranTblDesc.setStoredAsSubDirectories(storedAsDirs);
+      crtTranTblDesc.setNullFormat(rowFormatParams.nullFormat);
+
+      crtTranTblDesc.validate(conf);
+      // outputs is empty, which means this create table happens in the current
+      // database.
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTranTblDesc)));
+      break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
+      tblProps = validateAndAddDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
       if (isTemporary) {
@@ -13520,8 +13578,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Partition columns can only declared using their names in CTAS statements");
       }
 
-      tblProps = addDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
+      tblProps = validateAndAddDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary, isTransactional);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partColNames, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -13664,7 +13722,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           createVwDesc)));
       addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, false, tblProps);
-      queryState.setCommandType(HiveOperation.CREATEVIEW);
+      if (isAlterViewAs) {
+        queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
+      } else {
+        queryState.setCommandType(HiveOperation.CREATEVIEW);
+      }
+
     }
     qb.setViewDesc(createVwDesc);
 
@@ -14863,6 +14926,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return sb.toString();
   }
 
+  private void quoteIdentifierTokens(TokenRewriteStream tokenRewriteStream) {
+    if (conf.getVar(ConfVars.HIVE_QUOTEDID_SUPPORT).equals("none")) {
+      return;
+    }
+
+    for (int idx = tokenRewriteStream.MIN_TOKEN_INDEX; idx <= tokenRewriteStream.size()-1; idx++) {
+      Token curTok = tokenRewriteStream.get(idx);
+      if (curTok.getType() == HiveLexer.Identifier) {
+        // The Tokens have no distinction between Identifiers and QuotedIdentifiers.
+        // Ugly solution is just to surround all identifiers with quotes.
+        // Re-escape any backtick (`) characters in the identifier.
+        String escapedTokenText = curTok.getText().replaceAll("`", "``");
+        tokenRewriteStream.replace(curTok, "`" + escapedTokenText + "`");
+      }
+    }
+  }
+
   /**
    * Generate the query string for this query (with fully resolved table references).
    * @return The query string with resolved references. NULL if an error occurred.
@@ -15195,5 +15275,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       rewrittenQueryStr.append(")");
     }
+  }
+
+  @Override
+  public WriteEntity getAcidAnalyzeTable() {
+    return acidAnalyzeTable;
   }
 }

@@ -223,6 +223,9 @@
       <fetch-group name="fetch_db_mtable">
           <field name="database"/>
       </fetch-group>
+      <field name="writeId">
+        <column name="WRITE_ID"/>
+      </field>
     </class>
 
     <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
@@ -501,6 +504,9 @@
         <value>
            <column name="PARAM_VALUE" jdbc-type="CLOB"/>
         </value>
+      </field>
+      <field name="writeId">
+        <column name="WRITE_ID"/>
       </field>
     </class>
     

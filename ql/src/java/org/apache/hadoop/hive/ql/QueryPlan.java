@@ -34,7 +34,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -113,6 +115,7 @@ public class QueryPlan implements Serializable {
   private final HiveOperation operation;
   private final boolean acidResourcesInQuery;
   private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
+  private final WriteEntity acidAnalyzeTable;
   private final DDLDesc.DDLDescWithWriteId acidDdlDesc;
   private Boolean autoCommitValue;
 
@@ -126,6 +129,7 @@ public class QueryPlan implements Serializable {
     this.acidResourcesInQuery = false;
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
+    this.acidAnalyzeTable = null;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
@@ -152,9 +156,11 @@ public class QueryPlan implements Serializable {
     this.operation = operation;
     this.autoCommitValue = sem.getAutoCommitValue();
     this.resultSchema = resultSchema;
+    // TODO: all this ACID stuff should be in some sub-object
     this.acidResourcesInQuery = sem.hasTransactionalInQuery();
     this.acidSinks = sem.getAcidFileSinks();
     this.acidDdlDesc = sem.getAcidDdlDesc();
+    this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
   }
 
   /**
@@ -163,6 +169,11 @@ public class QueryPlan implements Serializable {
   public boolean hasAcidResourcesInQuery() {
     return acidResourcesInQuery;
   }
+
+  public WriteEntity getAcidAnalyzeTable() {
+    return acidAnalyzeTable;
+  }
+
   /**
    * @return Collection of FileSinkDesc representing writes to Acid resources
    */
@@ -649,7 +660,7 @@ public class QueryPlan implements Serializable {
       e.printStackTrace();
       return q.toString();
     }
-    return tmb.toString("UTF-8");
+    return tmb.toString(StandardCharsets.UTF_8);
   }
 
   public String toBinaryString() throws IOException {

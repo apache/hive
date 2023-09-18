@@ -278,6 +278,17 @@ struct GrantRevokePrivilegeResponse {
   1: optional bool success;
 }
 
+struct TruncateTableRequest {
+  1: required string dbName,
+  2: required string tableName,
+  3: optional list<string> partNames,
+  4: optional i64 writeId=-1,
+  5: optional string validWriteIdList
+}
+
+struct TruncateTableResponse {
+}
+
 struct Role {
   1: string roleName,
   2: i32 createTime,
@@ -441,7 +452,9 @@ struct Table {
   15: optional bool rewriteEnabled,     // rewrite enabled or not
   16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
   17: optional string catName,          // Name of the catalog the table is in
-  18: optional PrincipalType ownerType = PrincipalType.USER // owner type of this table (default to USER for backward compatibility)
+  18: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
+  19: optional i64 writeId=-1,
+  20: optional bool isStatsCompliant
 }
 
 struct Partition {
@@ -453,7 +466,9 @@ struct Partition {
   6: StorageDescriptor   sd,
   7: map<string, string> parameters,
   8: optional PrincipalPrivilegeSet privileges,
-  9: optional string catName
+  9: optional string catName,
+  10: optional i64 writeId=-1,
+  11: optional bool isStatsCompliant
 }
 
 struct PartitionWithoutSD {
@@ -480,7 +495,9 @@ struct PartitionSpec {
   3: string rootPath,
   4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
   5: optional PartitionListComposingSpec partitionList,
-  6: optional string catName
+  6: optional string catName,
+  7: optional i64 writeId=-1,
+  8: optional bool isStatsCompliant
 }
 
 // column statistics
@@ -575,17 +592,26 @@ struct ColumnStatisticsDesc {
 
 struct ColumnStatistics {
 1: required ColumnStatisticsDesc statsDesc,
-2: required list<ColumnStatisticsObj> statsObj;
+2: required list<ColumnStatisticsObj> statsObj,
+3: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
+                                                      // the calling query?
 }
 
 struct AggrStats {
 1: required list<ColumnStatisticsObj> colStats,
-2: required i64 partsFound // number of partitions for which stats were found
+2: required i64 partsFound, // number of partitions for which stats were found
+3: optional bool isStatsCompliant
 }
 
 struct SetPartitionsStatsRequest {
 1: required list<ColumnStatistics> colStats,
-2: optional bool needMerge //stats need to be merged with the existing stats
+2: optional bool needMerge, //stats need to be merged with the existing stats
+3: optional i64 writeId=-1,         // writeId for the current query that updates the stats
+4: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+}
+
+struct SetPartitionsStatsResponse {
+1: required bool result;
 }
 
 // schema of the table/query results etc.
@@ -714,18 +740,21 @@ struct PartitionsByExprRequest {
 }
 
 struct TableStatsResult {
-  1: required list<ColumnStatisticsObj> tableStats
+  1: required list<ColumnStatisticsObj> tableStats,
+  2: optional bool isStatsCompliant
 }
 
 struct PartitionsStatsResult {
-  1: required map<string, list<ColumnStatisticsObj>> partStats
+  1: required map<string, list<ColumnStatisticsObj>> partStats,
+  2: optional bool isStatsCompliant
 }
 
 struct TableStatsRequest {
  1: required string dbName,
  2: required string tblName,
  3: required list<string> colNames
- 4: optional string catName
+ 4: optional string catName,
+ 5: optional string validWriteIdList  // valid write id list for the table for which this struct is being sent
 }
 
 struct PartitionsStatsRequest {
@@ -733,12 +762,14 @@ struct PartitionsStatsRequest {
  2: required string tblName,
  3: required list<string> colNames,
  4: required list<string> partNames,
- 5: optional string catName
+ 5: optional string catName,
+ 6: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
 }
 
 // Return type for add_partitions_req
 struct AddPartitionsResult {
   1: optional list<Partition> partitions,
+  2: optional bool isStatsCompliant
 }
 
 // Request type for add_partitions_req
@@ -748,7 +779,8 @@ struct AddPartitionsRequest {
   3: required list<Partition> parts,
   4: required bool ifNotExists,
   5: optional bool needResult=true,
-  6: optional string catName
+  6: optional string catName,
+  7: optional string validWriteIdList
 }
 
 // Return type for drop_partitions_req
@@ -904,7 +936,8 @@ struct ReplTblWriteIdStateRequest {
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
 struct GetValidWriteIdsRequest {
     1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
-    2: required string validTxnList, // Valid txn list string wrt the current txn of the caller
+    2: optional string validTxnList, // Valid txn list string wrt the current txn of the caller
+    3: optional i64 writeId, //write id to be used to get the current txn id
 }
 
 // Valid Write ID list of one table wrt to current txn
@@ -1245,11 +1278,13 @@ struct GetTableRequest {
   1: required string dbName,
   2: required string tblName,
   3: optional ClientCapabilities capabilities,
-  4: optional string catName
+  4: optional string catName,
+  6: optional string validWriteIdList
 }
 
 struct GetTableResult {
-  1: required Table table
+  1: required Table table,
+  2: optional bool isStatsCompliant
 }
 
 struct GetTablesRequest {
@@ -1577,6 +1612,45 @@ struct GetRuntimeStatsRequest {
   2: required i32 maxCreateTime
 }
 
+struct AlterPartitionsRequest {
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tableName,
+  4: required list<Partition> partitions,
+  5: optional EnvironmentContext environmentContext,
+  6: optional i64 writeId=-1,
+  7: optional string validWriteIdList
+}
+
+struct AlterPartitionsResponse {
+}
+
+struct RenamePartitionRequest {
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tableName,
+  4: required list<string> partVals,
+  5: required Partition newPart,
+  6: optional string validWriteIdList
+}
+
+struct RenamePartitionResponse {
+}
+
+struct AlterTableRequest {
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tableName,
+  4: required Table table,
+  5: optional EnvironmentContext environmentContext,
+  6: optional i64 writeId=-1,
+  7: optional string validWriteIdList
+// TODO: also add cascade here, out of envCtx
+}
+
+struct AlterTableResponse {
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -1721,6 +1795,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)
+  TruncateTableResponse truncate_table_req(1:TruncateTableRequest req) throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
   list<string> get_materialized_views_for_rewriting(1: string db_name) throws (1: MetaException o1)
@@ -1786,6 +1861,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // alter table not only applies to future partitions but also cascade to existing partitions
   void alter_table_with_cascade(1:string dbname, 2:string tbl_name, 3:Table new_tbl, 4:bool cascade)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
+  AlterTableResponse alter_table_req(1:AlterTableRequest req)
+      throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+
+
   // the following applies to only tables that have partitions
   // * See notes on DDL_TIME
   Partition add_partition(1:Partition new_part)
@@ -1907,7 +1987,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // prehooks are fired together followed by all post hooks
   void alter_partitions(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
+
   void alter_partitions_with_environment_context(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts, 4:EnvironmentContext environment_context) throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  AlterPartitionsResponse alter_partitions_req(1:AlterPartitionsRequest req)
+      throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   void alter_partition_with_environment_context(1:string db_name,
       2:string tbl_name, 3:Partition new_part,
@@ -1918,6 +2002,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // in the new_part. old partition is identified from part_vals.
   // partition keys in new_part should be the same as those in old partition.
   void rename_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:Partition new_part)
+                       throws (1:InvalidOperationException o1, 2:MetaException o2)
+  
+  RenamePartitionResponse rename_partition_req(1:RenamePartitionRequest req)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   // returns whether or not the partition name is valid based on the value of the config
@@ -1974,6 +2061,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
   bool update_partition_column_statistics(1:ColumnStatistics stats_obj) throws (1:NoSuchObjectException o1,
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+
+  SetPartitionsStatsResponse update_table_column_statistics_req(1:SetPartitionsStatsRequest req) throws (1:NoSuchObjectException o1,
+              2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+  SetPartitionsStatsResponse update_partition_column_statistics_req(1:SetPartitionsStatsRequest req) throws (1:NoSuchObjectException o1,
+              2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+
 
   // get APIs return the column statistics corresponding to db_name, tbl_name, [part_name], col_name if
   // such statistics exists. If the required statistics doesn't exist, get APIs throw NoSuchObjectException
@@ -2205,7 +2298,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // Schema calls
   void create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
-        NoSuchObjectException o2, 3:MetaException o3)
+        2:NoSuchObjectException o2, 3:MetaException o3)
   void alter_ischema(1:AlterISchemaRequest rqst)
         throws(1:NoSuchObjectException o1, 2:MetaException o2)
   ISchema get_ischema(1:ISchemaName name) throws (1:NoSuchObjectException o1, 2:MetaException o2)

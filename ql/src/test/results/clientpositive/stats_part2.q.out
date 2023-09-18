@@ -1,0 +1,1331 @@
+PREHOOK: query: drop table if exists mysource
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists mysource
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table mysource (p int, key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mysource
+POSTHOOK: query: create table mysource (p int, key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mysource
+PREHOOK: query: insert into mysource values (100,20,'value20'), (101,40,'string40'), (102,50,'string50')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mysource
+POSTHOOK: query: insert into mysource values (100,20,'value20'), (101,40,'string40'), (102,50,'string50')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mysource
+POSTHOOK: Lineage: mysource.key SCRIPT []
+POSTHOOK: Lineage: mysource.p SCRIPT []
+POSTHOOK: Lineage: mysource.value SCRIPT []
+PREHOOK: query: insert into mysource values (100,21,'value21'), (101,41,'value41'), (102,51,'value51')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mysource
+POSTHOOK: query: insert into mysource values (100,21,'value21'), (101,41,'value41'), (102,51,'value51')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mysource
+POSTHOOK: Lineage: mysource.key SCRIPT []
+POSTHOOK: Lineage: mysource.p SCRIPT []
+POSTHOOK: Lineage: mysource.value SCRIPT []
+PREHOOK: query: drop table if exists stats_part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists stats_part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table stats_part(key int,value string) partitioned by (p int) stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: create table stats_part(key int,value string) partitioned by (p int) stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_part
+PREHOOK: query: explain select count(*) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: stats_part
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (p > 100) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: stats_part
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+            Filter Operator
+              predicate: (p > 100) (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: key
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Group By Operator
+                  aggregations: max(key)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                    value expressions: _col0 (type: int)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: desc formatted stats_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table stats_part partition(p=100) select distinct key, value from mysource where p == 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mysource
+PREHOOK: Output: default@stats_part@p=100
+POSTHOOK: query: insert into table stats_part partition(p=100) select distinct key, value from mysource where p == 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mysource
+POSTHOOK: Output: default@stats_part@p=100
+POSTHOOK: Lineage: stats_part PARTITION(p=100).key SIMPLE [(mysource)mysource.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=100).value SIMPLE [(mysource)mysource.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert into table stats_part partition(p=101) select distinct key, value from mysource where p == 101
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mysource
+PREHOOK: Output: default@stats_part@p=101
+POSTHOOK: query: insert into table stats_part partition(p=101) select distinct key, value from mysource where p == 101
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mysource
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Lineage: stats_part PARTITION(p=101).key SIMPLE [(mysource)mysource.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(mysource)mysource.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert into table stats_part partition(p=102) select distinct key, value from mysource where p == 102
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mysource
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: insert into table stats_part partition(p=102) select distinct key, value from mysource where p == 102
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mysource
+POSTHOOK: Output: default@stats_part@p=102
+POSTHOOK: Lineage: stats_part PARTITION(p=102).key SIMPLE [(mysource)mysource.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=102).value SIMPLE [(mysource)mysource.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: desc formatted stats_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	6                   
+	rawDataSize         	0                   
+	totalSize           	2335                
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select count(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into table mysource values (103,20,'value20'), (103,83,'value83'), (103,53,'value53')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mysource
+POSTHOOK: query: insert into table mysource values (103,20,'value20'), (103,83,'value83'), (103,53,'value53')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mysource
+POSTHOOK: Lineage: mysource.key SCRIPT []
+POSTHOOK: Lineage: mysource.p SCRIPT []
+POSTHOOK: Lineage: mysource.value SCRIPT []
+PREHOOK: query: insert into table stats_part partition(p=102) select distinct key, value from mysource where p == 102
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mysource
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: insert into table stats_part partition(p=102) select distinct key, value from mysource where p == 102
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mysource
+POSTHOOK: Output: default@stats_part@p=102
+POSTHOOK: Lineage: stats_part PARTITION(p=102).key SIMPLE [(mysource)mysource.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_part PARTITION(p=102).value SIMPLE [(mysource)mysource.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: desc formatted stats_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	4                   
+	numPartitions       	3                   
+	numRows             	8                   
+	rawDataSize         	0                   
+	totalSize           	3124                
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: show partitions stats_part
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: show partitions stats_part
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@stats_part
+p=100
+p=101
+p=102
+PREHOOK: query: explain select count(*) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+8
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+8
+PREHOOK: query: explain select count(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+6
+PREHOOK: query: explain select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+51
+PREHOOK: query: desc formatted stats_part partition(p = 100)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 100)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	756                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 101)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 101)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[101]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	789                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 102)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 102)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[102]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	0                   
+	totalSize           	1579                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: update stats_part set key = key + 100 where key in(-50,40) and p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+PREHOOK: Output: default@stats_part@p=101
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: update stats_part set key = key + 100 where key in(-50,40) and p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Output: default@stats_part@p=102
+PREHOOK: query: explain select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: explain select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: stats_part
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: key
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: max(key)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+140
+PREHOOK: query: desc formatted stats_part partition(p = 100)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 100)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	756                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 101)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 101)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[101]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	3                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	2235                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 102)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 102)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[102]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	0                   
+	totalSize           	1579                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(value) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=100
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: select count(value) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=100
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+8
+PREHOOK: query: update stats_part set value = concat(value, 'updated') where cast(key as integer) in(40,53) and p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+PREHOOK: Output: default@stats_part@p=101
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: update stats_part set value = concat(value, 'updated') where cast(key as integer) in(40,53) and p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Output: default@stats_part@p=102
+PREHOOK: query: desc formatted stats_part partition(p = 100)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 100)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	756                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 101)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 101)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[101]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	3                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	2235                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 102)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 102)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[102]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	0                   
+	totalSize           	1579                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(value) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=100
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: select count(value) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=100
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+8
+PREHOOK: query: delete from stats_part where key in (20, 41)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=100
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+PREHOOK: Output: default@stats_part@p=100
+PREHOOK: Output: default@stats_part@p=101
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: delete from stats_part where key in (20, 41)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=100
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part@p=100
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Output: default@stats_part@p=102
+PREHOOK: query: desc formatted stats_part partition(p = 100)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 100)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	1                   
+	rawDataSize         	0                   
+	totalSize           	1453                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 101)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 101)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[101]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	4                   
+	numRows             	1                   
+	rawDataSize         	0                   
+	totalSize           	2929                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition(p = 102)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition(p = 102)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[102]               	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	0                   
+	totalSize           	1579                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select count(*) from stats_part where p = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats_part where p = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats_part where p = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats_part where p = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+1
+PREHOOK: query: explain select count(*) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+5
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=100
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=100
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: stats_part
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: key
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(key)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=100
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=100
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+6
+PREHOOK: query: explain select count(*) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+5
+PREHOOK: query: explain select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: explain select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: stats_part
+            Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: key
+              Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: max(key)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(key) from stats_part where p > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+POSTHOOK: query: select max(key) from stats_part where p > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+#### A masked pattern was here ####
+140
+PREHOOK: query: describe extended stats_part partition (p=101)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: describe extended stats_part partition (p=101)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+key                 	int                 	                    
+value               	string              	                    
+p                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe extended stats_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: describe extended stats_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+key                 	int                 	                    
+value               	string              	                    
+p                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+#### A masked pattern was here ####

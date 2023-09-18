@@ -221,7 +221,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -254,7 +254,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -272,7 +272,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -379,7 +379,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -393,7 +393,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -611,7 +611,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -627,7 +627,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -643,7 +643,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -711,7 +711,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -728,7 +728,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -745,7 +745,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }
@@ -762,7 +762,7 @@ public class TestFunctions extends MetaStoreClientTest {
       Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
     } catch (NullPointerException exception) {
       // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
+    } catch (TTransportException | TApplicationException exception) {
       // Expected exception - Remote MetaStore
     }
   }

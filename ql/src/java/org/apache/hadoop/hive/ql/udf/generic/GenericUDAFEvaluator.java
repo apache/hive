@@ -149,6 +149,7 @@ public abstract class GenericUDAFEvaluator implements Closeable {
     // This function should be overriden in every sub class
     // And the sub class should call super.init(m, parameters) to get mode set.
     mode = m;
+    partitionEvaluator = null;
     return null;
   }
 

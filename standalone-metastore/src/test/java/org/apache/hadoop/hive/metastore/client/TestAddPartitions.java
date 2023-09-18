@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
@@ -682,7 +683,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
     try {
       client.add_partitions(null);
       Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
+    } catch (TTransportException | NullPointerException | TApplicationException e) {
       // TODO: NPE should not be thrown
     }
   }

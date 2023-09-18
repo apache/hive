@@ -324,6 +324,12 @@ public class TestHive extends TestCase {
       tbl.setCreateTime(ft.getTTable().getCreateTime());
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
+      // Txn stuff set by metastore
+      if (tbl.getTTable().isSetWriteId() != ft.getTTable().isSetWriteId()) {
+        // No need to compare this field.
+        ft.getTTable().setWriteId(0);
+        tbl.getTTable().setWriteId(0);
+      }
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
           + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
       assertEquals("SerializationLib is not set correctly", tbl
@@ -593,7 +599,7 @@ public class TestHive extends TestCase {
 
       Table table = createPartitionedTable(dbName, tableName);
       table.getParameters().put("auto.purge", "true");
-      hm.alterTable(tableName, table, null);
+      hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
           .put("ds", "20141216")

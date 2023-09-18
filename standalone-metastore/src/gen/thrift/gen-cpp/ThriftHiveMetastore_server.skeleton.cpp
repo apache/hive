@@ -12,8 +12,6 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
-using boost::shared_ptr;
-
 using namespace  ::Apache::Hadoop::Hive;
 
 class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
@@ -192,6 +190,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("truncate_table\n");
   }
 
+  void truncate_table_req(TruncateTableResponse& _return, const TruncateTableRequest& req) {
+    // Your implementation goes here
+    printf("truncate_table_req\n");
+  }
+
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     // Your implementation goes here
     printf("get_tables\n");
@@ -265,6 +268,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) {
     // Your implementation goes here
     printf("alter_table_with_cascade\n");
+  }
+
+  void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req) {
+    // Your implementation goes here
+    printf("alter_table_req\n");
   }
 
   void add_partition(Partition& _return, const Partition& new_part) {
@@ -442,6 +450,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_partitions_with_environment_context\n");
   }
 
+  void alter_partitions_req(AlterPartitionsResponse& _return, const AlterPartitionsRequest& req) {
+    // Your implementation goes here
+    printf("alter_partitions_req\n");
+  }
+
   void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("alter_partition_with_environment_context\n");
@@ -450,6 +463,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) {
     // Your implementation goes here
     printf("rename_partition\n");
+  }
+
+  void rename_partition_req(RenamePartitionResponse& _return, const RenamePartitionRequest& req) {
+    // Your implementation goes here
+    printf("rename_partition_req\n");
   }
 
   bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) {
@@ -520,6 +538,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool update_partition_column_statistics(const ColumnStatistics& stats_obj) {
     // Your implementation goes here
     printf("update_partition_column_statistics\n");
+  }
+
+  void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) {
+    // Your implementation goes here
+    printf("update_table_column_statistics_req\n");
+  }
+
+  void update_partition_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) {
+    // Your implementation goes here
+    printf("update_partition_column_statistics_req\n");
   }
 
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
@@ -1066,11 +1094,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
 
 int main(int argc, char **argv) {
   int port = 9090;
-  shared_ptr<ThriftHiveMetastoreHandler> handler(new ThriftHiveMetastoreHandler());
-  shared_ptr<TProcessor> processor(new ThriftHiveMetastoreProcessor(handler));
-  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+  ::std::shared_ptr<ThriftHiveMetastoreHandler> handler(new ThriftHiveMetastoreHandler());
+  ::std::shared_ptr<TProcessor> processor(new ThriftHiveMetastoreProcessor(handler));
+  ::std::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+  ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
   server.serve();
