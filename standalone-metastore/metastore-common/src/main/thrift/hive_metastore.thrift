@@ -880,7 +880,9 @@ struct PartitionsByExprRequest {
   7: optional string order
   8: optional string validWriteIdList,
   9: optional i64 id=-1, // table id
-  10: optional bool skipColumnSchemaForPartition
+  10: optional bool skipColumnSchemaForPartition,
+  11: optional string includeParamKeyPattern,
+  12: optional string excludeParamKeyPattern
 }
 
 struct TableStatsResult {
@@ -995,7 +997,9 @@ struct GetPartitionsByNamesRequest {
   8: optional string validWriteIdList,
   9: optional bool getFileMetadata,
   10: optional i64 id=-1,  // table id
-  11: optional bool skipColumnSchemaForPartition
+  11: optional bool skipColumnSchemaForPartition,
+  12: optional string includeParamKeyPattern,
+  13: optional string excludeParamKeyPattern
 }
 
 struct GetPartitionsByNamesResult {
@@ -2321,7 +2325,9 @@ struct GetPartitionsByFilterRequest {
    3: string tblName,
    4: string filter,
    5: optional i16 maxParts=-1,
-   6: optional bool skipColumnSchemaForPartition
+   6: optional bool skipColumnSchemaForPartition,
+   7: optional string includeParamKeyPattern,
+   8: optional string excludeParamKeyPattern
 }
 
 struct GetPartitionNamesPsRequest {
@@ -2348,7 +2354,9 @@ struct GetPartitionsPsWithAuthRequest {
    7: optional list<string> groupNames,
    8: optional string validWriteIdList,
    9: optional i64 id=-1 // table id
-   10: optional bool skipColumnSchemaForPartition
+   10: optional bool skipColumnSchemaForPartition,
+   11: optional string includeParamKeyPattern,
+   12: optional string excludeParamKeyPattern
 }
 
 struct GetPartitionsPsWithAuthResponse {

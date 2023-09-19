@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1230,8 +1229,14 @@ public class MetaStoreUtils {
     return result;
   }
 
-  public static <T> T createGetPartitionsReq(Class<T> clazz, Configuration conf) {
-    T req = ReflectionUtils.newInstance(clazz, conf);
+  public static <T> T createThriftPartitionsReq(Class<T> clazz, Configuration conf, Object... deepCopy) {
+    final T req;
+    if (deepCopy != null && deepCopy.length > 0) {
+      assert clazz.isAssignableFrom(deepCopy[0].getClass());
+      req = JavaUtils.newInstance(clazz, new Class[]{clazz}, deepCopy);
+    } else {
+      req = JavaUtils.newInstance(clazz);
+    }
     JavaUtils.setField(req, "setSkipColumnSchemaForPartition", MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS));
     JavaUtils.setField(req, "setIncludeParamKeyPattern", MetastoreConf.getAsString(conf,

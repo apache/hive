@@ -22,6 +22,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField GET_FILE_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("getFileMetadata", org.apache.thrift.protocol.TType.BOOL, (short)9);
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)10);
   private static final org.apache.thrift.protocol.TField SKIP_COLUMN_SCHEMA_FOR_PARTITION_FIELD_DESC = new org.apache.thrift.protocol.TField("skipColumnSchemaForPartition", org.apache.thrift.protocol.TType.BOOL, (short)11);
+  private static final org.apache.thrift.protocol.TField INCLUDE_PARAM_KEY_PATTERN_FIELD_DESC = new org.apache.thrift.protocol.TField("includeParamKeyPattern", org.apache.thrift.protocol.TType.STRING, (short)12);
+  private static final org.apache.thrift.protocol.TField EXCLUDE_PARAM_KEY_PATTERN_FIELD_DESC = new org.apache.thrift.protocol.TField("excludeParamKeyPattern", org.apache.thrift.protocol.TType.STRING, (short)13);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetPartitionsByNamesRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetPartitionsByNamesRequestTupleSchemeFactory();
@@ -37,6 +39,8 @@ package org.apache.hadoop.hive.metastore.api;
   private boolean getFileMetadata; // optional
   private long id; // optional
   private boolean skipColumnSchemaForPartition; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String includeParamKeyPattern; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String excludeParamKeyPattern; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -50,7 +54,9 @@ package org.apache.hadoop.hive.metastore.api;
     VALID_WRITE_ID_LIST((short)8, "validWriteIdList"),
     GET_FILE_METADATA((short)9, "getFileMetadata"),
     ID((short)10, "id"),
-    SKIP_COLUMN_SCHEMA_FOR_PARTITION((short)11, "skipColumnSchemaForPartition");
+    SKIP_COLUMN_SCHEMA_FOR_PARTITION((short)11, "skipColumnSchemaForPartition"),
+    INCLUDE_PARAM_KEY_PATTERN((short)12, "includeParamKeyPattern"),
+    EXCLUDE_PARAM_KEY_PATTERN((short)13, "excludeParamKeyPattern");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -88,6 +94,10 @@ package org.apache.hadoop.hive.metastore.api;
           return ID;
         case 11: // SKIP_COLUMN_SCHEMA_FOR_PARTITION
           return SKIP_COLUMN_SCHEMA_FOR_PARTITION;
+        case 12: // INCLUDE_PARAM_KEY_PATTERN
+          return INCLUDE_PARAM_KEY_PATTERN;
+        case 13: // EXCLUDE_PARAM_KEY_PATTERN
+          return EXCLUDE_PARAM_KEY_PATTERN;
         default:
           return null;
       }
@@ -134,7 +144,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ID_ISSET_ID = 2;
   private static final int __SKIPCOLUMNSCHEMAFORPARTITION_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.NAMES,_Fields.GET_COL_STATS,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.ENGINE,_Fields.VALID_WRITE_ID_LIST,_Fields.GET_FILE_METADATA,_Fields.ID,_Fields.SKIP_COLUMN_SCHEMA_FOR_PARTITION};
+  private static final _Fields optionals[] = {_Fields.NAMES,_Fields.GET_COL_STATS,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.ENGINE,_Fields.VALID_WRITE_ID_LIST,_Fields.GET_FILE_METADATA,_Fields.ID,_Fields.SKIP_COLUMN_SCHEMA_FOR_PARTITION,_Fields.INCLUDE_PARAM_KEY_PATTERN,_Fields.EXCLUDE_PARAM_KEY_PATTERN};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -162,6 +172,10 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.SKIP_COLUMN_SCHEMA_FOR_PARTITION, new org.apache.thrift.meta_data.FieldMetaData("skipColumnSchemaForPartition", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.INCLUDE_PARAM_KEY_PATTERN, new org.apache.thrift.meta_data.FieldMetaData("includeParamKeyPattern", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.EXCLUDE_PARAM_KEY_PATTERN, new org.apache.thrift.meta_data.FieldMetaData("excludeParamKeyPattern", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetPartitionsByNamesRequest.class, metaDataMap);
   }
@@ -212,6 +226,12 @@ package org.apache.hadoop.hive.metastore.api;
     this.getFileMetadata = other.getFileMetadata;
     this.id = other.id;
     this.skipColumnSchemaForPartition = other.skipColumnSchemaForPartition;
+    if (other.isSetIncludeParamKeyPattern()) {
+      this.includeParamKeyPattern = other.includeParamKeyPattern;
+    }
+    if (other.isSetExcludeParamKeyPattern()) {
+      this.excludeParamKeyPattern = other.excludeParamKeyPattern;
+    }
   }
 
   public GetPartitionsByNamesRequest deepCopy() {
@@ -235,6 +255,8 @@ package org.apache.hadoop.hive.metastore.api;
 
     setSkipColumnSchemaForPartitionIsSet(false);
     this.skipColumnSchemaForPartition = false;
+    this.includeParamKeyPattern = null;
+    this.excludeParamKeyPattern = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -525,6 +547,54 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SKIPCOLUMNSCHEMAFORPARTITION_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getIncludeParamKeyPattern() {
+    return this.includeParamKeyPattern;
+  }
+
+  public void setIncludeParamKeyPattern(@org.apache.thrift.annotation.Nullable java.lang.String includeParamKeyPattern) {
+    this.includeParamKeyPattern = includeParamKeyPattern;
+  }
+
+  public void unsetIncludeParamKeyPattern() {
+    this.includeParamKeyPattern = null;
+  }
+
+  /** Returns true if field includeParamKeyPattern is set (has been assigned a value) and false otherwise */
+  public boolean isSetIncludeParamKeyPattern() {
+    return this.includeParamKeyPattern != null;
+  }
+
+  public void setIncludeParamKeyPatternIsSet(boolean value) {
+    if (!value) {
+      this.includeParamKeyPattern = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getExcludeParamKeyPattern() {
+    return this.excludeParamKeyPattern;
+  }
+
+  public void setExcludeParamKeyPattern(@org.apache.thrift.annotation.Nullable java.lang.String excludeParamKeyPattern) {
+    this.excludeParamKeyPattern = excludeParamKeyPattern;
+  }
+
+  public void unsetExcludeParamKeyPattern() {
+    this.excludeParamKeyPattern = null;
+  }
+
+  /** Returns true if field excludeParamKeyPattern is set (has been assigned a value) and false otherwise */
+  public boolean isSetExcludeParamKeyPattern() {
+    return this.excludeParamKeyPattern != null;
+  }
+
+  public void setExcludeParamKeyPatternIsSet(boolean value) {
+    if (!value) {
+      this.excludeParamKeyPattern = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -615,6 +685,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case INCLUDE_PARAM_KEY_PATTERN:
+      if (value == null) {
+        unsetIncludeParamKeyPattern();
+      } else {
+        setIncludeParamKeyPattern((java.lang.String)value);
+      }
+      break;
+
+    case EXCLUDE_PARAM_KEY_PATTERN:
+      if (value == null) {
+        unsetExcludeParamKeyPattern();
+      } else {
+        setExcludeParamKeyPattern((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -654,6 +740,12 @@ package org.apache.hadoop.hive.metastore.api;
     case SKIP_COLUMN_SCHEMA_FOR_PARTITION:
       return isSkipColumnSchemaForPartition();
 
+    case INCLUDE_PARAM_KEY_PATTERN:
+      return getIncludeParamKeyPattern();
+
+    case EXCLUDE_PARAM_KEY_PATTERN:
+      return getExcludeParamKeyPattern();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -687,6 +779,10 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetId();
     case SKIP_COLUMN_SCHEMA_FOR_PARTITION:
       return isSetSkipColumnSchemaForPartition();
+    case INCLUDE_PARAM_KEY_PATTERN:
+      return isSetIncludeParamKeyPattern();
+    case EXCLUDE_PARAM_KEY_PATTERN:
+      return isSetExcludeParamKeyPattern();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -803,6 +899,24 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_includeParamKeyPattern = true && this.isSetIncludeParamKeyPattern();
+    boolean that_present_includeParamKeyPattern = true && that.isSetIncludeParamKeyPattern();
+    if (this_present_includeParamKeyPattern || that_present_includeParamKeyPattern) {
+      if (!(this_present_includeParamKeyPattern && that_present_includeParamKeyPattern))
+        return false;
+      if (!this.includeParamKeyPattern.equals(that.includeParamKeyPattern))
+        return false;
+    }
+
+    boolean this_present_excludeParamKeyPattern = true && this.isSetExcludeParamKeyPattern();
+    boolean that_present_excludeParamKeyPattern = true && that.isSetExcludeParamKeyPattern();
+    if (this_present_excludeParamKeyPattern || that_present_excludeParamKeyPattern) {
+      if (!(this_present_excludeParamKeyPattern && that_present_excludeParamKeyPattern))
+        return false;
+      if (!this.excludeParamKeyPattern.equals(that.excludeParamKeyPattern))
+        return false;
+    }
+
     return true;
   }
 
@@ -853,6 +967,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetSkipColumnSchemaForPartition()) ? 131071 : 524287);
     if (isSetSkipColumnSchemaForPartition())
       hashCode = hashCode * 8191 + ((skipColumnSchemaForPartition) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetIncludeParamKeyPattern()) ? 131071 : 524287);
+    if (isSetIncludeParamKeyPattern())
+      hashCode = hashCode * 8191 + includeParamKeyPattern.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetExcludeParamKeyPattern()) ? 131071 : 524287);
+    if (isSetExcludeParamKeyPattern())
+      hashCode = hashCode * 8191 + excludeParamKeyPattern.hashCode();
 
     return hashCode;
   }
@@ -975,6 +1097,26 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetIncludeParamKeyPattern(), other.isSetIncludeParamKeyPattern());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIncludeParamKeyPattern()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.includeParamKeyPattern, other.includeParamKeyPattern);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetExcludeParamKeyPattern(), other.isSetExcludeParamKeyPattern());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExcludeParamKeyPattern()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.excludeParamKeyPattern, other.excludeParamKeyPattern);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1083,6 +1225,26 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("skipColumnSchemaForPartition:");
       sb.append(this.skipColumnSchemaForPartition);
+      first = false;
+    }
+    if (isSetIncludeParamKeyPattern()) {
+      if (!first) sb.append(", ");
+      sb.append("includeParamKeyPattern:");
+      if (this.includeParamKeyPattern == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.includeParamKeyPattern);
+      }
+      first = false;
+    }
+    if (isSetExcludeParamKeyPattern()) {
+      if (!first) sb.append(", ");
+      sb.append("excludeParamKeyPattern:");
+      if (this.excludeParamKeyPattern == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.excludeParamKeyPattern);
+      }
       first = false;
     }
     sb.append(")");
@@ -1246,6 +1408,22 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 12: // INCLUDE_PARAM_KEY_PATTERN
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.includeParamKeyPattern = iprot.readString();
+              struct.setIncludeParamKeyPatternIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 13: // EXCLUDE_PARAM_KEY_PATTERN
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.excludeParamKeyPattern = iprot.readString();
+              struct.setExcludeParamKeyPatternIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1338,6 +1516,20 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeBool(struct.skipColumnSchemaForPartition);
         oprot.writeFieldEnd();
       }
+      if (struct.includeParamKeyPattern != null) {
+        if (struct.isSetIncludeParamKeyPattern()) {
+          oprot.writeFieldBegin(INCLUDE_PARAM_KEY_PATTERN_FIELD_DESC);
+          oprot.writeString(struct.includeParamKeyPattern);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.excludeParamKeyPattern != null) {
+        if (struct.isSetExcludeParamKeyPattern()) {
+          oprot.writeFieldBegin(EXCLUDE_PARAM_KEY_PATTERN_FIELD_DESC);
+          oprot.writeString(struct.excludeParamKeyPattern);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1385,7 +1577,13 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetSkipColumnSchemaForPartition()) {
         optionals.set(8);
       }
-      oprot.writeBitSet(optionals, 9);
+      if (struct.isSetIncludeParamKeyPattern()) {
+        optionals.set(9);
+      }
+      if (struct.isSetExcludeParamKeyPattern()) {
+        optionals.set(10);
+      }
+      oprot.writeBitSet(optionals, 11);
       if (struct.isSetNames()) {
         {
           oprot.writeI32(struct.names.size());
@@ -1425,6 +1623,12 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetSkipColumnSchemaForPartition()) {
         oprot.writeBool(struct.skipColumnSchemaForPartition);
       }
+      if (struct.isSetIncludeParamKeyPattern()) {
+        oprot.writeString(struct.includeParamKeyPattern);
+      }
+      if (struct.isSetExcludeParamKeyPattern()) {
+        oprot.writeString(struct.excludeParamKeyPattern);
+      }
     }
 
     @Override
@@ -1434,7 +1638,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setDb_nameIsSet(true);
       struct.tbl_name = iprot.readString();
       struct.setTbl_nameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(9);
+      java.util.BitSet incoming = iprot.readBitSet(11);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list732 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
@@ -1488,6 +1692,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(8)) {
         struct.skipColumnSchemaForPartition = iprot.readBool();
         struct.setSkipColumnSchemaForPartitionIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.includeParamKeyPattern = iprot.readString();
+        struct.setIncludeParamKeyPatternIsSet(true);
+      }
+      if (incoming.get(10)) {
+        struct.excludeParamKeyPattern = iprot.readString();
+        struct.setExcludeParamKeyPatternIsSet(true);
       }
     }
   }

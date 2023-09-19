@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +128,8 @@ public class JavaUtils {
         method.invoke(req, values);
       }
     } catch (Exception e) {
-      LOG.error("Unable to inject fields: {} to the instance: {}, message: {}", values, req, e.getMessage());
+      LOG.error("Unable to invoke the underlying method: {} of the instance: {}, message: {}",
+          methodName, req, e.getMessage());
       throw new RuntimeException(e);
     }
     return req;
