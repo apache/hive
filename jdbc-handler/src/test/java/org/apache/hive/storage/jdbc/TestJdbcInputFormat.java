@@ -17,7 +17,7 @@ package org.apache.hive.storage.jdbc;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.serdeConstants;
+
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputSplit;
@@ -29,9 +29,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -47,8 +46,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(DatabaseAccessorFactory.class)
+@RunWith(MockitoJUnitRunner.class)
 public class TestJdbcInputFormat {
 
   @Mock
@@ -57,7 +55,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testLimitSplit_noSpillOver() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getTotalNumberOfRecords(any(Configuration.class))).thenReturn(15);
@@ -76,7 +74,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testLimitSplit_withSpillOver() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getTotalNumberOfRecords(any(Configuration.class))).thenReturn(15);
@@ -100,7 +98,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Long() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
@@ -128,7 +126,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Double() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
@@ -160,7 +158,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Decimal() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
@@ -190,7 +188,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Timestamp() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
@@ -217,7 +215,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Date() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
@@ -245,7 +243,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_AutoShrink() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
@@ -271,7 +269,7 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_NoSplit() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
+    Mockito.mockStatic(DatabaseAccessorFactory.class);
     BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
