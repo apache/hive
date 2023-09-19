@@ -11876,14 +11876,14 @@ public class ObjectStore implements RawStore, Configurable {
         parameterBuilder.append(", java.lang.String para" + parameterVals.size());
         filterBuilder.append(" && dbName == para" + parameterVals.size());
       }
-      if (rqst.isSetTableNames()) {
+      if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
         filterBuilder.append(" && ");
         for (String tableName : rqst.getTableNames()) {
           parameterVals.add(tableName);
           parameterBuilder.append(", java.lang.String para" + parameterVals.size());
-          filterBuilder.append("tableName == para" + parameterVals.size()+ " || ");
+          filterBuilder.append("(tableName == para" + parameterVals.size()+ ") || ");
         }
-        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        filterBuilder.setLength(filterBuilder.length() - 3); // remove the last " || "
       }
       if (rqst.isSetEventTypeSkipList()) {
         for (String eventType : rqst.getEventTypeSkipList()) {
@@ -12251,14 +12251,14 @@ public class ObjectStore implements RawStore, Configurable {
         paramVals.add(Long.valueOf(toEventId));
       }
       // Specify list of table names in the query string and parameter types
-      if (rqst.isSetTableNames()) {
+      if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
         queryStr = queryStr + " && ";
         for (String tableName : rqst.getTableNames()) {
           paramVals.add(tableName.toLowerCase());
-          queryStr = queryStr + "tableName == tableName" + paramVals.size() + " || ";
+          queryStr = queryStr + "(tableName == tableName" + paramVals.size() + ") || ";
           paramSpecs = paramSpecs + ", java.lang.String tableName" + paramVals.size();
         }
-        queryStr = queryStr.substring(0, queryStr.length() - 4); // remove the last " || "
+        queryStr = queryStr.substring(0, queryStr.length() - 3); // remove the last " || "
       }
 
       query = pm.newQuery(queryStr);

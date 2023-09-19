@@ -1610,6 +1610,7 @@ public class TestDbNotificationListener {
     NotificationEventResponse rsp1 = msClient.getNextNotification(request, true, null);
     assertEquals(12, rsp1.getEventsSize());
     request.setTableNames(Arrays.asList(table1, table2));
+    request.setEventTypeSkipList(Arrays.asList("OPEN_TXN"));
     NotificationEventResponse rsp2 = msClient.getNextNotification(request, true, null);
     assertEquals(24, rsp2.getEventsSize());
     request.unsetTableNames();
@@ -1628,17 +1629,16 @@ public class TestDbNotificationListener {
   private void generateSometableEvents(String dbName, String tableName) throws Exception {
     // Event 1
     driver.run("create database if not exists "+dbName);
-    // Event 2
     driver.run("use "+dbName);
-    // Event 3
+    // Event 2
     driver.run("create table " + tableName + " (c int) partitioned by (ds string)");
-    // Event 4, 5, 6
+    // Event 3, 4, 5
     driver.run("insert into table " + tableName + " partition (ds = 'today') values (1)");
-    // Event 7, 8, 9
+    // Event 6, 7, 8
     driver.run("insert into table " + tableName + " partition (ds = 'today') values (2)");
-    // Event 10, 11, 12
+    // Event 9, 10, 11
     driver.run("insert into table " + tableName + " partition (ds) values (3, 'today')");
-    // Event 13, 14
+    // Event 12
     driver.run("alter table " + tableName + " add partition (ds = 'yesterday')");
   }
 }
