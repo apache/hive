@@ -60,7 +60,6 @@
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
-    <module>hive-it</module>
   </modules>
   <properties>
     <standalone-metastore.version>4.0.0-beta-2-SNAPSHOT</standalone-metastore.version>
