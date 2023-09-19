@@ -24,7 +24,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -93,6 +95,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.BLOB_MANIFEST_FILE;
 
@@ -129,6 +132,40 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       // be created in case of empty source table as well
     }
     return false;
+  }
+
+  public void flattenUnionSubdirectories(Path sourcePath) throws HiveException {
+    try {
+      FileSystem fs = sourcePath.getFileSystem(conf);
+      LOG.info("Checking {} for subdirectories to flatten", sourcePath);
+      Set<Path> unionSubdirs = new HashSet<>();
+      if (fs.exists(sourcePath)) {
+        RemoteIterator<LocatedFileStatus> i = fs.listFiles(sourcePath, true);
+        String prefix = AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
+        while (i.hasNext()) {
+          Path path = i.next().getPath();
+          Path parent = path.getParent();
+          if (parent.getName().startsWith(prefix)) {
+            // We do rename by including the name of parent directory into the filename so that there are no clashes
+            // when we move the files to the parent directory. Ex. HIVE_UNION_SUBDIR_1/000000_0 -> 1_000000_0
+            String parentOfParent = parent.getParent().toString();
+            String parentNameSuffix = parent.getName().substring(prefix.length());
+
+            fs.rename(path, new Path(parentOfParent + "/" + parentNameSuffix + "_" + path.getName()));
+
+            unionSubdirs.add(parent);
+          }
+        }
+
+        // remove the empty union subdirectories
+        for (Path path : unionSubdirs) {
+          LOG.info("This subdirectory has been flattened: " + path.toString());
+          fs.delete(path, true);
+        }
+      }
+    } catch (Exception e) {
+      throw new HiveException("Unable to flatten " + sourcePath, e);
+    }
   }
 
   private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
@@ -357,6 +394,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       return processHiveException(he);
     }
 
+    boolean shouldFlattenUnionSubdirectories =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_UNION_FLATTEN_SUBDIRECTORIES);
+
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
@@ -384,6 +424,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           Utilities.FILE_OP_LOGGER.debug("MoveTask not moving " + sourcePath);
         } else {
           Utilities.FILE_OP_LOGGER.debug("MoveTask moving " + sourcePath + " to " + targetPath);
+          if (shouldFlattenUnionSubdirectories) {
+            flattenUnionSubdirectories(sourcePath);
+          }
           if(lfd.getWriteType() == AcidUtils.Operation.INSERT) {
             //'targetPath' is table root of un-partitioned table or partition
             //'sourcePath' result of 'select ...' part of CTAS statement
@@ -461,6 +504,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
             && !tbd.isMmTable(); //it seems that LoadTableDesc has Operation.INSERT only for CTAS...
 
+        if (shouldFlattenUnionSubdirectories) {
+          flattenUnionSubdirectories(tbd.getSourcePath());
+        }
         // Create a data container
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
