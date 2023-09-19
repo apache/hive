@@ -6652,14 +6652,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       partitions = get_partitions_with_auth_optional_schema(dbName, req.getTblName(), new GetPartitionsArgs.GetPartitionsArgsBuilder()
           .max(req.getMaxParts()).userName(req.getUserName()).groupNames(req.getGroupNames())
           .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+          .includeParamKeyPattern(req.getIncludeParamKeyPattern())
+          .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
           .build());
     } else {
       partitions =
           get_partitions_ps_with_auth(dbName, req.getTblName(), new GetPartitionsArgs.GetPartitionsArgsBuilder()
-                  .part_vals(req.getPartVals()).max(req.getMaxParts())
-                  .userName(req.getUserName()).groupNames(req.getGroupNames())
-                  .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
-                  .build());
+              .part_vals(req.getPartVals()).max(req.getMaxParts())
+              .userName(req.getUserName()).groupNames(req.getGroupNames())
+              .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+              .includeParamKeyPattern(req.getIncludeParamKeyPattern())
+              .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+              .build());
     }
     GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
     res.setPartitions(partitions);
@@ -7273,6 +7277,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         new GetPartitionsArgs.GetPartitionsArgsBuilder()
             .filter(req.getFilter()).max(req.getMaxParts())
             .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+            .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+            .includeParamKeyPattern(req.getIncludeParamKeyPattern())
             .build());
   }
 
@@ -7328,6 +7334,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           new GetPartitionsArgs.GetPartitionsArgsBuilder()
               .expr(req.getExpr()).max(req.getMaxParts()).defaultPartName(req.getDefaultPartitionName())
               .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+              .includeParamKeyPattern(req.getIncludeParamKeyPattern())
+              .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
               .build());
       Table table = get_table_core(catName, dbName, tblName);
       List<PartitionSpec> partitionSpecs =
@@ -7449,6 +7457,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         gpbnr.getProcessorCapabilities(), gpbnr.getProcessorIdentifier(),
         new GetPartitionsArgs.GetPartitionsArgsBuilder()
             .partNames(gpbnr.getNames()).skipColumnSchemaForPartition(gpbnr.isSkipColumnSchemaForPartition())
+            .excludeParamKeyPattern(gpbnr.getExcludeParamKeyPattern())
+            .includeParamKeyPattern(gpbnr.getIncludeParamKeyPattern())
             .build());
     GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(partitions);
     return result;
