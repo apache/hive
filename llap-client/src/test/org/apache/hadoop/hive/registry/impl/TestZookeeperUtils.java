@@ -21,33 +21,38 @@ package org.apache.hadoop.hive.registry.impl;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * ZookeeperUtils test suite.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(UserGroupInformation.class)
+@RunWith(MockitoJUnitRunner.class)
 public class TestZookeeperUtils {
 
   private Configuration conf;
   private UserGroupInformation ugi;
 
+  MockedStatic<UserGroupInformation> userGroupInformationMockedStatic;
+
   @Before
   public void setup() {
     conf = new Configuration();
-    PowerMockito.mockStatic(UserGroupInformation.class);
-    BDDMockito.given(UserGroupInformation.isSecurityEnabled()).willReturn(true);
+    userGroupInformationMockedStatic = Mockito.mockStatic(UserGroupInformation.class);
+    userGroupInformationMockedStatic.when(UserGroupInformation::isSecurityEnabled).thenReturn(true);
     ugi = Mockito.mock(UserGroupInformation.class);
     UserGroupInformation.setLoginUser(ugi);
+  }
+
+  @After
+  public void teardown() {
+    userGroupInformationMockedStatic.close();
   }
 
   /**
@@ -55,8 +60,6 @@ public class TestZookeeperUtils {
    */
   @Test
   public void testHadoopAuthKerberosFromKeytabAndZookeeperUseKerberos() {
-    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(true);
-    Mockito.when(ugi.isFromKeytab()).thenReturn(true);
     Assert.assertTrue(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS));
     Assert.assertTrue(ZookeeperUtils.isKerberosEnabled(conf));
   }
@@ -66,8 +69,6 @@ public class TestZookeeperUtils {
    */
   @Test
   public void testHadoopAuthKerberosFromTicketAndZookeeperUseKerberos() {
-    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(true);
-    Mockito.when(ugi.isFromKeytab()).thenReturn(false);
     Assert.assertTrue(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS));
     Assert.assertTrue(ZookeeperUtils.isKerberosEnabled(conf));
   }
@@ -77,8 +78,6 @@ public class TestZookeeperUtils {
    */
   @Test
   public void testHadoopAuthKerberosNoLoginAndZookeeperUseKerberos() {
-    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(false);
-    Mockito.when(ugi.isFromKeytab()).thenReturn(false);
     Assert.assertTrue(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS));
     Assert.assertTrue(ZookeeperUtils.isKerberosEnabled(conf));
   }
@@ -88,9 +87,7 @@ public class TestZookeeperUtils {
    */
   @Test
   public void testHadoopAuthSimpleAndZookeeperUseKerberos() {
-    BDDMockito.given(UserGroupInformation.isSecurityEnabled()).willReturn(false);
-    Mockito.when(ugi.hasKerberosCredentials()).thenReturn(false);
-    Mockito.when(ugi.isFromKeytab()).thenReturn(false);
+    userGroupInformationMockedStatic.when(UserGroupInformation::isSecurityEnabled).thenReturn(false);
     Assert.assertTrue(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS));
     Assert.assertFalse(ZookeeperUtils.isKerberosEnabled(conf));
   }
