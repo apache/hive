@@ -58,8 +58,8 @@ public class ReflectionUtil {
    */
   public static void setInAllFields(Object object, String field, Object value) {
     try {
-      Field fieldToChange = Arrays.stream(FieldUtils.getAllFields(Cleaner.class))
-              .filter(f -> f.getName().equals("txnHandler"))
+      Field fieldToChange = Arrays.stream(FieldUtils.getAllFields(object.getClass()))
+              .filter(f -> f.getName().equals(field))
               .findFirst()
               .orElseThrow(NoSuchFieldException::new);
 
