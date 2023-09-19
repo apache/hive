@@ -18,41 +18,27 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
-import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toMap;
-
 public enum ReExecutionStrategyType {
-  OVERLAY("overlay", ReExecutionOverlayPlugin.class),
-  REOPTIMIZE("reoptimize", ReOptimizePlugin.class),
-  REEXECUTE_LOST_AM("reexecute_lost_am", ReExecuteLostAMQueryPlugin.class),
-  RECOMPILE_WITHOUT_CBO("recompile_without_cbo", ReCompileWithoutCBOPlugin.class),
-  DAGSUBMIT("dagsubmit", ReExecutionDagSubmitPlugin.class),
-  WRITE_CONFLICT("write_conflict", ReExecuteOnWriteConflictPlugin.class);
+  OVERLAY(ReExecutionOverlayPlugin.class),
+  REOPTIMIZE(ReOptimizePlugin.class),
+  REEXECUTE_LOST_AM(ReExecuteLostAMQueryPlugin.class),
+  RECOMPILE_WITHOUT_CBO(ReCompileWithoutCBOPlugin.class),
+  DAGSUBMIT(ReExecutionDagSubmitPlugin.class),
+  WRITE_CONFLICT(ReExecuteOnWriteConflictPlugin.class);
 
-  private static Map<String, ? extends Class<? extends IReExecutionPlugin>> STRATEGY_LOOKUP =
-      Arrays.stream(ReExecutionStrategyType.values())
-          .collect(toMap(ReExecutionStrategyType::getStrategy, ReExecutionStrategyType::getPluginClass));
-
-  ReExecutionStrategyType(String strategy, Class<? extends IReExecutionPlugin> pluginClass) {
-    this.strategy = strategy;
+  ReExecutionStrategyType(Class<? extends IReExecutionPlugin> pluginClass) {
     this.pluginClass = pluginClass;
   }
 
-  private final String strategy;
   private final Class<? extends IReExecutionPlugin> pluginClass;
-
-  public String getStrategy() {
-    return strategy;
-  }
 
   public Class<? extends IReExecutionPlugin> getPluginClass() {
     return pluginClass;
   }
 
-  public static Class<? extends IReExecutionPlugin> fromStrategyName(String strategy) {
-    return Optional.of(STRATEGY_LOOKUP.get(strategy.toLowerCase())).orElseThrow(IllegalArgumentException::new);
+  public static Class<? extends IReExecutionPlugin> getPluginClassByName(String strategy) {
+    return ReExecutionStrategyType.valueOf(strategy.toUpperCase()).getPluginClass();
   }
 }

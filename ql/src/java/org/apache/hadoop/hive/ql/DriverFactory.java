@@ -62,7 +62,7 @@ public final class DriverFactory {
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
-    Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.fromStrategyName(name);
+    Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.getPluginClassByName(name);
     try {
       return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
