@@ -457,6 +457,9 @@ public class MetastoreConf {
     DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE("metastore.direct.sql.max.elements.values.clause",
         "hive.direct.sql.max.elements.values.clause",
         1000, "The maximum number of values in a VALUES clause for INSERT statement."),
+    DIRECT_SQL_MAX_PARAMETERS("metastore.direct.sql.max.parameters",
+        "hive.direct.sql.max.parameters", 1000, "The maximum query parameters \n" +
+            "backend sql engine can support."),
     DIRECT_SQL_MAX_QUERY_LENGTH("metastore.direct.sql.max.query.length",
         "hive.direct.sql.max.query.length", 100, "The maximum\n" +
         " size of a query string (in KB)."),
@@ -982,6 +985,8 @@ public class MetastoreConf {
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", "hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
             "A ZooKeeper instance must be up and running when using zookeeper Hive lock manager "),
+    HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
+        "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

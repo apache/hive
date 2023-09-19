@@ -36,6 +36,11 @@ class AggrStats
             'isRequired' => true,
             'type' => TType::I64,
         ),
+        3 => array(
+            'var' => 'isStatsCompliant',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -46,6 +51,10 @@ class AggrStats
      * @var int
      */
     public $partsFound = null;
+    /**
+     * @var bool
+     */
+    public $isStatsCompliant = null;
 
     public function __construct($vals = null)
     {
@@ -55,6 +64,9 @@ class AggrStats
             }
             if (isset($vals['partsFound'])) {
                 $this->partsFound = $vals['partsFound'];
+            }
+            if (isset($vals['isStatsCompliant'])) {
+                $this->isStatsCompliant = $vals['isStatsCompliant'];
             }
         }
     }
@@ -81,14 +93,14 @@ class AggrStats
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->colStats = array();
-                        $_size252 = 0;
-                        $_etype255 = 0;
-                        $xfer += $input->readListBegin($_etype255, $_size252);
-                        for ($_i256 = 0; $_i256 < $_size252; ++$_i256) {
-                            $elem257 = null;
-                            $elem257 = new \metastore\ColumnStatisticsObj();
-                            $xfer += $elem257->read($input);
-                            $this->colStats []= $elem257;
+                        $_size259 = 0;
+                        $_etype262 = 0;
+                        $xfer += $input->readListBegin($_etype262, $_size259);
+                        for ($_i263 = 0; $_i263 < $_size259; ++$_i263) {
+                            $elem264 = null;
+                            $elem264 = new \metastore\ColumnStatisticsObj();
+                            $xfer += $elem264->read($input);
+                            $this->colStats []= $elem264;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -98,6 +110,13 @@ class AggrStats
                 case 2:
                     if ($ftype == TType::I64) {
                         $xfer += $input->readI64($this->partsFound);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->isStatsCompliant);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -122,8 +141,8 @@ class AggrStats
             }
             $xfer += $output->writeFieldBegin('colStats', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->colStats));
-            foreach ($this->colStats as $iter258) {
-                $xfer += $iter258->write($output);
+            foreach ($this->colStats as $iter265) {
+                $xfer += $iter265->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -131,6 +150,11 @@ class AggrStats
         if ($this->partsFound !== null) {
             $xfer += $output->writeFieldBegin('partsFound', TType::I64, 2);
             $xfer += $output->writeI64($this->partsFound);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->isStatsCompliant !== null) {
+            $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 3);
+            $xfer += $output->writeBool($this->isStatsCompliant);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

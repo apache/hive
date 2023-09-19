@@ -190,6 +190,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
 #### A masked pattern was here ####
 20
+PREHOOK: query: alter table partition_varchar_1 drop partition (dt = '2000-01-01')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@partition_varchar_1
+PREHOOK: Output: default@partition_varchar_1@dt=2000-01-01/region=1
+PREHOOK: Output: default@partition_varchar_1@dt=2000-01-01/region=2
+POSTHOOK: query: alter table partition_varchar_1 drop partition (dt = '2000-01-01')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@partition_varchar_1
+POSTHOOK: Output: default@partition_varchar_1@dt=2000-01-01/region=1
+POSTHOOK: Output: default@partition_varchar_1@dt=2000-01-01/region=2
 PREHOOK: query: drop table partition_varchar_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partition_varchar_1

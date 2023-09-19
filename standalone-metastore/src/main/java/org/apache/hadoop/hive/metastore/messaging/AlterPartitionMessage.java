@@ -65,5 +65,7 @@ public abstract class AlterPartitionMessage extends EventMessage {
     }
     return super.checkValid();
   }
+
+  public abstract Long getWriteId();
 }
 

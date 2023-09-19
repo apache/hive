@@ -34,12 +34,15 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -176,6 +179,13 @@ public class ColStatsProcessor implements IStatsProcessor {
     }
     SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
     request.setNeedMerge(colStatDesc.isNeedMerge());
+    HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl)
+        ? SessionState.get().getTxnMgr() : null;
+    if (txnMgr != null) {
+      request.setValidWriteIdList(AcidUtils.getTableValidWriteIdList(conf,
+          AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName())).toString());
+      request.setWriteId(txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName()));
+    }
     db.setPartitionColumnStatistics(request);
     return 0;
   }

@@ -31,13 +31,15 @@ public class AlterTableEvent extends ListenerEvent {
   private final Table newTable;
   private final Table oldTable;
   private final boolean isTruncateOp;
+  private Long writeId;
 
   public AlterTableEvent (Table oldTable, Table newTable, boolean isTruncateOp, boolean status,
-                          IHMSHandler handler) {
+                          Long writeId, IHMSHandler handler) {
     super (status, handler);
     this.oldTable = oldTable;
     this.newTable = newTable;
     this.isTruncateOp = isTruncateOp;
+    this.writeId = writeId;
   }
 
   /**
@@ -59,5 +61,9 @@ public class AlterTableEvent extends ListenerEvent {
    */
   public boolean getIsTruncateOp() {
     return isTruncateOp;
+  }
+
+  public Long getWriteId() {
+    return writeId;
   }
 }

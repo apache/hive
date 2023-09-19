@@ -244,6 +244,7 @@ public class TestMetaStoreEventListener {
     Assert.assertTrue(partEvent.getStatus());
     Partition part = msc.getPartition("hive2038", "tmptbl", "b=2011");
     Partition partAdded = partEvent.getPartitionIterator().next();
+    partAdded.setWriteId(part.getWriteId());
     validateAddPartition(part, partAdded);
     validateTableInAddPartition(tbl, partEvent.getTable());
     validateAddPartition(part, prePartEvent.getPartitions().get(0));
