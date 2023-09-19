@@ -2361,9 +2361,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Partition> listPartitionsByFilter(String catName, String db_name, String tbl_name,
                                                 String filter, int max_parts) throws TException {
+    GetPartitionsByFilterRequest req = createThriftPartitionsReq(GetPartitionsByFilterRequest.class, conf);
+    req.setTblName(tbl_name);
+    req.setDbName(db_name);
+    req.setCatName(catName);
+    req.setFilter(filter);
+    req.setMaxParts(shrinkMaxtoShort(max_parts));
     // TODO should we add capabilities here as well as it returns Partition objects
-    List<Partition> parts = client.get_partitions_by_filter(prependCatalogToDbName(
-        catName, db_name, conf), tbl_name, filter, shrinkMaxtoShort(max_parts));
+    List<Partition> parts = client.get_partitions_by_filter_req(req);
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
 
@@ -5109,6 +5114,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       request.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       request.setProcessorIdentifier(processorIdentifier);
+    if (!request.getProjectionSpec().isSetExcludeParamKeyPattern()) {
+      request.getProjectionSpec().setExcludeParamKeyPattern(MetastoreConf.getAsString(conf,
+          MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
+    }
+    if (!request.getProjectionSpec().isSetIncludeParamKeyPattern()) {
+      request.getProjectionSpec().setIncludeParamKeyPattern(MetastoreConf.getAsString(conf,
+          MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
+    }
     return client.get_partitions_with_specs(request);
   }
 
