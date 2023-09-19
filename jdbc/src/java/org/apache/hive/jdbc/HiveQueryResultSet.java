@@ -231,6 +231,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     this.protocol = builder.getProtocolVersion();
     initEmptyIterator();
     resultQueue = new ArrayBlockingQueue<>(Math.max(fetchThreads, 1));
+    // The fetch path is usually the bottleneck with a single-threaded fetch
+    // so only convert results there if there are multiple fetch threads.
+    if (fetchThreads > 1) {
+      useConvertedResultSet = true;
+    }
   }
 
   /**
@@ -404,6 +409,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
           gotLastBatch.set(true);
         }
         fetchedRows = RowSetFactory.create(results, protocol);
+        if (useConvertedResultSet) {
+          fetchedRows = new ConvertedResultSet(fetchedRows, getSchema());
+        }
+
         nextStartRow.set(results.getStartRowOffset() + 1 + fetchedRows.numRows());
       } catch (TException ex) {
         throw new SQLException("Error retrieving next row", ex);
@@ -466,6 +475,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
                 }
                 result.hasMoreRows = hasMoreRows;
                 result.fetchedRows = RowSetFactory.create(results, protocol);
+                if (useConvertedResultSet) {
+                  result.fetchedRows =
+                      new ConvertedResultSet(result.fetchedRows, getSchema());
+                }
                 result.startRow = results.getStartRowOffset() + 1;
                 if (hasStartRow.get() && result.startRow < nextStartRow.get()) {
                   throw new SQLException("Unexpected row offset");
