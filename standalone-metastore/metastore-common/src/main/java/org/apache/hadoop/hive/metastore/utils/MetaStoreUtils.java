@@ -1237,12 +1237,12 @@ public class MetaStoreUtils {
     } else {
       req = JavaUtils.newInstance(clazz);
     }
-    JavaUtils.setField(req, "setSkipColumnSchemaForPartition", MetastoreConf.getBoolVar(conf,
-        MetastoreConf.ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS));
-    JavaUtils.setField(req, "setIncludeParamKeyPattern", MetastoreConf.getAsString(conf,
-        MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
-    return JavaUtils.setField(req, "setExcludeParamKeyPattern", MetastoreConf.getAsString(conf,
-        MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
+    JavaUtils.setField(req, "setSkipColumnSchemaForPartition", new Class[]{boolean.class},
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS));
+    JavaUtils.setField(req, "setIncludeParamKeyPattern", new Class[]{String.class},
+        MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
+    return JavaUtils.setField(req, "setExcludeParamKeyPattern", new Class[]{String.class},
+        MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
   }
 
   /**
