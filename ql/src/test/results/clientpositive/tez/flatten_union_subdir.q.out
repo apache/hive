@@ -1,0 +1,96 @@
+PREHOOK: query: create external table union_src1 (value string) partitioned by (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_src1
+POSTHOOK: query: create external table union_src1 (value string) partitioned by (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_src1
+PREHOOK: query: create external table union_src2 (value string) partitioned by (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_src2
+POSTHOOK: query: create external table union_src2 (value string) partitioned by (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_src2
+PREHOOK: query: create external table union_target (value string) partitioned by (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_target
+POSTHOOK: query: create external table union_target (value string) partitioned by (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_target
+PREHOOK: query: insert into table union_src1 partition (key = 1) values ("val1")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src1@key=1
+POSTHOOK: query: insert into table union_src1 partition (key = 1) values ("val1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src1@key=1
+POSTHOOK: Lineage: union_src1 PARTITION(key=1).value SCRIPT []
+PREHOOK: query: insert into table union_src1 partition (key = 2) values ("val2")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src1@key=2
+POSTHOOK: query: insert into table union_src1 partition (key = 2) values ("val2")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src1@key=2
+POSTHOOK: Lineage: union_src1 PARTITION(key=2).value SCRIPT []
+PREHOOK: query: insert into table union_src2 partition (key = 1) values ("val3")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src2@key=1
+POSTHOOK: query: insert into table union_src2 partition (key = 1) values ("val3")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src2@key=1
+POSTHOOK: Lineage: union_src2 PARTITION(key=1).value SCRIPT []
+PREHOOK: query: insert into table union_src2 partition (key = 3) values ("val4")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src2@key=3
+POSTHOOK: query: insert into table union_src2 partition (key = 3) values ("val4")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src2@key=3
+POSTHOOK: Lineage: union_src2 PARTITION(key=3).value SCRIPT []
+PREHOOK: query: insert into table union_target
+select value, key from union_src1
+union all
+select value, key from union_src2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_src1
+PREHOOK: Input: default@union_src1@key=1
+PREHOOK: Input: default@union_src1@key=2
+PREHOOK: Input: default@union_src2
+PREHOOK: Input: default@union_src2@key=1
+PREHOOK: Input: default@union_src2@key=3
+PREHOOK: Output: default@union_target
+POSTHOOK: query: insert into table union_target
+select value, key from union_src1
+union all
+select value, key from union_src2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_src1
+POSTHOOK: Input: default@union_src1@key=1
+POSTHOOK: Input: default@union_src1@key=2
+POSTHOOK: Input: default@union_src2
+POSTHOOK: Input: default@union_src2@key=1
+POSTHOOK: Input: default@union_src2@key=3
+POSTHOOK: Output: default@union_target
+POSTHOOK: Output: default@union_target@key=1
+POSTHOOK: Output: default@union_target@key=2
+POSTHOOK: Output: default@union_target@key=3
+POSTHOOK: Lineage: union_target PARTITION(key=1).value EXPRESSION [(union_src1)union_src1.FieldSchema(name:value, type:string, comment:null), (union_src2)union_src2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: union_target PARTITION(key=2).value EXPRESSION [(union_src1)union_src1.FieldSchema(name:value, type:string, comment:null), (union_src2)union_src2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: union_target PARTITION(key=3).value EXPRESSION [(union_src1)union_src1.FieldSchema(name:value, type:string, comment:null), (union_src2)union_src2.FieldSchema(name:value, type:string, comment:null), ]
+drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###         10 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          5 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          5 ### HDFS DATE ### hdfs://### HDFS PATH ###
