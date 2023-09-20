@@ -16,4 +16,4 @@ union all
 select value, key from union_src2;
 
 -- if there is any HIVE_UNION_SUBDIR, the output will have more rows
-dfs -ls -R -r ${hiveconf:hive.metastore.warehouse.dir}/union_target;
+dfs -ls -R ${hiveconf:hive.metastore.warehouse.dir}/union_target;
