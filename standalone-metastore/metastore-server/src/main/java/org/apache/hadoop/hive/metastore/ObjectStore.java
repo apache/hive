@@ -2925,7 +2925,7 @@ public class ObjectStore implements RawStore, Configurable {
             " does not exist");
       }
       MPartition mpart = getMPartition(catName, dbName, tableName, part_vals, table);
-      part = convertToPart(catName, dbName, tableName, mpart, false, null);
+      part = convertToPart(catName, dbName, tableName, mpart, false);
       committed = commitTransaction();
       if (part == null) {
         throw new NoSuchObjectException("partition values="
@@ -3091,13 +3091,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Partition convertToPart(String catName, String dbName, String tblName,
-      MPartition mpart, boolean isAcidTable, GetPartitionsArgs args)
+      MPartition mpart, boolean isAcidTable, GetPartitionsArgs... args)
       throws MetaException {
     if (mpart == null) {
       return null;
     }
     Map<String,String> params = convertMap(mpart.getParameters(), args);
-    boolean noFS = args != null ? args.isSkipColumnSchemaForPartition() : false;
+    boolean noFS = args != null && args.length == 1 ? args[0].isSkipColumnSchemaForPartition() : false;
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
         mpart.getCreateTime(), mpart.getLastAccessTime(),
         convertToStorageDescriptor(mpart.getSd(), noFS, isAcidTable), params);
@@ -3398,7 +3398,7 @@ public class ObjectStore implements RawStore, Configurable {
             + partVals.toString());
       }
       MTable mtbl = mpart.getTable();
-      Partition part = convertToPart(catName, dbName, tblName, mpart, false, null);
+      Partition part = convertToPart(catName, dbName, tblName, mpart, false);
       if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
         String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
             .getPartitionKeys()), partVals);
@@ -5268,7 +5268,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     oldCd.t = oldCD;
-    return convertToPart(catName, dbname, name, oldp, false, null);
+    return convertToPart(catName, dbname, name, oldp, false);
   }
 
   @Override
@@ -10145,7 +10145,7 @@ public class ObjectStore implements RawStore, Configurable {
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
       Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(),getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false, null);
+          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false);
       List<String> colNames = new ArrayList<>();
 
       for(ColumnStatisticsObj statsObj : statsObjs) {
