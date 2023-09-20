@@ -7366,6 +7366,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           new GetPartitionsArgs.GetPartitionsArgsBuilder()
               .expr(req.getExpr()).defaultPartName(req.getDefaultPartitionName()).max(req.getMaxParts())
               .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+              .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+              .includeParamKeyPattern(req.getIncludeParamKeyPattern())
               .build());
       ret = new PartitionsByExprResult(partitions, hasUnknownPartitions);
     } catch (Exception e) {
