@@ -4096,12 +4096,12 @@ public class ObjectStore implements RawStore, Configurable {
     return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitionsViaPartNames(catName, dbName, tblName, null, args);
+        return directSql.getPartitionsViaPartNames(catName, dbName, tblName, args);
       }
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
-        return getPartitionsViaOrmFilter(catName, dbName, tblName, args.getPartNames(), false, args);
+        return getPartitionsViaOrmFilter(catName, dbName, tblName, false, args);
       }
     }.run(false);
   }
@@ -4145,7 +4145,8 @@ public class ObjectStore implements RawStore, Configurable {
         List<String> partNames = new LinkedList<>();
         hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
                 catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(), (short) args.getMax(), partNames));
-        return directSql.getPartitionsViaPartNames(catName, dbName, tblName, partNames, args);
+        GetPartitionsArgs newArgs = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build();
+        return directSql.getPartitionsViaPartNames(catName, dbName, tblName, newArgs);
       }
 
       @Override
@@ -4162,8 +4163,8 @@ public class ObjectStore implements RawStore, Configurable {
           List<String> partNames = new ArrayList<>();
           hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
                   catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(), (short) args.getMax(), partNames));
-          result = getPartitionsViaOrmFilter(catName, dbName, tblName, partNames,
-                  isAcidTable, args);
+          GetPartitionsArgs newArgs = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build();
+          result = getPartitionsViaOrmFilter(catName, dbName, tblName, isAcidTable, newArgs);
         }
         return result;
       }
@@ -4269,14 +4270,13 @@ public class ObjectStore implements RawStore, Configurable {
    * Gets partition names from the table via ORM (JDOQL) name filter.
    * @param dbName Database name.
    * @param tblName Table name.
-   * @param partNames Partition names to get the objects for.
    * @param isAcidTable True if the table is ACID
    * @param args additional arguments for getting partitions
    * @return Resulting partitions.
    */
   private List<Partition> getPartitionsViaOrmFilter(String catName, String dbName, String tblName,
-      List<String> partNames, boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
-
+      boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
+    List<String> partNames = args.getPartNames();
     if (partNames.isEmpty()) {
       return Collections.emptyList();
     }
@@ -4876,7 +4876,12 @@ public class ObjectStore implements RawStore, Configurable {
             params.put("t3", normalizeIdentifier(catName));
           }
         try {
-          return convertToParts(catName, dbName, tblName, listMPartitionsWithProjection(fieldNames, jdoFilter, params), false, null);
+          List<MPartition> mparts = listMPartitionsWithProjection(fieldNames, jdoFilter, params);
+          return convertToParts(catName, dbName, tblName, mparts, false,
+              new GetPartitionsArgs.GetPartitionsArgsBuilder()
+                  .excludeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
+                  .includeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
+                  .build());
         } catch (MetaException me) {
           throw me;
         } catch (Exception e) {

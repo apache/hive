@@ -660,16 +660,13 @@ class MetaStoreDirectSql {
    * @param catName Metastore catalog name.
    * @param dbName Metastore db name.
    * @param tblName Metastore table name.
-   * @param partNames Partition names to get.
    * @param args additional arguments for getting partitions
    * @return List of partitions.
    */
   public List<Partition> getPartitionsViaPartNames(final String catName, final String dbName,
-      final String tblName, List<String> partNames, GetPartitionsArgs args)
+      final String tblName, GetPartitionsArgs args)
       throws MetaException {
-    if (partNames == null) {
-      partNames = args.getPartNames();
-    }
+    List<String> partNames = args.getPartNames();
     if (partNames == null || partNames.isEmpty()) {
       return Collections.emptyList();
     }
@@ -691,9 +688,8 @@ class MetaStoreDirectSql {
   /**
    * Gets partitions by using direct SQL queries.
    * @param filter The filter.
-   * @param max The maximum number of partitions to return.
    * @param isAcidTable True if the table is ACID
-   * @param skipColSchemaForPartitions skip column schema for partitions
+   * @param args additional arguments for getting partitions
    * @return List of partitions.
    */
   public List<Partition> getPartitionsViaSqlFilter(String catName, String dbName, String tableName,

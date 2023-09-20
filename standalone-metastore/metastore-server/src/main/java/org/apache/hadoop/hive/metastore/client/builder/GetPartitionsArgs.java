@@ -93,6 +93,24 @@ public class GetPartitionsArgs {
     private String excludeParamKeyPattern;
     private boolean skipColumnSchemaForPartition = false;
 
+    public GetPartitionsArgsBuilder() {
+
+    }
+
+    public GetPartitionsArgsBuilder(GetPartitionsArgs args) {
+      this.filter = args.filter;
+      this.expr = args.expr;
+      this.defaultPartName = args.defaultPartName;
+      this.max = args.max;
+      this.partNames = args.partNames;
+      this.part_vals = args.part_vals;
+      this.userName = args.userName;
+      this.groupNames = args.groupNames;
+      this.includeParamKeyPattern = args.includeParamKeyPattern;
+      this.excludeParamKeyPattern = args.excludeParamKeyPattern;
+      this.skipColumnSchemaForPartition = args.skipColumnSchemaForPartition;
+    }
+
     public GetPartitionsArgsBuilder filter(String filter) {
       this.filter = filter;
       return this;
