@@ -552,17 +552,20 @@ class PartitionFilterMode(object):
     BY_NAMES = 0
     BY_VALUES = 1
     BY_EXPR = 2
+    BY_FILTER = 3
 
     _VALUES_TO_NAMES = {
         0: "BY_NAMES",
         1: "BY_VALUES",
         2: "BY_EXPR",
+        3: "BY_FILTER",
     }
 
     _NAMES_TO_VALUES = {
         "BY_NAMES": 0,
         "BY_VALUES": 1,
         "BY_EXPR": 2,
+        "BY_FILTER": 3,
     }
 
 
@@ -27240,11 +27243,12 @@ class GetPartitionsRequest(object):
      - processorCapabilities
      - processorIdentifier
      - validWriteIdList
+     - maxParts
 
     """
 
 
-    def __init__(self, catName=None, dbName=None, tblName=None, withAuth=None, user=None, groupNames=None, projectionSpec=None, filterSpec=None, processorCapabilities=None, processorIdentifier=None, validWriteIdList=None,):
+    def __init__(self, catName=None, dbName=None, tblName=None, withAuth=None, user=None, groupNames=None, projectionSpec=None, filterSpec=None, processorCapabilities=None, processorIdentifier=None, validWriteIdList=None, maxParts=-1,):
         self.catName = catName
         self.dbName = dbName
         self.tblName = tblName
@@ -27256,6 +27260,7 @@ class GetPartitionsRequest(object):
         self.processorCapabilities = processorCapabilities
         self.processorIdentifier = processorIdentifier
         self.validWriteIdList = validWriteIdList
+        self.maxParts = maxParts
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -27333,6 +27338,11 @@ class GetPartitionsRequest(object):
                     self.validWriteIdList = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 12:
+                if ftype == TType.I32:
+                    self.maxParts = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -27392,6 +27402,10 @@ class GetPartitionsRequest(object):
         if self.validWriteIdList is not None:
             oprot.writeFieldBegin('validWriteIdList', TType.STRING, 11)
             oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.maxParts is not None:
+            oprot.writeFieldBegin('maxParts', TType.I32, 12)
+            oprot.writeI32(self.maxParts)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -33342,6 +33356,7 @@ GetPartitionsRequest.thrift_spec = (
     (9, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 9
     (10, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 10
     (11, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 11
+    (12, TType.I32, 'maxParts', None, -1, ),  # 12
 )
 all_structs.append(GetFieldsRequest)
 GetFieldsRequest.thrift_spec = (

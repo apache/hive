@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)9);
   private static final org.apache.thrift.protocol.TField PROCESSOR_IDENTIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("processorIdentifier", org.apache.thrift.protocol.TType.STRING, (short)10);
   private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)11);
+  private static final org.apache.thrift.protocol.TField MAX_PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("maxParts", org.apache.thrift.protocol.TType.I32, (short)12);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetPartitionsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetPartitionsRequestTupleSchemeFactory();
@@ -37,6 +38,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> processorCapabilities; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String processorIdentifier; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String validWriteIdList; // optional
+  private int maxParts; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -50,7 +52,8 @@ package org.apache.hadoop.hive.metastore.api;
     FILTER_SPEC((short)8, "filterSpec"),
     PROCESSOR_CAPABILITIES((short)9, "processorCapabilities"),
     PROCESSOR_IDENTIFIER((short)10, "processorIdentifier"),
-    VALID_WRITE_ID_LIST((short)11, "validWriteIdList");
+    VALID_WRITE_ID_LIST((short)11, "validWriteIdList"),
+    MAX_PARTS((short)12, "maxParts");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -88,6 +91,8 @@ package org.apache.hadoop.hive.metastore.api;
           return PROCESSOR_IDENTIFIER;
         case 11: // VALID_WRITE_ID_LIST
           return VALID_WRITE_ID_LIST;
+        case 12: // MAX_PARTS
+          return MAX_PARTS;
         default:
           return null;
       }
@@ -130,8 +135,9 @@ package org.apache.hadoop.hive.metastore.api;
 
   // isset id assignments
   private static final int __WITHAUTH_ISSET_ID = 0;
+  private static final int __MAXPARTS_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.WITH_AUTH,_Fields.USER,_Fields.GROUP_NAMES,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.VALID_WRITE_ID_LIST};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.WITH_AUTH,_Fields.USER,_Fields.GROUP_NAMES,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.VALID_WRITE_ID_LIST,_Fields.MAX_PARTS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -159,11 +165,15 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("maxParts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetPartitionsRequest.class, metaDataMap);
   }
 
   public GetPartitionsRequest() {
+    this.maxParts = -1;
+
   }
 
   public GetPartitionsRequest(
@@ -217,6 +227,7 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetValidWriteIdList()) {
       this.validWriteIdList = other.validWriteIdList;
     }
+    this.maxParts = other.maxParts;
   }
 
   public GetPartitionsRequest deepCopy() {
@@ -237,6 +248,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
     this.validWriteIdList = null;
+    this.maxParts = -1;
+
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -533,6 +546,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public int getMaxParts() {
+    return this.maxParts;
+  }
+
+  public void setMaxParts(int maxParts) {
+    this.maxParts = maxParts;
+    setMaxPartsIsSet(true);
+  }
+
+  public void unsetMaxParts() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __MAXPARTS_ISSET_ID);
+  }
+
+  /** Returns true if field maxParts is set (has been assigned a value) and false otherwise */
+  public boolean isSetMaxParts() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __MAXPARTS_ISSET_ID);
+  }
+
+  public void setMaxPartsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MAXPARTS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CAT_NAME:
@@ -623,6 +658,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case MAX_PARTS:
+      if (value == null) {
+        unsetMaxParts();
+      } else {
+        setMaxParts((java.lang.Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -662,6 +705,9 @@ package org.apache.hadoop.hive.metastore.api;
     case VALID_WRITE_ID_LIST:
       return getValidWriteIdList();
 
+    case MAX_PARTS:
+      return getMaxParts();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -695,6 +741,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetProcessorIdentifier();
     case VALID_WRITE_ID_LIST:
       return isSetValidWriteIdList();
+    case MAX_PARTS:
+      return isSetMaxParts();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -811,6 +859,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_maxParts = true && this.isSetMaxParts();
+    boolean that_present_maxParts = true && that.isSetMaxParts();
+    if (this_present_maxParts || that_present_maxParts) {
+      if (!(this_present_maxParts && that_present_maxParts))
+        return false;
+      if (this.maxParts != that.maxParts)
+        return false;
+    }
+
     return true;
   }
 
@@ -861,6 +918,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetValidWriteIdList()) ? 131071 : 524287);
     if (isSetValidWriteIdList())
       hashCode = hashCode * 8191 + validWriteIdList.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetMaxParts()) ? 131071 : 524287);
+    if (isSetMaxParts())
+      hashCode = hashCode * 8191 + maxParts;
 
     return hashCode;
   }
@@ -983,6 +1044,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetMaxParts(), other.isSetMaxParts());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMaxParts()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxParts, other.maxParts);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1099,6 +1170,12 @@ package org.apache.hadoop.hive.metastore.api;
       } else {
         sb.append(this.validWriteIdList);
       }
+      first = false;
+    }
+    if (isSetMaxParts()) {
+      if (!first) sb.append(", ");
+      sb.append("maxParts:");
+      sb.append(this.maxParts);
       first = false;
     }
     sb.append(")");
@@ -1262,6 +1339,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 12: // MAX_PARTS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.maxParts = iprot.readI32();
+              struct.setMaxPartsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1356,6 +1441,11 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetMaxParts()) {
+        oprot.writeFieldBegin(MAX_PARTS_FIELD_DESC);
+        oprot.writeI32(struct.maxParts);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1407,7 +1497,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetValidWriteIdList()) {
         optionals.set(10);
       }
-      oprot.writeBitSet(optionals, 11);
+      if (struct.isSetMaxParts()) {
+        optionals.set(11);
+      }
+      oprot.writeBitSet(optionals, 12);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
       }
@@ -1453,12 +1546,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetValidWriteIdList()) {
         oprot.writeString(struct.validWriteIdList);
       }
+      if (struct.isSetMaxParts()) {
+        oprot.writeI32(struct.maxParts);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPartitionsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(11);
+      java.util.BitSet incoming = iprot.readBitSet(12);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
@@ -1522,6 +1618,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(10)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.maxParts = iprot.readI32();
+        struct.setMaxPartsIsSet(true);
       }
     }
   }

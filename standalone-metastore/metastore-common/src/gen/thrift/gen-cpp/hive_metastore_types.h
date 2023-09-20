@@ -427,7 +427,8 @@ struct PartitionFilterMode {
   enum type {
     BY_NAMES = 0,
     BY_VALUES = 1,
-    BY_EXPR = 2
+    BY_EXPR = 2,
+    BY_FILTER = 3
   };
 };
 
@@ -18832,7 +18833,7 @@ void swap(GetPartitionsResponse &a, GetPartitionsResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetPartitionsResponse& obj);
 
 typedef struct _GetPartitionsRequest__isset {
-  _GetPartitionsRequest__isset() : catName(false), dbName(false), tblName(false), withAuth(false), user(false), groupNames(false), projectionSpec(false), filterSpec(false), processorCapabilities(false), processorIdentifier(false), validWriteIdList(false) {}
+  _GetPartitionsRequest__isset() : catName(false), dbName(false), tblName(false), withAuth(false), user(false), groupNames(false), projectionSpec(false), filterSpec(false), processorCapabilities(false), processorIdentifier(false), validWriteIdList(false), maxParts(true) {}
   bool catName :1;
   bool dbName :1;
   bool tblName :1;
@@ -18844,6 +18845,7 @@ typedef struct _GetPartitionsRequest__isset {
   bool processorCapabilities :1;
   bool processorIdentifier :1;
   bool validWriteIdList :1;
+  bool maxParts :1;
 } _GetPartitionsRequest__isset;
 
 class GetPartitionsRequest : public virtual ::apache::thrift::TBase {
@@ -18858,7 +18860,8 @@ class GetPartitionsRequest : public virtual ::apache::thrift::TBase {
                          withAuth(0),
                          user(),
                          processorIdentifier(),
-                         validWriteIdList() {
+                         validWriteIdList(),
+                         maxParts(-1) {
   }
 
   virtual ~GetPartitionsRequest() noexcept;
@@ -18873,6 +18876,7 @@ class GetPartitionsRequest : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
   std::string validWriteIdList;
+  int32_t maxParts;
 
   _GetPartitionsRequest__isset __isset;
 
@@ -18897,6 +18901,8 @@ class GetPartitionsRequest : public virtual ::apache::thrift::TBase {
   void __set_processorIdentifier(const std::string& val);
 
   void __set_validWriteIdList(const std::string& val);
+
+  void __set_maxParts(const int32_t val);
 
   bool operator == (const GetPartitionsRequest & rhs) const
   {
@@ -18935,6 +18941,10 @@ class GetPartitionsRequest : public virtual ::apache::thrift::TBase {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.maxParts != rhs.__isset.maxParts)
+      return false;
+    else if (__isset.maxParts && !(maxParts == rhs.maxParts))
       return false;
     return true;
   }

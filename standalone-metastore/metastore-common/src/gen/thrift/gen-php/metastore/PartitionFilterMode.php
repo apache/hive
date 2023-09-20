@@ -24,10 +24,13 @@ final class PartitionFilterMode
 
     const BY_EXPR = 2;
 
+    const BY_FILTER = 3;
+
     static public $__names = array(
         0 => 'BY_NAMES',
         1 => 'BY_VALUES',
         2 => 'BY_EXPR',
+        3 => 'BY_FILTER',
     );
 }
 
