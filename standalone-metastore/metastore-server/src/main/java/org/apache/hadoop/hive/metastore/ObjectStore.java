@@ -3913,7 +3913,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private boolean canTryDirectSQL(List<String> partVals) {
     if (partVals.isEmpty()) {
-      return false;
+      return true;
     }
     for (String val : partVals) {
       if (val != null && !val.isEmpty()) {
@@ -4764,6 +4764,37 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(false);
   }
 
+  private List<Partition> getPartitionsInternal(Table table, GetPartitionsFilterSpec filterSpec,
+      GetPartitionsArgs.GetPartitionsArgsBuilder argsBuilder) throws Exception {
+    if (filterSpec == null || !filterSpec.isSetFilterMode()) {
+      return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(), true, true,
+          argsBuilder.build());
+    }
+    switch (filterSpec.getFilterMode()) {
+    case BY_EXPR:
+      // TODO...
+      throw new UnsupportedOperationException();
+    case BY_VALUES:
+      Collection parts = getPartitionPsQueryResults(table.getCatName(), table.getDbName(), table.getTableName(),
+          filterSpec.getFilters(), -1, null);
+      List<Partition> partitions = new ArrayList<>(parts.size());
+      for (Object o : parts) {
+        Partition part = convertToPart(table.getCatName(), table.getDbName(), table.getTableName(), (MPartition) o,
+            false, argsBuilder.build());
+        partitions.add(part);
+      }
+      return partitions;
+    case BY_NAMES:
+      argsBuilder.partNames(filterSpec.getFilters());
+      return getPartitionsByNames(table.getCatName(), table.getDbName(), table.getTableName(), argsBuilder.build());
+    case BY_FILTER:
+      String filterStr = filterSpec.getFilters().stream().map(filter -> "(" + filter + ")").collect(Collectors.joining(" AND "));
+      argsBuilder.filter(filterStr);
+      return getPartitionsByFilter(table.getCatName(), table.getDbName(), table.getTableName(), argsBuilder.build());
+    }
+    throw new MetaException("Shouldn't reach here");
+  }
+
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(final Table table,
       GetProjectionsSpec partitionsProjectSpec,
@@ -4782,11 +4813,14 @@ public class ObjectStore implements RawStore, Configurable {
     }
     if (fieldList == null || fieldList.isEmpty()) {
       // no fields are requested. Fallback to regular getPartitions implementation to return all the fields
-      return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(),
-          true, true, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-              .excludeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
-              .includeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
-              .build());
+      GetPartitionsArgs.GetPartitionsArgsBuilder argsBuilder = new GetPartitionsArgs.GetPartitionsArgsBuilder()
+          .excludeParamKeyPattern(inputExcludePattern)
+          .includeParamKeyPattern(inputIncludePattern);
+      try {
+        return getPartitionsInternal(table, filterSpec, argsBuilder);
+      } catch (Exception e) {
+        ExceptionHandler.handleException(e).throwMetaException(e);
+      }
     }
 
     // anonymous class below requires final String objects
@@ -4800,7 +4834,8 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
-        if (filterSpec.isSetFilterMode() && filterSpec.getFilterMode().equals(PartitionFilterMode.BY_EXPR)) {
+        if (filterSpec.isSetFilterMode() && (filterSpec.getFilterMode().equals(PartitionFilterMode.BY_EXPR) ||
+            filterSpec.getFilterMode().equals(PartitionFilterMode.BY_FILTER))) {
           // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
           // if there are more than one filter string we AND them together
           initExpressionTree();
@@ -4846,6 +4881,7 @@ public class ObjectStore implements RawStore, Configurable {
           if (filterSpec.isSetFilterMode()) {
             // generate the JDO filter string
             switch(filterSpec.getFilterMode()) {
+            case BY_FILTER:
             case BY_EXPR:
               if (tree == null) {
                 // tree could be null when directSQL is disabled
