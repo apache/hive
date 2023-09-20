@@ -57,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -2262,9 +2263,28 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
-  private Map<String, String> convertMap(Map<String, String> dnMap) {
-    return MetaStoreServerUtils.trimMapNulls(dnMap,
+  private Map<String, String> convertMap(Map<String, String> dnMap, GetPartitionsArgs... args) {
+    Map<String, String> parameters = MetaStoreServerUtils.trimMapNulls(dnMap,
         MetastoreConf.getBoolVar(getConf(), ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
+    if (parameters != null && args != null && args.length == 1) {
+      // Pattern matching in Java might be different from the one used by the metastore backends,
+      // support only the common case.
+      Pattern includePattern = Optional.ofNullable(args[0].getIncludeParamKeyPattern()).map(regex ->
+          Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).orElse(null);
+      Pattern excludePattern = Optional.ofNullable(args[0].getExcludeParamKeyPattern()).map(regex ->
+          Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).orElse(null);
+      return parameters.entrySet().stream().filter(entry -> {
+        boolean matches = true;
+        if (includePattern != null) {
+          matches &= includePattern.matcher(entry.getKey()).matches();
+        }
+        if (excludePattern != null) {
+          matches &= !excludePattern.matcher(entry.getKey()).matches();
+        }
+        return matches;
+      }).collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+    }
+    return parameters;
   }
 
   private Table convertToTable(MTable mtbl) throws MetaException {
@@ -3076,7 +3096,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (mpart == null) {
       return null;
     }
-    Map<String,String> params = convertMap(mpart.getParameters());
+    Map<String,String> params = convertMap(mpart.getParameters(), args);
     boolean noFS = args != null ? args.isSkipColumnSchemaForPartition() : false;
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
         mpart.getCreateTime(), mpart.getLastAccessTime(),

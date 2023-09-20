@@ -167,24 +167,6 @@ class MetastoreDirectSqlUtils {
     return rv;
   }
 
-  static void setPartitionParameters(String PARTITION_PARAMS, boolean convertMapNullsToEmptyStrings,
-      PersistenceManager pm, String partIds, TreeMap<Long, Partition> partitions)
-      throws MetaException {
-    String queryText;
-    queryText = "select \"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from " + PARTITION_PARAMS + ""
-        + " where \"PART_ID\" in (" + partIds + ") and \"PARAM_KEY\" is not null"
-        + " order by \"PART_ID\" asc";
-    loopJoinOrderedResult(pm, partitions, queryText, 0, new ApplyFunc<Partition>() {
-      @Override
-      public void apply(Partition t, Object[] fields) {
-        t.putToParameters(extractSqlClob(fields[1]), extractSqlClob(fields[2]));
-      }});
-    // Perform conversion of null map values
-    for (Partition t : partitions.values()) {
-      t.setParameters(MetaStoreServerUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
-    }
-  }
-
   static void setPartitionParametersWithFilter(String PARTITION_PARAMS,
       boolean convertMapNullsToEmptyStrings, PersistenceManager pm, String partIds,
       TreeMap<Long, Partition> partitions, String includeParamKeyPattern, String excludeParamKeyPattern)
