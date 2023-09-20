@@ -25,9 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,27 +36,26 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.mockito.Mockito.mockStatic;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
-@PrepareForTest({ HiveSchemaHelper.class, HiveSchemaTool.HiveSchemaToolCommandBuilder.class })
+
+@RunWith(MockitoJUnitRunner.class)
 public class TestHiveSchemaTool {
 
   String scriptFile = System.getProperty("java.io.tmpdir") + File.separator + "someScript.sql";
   @Mock
   private HiveConf hiveConf;
+  private MockedStatic<HiveSchemaHelper> hiveSchemaHelperMockedStatic;
   private HiveSchemaTool.HiveSchemaToolCommandBuilder builder;
   private String pasword = "reallySimplePassword";
 
   @Before
   public void setup() throws IOException {
-    mockStatic(HiveSchemaHelper.class);
-    when(HiveSchemaHelper
+    hiveSchemaHelperMockedStatic = mockStatic(HiveSchemaHelper.class);
+    hiveSchemaHelperMockedStatic.when(() -> HiveSchemaHelper
         .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECT_URL_KEY), same(hiveConf)))
         .thenReturn("someURL");
-    when(HiveSchemaHelper
+    hiveSchemaHelperMockedStatic.when(() -> HiveSchemaHelper
         .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTION_DRIVER), same(hiveConf)))
         .thenReturn("someDriver");
 
@@ -73,7 +71,7 @@ public class TestHiveSchemaTool {
     HiveSchemaHelper.getValidConfVar(eq(MetastoreConf.ConfVars.CONNECT_URL_KEY), same(hiveConf));
     HiveSchemaHelper
         .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTION_DRIVER), same(hiveConf));
-
+    hiveSchemaHelperMockedStatic.close();
     new File(scriptFile).delete();
   }
 
