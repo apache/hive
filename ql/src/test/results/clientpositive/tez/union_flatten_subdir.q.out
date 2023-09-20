@@ -88,4 +88,9 @@ POSTHOOK: Output: default@union_target@key=3
 POSTHOOK: Lineage: union_target PARTITION(key=1).value EXPRESSION [(union_src1)union_src1.FieldSchema(name:value, type:string, comment:null), (union_src2)union_src2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: union_target PARTITION(key=2).value EXPRESSION [(union_src1)union_src1.FieldSchema(name:value, type:string, comment:null), (union_src2)union_src2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: union_target PARTITION(key=3).value EXPRESSION [(union_src1)union_src1.FieldSchema(name:value, type:string, comment:null), (union_src2)union_src2.FieldSchema(name:value, type:string, comment:null), ]
-           4            3                 20 hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###         10 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          5 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          5 ### HDFS DATE ### hdfs://### HDFS PATH ###
