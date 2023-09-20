@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -72,6 +73,7 @@ public class TestDFSErrorHandling
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS, 1);
     hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI, true);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    hiveConf.set("hive.load.data.owner","hive");
 
     // Setting hive.server2.enable.doAs to True ensures that HS2 performs the query operation as
     // the connected user instead of the user running HS2.
@@ -118,6 +120,7 @@ public class TestDFSErrorHandling
     // Sets the sticky bit on stickyBitDir - now removing file kv1.txt from stickyBitDir by
     // unprivileged user will result in a DFS error.
     fs.setPermission(stickyBitDir, fsPermission);
+    fs.setOwner(new Path(stickyBitDir.toUri().getPath() + "/kv1.txt"), "hive", "hive");
 
     FileStatus[] files = fs.listStatus(stickyBitDir);
 
@@ -139,6 +142,66 @@ public class TestDFSErrorHandling
       if (e instanceof SQLException) {
         SQLException se = (SQLException) e;
         Assert.assertEquals("Unexpected error code", 20009, se.getErrorCode());
+        System.out.println(String.format("Error Message: %s", se.getMessage()));
+      } else
+        throw e;
+    }
+
+    stmt.execute("drop table if exists " + tableName);
+
+    stmt.close();
+    hs2Conn.close();
+  }
+
+
+  @Test
+  public void testDifferentOwner() throws Exception {
+    assertTrue("Test setup failed. MiniHS2 is not initialized",
+            miniHS2 != null && miniHS2.isStarted());
+
+    Class.forName(MiniHS2.getJdbcDriverName());
+    Path scratchDir = new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.SCRATCHDIR));
+
+    HadoopShims.MiniDFSShim dfs = miniHS2.getDfs();
+    FileSystem fs = dfs.getFileSystem();
+
+    Path stickyBitDir = new Path(scratchDir, "stickyBitDir");
+
+    fs.mkdirs(stickyBitDir);
+
+    String dataFileDir = hiveConf.get("test.data.files").replace('\\', '/')
+            .replace("c:", "").replace("C:", "").replace("D:", "").replace("d:", "");
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+
+    fs.copyFromLocalFile(dataFilePath, stickyBitDir);
+
+    FsPermission fsPermission = new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.READ_EXECUTE, true);
+
+    // Sets the sticky bit on stickyBitDir - now removing file kv1.txt from stickyBitDir by
+    // unprivileged user will result in a DFS error.
+    fs.setPermission(stickyBitDir, fsPermission);
+
+    FileStatus[] files = fs.listStatus(stickyBitDir);
+
+    // Connecting to HS2 as foo.
+    Connection hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL(), "foo", "bar");
+    Statement stmt = hs2Conn.createStatement();
+
+    String tableName = "stickyBitTable";
+
+    stmt.execute("drop table if exists " + tableName);
+    stmt.execute("create table " + tableName + " (foo int, bar string)");
+
+    try {
+      // This statement will attempt to move kv1.txt out of stickyBitDir as user foo.  HS2 is
+      // expected to return 20009.
+      stmt.execute("LOAD DATA INPATH '" + stickyBitDir.toUri().getPath() + "/kv1.txt' "
+              + "OVERWRITE INTO TABLE " + tableName);
+    } catch (Exception e) {
+      if (e instanceof SQLException) {
+        SQLException se = (SQLException) e;
+        Assert.assertTrue("Unexpected error code", se.getMessage().contains("and load data is also not ran as"));
+        //                Assert.assertEquals("Unexpected error code", 40000, se.getErrorCode());
         System.out.println(String.format("Error Message: %s", se.getMessage()));
       } else
         throw e;
