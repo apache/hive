@@ -11,8 +11,7 @@ package org.apache.hadoop.hive.metastore.api;
 public enum PartitionFilterMode implements org.apache.thrift.TEnum {
   BY_NAMES(0),
   BY_VALUES(1),
-  BY_EXPR(2),
-  BY_FILTER(3);
+  BY_EXPR(2);
 
   private final int value;
 
@@ -40,8 +39,6 @@ public enum PartitionFilterMode implements org.apache.thrift.TEnum {
         return BY_VALUES;
       case 2:
         return BY_EXPR;
-      case 3:
-        return BY_FILTER;
       default:
         return null;
     }

@@ -902,16 +902,14 @@ std::string to_string(const QueryState::type& val) {
 int _kPartitionFilterModeValues[] = {
   PartitionFilterMode::BY_NAMES,
   PartitionFilterMode::BY_VALUES,
-  PartitionFilterMode::BY_EXPR,
-  PartitionFilterMode::BY_FILTER
+  PartitionFilterMode::BY_EXPR
 };
 const char* _kPartitionFilterModeNames[] = {
   "BY_NAMES",
   "BY_VALUES",
-  "BY_EXPR",
-  "BY_FILTER"
+  "BY_EXPR"
 };
-const std::map<int, const char*> _PartitionFilterMode_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kPartitionFilterModeValues, _kPartitionFilterModeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _PartitionFilterMode_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kPartitionFilterModeValues, _kPartitionFilterModeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const PartitionFilterMode::type& val) {
   std::map<int, const char*>::const_iterator it = _PartitionFilterMode_VALUES_TO_NAMES.find(val);
@@ -47747,11 +47745,6 @@ void GetPartitionsRequest::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
 }
-
-void GetPartitionsRequest::__set_maxParts(const int32_t val) {
-  this->maxParts = val;
-__isset.maxParts = true;
-}
 std::ostream& operator<<(std::ostream& out, const GetPartitionsRequest& obj)
 {
   obj.printTo(out);
@@ -47892,14 +47885,6 @@ uint32_t GetPartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
-      case 12:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->maxParts);
-          this->__isset.maxParts = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -47984,11 +47969,6 @@ uint32_t GetPartitionsRequest::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.maxParts) {
-    xfer += oprot->writeFieldBegin("maxParts", ::apache::thrift::protocol::T_I32, 12);
-    xfer += oprot->writeI32(this->maxParts);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -48007,7 +47987,6 @@ void swap(GetPartitionsRequest &a, GetPartitionsRequest &b) {
   swap(a.processorCapabilities, b.processorCapabilities);
   swap(a.processorIdentifier, b.processorIdentifier);
   swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.maxParts, b.maxParts);
   swap(a.__isset, b.__isset);
 }
 
@@ -48023,7 +48002,6 @@ GetPartitionsRequest::GetPartitionsRequest(const GetPartitionsRequest& other1689
   processorCapabilities = other1689.processorCapabilities;
   processorIdentifier = other1689.processorIdentifier;
   validWriteIdList = other1689.validWriteIdList;
-  maxParts = other1689.maxParts;
   __isset = other1689.__isset;
 }
 GetPartitionsRequest& GetPartitionsRequest::operator=(const GetPartitionsRequest& other1690) {
@@ -48038,7 +48016,6 @@ GetPartitionsRequest& GetPartitionsRequest::operator=(const GetPartitionsRequest
   processorCapabilities = other1690.processorCapabilities;
   processorIdentifier = other1690.processorIdentifier;
   validWriteIdList = other1690.validWriteIdList;
-  maxParts = other1690.maxParts;
   __isset = other1690.__isset;
   return *this;
 }
@@ -48056,7 +48033,6 @@ void GetPartitionsRequest::printTo(std::ostream& out) const {
   out << ", " << "processorCapabilities="; (__isset.processorCapabilities ? (out << to_string(processorCapabilities)) : (out << "<null>"));
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "maxParts="; (__isset.maxParts ? (out << to_string(maxParts)) : (out << "<null>"));
   out << ")";
 }
 

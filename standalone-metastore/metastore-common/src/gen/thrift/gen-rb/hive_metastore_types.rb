@@ -245,9 +245,8 @@ module PartitionFilterMode
   BY_NAMES = 0
   BY_VALUES = 1
   BY_EXPR = 2
-  BY_FILTER = 3
-  VALUE_MAP = {0 => "BY_NAMES", 1 => "BY_VALUES", 2 => "BY_EXPR", 3 => "BY_FILTER"}
-  VALID_VALUES = Set.new([BY_NAMES, BY_VALUES, BY_EXPR, BY_FILTER]).freeze
+  VALUE_MAP = {0 => "BY_NAMES", 1 => "BY_VALUES", 2 => "BY_EXPR"}
+  VALID_VALUES = Set.new([BY_NAMES, BY_VALUES, BY_EXPR]).freeze
 end
 
 class Version; end
@@ -7493,7 +7492,6 @@ class GetPartitionsRequest
   PROCESSORCAPABILITIES = 9
   PROCESSORIDENTIFIER = 10
   VALIDWRITEIDLIST = 11
-  MAXPARTS = 12
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -7506,8 +7504,7 @@ class GetPartitionsRequest
     FILTERSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'filterSpec', :class => ::GetPartitionsFilterSpec},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    MAXPARTS => {:type => ::Thrift::Types::I32, :name => 'maxParts', :default => -1, :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 
   def struct_fields; FIELDS; end

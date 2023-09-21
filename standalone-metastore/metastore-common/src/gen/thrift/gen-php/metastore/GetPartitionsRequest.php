@@ -86,11 +86,6 @@ class GetPartitionsRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
-        12 => array(
-            'var' => 'maxParts',
-            'isRequired' => false,
-            'type' => TType::I32,
-        ),
     );
 
     /**
@@ -137,10 +132,6 @@ class GetPartitionsRequest
      * @var string
      */
     public $validWriteIdList = null;
-    /**
-     * @var int
-     */
-    public $maxParts = -1;
 
     public function __construct($vals = null)
     {
@@ -177,9 +168,6 @@ class GetPartitionsRequest
             }
             if (isset($vals['validWriteIdList'])) {
                 $this->validWriteIdList = $vals['validWriteIdList'];
-            }
-            if (isset($vals['maxParts'])) {
-                $this->maxParts = $vals['maxParts'];
             }
         }
     }
@@ -300,13 +288,6 @@ class GetPartitionsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 12:
-                    if ($ftype == TType::I32) {
-                        $xfer += $input->readI32($this->maxParts);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -394,11 +375,6 @@ class GetPartitionsRequest
         if ($this->validWriteIdList !== null) {
             $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 11);
             $xfer += $output->writeString($this->validWriteIdList);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->maxParts !== null) {
-            $xfer += $output->writeFieldBegin('maxParts', TType::I32, 12);
-            $xfer += $output->writeI32($this->maxParts);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
