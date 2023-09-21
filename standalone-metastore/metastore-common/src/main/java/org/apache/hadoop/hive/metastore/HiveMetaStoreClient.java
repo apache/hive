@@ -2205,14 +2205,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName,
                                                int maxParts) throws TException {
-    GetPartitionsRequest req = createThriftPartitionsReq(GetPartitionsRequest.class, conf);
-    req.setTblName(tableName);
-    req.setDbName(dbName);
-    req.setCatName(catName);
-    req.setMaxParts(maxParts);
     List<PartitionSpec> partitionSpecs =
-        client.get_partitions_with_specs(req).getPartitionSpec();
-    partitionSpecs = FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs);
+        client.get_partitions_pspec(prependCatalogToDbName(catName, dbName, conf), tableName, maxParts);
     return PartitionSpecProxy.Factory.get(partitionSpecs);
   }
 
@@ -2388,16 +2382,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public PartitionSpecProxy listPartitionSpecsByFilter(String catName, String db_name,
                                                        String tbl_name, String filter,
                                                        int max_parts) throws TException {
-    GetPartitionsRequest req = createThriftPartitionsReq(GetPartitionsRequest.class, conf);
-    req.setTblName(tbl_name);
-    req.setDbName(db_name);
-    req.setCatName(catName);
-    req.setFilterSpec(new GetPartitionsFilterSpec());
-    req.getFilterSpec().setFilterMode(PartitionFilterMode.BY_FILTER);
-    req.getFilterSpec().addToFilters(filter);
-    req.setMaxParts(max_parts);
     List<PartitionSpec> partitionSpecs =
-        client.get_partitions_with_specs(req).getPartitionSpec();
+        client.get_part_specs_by_filter(prependCatalogToDbName(catName, db_name, conf), tbl_name, filter,
+        max_parts);
     return PartitionSpecProxy.Factory.get(
         FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs));
   }

@@ -4775,37 +4775,6 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(false);
   }
 
-  private List<Partition> getPartitionsInternal(Table table, GetPartitionsFilterSpec filterSpec,
-      GetPartitionsArgs.GetPartitionsArgsBuilder argsBuilder) throws Exception {
-    if (filterSpec == null || !filterSpec.isSetFilterMode()) {
-      return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(), true, true,
-          argsBuilder.build());
-    }
-    switch (filterSpec.getFilterMode()) {
-    case BY_EXPR:
-      // TODO...
-      throw new UnsupportedOperationException();
-    case BY_VALUES:
-      Collection parts = getPartitionPsQueryResults(table.getCatName(), table.getDbName(), table.getTableName(),
-          filterSpec.getFilters(), -1, null);
-      List<Partition> partitions = new ArrayList<>(parts.size());
-      for (Object o : parts) {
-        Partition part = convertToPart(table.getCatName(), table.getDbName(), table.getTableName(), (MPartition) o,
-            false, argsBuilder.build());
-        partitions.add(part);
-      }
-      return partitions;
-    case BY_NAMES:
-      argsBuilder.partNames(filterSpec.getFilters());
-      return getPartitionsByNames(table.getCatName(), table.getDbName(), table.getTableName(), argsBuilder.build());
-    case BY_FILTER:
-      String filterStr = filterSpec.getFilters().stream().map(filter -> "(" + filter + ")").collect(Collectors.joining(" AND "));
-      argsBuilder.filter(filterStr);
-      return getPartitionsByFilter(table.getCatName(), table.getDbName(), table.getTableName(), argsBuilder.build());
-    }
-    throw new MetaException("Shouldn't reach here");
-  }
-
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(final Table table,
       GetProjectionsSpec partitionsProjectSpec,
@@ -4827,11 +4796,8 @@ public class ObjectStore implements RawStore, Configurable {
       GetPartitionsArgs.GetPartitionsArgsBuilder argsBuilder = new GetPartitionsArgs.GetPartitionsArgsBuilder()
           .excludeParamKeyPattern(inputExcludePattern)
           .includeParamKeyPattern(inputIncludePattern);
-      try {
-        return getPartitionsInternal(table, filterSpec, argsBuilder);
-      } catch (Exception e) {
-        ExceptionHandler.handleException(e).throwMetaException(e);
-      }
+      return getPartitionsInternal(table.getCatName(), table.getDbName(), table.getTableName(),
+          true, true, argsBuilder.build());
     }
 
     // anonymous class below requires final String objects
