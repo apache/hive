@@ -5113,13 +5113,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       request.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       request.setProcessorIdentifier(processorIdentifier);
-    if (!request.getProjectionSpec().isSetExcludeParamKeyPattern()) {
-      request.getProjectionSpec().setExcludeParamKeyPattern(MetastoreConf.getAsString(conf,
-          MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
-    }
-    if (!request.getProjectionSpec().isSetIncludeParamKeyPattern()) {
-      request.getProjectionSpec().setIncludeParamKeyPattern(MetastoreConf.getAsString(conf,
-          MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
+    if (request.isSetProjectionSpec()) {
+      if (!request.getProjectionSpec().isSetExcludeParamKeyPattern()) {
+        request.getProjectionSpec().setExcludeParamKeyPattern(MetastoreConf.getAsString(conf,
+            MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
+      }
+      if (!request.getProjectionSpec().isSetIncludeParamKeyPattern()) {
+        request.getProjectionSpec().setIncludeParamKeyPattern(MetastoreConf.getAsString(conf,
+            MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
+      }
     }
     return client.get_partitions_with_specs(request);
   }
