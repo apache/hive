@@ -1,4 +1,5 @@
 set hive.tez.union.flatten.subdirectories=true;
+set hive.tez.container.size=256;
 
 create external table union_src1 (value string) partitioned by (key int);
 create external table union_src2 (value string) partitioned by (key int);

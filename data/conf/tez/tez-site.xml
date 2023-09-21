@@ -1,19 +1,19 @@
 <configuration>
   <property>
     <name>tez.am.resource.memory.mb</name>
-    <value>512</value>
+    <value>128</value>
   </property>
   <property>
     <name>tez.task.resource.memory.mb</name>
-    <value>512</value>
+    <value>128</value>
   </property>
   <property>
     <name>tez.runtime.io.sort.mb</name>
-    <value>96</value>
+    <value>24</value>
   </property>
   <property>
     <name>tez.runtime.unordered.output.buffer.size-mb</name>
-    <value>40</value>
+    <value>10</value>
   </property>
   <property>
     <name>tez.runtime.shuffle.fetch.buffer.percent</name>
