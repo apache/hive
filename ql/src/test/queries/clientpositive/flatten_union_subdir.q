@@ -1,19 +1,17 @@
 set hive.tez.union.flatten.subdirectories=true;
+set hive.support.concurrency=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.acid.direct.insert.enabled=true;
+set hive.auto.convert.join=true;
 
-create external table union_src1 (value string) partitioned by (key int);
-create external table union_src2 (value string) partitioned by (key int);
-create external table union_target (value string) partitioned by (key int);
+create table test1 (val string) partitioned by (dt string) stored as avro TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only');
+insert into test1 partition (dt='20230817') values ("val1"), ("val2");
+create table test2 (val string) partitioned by (dt string) stored as avro TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only');
+select ful.* from (select val from test2 where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val;
 
-insert into table union_src1 partition (key = 1) values ("val1");
-insert into table union_src1 partition (key = 2) values ("val2");
+explain insert overwrite table test2 partition (dt='20230817') select ful.* from (select val from test2 where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817';
 
-insert into table union_src2 partition (key = 1) values ("val3");
-insert into table union_src2 partition (key = 3) values ("val4");
+insert overwrite table test2 partition (dt='20230817') select ful.* from (select val from test2 where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817';
 
-insert into table union_target
-select value, key from union_src1
-union all
-select value, key from union_src2;
-
--- if there is any HIVE_UNION_SUBDIR, the output will have more rows
-dfs -ls -R ${hiveconf:hive.metastore.warehouse.dir}/union_target;
+dfs -ls -R ${hiveconf:hive.metastore.warehouse.dir}/test2;
