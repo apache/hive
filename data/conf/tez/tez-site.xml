@@ -9,11 +9,11 @@
   </property>
   <property>
     <name>tez.runtime.io.sort.mb</name>
-    <value>24</value>
+    <value>96</value>
   </property>
   <property>
     <name>tez.runtime.unordered.output.buffer.size-mb</name>
-    <value>10</value>
+    <value>40</value>
   </property>
   <property>
     <name>tez.runtime.shuffle.fetch.buffer.percent</name>
