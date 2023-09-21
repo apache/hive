@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFSum.class.getName());
+  public static final int SUM_RESULT_PRECISION_INCREASE = 10;
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
@@ -252,7 +253,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       // 10b rows. The scale is the same as the input.
       DecimalTypeInfo outputTypeInfo = null;
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        int precision = Math.min(HiveDecimal.MAX_PRECISION, inputPrecision + 10);
+        int precision = Math.min(HiveDecimal.MAX_PRECISION, inputPrecision + SUM_RESULT_PRECISION_INCREASE);
         outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(precision, inputScale);
       } else {
         outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(inputPrecision, inputScale);

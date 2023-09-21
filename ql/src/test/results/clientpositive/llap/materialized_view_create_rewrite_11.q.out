@@ -1,0 +1,62 @@
+PREHOOK: query: create table t1 (a int, b decimal(3,2)) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int, b decimal(3,2)) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values (1,1), (2,1), (3,3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (1,1), (2,1), (3,3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+PREHOOK: query: create materialized view mv1 as
+select a, sum(b), count(b) from t1 group by a
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 as
+select a, sum(b), count(b) from t1 group by a
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1._c1 EXPRESSION [(t1)t1.FieldSchema(name:b, type:decimal(3,2), comment:null), ]
+POSTHOOK: Lineage: mv1._c2 EXPRESSION [(t1)t1.FieldSchema(name:b, type:decimal(3,2), comment:null), ]
+POSTHOOK: Lineage: mv1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: explain cbo
+select a, avg(b) from t1 group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a, avg(b) from t1 group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], _o__c1=[CAST(/($1, $2)):DECIMAL(7, 6)])
+  HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
+
+PREHOOK: query: select a, avg(b) from t1 group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select a, avg(b) from t1 group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+3	3.000000
+1	1.000000
+2	1.000000
