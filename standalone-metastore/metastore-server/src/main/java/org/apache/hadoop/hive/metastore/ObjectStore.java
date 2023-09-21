@@ -2269,17 +2269,25 @@ public class ObjectStore implements RawStore, Configurable {
     if (parameters != null && args != null && args.length == 1) {
       // Pattern matching in Java might be different from the one used by the metastore backends,
       // support only the common case.
-      Pattern includePattern = Optional.ofNullable(args[0].getIncludeParamKeyPattern()).map(regex ->
-          Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).orElse(null);
-      Pattern excludePattern = Optional.ofNullable(args[0].getExcludeParamKeyPattern()).map(regex ->
-          Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).orElse(null);
+      Pattern includePattern = null;
+      if (StringUtils.isNotBlank(args[0].getIncludeParamKeyPattern())) {
+        includePattern = Optional.of(args[0].getIncludeParamKeyPattern()).map(regex ->
+            Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).get();
+      }
+      Pattern excludePattern = null;
+      if (StringUtils.isNotBlank(args[0].getExcludeParamKeyPattern())) {
+        excludePattern = Optional.of(args[0].getExcludeParamKeyPattern()).map(regex ->
+            Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).orElse(null);
+      }
+      final Pattern inPattern = includePattern;
+      final Pattern exPattern = excludePattern;
       return parameters.entrySet().stream().filter(entry -> {
         boolean matches = true;
-        if (includePattern != null) {
-          matches &= includePattern.matcher(entry.getKey()).matches();
+        if (inPattern != null) {
+          matches &= inPattern.matcher(entry.getKey()).matches();
         }
-        if (excludePattern != null) {
-          matches &= !excludePattern.matcher(entry.getKey()).matches();
+        if (exPattern != null) {
+          matches &= !exPattern.matcher(entry.getKey()).matches();
         }
         return matches;
       }).collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
@@ -3096,6 +3104,9 @@ public class ObjectStore implements RawStore, Configurable {
     if (mpart == null) {
       return null;
     }
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
     Map<String,String> params = convertMap(mpart.getParameters(), args);
     boolean noFS = args != null && args.length == 1 ? args[0].isSkipColumnSchemaForPartition() : false;
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
