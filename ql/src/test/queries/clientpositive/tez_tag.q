@@ -52,7 +52,7 @@ set hive.auto.convert.join.noconditionaltask.size=0;
 set hive.mapjoin.hybridgrace.minwbsize=125;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
 
-set hive.llap.memory.oversubscription.max.executors.per.query=3;
+set hive.llap.memory.oversubscription.max.executors.per.query=3
 
 CREATE TABLE tab2_n2 (key int, value string, ds string);
 
