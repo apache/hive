@@ -2933,7 +2933,8 @@ public class ObjectStore implements RawStore, Configurable {
             " does not exist");
       }
       MPartition mpart = getMPartition(catName, dbName, tableName, part_vals, table);
-      part = convertToPart(catName, dbName, tableName, mpart, false);
+      part = convertToPart(catName, dbName, tableName, mpart,
+          TxnUtils.isAcidTable(table.getParameters()));
       committed = commitTransaction();
       if (part == null) {
         throw new NoSuchObjectException("partition values="
@@ -3374,7 +3375,7 @@ public class ObjectStore implements RawStore, Configurable {
         for (MPartition mpart : mparts) {
           MTable mtbl = mpart.getTable();
           Partition part = convertToPart(catName, dbName, tblName,
-              mpart, false, args);
+              mpart, TxnUtils.isAcidTable(mtbl.getParameters()), args);
           parts.add(part);
 
           if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
@@ -3409,7 +3410,8 @@ public class ObjectStore implements RawStore, Configurable {
             + partVals.toString());
       }
       MTable mtbl = mpart.getTable();
-      Partition part = convertToPart(catName, dbName, tblName, mpart, false);
+
+      Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()));
       if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
         String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
             .getPartitionKeys()), partVals);
@@ -3964,9 +3966,10 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("executing listPartitionNamesPsWithAuth");
       Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
           part_vals, max_parts, null);
+      boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
       for (Object o : parts) {
         Partition part = convertToPart(catName, db_name, tbl_name,
-            (MPartition) o, false, args);
+            (MPartition) o, isAcidTable, args);
         //set auth privileges
         if (getauth) {
           String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
@@ -4167,7 +4170,7 @@ public class ObjectStore implements RawStore, Configurable {
         List<Partition> result = null;
         if (exprTree != null) {
           result = getPartitionsViaOrmFilter(catName, dbName, tblName, exprTree,
-              false, partitionKeys, args);
+              false, partitionKeys, isAcidTable, args);
         }
         if (result == null) {
           // We couldn't do JDOQL filter pushdown. Get names via normal means.
@@ -4230,7 +4233,7 @@ public class ObjectStore implements RawStore, Configurable {
    *         there was error deriving the JDO filter.
    */
   private List<Partition> getPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree,
-      boolean isValidatedFilter, List<FieldSchema> partitionKeys,
+      boolean isValidatedFilter, List<FieldSchema> partitionKeys, boolean isAcidTable,
       GetPartitionsArgs args) throws MetaException {
     Map<String, Object> params = new HashMap<>();
     String jdoFilter =
@@ -4252,7 +4255,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieveAll(mparts); // TODO: why is this inconsistent with what we get by names?
       LOG.debug("Done retrieving all objects for getPartitionsViaOrmFilter");
       List<Partition> results =
-          convertToParts(catName, dbName, tblName, mparts, false, args);
+          convertToParts(catName, dbName, tblName, mparts, isAcidTable, args);
       return results;
     }
   }
@@ -4770,7 +4773,7 @@ public class ObjectStore implements RawStore, Configurable {
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {
         return getPartitionsViaOrmFilter(catName, dbName, tblName, tree, true,
-                partitionKeys, args);
+                partitionKeys, isAcidTable, args);
       }
     }.run(false);
   }
@@ -5278,7 +5281,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     oldCd.t = oldCD;
-    return convertToPart(catName, dbname, name, oldp, false);
+    return convertToPart(catName, dbname, name, oldp, TxnUtils.isAcidTable(table.getParameters()));
   }
 
   @Override
@@ -10155,7 +10158,7 @@ public class ObjectStore implements RawStore, Configurable {
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
       Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(), getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false);
+          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), TxnUtils.isAcidTable(table));
       List<String> colNames = new ArrayList<>();
 
       for(ColumnStatisticsObj statsObj : statsObjs) {
