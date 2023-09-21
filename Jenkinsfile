@@ -369,6 +369,14 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                 do
                   RENAME_TMP=`echo \$a | sed s/TEST-//g`
                   mv \${RENAME_TMP/.xml/-output.txt} \${RENAME_TMP/.xml/-output-save.txt}
+
+                  # folder stucture is: module/target/surefire-reports/$RENAME_TMP, so dirname(dirname(folder)) returns target
+                  SUREFIRE_REPORTS_FOLDER=`dirname "$RENAME_TMP"`
+                  TARGET_FOLDER=`dirname "$SUREFIRE_REPORTS_FOLDER"`
+                  SAVED_LOGS_FOLDER="$TARGET_FOLDER/precommit-saved-logs"
+                  mkdir -p $SAVED_LOGS_FOLDER
+                  # looking for files like itests/qtest/target/tmp/hive/yarn-175966601/hive-logDir-nm-1_3/application_1695299447878_0001/container_1695299447878_0001_01_000001/syslog
+                  mv $TARGET_FOLDER/tmp/hive/yarn-*/hive-logDir-* $SAVED_LOGS_FOLDER
                 done
                 # removes all stdout and err for passed tests
                 xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
@@ -378,7 +386,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
             } finally {
               def fn="${splitName}.tgz"
               sh """#!/bin/bash -e
-              tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
+              tar -czf ${fn} --files-from  <(find . -name '*/precommit-saved-logs/*' -o -path '*/surefire-reports/*')"""
               saveFile(fn)
               junit '**/TEST-*.xml'
             }
