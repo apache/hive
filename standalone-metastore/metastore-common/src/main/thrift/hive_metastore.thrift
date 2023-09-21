@@ -2238,8 +2238,7 @@ struct AlterTableResponse {
 enum PartitionFilterMode {
    BY_NAMES,                 // filter by names
    BY_VALUES,                // filter by values
-   BY_EXPR,                  // filter by expression
-   BY_FILTER
+   BY_EXPR                   // filter by expression
 }
 
 struct GetPartitionsFilterSpec {
@@ -2262,8 +2261,7 @@ struct GetPartitionsRequest {
    8: GetPartitionsFilterSpec filterSpec,
    9: optional list<string> processorCapabilities,
    10: optional string processorIdentifier,
-   11: optional string validWriteIdList,
-   12: optional i32 maxParts=-1
+   11: optional string validWriteIdList
 }
 
 struct GetFieldsRequest {

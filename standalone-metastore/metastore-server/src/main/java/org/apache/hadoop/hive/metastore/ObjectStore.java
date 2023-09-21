@@ -4811,8 +4811,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
-        if (filterSpec.isSetFilterMode() && (filterSpec.getFilterMode().equals(PartitionFilterMode.BY_EXPR) ||
-            filterSpec.getFilterMode().equals(PartitionFilterMode.BY_FILTER))) {
+        if (filterSpec.isSetFilterMode() && filterSpec.getFilterMode().equals(PartitionFilterMode.BY_EXPR)) {
           // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
           // if there are more than one filter string we AND them together
           initExpressionTree();
@@ -4858,7 +4857,6 @@ public class ObjectStore implements RawStore, Configurable {
           if (filterSpec.isSetFilterMode()) {
             // generate the JDO filter string
             switch(filterSpec.getFilterMode()) {
-            case BY_FILTER:
             case BY_EXPR:
               if (tree == null) {
                 // tree could be null when directSQL is disabled
@@ -4890,11 +4888,10 @@ public class ObjectStore implements RawStore, Configurable {
           }
         try {
           List<MPartition> mparts = listMPartitionsWithProjection(fieldNames, jdoFilter, params);
-          return convertToParts(catName, dbName, tblName, mparts, false,
-              new GetPartitionsArgs.GetPartitionsArgsBuilder()
-                  .excludeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
-                  .includeParamKeyPattern(partitionsProjectSpec.getIncludeParamKeyPattern())
-                  .build());
+          return convertToParts(catName, dbName, tblName, mparts, false, new GetPartitionsArgs.GetPartitionsArgsBuilder()
+              .excludeParamKeyPattern(excludeParamKeyPattern)
+              .includeParamKeyPattern(includeParamKeyPattern)
+              .build());
         } catch (MetaException me) {
           throw me;
         } catch (Exception e) {
