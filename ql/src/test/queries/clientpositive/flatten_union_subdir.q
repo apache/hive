@@ -92,7 +92,7 @@ dfs -ls -R ${hiveconf:hive.metastore.warehouse.dir}/union_target_acid_unflattene
 
 select * from union_target_acid_unflattened;
 
--- TESTS FOR DIRECT & NON FLATEENED
+-- TESTS FOR DIRECT & NON FLATTENED
 
 set hive.acid.direct.insert.enabled=true;
 
