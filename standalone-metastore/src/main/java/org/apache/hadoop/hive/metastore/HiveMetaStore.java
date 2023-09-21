@@ -807,10 +807,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (JDOException e) {
         LOG.warn("Retrying creating default database after error: " + e.getMessage(), e);
         try {
-          RawStore ms = getMS();
-          createDefaultCatalog(ms, wh);
-          createDefaultDB_core(ms);
-        } catch (InvalidObjectException | InvalidOperationException e1) {
+          createDefaultDB_core(getMS());
+        } catch (InvalidObjectException e1) {
           throw new MetaException(e1.getMessage());
         }
       } catch (InvalidObjectException|InvalidOperationException e) {

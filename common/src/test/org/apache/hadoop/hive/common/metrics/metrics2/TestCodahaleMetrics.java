@@ -55,7 +55,7 @@ public class TestCodahaleMetrics {
   private static final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
   private static File jsonReportFile;
   private static MetricRegistry metricRegistry;
-  private static final long REPORT_INTERVAL_MS = 2000;
+  private static final long REPORT_INTERVAL_MS = 100;
 
   @BeforeClass
   public static void setUp() throws Exception {

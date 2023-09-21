@@ -59,29 +59,23 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
+import junit.framework.TestCase;
+
 /**
  * TestHive.
  *
  */
-public class TestHive {
-  protected static Hive hm;
-  protected static HiveConf hiveConf;
+public class TestHive extends TestCase {
+  protected Hive hm;
+  protected HiveConf hiveConf;
 
-  @BeforeClass
-  public static void setUp() throws Exception {
-    hiveConf = new HiveConf(TestHive.class);
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    hiveConf = new HiveConf(this.getClass());
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -100,9 +94,10 @@ public class TestHive {
     }
   }
 
-  @AfterClass
-  public static void tearDown() throws Exception {
+  @Override
+  protected void tearDown() throws Exception {
     try {
+      super.tearDown();
       // disable trash
       hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
       hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
