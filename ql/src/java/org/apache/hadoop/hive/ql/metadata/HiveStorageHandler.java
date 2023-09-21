@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
@@ -721,6 +722,20 @@ public interface HiveStorageHandler extends Configurable {
       throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting column type " +
             "for a specific column.");
+  }
+
+  default boolean supportsMetadataDelete() {
+    return false;
+  }
+
+  default boolean canPerformMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SearchArgument searchArgument) {
+    throw new UnsupportedOperationException("Storage handler does not support validation of metadata " +
+            " delete operation using search argument.");
+  }
+
+  default void performMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SearchArgument searchArgument) {
+    throw new UnsupportedOperationException("Storage handler does not support metadata " +
+            " delete operation using search argument.");
   }
 
 }

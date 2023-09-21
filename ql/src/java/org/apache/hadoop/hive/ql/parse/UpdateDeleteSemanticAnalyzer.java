@@ -17,22 +17,31 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.misc.metadata.StorageMetadataUpdateDesc;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -164,15 +173,15 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
-    
+
     ASTNode where = null;
     int whereIndex = deleting() ? 1 : 2;
-    
+
     if (children.size() > whereIndex) {
       where = (ASTNode)children.get(whereIndex);
       assert where.getToken().getType() == HiveParser.TOK_WHERE :
           "Expected where clause, but found " + where.getName();
-      
+
       if (copyOnWriteMode) {
         String whereClause = ctx.getTokenRewriteStream().toString(
             where.getChild(0).getTokenStartIndex(), where.getChild(0).getTokenStopIndex());
@@ -213,11 +222,11 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         withQueryStr.append(") q");
         withQueryStr.append("\n").append(INDENT);
         withQueryStr.append("where rn=1\n)\n");
-        
+
         rewrittenQueryStr.insert(0, withQueryStr.toString());
       }
     }
-    
+
     if (!copyOnWriteMode) {
       // Add a sort by clause so that the row ids come out in the correct order
       appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
@@ -230,7 +239,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       new ASTSearcher().simpleBreadthFirstSearch(rewrittenTree, HiveParser.TOK_FROM, HiveParser.TOK_SUBQUERY,
           HiveParser.TOK_UNIONALL).getChild(0).getChild(0) : rewrittenTree)
       .getChild(1);
-    
+
     if (updating()) {
       rewrittenCtx.setOperation(Context.Operation.UPDATE);
       rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
@@ -280,6 +289,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenCtx.setEnableUnparse(false);
     analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
 
+    // Check if metadata delete is possible and convert the tasks to metadata delete.
+    checkAndPerformStorageMetadataUpdate(mTable, storageHandler);
+
     updateOutputs(mTable);
 
     if (updating()) {
@@ -290,6 +302,25 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         if (columnAccessInfo != null) { //assuming this means we are not doing Auth
           columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()),
               colName);
+        }
+      }
+    }
+  }
+
+  private void checkAndPerformStorageMetadataUpdate(Table table, HiveStorageHandler storageHandler) {
+    if (deleting() && storageHandler != null) {
+      Map<String, TableScanOperator> topOps = getParseContext().getTopOps();
+      if (topOps.containsKey(table.getTableName())) {
+        ExprNodeGenericFuncDesc hiveFilter = getParseContext().getTopOps()
+                .get(table.getTableName()).getConf().getFilterExpr();
+        if (hiveFilter != null && ConvertAstToSearchArg.isCompleteConversion(ctx.getConf(), hiveFilter)) {
+          SearchArgument sarg = ConvertAstToSearchArg.create(ctx.getConf(), hiveFilter);
+          if (storageHandler.canPerformMetadataDelete(table, sarg)) {
+            StorageMetadataUpdateDesc desc = new StorageMetadataUpdateDesc(
+                    new TableName(table.getCatName(), table.getDbName(), table.getTableName()), hiveFilter, operation);
+            DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
+            rootTasks = Collections.singletonList(TaskFactory.get(ddlWork));
+          }
         }
       }
     }

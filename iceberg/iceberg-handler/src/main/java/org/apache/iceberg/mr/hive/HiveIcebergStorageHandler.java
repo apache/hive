@@ -131,6 +131,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
@@ -159,6 +160,7 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
@@ -1877,5 +1879,48 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     } else {
       throw new SemanticException(String.format("Unable to find a column with the name: %s", colName));
     }
+  }
+
+  @Override
+  public boolean supportsMetadataDelete() {
+    return true;
+  }
+
+  @Override
+  public boolean canPerformMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SearchArgument sarg) {
+    if (!supportsMetadataDelete()) {
+      return false;
+    }
+
+    Expression exp;
+    try {
+      exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("Unable to create Iceberg filter," +
+              " continuing without metadata delete: ", e);
+      return false;
+    }
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(exp).includeColumnStats();
+    Set<DataFile> dataFiles = Sets.newHashSet(builder.collect());
+    boolean result = true;
+    for (DataFile dataFile : dataFiles) {
+      PartitionData partitionData = (PartitionData) dataFile.partition();
+      Expression residual = ResidualEvaluator.of(table.spec(), exp, false)
+              .residualFor(partitionData);
+      StrictMetricsEvaluator strictMetricsEvaluator = new StrictMetricsEvaluator(table.schema(), residual);
+      if (!strictMetricsEvaluator.eval(dataFile)) {
+        result = false;
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public void performMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SearchArgument sarg) {
+    Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    DeleteFiles deleteFiles = table.newDelete().deleteFromRowFilter(exp);
+    deleteFiles.commit();
   }
 }

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io.sarg;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -52,7 +51,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -74,6 +72,7 @@ public class ConvertAstToSearchArg {
 
   private final SearchArgument.Builder builder;
   private final Configuration conf;
+  private boolean completeConversion = true;
 
   /*
    * Create a new type for handling precision conversions from Decimal -> Double/Float
@@ -104,6 +103,14 @@ public class ConvertAstToSearchArg {
     this.conf = conf;
     builder = SearchArgumentFactory.newBuilder(conf);
     parse(expression);
+  }
+
+  /**
+   * Returns whether the given expression can be completely converted to a search argument.
+   * @return True if the expression can be converted completely, otherwise false.
+   */
+  public boolean isCompleteConversion() {
+    return completeConversion;
   }
 
   /**
@@ -316,11 +323,13 @@ public class ConvertAstToSearchArg {
     String columnName = getColumnName(expression, variable);
     if (columnName == null) {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      completeConversion = false;
       return;
     }
     BoxType boxType = getType(expression.getChildren().get(variable));
     if (boxType == null) {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      completeConversion = false;
       return;
     }
 
@@ -370,6 +379,7 @@ public class ConvertAstToSearchArg {
       LOG.warn("Exception thrown during SARG creation. Returning YES_NO_NULL." +
           " Exception: " + e.getMessage());
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      completeConversion = false;
     }
 
     if (needSwap) {
@@ -438,6 +448,7 @@ public class ConvertAstToSearchArg {
 
       // otherwise, we don't know what to do so make it a maybe
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      completeConversion = false;
       return;
     }
 
@@ -499,6 +510,7 @@ public class ConvertAstToSearchArg {
       // otherwise, we didn't understand it, so mark it maybe
     } else {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      completeConversion = false;
     }
   }
 
@@ -550,6 +562,10 @@ public class ConvertAstToSearchArg {
     catch (ExecutionException exception) {
       throw new RuntimeException(exception);
     }
+  }
+
+  public static boolean isCompleteConversion(Configuration conf, ExprNodeGenericFuncDesc expression) {
+    return new ConvertAstToSearchArg(conf, expression).isCompleteConversion();
   }
 
   public static SearchArgument create(Configuration conf, ExprNodeGenericFuncDesc expression) {

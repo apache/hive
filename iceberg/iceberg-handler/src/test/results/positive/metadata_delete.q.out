@@ -1,0 +1,90 @@
+PREHOOK: query: create table ice_date (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: create table ice_date (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: insert into table ice_date values (1, '2021-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: insert into table ice_date values (1, '2021-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: insert into table ice_date values (2, '2022-02-02'), (3, '2022-03-03')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: insert into table ice_date values (2, '2022-02-02'), (3, '2022-03-03')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: delete from ice_date where b = '2022-02-02'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: delete from ice_date where b = '2022-02-02'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: delete from ice_date where a = 1 and b = '2021-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: delete from ice_date where a = 1 and b = '2021-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: select * from ice_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	2022-03-03
+PREHOOK: query: create table ice_date_year (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: create table ice_date_year (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: insert into table ice_date_year values (1, '2021-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: insert into table ice_date_year values (1, '2021-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: insert into table ice_date_year values (2, '2022-02-02'), (3, '2022-03-03')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: insert into table ice_date_year values (2, '2022-02-02'), (3, '2022-03-03')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: delete from ice_date_year where year(b) = 2022
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date_year
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: delete from ice_date_year where year(b) = 2022
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date_year
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: select * from ice_date_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date_year
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_date_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date_year
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2021-01-01
