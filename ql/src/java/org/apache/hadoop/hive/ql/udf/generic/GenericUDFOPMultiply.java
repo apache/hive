@@ -19,10 +19,12 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -107,13 +109,23 @@ public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
-    // e1 * e2
-    // Precision: p1 + p2 + 1
-    // Scale: s1 + s2
-    int scale = scale1 + scale2;
-    int prec = prec1 + prec2 + 1;
-    return adjustPrecScale(prec, scale);
+    boolean allowLoss = SessionState.get() == null || SessionState.get().getConf() == null ?
+            new HiveConf().getBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS) :
+            SessionState.get().getConf().getBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS);
+    if (allowLoss) {
+      // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
+      // e1 * e2
+      // Precision: p1 + p2 + 1
+      // Scale: s1 + s2
+      int scale = scale1 + scale2;
+      int prec = prec1 + prec2 + 1;
+      return adjustPrecScale(prec, scale);
+    } else {
+      int scale = Math.min(HiveDecimal.MAX_SCALE, scale1 + scale2 );
+      int prec = Math.min(HiveDecimal.MAX_PRECISION, prec1 + prec2 + 1);
+      return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+    }
+
   }
 
 }

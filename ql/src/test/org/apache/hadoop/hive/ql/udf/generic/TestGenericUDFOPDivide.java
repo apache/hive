@@ -239,6 +239,22 @@ public class TestGenericUDFOPDivide extends AbstractTestGenericUDFOPNumeric {
     testDecimalDivisionResultType(38, 0, 38, 0, 38, 6);
   }
 
+  @Test
+  public void testDecimalDivisionResultTypeNotAllowLoss() throws HiveException {
+    SessionState.get().getConf().setBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS, false);
+    testDecimalDivisionResultType(5, 2, 3, 2, 11, 6);
+    testDecimalDivisionResultType(38, 18, 38, 18, 38, 18);
+    testDecimalDivisionResultType(38, 18, 20, 0, 38, 27);
+    testDecimalDivisionResultType(20, 0, 8, 5, 34, 9);
+    testDecimalDivisionResultType(10, 0, 10, 0, 21, 11);
+    testDecimalDivisionResultType(5, 2, 5, 5, 16, 8);
+    testDecimalDivisionResultType(10, 10, 5, 0, 16, 16);
+    testDecimalDivisionResultType(10, 10, 5, 5, 21, 16);
+    testDecimalDivisionResultType(38, 38, 38, 38, 38, 18);
+    testDecimalDivisionResultType(38, 0, 38, 0, 38, 18);
+  }
+
+
   private void testDecimalDivisionResultType(int prec1, int scale1, int prec2, int scale2, int prec3, int scale3)
       throws HiveException {
     GenericUDFOPDivide udf = new GenericUDFOPDivide();
