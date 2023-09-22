@@ -62,6 +62,12 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
   protected static final String[] EXECUTION_ENGINES = new String[] {"tez"};
 
+  public static final String RETRY_STRATEGIES =
+      "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict";
+
+  public static final String RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT =
+      "overlay,reoptimize,reexecute_lost_am," + "dagsubmit,recompile_without_cbo";
+
   protected static final Schema ORDER_SCHEMA = new Schema(
           required(1, "order_id", Types.LongType.get()),
           required(2, "customer_id", Types.LongType.get()),
