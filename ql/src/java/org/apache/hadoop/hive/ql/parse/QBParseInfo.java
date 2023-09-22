@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.AbstractMap.SimpleEntry;
 
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -117,10 +118,9 @@ public class QBParseInfo {
   // Use SimpleEntry to save the offset and rowcount of limit clause
   // KEY of SimpleEntry: offset
   // VALUE of SimpleEntry: rowcount
-  private final Map<String, ASTNode> destToASTLimit;
-  private final Map<String, ASTNode> destToASTOffset;
-
   private final Map<String, SimpleEntry<Integer, Integer>> destToLimit;
+  private final Map<String, SimpleEntry<ASTNode, ASTNode>> destToLimitAST;
+
 
   private int outerQueryLimit;
 
@@ -154,9 +154,8 @@ public class QBParseInfo {
     destToDistributeby = new HashMap<String, ASTNode>();
     destToSortby = new HashMap<String, ASTNode>();
     destToOrderby = new HashMap<String, ASTNode>();
-    destToASTLimit = new HashMap<>();
-    destToASTOffset = new HashMap<>();
     destToLimit = new HashMap<String, SimpleEntry<Integer, Integer>>();
+    destToLimitAST = new HashMap<String, SimpleEntry<ASTNode, ASTNode>>();
     destToOpType = new HashMap<>();
     insertIntoTables = new HashMap<String, ASTNode>();
     insertOverwriteTables = new HashMap<String, ASTNode>();
@@ -504,31 +503,27 @@ public class QBParseInfo {
     exprToColumnAlias.put(expr,  StringInternUtils.internIfNotNull(alias));
   }
 
-  public void setDestASTLimit(String dest, ASTNode limitExpr) {
-    destToASTLimit.put(dest, limitExpr);
-  }
-
-  public ASTNode getDestASTLimit(String dest) {
-    return destToASTLimit.get(dest);
-  }
-  public void setDestASTOffset(String dest, ASTNode offsetExpr) {
-    destToASTOffset.put(dest, offsetExpr);
-  }
-
-  public ASTNode getDestASTOffset(String dest) {
-    return destToASTOffset.get(dest);
-  }
-
-  public void setDestLimit(String dest, Integer offset, Integer limit) {
-    destToLimit.put(dest, new SimpleEntry<>(offset, limit));
-  }
-
   public Integer getDestLimit(String dest) {
     return destToLimit.get(dest) == null ? null : destToLimit.get(dest).getValue();
   }
 
   public Integer getDestLimitOffset(String dest) {
     return destToLimit.get(dest) == null ? 0 : destToLimit.get(dest).getKey();
+  }
+  public void setDestLimit(String dest, Integer offset, Integer limit) {
+    destToLimit.put(dest, new SimpleEntry<>(offset, limit));
+  }
+
+  public ASTNode getDestLimitAST(String dest) {
+    return destToLimitAST.get(dest) == null ? null : destToLimitAST.get(dest).getValue();
+  }
+
+  public ASTNode getDestOffsetAST(String dest) {
+    return destToLimitAST.get(dest) == null ? new ASTNode(new CommonToken(HiveParser.Number, "0")) : destToLimitAST.get(dest).getKey();
+  }
+
+  public void setDestLimit(String dest, ASTNode offsetAST, ASTNode limitAST) {
+    destToLimitAST.put(dest, new SimpleEntry<>(offsetAST, limitAST));
   }
 
   /**
@@ -655,10 +650,6 @@ public class QBParseInfo {
 
     Iterator<String> tName = tableSpecs.keySet().iterator();
     return tableSpecs.get(tName.next());
-  }
-
-  public Map<String, SimpleEntry<Integer,Integer>> getDestToLimit() {
-    return destToLimit;
   }
 
   public Map<String, Map<String, ASTNode>> getDestToAggregationExprs() {

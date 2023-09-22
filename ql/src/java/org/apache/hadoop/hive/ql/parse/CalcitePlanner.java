@@ -3914,21 +3914,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. OB Expr sanity test
       // in strict mode, in the presence of order by, limit must be
       // specified
-      ASTNode limitExpr = qb.getParseInfo().getDestASTLimit(dest);
-      Integer limitValue = qb.getParseInfo().getDestLimit(dest);
-      if (limitExpr == null && limitValue == null) {
+      OBLogicalPlanGenState obLogicalPlanGenState = beginGenOBLogicalPlan(obAST, selPair, outermostOB);
+      RelNode srcRel = obLogicalPlanGenState.getObInputRel();
+      RowResolver inputRR =  relToHiveRR.get(srcRel);
+      LimitOffsetExpr limitOffsetExpr = new LimitOffsetExpr(qbp);
+      Integer limitValue = limitOffsetExpr.getDestLimit(inputRR, dest);
+      if (limitValue == null) {
         String error = StrictChecks.checkNoLimit(conf);
         if (error != null) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(obAST, error));
         }
       }
 
-      OBLogicalPlanGenState obLogicalPlanGenState = beginGenOBLogicalPlan(obAST, selPair, outermostOB);
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
       RelCollation canonizedCollation = traitSet.canonize(
               RelCollationImpl.of(obLogicalPlanGenState.getFieldCollation()));
-
-      RelNode sortRel = genLimitLogicalPlan(qb, obLogicalPlanGenState.getObInputRel(), canonizedCollation);
+      RelNode sortRel = genLimitLogicalPlan(qb, srcRel, canonizedCollation);
       if (sortRel == null) {
         sortRel = new HiveSortLimit(cluster, traitSet, obLogicalPlanGenState.getObInputRel(), canonizedCollation, null, null);
       }
@@ -4190,25 +4191,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel,  RelCollation canonizedCollation) throws SemanticException {
       QBParseInfo qbp = getQBParseInfo(qb);
       RowResolver inputRR = relToHiveRR.get(srcRel);
-      // Fetch the limit value from the query, or generate it from the limit expression if it exists
-      Integer limitValue = qbp.getDestLimit(qbp.getClauseNames().iterator().next());
-      ASTNode limitExpr = qbp.getDestASTLimit(qbp.getClauseNames().iterator().next());
-      if (limitValue == null && limitExpr != null) {
-        limitValue = (Integer) genValueFromConstantExpr(inputRR, limitExpr);
-      }
-      // Fetch the offset value from the query, or generate it from the offset expression if it exists
-      Integer offsetValue = qbp.getDestLimitOffset(qbp.getClauseNames().iterator().next());
-      ASTNode offsetExpr = qbp.getDestASTOffset(qbp.getClauseNames().iterator().next());
-      if (offsetValue == null && offsetExpr != null) {
-        offsetValue = (Integer) genValueFromConstantExpr(inputRR, offsetExpr);
-      }
+      String dest = qbp.getClauseNames().iterator().next();
+      LimitOffsetExpr limitOffsetExpr= new LimitOffsetExpr(qbp);
+      Integer limitValue = limitOffsetExpr.getDestLimit(inputRR, dest);
       if (limitValue == null) {
         return null;
       }
-      // If either limit is expression or offset is expression, set the values in the qb
-      if (limitExpr != null || offsetExpr != null) {
-        qbp.setDestLimit(qbp.getClauseNames().iterator().next(), offsetValue, limitValue);
-      }
+      Integer offsetValue = limitOffsetExpr.getDestOffset(inputRR, dest);
+      qbp.setDestLimit(dest, offsetValue, limitValue);
       RexNode offsetRN = (offsetValue == null || offsetValue == 0) ?
               null : cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offsetValue));
       RexNode limitRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(limitValue));

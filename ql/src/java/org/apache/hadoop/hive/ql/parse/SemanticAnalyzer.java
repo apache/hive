@@ -1879,20 +1879,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_LIMIT:
         queryProperties.setHasLimit(true);
+        LimitOffsetExpr limitOffsetExpr = new LimitOffsetExpr(qbp);
         if (ast.getChildCount() == 2) {
           if (ast.getChild(1).getChildCount() == 0 && ast.getChild(0).getChildCount() == 0) {
-            qbp.setDestLimit(ctx_1.dest,
-                    Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
+            limitOffsetExpr.setDestLimitOffset(ctx_1.dest, Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
           } else {
-            qbp.setDestASTLimit(ctx_1.dest, (ASTNode) ast.getChild(1));
-            qbp.setDestASTOffset(ctx_1.dest, (ASTNode) ast.getChild(0));
+            limitOffsetExpr.setDestLimitOffset(ctx_1.dest, (ASTNode) ast.getChild(0), (ASTNode) ast.getChild(1));
           }
         } else {
           if (ast.getChild(0).getChildCount() == 0) {
-            qbp.setDestLimit(ctx_1.dest, 0, Integer.valueOf(ast.getChild(0).getText()));
+            limitOffsetExpr.setDestLimitOffset(ctx_1.dest, 0, Integer.valueOf(ast.getChild(0).getText()));
           } else {
-            qbp.setDestASTLimit(ctx_1.dest,  (ASTNode) ast.getChild(0));
-            qbp.setDestASTOffset(ctx_1.dest,  new ASTNode(new CommonToken(HiveParser.Number, "0")));
+            limitOffsetExpr.setDestLimitOffset(ctx_1.dest, new ASTNode(new CommonToken(HiveParser.Number, "0")), (ASTNode) ast.getChild(0));
           }
         }
         break;

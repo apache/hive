@@ -16,78 +16,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 86
-PREHOOK: query: select key from src limit (1+2*3)
+PREHOOK: query: select key from src limit (1) offset (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select key from src limit (1+2*3)
+POSTHOOK: query: select key from src limit (1) offset (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+86
+PREHOOK: query: select key from src limit 1 offset (1+2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src limit 1 offset (1+2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238
+PREHOOK: query: select key from src limit (1+2) offset 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src limit (1+2) offset 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 238
 86
 311
-27
-165
-409
-255
-PREHOOK: query: select key from src limit (1+2*3) offset (3*4*5)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: select key from src limit (1+2*3) offset (3*4*5)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-238
-86
-311
-27
-165
-409
-255
-PREHOOK: query: select key from src order by key limit (1+2*3) offset (3*4*5)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: select key from src order by key limit (1+2*3) offset (3*4*5)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-0
-0
-0
-10
-100
-100
-103
-PREHOOK: query: select key from (select * from src limit (1+2*3)) q1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: select key from (select * from src limit (1+2*3)) q1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-238
-86
-311
-27
-165
-409
-255
-PREHOOK: query: select key from (select * from src limit (1+2*3) offset (3*4*5)) q1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: select key from (select * from src limit (1+2*3) offset (3*4*5)) q1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-238
-86
-311
-27
-165
-409
-255

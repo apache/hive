@@ -21,10 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.parse.*;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMurmurHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.slf4j.Logger;
@@ -40,7 +43,6 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -59,11 +61,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 public class ExprNodeDescUtils {
@@ -771,44 +768,6 @@ public class ExprNodeDescUtils {
     return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory((PrimitiveTypeInfo) childTi);
   }
 
-  /**
-   * Build ExprNodeColumnDesc for the projections in the input operator from
-   * sartpos to endpos(both included). Operator must have an associated
-   * colExprMap.
-   *
-   * @param inputOp
-   *          Input Hive Operator
-   * @param startPos
-   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
-   *          endPos
-   * @param endPos
-   *          end position in the input operator schema; must be &gt;=0.
-   * @return List of ExprNodeDesc
-   */
-  public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
-      boolean addEmptyTabAlias, boolean setColToNonVirtual) {
-    ArrayList<ExprNodeDesc> exprColLst = new ArrayList<ExprNodeDesc>();
-    List<ColumnInfo> colInfoLst = inputOp.getSchema().getSignature();
-
-    String tabAlias;
-    boolean vc;
-    ColumnInfo ci;
-    for (int i = startPos; i <= endPos; i++) {
-      ci = colInfoLst.get(i);
-      tabAlias = ci.getTabAlias();
-      if (addEmptyTabAlias) {
-        tabAlias = "";
-      }
-      vc = ci.getIsVirtualCol();
-      if (setColToNonVirtual) {
-        vc = false;
-      }
-      exprColLst.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(), tabAlias, vc));
-    }
-
-    return exprColLst;
-  }
-
   public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
     for (ExprNodeDesc source : sourceList) {
@@ -1320,6 +1279,148 @@ public class ExprNodeDescUtils {
       }
     }
 
+  }
+
+  /**
+   * Build ExprNodeColumnDesc for the projections in the input operator from
+   * sartpos to endpos(both included). Operator must have an associated
+   * colExprMap.
+   *
+   * @param inputOp
+   *          Input Hive Operator
+   * @param startPos
+   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
+   *          endPos
+   * @param endPos
+   *          end position in the input operator schema; must be &gt;=0.
+   * @return List of ExprNodeDesc
+   */
+  public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
+                                                        boolean addEmptyTabAlias, boolean setColToNonVirtual) {
+    ArrayList<ExprNodeDesc> exprColLst = new ArrayList<ExprNodeDesc>();
+    List<ColumnInfo> colInfoLst = inputOp.getSchema().getSignature();
+
+    String tabAlias;
+    boolean vc;
+    ColumnInfo ci;
+    for (int i = startPos; i <= endPos; i++) {
+      ci = colInfoLst.get(i);
+      tabAlias = ci.getTabAlias();
+      if (addEmptyTabAlias) {
+        tabAlias = "";
+      }
+      vc = ci.getIsVirtualCol();
+      if (setColToNonVirtual) {
+        vc = false;
+      }
+      exprColLst.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(), tabAlias, vc));
+    }
+
+    return exprColLst;
+  }
+
+  /**
+   * Generates an expression node descriptor for the expression
+   */
+  public static ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input, boolean useCaching,
+                               boolean foldExpr) throws SemanticException {
+    TypeCheckCtx tcCtx = new TypeCheckCtx(input, useCaching, foldExpr);
+    return genExprNodeDesc(expr, input, tcCtx);
+  }
+
+  /**
+   * Returns expression node descriptor for the expression.
+   * If it's evaluated already in previous operator, it can be retrieved from cache.
+   */
+  private static ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input,
+                               TypeCheckCtx tcCtx) throws SemanticException {
+    // We recursively create the exprNodeDesc. Base cases: when we encounter
+    // a column ref, we convert that into an exprNodeColumnDesc; when we
+    // encounter
+    // a constant, we convert that into an exprNodeConstantDesc. For others we
+    // just
+    // build the exprNodeFuncDesc with recursively built children.
+
+    // If the current subExpression is pre-calculated, as in Group-By etc.
+    ExprNodeDesc cached = null;
+    if (tcCtx.isUseCaching()) {
+      cached = getExprNodeDescCached(expr, input);
+    }
+    if (cached == null) {
+      Map<ASTNode, ExprNodeDesc> allExprs = genAllExprNodeDesc(expr, input, tcCtx);
+      return allExprs.get(expr);
+    }
+    return cached;
+  }
+
+  /**
+   * Find ExprNodeDesc for the expression cached in the RowResolver. Returns null if not exists.
+   */
+  private static ExprNodeDesc getExprNodeDescCached(ASTNode expr, RowResolver input)
+      throws SemanticException {
+    ColumnInfo colInfo = input.getExpression(expr);
+    if (colInfo != null) {
+      ASTNode source = input.getExpressionSource(expr);
+      return new ExprNodeColumnDesc(colInfo.getType(), colInfo
+          .getInternalName(), colInfo.getTabAlias(), colInfo
+          .getIsVirtualCol(), colInfo.isSkewedCol());
+    }
+    return null;
+  }
+
+  /**
+   * Generates descriptors for all expression nodes and their children in the given expression.
+   * Uses the provided row resolver and metadata to resolve column names to internal names.
+   *
+   * @param expr
+   *          The expression
+   * @param input
+   *          The row resolver
+   * @param tcCtx
+   *          Customized type-checking context
+   * @return expression to exprNodeDesc mapping
+   * @throws SemanticException Failed to evaluate expression
+   */
+  private static Map<ASTNode, ExprNodeDesc> genAllExprNodeDesc(ASTNode expr, RowResolver input,
+                                                TypeCheckCtx tcCtx) throws SemanticException {
+    Map<ASTNode, ExprNodeDesc> nodeOutputs =
+        ExprNodeTypeCheck.genExprNode(expr, tcCtx);
+    ExprNodeDesc desc = nodeOutputs.get(expr);
+    if (desc == null) {
+      String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr
+          .getChild(0).getText());
+      ColumnInfo colInfo = input.get(null, tableOrCol);
+      String errMsg;
+      if (colInfo == null && input.getIsExprResolver()){
+        errMsg = ASTErrorUtils.getMsg(
+            ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(), expr);
+      } else {
+        errMsg = tcCtx.getError();
+      }
+      throw new SemanticException(Optional.ofNullable(errMsg).orElse("Error in parsing "));
+    }
+    if (desc instanceof ExprNodeColumnListDesc) {
+      throw new SemanticException("TOK_ALLCOLREF is not supported in current context");
+    }
+
+    return nodeOutputs;
+  }
+
+  /**
+   * Generates values from constant expression node.
+   * @param inputRR Row resolver
+   * @param expr AST Node which is a constant expression
+   * @return Object value of the expression
+   * @throws SemanticException
+   */
+  public static Object genValueFromConstantExpr(RowResolver inputRR, ASTNode expr) throws SemanticException {
+    ExprNodeDesc exprNode = genExprNodeDesc(expr, inputRR, true, true);
+    if (exprNode instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) exprNode;
+      return offsetConstantExprNode.getValue();
+    } else {
+      throw new SemanticException("Only constant expressions are supported");
+    }
   }
 
 }
