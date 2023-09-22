@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -50,6 +52,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -64,6 +67,7 @@ import org.apache.tez.runtime.library.cartesianproduct.CartesianProductEdgeManag
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -71,6 +75,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -193,6 +198,8 @@ public class DagUtils {
    * to be performed to make sure the resource is there and matches the expected file.
    */
   private final ConcurrentHashMap<String, Object> copyNotifiers = new ConcurrentHashMap<>();
+
+  private static final Cache<String, String> shaCache = CacheBuilder.newBuilder().maximumSize(100).build();
 
   class CollectFileSinkUrisNodeProcessor implements SemanticNodeProcessor {
 
@@ -1091,13 +1098,15 @@ public class DagUtils {
    * Localizes files, archives and jars the user has instructed us
    * to provide on the cluster as resources for execution.
    *
+   * @param hdfsDirPathStr
    * @param conf
+   * @param localizedJarSha The already localized files' SHA
    * @return List&lt;LocalResource&gt; local resources to add to execution
    * @throws IOException when hdfs operation fails
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
-  public List<LocalResource> localizeTempFilesFromConf(
-      String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
+  public List<LocalResource> localizeTempFilesFromConf(String hdfsDirPathStr, Configuration conf,
+      Map<String, LocalResource> localizedJarSha) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEADDFILESUSEHDFSLOCATION)) {
@@ -1106,19 +1115,19 @@ public class DagUtils {
       // local resources are session based.
       tmpResources.addAll(
           addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE,
-              getLocalTempFilesFromConf(conf), null).values()
+              getLocalTempFilesFromConf(conf), null, localizedJarSha).values()
       );
     } else {
       // all resources including HDFS are session based.
       tmpResources.addAll(
           addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE,
-              getTempFilesFromConf(conf), null).values()
+              getTempFilesFromConf(conf), null, localizedJarSha).values()
       );
     }
 
     tmpResources.addAll(
         addTempResources(conf, hdfsDirPathStr, LocalResourceType.ARCHIVE,
-            getTempArchivesFromConf(conf), null).values()
+            getTempArchivesFromConf(conf), null, localizedJarSha).values()
     );
     return tmpResources;
   }
@@ -1189,19 +1198,20 @@ public class DagUtils {
    * @param hdfsDirPathStr Destination directory in HDFS.
    * @param conf Configuration.
    * @param inputOutputJars The file names to localize.
+   * @param localizedJarSha The already localized files' SHA
    * @return Map&lt;String, LocalResource&gt; (srcPath, local resources) to add to execution
    * @throws IOException when hdfs operation fails.
    */
   public Map<String, LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
-      String[] inputOutputJars, String[] skipJars) throws IOException {
+      String[] inputOutputJars, String[] skipJars, Map<String, LocalResource> localizedJarSha) throws IOException {
     if (inputOutputJars == null) {
       return null;
     }
-    return addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE, inputOutputJars, skipJars);
+    return addTempResources(conf, hdfsDirPathStr, LocalResourceType.FILE, inputOutputJars, skipJars, localizedJarSha);
   }
 
-  private Map<String, LocalResource> addTempResources(Configuration conf, String hdfsDirPathStr,
-      LocalResourceType type, String[] files, String[] skipFiles) throws IOException {
+  private Map<String, LocalResource> addTempResources(Configuration conf, String hdfsDirPathStr, LocalResourceType type,
+      String[] files, String[] skipFiles, Map<String, LocalResource> localizedJarSha) throws IOException {
     HashSet<Path> skipFileSet = null;
     Map<String, LocalResource> tmpResourcesMap = new HashMap<>();
     if (skipFiles != null) {
@@ -1221,9 +1231,20 @@ public class DagUtils {
         LOG.info("Skipping vertex resource " + file + " that already exists in the session");
         continue;
       }
-      Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));
-      LocalResource localResource = localizeResource(new Path(file),
-          hdfsFilePath, type, conf);
+      Path filePath = new Path(file);
+      Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(filePath));
+      String sha = getSha(filePath, conf);
+      LocalResource localResource = null;
+      boolean alreadyLocalized = localizedJarSha.containsKey(sha);
+      LOG.debug("Checking SHA {} for filePath: {} (temp), already localized: {}", sha, filePath, alreadyLocalized);
+      if (alreadyLocalized) {
+        LOG.info("Skip creating already localized jar (temp) by sha {}: {}", sha, localResource);
+        localResource = localizedJarSha.get(sha);
+      } else {
+        localResource = localizeResource(filePath, hdfsFilePath, type, conf);
+        localizedJarSha.put(sha, localResource);
+      }
+
       tmpResourcesMap.put(file, localResource);
     }
     return tmpResourcesMap;
@@ -1811,5 +1832,33 @@ public class DagUtils {
       }
     }
     return allNonAppFileResources;
+  }
+
+  public String getSha(final Path localFile, Configuration conf) throws IOException, IllegalArgumentException {
+    FileSystem localFs = FileSystem.getLocal(conf);
+    FileStatus fileStatus = localFs.getFileStatus(localFile);
+    String key = getKey(fileStatus);
+    String sha256 = shaCache.getIfPresent(key);
+    if (sha256 == null) {
+      FSDataInputStream is = null;
+      try {
+        is = localFs.open(localFile);
+        long start = System.currentTimeMillis();
+        sha256 = DigestUtils.sha256Hex(is);
+        long end = System.currentTimeMillis();
+        LOG.info("Computed sha: {} for file: {} of length: {} in {} ms", sha256, localFile,
+          LlapUtil.humanReadableByteCount(fileStatus.getLen()), end - start);
+        shaCache.put(key, sha256);
+      } finally {
+        if (is != null) {
+          is.close();
+        }
+      }
+    }
+    return sha256;
+  }
+
+  private String getKey(final FileStatus fileStatus) {
+    return fileStatus.getPath() + ":" + fileStatus.getLen() + ":" + fileStatus.getModificationTime();
   }
 }

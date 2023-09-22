@@ -39,10 +39,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -50,7 +48,6 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.apache.hadoop.hive.llap.security.LlapTokenClient;
@@ -92,8 +89,7 @@ import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Holds session state related to Tez
@@ -144,14 +140,17 @@ public class TezSessionState {
     }
   }
 
-  private HiveResources resources;
+  @VisibleForTesting
+  HiveResources resources;
   @JsonProperty("doAsEnabled")
   private boolean doAsEnabled;
   private boolean isLegacyLlapMode;
   private WmContext wmContext;
   private KillQuery killQuery;
 
-  private static final Cache<String, String> shaCache = CacheBuilder.newBuilder().maximumSize(100).build();
+  // a map for jars (with SHA) that have been already localized in the session
+  @VisibleForTesting
+  final Map<String, LocalResource> localizedJarSha = new HashMap<>();
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -636,7 +635,7 @@ public class TezSessionState {
     // Always localize files from conf; duplicates are handled on FS level.
     // TODO: we could do the same thing as below and only localize if missing.
     //       That could be especially valuable given that this almost always the same set.
-    List<LocalResource> lrs = utils.localizeTempFilesFromConf(dir, conf);
+    List<LocalResource> lrs = utils.localizeTempFilesFromConf(dir, conf, localizedJarSha);
     if (lrs != null) {
       resources.localizedResources.addAll(lrs);
     }
@@ -655,7 +654,7 @@ public class TezSessionState {
       }
       if (!hasResources) {
         String[] skipFilesFromConf = DagUtils.getTempFilesFromConf(conf);
-        newResources = utils.localizeTempFiles(dir, conf, newFilesNotFromConf, skipFilesFromConf);
+        newResources = utils.localizeTempFiles(dir, conf, newFilesNotFromConf, skipFilesFromConf, localizedJarSha);
         if (newResources != null) {
           resources.localizedResources.addAll(newResources.values());
           resources.additionalFilesNotFromConf.putAll(newResources);
@@ -815,7 +814,8 @@ public class TezSessionState {
    * @throws LoginException when we are unable to determine the user.
    * @throws URISyntaxException when current jar location cannot be determined.
    */
-  private LocalResource createJarLocalResource(String localJarPath)
+  @VisibleForTesting
+  LocalResource createJarLocalResource(String localJarPath)
       throws IOException, LoginException, IllegalArgumentException {
     // TODO Reduce the number of lookups that happen here. This shouldn't go to HDFS for each call.
     // The hiveJarDir can be determined once per client.
@@ -824,8 +824,15 @@ public class TezSessionState {
     Path destDirPath = destDirStatus.getPath();
 
     Path localFile = new Path(localJarPath);
-    String sha = getSha(localFile);
+    String sha = utils.getSha(localFile, conf);
 
+    boolean alreadyLocalized = localizedJarSha.containsKey(sha);
+    LOG.debug("Checking SHA {} for localFile: {}, already localized: {}", sha, localFile, alreadyLocalized);
+    if (alreadyLocalized) {
+      LocalResource lr = localizedJarSha.get(sha);
+      LOG.info("Skip creating already localized jar by sha {}: {}", sha, lr);
+      return lr;
+    }
     String destFileName = localFile.getName();
 
     // Now, try to find the file based on SHA and name. Currently we require exact name match.
@@ -838,11 +845,9 @@ public class TezSessionState {
     // TODO: if this method is ever called on more than one jar, getting the dir and the
     //       list need to be refactored out to be done only once.
     Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
-    return utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
-  }
-
-  private String getKey(final FileStatus fileStatus) {
-    return fileStatus.getPath() + ":" + fileStatus.getLen() + ":" + fileStatus.getModificationTime();
+    LocalResource localResource = utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
+    localizedJarSha.put(sha, localResource);
+    return localResource;
   }
 
   private void addJarLRByClassName(String className, final Map<String, LocalResource> lrMap) throws
@@ -868,29 +873,6 @@ public class TezSessionState {
     lrMap.put(DagUtils.getBaseName(jarLr), jarLr);
   }
 
-  private String getSha(final Path localFile) throws IOException, IllegalArgumentException {
-    FileSystem localFs = FileSystem.getLocal(conf);
-    FileStatus fileStatus = localFs.getFileStatus(localFile);
-    String key = getKey(fileStatus);
-    String sha256 = shaCache.getIfPresent(key);
-    if (sha256 == null) {
-      FSDataInputStream is = null;
-      try {
-        is = localFs.open(localFile);
-        long start = System.currentTimeMillis();
-        sha256 = DigestUtils.sha256Hex(is);
-        long end = System.currentTimeMillis();
-        LOG.info("Computed sha: {} for file: {} of length: {} in {} ms", sha256, localFile,
-          LlapUtil.humanReadableByteCount(fileStatus.getLen()), end - start);
-        shaCache.put(key, sha256);
-      } finally {
-        if (is != null) {
-          is.close();
-        }
-      }
-    }
-    return sha256;
-  }
   public void setQueueName(String queueName) {
     this.queueName = queueName;
   }

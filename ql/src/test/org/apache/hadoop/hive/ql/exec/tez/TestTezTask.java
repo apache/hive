@@ -293,7 +293,7 @@ public class TestTezTask {
     final Map<String, LocalResource> resources = Collections.singletonMap(jarFilePath, res);
 
     when(utils.localizeTempFiles(anyString(), any(), eq(inputOutputJars),
-        any(String[].class))).thenReturn(resources);
+        any(String[].class), any(Map.class))).thenReturn(resources);
     when(sessionState.isOpen()).thenReturn(true);
     when(sessionState.isOpening()).thenReturn(false);
     task.ensureSessionHasResources(sessionState, inputOutputJars);

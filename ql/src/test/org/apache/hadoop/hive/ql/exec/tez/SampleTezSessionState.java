@@ -29,6 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.tez.dag.api.TezException;
 
@@ -76,6 +77,7 @@ public class SampleTezSessionState extends WmTezSession {
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
     this.doAsEnabled = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
+    this.resources = new HiveResources(new Path("."));
     setOpen(true);
   }
 
