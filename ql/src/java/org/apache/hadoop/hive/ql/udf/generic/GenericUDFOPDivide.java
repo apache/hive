@@ -27,13 +27,13 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Note that in SQL, the return type of divide is not necessarily the same
@@ -115,14 +115,34 @@ public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
-    // e1 / e2
-    // Precision: p1 - s1 + s2 + max(6, s1 + p2 + 1)
-    // Scale: max(6, s1 + p2 + 1)
-    int intDig = prec1 - scale1 + scale2;
-    int scale = Math.max(6, scale1 + prec2 + 1);
-    int prec = intDig + scale;
-    return adjustPrecScale(prec, scale);
+    boolean allowLoss = SessionState.get() == null || SessionState.get().getConf() == null ?
+            new HiveConf().getBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS) :
+            SessionState.get().getConf().getBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS);
+    if (allowLoss) {
+      // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
+      // e1 / e2
+      // Precision: p1 - s1 + s2 + max(6, s1 + p2 + 1)
+      // Scale: max(6, s1 + p2 + 1)
+      int intDig = prec1 - scale1 + scale2;
+      int scale = Math.max(6, scale1 + prec2 + 1);
+      int prec = intDig + scale;
+      return adjustPrecScale(prec, scale);
+    } else {
+      /**
+       * A balanced way to determine the precision/scale of decimal division result. Integer digits and
+       * decimal digits are computed independently. However, when the precision from above reaches above
+       * HiveDecimal.MAX_PRECISION, interger digit and decimal digits are shrunk equally to fit.
+       */
+      int intDig = Math.min(HiveDecimal.MAX_SCALE, prec1 - scale1 + scale2);
+      int decDig = Math.min(HiveDecimal.MAX_SCALE, Math.max(6, scale1 + prec2 + 1));
+      int diff = intDig + decDig -  HiveDecimal.MAX_SCALE;
+      if (diff > 0) {
+        decDig -= diff/2 + 1; // Slight negative bias.
+        intDig = HiveDecimal.MAX_SCALE - decDig;
+      }
+      return TypeInfoFactory.getDecimalTypeInfo(intDig + decDig, decDig);
+    }
+
   }
 
 }

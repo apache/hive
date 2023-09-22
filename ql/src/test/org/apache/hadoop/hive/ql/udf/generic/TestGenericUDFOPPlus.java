@@ -492,4 +492,15 @@ public class TestGenericUDFOPPlus extends AbstractTestGenericUDFOPNumeric {
     TimestampWritableV2 res = (TimestampWritableV2) udf.evaluate(args);
     Assert.assertEquals(Timestamp.valueOf("2001-01-02 2:3:4.567"), res.getTimestamp());
   }
+
+  @Test
+  public void testDecimalPlusResultType() throws HiveException {
+    verifyReturnType(new GenericUDFOPNumericPlus(), "decimal(38,10)", "decimal(38,10)", "decimal(38,9)");
+  }
+
+  @Test
+  public void testDecimalPlusResultTypeNotAllowLoss() throws HiveException {
+    SessionState.get().getConf().setBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS, false);
+    verifyReturnType(new GenericUDFOPNumericPlus(), "decimal(38,10)", "decimal(38,10)", "decimal(38,10)");
+  }
 }

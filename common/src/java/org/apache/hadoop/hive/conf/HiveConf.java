@@ -5725,7 +5725,10 @@ public class HiveConf extends Configuration {
 
     HIVE_ADDITIONAL_CONFIG_FILES("hive.additional.config.files", "",
             "The names of additional config files, such as ldap-site.xml," +
-                    "tez-site.xml, etc in comma separated list.");
+                    "tez-site.xml, etc in comma separated list."),
+
+    HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS("hive.sql.decimalOperations.allowPrecisionLoss", true,
+            "It defaults to true, which means the new behavior described here(HIVE-15331);  if set to false, hive uses previous rules. see HIVE-27553 for details\n");
 
     public final String varname;
     public final String altName;
