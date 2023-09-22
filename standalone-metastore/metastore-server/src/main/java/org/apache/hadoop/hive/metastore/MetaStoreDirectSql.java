@@ -667,7 +667,7 @@ class MetaStoreDirectSql {
       final String tblName, GetPartitionsArgs args)
       throws MetaException {
     List<String> partNames = args.getPartNames();
-    if (partNames == null || partNames.isEmpty()) {
+    if (partNames.isEmpty()) {
       return Collections.emptyList();
     }
     return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
