@@ -210,16 +210,11 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
-    Runnable oomHook = new Runnable() {
-      @Override
-      public void run() {
-        hiveServer2.stop();
-      }
-    };
+
     if (isHTTPTransportMode(hiveConf)) {
-      thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftHttpCLIService(cliService);
     } else {
-      thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftBinaryCLIService(cliService);
     }
     addService(thriftCLIService);
     super.init(hiveConf);
