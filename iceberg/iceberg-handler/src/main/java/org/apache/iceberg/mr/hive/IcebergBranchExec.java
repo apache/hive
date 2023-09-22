@@ -19,8 +19,10 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.util.Optional;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
@@ -46,6 +48,10 @@ public class IcebergBranchExec {
       snapshotId = createBranchSpec.getSnapshotId();
     } else if (createBranchSpec.getAsOfTime() != null) {
       snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createBranchSpec.getAsOfTime());
+    } else if (createBranchSpec.getAsOfTag() != null) {
+      Snapshot snapshot = Optional.ofNullable(table.snapshot(createBranchSpec.getAsOfTag())).orElseThrow(() ->
+          new IllegalArgumentException(String.format("Tag %s does not exist", createBranchSpec.getAsOfTag())));
+      snapshotId = snapshot.snapshotId();
     } else {
       snapshotId = table.currentSnapshot().snapshotId();
     }
