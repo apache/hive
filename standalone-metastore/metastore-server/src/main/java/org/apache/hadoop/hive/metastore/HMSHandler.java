@@ -384,6 +384,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       partitionValidationPattern = Pattern.compile(partitionValidationRegex);
     }
 
+    // We only initialize once the tasks that need to be run periodically. For remote metastore
+    // these threads are started along with the other housekeeping threads only in the leader
+    // HMS.
+    if (!HiveMetaStore.isMetaStoreRemote()) {
+      startAlwaysTaskThreads(conf, this);
+    }
     expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
     fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
 
@@ -403,6 +409,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     dataconnectorFactory = DataConnectorProviderFactory.getInstance(this);
   }
 
+  static void startAlwaysTaskThreads(Configuration conf, IHMSHandler handler) throws MetaException {
+    if (alwaysThreadsInitialized.compareAndSet(false, true)) {
+      try {
+        LeaderElectionContext context = new LeaderElectionContext.ContextBuilder(conf)
+            .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS)
+            .addListener(new HouseKeepingTasks(conf, false))
+            .setHMSHandler(handler).build();
+        context.start();
+      } catch (Exception e) {
+        throw newMetaException(e);
+      }
+    }
+  }
 
   /**
    *
