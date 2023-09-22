@@ -1365,10 +1365,12 @@ POSTHOOK: Input: default@union_top_view
 PREHOOK: query: drop table union_top
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_top
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_top
 POSTHOOK: query: drop table union_top
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_top
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_top
 PREHOOK: query: drop view union_top_view
 PREHOOK: type: DROPVIEW

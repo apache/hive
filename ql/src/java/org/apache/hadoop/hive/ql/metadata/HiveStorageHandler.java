@@ -392,6 +392,14 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   * Adds specific configurations to session for create table command.
+   * @param tblProps table properties
+   * @param hiveConf configuration
+   */
+  default void addResourcesForCreateTable(Map<String, String> tblProps, HiveConf hiveConf) {
+  }
+
   enum AcidSupportType {
     NONE,
     WITH_TRANSACTIONS,
@@ -543,15 +551,20 @@ public interface HiveStorageHandler extends Configurable {
   default boolean commitInMoveTask() {
     return false;
   }
-
+  
   /**
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
    * @param commitProperties Commit properties which are needed for the handler based commit
-   * @param overwrite If this is an INSERT OVERWRITE then it is true
+   * @param operation the operation type
    * @throws HiveException If there is an error during commit
    */
-  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  default void storageHandlerCommit(Properties commitProperties, Operation operation) throws HiveException {
     throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+    storageHandlerCommit(commitProperties, overwrite ? Operation.IOW : Operation.OTHER);
   }
 
   /**
@@ -680,6 +693,11 @@ public interface HiveStorageHandler extends Configurable {
   default List<String> showPartitions(DDLOperationContext context,
       org.apache.hadoop.hive.ql.metadata.Table tbl) throws UnsupportedOperationException, HiveException {
     throw new UnsupportedOperationException("Storage handler does not support show partitions command");
+  }
+
+  default void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support validation of partition values");
   }
 
 }

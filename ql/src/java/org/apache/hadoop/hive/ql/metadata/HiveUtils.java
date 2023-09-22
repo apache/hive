@@ -285,9 +285,17 @@ public final class HiveUtils {
     // in identifier by doubling them up.
     Quotation quotation = Quotation.from(conf);
     if (quotation != Quotation.NONE) {
-      identifier = identifier.replaceAll("`", "``");
+      return unparseIdentifier(identifier, Quotation.BACKTICKS);
     }
     return "`" + identifier + "`";
+  }
+
+  public static String unparseIdentifier(String identifier, Quotation quotation) {
+    return String.format("%s%s%s",
+        quotation.getQuotationChar(),
+        identifier.replaceAll(
+            quotation.getQuotationChar(), quotation.getQuotationChar() + quotation.getQuotationChar()),
+        quotation.getQuotationChar());
   }
 
   public static HiveStorageHandler getStorageHandler(

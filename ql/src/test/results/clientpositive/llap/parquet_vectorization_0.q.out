@@ -30502,12 +30502,16 @@ STAGE PLANS:
 
 PREHOOK: query: drop table if exists cast_string_to_int_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists cast_string_to_int_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists cast_string_to_int_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists cast_string_to_int_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table cast_string_to_int_1 as select CAST(CAST(key as float) as string),value from srcbucket
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcbucket

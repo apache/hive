@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>4.0.0-beta-1-SNAPSHOT</version>
+  <version>4.0.0-beta-2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive</name>
   <url>https://hive.apache.org</url>
@@ -62,7 +62,7 @@
     <module>kafka-handler</module>
   </modules>
   <properties>
-    <standalone-metastore.version>4.0.0-beta-1-SNAPSHOT</standalone-metastore.version>
+    <standalone-metastore.version>4.0.0-beta-2-SNAPSHOT</standalone-metastore.version>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -169,7 +169,7 @@
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.3</junit.vintage.version>
     <kafka.version>2.5.0</kafka.version>
-    <kryo.version>5.2.0</kryo.version>
+    <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
@@ -198,7 +198,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.0.0-beta-1-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.0.0-beta-2-SNAPSHOT</storage-api.version>
     <tez.version>0.10.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -223,7 +223,7 @@
     <validation-api.version>1.1.0.Final</validation-api.version>
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
     <aws-java-sdk.version>1.12.132</aws-java-sdk.version>
-    <jansi.version>2.3.4</jansi.version>
+    <jansi.version>2.4.0</jansi.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -899,11 +899,6 @@
         <version>${json.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>${mockito-core.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
@@ -1385,21 +1380,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
   </dependencies>
   <build>
     <pluginManagement>
@@ -1859,7 +1839,7 @@
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
                         <exec executable="${thrift.home}/bin/thrift" failonerror="true" dir=".">
-                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
+                          <arg line="${thrift.args} -strict -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
                         </exec>
                       </sequential>
                     </for>

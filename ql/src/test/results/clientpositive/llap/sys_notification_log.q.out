@@ -42,10 +42,12 @@ POSTHOOK: Input: sys@notification_log
 PREHOOK: query: drop table emp02
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: srcnotification@emp02
+PREHOOK: Output: database:srcnotification
 PREHOOK: Output: srcnotification@emp02
 POSTHOOK: query: drop table emp02
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: srcnotification@emp02
+POSTHOOK: Output: database:srcnotification
 POSTHOOK: Output: srcnotification@emp02
 PREHOOK: query: select tbl_name from sys.notification_log where db_name='srcnotification' AND event_type='DROP_TABLE'
 PREHOOK: type: QUERY

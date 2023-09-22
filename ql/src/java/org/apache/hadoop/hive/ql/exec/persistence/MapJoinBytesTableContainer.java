@@ -342,7 +342,7 @@ public class MapJoinBytesTableContainer
 
     @Override
     public byte updateStateByte(Byte previousValue) {
-      if (!hasTag || filterGetter == null) {
+      if (filterGetter == null) {
         return (byte) 0xff;
       }
       byte aliasFilter = (previousValue == null) ? (byte)0xff : previousValue.byteValue();

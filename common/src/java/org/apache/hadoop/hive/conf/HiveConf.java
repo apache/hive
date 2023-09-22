@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.Validator.SizeValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.conf.Validator.WritableDirectoryValidator;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
@@ -1819,6 +1820,10 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
         "Enabling strict bucketing checks disallows the following:\n" +
         "  Load into bucketed tables."),
+    HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY("hive.strict.checks.offset.no.orderby", false,
+        "Enabling strict offset checks disallows the following:\n" +
+        "  OFFSET without ORDER BY.\n" +
+        "OFFSET is mostly meaningless when a result set doesn't have a total order."),
     HIVE_STRICT_TIMESTAMP_CONVERSION("hive.strict.timestamp.conversion", true,
         "Restricts unsafe numeric to timestamp conversions"),
     HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
@@ -3007,6 +3012,10 @@ public class HiveConf extends Configuration {
         "Keystore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.keyStore.password " +
              "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE("hive.zookeeper.ssl.keystore.type", "",
+        "Keystore type when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.keyStore.type " +
+            "system property (note the camelCase)."),
     HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION("hive.zookeeper.ssl.truststore.location", "",
         "Truststore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
             "Overrides any explicit value set via the zookeeper.ssl.trustStore.location" +
@@ -3015,6 +3024,10 @@ public class HiveConf extends Configuration {
         "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
              "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE("hive.zookeeper.ssl.truststore.type", "",
+        "Truststore type when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.trustStore.type " +
+            "system property (note the camelCase)."),
     HIVE_ZOOKEEPER_KILLQUERY_ENABLE("hive.zookeeper.killquery.enable", true,
         "Whether enabled kill query coordination with zookeeper, " +
             "when hive.server2.support.dynamic.service.discovery is enabled."),
@@ -3536,8 +3549,8 @@ public class HiveConf extends Configuration {
     HIVEFETCHTASKCACHING("hive.fetch.task.caching", true,
         "Enabling the caching of the result of fetch tasks eliminates the chance of running into a failing read." +
             " On the other hand, if enabled, the hive.fetch.task.conversion.threshold must be adjusted accordingly. That" +
-            " is 1GB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
-    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 1073741824L,
+            " is 200MB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
+    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 209715200L,
         "Input threshold for applying hive.fetch.task.conversion. If target table is native, input length\n" +
         "is calculated by summation of file lengths. If it's not native, storage handler for the table\n" +
         "can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface."),
@@ -3830,7 +3843,19 @@ public class HiveConf extends Configuration {
     HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL("hive.privilege.synchronizer.interval",
         "1800s", new TimeValidator(TimeUnit.SECONDS),
         "Interval to synchronize privileges from external authorizer periodically in HS2"),
-
+    HIVE_DATETIME_FORMATTER("hive.datetime.formatter", "DATETIME",
+        new StringSet("DATETIME", "SIMPLE"),
+        "The formatter to use for handling datetime values. The possible values are:\n" +
+        " * DATETIME: For using java.time.format.DateTimeFormatter\n" +
+        " * SIMPLE: For using java.text.SimpleDateFormat (known bugs: HIVE-25458, HIVE-25403, HIVE-25268)\n" +
+        "Currently the configuration only affects the behavior of the following SQL functions:\n" +
+        " * unix_timestamp(string,[string])\n" + 
+        " * from_unixtime\n" + 
+        " * date_format\n\n" +
+        "The SIMPLE formatter exists purely for compatibility purposes with previous versions of Hive thus its use " +
+        "is discouraged. It suffers from known bugs that are unlikely to be fixed in subsequent versions of the product." +
+        "Furthermore, using SIMPLE formatter may lead to strange behavior, and unexpected results when combined " +
+        "with SQL functions/operators that are using the new DATETIME formatter."),
      // HiveServer2 specific configs
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
         "Clear dangling scratch dir periodically in HS2"),
@@ -5533,8 +5558,10 @@ public class HiveConf extends Configuration {
             "hive.driver.parallel.compilation.global.limit," +
             "hive.zookeeper.ssl.keystore.location," +
             "hive.zookeeper.ssl.keystore.password," +
+            "hive.zookeeper.ssl.keystore.type," +
             "hive.zookeeper.ssl.truststore.location," +
-            "hive.zookeeper.ssl.truststore.password",
+            "hive.zookeeper.ssl.truststore.password," +
+            "hive.zookeeper.ssl.truststore.type",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -6363,8 +6390,10 @@ public class HiveConf extends Configuration {
       .sslEnabled(getBoolVar(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
       .keyStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
       .keyStorePassword(keyStorePassword)
+      .keyStoreType(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE))
       .trustStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-      .trustStorePassword(trustStorePassword).build();
+      .trustStorePassword(trustStorePassword)
+      .trustStoreType(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE)).build();
   }
 
   public HiveConf() {
@@ -6992,6 +7021,8 @@ public class HiveConf extends Configuration {
         "Cartesian products", ConfVars.HIVE_STRICT_CHECKS_CARTESIAN);
     private static final String NO_BUCKETING_MSG = makeMessage(
         "Load into bucketed tables", ConfVars.HIVE_STRICT_CHECKS_BUCKETING);
+    private static final String NO_OFFSET_WITHOUT_ORDERBY_MSG = makeMessage(
+        "OFFSET without ORDER BY", ConfVars.HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY);
 
     private static String makeMessage(String what, ConfVars setting) {
       return what + " are disabled for safety reasons. If you know what you are doing, please set "
@@ -7019,6 +7050,12 @@ public class HiveConf extends Configuration {
 
     public static String checkBucketing(Configuration conf) {
       return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_BUCKETING) ? null : NO_BUCKETING_MSG;
+    }
+
+    public static void checkOffsetWithoutOrderBy(Configuration conf) throws SemanticException {
+      if (!isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY)) {
+        throw new SemanticException(NO_OFFSET_WITHOUT_ORDERBY_MSG);
+      }
     }
 
     private static boolean isAllowed(Configuration conf, ConfVars setting) {

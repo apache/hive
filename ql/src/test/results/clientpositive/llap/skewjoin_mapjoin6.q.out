@@ -16,8 +16,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1_n39
 PREHOOK: query: drop table array_valued_T1_n39
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table array_valued_T1_n39
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table array_valued_T1_n39 (key string, value array<string>) SKEWED BY (key) ON ((8))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

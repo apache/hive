@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE join_src
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE join_src
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE join_src (
     key int,
     value string)

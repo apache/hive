@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists studentparttab30k
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists studentparttab30k
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table studentparttab30k (name string) row format delimited fields terminated by '\\t' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -21,8 +23,10 @@ POSTHOOK: Output: default@studentparttab30k
 POSTHOOK: Lineage: studentparttab30k.name SCRIPT []
 PREHOOK: query: drop table if exists multi_insert_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multi_insert_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table multi_insert_1 (name string) row format delimited fields terminated by '\\t' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

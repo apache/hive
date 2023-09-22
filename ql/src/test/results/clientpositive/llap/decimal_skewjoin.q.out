@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists decimal_skewjoin_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists decimal_skewjoin_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists decimal_skewjoin_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists decimal_skewjoin_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table decimal_skewjoin_1 (t decimal(4,2), u decimal(5), v decimal)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,16 +66,20 @@ POSTHOOK: Input: default@decimal_skewjoin_2
 PREHOOK: query: drop table decimal_skewjoin_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_skewjoin_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_skewjoin_1
 POSTHOOK: query: drop table decimal_skewjoin_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_skewjoin_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_skewjoin_1
 PREHOOK: query: drop table decimal_skewjoin_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_skewjoin_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_skewjoin_2
 POSTHOOK: query: drop table decimal_skewjoin_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_skewjoin_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_skewjoin_2

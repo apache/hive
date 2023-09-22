@@ -87,18 +87,22 @@ dt                  	string
 PREHOOK: query: DROP TABLE alter5_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter5_src
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter5_src
 POSTHOOK: query: DROP TABLE alter5_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter5_src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter5_src
 PREHOOK: query: DROP TABLE alter5_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter5_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter5_n1
 POSTHOOK: query: DROP TABLE alter5_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter5_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter5_n1
 PREHOOK: query: SHOW TABLES LIKE "alter%"
 PREHOOK: type: SHOWTABLES

@@ -325,14 +325,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // LOCKS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list868 = iprot.readListBegin();
-                struct.locks = new java.util.ArrayList<ShowLocksResponseElement>(_list868.size);
-                @org.apache.thrift.annotation.Nullable ShowLocksResponseElement _elem869;
-                for (int _i870 = 0; _i870 < _list868.size; ++_i870)
+                org.apache.thrift.protocol.TList _list884 = iprot.readListBegin();
+                struct.locks = new java.util.ArrayList<ShowLocksResponseElement>(_list884.size);
+                @org.apache.thrift.annotation.Nullable ShowLocksResponseElement _elem885;
+                for (int _i886 = 0; _i886 < _list884.size; ++_i886)
                 {
-                  _elem869 = new ShowLocksResponseElement();
-                  _elem869.read(iprot);
-                  struct.locks.add(_elem869);
+                  _elem885 = new ShowLocksResponseElement();
+                  _elem885.read(iprot);
+                  struct.locks.add(_elem885);
                 }
                 iprot.readListEnd();
               }
@@ -358,9 +358,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(LOCKS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.locks.size()));
-          for (ShowLocksResponseElement _iter871 : struct.locks)
+          for (ShowLocksResponseElement _iter887 : struct.locks)
           {
-            _iter871.write(oprot);
+            _iter887.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetLocks()) {
         {
           oprot.writeI32(struct.locks.size());
-          for (ShowLocksResponseElement _iter872 : struct.locks)
+          for (ShowLocksResponseElement _iter888 : struct.locks)
           {
-            _iter872.write(oprot);
+            _iter888.write(oprot);
           }
         }
       }
@@ -405,14 +405,14 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list873 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.locks = new java.util.ArrayList<ShowLocksResponseElement>(_list873.size);
-          @org.apache.thrift.annotation.Nullable ShowLocksResponseElement _elem874;
-          for (int _i875 = 0; _i875 < _list873.size; ++_i875)
+          org.apache.thrift.protocol.TList _list889 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.locks = new java.util.ArrayList<ShowLocksResponseElement>(_list889.size);
+          @org.apache.thrift.annotation.Nullable ShowLocksResponseElement _elem890;
+          for (int _i891 = 0; _i891 < _list889.size; ++_i891)
           {
-            _elem874 = new ShowLocksResponseElement();
-            _elem874.read(iprot);
-            struct.locks.add(_elem874);
+            _elem890 = new ShowLocksResponseElement();
+            _elem890.read(iprot);
+            struct.locks.add(_elem890);
           }
         }
         struct.setLocksIsSet(true);

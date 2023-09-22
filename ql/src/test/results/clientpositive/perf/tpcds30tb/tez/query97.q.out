@@ -214,6 +214,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint)
                   Statistics: Num rows: 8395118768 Data size: 133476173240 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: 0S (type: smallint)
 
   Stage: Stage-0
     Fetch Operator

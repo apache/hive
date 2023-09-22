@@ -75,16 +75,16 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
     PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
     Path tblPath = pCtx.getContext().getLocation();
 
-    try {
-      FileSystem fs = tblPath.getFileSystem(conf);
-      if (!fs.exists(tblPath)) {
-        return;
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("Not able to check whether the CTAS table directory exists due to: ", e);
-    }
-
     if (isCTAS && tblPath != null) {
+      try {
+        FileSystem fs = tblPath.getFileSystem(conf);
+        if (!fs.exists(tblPath)) {
+          return;
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("Not able to check whether the CTAS table directory exists due to: ", e);
+      }
+
       boolean isSoftDeleteEnabled = tblPath.getName().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN);
 
       if ((HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK) || isSoftDeleteEnabled)

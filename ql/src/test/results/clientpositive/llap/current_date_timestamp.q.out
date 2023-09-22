@@ -151,10 +151,12 @@ true	true	true	true
 PREHOOK: query: drop table if exists tmp_runtimeconstant
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_runtimeconstant
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_runtimeconstant
 POSTHOOK: query: drop table if exists tmp_runtimeconstant
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_runtimeconstant
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_runtimeconstant
 PREHOOK: query: create temporary table tmp_runtimeconstant(d date, t timestamp)
 PREHOOK: type: CREATETABLE
@@ -192,10 +194,12 @@ true
 PREHOOK: query: drop table if exists tmp_runtimeconstant
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_runtimeconstant
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_runtimeconstant
 POSTHOOK: query: drop table if exists tmp_runtimeconstant
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_runtimeconstant
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_runtimeconstant
 PREHOOK: query: create temporary table tmp_runtimeconstant(t timestamp, d date)
 PREHOOK: type: CREATETABLE

@@ -127,18 +127,22 @@ binary_type         	binary              	Inferred from Parquet file.
 PREHOOK: query: DROP TABLE test_all_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_all_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_all_types
 POSTHOOK: query: DROP TABLE test_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_all_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_all_types
 PREHOOK: query: DROP TABLE like_test_all_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_all_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_all_types
 POSTHOOK: query: DROP TABLE like_test_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_all_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_all_types
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -204,15 +208,19 @@ boolean_type        	boolean             	Inferred from Parquet file.
 binary_type         	string              	Inferred from Parquet file.
 PREHOOK: query: DROP TABLE test_all_types
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE test_all_types
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE like_test_all_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_all_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_all_types
 POSTHOOK: query: DROP TABLE like_test_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_all_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_all_types
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -285,10 +293,12 @@ POSTHOOK: Input: default@like_test_array
 PREHOOK: query: DROP TABLE like_test_array
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_array
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_array
 POSTHOOK: query: DROP TABLE like_test_array
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_array
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_array
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -373,10 +383,12 @@ POSTHOOK: Input: default@like_test_map
 PREHOOK: query: DROP TABLE like_test_map
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_map
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_map
 POSTHOOK: query: DROP TABLE like_test_map
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_map
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_map
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -449,10 +461,12 @@ POSTHOOK: Input: default@like_test_complex_struct
 PREHOOK: query: DROP TABLE like_test_complex_struct
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_complex_struct
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_complex_struct
 POSTHOOK: query: DROP TABLE like_test_complex_struct
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_complex_struct
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_complex_struct
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -525,10 +539,12 @@ POSTHOOK: Input: default@like_test_complex_complex
 PREHOOK: query: DROP TABLE like_test_complex_complex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_complex_complex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_complex_complex
 POSTHOOK: query: DROP TABLE like_test_complex_complex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_complex_complex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_complex_complex
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -604,8 +620,10 @@ POSTHOOK: Input: default@like_test_partitioning@year=1984/month=1
 PREHOOK: query: DROP TABLE like_test_partitioning
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_partitioning
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_partitioning
 POSTHOOK: query: DROP TABLE like_test_partitioning
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_partitioning
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_partitioning

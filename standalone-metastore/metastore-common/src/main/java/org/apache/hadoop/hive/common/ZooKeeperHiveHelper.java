@@ -71,8 +71,10 @@ public class ZooKeeperHiveHelper {
     private boolean sslEnabled = false;
     private String keyStoreLocation = null;
     private String keyStorePassword = null;
+    private String keyStoreType = null;
     private String trustStoreLocation = null;
     private String trustStorePassword = null;
+    private String trustStoreType = null;
 
     public ZooKeeperHiveHelper build() {
       return new ZooKeeperHiveHelper(this);
@@ -128,6 +130,11 @@ public class ZooKeeperHiveHelper {
       return this;
     }
 
+    public ZooKeeperHiveHelperBuilder keyStoreType(String keyStoreType) {
+      this.keyStoreType = keyStoreType;
+      return this;
+    }
+
     public ZooKeeperHiveHelperBuilder trustStoreLocation(String trustStoreLocation) {
       this.trustStoreLocation = trustStoreLocation;
       return this;
@@ -135,6 +142,11 @@ public class ZooKeeperHiveHelper {
 
     public ZooKeeperHiveHelperBuilder trustStorePassword(String trustStorePassword) {
       this.trustStorePassword = trustStorePassword;
+      return this;
+    }
+
+    public ZooKeeperHiveHelperBuilder trustStoreType(String trustStoreType) {
+      this.trustStoreType = trustStoreType;
       return this;
     }
 
@@ -178,12 +190,20 @@ public class ZooKeeperHiveHelper {
       return keyStorePassword;
     }
 
+    public String getKeyStoreType() {
+      return keyStoreType;
+    }
+
     public String getTrustStoreLocation() {
       return trustStoreLocation;
     }
 
     public String getTrustStorePassword() {
       return trustStorePassword;
+    }
+
+    public String getTrustStoreType() {
+      return trustStoreType;
     }
   }
 
@@ -233,8 +253,10 @@ public class ZooKeeperHiveHelper {
         new SSLZookeeperFactory(sslEnabled,
             builder.getKeyStoreLocation(),
             builder.getKeyStorePassword(),
+            builder.getKeyStoreType(),
             builder.getTrustStoreLocation(),
-            builder.getTrustStorePassword());
+            builder.getTrustStorePassword(),
+            builder.getTrustStoreType());
 
   }
 

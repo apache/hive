@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE repairtable_n4(key INT, value STRING) PARTITIONED BY (Year INT, Month INT, Day INT) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -41,8 +43,10 @@ year=2020/month=3/day=2
 PREHOOK: query: DROP TABLE default.repairtable_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n4
 POSTHOOK: query: DROP TABLE default.repairtable_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n4

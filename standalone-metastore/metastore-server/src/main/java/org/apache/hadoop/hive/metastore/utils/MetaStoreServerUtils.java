@@ -548,16 +548,16 @@ public class MetaStoreServerUtils {
     }
 
     if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_AUTO_GATHER) && 
-            !isDoNotUpdateStats(envContext)) {
+            !getBooleanEnvProp(envContext, StatsSetupConst.DO_NOT_UPDATE_STATS)) {
       LOG.debug("Calling updateTableStatsSlow for table {}.{}.{}", tbl.getCatName(), tbl.getDbName(), tbl.getTableName());
       updateTableStatsSlow(db, tbl, wh, newDir, false, envContext);
     }
   }
 
-  private static boolean isDoNotUpdateStats(EnvironmentContext envContext) {
+  public static boolean getBooleanEnvProp(EnvironmentContext envContext, String key) {
     return Optional.ofNullable(envContext)
             .map(EnvironmentContext::getProperties)
-            .map(props -> props.getOrDefault(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.FALSE))
+            .map(props -> props.getOrDefault(key, StatsSetupConst.FALSE))
             .map(Boolean::parseBoolean)
             .orElse(false);
   }

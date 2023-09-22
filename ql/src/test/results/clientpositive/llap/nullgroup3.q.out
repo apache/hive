@@ -215,10 +215,12 @@ POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
 PREHOOK: query: DROP TABLE tstparttbl_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstparttbl_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstparttbl_n0
 POSTHOOK: query: DROP TABLE tstparttbl_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstparttbl_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstparttbl_n0
 PREHOOK: query: CREATE TABLE tstparttbl_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -330,10 +332,12 @@ POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
 PREHOOK: query: DROP TABLE tstparttbl2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstparttbl2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstparttbl2_n0
 POSTHOOK: query: DROP TABLE tstparttbl2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstparttbl2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstparttbl2_n0
 PREHOOK: query: CREATE TABLE tstparttbl2_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

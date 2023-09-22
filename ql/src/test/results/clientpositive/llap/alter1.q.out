@@ -180,10 +180,12 @@ c                   	string
 PREHOOK: query: DROP TABLE alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter1
 POSTHOOK: query: DROP TABLE alter1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter1
 PREHOOK: query: SHOW TABLES LIKE "alter%"
 PREHOOK: type: SHOWTABLES
@@ -386,10 +388,12 @@ PREHOOK: query: DROP TABLE alter1_db.alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter1_db@alter1
 PREHOOK: Output: alter1_db@alter1
+PREHOOK: Output: database:alter1_db
 POSTHOOK: query: DROP TABLE alter1_db.alter1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
+POSTHOOK: Output: database:alter1_db
 PREHOOK: query: DROP DATABASE alter1_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:alter1_db

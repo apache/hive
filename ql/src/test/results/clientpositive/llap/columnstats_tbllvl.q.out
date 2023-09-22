@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
   sourceIP string,
   destURL string,
@@ -956,10 +958,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":
 PREHOOK: query: drop table dummydb.UserVisits_in_dummy_db
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: database:dummydb
 PREHOOK: Output: dummydb@uservisits_in_dummy_db
 POSTHOOK: query: drop table dummydb.UserVisits_in_dummy_db
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: database:dummydb
 POSTHOOK: Output: dummydb@uservisits_in_dummy_db
 PREHOOK: query: drop database dummydb
 PREHOOK: type: DROPDATABASE

@@ -76,10 +76,12 @@ POSTHOOK: Input: default@exim_employee_n0@emp_country=us/emp_state=tn
 PREHOOK: query: drop table exim_employee_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_employee_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exim_employee_n0
 POSTHOOK: query: drop table exim_employee_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exim_employee_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee_n0
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
@@ -240,10 +242,12 @@ POSTHOOK: Input: importer@exim_employee_n0@emp_country=us/emp_state=tn
 PREHOOK: query: drop table exim_employee_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_employee_n0
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_employee_n0
 POSTHOOK: query: drop table exim_employee_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_employee_n0
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee_n0
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE

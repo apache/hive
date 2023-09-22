@@ -47,6 +47,7 @@ comparisonOperator
 
 identifier
     : IDENTIFIER #unquotedIdentifer
+    | QUOTEDIDENTIFIER #quotedIdentifier
     ;
 
 identifierList
@@ -130,6 +131,11 @@ TIMESTAMP_VALUE
 
 IDENTIFIER
     : (LETTER | DIGIT | '_')+
+    ;
+
+QUOTEDIDENTIFIER
+    :
+    ('`'  ( '``' | ~('`') )* '`')
     ;
 
 fragment LETTER

@@ -163,10 +163,12 @@ POSTHOOK: Input: default@dest1_n44
 PREHOOK: query: DROP TABLE dest1_n44
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_n44
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_n44
 POSTHOOK: query: DROP TABLE dest1_n44
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_n44
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n44
 PREHOOK: query: CREATE TABLE dest1_n44(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

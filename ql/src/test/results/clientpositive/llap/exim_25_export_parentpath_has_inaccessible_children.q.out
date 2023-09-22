@@ -31,8 +31,10 @@ POSTHOOK: Input: default@t_exppath
 PREHOOK: query: drop table t_exppath
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_exppath
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_exppath
 POSTHOOK: query: drop table t_exppath
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_exppath
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_exppath

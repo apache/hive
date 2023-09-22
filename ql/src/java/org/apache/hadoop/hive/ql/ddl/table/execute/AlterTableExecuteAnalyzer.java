@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.execute;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -34,7 +33,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.CherryPickSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExpireSnapshotsSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.FastForwardSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -44,7 +45,9 @@ import java.time.ZoneId;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.CHERRY_PICK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.FAST_FORWARD;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.SET_CURRENT_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
@@ -71,44 +74,92 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     validateAlterTableType(table, AlterTableType.EXECUTE, false);
     inputs.add(new ReadEntity(table));
     AlterTableExecuteDesc desc = null;
-    if (HiveParser.KW_ROLLBACK == executeCommandType.getType()) {
-      AlterTableExecuteSpec<AlterTableExecuteSpec.RollbackSpec> spec;
-      // the second child must be the rollback parameter
-      ASTNode child = (ASTNode) command.getChild(1);
-
-      if (child.getType() == HiveParser.StringLiteral) {
-        ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-            .getLocalTimeZone();
-        TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
-        spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(TIME, time.toEpochMilli()));
-      } else {
-        spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(VERSION,
-            Long.valueOf(child.getText())));
-      }
-      desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
-    } else if (HiveParser.KW_EXPIRE_SNAPSHOTS == executeCommandType.getType()) {
-      AlterTableExecuteSpec<AlterTableExecuteSpec.ExpireSnapshotsSpec> spec;
-      // the second child must be the rollback parameter
-      ASTNode child = (ASTNode) command.getChild(1);
-
-      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-          .getLocalTimeZone();
-      String childText = PlanUtils.stripQuotes(child.getText().trim());
-      if (EXPIRE_SNAPSHOT_BY_ID_REGEX.matcher(childText).matches()) {
-         spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(childText));
-      } else {
-        TimestampTZ time = TimestampTZUtil.parse(childText, timeZone);
-        spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
-      }
-      desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
-    } else if (HiveParser.KW_SET_CURRENT_SNAPSHOT == executeCommandType.getType()) {
-      ASTNode child = (ASTNode) command.getChild(1);
-      AlterTableExecuteSpec<AlterTableExecuteSpec.SetCurrentSnapshotSpec> spec =
-          new AlterTableExecuteSpec(SET_CURRENT_SNAPSHOT,
-              new AlterTableExecuteSpec.SetCurrentSnapshotSpec(Long.valueOf(child.getText())));
-      desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+    switch (executeCommandType.getType()) {
+      case HiveParser.KW_ROLLBACK:
+        desc = getRollbackDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
+      case HiveParser.KW_EXPIRE_SNAPSHOTS:
+        desc = getExpireSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
+      case HiveParser.KW_SET_CURRENT_SNAPSHOT:
+        desc = getSetCurrentSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
+      case HiveParser.KW_FAST_FORWARD:
+        desc = getFastForwardDesc(tableName, partitionSpec, command);
+        break;
+      case HiveParser.KW_CHERRY_PICK:
+        desc = getCherryPickDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+  }
+
+  private static AlterTableExecuteDesc getCherryPickDesc(TableName tableName, Map<String, String> partitionSpec,
+      ASTNode childNode) throws SemanticException {
+    long snapshotId = Long.parseLong(childNode.getText());
+    AlterTableExecuteSpec spec = new AlterTableExecuteSpec(CHERRY_PICK, new CherryPickSpec(snapshotId));
+    return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static AlterTableExecuteDesc getFastForwardDesc(TableName tableName, Map<String, String> partitionSpec,
+      ASTNode command) throws SemanticException {
+    String branchName;
+    String targetBranchName;
+    ASTNode child1 = (ASTNode) command.getChild(1);
+    if (command.getChildCount() == 2) {
+      branchName = "main";
+      targetBranchName = PlanUtils.stripQuotes(child1.getText());
+    } else {
+      ASTNode child2 = (ASTNode) command.getChild(2);
+      branchName = PlanUtils.stripQuotes(child1.getText());
+      targetBranchName = PlanUtils.stripQuotes(child2.getText());
+    }
+
+    AlterTableExecuteSpec spec =
+        new AlterTableExecuteSpec(FAST_FORWARD, new FastForwardSpec(branchName, targetBranchName));
+    return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static AlterTableExecuteDesc getSetCurrentSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
+      ASTNode childNode) throws SemanticException {
+    AlterTableExecuteSpec<AlterTableExecuteSpec.SetCurrentSnapshotSpec> spec =
+        new AlterTableExecuteSpec(SET_CURRENT_SNAPSHOT,
+            new AlterTableExecuteSpec.SetCurrentSnapshotSpec(Long.valueOf(childNode.getText())));
+    return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static AlterTableExecuteDesc getExpireSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
+      ASTNode childNode) throws SemanticException {
+    AlterTableExecuteSpec<ExpireSnapshotsSpec> spec;
+    // the second child must be the rollback parameter
+
+    ZoneId timeZone = SessionState.get() == null ?
+        new HiveConf().getLocalTimeZone() :
+        SessionState.get().getConf().getLocalTimeZone();
+    String childText = PlanUtils.stripQuotes(childNode.getText().trim());
+    if (EXPIRE_SNAPSHOT_BY_ID_REGEX.matcher(childText).matches()) {
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(childText));
+    } else {
+      TimestampTZ time = TimestampTZUtil.parse(childText, timeZone);
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
+    }
+    return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static AlterTableExecuteDesc getRollbackDesc(TableName tableName, Map<String, String> partitionSpec,
+      ASTNode childNode) throws SemanticException {
+    AlterTableExecuteSpec<RollbackSpec> spec;
+    // the child must be the rollback parameter
+    if (childNode.getType() == HiveParser.StringLiteral) {
+      ZoneId timeZone = SessionState.get() == null ?
+          new HiveConf().getLocalTimeZone() :
+          SessionState.get().getConf().getLocalTimeZone();
+      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(childNode.getText()), timeZone);
+      spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(TIME, time.toEpochMilli()));
+    } else {
+      spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(VERSION, Long.valueOf(childNode.getText())));
+    }
+    return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 }

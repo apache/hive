@@ -242,4 +242,20 @@ public class IcebergTableUtil {
     manageSnapshots.setCurrentSnapshot(value);
     manageSnapshots.commit();
   }
+
+  /**
+   * Fast forwards a branch to another.
+   * @param table the iceberg table
+   * @param sourceBranch the source branch
+   * @param targetBranch the target branch
+   */
+  public static void fastForwardBranch(Table table, String sourceBranch, String targetBranch) {
+    LOG.debug("Fast Forwarding the iceberg table {} branch {} to {}", table.name(), sourceBranch, targetBranch);
+    table.manageSnapshots().fastForwardBranch(sourceBranch, targetBranch).commit();
+  }
+
+  public static void cherryPick(Table table, long snapshotId) {
+    LOG.debug("Cherry-Picking {} to {}", snapshotId, table.name());
+    table.manageSnapshots().cherrypick(snapshotId).commit();
+  }
 }

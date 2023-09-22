@@ -238,8 +238,10 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
         .keyStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
         .keyStorePassword(keyStorePassword)
+        .keyStoreType(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE))
         .trustStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
         .trustStorePassword(trustStorePassword)
+        .trustStoreType(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE))
         .build().getNewZookeeperClient(zooKeeperAclProvider, namespace);
   }
 

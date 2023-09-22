@@ -140,10 +140,12 @@ POSTHOOK: Input: default@temptable1
 PREHOOK: query: drop table temptable1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temptable1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@temptable1
 POSTHOOK: query: drop table temptable1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temptable1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temptable1
 PREHOOK: query: create table temptable1(
  `!@#$%^&*()_name` string,

@@ -251,6 +251,7 @@ public class MetastoreConf {
       ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
+      ConfVars.PARTITION_ORDER_EXPR,
       ConfVars.CAPABILITY_CHECK,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.EXPRESSION_PROXY_CLASS
@@ -556,6 +557,13 @@ public class MetastoreConf {
         360, TimeUnit.MINUTES,
         "Logging frequency of ACID related metrics. Set this value to 0 to completely turn off logging. " +
             "Default time unit: minutes"),
+    COMPACTOR_FETCH_SIZE(
+            "metastore.compactor.fetch.size",
+            "hive.compactor.fetch.size",
+            1000,
+            new RangeValidator(100, 5000),
+            "Limits the number of items fetched during cleaning, abort and finding potential compactions. " +
+                    "Allowed values between 100 and 5000"),
     METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
             "hive.metastore.housekeeping.leader.hostname", "",
 "If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
@@ -1113,6 +1121,12 @@ public class MetastoreConf {
             "metadata being exported to the current user's home directory on HDFS."),
     METASTORE_MAX_EVENT_RESPONSE("metastore.max.event.response", "hive.metastore.max.event.response", 1000000,
         "The parameter will decide the maximum number of events that HMS will respond."),
+    METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS("metastore.client.skip.columns.for.partitions",
+            "hive.metastore.client.skip.columns.for.partitions", false,
+            "Config to disable field schema for partitions. Currently all the partitions in a \n"
+                    + "table carries the field schema that is same as that of table schema. For a table with \n"
+                    + "wider partitions fetching duplicated field schema in every partition increases memory footprint\n"
+                    + "and thrift communication timeout errors. Set this config to 'true' to ignore column schema in partitions."),
     METASTORE_CLIENT_FILTER_ENABLED("metastore.client.filter.enabled", "hive.metastore.client.filter.enabled", true,
         "Enable filtering the metadata read results at HMS client. Default is true."),
     METASTORE_SERVER_FILTER_ENABLED("metastore.server.filter.enabled", "hive.metastore.server.filter.enabled", false,
@@ -1259,6 +1273,10 @@ public class MetastoreConf {
     PARTITION_NAME_WHITELIST_PATTERN("metastore.partition.name.whitelist.pattern",
         "hive.metastore.partition.name.whitelist.pattern", "",
         "Partition names will be checked against this regex pattern and rejected if not matched."),
+    PARTITION_ORDER_EXPR("metastore.partition.order.expr",
+        "hive.metastore.partition.order.expr", "\"PART_NAME\" asc",
+        "The default partition order if the metastore does not return all partitions. \n" +
+            "It can be sorted based on any column in the PARTITIONS table (e.g., \"PARTITIONS\".\"CREATE_TIME\" desc, \"PARTITIONS\".\"LAST_ACCESS_TIME\" desc etc)"),
     PART_INHERIT_TBL_PROPS("metastore.partition.inherit.table.properties",
         "hive.metastore.partition.inherit.table.properties", "",
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
@@ -1344,7 +1362,8 @@ public class MetastoreConf {
             "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
             "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
             "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
-            "org.apache.hadoop.hive.serde2.OpenCSVSerde",
+            "org.apache.hadoop.hive.serde2.OpenCSVSerde," +
+            "org.apache.iceberg.mr.hive.HiveIcebergSerDe",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
     SERDES_WITHOUT_FROM_DESERIALIZER("metastore.serdes.without.from.deserializer",
         "hive.metastore.serdes.without.from.deserializer",
@@ -1518,6 +1537,11 @@ public class MetastoreConf {
         "Keystore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.keyStore.password" +
             "system property (note the camelCase)."),
+    THRIFT_ZOOKEEPER_SSL_KEYSTORE_TYPE("metastore.zookeeper.ssl.keystore.type",
+        "hive.zookeeper.ssl.keystore.type", "",
+        "Keystore type when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.keyStore.type" +
+            "system property (note the camelCase)."),
     THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION("metastore.zookeeper.ssl.truststore.location",
         "hive.zookeeper.ssl.truststore.location", "",
         "Truststore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
@@ -1527,6 +1551,11 @@ public class MetastoreConf {
         "hive.zookeeper.ssl.truststore.password", "",
         "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
+            "system property (note the camelCase)."),
+    THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_TYPE("metastore.zookeeper.ssl.truststore.type",
+        "hive.zookeeper.ssl.truststore.type", "",
+        "Truststore type when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.trustStore.type" +
             "system property (note the camelCase)."),
     THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
         new StringSetValidator("RANDOM", "SEQUENTIAL"),
@@ -2579,8 +2608,10 @@ public class MetastoreConf {
         .sslEnabled(MetastoreConf.getBoolVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_ENABLE))
         .keyStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
         .keyStorePassword(keyStorePassword)
+        .keyStoreType(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_TYPE))
         .trustStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-        .trustStorePassword(trustStorePassword).build();
+        .trustStorePassword(trustStorePassword)
+        .trustStoreType(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_TYPE)).build();
   }
 
   /**

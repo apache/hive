@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE insert_into1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE insert_into1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE insert_into1 (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -911,8 +913,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE insert_into1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into1
 POSTHOOK: query: DROP TABLE insert_into1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1

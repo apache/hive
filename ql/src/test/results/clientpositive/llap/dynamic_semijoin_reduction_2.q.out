@@ -350,18 +350,22 @@ STAGE PLANS:
 PREHOOK: query: drop table table_1_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_1_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_1_n2
 POSTHOOK: query: drop table table_1_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_1_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_1_n2
 PREHOOK: query: drop table table_18_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_18_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_18_n2
 POSTHOOK: query: drop table table_18_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_18_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_18_n2
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n20(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

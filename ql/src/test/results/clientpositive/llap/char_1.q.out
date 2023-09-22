@@ -1,11 +1,15 @@
 PREHOOK: query: drop table char1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table char1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table char1_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table char1_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table char1 (key char(10), value char(20))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -131,16 +135,20 @@ POSTHOOK: Input: default@char1
 PREHOOK: query: drop table char1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char1
 POSTHOOK: query: drop table char1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char1
 PREHOOK: query: drop table char1_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char1_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char1_1
 POSTHOOK: query: drop table char1_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char1_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char1_1

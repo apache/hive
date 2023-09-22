@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -98,6 +99,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -126,6 +128,7 @@ import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
+import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.RowLevelOperationMode;
@@ -159,6 +162,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.collect.Streams;
+import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
@@ -563,7 +567,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       // Analyze table and stats updater thread
       return fs.delete(statsPath, true);
     }
-    return false;
+    return SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
+      .filter(opType -> HiveOperation.ANALYZE_TABLE == opType)
+      .isPresent();
   }
 
   private void checkAndMergeColStats(ColumnStatistics statsObjNew, Table tbl) throws InvalidObjectException {
@@ -703,7 +709,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  public void storageHandlerCommit(Properties commitProperties, Operation operation)
+        throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
     String snapshotRef = commitProperties.getProperty(Catalogs.SNAPSHOT_REF);
@@ -711,14 +718,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef, overwrite);
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef);
     if (jobContextList.isEmpty()) {
       return;
     }
 
     HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
     try {
-      committer.commitJobs(jobContextList);
+      committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
       String ids = jobContextList
           .stream().map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(", "));
@@ -786,6 +793,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         LOG.debug("Executing set current snapshot operation on iceberg table {}.{} to version {}", hmsTable.getDbName(),
             hmsTable.getTableName(), setSnapshotVersionSpec.getSnapshotId());
         IcebergTableUtil.setCurrentSnapshot(icebergTable, setSnapshotVersionSpec.getSnapshotId());
+        break;
+      case FAST_FORWARD:
+        AlterTableExecuteSpec.FastForwardSpec fastForwardSpec =
+            (AlterTableExecuteSpec.FastForwardSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.fastForwardBranch(icebergTable, fastForwardSpec.getSourceBranch(),
+            fastForwardSpec.getTargetBranch());
+        break;
+      case CHERRY_PICK:
+        AlterTableExecuteSpec.CherryPickSpec cherryPickSpec =
+            (AlterTableExecuteSpec.CherryPickSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.cherryPick(icebergTable, cherryPickSpec.getSnapshotId());
         break;
       default:
         throw new UnsupportedOperationException(
@@ -866,6 +884,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
         IcebergTagExec.createTag(icebergTable, createTagSpec);
         break;
+      case DROP_BRANCH:
+        AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec =
+            (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergBranchExec.dropBranch(icebergTable, dropBranchSpec);
+        break;
+      case DROP_TAG:
+        AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec =
+            (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergTagExec.dropTag(icebergTable, dropTagSpec);
+        break;
       default:
         throw new UnsupportedOperationException(String.format(
             "Operation type %s is not supported", alterTableSnapshotRefSpec.getOperationType().getName()));
@@ -903,18 +931,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     StringBuilder authURI =
         new StringBuilder(ICEBERG_URI_PREFIX).append(encodeString(dbName)).append("/").append(encodeString(tableName))
             .append("?snapshot=");
-    Optional<String> locationProperty = SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
-    if (locationProperty.isPresent()) {
-      Preconditions.checkArgument(locationProperty.get() != null,
-          "Table location is not set in SessionState. Authorization URI cannot be supplied.");
-      // this property is set during the create operation before the hive table was created
-      // we are returning a dummy iceberg metadata file
-      authURI.append(encodeString(URI.create(locationProperty.get()).getPath()))
-          .append(encodeString("/metadata/dummy.metadata.json"));
+    // If metadata location is provided we should use that location for auth, since during create if the
+    // metadata_location is explicitly provided we register a table using that path.
+    Optional<String> metadataLocation =
+        SessionStateUtil.getProperty(conf, BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+    if (metadataLocation.isPresent()) {
+      authURI.append(encodeString(metadataLocation.get()));
     } else {
-      Table table = IcebergTableUtil.getTable(conf, hmsTable);
-      authURI.append(
-          encodeString(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()));
+      Optional<String> locationProperty =
+          SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
+      if (locationProperty.isPresent()) {
+        // this property is set during the create operation before the hive table was created
+        // we are returning a dummy iceberg metadata file
+        authURI.append(encodeString(URI.create(locationProperty.get()).getPath()))
+            .append(encodeString("/metadata/dummy.metadata.json"));
+      } else {
+        Table table = IcebergTableUtil.getTable(conf, hmsTable);
+        authURI.append(
+            encodeString(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()));
+      }
     }
     LOG.debug("Iceberg storage handler authorization URI {}", authURI);
     return new URI(authURI.toString());
@@ -1380,11 +1415,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * Generates {@link JobContext}s for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
-   * @param overwrite If we have to overwrite the existing table or just add the new data
+   * @param branchName the name of the branch
    * @return The generated Optional JobContext list or empty if not presents.
    */
   private List<JobContext> generateJobContext(Configuration configuration, String tableName,
-      String branchName, boolean overwrite) {
+      String branchName) {
     JobConf jobConf = new JobConf(configuration);
     Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
         SessionStateUtil.getCommitInfo(jobConf, tableName);
@@ -1393,7 +1428,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
         JobID jobID = JobID.forName(commitInfo.getJobIdStr());
         commitInfo.getProps().forEach(jobConf::set);
-        jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
         // we should only commit this current table because
         // for multi-table inserts, this hook method will be called sequentially for each target table
@@ -1516,6 +1550,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public void addResourcesForCreateTable(Map<String, String> tblProps, HiveConf hiveConf) {
+    String metadataLocation = tblProps.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+    if (StringUtils.isNotEmpty(metadataLocation)) {
+      SessionStateUtil.addResourceOrThrow(hiveConf, BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+          metadataLocation);
+    }
+  }
+
+  @Override
   public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
@@ -1591,4 +1634,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return parts;
   }
 
+  @Override
+  public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+
+    if (table.spec().isUnpartitioned()) {
+      throw new SemanticException("Writing data into a partition fails when the Iceberg table is unpartitioned.");
+    }
+
+    Map<String, Types.NestedField> mapOfPartColNamesWithTypes = Maps.newHashMap();
+    for (PartitionField partField : table.spec().fields()) {
+      Types.NestedField field = table.schema().findField(partField.sourceId());
+      mapOfPartColNamesWithTypes.put(field.name(), field);
+    }
+
+    for (Map.Entry<String, String> spec : partitionSpec.entrySet()) {
+      Types.NestedField field = mapOfPartColNamesWithTypes.get(spec.getKey());
+      Objects.requireNonNull(field, String.format("%s is not a partition column", spec.getKey()));
+      // If the partition spec value is null, it's a dynamic partition column.
+      if (spec.getValue() != null) {
+        Object partKeyVal = Conversions.fromPartitionString(field.type(), spec.getValue());
+        Objects.requireNonNull(partKeyVal,
+            String.format("Partition spec value for column : %s is invalid", field.name()));
+      }
+    }
+  }
 }

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists customer
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists customer
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists orders
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists orders
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table customer (id int, name string, email string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists t_n29
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists t_n29
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t_n29 (a int,v int, b boolean)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

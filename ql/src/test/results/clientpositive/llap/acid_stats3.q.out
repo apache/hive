@@ -135,10 +135,12 @@ STAGE PLANS:
 PREHOOK: query: drop table stats_nonpart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_nonpart
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_nonpart
 POSTHOOK: query: drop table stats_nonpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_nonpart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_nonpart
 PREHOOK: query: create table stats_part(key int,value string) partitioned by (p int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
@@ -411,8 +413,10 @@ STAGE PLANS:
 PREHOOK: query: drop table stats_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_part
 POSTHOOK: query: drop table stats_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part

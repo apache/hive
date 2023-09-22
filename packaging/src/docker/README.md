@@ -72,6 +72,11 @@ For a quick start, launch the Metastore with Derby,
         --name metastore apache/hive:${HIVE_VERSION}
   ```
 
+NOTE:
+
+For Hive releases before 4.0, if you want to upgrade the existing external Metastore schema to the target version,
+then add "--env SCHEMA_COMMAND=upgradeSchema" to the command.
+
 - HiveServer2
 
 Launch the HiveServer2 with an embedded Metastore,

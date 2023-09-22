@@ -52,8 +52,10 @@ Sort Columns:       	[]
 PREHOOK: query: DROP TABLE ice_t
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_t
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_t
 POSTHOOK: query: DROP TABLE ice_t
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_t

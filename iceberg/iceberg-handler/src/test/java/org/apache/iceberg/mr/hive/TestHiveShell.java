@@ -54,8 +54,9 @@ public class TestHiveShell {
   private final HiveServer2 hs2;
   private final HiveConf hs2Conf;
   private CLIService client;
-  private HiveSession session;
   private boolean started;
+
+  private ThreadLocal<HiveSession> session = ThreadLocal.withInitial(this::openSession);
 
   public TestHiveShell() {
     metastore = new TestHiveMetastore();
@@ -69,9 +70,9 @@ public class TestHiveShell {
   }
 
   public void setHiveSessionValue(String key, String value) {
-    Preconditions.checkState(session != null, "There is no open session for setting variables.");
+    Preconditions.checkState(session.get() != null, "There is no open session for setting variables.");
     try {
-      session.getSessionConf().set(key, value);
+      session.get().getSessionConf().set(key, value);
     } catch (Exception e) {
       throw new RuntimeException("Unable to set Hive session variable: ", e);
     }
@@ -87,6 +88,8 @@ public class TestHiveShell {
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREURIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREURIS));
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
         metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
+    hs2Conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL,
+        metastore.hiveConf().getVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL));
 
     // Initializing RpcMetrics in a single JVM multiple times can cause issues
     DefaultMetricsSystem.setMiniClusterMode(true);
@@ -114,32 +117,33 @@ public class TestHiveShell {
     return metastore;
   }
 
-  public void openSession() {
+  private HiveSession openSession() {
     Preconditions.checkState(started, "You have to start TestHiveShell first, before opening a session.");
     try {
       SessionHandle sessionHandle = client.getSessionManager().openSession(
           CLIService.SERVER_VERSION, "", "", "127.0.0.1", Collections.emptyMap());
-      session = client.getSessionManager().getSession(sessionHandle);
+      return client.getSessionManager().getSession(sessionHandle);
     } catch (Exception e) {
       throw new RuntimeException("Unable to open new Hive session: ", e);
     }
   }
 
   public void closeSession() {
-    Preconditions.checkState(session != null, "There is no open session to be closed.");
+    Preconditions.checkState(session.get() != null, "There is no open session to be closed.");
     try {
-      session.close();
-      session = null;
+      session.get().close();
+      session.remove();
     } catch (Exception e) {
       throw new RuntimeException("Unable to close Hive session: ", e);
     }
   }
 
   public List<Object[]> executeStatement(String statement) {
-    Preconditions.checkState(session != null,
+    Preconditions.checkState(session.get() != null,
             "You have to start TestHiveShell and open a session first, before running a query.");
     try {
-      OperationHandle handle = client.executeStatement(session.getSessionHandle(), statement, Collections.emptyMap());
+      OperationHandle handle = client.executeStatement(session.get().getSessionHandle(), statement,
+          Collections.emptyMap());
       List<Object[]> resultSet = Lists.newArrayList();
       if (handle.hasResultSet()) {
         RowSet rowSet;
@@ -170,14 +174,14 @@ public class TestHiveShell {
 
   public Configuration getHiveConf() {
     if (session != null) {
-      return session.getHiveConf();
+      return session.get().getHiveConf();
     } else {
       return hs2Conf;
     }
   }
 
   public HiveSession getSession() {
-    return session;
+    return session.get();
   }
 
   private HiveConf initializeConf() {

@@ -37,10 +37,12 @@ value               	string
 PREHOOK: query: DROP TABLE set_bucketing_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@set_bucketing_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@set_bucketing_test
 POSTHOOK: query: DROP TABLE set_bucketing_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@set_bucketing_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@set_bucketing_test
 PREHOOK: query: SHOW TABLES LIKE "set_bucketing_%"
 PREHOOK: type: SHOWTABLES
@@ -106,10 +108,12 @@ PREHOOK: query: DROP TABLE set_bucketing_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter4_db@set_bucketing_test
 PREHOOK: Output: alter4_db@set_bucketing_test
+PREHOOK: Output: database:alter4_db
 POSTHOOK: query: DROP TABLE set_bucketing_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: alter4_db@set_bucketing_test
 POSTHOOK: Output: alter4_db@set_bucketing_test
+POSTHOOK: Output: database:alter4_db
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

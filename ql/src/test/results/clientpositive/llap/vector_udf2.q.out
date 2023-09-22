@@ -1,7 +1,9 @@
 PREHOOK: query: drop table varchar_udf_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_udf_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table varchar_udf_2 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -137,10 +139,12 @@ true	true	true	false	false	false
 PREHOOK: query: drop table varchar_udf_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_udf_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_udf_2
 POSTHOOK: query: drop table varchar_udf_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_udf_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_udf_2
 PREHOOK: query: create temporary table HIVE_14349 (a string) stored as orc
 PREHOOK: type: CREATETABLE
@@ -337,8 +341,10 @@ XYZab
 PREHOOK: query: drop table HIVE_14349
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_14349
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive_14349
 POSTHOOK: query: drop table HIVE_14349
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive_14349
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_14349

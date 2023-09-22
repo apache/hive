@@ -1,11 +1,15 @@
 PREHOOK: query: drop table dp_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table dp_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table intermediate_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermediate_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table intermediate_n0(key int, val string, r int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -4724,16 +4728,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table dp_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dp_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dp_mm
 POSTHOOK: query: drop table dp_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dp_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dp_mm
 PREHOOK: query: drop table intermediate_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@intermediate_n0
 POSTHOOK: query: drop table intermediate_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermediate_n0

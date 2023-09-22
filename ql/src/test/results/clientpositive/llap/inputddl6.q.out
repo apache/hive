@@ -106,8 +106,10 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE INPUTDDL6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@inputddl6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@inputddl6
 POSTHOOK: query: DROP TABLE INPUTDDL6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@inputddl6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputddl6

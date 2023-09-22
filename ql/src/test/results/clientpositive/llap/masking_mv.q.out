@@ -1485,16 +1485,20 @@ POSTHOOK: Output: default@masking_test_view_n_mv_4
 PREHOOK: query: drop table `masking_test_n_mv`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n_mv
 POSTHOOK: query: drop table `masking_test_n_mv`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n_mv
 PREHOOK: query: drop table `srcTnx`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srctnx
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srctnx
 POSTHOOK: query: drop table `srcTnx`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srctnx
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srctnx

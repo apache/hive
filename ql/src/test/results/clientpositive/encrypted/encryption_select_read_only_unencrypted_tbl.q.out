@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS unencrypted_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS unencrypted_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -32,8 +34,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table unencrypted_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@unencrypted_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@unencrypted_table
 POSTHOOK: query: drop table unencrypted_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@unencrypted_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unencrypted_table

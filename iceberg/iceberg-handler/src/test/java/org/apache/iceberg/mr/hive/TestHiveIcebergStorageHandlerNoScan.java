@@ -103,6 +103,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerNoScan {
@@ -1468,8 +1469,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         spec, FileFormat.PARQUET, ImmutableList.of());
 
     String[] commands = {
-        "INSERT INTO target PARTITION (last_name='Johnson') VALUES (1, 'Rob')",
-        "INSERT OVERWRITE TABLE target PARTITION (last_name='Johnson') SELECT * FROM target WHERE FALSE",
         "DESCRIBE target PARTITION (last_name='Johnson')",
         "TRUNCATE target PARTITION (last_name='Johnson')"
     };
@@ -1503,6 +1502,38 @@ public class TestHiveIcebergStorageHandlerNoScan {
         URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath(),
         HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
 
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledWithMetadataLocation() throws HiveException {
+    shell.setHiveSessionValue("hive.security.authorization.enabled", true);
+    shell.setHiveSessionValue("hive.security.authorization.manager",
+        "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+    TableIdentifier source = TableIdentifier.of("default", "source");
+    Table sourceTable = testTables.createTable(shell, source.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
+
+    String metadataFileLocation =
+        URI.create(((BaseTable) sourceTable).operations().current().metadataFileLocation()).getPath();
+    TableIdentifier target = TableIdentifier.of("default", "target");
+
+    Table targetTable = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of(), 1,
+        Collections.singletonMap(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, metadataFileLocation));
+    HiveAuthorizer authorizer = CustomTestHiveAuthorizerFactory.getAuthorizer();
+    ArgumentCaptor<List<HivePrivilegeObject>> outputHObjsCaptor = ArgumentCaptor.forClass(List.class);
+    Mockito.verify(authorizer,  times(2))
+        .checkPrivileges(Mockito.any(), Mockito.any(), outputHObjsCaptor.capture(), Mockito.any());
+    Optional<HivePrivilegeObject> hivePrivObject = outputHObjsCaptor.getValue().stream()
+        .filter(hpo -> hpo.getType().equals(HivePrivilegeObject.HivePrivilegeObjectType.STORAGEHANDLER_URI)).findAny();
+
+    // For the target table, validate the metadata file location is passed at Authorizer.
+    if (hivePrivObject.isPresent()) {
+      Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" + metadataFileLocation,
+          HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(hivePrivObject.get().getObjectName()));
+    } else {
+      Assert.fail("StorageHandler auth URI is not found");
+    }
   }
 
   @Test
@@ -1865,6 +1896,41 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     Assert.assertEquals(expectedSchema, icebergSchema);
     Assert.assertEquals(expectedSchema, hmsSchema);
+  }
+
+  @Test
+  public void checkIcebergTableLocation() throws TException, InterruptedException, IOException {
+    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    String dBName = "testdb";
+    String tableName = "tbl";
+    String dbWithSuffix = "/" + dBName + ".db";
+    String dbManagedLocation = shell.getHiveConf().get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname) + dbWithSuffix;
+    String dbExternalLocation = shell.getHiveConf().get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname) +
+        dbWithSuffix;
+    Path noExistedTblPath = new Path(dbManagedLocation + "/" + tableName);
+    Path expectedTblPath = new Path(dbExternalLocation + "/" + tableName);
+
+    // Create a database with default external location and managed location.
+    shell.executeStatement("CREATE DATABASE " + dBName);
+
+    // Create a iceberg table without external keyword, and its location should on database external location.
+    shell.executeStatement("CREATE TABLE " + dBName + "." + tableName + " (id int) STORED BY ICEBERG");
+
+    // table location whose parent path is managed database location should not exist.
+    Assert.assertFalse(noExistedTblPath.getFileSystem(shell.getHiveConf()).exists(noExistedTblPath));
+
+    // Check the iceberg table location, whose parent path should be database external location.
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(dBName, tableName);
+    org.apache.iceberg.Table iceTable = testTables.loadTable(TableIdentifier.of(dBName, tableName));
+    Path hmsTblLocation = new Path(hmsTable.getSd().getLocation());
+    Assert.assertTrue(hmsTblLocation.getFileSystem(shell.getHiveConf()).exists(hmsTblLocation));
+    Assert.assertTrue(expectedTblPath.toString().equalsIgnoreCase(hmsTblLocation.toString()));
+    Assert.assertTrue(expectedTblPath.toString().equalsIgnoreCase(iceTable.location()));
+
+    shell.executeStatement("DROP TABLE " + dBName + "." + tableName);
+    // external table location should still exist if table is dropped as external.table.purge is default false.
+    Assert.assertTrue(hmsTblLocation.getFileSystem(shell.getHiveConf()).exists(hmsTblLocation));
   }
 
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {

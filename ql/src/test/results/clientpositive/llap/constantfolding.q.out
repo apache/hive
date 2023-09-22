@@ -22,12 +22,16 @@ k4
 k4	 
 PREHOOK: query: drop table if exists union_all_bug_test_1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists union_all_bug_test_1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists union_all_bug_test_2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists union_all_bug_test_2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists union_all_bug_test_1_n0
 (
 f1 int,

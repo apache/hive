@@ -1,7 +1,9 @@
 PREHOOK: query: drop table windowing_distinct
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table windowing_distinct
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table windowing_distinct(
            index int,
            t tinyint,

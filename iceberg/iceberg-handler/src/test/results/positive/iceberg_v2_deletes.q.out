@@ -14,7 +14,7 @@ PREHOOK: Input: default@ice01
 POSTHOOK: query: show create table ice01
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@ice01
-CREATE TABLE `ice01`(
+CREATE EXTERNAL TABLE `ice01`(
   `id` int)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
@@ -122,7 +122,7 @@ PREHOOK: Input: default@ice01
 POSTHOOK: query: show create table ice01
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@ice01
-CREATE TABLE `ice01`(
+CREATE EXTERNAL TABLE `ice01`(
   `id` int)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
@@ -265,7 +265,7 @@ PREHOOK: Input: default@icepart01
 POSTHOOK: query: show create table icepart01
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@icepart01
-CREATE TABLE `icepart01`(
+CREATE EXTERNAL TABLE `icepart01`(
   `id` int, 
   `part` int)
 PARTITIONED BY SPEC ( 
@@ -323,16 +323,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table ice01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice01
 POSTHOOK: query: drop table ice01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01
 PREHOOK: query: drop table icepart01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@icepart01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@icepart01
 POSTHOOK: query: drop table icepart01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@icepart01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@icepart01

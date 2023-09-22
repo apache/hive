@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists binary_cast_insert
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists binary_cast_insert
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table binary_cast_insert (b binary)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

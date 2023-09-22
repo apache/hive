@@ -124,8 +124,10 @@ Using the default value passed in for log id: 1ba9df58-94d3-4235-8920-cc4a8c7afd
 PREHOOK: query: drop table logs2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@logs2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@logs2
 POSTHOOK: query: drop table logs2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@logs2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@logs2

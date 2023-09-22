@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists  u_table_4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists  u_table_4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table u_table_4(smallint_col_22 smallint, int_col_5 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -22,8 +24,10 @@ POSTHOOK: Lineage: u_table_4.int_col_5 SCRIPT []
 POSTHOOK: Lineage: u_table_4.smallint_col_22 SCRIPT []
 PREHOOK: query: drop table u_table_7
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table u_table_7
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table u_table_7 ( bigint_col_3 bigint, int_col_10 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -44,8 +48,10 @@ POSTHOOK: Lineage: u_table_7.bigint_col_3 SCRIPT []
 POSTHOOK: Lineage: u_table_7.int_col_10 SCRIPT []
 PREHOOK: query: drop table u_table_19
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table u_table_19
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table u_table_19 (bigint_col_18 bigint ,int_col_19 int, STRING_COL_7 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

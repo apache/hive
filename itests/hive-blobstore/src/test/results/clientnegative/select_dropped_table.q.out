@@ -13,9 +13,11 @@ POSTHOOK: Output: default@qtest
 PREHOOK: query: DROP TABLE qtest
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@qtest
+PREHOOK: Output: database:default
 PREHOOK: Output: default@qtest
 POSTHOOK: query: DROP TABLE qtest
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@qtest
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@qtest
 FAILED: SemanticException [Error 10001]: Line 2:14 Table not found 'qtest'

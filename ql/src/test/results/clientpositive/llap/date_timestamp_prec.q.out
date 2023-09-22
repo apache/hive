@@ -30,8 +30,10 @@ POSTHOOK: Input: default@mytable
 PREHOOK: query: drop table mytable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mytable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mytable
 POSTHOOK: query: drop table mytable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mytable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mytable

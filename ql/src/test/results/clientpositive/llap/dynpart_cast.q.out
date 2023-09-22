@@ -1,7 +1,9 @@
 PREHOOK: query: drop table dynpart_cast
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table dynpart_cast
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table dynpart_cast (i int) PARTITIONED BY (`static_part` int, `dyn_part` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
