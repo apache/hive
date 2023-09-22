@@ -114,6 +114,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -613,6 +614,20 @@ public class TestInputOutputFormat {
       assertEquals(1, splitSizeEstimator.getEstimatedSize(split));
     }
     assertEquals(4, splits.size());
+  }
+
+  @Test
+  public void testSplitSizeEstimator() throws HiveException, IOException {
+    String mockPath = "split_size_estimator";
+    InputSplit[] splits = {
+            new FileSplit(new Path(mockPath + "/0_0"), 0, 0, new String[]{"host1"}),
+            new FileSplit(new Path(mockPath + "/0_1"), 0, 1, new String[]{"host1"}),
+            new FileSplit(new Path(mockPath + "/0_2"), 0, 1, new String[]{"host1"})
+    };
+    ColumnarSplitSizeEstimator splitSizeEstimator = new ColumnarSplitSizeEstimator();
+    assertEquals(0, splitSizeEstimator.getEstimatedSize(splits[0]));
+    assertEquals(1, splitSizeEstimator.getEstimatedSize(splits[1]));
+    assertEquals(1, splitSizeEstimator.getEstimatedSize(splits[2]));
   }
 
   @Test

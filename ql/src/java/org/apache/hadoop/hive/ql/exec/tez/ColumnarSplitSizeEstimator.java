@@ -35,6 +35,9 @@ public class ColumnarSplitSizeEstimator implements SplitSizeEstimator {
   @Override
   public long getEstimatedSize(InputSplit inputSplit) throws IOException {
     long colProjSize = inputSplit.getLength();
+    if (colProjSize == 0) {
+      return colProjSize;
+    }
 
     if (inputSplit instanceof ColumnarSplit) {
       colProjSize = ((ColumnarSplit) inputSplit).getColumnarProjectionSize();
