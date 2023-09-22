@@ -2268,26 +2268,28 @@ public class ObjectStore implements RawStore, Configurable {
         MetastoreConf.getBoolVar(getConf(), ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
     if (parameters != null && args != null && args.length == 1) {
       // Pattern matching in Java might be different from the one used by the metastore backends,
-      // support only the common case.
-      Pattern includePattern = null;
+      // An underscore (_) in pattern stands for (matches) any single character;
+      // a percent sign (%) matches any sequence of zero or more characters.
+      // See TestGetPartitionsUsingProjectionAndFilterSpecs#testPartitionProjectionEmptySpec.
+      Pattern includePatt = null;
       if (StringUtils.isNotBlank(args[0].getIncludeParamKeyPattern())) {
-        includePattern = Optional.of(args[0].getIncludeParamKeyPattern()).map(regex ->
-            Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).get();
+        includePatt = Optional.of(args[0].getIncludeParamKeyPattern()).map(regex ->
+            Pattern.compile(regex.replaceAll("%", ".*").replaceAll("_", "."))).get();
       }
-      Pattern excludePattern = null;
+      Pattern excludePatt = null;
       if (StringUtils.isNotBlank(args[0].getExcludeParamKeyPattern())) {
-        excludePattern = Optional.of(args[0].getExcludeParamKeyPattern()).map(regex ->
-            Pattern.compile(regex.replaceAll("\\*", ".*").replaceAll("\\|\\|", "|"))).orElse(null);
+        excludePatt = Optional.of(args[0].getExcludeParamKeyPattern()).map(regex ->
+            Pattern.compile(regex.replaceAll("%", ".*").replaceAll("_", "."))).get();;
       }
-      final Pattern inPattern = includePattern;
-      final Pattern exPattern = excludePattern;
+      final Pattern includePattern = includePatt;
+      final Pattern excludePattern = excludePatt;
       return parameters.entrySet().stream().filter(entry -> {
         boolean matches = true;
-        if (inPattern != null) {
-          matches &= inPattern.matcher(entry.getKey()).matches();
+        if (includePattern != null) {
+          matches &= includePattern.matcher(entry.getKey()).matches();
         }
-        if (exPattern != null) {
-          matches &= !exPattern.matcher(entry.getKey()).matches();
+        if (excludePattern != null) {
+          matches &= !excludePattern.matcher(entry.getKey()).matches();
         }
         return matches;
       }).collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
