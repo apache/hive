@@ -62,6 +62,7 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
     Long maxRefAgeMs = null;
     Integer minSnapshotsToKeep = null;
     Long maxSnapshotAgeMs = null;
+    String asOfTag = null;
     for (int i = 1; i < command.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) command.getChild(i);
       switch (childNode.getToken().getType()) {
@@ -73,6 +74,9 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
             SessionState.get().getConf().getLocalTimeZone();
         TimestampTZ ts = TimestampTZUtil.parse(stripQuotes(childNode.getChild(0).getText()), timeZone);
         asOfTime = ts.toEpochMilli();
+        break;
+      case HiveParser.TOK_AS_OF_TAG:
+        asOfTag = unescapeIdentifier(childNode.getChild(0).getText());
         break;
       case HiveParser.TOK_RETAIN:
         String maxRefAge = childNode.getChild(0).getText();
@@ -96,7 +100,7 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
 
     AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createSnapshotRefSpec =
         new AlterTableSnapshotRefSpec.CreateSnapshotRefSpec(refName, snapshotId, asOfTime,
-            maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs);
+            maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs, asOfTag);
     AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.CreateSnapshotRefSpec> alterTableSnapshotRefSpec
         = new AlterTableSnapshotRefSpec(alterTableType, createSnapshotRefSpec);
     AbstractAlterTableDesc alterTableDesc =

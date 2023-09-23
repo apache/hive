@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -196,5 +197,32 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     shell.executeStatement(String.format("ALTER TABLE customers DROP BRANCH IF EXISTS %s", branchName));
     table.refresh();
     Assert.assertNull(table.refs().get(branchName));
+  }
+
+  @Test
+  public void testCreateBranchFromTag() throws IOException, InterruptedException {
+    Table table =
+        testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+    String branchName1 = "test_branch_1";
+    String tagName = "test_tag";
+    String branchName2 = "test_branch_2";
+    String nonExistTag = "test_non_exist_tag";
+    shell.executeStatement(String.format("ALTER TABLE customers CREATE TAG %s", tagName));
+
+    // Create a branch based on an existing tag.
+    shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s",
+        branchName1, tagName));
+    table.refresh();
+    SnapshotRef ref = table.refs().get(branchName1);
+    Assert.assertEquals(table.currentSnapshot().snapshotId(), ref.snapshotId());
+    Assert.assertNull(ref.minSnapshotsToKeep());
+    Assert.assertNull(ref.maxSnapshotAgeMs());
+    Assert.assertNull(ref.maxRefAgeMs());
+
+    // Create a branch based on a tag which doesn't exist will fail.
+    Assertions.assertThatThrownBy(() -> shell.executeStatement(String.format(
+        "ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s", branchName2, nonExistTag)))
+        .isInstanceOf(IllegalArgumentException.class).hasMessageEndingWith("does not exist");
   }
 }

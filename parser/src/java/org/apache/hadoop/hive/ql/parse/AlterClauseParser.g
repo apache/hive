@@ -507,6 +507,9 @@ snapshotIdOfRef
     |
     (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
     -> ^(TOK_AS_OF_TIME $asOfTime)
+    |
+    (KW_FOR KW_TAG KW_AS KW_OF asOfTag=identifier)
+    -> ^(TOK_AS_OF_TAG $asOfTag)
     ;
 
 refRetain
