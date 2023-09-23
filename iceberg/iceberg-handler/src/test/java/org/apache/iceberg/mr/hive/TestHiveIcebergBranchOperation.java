@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -220,14 +221,8 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     Assert.assertNull(ref.maxRefAgeMs());
 
     // Create a branch based on a tag which doesn't exist will fail.
-    try {
-      shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s",
-          branchName2, nonExistTag));
-    } catch (Throwable e) {
-      while (e.getCause() != null) {
-        e = e.getCause();
-      }
-      Assert.assertTrue(e.getMessage().contains("does not exist"));
-    }
+    Assertions.assertThatThrownBy(() -> shell.executeStatement(String.format(
+        "ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s", branchName2, nonExistTag)))
+        .isInstanceOf(IllegalArgumentException.class).hasMessageEndingWith("does not exist");
   }
 }
