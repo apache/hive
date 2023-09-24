@@ -9966,10 +9966,10 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void writeMPartitionColumnStatistics(Table table, Partition partition,
       MPartitionColumnStatistics mStatsObj, MPartitionColumnStatistics oldStats) {
-    String catName = mStatsObj.getCatName();
-    String dbName = mStatsObj.getDbName();
-    String tableName = mStatsObj.getTableName();
-    String partName = mStatsObj.getPartitionName();
+    String catName = mStatsObj.getPartition().getTable().getDatabase().getCatalogName();
+    String dbName = mStatsObj.getPartition().getTable().getDatabase().getName();
+    String tableName = mStatsObj.getPartition().getTable().getTableName();
+    String partName = mStatsObj.getPartition().getPartitionName();
     String colName = mStatsObj.getColName();
 
     Preconditions.checkState(this.currentTransaction.isActive());
@@ -10221,7 +10221,7 @@ public class ObjectStore implements RawStore, Configurable {
             public List<MTableColumnStatistics> run(List<String> input)
                 throws MetaException {
               StringBuilder filter =
-                  new StringBuilder("tableName == t1 && dbName == t2 && catName == t3 && engine == t4 && (");
+                  new StringBuilder("table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && engine == t4 && (");
               StringBuilder paramStr = new StringBuilder(
                   "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4");
               Object[] params = new Object[input.size() + 4];
@@ -10296,7 +10296,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       query = pm.newQuery(MTableColumnStatistics.class);
-      query.setFilter("tableName == t1 && dbName == t2 && catName == t3");
+      query.setFilter("table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setResult("DISTINCT engine");
       Collection names = (Collection) query.execute(tableName, dbName, catName);
@@ -10408,7 +10408,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       query = pm.newQuery(MPartitionColumnStatistics.class);
-      query.setFilter("tableName == t1 && dbName == t2 && catName == t3");
+      query.setFilter("partition.table.tableName == t1 && partition.table.database.name == t2 && partition.table.database.catalogName == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setResult("DISTINCT engine");
       Collection names = (Collection) query.execute(tableName, dbName, catName);
@@ -10507,7 +10507,7 @@ public class ObjectStore implements RawStore, Configurable {
         for (int i = 0; i <= mStats.size(); ++i) {
           boolean isLast = i == mStats.size();
           MPartitionColumnStatistics mStatsObj = isLast ? null : mStats.get(i);
-          String partName = isLast ? null : mStatsObj.getPartitionName();
+          String partName = isLast ? null : mStatsObj.getPartition().getPartitionName();
           if (isLast || !partName.equals(lastPartName)) {
             if (i != 0) {
               ColumnStatistics colStat = new ColumnStatistics(csd, curList);
@@ -10651,7 +10651,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<MPartitionColumnStatistics> result = Collections.emptyList();
       try (Query query = pm.newQuery(MPartitionColumnStatistics.class)) {
         String paramStr = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4";
-        String filter = "tableName == t1 && dbName == t2 && catName == t3 && engine == t4 && (";
+        String filter = "partition.table.tableName == t1 && partition.table.database.name == t2 && partition.table.database.catalogName == t3 && engine == t4 && (";
         Object[] params = new Object[colNames.size() + partNames.size() + 4];
         int i = 0;
         params[i++] = table.getTableName();
@@ -10660,7 +10660,7 @@ public class ObjectStore implements RawStore, Configurable {
         params[i++] = engine;
         int firstI = i;
         for (String s : partNames) {
-          filter += ((i == firstI) ? "" : " || ") + "partitionName == p" + i;
+          filter += ((i == firstI) ? "" : " || ") + "partition.partitionName == p" + i;
           paramStr += ", java.lang.String p" + i;
           params[i++] = s;
         }
@@ -10674,7 +10674,7 @@ public class ObjectStore implements RawStore, Configurable {
         filter += ")";
         query.setFilter(filter);
         query.declareParameters(paramStr);
-        query.setOrdering("partitionName ascending");
+        query.setOrdering("partition.partitionName ascending");
         result = (List<MPartitionColumnStatistics>) query.executeWithArray(params);
         pm.retrieveAll(result);
         result = new ArrayList<>(result);
@@ -10696,7 +10696,7 @@ public class ObjectStore implements RawStore, Configurable {
       String catName, String dbName, String tableName, List<String> partNames) {
     Pair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
         catName, dbName, tableName, partNames, MPartitionColumnStatistics.class,
-        "tableName", "dbName", "partition.partitionName", "catName");
+        "partition.table.tableName", "partition.table.database.name", "partition.partitionName", "partition.table.database.catalogName");
     try (QueryWrapper wrapper = new QueryWrapper(queryWithParams.getLeft())) {
       wrapper.deletePersistentAll(queryWithParams.getRight());
     }
@@ -10722,7 +10722,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       query = pm.newQuery(MPartitionColumnStatistics.class);
 
-      String filter = "dbName == t2 && tableName == t3 && catName == t4";
+      String filter = "partition.table.database.name == t2 && partition.table.tableName == t3 && partition.table.database.catalogName == t4";
       String parameters = "java.lang.String t2, java.lang.String t3, java.lang.String t4";
 
       query.setFilter(filter);
@@ -10808,13 +10808,13 @@ public class ObjectStore implements RawStore, Configurable {
       String parameters;
       if (colName != null) {
         filter =
-            "partition.partitionName == t1 && dbName == t2 && tableName == t3 && "
-                + "colName == t4 && catName == t5" + (engine != null ? " && engine == t6" : "");
+            "partition.partitionName == t1 && partition.table.database.name == t2 && partition.table.tableName == t3 && "
+                + "colName == t4 && partition.table.database.catalogName == t5" + (engine != null ? " && engine == t6" : "");
         parameters =
             "java.lang.String t1, java.lang.String t2, "
                 + "java.lang.String t3, java.lang.String t4, java.lang.String t5" + (engine != null ? ", java.lang.String t6" : "");
       } else {
-        filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3 && catName == t4" + (engine != null ? " && engine == t5" : "");
+        filter = "partition.partitionName == t1 && partition.table.database.name == t2 && partition.table.tableName == t3 && partition.table.database.catalogName == t4" + (engine != null ? " && engine == t5" : "");
         parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4" + (engine != null ? ", java.lang.String t5" : "");
       }
       query.setFilter(filter);
@@ -10902,10 +10902,10 @@ public class ObjectStore implements RawStore, Configurable {
       String filter;
       String parameters;
       if (colName != null) {
-        filter = "table.tableName == t1 && dbName == t2 && catName == t3 && colName == t4" + (engine != null ? " && engine == t5" : "");
+        filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && colName == t4" + (engine != null ? " && engine == t5" : "");
         parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4" + (engine != null ? ", java.lang.String t5" : "");
       } else {
-        filter = "table.tableName == t1 && dbName == t2 && catName == t3" + (engine != null ? " && engine == t4" : "");
+        filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3" + (engine != null ? " && engine == t4" : "");
         parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3" + (engine != null ? ", java.lang.String t4" : "");
       }
 

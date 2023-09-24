@@ -69,9 +69,6 @@ public class StatObjectConverter {
 
      MTableColumnStatistics mColStats = new MTableColumnStatistics();
      mColStats.setTable(table);
-     mColStats.setDbName(statsDesc.getDbName());
-     mColStats.setCatName(table.getDatabase().getCatalogName());
-     mColStats.setTableName(statsDesc.getTableName());
      mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
      mColStats.setColName(statsObj.getColName());
      mColStats.setColType(statsObj.getColType());
@@ -460,9 +457,9 @@ public class StatObjectConverter {
       MTableColumnStatistics mStatsObj) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setIsTblLevel(true);
-    statsDesc.setCatName(mStatsObj.getCatName());
-    statsDesc.setDbName(mStatsObj.getDbName());
-    statsDesc.setTableName(mStatsObj.getTableName());
+    statsDesc.setCatName(mStatsObj.getTable().getDatabase().getCatalogName());
+    statsDesc.setDbName(mStatsObj.getTable().getDatabase().getName());
+    statsDesc.setTableName(mStatsObj.getTable().getTableName());
     statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
     return statsDesc;
   }
@@ -475,16 +472,7 @@ public class StatObjectConverter {
     }
 
     MPartitionColumnStatistics mColStats = new MPartitionColumnStatistics();
-    if (partition != null) {
-      mColStats.setCatName(partition.getTable().getDatabase().getCatalogName());
-      mColStats.setPartition(partition);
-    } else {
-      // Assume that the statsDesc has already set catalogName when partition is null
-      mColStats.setCatName(statsDesc.getCatName());
-    }
-    mColStats.setDbName(statsDesc.getDbName());
-    mColStats.setTableName(statsDesc.getTableName());
-    mColStats.setPartitionName(statsDesc.getPartName());
+    mColStats.setPartition(partition);
     mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
     mColStats.setColName(statsObj.getColName());
     mColStats.setColType(statsObj.getColType());
@@ -668,10 +656,10 @@ public class StatObjectConverter {
     MPartitionColumnStatistics mStatsObj) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setIsTblLevel(false);
-    statsDesc.setCatName(mStatsObj.getCatName());
-    statsDesc.setDbName(mStatsObj.getDbName());
-    statsDesc.setTableName(mStatsObj.getTableName());
-    statsDesc.setPartName(mStatsObj.getPartitionName());
+    statsDesc.setCatName(mStatsObj.getPartition().getTable().getDatabase().getCatalogName());
+    statsDesc.setDbName(mStatsObj.getPartition().getTable().getDatabase().getName());
+    statsDesc.setTableName(mStatsObj.getPartition().getTable().getTableName());
+    statsDesc.setPartName(mStatsObj.getPartition().getPartitionName());
     statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
     return statsDesc;
   }
