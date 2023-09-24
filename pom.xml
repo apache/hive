@@ -151,7 +151,7 @@
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
-    <ivy.version>2.5.1</ivy.version>
+    <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.13.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
