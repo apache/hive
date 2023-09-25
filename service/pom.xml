@@ -307,12 +307,6 @@
       <artifactId>apacheds-server-integ</artifactId>
       <version>${apache-directory-server.version}</version>
       <scope>test</scope>
-        <exclusions>
-            <exclusion>
-                <groupId>bouncycastle</groupId>
-                <artifactId>bcprov-jdk15</artifactId>
-            </exclusion>
-        </exclusions>
     </dependency>
 
     <dependency>
