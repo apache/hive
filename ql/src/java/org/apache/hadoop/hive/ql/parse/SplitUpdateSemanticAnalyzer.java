@@ -155,7 +155,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     List<String> sortKeys = columnAppender.getSortKeys();
     appendSortBy(rewrittenQueryStr, sortKeys);
 
-    ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQueryStr);
+    ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

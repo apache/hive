@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -110,6 +111,10 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.FetchFormatter;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Writable;
@@ -128,13 +133,17 @@ import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.FindFiles;
 import org.apache.iceberg.ManifestFile;
+import org.apache.iceberg.MetadataTableType;
+import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
@@ -150,8 +159,8 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
+import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.puffin.Blob;
@@ -166,7 +175,6 @@ import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
-import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
@@ -177,6 +185,7 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
+import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -387,7 +396,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return true;
     }
     // If it is a table which has undergone partition evolution, return false;
-    if (isPartitionEvolution(icebergTbl)) {
+    if (hasUndergonePartitionEvolution(icebergTbl)) {
       if (withPartClause) {
         throw new SemanticException("Can not Load into an iceberg table, which has undergone partition evolution " +
             "using the PARTITION clause");
@@ -976,7 +985,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (IcebergTableUtil.isBucketed(table)) {
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
-      if (isPartitionEvolution(table)) {
+      if (hasUndergonePartitionEvolution(table)) {
         throw new SemanticException(
             "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
             "to successfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
@@ -988,7 +997,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table,
       boolean isWriteOperation) {
-    if (table.getParameters() != null && "2".equals(table.getParameters().get(TableProperties.FORMAT_VERSION))) {
+    if (IcebergTableUtil.isV2Table(table.getParameters())) {
       if (isWriteOperation) {
         checkDMLOperationMode(table);
       }
@@ -1650,14 +1659,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   /**
    * A function to decide whether a given truncate query can perform a metadata delete or not.
-   * If its not possible to perform metadata delete then try to perform a positional delete.
+   * If its not possible to perform metadata delete then try to perform a delete based on the mode.
    * The steps to decide whether truncate is possible is as follows - <br>
    * a. Create an expression based on the partition spec columns and partition spec values. <br>
    * b. Find files which match the expression using Apache Iceberg's FindFiles API. <br>
-   * c. Do strict evaluation on whether the expression can clearly match all rows in the file. <br>
+   * c. Do evaluation on whether the expression can match the partition value in the file. <br>
    * If for all files, the strict evaluation returns true, it means that we safely delete all files
    * by performing a metadata delete operation. If not, we must convert the truncate to delete query
-   * which eventually performs a positional delete.
+   * which eventually performs a delete based on the mode.
    * @param hmsTable A Hive table instance.
    * @param partitionSpec Map containing partition specification given by user.
    * @return true if we can perform metadata delete, otherwise false.
@@ -1665,51 +1674,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * or when partition column is not present in the table.
    */
   @Override
-  public boolean shouldTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+  public boolean canUseTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    if (MapUtils.isEmpty(partitionSpec) || !isPartitionEvolution(table)) {
+    if (MapUtils.isEmpty(partitionSpec) || !hasUndergonePartitionEvolution(table)) {
       return true;
     }
 
-    Map<String, PartitionField> partitionFieldMap = Maps.newHashMapWithExpectedSize(table.spec().fields().size());
-    table.spec().fields().forEach(partField -> partitionFieldMap.put(partField.name(), partField));
-    Expression finalExp = Expressions.alwaysTrue();
-    for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
-      String partColName = entry.getKey();
-      if (partitionFieldMap.containsKey(partColName)) {
-        PartitionField partitionField = partitionFieldMap.get(partColName);
-        Type resultType = partitionField.transform().getResultType(table.schema()
-            .findField(partitionField.sourceId()).type());
-        TransformSpec.TransformType transformType = IcebergTableUtil.getTransformType(partitionField.transform());
-        Object value = Conversions.fromPartitionString(resultType, entry.getValue());
-        Iterable iterable = () -> Collections.singletonList(value).iterator();
-        if (transformType.equals(TransformSpec.TransformType.IDENTITY)) {
-          Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
-          finalExp = Expressions.and(finalExp, boundPredicate);
-        } else {
-          throw new SemanticException(
-              String.format("Partition transforms are not supported via truncate operation: %s", partColName));
-        }
-      } else {
-        throw new SemanticException(String.format("No partition column/transform by the name: %s", partColName));
-      }
-    }
-    FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(finalExp).includeColumnStats();
-    Set<DataFile> dataFiles = Sets.newHashSet(Iterables.transform(builder.collect(), file -> file));
+    Expression finalExp = generateExpressionFromPartitionSpec(table, partitionSpec);
+    FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(finalExp);
+    Set<DataFile> dataFiles = Sets.newHashSet(builder.collect());
     boolean result = true;
     for (DataFile dataFile : dataFiles) {
       PartitionData partitionData = (PartitionData) dataFile.partition();
       Expression residual = ResidualEvaluator.of(table.spec(), finalExp, false)
           .residualFor(partitionData);
-      StrictMetricsEvaluator strictMetricsEvaluator = new StrictMetricsEvaluator(table.schema(), residual);
-      if (!strictMetricsEvaluator.eval(dataFile)) {
+      if (!residual.isEquivalentTo(Expressions.alwaysTrue())) {
         result = false;
+        break;
       }
     }
 
-    boolean isV2Table = hmsTable.getParameters() != null &&
-        "2".equals(hmsTable.getParameters().get(TableProperties.FORMAT_VERSION));
+    boolean isV2Table = IcebergTableUtil.isV2Table(hmsTable.getParameters());
     if (!result && !isV2Table) {
       throw new SemanticException("Truncate conversion to delete is not possible since its not an Iceberg V2 table." +
           " Consider converting the table to Iceberg's V2 format specification.");
@@ -1717,11 +1703,116 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return result;
   }
 
-  private boolean isPartitionEvolution(Table table) {
+  private boolean hasUndergonePartitionEvolution(Table table) {
     // If it is a table which has undergone partition evolution, return true.
     return table.currentSnapshot() != null &&
         table.currentSnapshot().allManifests(table.io()).parallelStream()
         .map(ManifestFile::partitionSpecId)
         .anyMatch(id -> id < table.spec().specId());
+  }
+
+  /**
+   * Returns a list of partitions which are corresponding to the table based on the partition spec provided.
+   * @param hmsTable A Hive table instance.
+   * @param partitionSpec Map containing partition specification.
+   * @return A list of partition values which satisfies the partition spec provided corresponding to the table.
+   * @throws SemanticException Exception raised when there is an issue performing a scan on the partitions table.
+   */
+  @Override
+  public List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Map<String, String> partitionSpec) throws SemanticException {
+    Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
+            .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+    Expression expression = generateExpressionFromPartitionSpec(icebergTable, partitionSpec);
+    Set<PartitionData> partitionList = Sets.newHashSet();
+    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+      fileScanTasks.forEach(task -> {
+        partitionList.addAll(Sets.newHashSet(CloseableIterable.transform(task.asDataTask().rows(), row -> {
+          StructProjection data = row.get(PART_IDX, StructProjection.class);
+          PartitionSpec pSpec = icebergTable.spec();
+          PartitionData partitionData = new PartitionData(pSpec.partitionType());
+          for (int index = 0; index < pSpec.fields().size(); index++) {
+            partitionData.set(index, data.get(index, Object.class));
+          }
+          return partitionData;
+        })));
+      });
+
+      List<String> partPathList = partitionList.stream().filter(partitionData -> {
+        ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.spec(), expression, false);
+        return resEval.residualFor(partitionData).isEquivalentTo(Expressions.alwaysTrue());
+      }).map(partitionData -> icebergTable.spec().partitionToPath(partitionData)).collect(Collectors.toList());
+
+      return partPathList;
+    } catch (IOException e) {
+      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
+    }
+  }
+
+  private Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
+    Map<String, PartitionField> partitionFieldMap = table.spec().fields().stream()
+        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
+    Expression finalExp = Expressions.alwaysTrue();
+    for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
+      String partColName = entry.getKey();
+      if (partitionFieldMap.containsKey(partColName)) {
+        PartitionField partitionField = partitionFieldMap.get(partColName);
+        Type resultType = partitionField.transform().getResultType(table.schema()
+                .findField(partitionField.sourceId()).type());
+        Object value = Conversions.fromPartitionString(resultType, entry.getValue());
+        TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
+        Iterable iterable = () -> Collections.singletonList(value).iterator();
+        if (TransformSpec.TransformType.IDENTITY == transformType) {
+          Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
+          finalExp = Expressions.and(finalExp, boundPredicate);
+        } else {
+          throw new SemanticException(
+                  String.format("Partition transforms are not supported via truncate operation: %s", partColName));
+        }
+      } else {
+        throw new SemanticException(String.format("No partition column/transform by the name: %s", partColName));
+      }
+    }
+    return finalExp;
+  }
+
+  /**
+   * A function to fetch the column information of the underlying column defined by the table format.
+   * @param hmsTable A Hive table instance
+   * @param colName Column name
+   * @return An instance of ColumnInfo.
+   * @throws SemanticException An exception is thrown when the column is not present, or if we unable to fetch
+   * column type due to SerDeException, or if the associated field object inspector is not present.
+   */
+  @Override
+  public ColumnInfo getColumnInfo(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String colName)
+      throws SemanticException {
+    Table icebergTbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Deserializer deserializer = hmsTable.getDeserializer();
+    Types.NestedField field = icebergTbl.schema().findField(colName);
+    if (field != null) {
+      try {
+        ObjectInspector fieldObjInspector = null;
+        StructObjectInspector structObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
+        for (StructField structField : structObjectInspector.getAllStructFieldRefs()) {
+          if (field.name().equalsIgnoreCase(structField.getFieldName())) {
+            fieldObjInspector = structField.getFieldObjectInspector();
+            break;
+          }
+        }
+        if (fieldObjInspector != null) {
+          return new ColumnInfo(field.name(), fieldObjInspector, hmsTable.getTableName(), false);
+        } else {
+          throw new SemanticException(String.format("Unable to fetch column type of column %s " +
+              "since we are not able to infer its object inspector.", colName));
+        }
+      } catch (SerDeException e) {
+        throw new SemanticException(String.format("Unable to fetch column type of column %s due to: %s", colName, e));
+      }
+    } else {
+      throw new SemanticException(String.format("Unable to find a column with the name: %s", colName));
+    }
   }
 }

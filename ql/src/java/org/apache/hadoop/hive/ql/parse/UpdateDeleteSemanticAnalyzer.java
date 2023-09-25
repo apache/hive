@@ -105,7 +105,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       && children.size() == 1 && deleting();
     if (shouldTruncate) {
       StringBuilder rewrittenQueryStr = new StringBuilder("truncate ").append(getFullTableNameForSQL(tabNameNode));
-      ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQueryStr);
+      ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
       Context rewrittenCtx = rr.rewrittenCtx;
       ASTNode rewrittenTree = rr.rewrittenTree;
 
@@ -211,7 +211,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       // Add a sort by clause so that the row ids come out in the correct order
       appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
     }
-    ReparseResult rr = ParseUtils.parseRewrittenQuery(conf, ctx, rewrittenQueryStr);
+    ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

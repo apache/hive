@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
@@ -32,12 +33,12 @@ import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.transforms.Transform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -260,27 +261,8 @@ public class IcebergTableUtil {
     table.manageSnapshots().cherrypick(snapshotId).commit();
   }
 
-  public static TransformSpec.TransformType getTransformType(Transform<?, ?> transform) {
-    String transformString = transform.toString();
-    if (transformString.contains("bucket")) {
-      return TransformSpec.TransformType.BUCKET;
-    } else if (transformString.contains("identity")) {
-      return TransformSpec.TransformType.IDENTITY;
-    } else if (transformString.contains("truncate")) {
-      return TransformSpec.TransformType.TRUNCATE;
-    } else if (transformString.contains("year")) {
-      return TransformSpec.TransformType.YEAR;
-    } else if (transformString.contains("month")) {
-      return TransformSpec.TransformType.MONTH;
-    } else if (transformString.contains("day")) {
-      return TransformSpec.TransformType.DAY;
-    } else if (transformString.contains("hour")) {
-      return TransformSpec.TransformType.HOUR;
-    } else if (transformString.contains("void")) {
-      return TransformSpec.TransformType.VOID;
-    } else {
-      // By default, lets return UNKNOWN.
-      return TransformSpec.TransformType.UNKNOWN;
-    }
+  public static boolean isV2Table(Map<String, String> props) {
+    return props != null &&
+        "2".equals(props.get(TableProperties.FORMAT_VERSION));
   }
 }

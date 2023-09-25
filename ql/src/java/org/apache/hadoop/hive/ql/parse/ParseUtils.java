@@ -676,18 +676,18 @@ public final class ParseUtils {
   /**
    * Parse the newly generated SQL statement to get a new AST.
    */
-  public static ReparseResult parseRewrittenQuery(HiveConf conf, Context ctx,
+  public static ReparseResult parseRewrittenQuery(Context ctx,
       StringBuilder rewrittenQueryStr)
       throws SemanticException {
     // Set dynamic partitioning to nonstrict so that queries do not need any partition
     // references.
     // TODO: this may be a perf issue as it prevents the optimizer.. or not
-    HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    HiveConf.setVar(ctx.getConf(), HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
+    HiveConf.setBoolVar(ctx.getConf(), HiveConf.ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
     // Parse the rewritten query string
     Context rewrittenCtx;
-    rewrittenCtx = new Context(conf);
+    rewrittenCtx = new Context(ctx.getConf());
     rewrittenCtx.setHDFSCleanup(true);
     // We keep track of all the contexts that are created by this query
     // so we can clear them when we finish execution

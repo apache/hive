@@ -1010,7 +1010,14 @@ public final class TypeInfoUtils {
     return false;
   }
 
-  public static boolean shouldEncloseQuotes(PrimitiveCategory category) {
+  public static String convertStringToLiteralForSQL(String value, PrimitiveCategory category) {
+    if (shouldEncloseQuotes(category)) {
+      return "'" + value.replace("'", "\\'") + "'";
+    }
+    return value;
+  }
+
+  private static boolean shouldEncloseQuotes(PrimitiveCategory category) {
     switch(category) {
       case STRING:
       case DATE:
