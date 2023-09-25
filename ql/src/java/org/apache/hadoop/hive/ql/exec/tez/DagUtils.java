@@ -1233,18 +1233,29 @@ public class DagUtils {
       }
       Path filePath = new Path(file);
       Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(filePath));
-      String sha = getSha(filePath, conf);
       LocalResource localResource = null;
-      boolean alreadyLocalized = localizedJarSha.containsKey(sha);
-      LOG.debug("Checking SHA {} for filePath: {} (temp), already localized: {}", sha, filePath, alreadyLocalized);
-      if (alreadyLocalized) {
-        LOG.info("Skip creating already localized jar (temp) by sha {}: {}", sha, localResource);
-        localResource = localizedJarSha.get(sha);
-      } else {
+      /*
+       * This method can be called with HDFS resources, which leads to a 'Wrong FS' IllegalArgumentException
+       * while trying to obtain a Path of a file on hdfs from a RawLocalFileSystem.
+       * A typical example is a usecase like below (sha optimization is used only for local resources):
+       * set hive.aux.jars.path=hdfs:///tmp/test_load_aux_jar/some.jar;
+       */
+      String scheme = filePath.getFileSystem(conf).getScheme();
+      if (!"file".equalsIgnoreCase(scheme)) {
+        LOG.debug("SHA skip localization optimization is disabled for HDFS resource: {}", filePath);
         localResource = localizeResource(filePath, hdfsFilePath, type, conf);
-        localizedJarSha.put(sha, localResource);
+      } else {
+        String sha = getSha(filePath, conf);
+        boolean alreadyLocalized = localizedJarSha.containsKey(sha);
+        LOG.debug("Checking SHA {} for filePath: {} (temp), already localized: {}", sha, filePath, alreadyLocalized);
+        if (alreadyLocalized) {
+          localResource = localizedJarSha.get(sha);
+          LOG.info("Skip creating already localized jar (temp) by sha {}: {}", sha, localResource);
+        } else {
+          localResource = localizeResource(filePath, hdfsFilePath, type, conf);
+          localizedJarSha.put(sha, localResource);
+        }
       }
-
       tmpResourcesMap.put(file, localResource);
     }
     return tmpResourcesMap;
