@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import com.google.common.collect.Lists;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.TestListPartitions;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -198,10 +201,34 @@ public class TestListPartitionsWithIncludeExcludeParams
 
   private void checkExpr(int numParts, ExprNodeGenericFuncDesc expr) throws Exception {
     List<Partition> partitions = new ArrayList<>();
-    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, SerializationUtilities.serializeObjectWithTypeInformation(expr),
+    byte[] exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
+    getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, exprBytes,
         null, (short) -1, partitions);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, partitions.size());
     assertPartitionsHaveCorrectParams(partitions);
+
+    PartitionsByExprRequest req = new PartitionsByExprRequest(DB_NAME, TABLE_NAME,
+        ByteBuffer.wrap(exprBytes));
+    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+        new ArrayList<>();
+    getClient().listPartitionsSpecByExpr(req, msParts);
+
+    int numPartitions = 0;
+    for (org.apache.hadoop.hive.metastore.api.PartitionSpec partitionSpec : msParts) {
+      assertTrue(partitionSpec.getPartitionList() == null ||
+          partitionSpec.getPartitionList().getPartitions() == null ||
+          partitionSpec.getPartitionList().getPartitions().isEmpty());
+      for (PartitionWithoutSD partitionWithoutSD: partitionSpec.getSharedSDPartitionSpec().getPartitions()) {
+        numPartitions ++;
+        Map<String, String> parameters = partitionWithoutSD.getParameters();
+        assertTrue("included parameter key is not found in the partition",
+            parameters.keySet().containsAll(includeKeys));
+        assertFalse("excluded parameter key is found in the partition",
+            parameters.keySet().stream().anyMatch(key -> excludeKeys.contains(key)));
+        assertEquals(includeKeys.size(), parameters.size());
+      }
+    }
+    assertEquals("Partition check failed: " + expr.getExprString(), numParts, numPartitions);
   }
 
 }
