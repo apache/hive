@@ -4092,23 +4092,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
     }
 
-    /**
-     * Generates values from constant expression node.
-     * @param inputRR Row resolver
-     * @param expr AST Node which is a constant expression
-     * @return Object value of the expression
-     * @throws SemanticException
-     */
-    private Object genValueFromConstantExpr(RowResolver inputRR, ASTNode expr) throws SemanticException {
-      ExprNodeDesc exprNode = genExprNodeDesc(expr, inputRR, true, true);
-      if (exprNode instanceof ExprNodeConstantDesc) {
-        ExprNodeConstantDesc offsetConstantExprNode = (ExprNodeConstantDesc) exprNode;
-        return offsetConstantExprNode.getValue();
-      } else {
-        throw new SemanticException("Only constant expressions are supported");
-      }
-    }
-
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel,  RelCollation canonizedCollation) throws SemanticException {
       QBParseInfo qbp = getQBParseInfo(qb);
       RowResolver inputRR = relToHiveRR.get(srcRel);
