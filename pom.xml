@@ -63,7 +63,7 @@
   </modules>
   <properties>
     <standalone-metastore.version>4.0.0-beta-2-SNAPSHOT</standalone-metastore.version>
-    <hive.version.shortname>4.0.0</hive.version.shortname>
+    <hive.version.shortname>4.0.0-beta-2</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
