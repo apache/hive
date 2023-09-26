@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
-import org.apache.hadoop.hive.ql.util.TimeUtil;
+import org.apache.hadoop.util.Time;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,6 +66,8 @@ public class TestPrimaryToReplicaResourceFunction {
   private Function functionObj;
   @Mock
   private FileSystem mockFs;
+
+  MockedStatic<Time> timeMockedStatic;
   private static Logger logger =
       LoggerFactory.getLogger(TestPrimaryToReplicaResourceFunction.class);
 
@@ -75,9 +78,14 @@ public class TestPrimaryToReplicaResourceFunction {
         new Context("primaryDb", null, null, null, hiveConf, null, null, logger);
     when(hiveConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR))
         .thenReturn("/someBasePath/withADir/");
-    TimeUtil timeUtil = mock(TimeUtil.class);
-    when(timeUtil.getNanoTime()).thenReturn(0L);
-    function = new PrimaryToReplicaResourceFunction(context, metadata, "replicaDbName", timeUtil);
+    timeMockedStatic = mockStatic(Time.class);
+    timeMockedStatic.when(Time::monotonicNowNanos).thenReturn(0L);
+    function = new PrimaryToReplicaResourceFunction(context, metadata, "replicaDbName");
+  }
+
+  @After
+  public void tearDown() {
+    timeMockedStatic.close();
   }
 
   @Test

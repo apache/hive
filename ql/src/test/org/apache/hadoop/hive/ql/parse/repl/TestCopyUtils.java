@@ -99,14 +99,11 @@ public class TestCopyUtils {
     doReturn(false).when(copyUtils).regularCopy(same(fs), anyList());
 
     when(source.getFileSystem(same(conf))).thenReturn(fs);
-    try (
-            MockedStatic<FileUtils> fileUtilsMockedStatic = mockStatic(FileUtils.class);
-            MockedStatic<Utils> utilsMockedStatic = mockStatic(Utils.class)
-      ) {
-      fileUtilsMockedStatic.when(() -> FileUtils.distCp(same(fs), anyList(), same(destination),
-                            anyBoolean(), eq(null), same(conf),
-                            same(ShimLoader.getHadoopShims())))
-          .thenReturn(false);
+    try (MockedStatic<FileUtils> fileUtilsMockedStatic = mockStatic(FileUtils.class);
+         MockedStatic<Utils> utilsMockedStatic = mockStatic(Utils.class)) {
+      fileUtilsMockedStatic.when(
+              () -> FileUtils.distCp(same(fs), anyList(), same(destination), anyBoolean(), eq(null), same(conf),
+                      same(ShimLoader.getHadoopShims()))).thenReturn(false);
       utilsMockedStatic.when(Utils::getUGI).thenReturn(mock(UserGroupInformation.class));
 
       copyUtils.doCopy(destination, srcPaths);
