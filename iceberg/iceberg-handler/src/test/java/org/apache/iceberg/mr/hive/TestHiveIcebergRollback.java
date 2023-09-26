@@ -134,4 +134,14 @@ public class TestHiveIcebergRollback extends HiveIcebergStorageHandlerWithEngine
             table.history().get(1).snapshotId() + ")");
         });
   }
+
+  @Test
+  public void testNonIcebergRollback() {
+    shell.executeStatement("CREATE TABLE non_ice (id int)");
+
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Not an iceberg table", () -> {
+        shell.executeStatement("ALTER TABLE non_ice EXECUTE ROLLBACK('2022-09-26 00:00:00')");
+        });
+  }
 }
