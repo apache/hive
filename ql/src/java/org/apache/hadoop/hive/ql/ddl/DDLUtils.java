@@ -239,4 +239,12 @@ public final class DDLUtils {
     return conf.get(HIVE_ICEBERG_STATS_SOURCE.varname, HiveMetaHook.ICEBERG)
             .equalsIgnoreCase(HiveMetaHook.ICEBERG);
   }
+
+  public static boolean checkCanAlterExecute(Table table) {
+    // If other table type also supports execute, we can add it here.
+    if (isIcebergTable(table)) {
+      return true;
+    }
+    return false;
+  }
 }

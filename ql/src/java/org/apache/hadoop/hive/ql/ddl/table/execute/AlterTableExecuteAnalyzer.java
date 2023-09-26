@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -70,7 +69,6 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     Table table = getTable(tableName);
-    DDLUtils.validateTableIsIceberg(table);
     // the first child must be the execute operation type
     ASTNode executeCommandType = (ASTNode) command.getChild(0);
     validateAlterTableType(table, AlterTableType.EXECUTE, false);

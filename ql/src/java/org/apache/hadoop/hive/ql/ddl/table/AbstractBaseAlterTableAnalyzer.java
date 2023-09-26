@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -163,6 +164,12 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
         !table.getStorageHandler().isAllowedAlterOperation(op)) {
         throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.format(
             AlterTableType.NON_NATIVE_TABLE_ALLOWED.toString(), table.getTableName()));
+    }
+
+    if (op == AlterTableType.EXECUTE) {
+        if(!DDLUtils.checkCanAlterExecute(table)) {
+          throw new SemanticException(ErrorMsg.ALTER_EXECUTE_DISALLOWED_OP.format(table.getTableName()));
+        }
     }
   }
 }

@@ -140,7 +140,7 @@ public class TestHiveIcebergRollback extends HiveIcebergStorageHandlerWithEngine
     shell.executeStatement("CREATE TABLE non_ice (id int)");
 
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Not an iceberg table", () -> {
+        "ALTER EXECUTE is not supported for table", () -> {
         shell.executeStatement("ALTER TABLE non_ice EXECUTE ROLLBACK('2022-09-26 00:00:00')");
         });
   }
