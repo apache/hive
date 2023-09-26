@@ -43,6 +43,12 @@
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15on</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
