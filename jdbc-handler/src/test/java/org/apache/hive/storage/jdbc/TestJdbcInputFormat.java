@@ -59,7 +59,8 @@ public class TestJdbcInputFormat {
   public void setup() throws Exception{
 
     hiveDatabaseAccessorFactory = mockStatic(DatabaseAccessorFactory.class);
-    hiveDatabaseAccessorFactory.when(() -> DatabaseAccessorFactory.getAccessor(any(Configuration.class))).thenReturn(mockDatabaseAccessor);
+    hiveDatabaseAccessorFactory.when(() -> DatabaseAccessorFactory.getAccessor(any(Configuration.class))).
+      thenReturn(mockDatabaseAccessor);
   }
 
   @After
