@@ -664,13 +664,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), CAST( _col0 AS decimal(30,10)) (type: decimal(30,10))
+                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), _col0 (type: decimal(30,10))
                   outputColumnNames: _col0, _col1
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [4, 5]
-                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14), CastDecimalToDecimal(col 0:decimal(30,10)) -> 5:decimal(30,10)
+                      projectedOutputColumnNums: [4, 0]
+                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14)
                   Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1288,13 +1288,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), CAST( _col0 AS decimal(30,10)) (type: decimal(30,10))
+                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), _col0 (type: decimal(30,10))
                   outputColumnNames: _col0, _col1
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [4, 5]
-                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14), CastDecimalToDecimal(col 0:decimal(30,10)) -> 5:decimal(30,10)
+                      projectedOutputColumnNums: [4, 0]
+                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14)
                   Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
