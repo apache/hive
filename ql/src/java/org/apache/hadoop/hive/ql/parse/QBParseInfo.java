@@ -517,16 +517,16 @@ public class QBParseInfo {
     destToLimit.put(dest, new SimpleEntry<>(offset, limit));
   }
 
+  public void setDestLimit(String dest, ASTNode offsetAST, ASTNode limitAST) {
+    destToLimitAST.put(dest, new SimpleEntry<>(offsetAST, limitAST));
+  }
+
   public ASTNode getDestLimitAST(String dest) {
     return destToLimitAST.get(dest) == null ? null : destToLimitAST.get(dest).getValue();
   }
 
   public ASTNode getDestOffsetAST(String dest) {
     return destToLimitAST.get(dest) == null ? new ASTNode(new CommonToken(HiveParser.Number, "0")) : destToLimitAST.get(dest).getKey();
-  }
-
-  public void setDestLimit(String dest, ASTNode offsetAST, ASTNode limitAST) {
-    destToLimitAST.put(dest, new SimpleEntry<>(offsetAST, limitAST));
   }
 
   /**

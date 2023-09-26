@@ -24,7 +24,6 @@ import com.google.common.collect.Multimap;
 import java.util.*;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
@@ -1394,6 +1393,7 @@ public class ExprNodeDescUtils {
       if (colInfo == null && input.getIsExprResolver()){
         errMsg = ASTErrorUtils.getMsg(
             ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(), expr);
+            
       } else {
         errMsg = tcCtx.getError();
       }
