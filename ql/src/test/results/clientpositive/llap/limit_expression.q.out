@@ -45,3 +45,18 @@ POSTHOOK: Input: default@src
 238
 86
 311
+PREHOOK: query: select key from src limit (1+2*3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src limit (1+2*3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238
+86
+311
+27
+165
+409
+255

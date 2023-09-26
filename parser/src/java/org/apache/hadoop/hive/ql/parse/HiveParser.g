@@ -2799,14 +2799,24 @@ destination
 limitClause
 @init { pushMsg("limit clause", state); }
 @after { popMsg(state); }
-   : KW_LIMIT ((offset=Number COMMA)? ((LPAREN offsetExpr=expression RPAREN) | offset=Number))
-      -> {numExpr != null}? ^(TOK_LIMIT ($offset)? $numExpr)
-      -> ^(TOK_LIMIT ($offset)? $num)
-   | KW_LIMIT ((LPAREN numExpr=expression RPAREN) | num=Number) KW_OFFSET ((LPAREN offsetExpr=expression RPAREN) | offset=Number)
-      -> {numExpr != null && offsetExpr != null}? ^(TOK_LIMIT ($offsetExpr)? $numExpr)
-      -> {numExpr != null}? ^(TOK_LIMIT ($offset)? $numExpr)
-      -> {offsetExpr != null}? ^(TOK_LIMIT ($offsetExpr)? $num)
-      -> ^(TOK_LIMIT ($offset)? $num)
+   : KW_LIMIT ((offset=Number COMMA) (numExpr=limitExpression))
+      -> ^(TOK_LIMIT ($offset)? $numExpr)
+   | KW_LIMIT (numExpr=limitExpression) (KW_OFFSET (offsetExpr=offsetExpression))?
+      -> ^(TOK_LIMIT ($offsetExpr)? $numExpr)
+   ;
+
+limitExpression
+@init { pushMsg("limit expression", state); }
+@after { popMsg(state); }
+   : LPAREN! expression RPAREN!
+   | Number
+   ;
+
+offsetExpression
+@init { pushMsg("offset expression", state); }
+@after { popMsg(state); }
+   : LPAREN! expression RPAREN!
+   | Number
    ;
 
 //DELETE FROM <tableName> WHERE ...;
