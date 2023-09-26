@@ -224,5 +224,10 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     Assertions.assertThatThrownBy(() -> shell.executeStatement(String.format(
         "ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s", branchName2, nonExistTag)))
         .isInstanceOf(IllegalArgumentException.class).hasMessageEndingWith("does not exist");
+
+    // Create a branch based on a branch will fail.
+    Assertions.assertThatThrownBy(() -> shell.executeStatement(String.format(
+            "ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s", branchName2, branchName1)))
+        .isInstanceOf(IllegalArgumentException.class).hasMessageEndingWith("does not exist");
   }
 }
