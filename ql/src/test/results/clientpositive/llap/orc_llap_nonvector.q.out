@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE orc_create_staging_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_create_staging_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_create_complex
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_create_complex
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_llap_nonvector
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap_nonvector
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_create_staging_n3 (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -1348,7 +1354,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap_nonvector_2
-                  Statistics: Num rows: 12288 Data size: 4468180 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 4468250 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 10
                     Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1393,24 +1399,30 @@ POSTHOOK: Input: default@orc_llap_nonvector_2
 PREHOOK: query: DROP TABLE orc_create_staging_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_staging_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_staging_n3
 POSTHOOK: query: DROP TABLE orc_create_staging_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_staging_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_staging_n3
 PREHOOK: query: DROP TABLE orc_llap_nonvector
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_nonvector
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_nonvector
 POSTHOOK: query: DROP TABLE orc_llap_nonvector
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_nonvector
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_nonvector
 PREHOOK: query: DROP TABLE orc_llap_nonvector_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_nonvector_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_nonvector_2
 POSTHOOK: query: DROP TABLE orc_llap_nonvector_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_nonvector_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_nonvector_2

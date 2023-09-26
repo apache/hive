@@ -52,8 +52,10 @@ POSTHOOK: Input: default@hybrid_table
 PREHOOK: query: drop table hybrid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hybrid_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hybrid_table
 POSTHOOK: query: drop table hybrid_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hybrid_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hybrid_table

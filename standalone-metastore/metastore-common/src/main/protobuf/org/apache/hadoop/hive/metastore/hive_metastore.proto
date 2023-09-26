@@ -2115,6 +2115,8 @@ enum CompactionType {
   COMPACTION_TYPE_UNSPECIFIED = 0;
   COMPACTION_TYPE_MINOR = 1;
   COMPACTION_TYPE_MAJOR = 2;
+  COMPACTION_TYPE_REBALANCE = 3;
+  COMPACTION_TYPE_ABORT_TXN_CLEANUP = 4;
 }
 
 enum DataOperationType {
@@ -2459,6 +2461,7 @@ message FireEventRequestData {
   oneof fireEventRequestData {
     InsertEventRequestData insert_data = 1;
     InsertEventRequestDataList insert_datas = 2;
+    bool refresh_event = 3;
   }
 }
 
@@ -2469,6 +2472,7 @@ message FireListenerEventRequest {
   string table_name = 4;
   repeated string partition_vals = 5;
   string cat_name = 6;
+  map<string, string> tblParams = 7;
 }
 
 message FireListenerEventResponse {

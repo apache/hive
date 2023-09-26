@@ -20,18 +20,27 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.LongSummaryStatistics;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.slf4j.Logger;
@@ -151,6 +160,11 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         }
 
         int lbLevel = (ctx.getLbCtx() == null) ? 0 : ctx.getLbCtx().calculateListBucketingLevel();
+        boolean manifestFilePresent = false;
+        FileSystem manifestFs = dirPath.getFileSystem(conf);
+        if (manifestFs.exists(new Path(dirPath, Utilities.BLOB_MANIFEST_FILE))) {
+          manifestFilePresent = true;
+        }
 
         /**
          * In order to make code easier to read, we write the following in the way:
@@ -168,15 +182,25 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           int dpLbLevel = numDPCols + lbLevel;
 
           generateActualTasks(conf, resTsks, trgtSize, avgConditionSize, mvTask, mrTask,
-              mrAndMvTask, dirPath, inpFs, ctx, work, dpLbLevel);
+              mrAndMvTask, dirPath, inpFs, ctx, work, dpLbLevel, manifestFilePresent);
         } else { // no dynamic partitions
           if(lbLevel == 0) {
             // static partition without list bucketing
-            long totalSz = getMergeSize(inpFs, dirPath, avgConditionSize);
-            Utilities.FILE_OP_LOGGER.debug("merge resolve simple case - totalSz " + totalSz + " from " + dirPath);
+            List<FileStatus> manifestFilePaths = new ArrayList<>();
+            long totalSize;
+            if (manifestFilePresent) {
+              manifestFilePaths = getManifestFilePaths(conf, dirPath);
+              totalSize = getMergeSize(manifestFilePaths, avgConditionSize);
+            } else {
+              totalSize = getMergeSize(inpFs, dirPath, avgConditionSize);
+              Utilities.FILE_OP_LOGGER.debug("merge resolve simple case - totalSize " + totalSize + " from " + dirPath);
+            }
 
-            if (totalSz >= 0) { // add the merge job
-              setupMapRedWork(conf, work, trgtSize, totalSz);
+            if (totalSize >= 0) { // add the merge job
+              if (manifestFilePresent) {
+                setupWorkWhenUsingManifestFile(work, manifestFilePaths, dirPath, true);
+              }
+              setupMapRedWork(conf, work, trgtSize, totalSize);
               resTsks.add(mrTask);
             } else { // don't need to merge, add the move job
               resTsks.add(mvTask);
@@ -184,7 +208,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           } else {
             // static partition and list bucketing
             generateActualTasks(conf, resTsks, trgtSize, avgConditionSize, mvTask, mrTask,
-                mrAndMvTask, dirPath, inpFs, ctx, work, lbLevel);
+                mrAndMvTask, dirPath, inpFs, ctx, work, lbLevel, manifestFilePresent);
           }
         }
       } else {
@@ -229,11 +253,22 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
   private void generateActualTasks(HiveConf conf, List<Task<?>> resTsks,
       long trgtSize, long avgConditionSize, Task<?> mvTask,
       Task<?> mrTask, Task<?> mrAndMvTask, Path dirPath,
-      FileSystem inpFs, ConditionalResolverMergeFilesCtx ctx, MapWork work, int dpLbLevel)
+      FileSystem inpFs, ConditionalResolverMergeFilesCtx ctx, MapWork work, int dpLbLevel,
+      boolean manifestFilePresent)
       throws IOException {
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
-    // get list of dynamic partitions
-    List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
+    List<FileStatus> statusList;
+    Map<FileStatus, List<FileStatus>> manifestDirToFile = new HashMap<>();
+    if (manifestFilePresent) {
+      // Get the list of files from manifest file.
+      List<FileStatus> fileStatuses = getManifestFilePaths(conf, dirPath);
+      // Setup the work to include all the files present in the manifest.
+      setupWorkWhenUsingManifestFile(work, fileStatuses, dirPath, false);
+      manifestDirToFile = getManifestDirs(inpFs, fileStatuses);
+      statusList = new ArrayList<>(manifestDirToFile.keySet());
+    } else {
+      statusList = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
+    }
     FileStatus[] status = statusList.toArray(new FileStatus[statusList.size()]);
 
     // cleanup pathToPartitionInfo
@@ -253,15 +288,21 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     work.removePathToAlias(path); // the root path is not useful anymore
 
     // populate pathToPartitionInfo and pathToAliases w/ DP paths
-    long totalSz = 0;
+    long totalSize = 0;
     boolean doMerge = false;
     // list of paths that don't need to merge but need to move to the dest location
-    List<Path> toMove = new ArrayList<Path>();
+    List<Path> toMove = new ArrayList<>();
+    List<Path> toMerge = new ArrayList<>();
     for (int i = 0; i < status.length; ++i) {
-      long len = getMergeSize(inpFs, status[i].getPath(), avgConditionSize);
+      long len;
+      if (manifestFilePresent) {
+        len = getMergeSize(manifestDirToFile.get(status[i]), avgConditionSize);
+      } else {
+        len = getMergeSize(inpFs, status[i].getPath(), avgConditionSize);
+      }
       if (len >= 0) {
         doMerge = true;
-        totalSz += len;
+        totalSize += len;
         PartitionDesc pDesc = (dpCtx != null) ? generateDPFullPartSpec(dpCtx, status, tblDesc, i)
             : partDesc;
         if (pDesc == null) {
@@ -271,6 +312,13 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         Utilities.FILE_OP_LOGGER.debug("merge resolver will merge " + status[i].getPath());
         work.resolveDynamicPartitionStoredAsSubDirsMerge(conf, status[i].getPath(), tblDesc,
             aliases, pDesc);
+        // Do not add input file since its already added when the manifest file is present.
+        if (manifestFilePresent) {
+          toMerge.addAll(manifestDirToFile.get(status[i])
+              .stream().map(FileStatus::getPath).collect(Collectors.toList()));
+        } else {
+          toMerge.add(status[i].getPath());
+        }
       } else {
         Utilities.FILE_OP_LOGGER.debug("merge resolver will move " + status[i].getPath());
 
@@ -278,8 +326,13 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       }
     }
     if (doMerge) {
+      // Set paths appropriately.
+      if (work.getInputPaths() != null && !work.getInputPaths().isEmpty()) {
+        toMerge.addAll(work.getInputPaths());
+      }
+      work.setInputPaths(toMerge);
       // add the merge MR job
-      setupMapRedWork(conf, work, trgtSize, totalSz);
+      setupMapRedWork(conf, work, trgtSize, totalSize);
 
       // add the move task for those partitions that do not need merging
       if (toMove.size() > 0) {
@@ -359,11 +412,11 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     mWork.setIsMergeFromResolver(true);
   }
 
-  private static class AverageSize {
+  private static class FileSummary {
     private final long totalSize;
-    private final int numFiles;
+    private final long numFiles;
 
-    public AverageSize(long totalSize, int numFiles) {
+    public FileSummary(long totalSize, long numFiles) {
       this.totalSize = totalSize;
       this.numFiles  = numFiles;
     }
@@ -372,64 +425,106 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       return totalSize;
     }
 
-    public int getNumFiles() {
+    public long getNumFiles() {
       return numFiles;
     }
   }
 
-  private AverageSize getAverageSize(FileSystem inpFs, Path dirPath) {
-    AverageSize error = new AverageSize(-1, -1);
-    try {
-      FileStatus[] fStats = inpFs.listStatus(dirPath);
+  private FileSummary getFileSummary(List<FileStatus> fileStatusList) {
+    LongSummaryStatistics stats = fileStatusList.stream().filter(FileStatus::isFile)
+        .mapToLong(FileStatus::getLen).summaryStatistics();
+    return new FileSummary(stats.getSum(), stats.getCount());
+  }
 
-      long totalSz = 0;
-      int numFiles = 0;
-      for (FileStatus fStat : fStats) {
-        Utilities.FILE_OP_LOGGER.debug("Resolver looking at " + fStat.getPath());
-        if (fStat.isDir()) {
-          AverageSize avgSzDir = getAverageSize(inpFs, fStat.getPath());
-          if (avgSzDir.getTotalSize() < 0) {
-            return error;
-          }
-          totalSz += avgSzDir.getTotalSize();
-          numFiles += avgSzDir.getNumFiles();
-        }
-        else {
-          totalSz += fStat.getLen();
-          numFiles++;
-        }
-      }
-
-      return new AverageSize(totalSz, numFiles);
-    } catch (IOException e) {
-      return error;
+  private List<FileStatus> getManifestFilePaths(HiveConf conf, Path dirPath) throws IOException {
+    FileSystem manifestFs = dirPath.getFileSystem(conf);
+    List<String> filesKept;
+    List<FileStatus> pathsKept = new ArrayList<>();
+    try (FSDataInputStream inStream = manifestFs.open(new Path(dirPath, Utilities.BLOB_MANIFEST_FILE))) {
+      String paths = IOUtils.toString(inStream, Charset.defaultCharset());
+      filesKept = Lists.newArrayList(paths.split(System.lineSeparator()));
     }
+    // The first string contains the directory information. Not useful.
+    filesKept.remove(0);
+
+    for (String file : filesKept) {
+      pathsKept.add(manifestFs.getFileStatus(new Path(file)));
+    }
+    return pathsKept;
+  }
+
+  private long getMergeSize(FileSystem inpFs, Path dirPath, long avgSize) {
+    List<FileStatus> result = FileUtils.getFileStatusRecurse(dirPath, inpFs);
+    return getMergeSize(result, avgSize);
   }
 
   /**
    * Whether to merge files inside directory given the threshold of the average file size.
    *
-   * @param inpFs input file system.
-   * @param dirPath input file directory.
+   * @param fileStatuses a list of FileStatus instances.
    * @param avgSize threshold of average file size.
    * @return -1 if not need to merge (either because of there is only 1 file or the
    * average size is larger than avgSize). Otherwise the size of the total size of files.
    * If return value is 0 that means there are multiple files each of which is an empty file.
    * This could be true when the table is bucketized and all buckets are empty.
    */
-  private long getMergeSize(FileSystem inpFs, Path dirPath, long avgSize) {
-    AverageSize averageSize = getAverageSize(inpFs, dirPath);
-    if (averageSize.getTotalSize() < 0) {
+  private long getMergeSize(List<FileStatus> fileStatuses, long avgSize) {
+    FileSummary fileSummary = getFileSummary(fileStatuses);
+    if (fileSummary.getTotalSize() <= 0) {
       return -1;
     }
 
-    if (averageSize.getNumFiles() <= 1) {
+    if (fileSummary.getNumFiles() <= 1) {
       return -1;
     }
 
-    if (averageSize.getTotalSize()/averageSize.getNumFiles() < avgSize) {
-      return averageSize.getTotalSize();
+    if (fileSummary.getTotalSize() / fileSummary.getNumFiles() < avgSize) {
+      return fileSummary.getTotalSize();
     }
     return -1;
+  }
+
+  private void setupWorkWhenUsingManifestFile(MapWork mapWork, List<FileStatus> fileStatuses, Path dirPath,
+                                              boolean isTblLevel) {
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
+    Map<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
+    Operator<? extends OperatorDesc> op = aliasToWork.get(dirPath.toString());
+    PartitionDesc partitionDesc = pathToPartitionInfo.get(dirPath);
+    Path tmpDirPath = Utilities.toTempPath(dirPath);
+    if (op != null) {
+      aliasToWork.remove(dirPath.toString());
+      aliasToWork.put(tmpDirPath.toString(), op);
+      mapWork.setAliasToWork(aliasToWork);
+    }
+    if (partitionDesc != null) {
+      pathToPartitionInfo.remove(dirPath);
+      pathToPartitionInfo.put(tmpDirPath, partitionDesc);
+      mapWork.setPathToPartitionInfo(pathToPartitionInfo);
+    }
+    mapWork.removePathToAlias(dirPath);
+    mapWork.addPathToAlias(tmpDirPath, tmpDirPath.toString());
+    if (isTblLevel) {
+      List<Path> inputPaths = fileStatuses.stream()
+          .filter(FileStatus::isFile)
+          .map(FileStatus::getPath).collect(Collectors.toList());
+      mapWork.setInputPaths(inputPaths);
+    }
+    mapWork.setUseInputPathsDirectly(true);
+  }
+
+  private Map<FileStatus, List<FileStatus>> getManifestDirs(FileSystem inpFs, List<FileStatus> fileStatuses)
+      throws IOException {
+    Map<FileStatus, List<FileStatus>> manifestDirsToPaths = new HashMap<>();
+    for (FileStatus fileStatus : fileStatuses) {
+      if (!fileStatus.isDirectory()) {
+        FileStatus parentDir = inpFs.getFileStatus(fileStatus.getPath().getParent());
+        List<FileStatus> fileStatusList = Lists.newArrayList(fileStatus);
+        manifestDirsToPaths.merge(parentDir, fileStatusList, (oldValue, newValue) -> {
+          oldValue.addAll(newValue);
+          return oldValue;
+        });
+      }
+    }
+    return manifestDirsToPaths;
   }
 }

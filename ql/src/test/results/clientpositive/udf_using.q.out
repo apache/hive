@@ -1,10 +1,10 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.lookup
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.lookup
 #### A masked pattern was here ####
 PREHOOK: query: create table udf_using (c1 string)
@@ -37,17 +37,19 @@ Joe	2
 PREHOOK: query: drop table udf_using
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@udf_using
+PREHOOK: Output: database:default
 PREHOOK: Output: default@udf_using
 POSTHOOK: query: drop table udf_using
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@udf_using
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@udf_using
 PREHOOK: query: drop function lookup
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.lookup
 POSTHOOK: query: drop function lookup
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.lookup
 #### A masked pattern was here ####

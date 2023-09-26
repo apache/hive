@@ -1,11 +1,15 @@
 PREHOOK: query: drop table hbsort
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table hbsort
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table hbpartition
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table hbpartition
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table hbsort(key string, val string, val2 string)
 stored as
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
@@ -91,16 +95,20 @@ POSTHOOK: Lineage: hbsort.val2 EXPRESSION [(src)src.FieldSchema(name:key, type:s
 PREHOOK: query: drop table hbsort
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbsort
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbsort
 POSTHOOK: query: drop table hbsort
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbsort
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbsort
 PREHOOK: query: drop table hbpartition
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbpartition
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbpartition
 POSTHOOK: query: drop table hbpartition
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbpartition
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbpartition

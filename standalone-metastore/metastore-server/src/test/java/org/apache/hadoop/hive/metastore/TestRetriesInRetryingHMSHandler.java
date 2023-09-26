@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.BatchUpdateException;
-import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +48,8 @@ public class TestRetriesInRetryingHMSHandler {
   @BeforeClass
   public static void setup() throws IOException {
     conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, ConfVars.HMS_HANDLER_PROXY_CLASS,
+        MetastoreConf.METASTORE_RETRYING_HANDLER_CLASS);
     MetastoreConf.setLongVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS, RETRY_ATTEMPTS);
     MetastoreConf.setTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL, 10, TimeUnit.MILLISECONDS);
     MetastoreConf.setBoolVar(conf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF, false);
@@ -66,7 +67,7 @@ public class TestRetriesInRetryingHMSHandler {
     .doThrow(JDOException.class)
     .doNothing()
     .when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
+    HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(2)).init();
   }
 
@@ -78,7 +79,7 @@ public class TestRetriesInRetryingHMSHandler {
     IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
     Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
     Mockito.doNothing().when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
+    HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(1)).init();
   }
 
@@ -86,13 +87,18 @@ public class TestRetriesInRetryingHMSHandler {
    * If the init method in HMSHandler throws exception all the times it should be retried until
    * HiveConf.ConfVars.HMSHANDLERATTEMPTS is reached before giving up
    */
-  @Test(expected = MetaException.class)
+  @Test
   public void testRetriesLimit() throws MetaException {
     IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
     Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
     Mockito.doThrow(JDOException.class).when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
-    Mockito.verify(mockBaseHandler, Mockito.times(RETRY_ATTEMPTS)).init();
+    try {
+      HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
+      Assert.fail("should fail for mockBaseHandler init.");
+    } catch (MetaException e) {
+      // expected
+    }
+    Mockito.verify(mockBaseHandler, Mockito.times(RETRY_ATTEMPTS + 1)).init();
   }
 
   /*
@@ -111,7 +117,7 @@ public class TestRetriesInRetryingHMSHandler {
     .doThrow(me)
     .doNothing()
     .when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
+    HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(2)).init();
   }
 
@@ -133,12 +139,66 @@ public class TestRetriesInRetryingHMSHandler {
     InvocationTargetException ex = new InvocationTargetException(me);
     Mockito.doThrow(me).when(mockBaseHandler).getMS();
 
-    IHMSHandler retryingHandler = RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
+    IHMSHandler retryingHandler = HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
     try {
       retryingHandler.getMS();
       Assert.fail("should throw the mocked MetaException");
     } catch (MetaException e) {
       Assert.assertTrue(e.getMessage().contains("java.sql.SQLIntegrityConstraintViolationException"));
     }
+  }
+
+  @Test
+  public void testUnrecoverableException() throws MetaException {
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
+    SQLIntegrityConstraintViolationException sqlException =
+            new SQLIntegrityConstraintViolationException("Cannot delete or update a parent row");
+    BatchUpdateException updateException = new BatchUpdateException(sqlException);
+    NucleusDataStoreException nucleusException = new NucleusDataStoreException(
+            "Clear request failed: DELETE FROM `PARTITION_PARAMS` WHERE `PART_ID`=?", updateException);
+    JDOUserException jdoException = new JDOUserException(
+            "One or more instances could not be deleted", nucleusException);
+    // SQLIntegrityConstraintViolationException wrapped in BatchUpdateException wrapped in
+    // NucleusDataStoreException wrapped in JDOUserException wrapped in MetaException wrapped in InvocationException
+    MetaException me = new MetaException("Dummy exception");
+    me.initCause(jdoException);
+    InvocationTargetException ex = new InvocationTargetException(me);
+    Mockito.doThrow(me).when(mockBaseHandler).getMS();
+
+    IHMSHandler retryingHandler = HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
+    try {
+      retryingHandler.getMS();
+      Assert.fail("should throw the mocked MetaException");
+    } catch (MetaException e) {
+      // expected
+    }
+    Mockito.verify(mockBaseHandler, Mockito.times(1)).getMS();
+  }
+
+  @Test
+  public void testRecoverableException() throws MetaException {
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
+    BatchUpdateException updateException = new BatchUpdateException();
+    NucleusDataStoreException nucleusException = new NucleusDataStoreException(
+            "Clear request failed: DELETE FROM `PARTITION_PARAMS` WHERE `PART_ID`=?", updateException);
+    JDOUserException jdoException = new JDOUserException(
+            "One or more instances could not be deleted", nucleusException);
+    // BatchUpdateException wrapped in NucleusDataStoreException wrapped in
+    // JDOUserException wrapped in MetaException wrapped in InvocationException
+    MetaException me = new MetaException("Dummy exception");
+    me.initCause(jdoException);
+    InvocationTargetException ex = new InvocationTargetException(me);
+    Mockito.doThrow(me).when(mockBaseHandler).getMS();
+
+    IHMSHandler retryingHandler = HMSHandlerProxyFactory.getProxy(conf, mockBaseHandler, false);
+    try {
+      retryingHandler.getMS();
+      Assert.fail("should throw the mocked MetaException");
+    } catch (MetaException e) {
+      // expected
+    }
+    Mockito.verify(mockBaseHandler, Mockito.times(RETRY_ATTEMPTS + 1)).getMS();
   }
 }

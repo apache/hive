@@ -689,4 +689,67 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
     testCase.assertAuthenticateFails(MANAGER_1.credentialsWithDn());
   }
+
+  @Test
+  public void testUserSearchFilterPositive() throws Exception {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .userSearchFilter("(&(|(uid={0})(sAMAccountName={0}))(objectClass=person))")
+        .guidKey("uid")
+        .build();
+
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+
+    testCase = defaultBuilder()
+        .baseDN("ou=Engineering,dc=ad,dc=example,dc=com")
+        .userSearchFilter("(&(|(uid={0})(sAMAccountName={0}))(objectClass=person))")
+        .guidKey("sAMAccountName")
+        .build();
+
+    testCase.assertAuthenticatePasses(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticatePasses(ENGINEER_1.credentialsWithDn());
+  }
+
+  @Test
+  public void testUserSearchFilterNegative() throws Exception {
+    testCase = defaultBuilder()
+        .baseDN("ou=Engineering,dc=ad,dc=example,dc=com")
+        .userSearchFilter("(&(sAMAccountName={0})(objectClass=person)")
+        .guidKey("uid")
+        .build();
+
+    testCase.assertAuthenticateFails(USER1.credentialsWithId());
+    testCase.assertAuthenticateFails(USER3.credentialsWithId());
+  }
+
+  @Test
+  public void testUserAndGroupSearchFilterPositive() throws Exception {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .userSearchFilter("(&(|(uid={0})(sAMAccountName={0}))(objectClass=person))")
+        .guidKey("uid")
+        .groupBaseDN("ou=Groups,dc=example,dc=com")
+        .groupSearchFilter("(&(|(member={0})(member={1}))(&(|(cn=group1)(cn=group2))(objectClass=groupOfNames)))")
+        .build();
+
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+  }
+
+  @Test
+  public void testUserAndGroupSearchFilterNegative() throws Exception {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .userSearchFilter("(&(|(uid={0})(sAMAccountName={0}))(objectClass=person)")
+        .guidKey("uid")
+        .groupBaseDN("ou=Groups,dc=example,dc=com")
+        .groupSearchFilter("(&(|(member={0})(member={1}))(&(cn=group1)(objectClass=groupOfNames)))")
+        .build();
+
+    testCase.assertAuthenticateFails(USER2.credentialsWithId());
+    testCase.assertAuthenticateFails(USER3.credentialsWithId());
+    testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
+  }
+
 }

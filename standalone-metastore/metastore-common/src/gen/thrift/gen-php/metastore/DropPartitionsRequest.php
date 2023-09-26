@@ -68,6 +68,11 @@ class DropPartitionsRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        10 => array(
+            'var' => 'skipColumnSchemaForPartition',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -106,6 +111,10 @@ class DropPartitionsRequest
      * @var string
      */
     public $catName = null;
+    /**
+     * @var bool
+     */
+    public $skipColumnSchemaForPartition = null;
 
     public function __construct($vals = null)
     {
@@ -136,6 +145,9 @@ class DropPartitionsRequest
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['skipColumnSchemaForPartition'])) {
+                $this->skipColumnSchemaForPartition = $vals['skipColumnSchemaForPartition'];
             }
         }
     }
@@ -224,6 +236,13 @@ class DropPartitionsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 10:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->skipColumnSchemaForPartition);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -287,6 +306,11 @@ class DropPartitionsRequest
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 9);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->skipColumnSchemaForPartition !== null) {
+            $xfer += $output->writeFieldBegin('skipColumnSchemaForPartition', TType::BOOL, 10);
+            $xfer += $output->writeBool($this->skipColumnSchemaForPartition);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

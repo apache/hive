@@ -23,6 +23,7 @@ import java.net.ServerSocket;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.After;
@@ -45,6 +46,8 @@ public class TestHiveRemote extends TestHive {
     hiveConf = new HiveConf(TestHiveRemote.class);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.EVENT_LISTENERS, DummyFireInsertListener.class.getName());
     MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
   }
 

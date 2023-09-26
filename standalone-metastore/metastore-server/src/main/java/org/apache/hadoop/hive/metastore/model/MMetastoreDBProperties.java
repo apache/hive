@@ -21,6 +21,8 @@ public class MMetastoreDBProperties {
   private String propertyKey;
   private String propertyValue;
   private String description;
+  private byte[] propertyContent;
+
 
   public MMetastoreDBProperties() {}
 
@@ -53,4 +55,8 @@ public class MMetastoreDBProperties {
   public void setDescription(String description) {
     this.description = description;
   }
+
+  public byte[] getPropertyContent() {  return propertyContent;  }
+
+  public void setPropertyContent(byte[] propertyContent) {  this.propertyContent = propertyContent; }
 }

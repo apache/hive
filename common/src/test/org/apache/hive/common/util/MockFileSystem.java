@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.mockito.MockitoAnnotations;
 
 public class MockFileSystem extends FileSystem {
   final List<MockFile> files = new ArrayList<MockFile>();
@@ -165,7 +166,15 @@ public class MockFileSystem extends FileSystem {
   public boolean rename(Path path, Path path2) throws IOException {
     statistics.incrementWriteOps(1);
     checkAccess();
-    return false;
+
+    MockFile file = findFile(path);
+    if (file == null || findFile(path2) != null) {
+      return false;
+    }
+
+    files.add(new MockFile(path2.toString(), file.blockSize, file.content));
+    files.remove(file);
+    return true;
   }
 
   @Override

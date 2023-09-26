@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists TJOIN1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists TJOIN1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists TJOIN2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists TJOIN2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists TJOIN1 (RNUM int , C1 int, C2 int) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.Validator.SizeValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.conf.Validator.WritableDirectoryValidator;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
@@ -794,6 +795,10 @@ public class HiveConf extends Configuration {
     OUTPUT_FILE_EXTENSION("hive.output.file.extension", null,
         "String used as a file extension for output files. \n" +
         "If not set, defaults to the codec extension for text files (e.g. \".gz\"), or no extension otherwise."),
+
+    HIVE_LOAD_DATA_USE_NATIVE_API("hive.load.data.use.native.api", true,
+        "Whether to use a native APIs for load queries to non-native table(like iceberg), if false uses a Tez job for" +
+            " load queries"),
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
@@ -1815,6 +1820,10 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
         "Enabling strict bucketing checks disallows the following:\n" +
         "  Load into bucketed tables."),
+    HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY("hive.strict.checks.offset.no.orderby", false,
+        "Enabling strict offset checks disallows the following:\n" +
+        "  OFFSET without ORDER BY.\n" +
+        "OFFSET is mostly meaningless when a result set doesn't have a total order."),
     HIVE_STRICT_TIMESTAMP_CONVERSION("hive.strict.timestamp.conversion", true,
         "Restricts unsafe numeric to timestamp conversions"),
     HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
@@ -2205,9 +2214,11 @@ public class HiveConf extends Configuration {
         "padding tolerance config (hive.exec.orc.block.padding.tolerance)."),
     HIVE_ORC_CODEC_POOL("hive.use.orc.codec.pool", false,
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
-    HIVE_USE_STATS_FROM("hive.use.stats.from","iceberg","Use stats from iceberg table snapshot for query " +
-        "planning. This has three values metastore, puffin and iceberg"),
-
+    HIVE_ICEBERG_STATS_SOURCE("hive.iceberg.stats.source", "iceberg",
+        "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
+    HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
+        "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
+            " defult DirectExecutorService"),
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
@@ -2365,7 +2376,7 @@ public class HiveConf extends Configuration {
         "If this parameter is on, and the sum of size for n-1 of the tables/partitions for a n-way join is smaller than the\n" +
         "specified size, the join is directly converted to a mapjoin (there is no conditional task)."),
     HIVE_CONVERT_ANTI_JOIN("hive.auto.convert.anti.join", true,
-        "Whether Hive enables the optimization about converting join with null filter to anti join"),
+        "Whether Hive enables the optimization about converting join with null filter to anti join."),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
@@ -2611,6 +2622,10 @@ public class HiveConf extends Configuration {
         "If the user has set hive.merge.mapfiles to true and hive.merge.mapredfiles to false, the idea was the\n" +
         "number of reducers are few, so the number of files anyway are small. However, with this optimization,\n" +
         "we are increasing the number of files possibly by a big margin. So, we merge aggressively."),
+    HIVE_TEZ_UNION_FLATTEN_SUBDIRECTORIES("hive.tez.union.flatten.subdirectories", false,
+        "By default, when writing data into a table and UNION ALL is the last step of the query, Hive on Tez will\n" +
+        "create a subdirectory for each branch of the UNION ALL. When this property is enabled,\n" +
+        "the subdirectories are removed, and the files are renamed and moved to the parent directory"),
     HIVEOPTCORRELATION("hive.optimize.correlation", false, "exploit intra-query correlations."),
 
     HIVE_OPTIMIZE_LIMIT_TRANSPOSE("hive.optimize.limittranspose", false,
@@ -3001,6 +3016,10 @@ public class HiveConf extends Configuration {
         "Keystore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.keyStore.password " +
              "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE("hive.zookeeper.ssl.keystore.type", "",
+        "Keystore type when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.keyStore.type " +
+            "system property (note the camelCase)."),
     HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION("hive.zookeeper.ssl.truststore.location", "",
         "Truststore location when using a client-side certificate with TLS connectivity to ZooKeeper. " +
             "Overrides any explicit value set via the zookeeper.ssl.trustStore.location" +
@@ -3009,6 +3028,10 @@ public class HiveConf extends Configuration {
         "Truststore password when using a client-side certificate with TLS connectivity to ZooKeeper." +
             "Overrides any explicit value set via the zookeeper.ssl.trustStore.password " +
              "system property (note the camelCase)."),
+    HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE("hive.zookeeper.ssl.truststore.type", "",
+        "Truststore type when using a client-side certificate with TLS connectivity to ZooKeeper." +
+            "Overrides any explicit value set via the zookeeper.ssl.trustStore.type " +
+            "system property (note the camelCase)."),
     HIVE_ZOOKEEPER_KILLQUERY_ENABLE("hive.zookeeper.killquery.enable", true,
         "Whether enabled kill query coordination with zookeeper, " +
             "when hive.server2.support.dynamic.service.discovery is enabled."),
@@ -3270,11 +3293,11 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD("hive.compactor.abortedtxn.threshold", 1000,
         "Number of aborted transactions involving a given table or partition that will trigger\n" +
-        "a major compaction."),
+        "a major compaction / cleanup of aborted directories."),
 
     HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD("hive.compactor.aborted.txn.time.threshold", "12h",
         new TimeValidator(TimeUnit.HOURS),
-        "Age of table/partition's oldest aborted transaction when compaction will be triggered. " +
+        "Age of table/partition's oldest aborted transaction when compaction / cleanup of aborted directories will be triggered. " +
         "Default time unit is: hours. Set to a negative number to disable."),
 
     HIVE_COMPACTOR_ACTIVE_DELTA_DIR_THRESHOLD("hive.compactor.active.delta.dir.threshold", 200,
@@ -3530,8 +3553,8 @@ public class HiveConf extends Configuration {
     HIVEFETCHTASKCACHING("hive.fetch.task.caching", true,
         "Enabling the caching of the result of fetch tasks eliminates the chance of running into a failing read." +
             " On the other hand, if enabled, the hive.fetch.task.conversion.threshold must be adjusted accordingly. That" +
-            " is 1GB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
-    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 1073741824L,
+            " is 200MB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
+    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 209715200L,
         "Input threshold for applying hive.fetch.task.conversion. If target table is native, input length\n" +
         "is calculated by summation of file lengths. If it's not native, storage handler for the table\n" +
         "can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface."),
@@ -3824,7 +3847,19 @@ public class HiveConf extends Configuration {
     HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL("hive.privilege.synchronizer.interval",
         "1800s", new TimeValidator(TimeUnit.SECONDS),
         "Interval to synchronize privileges from external authorizer periodically in HS2"),
-
+    HIVE_DATETIME_FORMATTER("hive.datetime.formatter", "DATETIME",
+        new StringSet("DATETIME", "SIMPLE"),
+        "The formatter to use for handling datetime values. The possible values are:\n" +
+        " * DATETIME: For using java.time.format.DateTimeFormatter\n" +
+        " * SIMPLE: For using java.text.SimpleDateFormat (known bugs: HIVE-25458, HIVE-25403, HIVE-25268)\n" +
+        "Currently the configuration only affects the behavior of the following SQL functions:\n" +
+        " * unix_timestamp(string,[string])\n" + 
+        " * from_unixtime\n" + 
+        " * date_format\n\n" +
+        "The SIMPLE formatter exists purely for compatibility purposes with previous versions of Hive thus its use " +
+        "is discouraged. It suffers from known bugs that are unlikely to be fixed in subsequent versions of the product." +
+        "Furthermore, using SIMPLE formatter may lead to strange behavior, and unexpected results when combined " +
+        "with SQL functions/operators that are using the new DATETIME formatter."),
      // HiveServer2 specific configs
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
         "Clear dangling scratch dir periodically in HS2"),
@@ -4250,6 +4285,16 @@ public class HiveConf extends Configuration {
         "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
         "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
         "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER("hive.server2.authentication.ldap.userSearchFilter", null,
+        "User search filter to be used with baseDN to search for users\n" +
+            "For example: (&(uid={0})(objectClass=person))"),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN("hive.server2.authentication.ldap.groupBaseDN", null,
+        "BaseDN for Group Search. This is used in conjunction with hive.server2.authentication.ldap.baseDN\n" +
+            "and \n" +
+            "request, succeeds if the group is part of the resultset."),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER("hive.server2.authentication.ldap.groupSearchFilter", null,
+        "Group search filter to be used with baseDN, userSearchFilter, groupBaseDN to search for users in groups\n" +
+            "For example: (&(|(memberUid={0})(memberUid={1}))(objectClass=posixGroup))\n"),
     HIVE_SERVER2_PLAIN_LDAP_BIND_USER("hive.server2.authentication.ldap.binddn", null,
         "The user with which to bind to the LDAP server, and search for the full domain name " +
         "of the user being authenticated.\n" +
@@ -4428,6 +4473,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_XSRF_FILTER_ENABLED("hive.server2.xsrf.filter.enabled",false,
         "If enabled, HiveServer2 will block any requests made to it over http " +
         "if an X-XSRF-HEADER header is not present"),
+    HIVE_SERVER2_CSRF_FILTER_ENABLED("hive.server2.csrf.filter.enabled",false,
+        "If enabled, HiveServer2 will block any requests made to it over http " +
+            "if an X-CSRF-TOKEN header is not present"),
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist",
       "set,reset,dfs,add,list,delete,reload,compile,llap",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
@@ -4752,6 +4800,10 @@ public class HiveConf extends Configuration {
         "Turn on Tez' auto reducer parallelism feature. When enabled, Hive will still estimate data sizes\n" +
         "and set parallelism estimates. Tez will sample source vertices' output sizes and adjust the estimates at runtime as\n" +
         "necessary."),
+    TEZ_AUTO_REDUCER_PARALLELISM_MIN_THRESHOLD("hive.tez.auto.reducer.parallelism.min.threshold", 1.0f,
+        "Hive on Tez disables auto reducer parallelism if # of reducers * hive.tez.min.partition.factor is smaller\n" +
+        "than this value. This helps to avoid overhead when the potential impact of auto reducer parallelism is not\n" +
+        "significant. This is effective only when hive.tez.auto.reducer.parallelism is true."),
     TEZ_LLAP_MIN_REDUCER_PER_EXECUTOR("hive.tez.llap.min.reducer.per.executor", 0.33f,
         "If above 0, the min number of reducers for auto-parallelism for LLAP scheduling will\n" +
         "be set to this fraction of the number of executors."),
@@ -4767,7 +4819,7 @@ public class HiveConf extends Configuration {
         "hive.tez.bucket.pruning", true,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
-            "produced by hive.optimize.ppd and hive.optimize.index.filters."),
+            "produced by hive.optimize.ppd and hive.optimize.index.filter."),
     TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT(
         "hive.tez.bucket.pruning.compat", true,
         "When pruning is enabled, handle possibly broken inserts due to negative hashcodes.\n" +
@@ -5484,7 +5536,7 @@ public class HiveConf extends Configuration {
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
         "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
-        "hive.users.in.admin.role,hive.server2.xsrf.filter.enabled,hive.security.authorization.enabled," +
+        "hive.users.in.admin.role,hive.server2.xsrf.filter.enabled,hive.server2.csrf.filter.enabled,hive.security.authorization.enabled," +
             "hive.distcp.privileged.doAs," +
             "hive.server2.authentication.ldap.baseDN," +
             "hive.server2.authentication.ldap.url," +
@@ -5510,8 +5562,10 @@ public class HiveConf extends Configuration {
             "hive.driver.parallel.compilation.global.limit," +
             "hive.zookeeper.ssl.keystore.location," +
             "hive.zookeeper.ssl.keystore.password," +
+            "hive.zookeeper.ssl.keystore.type," +
             "hive.zookeeper.ssl.truststore.location," +
-            "hive.zookeeper.ssl.truststore.password",
+            "hive.zookeeper.ssl.truststore.password," +
+            "hive.zookeeper.ssl.truststore.type",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -5551,12 +5605,13 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
         "Enable query reexecutions"),
     HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies",
-        "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo",
+        "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict",
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
             + "  recompile_without_cbo: recompiles query after a CBO failure\n"
-            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned"),
+            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n "
+            + "  write_conflict: retries the query once if the query failed due to write_conflict"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
@@ -6289,6 +6344,10 @@ public class HiveConf extends Configuration {
     return getVar(conf, ConfVars.HIVEQUERYSTRING, EncoderDecoderFactory.URL_ENCODER_DECODER);
   }
 
+  public static String getQueryId(Configuration conf) {
+    return getVar(conf, HiveConf.ConfVars.HIVEQUERYID, "");
+  }
+
   public void setQueryString(String query) {
     setQueryString(this, query);
   }
@@ -6333,8 +6392,10 @@ public class HiveConf extends Configuration {
       .sslEnabled(getBoolVar(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
       .keyStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
       .keyStorePassword(keyStorePassword)
+      .keyStoreType(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE))
       .trustStoreLocation(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-      .trustStorePassword(trustStorePassword).build();
+      .trustStorePassword(trustStorePassword)
+      .trustStoreType(getVar(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE)).build();
   }
 
   public HiveConf() {
@@ -6962,6 +7023,8 @@ public class HiveConf extends Configuration {
         "Cartesian products", ConfVars.HIVE_STRICT_CHECKS_CARTESIAN);
     private static final String NO_BUCKETING_MSG = makeMessage(
         "Load into bucketed tables", ConfVars.HIVE_STRICT_CHECKS_BUCKETING);
+    private static final String NO_OFFSET_WITHOUT_ORDERBY_MSG = makeMessage(
+        "OFFSET without ORDER BY", ConfVars.HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY);
 
     private static String makeMessage(String what, ConfVars setting) {
       return what + " are disabled for safety reasons. If you know what you are doing, please set "
@@ -6989,6 +7052,12 @@ public class HiveConf extends Configuration {
 
     public static String checkBucketing(Configuration conf) {
       return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_BUCKETING) ? null : NO_BUCKETING_MSG;
+    }
+
+    public static void checkOffsetWithoutOrderBy(Configuration conf) throws SemanticException {
+      if (!isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_OFFSET_NO_ORDERBY)) {
+        throw new SemanticException(NO_OFFSET_WITHOUT_ORDERBY_MSG);
+      }
     }
 
     private static boolean isAllowed(Configuration conf, ConfVars setting) {

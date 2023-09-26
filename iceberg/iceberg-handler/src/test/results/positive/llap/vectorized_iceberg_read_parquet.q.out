@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice_parquet
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_parquet
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_parquet(a int, b string) stored by iceberg stored as parquet
 TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
 PREHOOK: type: CREATETABLE
@@ -702,32 +704,40 @@ POSTHOOK: Input: default@tbl_ice_parquet_complex
 PREHOOK: query: drop table tbl_ice_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_parquet
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_parquet
 POSTHOOK: query: drop table tbl_ice_parquet
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_parquet
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_parquet
 PREHOOK: query: drop table tbl_ice_parquet_all_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_parquet_all_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_parquet_all_types
 POSTHOOK: query: drop table tbl_ice_parquet_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_parquet_all_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_parquet_all_types
 PREHOOK: query: drop table tbl_ice_parquet_parted
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_parquet_parted
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_parquet_parted
 POSTHOOK: query: drop table tbl_ice_parquet_parted
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_parquet_parted
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_parquet_parted
 PREHOOK: query: drop table tbl_ice_parquet_complex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_parquet_complex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_parquet_complex
 POSTHOOK: query: drop table tbl_ice_parquet_complex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_parquet_complex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_parquet_complex

@@ -76,6 +76,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.security.metastore.authenticator.manager");
     addToExpectedRestrictedMap("hive.users.in.admin.role");
     addToExpectedRestrictedMap("hive.server2.xsrf.filter.enabled");
+    addToExpectedRestrictedMap("hive.server2.csrf.filter.enabled");
     addToExpectedRestrictedMap("hive.security.authorization.enabled");
     addToExpectedRestrictedMap("hive.distcp.privileged.doAs");
     addToExpectedRestrictedMap("hive.server2.authentication.ldap.baseDN");
@@ -104,8 +105,10 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.driver.parallel.compilation.global.limit");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.location");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.password");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.type");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.location");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.password");
+    addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.type");
 
     checkRestrictedListMatch();
   }

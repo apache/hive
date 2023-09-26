@@ -1,0 +1,150 @@
+PREHOOK: query: DROP TABLE IF EXISTS orc_bucketed
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS orc_bucketed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table orc_bucketed (a int, b string) clustered by (a) into 3 buckets stored as orc TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: create table orc_bucketed (a int, b string) clustered by (a) into 3 buckets stored as orc TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_bucketed
+PREHOOK: query: insert into orc_bucketed values('1', 'text1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('1', 'text1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('2', 'text2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('2', 'text2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('3', 'text3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('3', 'text3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('4', 'text4')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('4', 'text4')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('5', 'text5')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('5', 'text5')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('6', 'text6')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('6', 'text6')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('7', 'text7')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('7', 'text7')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('8', 'text8')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('8', 'text8')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('9', 'text9')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('9', 'text9')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: insert into orc_bucketed values('10', 'text10')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: insert into orc_bucketed values('10', 'text10')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_bucketed
+POSTHOOK: Lineage: orc_bucketed.a SCRIPT []
+POSTHOOK: Lineage: orc_bucketed.b SCRIPT []
+PREHOOK: query: describe extended orc_bucketed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_bucketed
+POSTHOOK: query: describe extended orc_bucketed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_bucketed
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+Detailed Table Information	Table(tableName:orc_bucketed, dbName:default, #Masked# #Masked#, #Masked#, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:string, comment:null)], #Masked# inputFormat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat, compressed:false, numBuckets:3, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.ql.io.orc.OrcSerde, parameters:{serialization.format=1}), bucketCols:[a], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], #Masked# storedAsSubDirectories:false), partitionKeys:[], parameters:{#Masked#, numRows=10, #Masked#, transactional_properties=insert_only, COLUMN_STATS_ACCURATE={\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}, numFiles=10, #Masked#, #Masked#, numFilesErasureCoded=0, transactional=true}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE, rewriteEnabled:false, catName:hive, #Masked# #Masked#, #Masked#)	
+PREHOOK: query: alter table orc_bucketed compact 'MAJOR' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_bucketed
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: alter table orc_bucketed compact 'MAJOR' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_bucketed
+POSTHOOK: Output: default@orc_bucketed
+PREHOOK: query: analyze table orc_bucketed compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_bucketed
+PREHOOK: Output: default@orc_bucketed
+POSTHOOK: query: analyze table orc_bucketed compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_bucketed
+POSTHOOK: Output: default@orc_bucketed
+PREHOOK: query: describe extended orc_bucketed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_bucketed
+POSTHOOK: query: describe extended orc_bucketed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_bucketed
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+Detailed Table Information	Table(tableName:orc_bucketed, dbName:default, #Masked# #Masked#, #Masked#, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:string, comment:null)], #Masked# inputFormat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat, compressed:false, numBuckets:3, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.ql.io.orc.OrcSerde, parameters:{serialization.format=1}), bucketCols:[a], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], #Masked# storedAsSubDirectories:false), partitionKeys:[], parameters:{#Masked#, numRows=10, #Masked#, transactional_properties=insert_only, COLUMN_STATS_ACCURATE={\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}, numFiles=3, #Masked#, #Masked#, numFilesErasureCoded=0, transactional=true}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE, rewriteEnabled:false, catName:hive, #Masked# #Masked#, #Masked#)	

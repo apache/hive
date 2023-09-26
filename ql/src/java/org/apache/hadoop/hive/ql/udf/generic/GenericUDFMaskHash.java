@@ -59,16 +59,19 @@ class MaskHashTransformer extends AbstractTransformer {
   }
 
   public void setSHA512(boolean val) {
+    if (val) {
+      LOG.info("Using SHA512 for masking");
+    } else {
+      LOG.info("Using SHA256 for masking");
+    }
     this.isSHA512 = val;
   }
 
   @Override
   String transform(final String value) {
     if (getIsSHA512FromSessionConf() || isSHA512) {
-      LOG.info("Using SHA512 for masking");
       return DigestUtils.sha512Hex(value);
     } else {
-      LOG.info("Using SHA256 for masking");
       return DigestUtils.sha256Hex(value);
     }
   }

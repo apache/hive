@@ -1161,23 +1161,29 @@ POSTHOOK: Input: default@t2@p1=P30
 PREHOOK: query: DROP TABLE t0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t0
 POSTHOOK: query: DROP TABLE t0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t0
 PREHOOK: query: DROP TABLE t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
 POSTHOOK: query: DROP TABLE t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: DROP TABLE t3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `table1`(
 col5679 bigint,
 t0_col1 double,
@@ -2844,32 +2850,40 @@ POSTHOOK: Input: default@table2_28
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
 POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: DROP TABLE table2_23
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_23
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_23
 POSTHOOK: query: DROP TABLE table2_23
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_23
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_23
 PREHOOK: query: DROP TABLE table2_25
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_25
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_25
 POSTHOOK: query: DROP TABLE table2_25
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_25
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_25
 PREHOOK: query: DROP TABLE table2_28
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_28
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_28
 POSTHOOK: query: DROP TABLE table2_28
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_28
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_28

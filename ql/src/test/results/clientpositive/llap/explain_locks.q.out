@@ -1,8 +1,11 @@
 PREHOOK: query: explain locks drop table test_explain_locks
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: explain locks drop table test_explain_locks
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 LOCK INFORMATION:
+default -> SHARED_READ
 PREHOOK: query: explain locks create table test_explain_locks (a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -15,12 +18,16 @@ LOCK INFORMATION:
 default -> SHARED_READ
 PREHOOK: query: drop table if exists target
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists target
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table target (a int, b int) partitioned by (p int, q int) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

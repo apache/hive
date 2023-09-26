@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists test_metadata
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_metadata
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table test_metadata (id int, value string) stored by iceberg stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

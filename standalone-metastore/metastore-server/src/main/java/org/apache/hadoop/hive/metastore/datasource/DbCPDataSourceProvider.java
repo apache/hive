@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.datasource;
 
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 
@@ -84,16 +85,16 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     boolean testOnBorrow = hdpConfig.getBoolean(CONNECTION_TEST_BORROW_PROPERTY,
         BaseObjectPoolConfig.DEFAULT_TEST_ON_BORROW);
     long evictionTimeMillis = hdpConfig.getLong(CONNECTION_MIN_EVICT_MILLIS_PROPERTY,
-        BaseObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
+        BaseObjectPoolConfig.DEFAULT_MIN_EVICTABLE_IDLE_TIME.toMillis());
     boolean testWhileIdle = hdpConfig.getBoolean(CONNECTION_TEST_IDLEPROPERTY,
         BaseObjectPoolConfig.DEFAULT_TEST_WHILE_IDLE);
     long timeBetweenEvictionRuns = hdpConfig.getLong(CONNECTION_TIME_BETWEEN_EVICTION_RUNS_MILLIS,
-        BaseObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS);
+        BaseObjectPoolConfig.DEFAULT_TIME_BETWEEN_EVICTION_RUNS.toMillis());
     int numTestsPerEvictionRun = hdpConfig.getInt(CONNECTION_NUM_TESTS_PER_EVICTION_RUN,
         BaseObjectPoolConfig.DEFAULT_NUM_TESTS_PER_EVICTION_RUN);
     boolean testOnReturn = hdpConfig.getBoolean(CONNECTION_TEST_ON_RETURN, BaseObjectPoolConfig.DEFAULT_TEST_ON_RETURN);
     long softMinEvictableIdleTimeMillis = hdpConfig.getLong(CONNECTION_SOFT_MIN_EVICTABLE_IDLE_TIME,
-        BaseObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
+        BaseObjectPoolConfig.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME.toMillis());
     boolean lifo = hdpConfig.getBoolean(CONNECTION_LIFO, BaseObjectPoolConfig.DEFAULT_LIFO);
 
     ConnectionFactory connFactory = new DataSourceConnectionFactory(dbcpDs);
@@ -106,11 +107,11 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     objectPool.setMinIdle(connectionMinIlde);
     objectPool.setTestOnBorrow(testOnBorrow);
     objectPool.setTestWhileIdle(testWhileIdle);
-    objectPool.setMinEvictableIdleTimeMillis(evictionTimeMillis);
-    objectPool.setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRuns);
+    objectPool.setMinEvictableIdleTime(Duration.ofMillis(evictionTimeMillis));
+    objectPool.setTimeBetweenEvictionRuns(Duration.ofMillis(timeBetweenEvictionRuns));
     objectPool.setNumTestsPerEvictionRun(numTestsPerEvictionRun);
     objectPool.setTestOnReturn(testOnReturn);
-    objectPool.setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
+    objectPool.setSoftMinEvictableIdleTime(Duration.ofMillis(softMinEvictableIdleTimeMillis));
     objectPool.setLifo(lifo);
 
     // Enable TxnHandler#connPoolMutex to release the idle connection if possible,
@@ -120,10 +121,10 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     if ("mutex".equalsIgnoreCase(poolName)) {
       if (timeBetweenEvictionRuns < 0) {
         // When timeBetweenEvictionRunsMillis non-positive, no idle object evictor thread runs
-        objectPool.setTimeBetweenEvictionRunsMillis(30 * 1000);
+        objectPool.setTimeBetweenEvictionRuns(Duration.ofMillis(30 * 1000));
       }
       if (softMinEvictableIdleTimeMillis < 0) {
-        objectPool.setSoftMinEvictableIdleTimeMillis(600 * 1000);
+        objectPool.setSoftMinEvictableIdleTime(Duration.ofMillis(600 * 1000));
       }
     }
     String stmt = dbProduct.getPrepareTxnStmt();

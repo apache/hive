@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -50,6 +52,7 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE;
 
 /**
  * Utilities used by some DDLOperations.
@@ -216,5 +219,24 @@ public final class DDLUtils {
       cols.ifPresent(tbl::setFields);
       partCols.ifPresent(tbl::setPartCols);
     }
+  }
+
+  public static void validateTableIsIceberg(org.apache.hadoop.hive.ql.metadata.Table table)
+      throws SemanticException {
+    String tableType = table.getParameters().get(HiveMetaHook.TABLE_TYPE);
+    if (!HiveMetaHook.ICEBERG.equalsIgnoreCase(tableType)) {
+      throw new SemanticException(String.format("Not an iceberg table: %s (type=%s)",
+          table.getFullTableName(), tableType));
+    }
+  }
+
+  public static boolean isIcebergTable(Table table) {
+    return table.isNonNative() && 
+            table.getStorageHandler().getType() == StorageHandlerTypes.ICEBERG;
+  }
+
+  public static boolean isIcebergStatsSource(HiveConf conf) {
+    return conf.get(HIVE_ICEBERG_STATS_SOURCE.varname, HiveMetaHook.ICEBERG)
+            .equalsIgnoreCase(HiveMetaHook.ICEBERG);
   }
 }

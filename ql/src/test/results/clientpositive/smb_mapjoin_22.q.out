@@ -135,18 +135,22 @@ POSTHOOK: Input: default@test_table2_n10
 PREHOOK: query: drop table test_table1_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table1_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1_n10
 POSTHOOK: query: drop table test_table1_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table1_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1_n10
 PREHOOK: query: drop table test_table2_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n10
 POSTHOOK: query: drop table test_table2_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n10
 PREHOOK: query: CREATE TABLE test_table1_n10 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS

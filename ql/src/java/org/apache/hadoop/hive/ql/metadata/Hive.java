@@ -33,9 +33,12 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergStatsSource;
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergTable;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.CALCITE;
 import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
@@ -109,11 +112,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -218,6 +225,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -260,6 +268,7 @@ public class Hive {
   private SynchronizedMetaStoreClient syncMetaStoreClient;
   private UserGroupInformation owner;
   private boolean isAllowClose = true;
+  private final static int DEFAULT_BATCH_DECAYING_FACTOR = 2;
 
   // metastore calls timing information
   private final ConcurrentHashMap<String, Long> metaCallTimeMap = new ConcurrentHashMap<>();
@@ -875,9 +884,15 @@ public class Hive {
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      newTbl.checkValidity(conf);
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
+      }
+      if (isRename(environmentContext)) {
+        newTbl.validateName(conf);
+        environmentContext.putToProperties(HiveMetaHook.OLD_TABLE_NAME, tblName);
+        environmentContext.putToProperties(HiveMetaHook.OLD_DB_NAME, dbName);
+      } else {
+        newTbl.checkValidity(conf);
       }
       if (cascade) {
         environmentContext.putToProperties(StatsSetupConst.CASCADE, StatsSetupConst.TRUE);
@@ -916,6 +931,14 @@ public class Hive {
     } catch (TException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     }
+  }
+
+  private static boolean isRename(EnvironmentContext environmentContext) {
+    if (environmentContext.isSetProperties()) {
+      String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
+      return operation != null && AlterTableType.RENAME == AlterTableType.valueOf(operation);
+    }
+    return false;
   }
 
   /**
@@ -1330,14 +1353,27 @@ public class Hive {
         }
       }
 
-      if (primaryKeys == null && foreignKeys == null
-              && uniqueConstraints == null && notNullConstraints == null && defaultConstraints == null
-          && checkConstraints == null) {
-        getMSC().createTable(tTbl);
-      } else {
-        getMSC().createTableWithConstraints(tTbl, primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+      CreateTableRequest request = new CreateTableRequest(tTbl);
+
+      if (isIcebergTable(tbl)) {
+        EnvironmentContext envContext = new EnvironmentContext();
+        if (TableType.MANAGED_TABLE.equals(tbl.getTableType())) {
+          envContext.putToProperties(CTAS_LEGACY_CONFIG, Boolean.TRUE.toString());
+        }
+        if (isIcebergStatsSource(conf)) {
+          envContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        }
+        request.setEnvContext(envContext);
       }
+
+      request.setPrimaryKeys(primaryKeys);
+      request.setForeignKeys(foreignKeys);
+      request.setUniqueConstraints(uniqueConstraints);
+      request.setNotNullConstraints(notNullConstraints);
+      request.setDefaultConstraints(defaultConstraints);
+      request.setCheckConstraints(checkConstraints);
+
+      getMSC().createTable(request);
 
     } catch (AlreadyExistsException e) {
       if (!ifNotExists) {
@@ -1573,7 +1609,7 @@ public class Hive {
    */
   public Table getTable(TableName tableName) throws HiveException {
     return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), null, true);
+        tableName.getTable(), tableName.getTableMetaRef(), true);
   }
 
   /**
@@ -1583,16 +1619,16 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
-   * @param metaTableName
-   *          the name of the metadata table
+   * @param tableMetaRef
+   *          the name of the table meta ref, e.g. iceberg metadata table or branch
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
   public Table getTable(final String dbName, final String tableName,
-                        final String metaTableName, boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, metaTableName, throwException, false);
+                        final String tableMetaRef, boolean throwException) throws HiveException {
+    return this.getTable(dbName, tableName, tableMetaRef, throwException, false);
   }
 
   /**
@@ -1638,8 +1674,8 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
-   * @param metaTableName
-   *          the name of the metadata table
+   * @param tableMetaRef
+   *          the name of the table meta ref, e.g. iceberg metadata table or branch
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @param checkTransactional
@@ -1648,9 +1684,9 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, String metaTableName, boolean throwException,
+  public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional) throws HiveException {
-    return getTable(dbName, tableName, metaTableName, throwException, checkTransactional, false);
+    return getTable(dbName, tableName, tableMetaRef, throwException, checkTransactional, false);
   }
 
   /**
@@ -1660,8 +1696,8 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
-   * @param metaTableName
-   *          the name of the metadata table
+   * @param tableMetaRef
+   *          the name of the table meta ref, e.g. iceberg metadata table or branch
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @param checkTransactional
@@ -1672,7 +1708,7 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, String metaTableName, boolean throwException,
+  public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
     if (tableName == null || tableName.equals("")) {
@@ -1735,15 +1771,12 @@ public class Hive {
     }
 
     Table t = new Table(tTable);
-    if (metaTableName != null) {
-      if (t.getStorageHandler() == null || !t.getStorageHandler().isMetadataTableSupported()) {
-        throw new SemanticException(ErrorMsg.METADATA_TABLE_NOT_SUPPORTED, t.getTableName());
+    if (tableMetaRef != null) {
+      if (t.getStorageHandler() == null || !t.getStorageHandler().isTableMetaRefSupported()) {
+        throw new SemanticException(ErrorMsg.TABLE_META_REF_NOT_SUPPORTED, t.getTableName());
       }
-      if (!t.getStorageHandler().isValidMetadataTable(metaTableName)) {
-        throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, metaTableName);
-      }
+      t = t.getStorageHandler().checkAndSetTableMetaRef(t, tableMetaRef);
     }
-    t.setMetaTable(metaTableName);
     return t;
   }
 
@@ -1758,9 +1791,14 @@ public class Hive {
    */
   private ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
     ValidWriteIdList validWriteIdList = null;
-    long txnId = SessionState.get() != null && SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+    SessionState sessionState = SessionState.get();
+    HiveTxnManager txnMgr = sessionState != null? sessionState.getTxnMgr() : null;
+    long txnId = txnMgr != null ? txnMgr.getCurrentTxnId() : 0;
     if (txnId > 0) {
       validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
+    } else {
+      String fullTableName = getFullTableName(dbName, tableName);
+      validWriteIdList = new ValidReaderWriteIdList(fullTableName, new long[0], new BitSet(), Long.MAX_VALUE);
     }
     return validWriteIdList;
   }
@@ -2979,10 +3017,10 @@ public class Hive {
   }
 
   private void setStatsPropAndAlterPartitions(boolean resetStatistics, Table tbl,
-                                             List<Partition> partitions,
+                                              List<Partition> partitions,
                                               AcidUtils.TableSnapshot tableSnapshot)
           throws TException {
-    if (partitions.isEmpty()) {
+    if (partitions.isEmpty() || conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)) {
       return;
     }
     EnvironmentContext ec = new EnvironmentContext();
@@ -3373,6 +3411,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
           get(conf).getSynchronizedMSC().addWriteNotificationLog(request);
         }
         supported = false;
+      } else {
+	// Rethrow the exception, so failures are visible. Missing a write notification can be very difficult
+	// to debug otherwise.
+	throw e;
       }
     }
     long end = System.currentTimeMillis();
@@ -3799,6 +3841,47 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  /**
+   * This method helps callers trigger an INSERT event for DML queries without having to deal with
+   * HMS objects. This takes java object types as arguments.
+   * @param dbName Name of the hive database this table belongs to.
+   * @param tblName Name of the hive table this event is for.
+   * @param partitionSpec Map containing key/values for each partition column. Can be null if the event is for a table
+   * @param replace boolean to indicate whether the filelist is replacement of existing files. Treated as additions otherwise
+   * @param newFiles List of file paths affected (added/replaced) by this DML query. Can be null
+   * @throws HiveException if the table or partition does not exist or other internal errors in fetching them
+   */
+  public void fireInsertEvent(String dbName, String tblName,
+      Map<String, String> partitionSpec, boolean replace, List<String> newFiles)
+      throws HiveException {
+    if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
+      LOG.info("DML Events not enabled. Set " + ConfVars.FIRE_EVENTS_FOR_DML.varname);
+      return;
+    }
+    Table table = getTable(dbName, tblName);
+    if (table != null && !table.isTemporary()) {
+      List<FileStatus> newFileStatusObject = null;
+      String parentDir = null;
+      if (newFiles != null && newFiles.size() > 0) {
+        newFileStatusObject = new ArrayList<>(newFiles.size());
+        if (partitionSpec != null && partitionSpec.size() > 0) {
+          // fetch the partition object to determine its location
+          Partition part = getPartition(table, partitionSpec, false);
+          parentDir = part.getLocation();
+        } else {
+          // fetch the table location
+          parentDir = table.getSd().getLocation();
+        }
+        for (String fileName: newFiles) {
+          FileStatus fStatus = new FileStatus();
+          fStatus.setPath(new Path(parentDir, fileName));
+          newFileStatusObject.add(fStatus);
+        }
+      }
+      fireInsertEvent(table, partitionSpec, replace, newFileStatusObject);
+    }
+  }
+
   private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<FileStatus> newFiles)
       throws HiveException {
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
@@ -4069,7 +4152,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl table for which partitions are needed
    * @return list of partition objects
    */
-  public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
+  public Set<Partition> getAllPartitions(Table tbl) throws HiveException {
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
@@ -4086,6 +4169,49 @@ private void constructOneLBLocationMap(FileStatus fSta,
       parts.add(new Partition(tbl, tpart));
     }
     return parts;
+  }
+
+  /**
+   * Get all the partitions. Do it in batches if batchSize is more than 0 else get it in one call.
+   * @param tbl table for which partitions are needed
+   * @return list of partition objects
+   */
+  public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
+    int batchSize= MetastoreConf.getIntVar(
+            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    if (batchSize > 0) {
+      return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES));
+    } else {
+      return getAllPartitions(tbl);
+    }
+  }
+
+  public Set<Partition> getAllPartitionsInBatches(Table tbl, int batchSize, int decayingFactor,
+         int maxRetries) throws HiveException {
+    if (!tbl.isPartitioned()) {
+      return Sets.newHashSet(new Partition(tbl));
+    }
+    Set<Partition> result = new LinkedHashSet<>();
+    RetryUtilities.ExponentiallyDecayingBatchWork batchTask = new RetryUtilities
+            .ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
+      @Override
+      public Void execute(int size) throws HiveException {
+        try {
+          result.clear();
+          new PartitionIterable(Hive.get(), tbl, null, size).forEach(result::add);
+          return null;
+        } catch (HiveException e) {
+          throw e;
+        }
+      }
+    };
+    try {
+      batchTask.run();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return result;
   }
 
   /**
@@ -4705,7 +4831,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
 
-    LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
     return fullF1.startsWith(fullF2);
   }
 
@@ -6646,6 +6771,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
       storageHandler.executeOperation(table, executeSpec);
     } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterTableSnapshotRefOperation(Table table, AlterTableSnapshotRefSpec alterTableSnapshotRefSpec) throws HiveException {
+    try {
+      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      storageHandler.alterTableSnapshotRefOperation(table, alterTableSnapshotRefSpec);
+    } catch (Exception e) {
       throw new HiveException(e);
     }
   }

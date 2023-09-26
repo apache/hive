@@ -272,7 +272,7 @@ fi
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres',/*'mysql',*/'oracle']) {
+  for (def d in ['derby','postgres',/*'mysql','oracle'*/]) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
@@ -364,6 +364,12 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
           stage('PostProcess') {
             try {
               sh """#!/bin/bash -e
+                FAILED_FILES=`find . -name "TEST*xml" -exec grep -l "<failure" {} \\; 2>/dev/null | head -n 10`
+                for a in \$FAILED_FILES
+                do
+                  RENAME_TMP=`echo \$a | sed s/TEST-//g`
+                  mv \${RENAME_TMP/.xml/-output.txt} \${RENAME_TMP/.xml/-output-save.txt}
+                done
                 # removes all stdout and err for passed tests
                 xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
                 # remove all output.txt files

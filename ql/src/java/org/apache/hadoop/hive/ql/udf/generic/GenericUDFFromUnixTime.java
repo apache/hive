@@ -18,12 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -37,6 +31,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+
+import java.time.Instant;
+
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 /**
@@ -52,10 +49,8 @@ public class GenericUDFFromUnixTime extends GenericUDF {
 
   private transient IntObjectInspector inputIntOI;
   private transient LongObjectInspector inputLongOI;
-  private transient ZoneId timeZone;
   private transient final Text result = new Text();
-  private transient String lastFormat ="uuuu-MM-dd HH:mm:ss";
-  private transient DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(lastFormat);
+  private transient InstantFormatter formatter;
   private transient Converter[] converters = new Converter[2];
   private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[2];
 
@@ -84,20 +79,16 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       checkArgGroups(arguments, 1, inputTypes, STRING_GROUP);
       obtainStringConverter(arguments, 1, inputTypes, converters);
     }
-
-    if (timeZone == null) {
-      timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-              .getLocalTimeZone();
+    if (formatter == null) {
+      formatter = InstantFormatter.ofConfiguration(SessionState.get() == null ? new HiveConf() : SessionState.getSessionConf());
     }
-
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 
   @Override
   public void configure(MapredContext context) {
     if (context != null) {
-      String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
-      timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+      formatter = InstantFormatter.ofConfiguration(context.getJobConf());
     }
   }
 
@@ -107,21 +98,16 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       return null;
     }
 
-    if(arguments.length == 2) {
+    long unixTime = (inputIntOI != null) ? inputIntOI.get(arguments[0].get()) : inputLongOI.get(arguments[0].get());
+    if (arguments.length == 2) {
       String format = getStringValue(arguments, 1, converters);
       if (format == null) {
         return null;
       }
-      if (!format.equals(lastFormat)) {
-        FORMATTER = DateTimeFormatter.ofPattern(format);
-        lastFormat = format;
-      }
+      result.set(formatter.format(Instant.ofEpochSecond(unixTime), format));
+    } else {
+      result.set(formatter.format(Instant.ofEpochSecond(unixTime)));
     }
-
-    long unixTime = (inputIntOI != null) ? inputIntOI.get(arguments[0].get()) : inputLongOI.get(arguments[0].get());
-    Instant instant = Instant.ofEpochSecond(unixTime);
-    ZonedDateTime zonedDT = ZonedDateTime.ofInstant(instant, timeZone);
-    result.set(zonedDT.format(FORMATTER));
     return result;
   }
 

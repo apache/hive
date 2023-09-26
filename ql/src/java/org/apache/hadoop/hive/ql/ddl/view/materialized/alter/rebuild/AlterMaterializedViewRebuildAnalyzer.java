@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -299,8 +300,9 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       // First we need to check if it is valid to convert to MERGE/INSERT INTO.
       // If we succeed, we modify the plan and afterwards the AST.
       // MV should be an acid table.
-      boolean fullAcidView = AcidUtils.isFullAcidTable(mvTable.getTTable());
-      MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor(fullAcidView);
+      boolean acidView = AcidUtils.isFullAcidTable(mvTable.getTTable())
+              || AcidUtils.isNonNativeAcidTable(mvTable, true);
+      MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor(acidView);
       visitor.go(basePlan);
       if (visitor.isRewritingAllowed()) {
         if (!materialization.isSourceTablesUpdateDeleteModified()) {
@@ -311,7 +313,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
           }
         } else {
-          if (fullAcidView) {
+          if (acidView) {
             if (visitor.isContainsAggregate()) {
               if (visitor.getCountIndex() < 0) {
                 // count(*) is necessary for determine which rows should be deleted from the view
@@ -465,21 +467,40 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   protected ASTNode fixUpAfterCbo(ASTNode originalAst, ASTNode newAst, CalcitePlanner.PreCboCtx cboCtx)
           throws SemanticException {
     ASTNode fixedAST = super.fixUpAfterCbo(originalAst, newAst, cboCtx);
-    // 1.2. Fix up the query for materialization rebuild
-    if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD) {
-      fixUpASTAggregateInsertIncrementalRebuild(fixedAST);
-    } else if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_INSERT_DELETE_REBUILD) {
-      fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST);
-    } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_REBUILD) {
-      fixUpASTJoinInsertIncrementalRebuild(fixedAST);
-    } else if (mvRebuildMode == MaterializationRebuildMode.JOIN_INSERT_DELETE_REBUILD) {
-      fixUpASTJoinInsertDeleteIncrementalRebuild(fixedAST);
+    switch (mvRebuildMode) {
+      case INSERT_OVERWRITE_REBUILD:
+        return fixedAST;
+      case JOIN_INSERT_REBUILD:
+        fixUpASTJoinInsertIncrementalRebuild(fixedAST);
+        return fixedAST;
+      case AGGREGATE_INSERT_REBUILD:
+        fixUpASTAggregateInsertIncrementalRebuild(fixedAST, getMaterializedViewASTBuilder());
+        return fixedAST;
+      case AGGREGATE_INSERT_DELETE_REBUILD:
+        fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST, getMaterializedViewASTBuilder());
+        return fixedAST;
+      case JOIN_INSERT_DELETE_REBUILD:
+        fixUpASTJoinInsertDeleteIncrementalRebuild(fixedAST, getMaterializedViewASTBuilder());
+        return fixedAST;
+      default:
+        throw new UnsupportedOperationException("No materialized view rebuild exists for mode " + mvRebuildMode);
     }
-
-    return fixedAST;
   }
 
-  private void fixUpASTAggregateInsertIncrementalRebuild(ASTNode newAST) throws SemanticException {
+  @NotNull
+  private MaterializedViewASTBuilder getMaterializedViewASTBuilder() {
+    if (AcidUtils.isFullAcidTable(mvTable.getTTable())) {
+      return new NativeAcidMaterializedViewASTBuilder();
+    } else if (AcidUtils.isNonNativeAcidTable(mvTable, true)) {
+      return new NonNativeAcidMaterializedViewASTBuilder(mvTable);
+    } else {
+      throw new UnsupportedOperationException("Incremental rebuild is supported only for fully ACID materialized " +
+              "views or if the Storage handler supports snapshots (Iceberg).");
+    }
+  }
+
+  private void fixUpASTAggregateInsertIncrementalRebuild(ASTNode newAST, MaterializedViewASTBuilder astBuilder)
+          throws SemanticException {
     ASTNode updateNode = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(
             newAST, HiveParser.TOK_QUERY, HiveParser.TOK_INSERT);
     ASTNode subqueryNodeInputROJ = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(
@@ -510,20 +531,22 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       throw new SemanticException("Unexpected condition in incremental rewriting");
     }
 
-    fixUpASTAggregateIncrementalRebuild(subqueryNodeInputROJ, updateNode, disjunctMap);
+    fixUpASTAggregateIncrementalRebuild(subqueryNodeInputROJ, updateNode, disjunctMap, astBuilder);
   }
 
   private void fixUpASTAggregateIncrementalRebuild(
           ASTNode subqueryNodeInputROJ,
-          ASTNode updateNode,
-          Map<Context.DestClausePrefix, ASTNode> disjuncts)
+          ASTNode updateInsertNode,
+          Map<Context.DestClausePrefix, ASTNode> disjuncts,
+          MaterializedViewASTBuilder astBuilder)
           throws SemanticException {
-    // Replace INSERT OVERWRITE by MERGE equivalent rewriting.
+    // Replace INSERT OVERWRITE by MERGE equivalent rewriting. The update branch is
+    // split to a delete (updateDeleteNode) and an insert (updateInsertNode) branch
     // Here we need to do this complex AST rewriting that generates the same plan
     // that a MERGE clause would generate because CBO does not support MERGE yet.
     // TODO: Support MERGE as first class member in CBO to simplify this logic.
     // 1) Replace INSERT OVERWRITE by INSERT
-    ASTNode destinationNode = (ASTNode) updateNode.getChild(0);
+    ASTNode destinationNode = (ASTNode) updateInsertNode.getChild(0);
     ASTNode newInsertInto = (ASTNode) ParseDriver.adaptor.create(
             HiveParser.TOK_INSERT_INTO, "TOK_INSERT_INTO");
     newInsertInto.addChildren(destinationNode.getChildren());
@@ -538,11 +561,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     // 2) Copy INSERT branch and duplicate it, the first branch will be the UPDATE
     // for the MERGE statement while the new branch will be the INSERT for the
     // MERGE statement
-    ASTNode updateParent = (ASTNode) updateNode.getParent();
-    ASTNode insertNode = (ASTNode) ParseDriver.adaptor.dupTree(updateNode);
+    ASTNode updateParent = (ASTNode) updateInsertNode.getParent();
+    ASTNode insertNode = (ASTNode) ParseDriver.adaptor.dupTree(updateInsertNode);
     insertNode.setParent(updateParent);
-    updateParent.addChild(insertNode);
-    // 3) Create ROW_ID column in select clause from left input for the RIGHT OUTER JOIN.
+    // 3) Add sort columns (ROW_ID in case of native) to select clause from left input for the RIGHT OUTER JOIN.
     // This is needed for the UPDATE clause. Hence, we find the following node:
     // TOK_QUERY
     //   TOK_FROM
@@ -562,32 +584,39 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ASTNode selectNodeInputROJ = new ASTSearcher().simpleBreadthFirstSearch(
             subqueryNodeInputROJ, HiveParser.TOK_SUBQUERY, HiveParser.TOK_QUERY,
             HiveParser.TOK_INSERT, HiveParser.TOK_SELECT);
-    ASTNode selectExprNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
-    ASTNode tableName = createRowIdNode(TableName.getDbTable(
+    astBuilder.createAcidSortNodes(TableName.getDbTable(
             materializationNode.getChild(0).getText(),
-            materializationNode.getChild(1).getText()));
-    ParseDriver.adaptor.addChild(selectExprNodeInputROJ, tableName);
-    ParseDriver.adaptor.addChild(selectNodeInputROJ, selectExprNodeInputROJ);
+            materializationNode.getChild(1).getText()))
+            .forEach(astNode -> ParseDriver.adaptor.addChild(selectNodeInputROJ, astNode));
     // 4) Transform first INSERT branch into an UPDATE
-    // 4.1) Adding ROW__ID field
-    ASTNode selectNodeInUpdate = (ASTNode) updateNode.getChild(1);
-    if (selectNodeInUpdate.getType() != HiveParser.TOK_SELECT) {
-      throw new SemanticException("TOK_SELECT expected in incremental rewriting");
-    }
-    ASTNode selectExprNodeInUpdate = (ASTNode) ParseDriver.adaptor.dupNode(selectExprNodeInputROJ);
-    ParseDriver.adaptor.addChild(selectExprNodeInUpdate, createRowIdNode((ASTNode) subqueryNodeInputROJ.getChild(1)));
-    selectNodeInUpdate.insertChild(0, selectExprNodeInUpdate);
-    // 4.2) Modifying filter condition.
-    ASTNode whereClauseInUpdate = findWhereClause(updateNode);
+    // 4.1) Modifying filter condition.
+    ASTNode whereClauseInUpdate = findWhereClause(updateInsertNode);
     if (whereClauseInUpdate.getChild(0).getType() != HiveParser.KW_OR) {
       throw new SemanticException("OR clause expected below TOK_WHERE in incremental rewriting");
     }
     // We bypass the OR clause and select the first disjunct for the Update branch
     ParseDriver.adaptor.setChild(whereClauseInUpdate, 0, disjuncts.get(Context.DestClausePrefix.UPDATE));
+    ASTNode updateDeleteNode = (ASTNode) ParseDriver.adaptor.dupTree(updateInsertNode);
+    // 4.2) Adding acid sort columns (ROW__ID in case of native acid query StorageHandler otherwise)
+    ASTNode selectNodeInUpdateDelete = (ASTNode) updateDeleteNode.getChild(1);
+    if (selectNodeInUpdateDelete.getType() != HiveParser.TOK_SELECT) {
+      throw new SemanticException("TOK_SELECT expected in incremental rewriting got "
+              + selectNodeInUpdateDelete.getType());
+    }
+    // Remove children
+    while (selectNodeInUpdateDelete.getChildCount() > 0) {
+      selectNodeInUpdateDelete.deleteChild(0);
+    }
+    // And add acid sort columns
+    List<ASTNode> selectExprNodesInUpdate = astBuilder.createDeleteSelectNodes(
+            subqueryNodeInputROJ.getChild(1).getText());
+    for (int i = 0; i < selectExprNodesInUpdate.size(); ++i) {
+      selectNodeInUpdateDelete.insertChild(i, selectExprNodesInUpdate.get(i));
+    }
     // 4.3) Finally, we add SORT clause, this is needed for the UPDATE.
-    ASTNode sortExprNode = createSortNode(createRowIdNode((ASTNode) subqueryNodeInputROJ.getChild(1)));
-    ParseDriver.adaptor.addChild(updateNode, sortExprNode);
+    ASTNode sortExprNode = astBuilder.createSortNodes(
+            astBuilder.createAcidSortNodes((ASTNode) subqueryNodeInputROJ.getChild(1)));
+    ParseDriver.adaptor.addChild(updateDeleteNode, sortExprNode);
     // 5) Modify INSERT branch condition. In particular, we need to modify the
     // WHERE clause and pick up the disjunct for the Insert branch.
     ASTNode whereClauseInInsert = findWhereClause(insertNode);
@@ -596,14 +625,20 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     }
     // We bypass the OR clause and select the second disjunct
     ParseDriver.adaptor.setChild(whereClauseInInsert, 0, disjuncts.get(Context.DestClausePrefix.INSERT));
+
+    updateParent.addChild(updateDeleteNode);
+    updateParent.addChild(insertNode);
+
     // 6) Now we set some tree properties related to multi-insert
     // operation with INSERT/UPDATE
     ctx.setOperation(Context.Operation.MERGE);
-    ctx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
-    ctx.addDestNamePrefix(2, Context.DestClausePrefix.INSERT);
+    ctx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);
+    ctx.addDestNamePrefix(2, Context.DestClausePrefix.DELETE);
+    ctx.addDestNamePrefix(3, Context.DestClausePrefix.INSERT);
   }
 
-  private void fixUpASTAggregateInsertDeleteIncrementalRebuild(ASTNode newAST) throws SemanticException {
+  private void fixUpASTAggregateInsertDeleteIncrementalRebuild(ASTNode newAST, MaterializedViewASTBuilder astBuilder)
+          throws SemanticException {
     ASTNode updateNode = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(
             newAST, HiveParser.TOK_QUERY, HiveParser.TOK_INSERT);
     ASTNode subqueryNodeInputROJ = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(
@@ -646,10 +681,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       }
     }
 
-    fixUpASTAggregateIncrementalRebuild(subqueryNodeInputROJ, updateNode, disjunctMap);
-    addDeleteBranch(updateNode, subqueryNodeInputROJ, disjunctMap.get(Context.DestClausePrefix.DELETE));
+    fixUpASTAggregateIncrementalRebuild(subqueryNodeInputROJ, updateNode, disjunctMap, astBuilder);
+    addDeleteBranch(updateNode, subqueryNodeInputROJ, disjunctMap.get(Context.DestClausePrefix.DELETE), astBuilder);
 
-    ctx.addDestNamePrefix(3, Context.DestClausePrefix.DELETE);
+    ctx.addDestNamePrefix(4, Context.DestClausePrefix.DELETE);
   }
 
   private ASTNode findWhereClause(ASTNode updateNode) throws SemanticException {
@@ -667,7 +702,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     return whereClauseInUpdate;
   }
 
-  private void addDeleteBranch(ASTNode updateNode, ASTNode subqueryNodeInputROJ, ASTNode filter)
+  private void addDeleteBranch(ASTNode updateNode, ASTNode subqueryNodeInputROJ, ASTNode predicate,
+                               MaterializedViewASTBuilder astBuilder)
           throws SemanticException {
     ASTNode updateParent = (ASTNode) updateNode.getParent();
     ASTNode deleteNode = (ASTNode) ParseDriver.adaptor.dupTree(updateNode);
@@ -683,55 +719,13 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     while (selectNodeInDelete.getChildCount() > 0) {
       selectNodeInDelete.deleteChild(0);
     }
-    // 3) Adding ROW__ID field
-    ASTNode selectExprNodeInUpdate = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
-    ParseDriver.adaptor.addChild(selectExprNodeInUpdate, createRowIdNode((ASTNode) subqueryNodeInputROJ.getChild(1)));
-    selectNodeInDelete.insertChild(0, selectExprNodeInUpdate);
+    // 3) Adding acid sort columns
+    astBuilder.createDeleteSelectNodes(subqueryNodeInputROJ.getChild(1).getText())
+            .forEach(astNode -> ParseDriver.adaptor.addChild(selectNodeInDelete, astNode));
 
     // 4) Add filter condition to delete
     ASTNode whereClauseInDelete = findWhereClause(deleteNode);
-    ParseDriver.adaptor.setChild(whereClauseInDelete, 0, filter);
-  }
-
-  private ASTNode createRowIdNode(ASTNode inputNode) {
-    return createRowIdNode(inputNode.getText());
-  }
-
-  // .
-  //    TOK_TABLE_OR_COL
-  //          <tableName>
-  //    ROW__ID
-  private ASTNode createRowIdNode(String tableName) {
-    ASTNode dotNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.DOT, ".");
-    ASTNode columnTokNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
-    ASTNode rowIdNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.Identifier, VirtualColumn.ROWID.getName());
-    ASTNode tableNameNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.Identifier, tableName);
-
-    ParseDriver.adaptor.addChild(dotNode, columnTokNode);
-    ParseDriver.adaptor.addChild(dotNode, rowIdNode);
-    ParseDriver.adaptor.addChild(columnTokNode, tableNameNode);
-    return dotNode;
-  }
-
-  //       TOK_SORTBY
-  //         TOK_TABSORTCOLNAMEASC
-  //            TOK_NULLS_FIRST
-  //               <sortKeyNode>
-  private ASTNode createSortNode(ASTNode sortKeyNode) {
-    ASTNode sortExprNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_SORTBY, "TOK_SORTBY");
-    ASTNode orderExprNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_TABSORTCOLNAMEASC, "TOK_TABSORTCOLNAMEASC");
-    ASTNode nullsOrderExprNode = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_NULLS_FIRST, "TOK_NULLS_FIRST");
-    ParseDriver.adaptor.addChild(sortExprNode, orderExprNode);
-    ParseDriver.adaptor.addChild(orderExprNode, nullsOrderExprNode);
-    ParseDriver.adaptor.addChild(nullsOrderExprNode, sortKeyNode);
-    return sortExprNode;
+    ParseDriver.adaptor.setChild(whereClauseInDelete, 0, predicate);
   }
 
   private void fixUpASTJoinInsertIncrementalRebuild(ASTNode newAST) throws SemanticException {
@@ -758,7 +752,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     destParent.insertChild(childIndex, newChild);
   }
 
-  private void fixUpASTJoinInsertDeleteIncrementalRebuild(ASTNode newAST) throws SemanticException {
+  private void fixUpASTJoinInsertDeleteIncrementalRebuild(ASTNode newAST, MaterializedViewASTBuilder astBuilder)
+          throws SemanticException {
     // Replace INSERT OVERWRITE by MERGE equivalent rewriting.
     // Here we need to do this complex AST rewriting that generates the same plan
     // that a MERGE clause would generate because CBO does not support MERGE yet.
@@ -785,12 +780,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ASTNode selectNodeInputROJ = new ASTSearcher().simpleBreadthFirstSearch(
             subqueryNodeInputROJ, HiveParser.TOK_SUBQUERY, HiveParser.TOK_QUERY,
             HiveParser.TOK_INSERT, HiveParser.TOK_SELECT);
-    ASTNode selectExprNodeInputROJ = (ASTNode) ParseDriver.adaptor.create(
-            HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
-    ParseDriver.adaptor.addChild(selectNodeInputROJ, selectExprNodeInputROJ);
-    ParseDriver.adaptor.addChild(selectExprNodeInputROJ, createRowIdNode(TableName.getDbTable(
+    astBuilder.createAcidSortNodes(TableName.getDbTable(
             materializationNode.getChild(0).getText(),
-            materializationNode.getChild(1).getText())));
+            materializationNode.getChild(1).getText()))
+            .forEach(astNode -> ParseDriver.adaptor.addChild(selectNodeInputROJ, astNode));
 
     ASTNode whereClauseInInsert = findWhereClause(insertNode);
 
@@ -827,10 +820,12 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ASTNode newCondInInsert = (ASTNode) whereClauseInInsert.getChild(0).getChild(indexInsert);
     ParseDriver.adaptor.setChild(whereClauseInInsert, 0, newCondInInsert);
 
-    addDeleteBranch(insertNode, subqueryNodeInputROJ, (ASTNode) whereClauseInInsert.getChild(0).getChild(indexDelete));
+    ASTNode deletePredicate = (ASTNode) whereClauseInInsert.getChild(0).getChild(indexDelete);
+    addDeleteBranch(insertNode, subqueryNodeInputROJ, deletePredicate, astBuilder);
 
     // 3) Add sort node to delete branch
-    ASTNode sortNode = createSortNode(createRowIdNode((ASTNode) subqueryNodeInputROJ.getChild(1)));
+    ASTNode sortNode = astBuilder.createSortNodes(
+            astBuilder.createAcidSortNodes((ASTNode) subqueryNodeInputROJ.getChild(1)));
     ParseDriver.adaptor.addChild(insertNode.getParent().getChild(2), sortNode);
 
     // 4) Now we set some tree properties related to multi-insert
@@ -838,5 +833,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ctx.setOperation(Context.Operation.MERGE);
     ctx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);
     ctx.addDestNamePrefix(2, Context.DestClausePrefix.DELETE);
+  }
+
+  @Override
+  protected boolean allowOutputMultipleTimes() {
+    return true;
   }
 }

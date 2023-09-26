@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.TimeZone;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.common.DynFields;
@@ -101,6 +102,7 @@ public class TestHiveIcebergStorageHandlerTimezone {
   @Before
   public void before() throws IOException {
     TimeZone.setDefault(TimeZone.getTimeZone(timezoneString));
+    TypeInfoFactory.timestampLocalTZTypeInfo.setTimeZone(TimeZone.getTimeZone(timezoneString).toZoneId());
 
     // Magic to clean cached date format and local timezone for Hive where the default timezone is used/stored in the
     // cached object
@@ -190,6 +192,27 @@ public class TestHiveIcebergStorageHandlerTimezone {
       Assert.assertEquals("2019-02-22 15:14:54.2 " + timezoneString, result.get(0)[0]);
     } else if (timezoneString.equals("GMT")) {
       Assert.assertEquals("2019-02-22 09:44:54.2 " + timezoneString, result.get(0)[0]);
+    }
+  }
+
+  @Test
+  public void testFetchTaskWithTimestampWithLocalTimeZone() throws IOException {
+    Schema timestampSchema = new Schema(optional(1, "d_ts", Types.TimestampType.withZone()));
+
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(timestampSchema)
+        .add(OffsetDateTime.of(LocalDateTime.of(2019, 2, 22, 9, 44, 54, 100000000), ZoneOffset.of("+00")))
+        .build();
+
+    testTables.createTable(shell, "ts_test_tz", timestampSchema, FileFormat.PARQUET, records);
+
+    List<Object[]> result = shell.executeStatement("SELECT * FROM ts_test_tz");
+    Assert.assertEquals(1, result.size());
+    if (timezoneString.equals("America/New_York")) {
+      Assert.assertEquals("2019-02-22 04:44:54.1 " + timezoneString, result.get(0)[0]);
+    } else if (timezoneString.equals("Asia/Kolkata")) {
+      Assert.assertEquals("2019-02-22 15:14:54.1 " + timezoneString, result.get(0)[0]);
+    } else if (timezoneString.equals("GMT")) {
+      Assert.assertEquals("2019-02-22 09:44:54.1 " + timezoneString, result.get(0)[0]);
     }
   }
 }

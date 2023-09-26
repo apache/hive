@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE llap_stats
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE llap_stats
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE llap_stats(ctinyint TINYINT, csmallint SMALLINT) partitioned by (cint int) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -257,8 +259,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE llap_stats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@llap_stats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_stats
 POSTHOOK: query: DROP TABLE llap_stats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@llap_stats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_stats

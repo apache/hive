@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -341,10 +342,23 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public boolean dropPartition(String catName, String dbName, String tableName, String partName)
+      throws MetaException, NoSuchObjectException,
+      InvalidObjectException, InvalidInputException {
+    return objectStore.dropPartition(catName, dbName, tableName, partName);
+  }
+
+  @Override
   public List<Partition> getPartitions(String catName, String dbName, String tableName, int max)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartitions(catName, dbName, tableName, max);
   }
+
+    @Override
+    public List<Partition> getPartitions(String catName, String dbName, String tblName, int max,
+                                         boolean skipColumnSchemaForPartition) throws MetaException, NoSuchObjectException {
+        return objectStore.getPartitions(catName, dbName, tblName, max, skipColumnSchemaForPartition);
+    }
 
   @Override
   public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
@@ -455,6 +469,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.getPartitionsByFilter(catName, dbName, tblName, filter, maxParts);
   }
 
+    @Override
+    public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName,
+                                                 String filter, short maxParts, boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException {
+        return objectStore.getPartitionsByFilter(catName, dbName, tblName, filter, maxParts, skipColSchemaForPartitions);
+    }
+
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
       GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
@@ -486,12 +506,25 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.getPartitionsByNames(catName, dbName, tblName, partNames);
   }
 
+    @Override
+    public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
+                                                List<String> partNames, boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException {
+        return objectStore.getPartitionsByNames(catName, dbName, tblName, partNames, skipColSchemaForPartitions);
+    }
+
   @Override
   public boolean getPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr,
       String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     return objectStore.getPartitionsByExpr(catName,
         dbName, tblName, expr, defaultPartitionName, maxParts, result);
   }
+
+    @Override
+    public boolean getPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr,
+                                       String defaultPartitionName, short maxParts, List<Partition> result, boolean skipColSchemaForPartitions) throws TException {
+        return objectStore.getPartitionsByExpr(catName,
+                dbName, tblName, expr, defaultPartitionName, maxParts, result, skipColSchemaForPartitions);
+    }
 
   @Override
   public Table markPartitionForEvent(String catName, String dbName, String tblName,
@@ -683,6 +716,15 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
         groupNames);
   }
 
+    @Override
+    public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName, short maxParts,
+                                                 String userName, List<String> groupNames, boolean isColumnSchemaRequired) throws MetaException, NoSuchObjectException,
+            InvalidObjectException {
+
+        return objectStore.getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName,
+                groupNames, isColumnSchemaRequired);
+    }
+
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tblName,
       List<String> partVals, short maxParts)
@@ -697,6 +739,14 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.listPartitionsPsWithAuth(catName, dbName, tblName, partVals, maxParts,
         userName, groupNames);
   }
+
+    @Override
+    public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
+                                                    List<String> partVals, short maxParts, String userName, List<String> groupNames, boolean skipColSchemaForPartitions)
+            throws MetaException, InvalidObjectException, NoSuchObjectException {
+        return objectStore.listPartitionsPsWithAuth(catName, dbName, tblName, partVals, maxParts,
+                userName, groupNames, skipColSchemaForPartitions);
+    }
 
   @Override
   public long cleanupEvents() {
@@ -818,6 +868,14 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
     return objectStore.updateTableColumnStatistics(statsObj, validWriteIds, writeId);
+  }
+
+  @Override
+  public Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable, ColumnStatistics statsObj,
+                                                             List<String> partVals, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException,
+      InvalidInputException {
+    return objectStore.updatePartitionColumnStatistics(table, mTable, statsObj, partVals, validWriteIds, writeId);
   }
 
   @Override
@@ -1525,6 +1583,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     objectStore.dropPackage(request);
   }
 
+  @Override
+  public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException {
+      return objectStore.ensureGetMTable(catName, dbName, catName);
+  }
+    
   @Override
   public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
         Map<String, ColumnStatistics> partColStatsMap,

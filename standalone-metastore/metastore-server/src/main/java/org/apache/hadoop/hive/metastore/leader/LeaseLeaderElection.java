@@ -79,7 +79,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   // For non-leader instances to check the lock periodically to
   // see if there is a chance to take over the leadership.
-  // At any time, only one of heartbeater and nonLeaderWatcher is alive.
+  // At any time, either heartbeater or nonLeaderWatcher is alive.
   private LeaseWatcher nonLeaderWatcher;
 
   // Current lock id
@@ -134,7 +134,6 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       } catch (Exception e) {
         LOG.error("Error notifying the listener: " + listener +
             ", leader: " + isLeader, e);
-        // throw new LeaderException(e);
       }
     });
   }
@@ -247,7 +246,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     }
 
     public void perform() {
-      LOG.info("Starting " + getClass().getName() + " for leader: " + name);
+      LOG.info("Starting a watcher: {} for {}", getClass().getName(), name);
       start();
     }
 
@@ -290,11 +289,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   }
 
   private class NonLeaderWatcher extends LeaseWatcher {
-    private CheckLockRequest request;
-
     private long sleep;
-
     private int count;
+    private CheckLockRequest request;
 
     NonLeaderWatcher(Configuration conf, TableName table) {
       super(conf, table);
@@ -316,12 +313,12 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
             reclaim();
           }
         } else {
-          // If the leader crashes, the lock it holds will become timeout eventually.
+          // In case the leader crashes, the lock it holds will become timeout eventually.
           // The AcidHouseKeeperService would not clean the corrupt lock until a new leader is elected,
-          // however the leader candidate should hold that lock firstly in order to be the new leader,
-          // so a deadlock occurs in such case.
-          // For non-leader instances, they should try to clean timeout locks if possible to avoid
-          // such problem.
+          // however a leader candidate should hold that lock firstly in order to be the new leader,
+          // a deadlock occurs in such case.
+          // For all non-leader instances, they should try to clean timeout locks if possible to
+          // avoid such problem.
           store.performTimeOuts();
         }
       } catch (NoSuchTxnException | TxnAbortedException e) {
@@ -449,7 +446,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       } catch (NoSuchLockException | TxnOpenException e) {
         // ignore
       } catch (Exception e) {
-        LOG.error("Error while unlocking", e);
+        LOG.error("Error while unlocking: " + lockId, e);
       }
     }
   }
@@ -467,5 +464,4 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   public String getName() {
     return name;
   }
-
 }

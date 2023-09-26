@@ -32,7 +32,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -61,6 +61,12 @@ import static org.junit.runners.Parameterized.Parameters;
 public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
   protected static final String[] EXECUTION_ENGINES = new String[] {"tez"};
+
+  public static final String RETRY_STRATEGIES =
+      "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict";
+
+  public static final String RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT =
+      "overlay,reoptimize,reexecute_lost_am," + "dagsubmit,recompile_without_cbo";
 
   protected static final Schema ORDER_SCHEMA = new Schema(
           required(1, "order_id", Types.LongType.get()),
@@ -112,7 +118,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
         if (javaVersion.equals("1.8")) {
           testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, false});
           // test for vectorization=ON in case of ORC and PARQUET format with Tez engine
-          if (fileFormat != FileFormat.METADATA && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
+          if (fileFormat != FileFormat.METADATA && "tez".equals(engine) && HiveVersion.min(HiveVersion.HIVE_3)) {
             testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, true});
           }
         }

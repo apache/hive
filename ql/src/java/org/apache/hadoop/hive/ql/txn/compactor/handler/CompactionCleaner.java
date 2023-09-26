@@ -17,17 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -39,45 +35,33 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest.CleanupRequestBuilder;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
-import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.collections4.ListUtils.subtract;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getIntVar;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
 import static java.util.Objects.isNull;
 
 /**
- * A compaction based implementation of RequestHandler.
+ * A compaction based implementation of TaskHandler.
  * Provides implementation of creation of compaction clean tasks.
  */
 class CompactionCleaner extends TaskHandler {
@@ -98,7 +82,7 @@ class CompactionCleaner extends TaskHandler {
             : 0;
     List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
     if (!readyToClean.isEmpty()) {
-      long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
+      long minTxnIdSeenOpen = Math.min(minOpenTxnId, txnHandler.findMinTxnIdSeenOpen());
       // For checking which compaction can be cleaned we can use the minOpenTxnId
       // However findReadyToClean will return all records that were compacted with old version of HMS
       // where the CQ_NEXT_TXN_ID is not set. For these compactions we need to provide minTxnIdSeenOpen
@@ -114,7 +98,7 @@ class CompactionCleaner extends TaskHandler {
     return Collections.emptyList();
   }
 
-  private void clean(CompactionInfo ci, long minOpenTxnGLB, boolean metricsEnabled) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for {}", ci);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
@@ -140,7 +124,7 @@ class CompactionCleaner extends TaskHandler {
         if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
           // The table was marked no clean up true.
           LOG.info("Skipping table {} clean up, as NO_CLEANUP set to true", ci.getFullTableName());
-          txnHandler.markCleaned(ci);
+          txnHandler.markRefused(ci);
           return;
         }
         if (!isNull(ci.partName)) {
@@ -155,7 +139,7 @@ class CompactionCleaner extends TaskHandler {
           if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
             // The partition was marked no clean up true.
             LOG.info("Skipping partition {} clean up, as NO_CLEANUP set to true", ci.getFullPartitionName());
-            txnHandler.markCleaned(ci);
+            txnHandler.markRefused(ci);
             return;
           }
         }
@@ -172,7 +156,7 @@ class CompactionCleaner extends TaskHandler {
         if (dropPartition && isNull(resolvePartition(ci.dbname, ci.tableName, ci.partName))) {
           cleanUsingLocation(ci, path, true);
         } else {
-          cleanUsingAcidDir(ci, path, minOpenTxnGLB);
+          cleanUsingAcidDir(ci, path, minOpenTxn);
         }
       } else {
         cleanUsingLocation(ci, location, false);
@@ -180,11 +164,10 @@ class CompactionCleaner extends TaskHandler {
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", ci,
               e.getMessage());
-      ci.errorMessage = e.getMessage();
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();
       }
-      handleCleanerAttemptFailure(ci);
+      handleCleanerAttemptFailure(ci, e.getMessage());
     }  finally {
       if (metricsEnabled) {
         perfLogger.perfLogEnd(CompactionCleaner.class.getName(), cleanerMetric);
@@ -222,9 +205,9 @@ class CompactionCleaner extends TaskHandler {
     }
   }
 
-  private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxnGLB) throws Exception {
+  private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn, false);
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /*
@@ -260,48 +243,10 @@ class CompactionCleaner extends TaskHandler {
 
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
+    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
-    Path path = new Path(location);
-    FileSystem fs = path.getFileSystem(conf);
-
-    // Collect all the files/dirs
-    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, path);
-    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, validWriteIdList, Ref.from(false), false,
-            dirSnapshots);
-    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
-    boolean isDynPartAbort = CompactorUtil.isDynPartAbort(table, ci.partName);
-
-    List<Path> obsoleteDirs = CompactorUtil.getObsoleteDirs(dir, isDynPartAbort);
-    if (isDynPartAbort || dir.hasUncompactedAborts()) {
-      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
-    }
-
-    List<Path> deleted = fsRemover.clean(new CleanupRequestBuilder().setLocation(location)
-            .setDbName(ci.dbname).setFullPartitionName(ci.getFullPartitionName())
-            .setRunAs(ci.runAs).setObsoleteDirs(obsoleteDirs).setPurge(true)
-            .build());
-
-    if (!deleted.isEmpty()) {
-      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
-              txnHandler);
-    }
-
-    // Make sure there are no leftovers below the compacted watermark
-    boolean success = false;
-    conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
-    dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
-                    ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
-            Ref.from(false), false, dirSnapshots);
-
-    List<Path> remained = subtract(CompactorUtil.getObsoleteDirs(dir, isDynPartAbort), deleted);
-    if (!remained.isEmpty()) {
-      LOG.warn("{} Remained {} obsolete directories from {}. {}",
-              idWatermark(ci), remained.size(), location, CompactorUtil.getDebugInfo(remained));
-    } else {
-      LOG.debug("{} All cleared below the watermark: {} from {}", idWatermark(ci), ci.highestWriteId, location);
-      success = true;
-    }
+    boolean success = cleanAndVerifyObsoleteDirectories(ci, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, ci.partName)) {
       txnHandler.markCleaned(ci);
     } else {
@@ -337,18 +282,10 @@ class CompactionCleaner extends TaskHandler {
     return " id=" + ci.id;
   }
 
-  private ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
+  @Override
+  protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
           throws NoSuchTxnException, MetaException {
-    List<String> tblNames = Collections.singletonList(AcidUtils.getFullTableName(ci.dbname, ci.tableName));
-    GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
-    request.setValidTxnList(validTxnList.writeToString());
-    GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
-    // we could have no write IDs for a table if it was never written to but
-    // since we are in the Cleaner phase of compactions, there must have
-    // been some delta/base dirs
-    assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
-    ValidReaderWriteIdList validWriteIdList =
-            TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+    ValidReaderWriteIdList validWriteIdList = super.getValidCleanerWriteIdList(ci, validTxnList);
     /*
      * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
      * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction
@@ -358,22 +295,6 @@ class CompactionCleaner extends TaskHandler {
       validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
     }
     return validWriteIdList;
-  }
-
-  private void handleCleanerAttemptFailure(CompactionInfo ci) throws MetaException {
-    long defaultRetention = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
-    int cleanAttempts = 0;
-    if (ci.retryRetention > 0) {
-      cleanAttempts = (int)(Math.log(ci.retryRetention / defaultRetention) / Math.log(2)) + 1;
-    }
-    if (cleanAttempts >= getIntVar(conf, HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS)) {
-      //Mark it as failed if the max attempt threshold is reached.
-      txnHandler.markFailed(ci);
-    } else {
-      //Calculate retry retention time and update record.
-      ci.retryRetention = (long)Math.pow(2, cleanAttempts) * defaultRetention;
-      txnHandler.setCleanerRetryRetentionTimeOnError(ci);
-    }
   }
 
   private CleanupRequest getCleaningRequestBasedOnLocation(CompactionInfo ci, String location) {

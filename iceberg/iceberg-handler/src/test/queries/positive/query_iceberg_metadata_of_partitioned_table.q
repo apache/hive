@@ -30,7 +30,7 @@ insert into table ice_meta_3 partition (b='three', c='Wednesday') values (6), (7
 insert into table ice_meta_3 partition (b='four', c='Thursday') values (9);
 insert into table ice_meta_3 partition (b='four', c='Saturday') values (12), (13), (14);
 insert into table ice_meta_3 partition (b='four', c='Sunday') values (15);
-alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler');
+alter table ice_meta_3 convert to iceberg;
 select * from ice_meta_3;
 
 

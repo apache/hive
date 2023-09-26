@@ -4,8 +4,10 @@ POSTHOOK: query: drop materialized view if exists mat1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -96,8 +98,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.tbl_ice	0/0/0               	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
 PREHOOK: query: select * from mat1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
@@ -185,5 +187,5 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.tbl_ice	0/0/0               	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 

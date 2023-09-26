@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
@@ -68,6 +67,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String poolName;
   public int numberOfBuckets = 0;
   public String orderByClause;
+  public long minOpenWriteTxnId = 0;
 
   /**
    * The highest write id that the compaction job will pay attention to.
@@ -179,6 +179,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
         .append("poolName", poolName)
         .append("numberOfBuckets", numberOfBuckets)
         .append("orderByClause", orderByClause)
+        .append("minOpenWriteTxnId", minOpenWriteTxnId)
         .build();
   }
 
@@ -351,5 +352,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public void setWriteIds(boolean hasUncompactedAborts, Set<Long> writeIds) {
     this.hasUncompactedAborts = hasUncompactedAborts;
     this.writeIds = writeIds;
+  }
+
+  public boolean isAbortedTxnCleanup() {
+    return type == CompactionType.ABORT_TXN_CLEANUP;
   }
 }

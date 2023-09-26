@@ -1,0 +1,49 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_custom
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_custom
+PREHOOK: query: insert into test_custom select 1, 'test'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_custom
+POSTHOOK: query: insert into test_custom select 1, 'test'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_custom
+POSTHOOK: Lineage: test_custom.age SIMPLE []
+POSTHOOK: Lineage: test_custom.name SIMPLE []
+PREHOOK: query: desc formatted test_custom age
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_custom
+POSTHOOK: query: desc formatted test_custom age
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_custom
+col_name            	age                 
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"age\":\"true\",\"name\":\"true\"}}
+PREHOOK: query: drop table test_custom
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_custom
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_custom
+POSTHOOK: query: drop table test_custom
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_custom
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_custom

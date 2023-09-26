@@ -45,6 +45,8 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private boolean isInsertOverwrite;
   private boolean isDirectInsert;
 
+  private boolean useAppendForLoad;
+
   // TODO: the below seem like they should just be combined into partitionDesc
   private Table mdTable;
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
@@ -155,6 +157,20 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     } else {
       init(table, new LinkedHashMap<String, String>(), lft, writeId);
     }
+  }
+
+  public LoadTableDesc(Path path, Table tableHandle, boolean isOverWrite, boolean useAppendForLoad,
+      Map<String, String> partitionSpec) {
+    super(path, AcidUtils.Operation.NOT_ACID);
+    this.mdTable = tableHandle;
+    this.useAppendForLoad = useAppendForLoad;
+    this.loadFileType = isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
+    this.table = Utilities.getTableDesc(tableHandle);
+    this.partitionSpec = partitionSpec;
+  }
+
+  public boolean isUseAppendForLoad() {
+    return useAppendForLoad;
   }
 
   private void init(

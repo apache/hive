@@ -8,12 +8,16 @@ POSTHOOK: query: drop materialized view if exists mv1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: query: drop table if exists emps
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists emps
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists depts
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists depts
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE emps (
   empid INT,
   deptno INT,
@@ -113,6 +117,9 @@ POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.deptname SIMPLE [(depts)depts.FieldSchema(name:deptname, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1.empid SIMPLE [(emps)emps.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.hire_date SIMPLE [(emps)emps.FieldSchema(name:hire_date, type:timestamp, comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)

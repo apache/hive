@@ -19,6 +19,8 @@
 package org.apache.hive.service.server;
 
 import com.google.common.base.Joiner;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -101,6 +104,7 @@ import org.apache.hive.http.LlapServlet;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.hive.service.cli.CLIService;
@@ -132,6 +136,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import javax.servlet.jsp.JspFactory;
 
 /**
  * HiveServer2.
@@ -340,6 +346,10 @@ public class HiveServer2 extends CompositeService {
           LOG.info("Web UI is disabled since port is set to " + webUIPort);
         } else {
           LOG.info("Starting Web UI on port "+ webUIPort);
+          if (JspFactory.getDefaultFactory() == null) {
+            // Set the default JspFactory to avoid NPE while opening the home page
+            JspFactory.setDefaultFactory(new org.apache.jasper.runtime.JspFactoryImpl());
+          }
           HttpServer.Builder builder = new HttpServer.Builder("hiveserver2");
           builder.setPort(webUIPort).setConf(hiveConf);
           builder.setHost(webHost);
@@ -492,14 +502,6 @@ public class HiveServer2 extends CompositeService {
     return false;
   }
 
-  public static boolean isKerberosAuthMode(Configuration hiveConf) {
-    String authMode = hiveConf.get(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname);
-    if (authMode != null && (authMode.equalsIgnoreCase("KERBEROS"))) {
-      return true;
-    }
-    return false;
-  }
-
   /**
    * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
    */
@@ -564,7 +566,7 @@ public class HiveServer2 extends CompositeService {
     // Auth specific confs
     confsToPublish.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
         hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION));
-    if (isKerberosAuthMode(hiveConf)) {
+    if (AuthType.isKerberosAuthMode(hiveConf)) {
       confsToPublish.put(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
           hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
     }
@@ -663,7 +665,7 @@ public class HiveServer2 extends CompositeService {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }
-    return thriftCLIService.getServerIPAddress().getHostName() + ":"
+    return thriftCLIService.getServerIPAddress().getCanonicalHostName() + ":"
         + thriftCLIService.getPortNumber();
   }
 
@@ -671,7 +673,7 @@ public class HiveServer2 extends CompositeService {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }
-    return thriftCLIService.getServerIPAddress().getHostName();
+    return thriftCLIService.getServerIPAddress().getCanonicalHostName();
   }
 
   @Override
@@ -917,6 +919,13 @@ public class HiveServer2 extends CompositeService {
         LOG.error("Error removing znode for this HiveServer2 instance from ZooKeeper.", e);
       }
     }
+    String pidDir = StringUtils.defaultIfEmpty(System.getenv("HIVESERVER2_PID_DIR"),
+        System.getenv("HIVE_CONF_DIR"));
+    if (StringUtils.isNotEmpty(pidDir)) {
+      File pidFile = new File(pidDir, "hiveserver2.pid");
+      LOG.info("Deleting the tmp HiveServer2 pid file: {}", pidFile);
+      FileUtils.deleteQuietly(pidFile);
+    }
     super.decommission();
   }
 
@@ -1002,8 +1011,7 @@ public class HiveServer2 extends CompositeService {
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
     }
-    if (hiveConf != null && HiveSamlUtils
-        .isSamlAuthMode(hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION))) {
+    if (hiveConf != null && AuthType.isSamlAuthMode(hiveConf)) {
       // this is mostly for testing purposes to make sure that SAML client is
       // reinitialized after a HS2 is restarted.
       HiveSaml2Client.shutdown();

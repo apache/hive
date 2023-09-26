@@ -433,8 +433,10 @@ NULL	8	4
 PREHOOK: query: DROP TABLE IF EXISTS t_test_grouping_sets
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_test_grouping_sets
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_test_grouping_sets
 POSTHOOK: query: DROP TABLE IF EXISTS t_test_grouping_sets
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_test_grouping_sets
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_test_grouping_sets

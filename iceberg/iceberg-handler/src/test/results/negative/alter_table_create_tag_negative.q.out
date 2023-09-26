@@ -1,0 +1,12 @@
+PREHOOK: query: create table ice_tbl (id int, name string) Stored by Iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: create table ice_tbl (id int, name string) Stored by Iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: alter table ice_tbl create tag test_branch_1
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice_tbl
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.UnsupportedOperationException: Cannot alter create tag on iceberg table default.ice_tbl which has no snapshot

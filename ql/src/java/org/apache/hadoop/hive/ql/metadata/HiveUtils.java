@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.parse.Quotation;
 import org.slf4j.Logger;
@@ -107,6 +109,8 @@ public final class HiveUtils {
   static final byte[] tabEscapeBytes = "\\t".getBytes();;
   static final byte[] tabUnescapeBytes = "\t".getBytes();
   static final byte[] ctrlABytes = "\u0001".getBytes();
+  static final Pattern TAG = Pattern.compile("tag_(.*)");
+  static final Pattern SNAPSHOT_REF = Pattern.compile("(?:branch_|tag_)(.*)");
 
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveUtils.class);
@@ -281,9 +285,17 @@ public final class HiveUtils {
     // in identifier by doubling them up.
     Quotation quotation = Quotation.from(conf);
     if (quotation != Quotation.NONE) {
-      identifier = identifier.replaceAll("`", "``");
+      return unparseIdentifier(identifier, Quotation.BACKTICKS);
     }
     return "`" + identifier + "`";
+  }
+
+  public static String unparseIdentifier(String identifier, Quotation quotation) {
+    return String.format("%s%s%s",
+        quotation.getQuotationChar(),
+        identifier.replaceAll(
+            quotation.getQuotationChar(), quotation.getQuotationChar() + quotation.getQuotationChar()),
+        quotation.getQuotationChar());
   }
 
   public static HiveStorageHandler getStorageHandler(
@@ -438,5 +450,18 @@ public final class HiveUtils {
       return new Path(root, dbName + "." + tableName);
     }
     return new Path(root, dbName);
+  }
+
+  public static String getTableSnapshotRef(String refName) {
+    Matcher ref = SNAPSHOT_REF.matcher(refName);
+    if (ref.matches()) {
+      return ref.group(1);
+    }
+    return null;
+  }
+
+  public static Boolean isTableTag(String refName) {
+    Matcher ref = TAG.matcher(refName);
+    return ref.matches();
   }
 }

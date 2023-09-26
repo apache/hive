@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.parse.ParseUtils.ensureClassExists;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +46,8 @@ public class StorageFormat {
   private String serde;
   private final Map<String, String> serdeProps;
 
-  private enum StorageHandlerTypes {
+  public enum StorageHandlerTypes {
+    DEFAULT(),
     ICEBERG("\'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler\'",
         "org.apache.iceberg.mr.hive.HiveIcebergInputFormat", "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
 
@@ -55,6 +55,12 @@ public class StorageFormat {
     private final String inputFormat;
     private final String outputFormat;
 
+    private StorageHandlerTypes() {
+      this.className = null;
+      this.inputFormat = null;
+      this.outputFormat = null;
+    }
+    
     private StorageHandlerTypes(String className, String inputFormat, String outputFormat) {
       this.className = className;
       this.inputFormat = inputFormat;
@@ -165,14 +171,7 @@ public class StorageFormat {
   }
 
   protected void processStorageFormat(String name) throws SemanticException {
-    if (name.isEmpty()) {
-      throw new SemanticException("File format in STORED AS clause cannot be empty");
-    }
-    StorageFormatDescriptor descriptor = storageFormatFactory.get(name);
-    if (descriptor == null) {
-      throw new SemanticException("Unrecognized file format in STORED AS clause:" +
-          " '" + name + "'");
-    }
+    StorageFormatDescriptor descriptor = getDescriptor(name, "STORED AS clause");
     inputFormat = ensureClassExists(descriptor.getInputFormat());
     outputFormat = ensureClassExists(descriptor.getOutputFormat());
     if (serde == null) {
@@ -244,5 +243,16 @@ public class StorageFormat {
 
   public void setStorageHandler(String storageHandlerClass) throws SemanticException {
     storageHandler = ensureClassExists(storageHandlerClass);
+  }
+
+  public static StorageFormatDescriptor getDescriptor(String format, String clause) throws SemanticException {
+    if (format.isEmpty()) {
+      throw new SemanticException("File format in " + clause + " cannot be empty");
+    }
+    StorageFormatDescriptor descriptor = storageFormatFactory.get(format);
+    if (descriptor == null) {
+      throw new SemanticException("Unrecognized file format in " + clause + ":" + " '" + format + "'");
+    }
+    return descriptor;
   }
 }

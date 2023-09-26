@@ -206,10 +206,12 @@ insert_num	part	s1	b
 PREHOOK: query: drop table part_change_various_various_struct1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_various_various_struct1_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_struct1_n1
 POSTHOOK: query: drop table part_change_various_various_struct1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_struct1_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_struct1_n1
 PREHOOK: query: CREATE TABLE part_add_various_various_struct2_n1(insert_num int, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
@@ -495,10 +497,12 @@ insert_num	part	b	s2
 PREHOOK: query: drop table part_add_various_various_struct2_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_add_various_various_struct2_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_add_various_various_struct2_n1
 POSTHOOK: query: drop table part_add_various_various_struct2_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_add_various_various_struct2_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_add_various_various_struct2_n1
 PREHOOK: query: CREATE TABLE part_add_to_various_various_struct4_n1(insert_num int, b STRING, s3 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT>) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
@@ -704,8 +708,10 @@ insert_num	part	b	s3
 PREHOOK: query: drop table part_add_to_various_various_struct4_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_add_to_various_various_struct4_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_add_to_various_various_struct4_n1
 POSTHOOK: query: drop table part_add_to_various_various_struct4_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_add_to_various_various_struct4_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_add_to_various_various_struct4_n1

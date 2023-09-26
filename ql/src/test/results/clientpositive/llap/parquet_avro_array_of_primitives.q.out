@@ -32,8 +32,10 @@ POSTHOOK: Input: default@parquet_avro_array_of_primitives
 PREHOOK: query: DROP TABLE parquet_avro_array_of_primitives
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_avro_array_of_primitives
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_avro_array_of_primitives
 POSTHOOK: query: DROP TABLE parquet_avro_array_of_primitives
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_avro_array_of_primitives
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_avro_array_of_primitives

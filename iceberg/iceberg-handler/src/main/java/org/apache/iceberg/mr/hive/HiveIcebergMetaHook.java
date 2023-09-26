@@ -83,9 +83,9 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.CachedClientPool;
-import org.apache.iceberg.hive.HiveCommitLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
+import org.apache.iceberg.hive.MetastoreLock;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mapping.MappingUtil;
 import org.apache.iceberg.mapping.NameMapping;
@@ -120,7 +120,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
-      AlterTableType.UPDATE_COLUMNS, AlterTableType.SETPARTITIONSPEC, AlterTableType.EXECUTE);
+      AlterTableType.UPDATE_COLUMNS, AlterTableType.RENAME, AlterTableType.EXECUTE, AlterTableType.CREATE_BRANCH,
+      AlterTableType.CREATE_TAG, AlterTableType.DROP_BRANCH, AlterTableType.DROP_TAG);
   private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
@@ -147,7 +148,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private Transaction transaction;
   private AlterTableType currentAlterTableOp;
   private boolean createHMSTableInHook = false;
-  private HiveCommitLock commitLock;
+  private MetastoreLock commitLock;
 
   private enum FileFormat {
     ORC("orc"), PARQUET("parquet"), AVRO("avro");
@@ -165,6 +166,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   @Override
   public void preCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable.isTemporary()) {
+      throw new UnsupportedOperationException("Creation of temporary iceberg tables is not supported.");
+    }
     this.catalogProperties = getCatalogProperties(hmsTable);
 
     // Set the table type even for non HiveCatalog based tables
@@ -173,7 +177,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       if (Boolean.parseBoolean(this.catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
-        throw new RuntimeException("CTLT target table must be a HiveCatalog table.");
+        throw new UnsupportedOperationException("CTLT target table must be a HiveCatalog table.");
       }
       // For non-HiveCatalog tables too, we should set the input and output format
       // so that the table can be read by other engines like Impala
@@ -319,16 +323,20 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       throws MetaException {
     catalogProperties = getCatalogProperties(hmsTable);
     setupAlterOperationType(hmsTable, context);
+    if (AlterTableType.RENAME.equals(currentAlterTableOp)) {
+      catalogProperties.put(Catalogs.NAME, TableIdentifier.of(context.getProperties().get(OLD_DB_NAME),
+          context.getProperties().get(OLD_TABLE_NAME)).toString());
+    }
     if (commitLock == null) {
-      commitLock = new HiveCommitLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
+      commitLock = new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
           catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
     }
 
     try {
-      commitLock.acquire();
+      commitLock.lock();
       doPreAlterTable(hmsTable, context);
     } catch (Exception e) {
-      commitLock.release();
+      commitLock.unlock();
       throw new MetaException(StringUtils.stringifyException(e));
     }
   }
@@ -522,7 +530,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (commitLock == null) {
       throw new IllegalStateException("Hive commit lock should already be set");
     }
-    commitLock.release();
+    commitLock.unlock();
     if (isTableMigration) {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
@@ -549,6 +557,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         case SETPARTITIONSPEC:
           IcebergTableUtil.updateSpec(conf, icebergTable);
           break;
+        case RENAME:
+          Catalogs.renameTable(conf, catalogProperties, TableIdentifier.of(hmsTable.getDbName(),
+              hmsTable.getTableName()));
+          break;
       }
     }
   }
@@ -558,7 +570,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (commitLock == null) {
       throw new IllegalStateException("Hive commit lock should already be set");
     }
-    commitLock.release();
+    commitLock.unlock();
     if (Boolean.parseBoolean(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
       LOG.debug("Initiating rollback for table {} at location {}",
           hmsTable.getTableName(), hmsTable.getSd().getLocation());

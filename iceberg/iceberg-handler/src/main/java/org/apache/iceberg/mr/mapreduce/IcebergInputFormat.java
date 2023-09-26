@@ -30,10 +30,12 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -55,7 +57,7 @@ import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Scan;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
-import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -73,7 +75,7 @@ import org.apache.iceberg.encryption.EncryptedFiles;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
-import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.InputFile;
@@ -114,7 +116,21 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   private static TableScan createTableScan(Table table, Configuration conf) {
     TableScan scan = table.newScan();
 
-    long snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    long snapshotId = -1;
+    try {
+      snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+    } catch (NumberFormatException e) {
+      String version = conf.get(InputFormatConfig.SNAPSHOT_ID);
+      SnapshotRef ref = table.refs().get(version);
+      if (ref == null) {
+        throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " + version);
+      }
+      snapshotId = ref.snapshotId();
+    }
+    String refName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
+    if (StringUtils.isNotEmpty(refName)) {
+      scan = scan.useRef(HiveUtils.getTableSnapshotRef(refName));
+    }
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
     }
@@ -182,7 +198,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     Configuration conf = context.getConfiguration();
     Table table = Optional
         .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
-        .orElseGet(() -> Catalogs.loadTable(conf));
+        .orElseGet(() -> {
+          Table tbl = Catalogs.loadTable(conf);
+          conf.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.name());
+          conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tbl.name(), SerializationUtil.serializeToBase64(tbl));
+          return tbl;
+        });
 
     List<InputSplit> splits = Lists.newArrayList();
     boolean applyResidual = !conf.getBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, false);
@@ -198,14 +219,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
-      Table serializableTable = SerializableTable.copyOf(table);
       tasksIterable.forEach(task -> {
         if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
             model == InputFormatConfig.InMemoryDataModel.PIG)) {
           // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
           checkResiduals(task);
         }
-        splits.add(new IcebergSplit(serializableTable, conf, task));
+        splits.add(new IcebergSplit(conf, task));
       });
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
@@ -244,7 +264,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private static final DynMethods.StaticMethod HIVE_VECTORIZED_READER_BUILDER;
 
     static {
-      if (MetastoreUtil.hive3PresentOnClasspath()) {
+      if (HiveVersion.min(HiveVersion.HIVE_3)) {
         HIVE_VECTORIZED_READER_BUILDER = DynMethods.builder("reader")
             .impl(HIVE_VECTORIZED_READER_CLASS,
                 Table.class,
@@ -279,7 +299,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
       this.conf = newContext.getConfiguration();
-      this.table = ((IcebergSplit) split).table();
+      this.table = SerializationUtil.deserializeFromBase64(
+                conf.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + conf.get(InputFormatConfig.TABLE_IDENTIFIER)));
       HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
       this.tasks = task.files().iterator();
       this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
@@ -346,7 +367,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Preconditions.checkArgument(!task.file().format().equals(FileFormat.AVRO),
           "Vectorized execution is not yet supported for Iceberg avro tables. " +
               "Please turn off vectorization and retry the query.");
-      Preconditions.checkArgument(MetastoreUtil.hive3PresentOnClasspath(),
+      Preconditions.checkArgument(HiveVersion.min(HiveVersion.HIVE_3),
           "Vectorized read is unsupported for Hive 2 integration.");
 
       Path path = new Path(task.file().path().toString());
@@ -517,12 +538,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       }
 
       String[] selectedColumns = InputFormatConfig.selectedColumns(conf);
-      if (selectedColumns == null) {
-        return table.schema();
-      }
+      readSchema = table.schema();
 
-      readSchema = caseSensitive ? table.schema().select(selectedColumns) :
-          table.schema().caseInsensitiveSelect(selectedColumns);
+      if (selectedColumns != null) {
+        readSchema =
+            caseSensitive ? readSchema.select(selectedColumns) : readSchema.caseInsensitiveSelect(selectedColumns);
+      }
 
       if (InputFormatConfig.fetchVirtualColumns(conf)) {
         return IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);

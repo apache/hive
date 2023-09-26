@@ -175,7 +175,7 @@ STAGE PLANS:
                 TableScan
                   alias: repro
                   filterExpr: i is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 1850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: i is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
@@ -202,7 +202,7 @@ STAGE PLANS:
                 TableScan
                   alias: repro
                   filterExpr: i is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 1850 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: i is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
@@ -272,8 +272,10 @@ POSTHOOK: Input: default@repro
 PREHOOK: query: DROP TABLE repro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repro
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repro
 POSTHOOK: query: DROP TABLE repro
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repro
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repro

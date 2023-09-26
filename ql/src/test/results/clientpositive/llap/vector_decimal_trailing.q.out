@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING_txt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING_txt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_TRAILING_txt (
   id int,
   a decimal(10,4),
@@ -218,16 +222,20 @@ POSTHOOK: Input: default@decimal_trailing
 PREHOOK: query: DROP TABLE DECIMAL_TRAILING_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_trailing_txt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_trailing_txt
 POSTHOOK: query: DROP TABLE DECIMAL_TRAILING_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_trailing_txt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_trailing_txt
 PREHOOK: query: DROP TABLE DECIMAL_TRAILING
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_trailing
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_trailing
 POSTHOOK: query: DROP TABLE DECIMAL_TRAILING
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_trailing
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_trailing

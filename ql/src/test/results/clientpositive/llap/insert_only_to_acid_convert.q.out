@@ -38,7 +38,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	182                 
-	totalSize           	310                 
+	totalSize           	317                 
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -53,12 +53,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional'='true','transactional_properties'='default')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: ALTER TABLE insert_only convert to acid TBLPROPERTIES ('transactional_properties'='default')
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@insert_only
-PREHOOK: Output: default@insert_only
-POSTHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional'='true','transactional_properties'='default')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: ALTER TABLE insert_only convert to acid TBLPROPERTIES ('transactional_properties'='default')
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@insert_only
 POSTHOOK: Output: default@insert_only
 PREHOOK: query: describe formatted insert_only
@@ -84,7 +83,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	182                 
-	totalSize           	310                 
+	totalSize           	317                 
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -159,7 +158,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	182                 
-	totalSize           	310                 
+	totalSize           	317                 
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -204,7 +203,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	182                 
-	totalSize           	310                 
+	totalSize           	317                 
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -296,7 +295,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	20                  
 	rawDataSize         	2008                
-	totalSize           	1920                
+	totalSize           	1948                
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -347,7 +346,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	20                  
 	rawDataSize         	2008                
-	totalSize           	1920                
+	totalSize           	1948                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

@@ -33,8 +33,10 @@ TBLPROPERTIES (
   'bucketing_version'='2')
 PREHOOK: query: drop table tmp1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tmp1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create temporary table tmpdb.tmp_not_null_tbl (a int NOT NULL)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tmpdb
@@ -64,10 +66,12 @@ TBLPROPERTIES (
 PREHOOK: query: drop table tmpdb.tmp_not_null_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tmpdb@tmp_not_null_tbl
+PREHOOK: Output: database:tmpdb
 PREHOOK: Output: tmpdb@tmp_not_null_tbl
 POSTHOOK: query: drop table tmpdb.tmp_not_null_tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: tmpdb@tmp_not_null_tbl
+POSTHOOK: Output: database:tmpdb
 POSTHOOK: Output: tmpdb@tmp_not_null_tbl
 PREHOOK: query: drop database tmpdb
 PREHOOK: type: DROPDATABASE

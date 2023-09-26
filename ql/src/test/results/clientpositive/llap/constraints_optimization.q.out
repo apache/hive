@@ -752,18 +752,22 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE customer_removal_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_removal_n0
 POSTHOOK: query: DROP TABLE customer_removal_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_removal_n0
 PREHOOK: query: DROP TABLE dates_removal_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dates_removal_n0
 POSTHOOK: query: DROP TABLE dates_removal_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dates_removal_n0
 PREHOOK: query: -- group by reduction optimization
   create table dest_g21 (key1 int, value1 double, primary key(key1) disable rely)
@@ -1420,10 +1424,12 @@ POSTHOOK: Input: default@dest_g21
 PREHOOK: query: DROP table dest_g21
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g21
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g21
 POSTHOOK: query: DROP table dest_g21
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g21
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g21
 PREHOOK: query: CREATE TABLE tconst(i int NOT NULL disable rely, j INT NOT NULL disable norely, d_year string)
 PREHOOK: type: CREATETABLE
@@ -1927,10 +1933,12 @@ POSTHOOK: Input: default@tconst
 PREHOOK: query: DROP TABLE tconst
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tconst
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tconst
 POSTHOOK: query: DROP TABLE tconst
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tconst
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tconst
 PREHOOK: query: create table dest_g21 (key1 int NOT NULL disable rely, value1 double, UNIQUE(key1) disable rely)
 PREHOOK: type: CREATETABLE
@@ -2043,18 +2051,22 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE dest_g21
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g21
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g21
 POSTHOOK: query: DROP TABLE dest_g21
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g21
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g21
 PREHOOK: query: DROP TABLE dest_g24
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g24
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g24
 POSTHOOK: query: DROP TABLE dest_g24
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g24
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g24
 PREHOOK: query: CREATE TABLE `customer`(
   `c_customer_sk` int,
@@ -3187,10 +3199,12 @@ POSTHOOK: Input: default@web_sales
 PREHOOK: query: drop table web_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@web_sales
+PREHOOK: Output: database:default
 PREHOOK: Output: default@web_sales
 POSTHOOK: query: drop table web_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@web_sales
 PREHOOK: query: create table t1(i int primary key disable rely, j int)
 PREHOOK: type: CREATETABLE
@@ -3298,16 +3312,20 @@ POSTHOOK: Input: default@t2
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
 POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: drop table t2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2
 POSTHOOK: query: drop table t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2

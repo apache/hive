@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-beta-2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-common</artifactId>
@@ -209,6 +209,12 @@
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
       <version>${tez.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.jettison</groupId>
+          <artifactId>jettison</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.fusesource.jansi</groupId>
@@ -219,6 +225,12 @@
     <dependency>
       <groupId>com.google.code.tempus-fugit</groupId>
       <artifactId>tempus-fugit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

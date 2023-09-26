@@ -36,6 +36,16 @@ class AddPartitionsResult
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        3 => array(
+            'var' => 'partitionColSchema',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRUCT,
+            'elem' => array(
+                'type' => TType::STRUCT,
+                'class' => '\metastore\FieldSchema',
+                ),
+        ),
     );
 
     /**
@@ -46,6 +56,10 @@ class AddPartitionsResult
      * @var bool
      */
     public $isStatsCompliant = null;
+    /**
+     * @var \metastore\FieldSchema[]
+     */
+    public $partitionColSchema = null;
 
     public function __construct($vals = null)
     {
@@ -55,6 +69,9 @@ class AddPartitionsResult
             }
             if (isset($vals['isStatsCompliant'])) {
                 $this->isStatsCompliant = $vals['isStatsCompliant'];
+            }
+            if (isset($vals['partitionColSchema'])) {
+                $this->partitionColSchema = $vals['partitionColSchema'];
             }
         }
     }
@@ -81,14 +98,14 @@ class AddPartitionsResult
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size526 = 0;
-                        $_etype529 = 0;
-                        $xfer += $input->readListBegin($_etype529, $_size526);
-                        for ($_i530 = 0; $_i530 < $_size526; ++$_i530) {
-                            $elem531 = null;
-                            $elem531 = new \metastore\Partition();
-                            $xfer += $elem531->read($input);
-                            $this->partitions []= $elem531;
+                        $_size560 = 0;
+                        $_etype563 = 0;
+                        $xfer += $input->readListBegin($_etype563, $_size560);
+                        for ($_i564 = 0; $_i564 < $_size560; ++$_i564) {
+                            $elem565 = null;
+                            $elem565 = new \metastore\Partition();
+                            $xfer += $elem565->read($input);
+                            $this->partitions []= $elem565;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -98,6 +115,23 @@ class AddPartitionsResult
                 case 2:
                     if ($ftype == TType::BOOL) {
                         $xfer += $input->readBool($this->isStatsCompliant);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::LST) {
+                        $this->partitionColSchema = array();
+                        $_size566 = 0;
+                        $_etype569 = 0;
+                        $xfer += $input->readListBegin($_etype569, $_size566);
+                        for ($_i570 = 0; $_i570 < $_size566; ++$_i570) {
+                            $elem571 = null;
+                            $elem571 = new \metastore\FieldSchema();
+                            $xfer += $elem571->read($input);
+                            $this->partitionColSchema []= $elem571;
+                        }
+                        $xfer += $input->readListEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -122,8 +156,8 @@ class AddPartitionsResult
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter532) {
-                $xfer += $iter532->write($output);
+            foreach ($this->partitions as $iter572) {
+                $xfer += $iter572->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -131,6 +165,18 @@ class AddPartitionsResult
         if ($this->isStatsCompliant !== null) {
             $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
             $xfer += $output->writeBool($this->isStatsCompliant);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->partitionColSchema !== null) {
+            if (!is_array($this->partitionColSchema)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('partitionColSchema', TType::LST, 3);
+            $output->writeListBegin(TType::STRUCT, count($this->partitionColSchema));
+            foreach ($this->partitionColSchema as $iter573) {
+                $xfer += $iter573->write($output);
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

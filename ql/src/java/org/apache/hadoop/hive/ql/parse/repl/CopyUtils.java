@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -645,6 +646,16 @@ public class CopyUtils {
     String[] subDirs = fileInfo.getSubDir().split(Path.SEPARATOR);
     Path destination = destRoot;
     for (String subDir: subDirs) {
+      if (subDir.startsWith(AcidUtils.BASE_PREFIX)) {
+        AcidUtils.ParsedBaseLight pb = AcidUtils.ParsedBase.parseBase(new Path(subDir));
+        subDir = pb.getVisibilityTxnId() > 0 ? AcidUtils.baseDir(pb.getWriteId()) : subDir;
+      } else if (subDir.startsWith(AcidUtils.DELTA_PREFIX)) {
+        AcidUtils.ParsedDeltaLight pdl = AcidUtils.ParsedDeltaLight.parse(new Path(subDir));
+        subDir = pdl.getVisibilityTxnId() > 0 ? AcidUtils.deltaSubdir(pdl.getMinWriteId(), pdl.getMaxWriteId()) : subDir;
+      } else if (subDir.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+        AcidUtils.ParsedDeltaLight pdl = AcidUtils.ParsedDeltaLight.parse(new Path(subDir));
+        subDir = pdl.getVisibilityTxnId() > 0 ? AcidUtils.deleteDeltaSubdir(pdl.getMinWriteId(), pdl.getMaxWriteId()) : subDir;
+      }
       destination = new Path(destination, subDir);
     }
     return destination;

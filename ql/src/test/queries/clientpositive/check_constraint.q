@@ -36,8 +36,8 @@ create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int C
 explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE;
 alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE;
 DESC formatted tmulti;
-EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
-INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
+EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12');
+INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12');
 Select * from tmulti;
 
 -- alter table add constraint
@@ -45,16 +45,16 @@ truncate table tmulti;
 alter table tmulti add constraint chk1 CHECK (userName != NULL);
 alter table tmulti add constraint chk2 CHECK (numClicks <= 10000 AND userName != '');
 DESC formatted tmulti;
-EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
-INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
+EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12');
+INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12');
 Select * from tmulti;
 Drop table tmulti;
 
 -- case insentivity
 create table tcase(url string NOT NULL ENABLE, userName string, d date, numClicks int CHECK (numclicks > 0));
 DESC formatted tcase;
-EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48);
-INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48);
+EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48);
+INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48);
 Select * from tcase ;
 Drop table tcase;
 

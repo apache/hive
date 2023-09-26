@@ -1,0 +1,404 @@
+outputHObjs:
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db}
+PREHOOK: query: CREATE DATABASE test_auth_obj_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_auth_obj_db
+POSTHOOK: query: CREATE DATABASE test_auth_obj_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_auth_obj_db
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: CREATE TABLE test_auth_obj_db.test_privs(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_auth_obj_db
+PREHOOK: Output: test_auth_obj_db@test_privs
+POSTHOOK: query: CREATE TABLE test_auth_obj_db.test_privs(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_auth_obj_db
+POSTHOOK: Output: test_auth_obj_db@test_privs
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: CREATE TABLE test_auth_obj_db.test_privs2(s string, i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_auth_obj_db
+PREHOOK: Output: test_auth_obj_db@test_privs2
+POSTHOOK: query: CREATE TABLE test_auth_obj_db.test_privs2(s string, i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_auth_obj_db
+POSTHOOK: Output: test_auth_obj_db@test_privs2
+PREHOOK: query: SHOW DATABASES LIKE 'test_auth_obj_db'
+PREHOOK: type: SHOWDATABASES
+filterListCmdObjects
+HIVE PRIVILEGE OBJECT { objectName: default type: DATABASE actionType: OTHER dbName: default}
+HIVE PRIVILEGE OBJECT { objectName: test_auth_obj_db type: DATABASE actionType: OTHER dbName: test_auth_obj_db}
+POSTHOOK: query: SHOW DATABASES LIKE 'test_auth_obj_db'
+POSTHOOK: type: SHOWDATABASES
+test_auth_obj_db
+inputHObjs:
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: SHOW TABLES IN test_auth_obj_db
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_auth_obj_db
+filterListCmdObjects
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
+POSTHOOK: query: SHOW TABLES IN test_auth_obj_db
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_auth_obj_db
+test_privs
+test_privs2
+applyRowFilterAndColumnMasking:
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db columns: [i]}
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: EXPLAIN SELECT * FROM test_auth_obj_db.test_privs
+PREHOOK: type: QUERY
+PREHOOK: Input: test_auth_obj_db@test_privs
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * FROM test_auth_obj_db.test_privs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_auth_obj_db@test_privs
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_privs
+          Select Operator
+            expressions: i (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: INSERT dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: EXPLAIN INSERT INTO test_auth_obj_db.test_privs VALUES (1),(2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test_auth_obj_db@test_privs
+POSTHOOK: query: EXPLAIN INSERT INTO test_auth_obj_db.test_privs VALUES (1),(2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test_auth_obj_db@test_privs
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1),const struct(2),const struct(3)) (type: array<struct<col1:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: test_auth_obj_db.test_privs
+                        Select Operator
+                          expressions: _col0 (type: int)
+                          outputColumnNames: i
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(i), max(i), count(1), count(i), compute_bit_vector_hll(i)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                            Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              null sort order: 
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: test_auth_obj_db.test_privs
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: i
+          Column Types: int
+          Table: test_auth_obj_db.test_privs
+
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: DROP TABLE test_auth_obj_db.test_privs2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_auth_obj_db@test_privs2
+PREHOOK: Output: database:test_auth_obj_db
+PREHOOK: Output: test_auth_obj_db@test_privs2
+POSTHOOK: query: DROP TABLE test_auth_obj_db.test_privs2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_auth_obj_db@test_privs2
+POSTHOOK: Output: database:test_auth_obj_db
+POSTHOOK: Output: test_auth_obj_db@test_privs2
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: DROP TABLE test_auth_obj_db.test_privs
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_auth_obj_db@test_privs
+PREHOOK: Output: database:test_auth_obj_db
+PREHOOK: Output: test_auth_obj_db@test_privs
+POSTHOOK: query: DROP TABLE test_auth_obj_db.test_privs
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_auth_obj_db@test_privs
+POSTHOOK: Output: database:test_auth_obj_db
+POSTHOOK: Output: test_auth_obj_db@test_privs
+inputHObjs:
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+outputHObjs:
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
+PREHOOK: query: DROP DATABASE test_auth_obj_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_auth_obj_db
+PREHOOK: Output: database:test_auth_obj_db
+POSTHOOK: query: DROP DATABASE test_auth_obj_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_auth_obj_db
+POSTHOOK: Output: database:test_auth_obj_db
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: dboutput type: FUNCTION actionType: OTHER}
+PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: dboutput
+POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: dboutput
+PREHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+#### A masked pattern was here ####
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default OWNER: public OWNERTYPE: ROLE}
+PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table_src
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "APP",
+                "hive.sql.dbcp.password" = "mine",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_simple_derby_table_src
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table_src
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "APP",
+                "hive.sql.dbcp.password" = "mine",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_simple_derby_table_src
+applyRowFilterAndColumnMasking:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default columns: [ikey, bkey, fkey, dkey]}
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER columns: [bkey, dkey, fkey, ikey]}
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default OWNER: public OWNERTYPE: ROLE}
+PREHOOK: query: create table ext_simple_derby_table_ctas as select * from ext_simple_derby_table_src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ext_simple_derby_table_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_simple_derby_table_ctas
+POSTHOOK: query: create table ext_simple_derby_table_ctas as select * from ext_simple_derby_table_src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ext_simple_derby_table_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_simple_derby_table_ctas
+POSTHOOK: Lineage: ext_simple_derby_table_ctas.bkey SIMPLE [(ext_simple_derby_table_src)ext_simple_derby_table_src.FieldSchema(name:bkey, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: ext_simple_derby_table_ctas.dkey SIMPLE [(ext_simple_derby_table_src)ext_simple_derby_table_src.FieldSchema(name:dkey, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: ext_simple_derby_table_ctas.fkey SIMPLE [(ext_simple_derby_table_src)ext_simple_derby_table_src.FieldSchema(name:fkey, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: ext_simple_derby_table_ctas.ikey SIMPLE [(ext_simple_derby_table_src)ext_simple_derby_table_src.FieldSchema(name:ikey, type:int, comment:from deserializer), ]
+applyRowFilterAndColumnMasking:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default columns: [bkey, dkey, fkey, ikey]}
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER columns: [bkey, dkey, fkey, ikey]}
+outputHObjs:
+#### A masked pattern was here ####
+HIVE PRIVILEGE OBJECT { objectName: jdbctable_from_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default OWNER: public OWNERTYPE: ROLE}
+PREHOOK: query: CREATE EXTERNAL TABLE default.jdbctable_from_ctas
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "APP",
+                "hive.sql.dbcp.password" = "mine",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1"
+) as select * from default.ext_simple_derby_table_ctas
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ext_simple_derby_table_ctas
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbctable_from_ctas
+POSTHOOK: query: CREATE EXTERNAL TABLE default.jdbctable_from_ctas
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "APP",
+                "hive.sql.dbcp.password" = "mine",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1"
+) as select * from default.ext_simple_derby_table_ctas
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ext_simple_derby_table_ctas
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbctable_from_ctas
+POSTHOOK: Lineage: jdbctable_from_ctas.bkey SIMPLE [(ext_simple_derby_table_ctas)ext_simple_derby_table_ctas.FieldSchema(name:bkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: jdbctable_from_ctas.dkey SIMPLE [(ext_simple_derby_table_ctas)ext_simple_derby_table_ctas.FieldSchema(name:dkey, type:double, comment:null), ]
+POSTHOOK: Lineage: jdbctable_from_ctas.fkey SIMPLE [(ext_simple_derby_table_ctas)ext_simple_derby_table_ctas.FieldSchema(name:fkey, type:float, comment:null), ]
+POSTHOOK: Lineage: jdbctable_from_ctas.ikey SIMPLE [(ext_simple_derby_table_ctas)ext_simple_derby_table_ctas.FieldSchema(name:ikey, type:int, comment:null), ]
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: jdbctable_from_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: jdbctable_from_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default OWNER: public OWNERTYPE: ROLE}
+PREHOOK: query: drop table default.jdbctable_from_ctas
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@jdbctable_from_ctas
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbctable_from_ctas
+POSTHOOK: query: drop table default.jdbctable_from_ctas
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@jdbctable_from_ctas
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbctable_from_ctas
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default OWNER: public OWNERTYPE: ROLE}
+PREHOOK: query: drop table default.ext_simple_derby_table_ctas
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ext_simple_derby_table_ctas
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_simple_derby_table_ctas
+POSTHOOK: query: drop table default.ext_simple_derby_table_ctas
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ext_simple_derby_table_ctas
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_simple_derby_table_ctas
+inputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+outputHObjs:
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default OWNER: public OWNERTYPE: ROLE}
+PREHOOK: query: drop table default.ext_simple_derby_table_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ext_simple_derby_table_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_simple_derby_table_src
+POSTHOOK: query: drop table default.ext_simple_derby_table_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ext_simple_derby_table_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_simple_derby_table_src

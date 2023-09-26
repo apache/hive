@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS hdfs_source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hdfs_source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hdfs_source(a string, b string, c double)
 ROW FORMAT DELIMITED 
 FIELDS TERMINATED BY ' '
@@ -30,8 +32,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@hdfs_source
 PREHOOK: query: DROP TABLE IF EXISTS blobstore_target
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS blobstore_target
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE blobstore_target 
 #### A masked pattern was here ####
 AS SELECT * FROM hdfs_source

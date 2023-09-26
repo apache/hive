@@ -1,0 +1,218 @@
+PREHOOK: query: DROP TABLE IF EXISTS orc_partition
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS orc_partition
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE orc_partition
+(a STRING, b STRING)
+PARTITIONED BY (c STRING)
+STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: CREATE TABLE orc_partition
+(a STRING, b STRING)
+PARTITIONED BY (c STRING)
+STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_partition
+PREHOOK: query: insert into orc_partition values('1', 'text1', 'part1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('1', 'text1', 'part1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part1
+POSTHOOK: Lineage: orc_partition PARTITION(c=part1).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part1).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('2', 'text2', 'part1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('2', 'text2', 'part1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part1
+POSTHOOK: Lineage: orc_partition PARTITION(c=part1).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part1).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('3', 'text3', 'part2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('3', 'text3', 'part2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part2
+POSTHOOK: Lineage: orc_partition PARTITION(c=part2).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part2).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('4', 'text4', 'part2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('4', 'text4', 'part2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part2
+POSTHOOK: Lineage: orc_partition PARTITION(c=part2).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part2).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('5', 'text5', 'part3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('5', 'text5', 'part3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part3
+POSTHOOK: Lineage: orc_partition PARTITION(c=part3).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part3).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('6', 'text6', 'part3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('6', 'text6', 'part3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part3
+POSTHOOK: Lineage: orc_partition PARTITION(c=part3).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part3).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('7', 'text7', 'part4')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('7', 'text7', 'part4')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part4
+POSTHOOK: Lineage: orc_partition PARTITION(c=part4).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part4).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('8', 'text8', 'part4')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('8', 'text8', 'part4')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part4
+POSTHOOK: Lineage: orc_partition PARTITION(c=part4).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part4).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('9', 'text9', 'part5')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('9', 'text9', 'part5')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part5
+POSTHOOK: Lineage: orc_partition PARTITION(c=part5).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part5).b SCRIPT []
+PREHOOK: query: insert into orc_partition values('10', 'text10', 'part5')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orc_partition
+POSTHOOK: query: insert into orc_partition values('10', 'text10', 'part5')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part5
+POSTHOOK: Lineage: orc_partition PARTITION(c=part5).a SCRIPT []
+POSTHOOK: Lineage: orc_partition PARTITION(c=part5).b SCRIPT []
+PREHOOK: query: describe extended orc_partition
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_partition
+POSTHOOK: query: describe extended orc_partition
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_partition
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	string              	                    
+	 	 
+Detailed Table Information	Table(tableName:orc_partition, dbName:default, #Masked# #Masked#, #Masked#, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], #Masked# inputFormat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.ql.io.orc.OrcSerde, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], #Masked# storedAsSubDirectories:false), partitionKeys:[FieldSchema(name:c, type:string, comment:null)], parameters:{#Masked#, numRows=10, #Masked#, transactional_properties=insert_only, COLUMN_STATS_ACCURATE={\"BASIC_STATS\":\"true\"}, numPartitions=5, numFiles=10, #Masked#, #Masked#, numFilesErasureCoded=0, transactional=true}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE, rewriteEnabled:false, catName:hive, #Masked# #Masked#, #Masked#)	
+PREHOOK: query: alter table orc_partition PARTITION (c='part1') compact 'MAJOR' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_partition
+PREHOOK: Output: default@orc_partition@c=part1
+POSTHOOK: query: alter table orc_partition PARTITION (c='part1') compact 'MAJOR' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part1
+PREHOOK: query: alter table orc_partition PARTITION (c='part2') compact 'MAJOR' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_partition
+PREHOOK: Output: default@orc_partition@c=part2
+POSTHOOK: query: alter table orc_partition PARTITION (c='part2') compact 'MAJOR' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part2
+PREHOOK: query: alter table orc_partition PARTITION (c='part3') compact 'MAJOR' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_partition
+PREHOOK: Output: default@orc_partition@c=part3
+POSTHOOK: query: alter table orc_partition PARTITION (c='part3') compact 'MAJOR' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part3
+PREHOOK: query: alter table orc_partition PARTITION (c='part4') compact 'MAJOR' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_partition
+PREHOOK: Output: default@orc_partition@c=part4
+POSTHOOK: query: alter table orc_partition PARTITION (c='part4') compact 'MAJOR' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part4
+PREHOOK: query: alter table orc_partition PARTITION (c='part5') compact 'MAJOR' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_partition
+PREHOOK: Output: default@orc_partition@c=part5
+POSTHOOK: query: alter table orc_partition PARTITION (c='part5') compact 'MAJOR' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part5
+PREHOOK: query: analyze table orc_partition compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_partition
+PREHOOK: Output: default@orc_partition
+PREHOOK: Output: default@orc_partition@c=part1
+PREHOOK: Output: default@orc_partition@c=part2
+PREHOOK: Output: default@orc_partition@c=part3
+PREHOOK: Output: default@orc_partition@c=part4
+PREHOOK: Output: default@orc_partition@c=part5
+POSTHOOK: query: analyze table orc_partition compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_partition
+POSTHOOK: Output: default@orc_partition
+POSTHOOK: Output: default@orc_partition@c=part1
+POSTHOOK: Output: default@orc_partition@c=part2
+POSTHOOK: Output: default@orc_partition@c=part3
+POSTHOOK: Output: default@orc_partition@c=part4
+POSTHOOK: Output: default@orc_partition@c=part5
+PREHOOK: query: describe extended orc_partition
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_partition
+POSTHOOK: query: describe extended orc_partition
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_partition
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	string              	                    
+	 	 
+Detailed Table Information	Table(tableName:orc_partition, dbName:default, #Masked# #Masked#, #Masked#, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], #Masked# inputFormat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.ql.io.orc.OrcSerde, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], #Masked# storedAsSubDirectories:false), partitionKeys:[FieldSchema(name:c, type:string, comment:null)], parameters:{#Masked#, numRows=10, #Masked#, transactional_properties=insert_only, COLUMN_STATS_ACCURATE={\"BASIC_STATS\":\"true\"}, numPartitions=5, numFiles=5, #Masked#, #Masked#, numFilesErasureCoded=0, transactional=true}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE, rewriteEnabled:false, catName:hive, #Masked# #Masked#, #Masked#)	

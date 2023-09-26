@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists ext_loc_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ext_loc_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table ext_loc_n0 (
   state string,
   locid double,
@@ -32,8 +34,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@ext_loc_n0
 PREHOOK: query: drop table if exists loc_orc_1d_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists loc_orc_1d_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table loc_orc_1d_n0 (
   state string,
   locid double,
@@ -1082,8 +1086,10 @@ STAGE PLANS:
 
 PREHOOK: query: drop table if exists loc_orc_2d_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists loc_orc_2d_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table loc_orc_2d_n0 (
   state string,
   locid int,

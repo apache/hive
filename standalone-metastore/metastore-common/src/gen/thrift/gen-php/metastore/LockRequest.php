@@ -153,14 +153,14 @@ class LockRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->component = array();
-                        $_size724 = 0;
-                        $_etype727 = 0;
-                        $xfer += $input->readListBegin($_etype727, $_size724);
-                        for ($_i728 = 0; $_i728 < $_size724; ++$_i728) {
-                            $elem729 = null;
-                            $elem729 = new \metastore\LockComponent();
-                            $xfer += $elem729->read($input);
-                            $this->component []= $elem729;
+                        $_size772 = 0;
+                        $_etype775 = 0;
+                        $xfer += $input->readListBegin($_etype775, $_size772);
+                        for ($_i776 = 0; $_i776 < $_size772; ++$_i776) {
+                            $elem777 = null;
+                            $elem777 = new \metastore\LockComponent();
+                            $xfer += $elem777->read($input);
+                            $this->component []= $elem777;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -236,8 +236,8 @@ class LockRequest
             }
             $xfer += $output->writeFieldBegin('component', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->component));
-            foreach ($this->component as $iter730) {
-                $xfer += $iter730->write($output);
+            foreach ($this->component as $iter778) {
+                $xfer += $iter778->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

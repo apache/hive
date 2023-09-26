@@ -134,10 +134,12 @@ POSTHOOK: Input: default@q1
 PREHOOK: query: drop table q1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@q1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@q1
 POSTHOOK: query: drop table q1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@q1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@q1
 PREHOOK: query: show tables like "q1"
 PREHOOK: type: SHOWTABLES

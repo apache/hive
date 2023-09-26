@@ -46,6 +46,14 @@ explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_s
 select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
         group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal;
 
+create external table t1 stored as orc as select * from tbl_ice_mixed_all_types ;
+
+explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
+    group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal;
+select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
+        group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal;
+
+
 create external table tbl_ice_mixed_parted (
     a int,
     b string

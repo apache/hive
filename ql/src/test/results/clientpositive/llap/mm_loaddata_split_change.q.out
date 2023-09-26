@@ -1,7 +1,9 @@
 PREHOOK: query: drop table load0_ss
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table load0_ss
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table load0_ss (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -183,8 +185,10 @@ POSTHOOK: Input: default@load0_ss
 PREHOOK: query: drop table load0_ss
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load0_ss
+PREHOOK: Output: database:default
 PREHOOK: Output: default@load0_ss
 POSTHOOK: query: drop table load0_ss
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@load0_ss
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load0_ss

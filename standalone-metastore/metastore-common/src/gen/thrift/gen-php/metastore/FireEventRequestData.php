@@ -37,6 +37,11 @@ class FireEventRequestData
                 'class' => '\metastore\InsertEventRequestData',
                 ),
         ),
+        3 => array(
+            'var' => 'refreshEvent',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -47,6 +52,10 @@ class FireEventRequestData
      * @var \metastore\InsertEventRequestData[]
      */
     public $insertDatas = null;
+    /**
+     * @var bool
+     */
+    public $refreshEvent = null;
 
     public function __construct($vals = null)
     {
@@ -56,6 +65,9 @@ class FireEventRequestData
             }
             if (isset($vals['insertDatas'])) {
                 $this->insertDatas = $vals['insertDatas'];
+            }
+            if (isset($vals['refreshEvent'])) {
+                $this->refreshEvent = $vals['refreshEvent'];
             }
         }
     }
@@ -90,16 +102,23 @@ class FireEventRequestData
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->insertDatas = array();
-                        $_size849 = 0;
-                        $_etype852 = 0;
-                        $xfer += $input->readListBegin($_etype852, $_size849);
-                        for ($_i853 = 0; $_i853 < $_size849; ++$_i853) {
-                            $elem854 = null;
-                            $elem854 = new \metastore\InsertEventRequestData();
-                            $xfer += $elem854->read($input);
-                            $this->insertDatas []= $elem854;
+                        $_size897 = 0;
+                        $_etype900 = 0;
+                        $xfer += $input->readListBegin($_etype900, $_size897);
+                        for ($_i901 = 0; $_i901 < $_size897; ++$_i901) {
+                            $elem902 = null;
+                            $elem902 = new \metastore\InsertEventRequestData();
+                            $xfer += $elem902->read($input);
+                            $this->insertDatas []= $elem902;
                         }
                         $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->refreshEvent);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -132,10 +151,15 @@ class FireEventRequestData
             }
             $xfer += $output->writeFieldBegin('insertDatas', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->insertDatas));
-            foreach ($this->insertDatas as $iter855) {
-                $xfer += $iter855->write($output);
+            foreach ($this->insertDatas as $iter903) {
+                $xfer += $iter903->write($output);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->refreshEvent !== null) {
+            $xfer += $output->writeFieldBegin('refreshEvent', TType::BOOL, 3);
+            $xfer += $output->writeBool($this->refreshEvent);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

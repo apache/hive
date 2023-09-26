@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS test_1_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_1_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_1_n2 AS SELECT 1 AS id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -15,8 +17,10 @@ POSTHOOK: Output: default@test_1_n2
 POSTHOOK: Lineage: test_1_n2.id SIMPLE []
 PREHOOK: query: DROP TABLE IF EXISTS test_2_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_2_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_2_n2 (id INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -27,8 +31,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_2_n2
 PREHOOK: query: DROP TABLE IF EXISTS test_3_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_3_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_3_n0 AS SELECT 1 AS id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table

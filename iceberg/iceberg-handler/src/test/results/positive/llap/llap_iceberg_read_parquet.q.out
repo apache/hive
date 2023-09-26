@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE IF EXISTS llap_orders_parquet PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS llap_orders_parquet PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS llap_items_parquet PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS llap_items_parquet PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS mig_source_parquet PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS mig_source_parquet PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE llap_items_parquet (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -40,11 +46,11 @@ POSTHOOK: query: INSERT INTO llap_items_parquet VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_items_parquet
-PREHOOK: query: CREATE EXTERNAL TABLE llap_orders_parquet (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS PARQUET
+PREHOOK: query: CREATE EXTERNAL TABLE llap_orders_parquet (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_orders_parquet
-POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders_parquet (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS PARQUET
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders_parquet (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_orders_parquet
@@ -203,11 +209,11 @@ Cybertruck	4.5	50000
 Model S	NULL	123000
 Model X	2.5	113000
 Model Y	NULL	55000
-PREHOOK: query: ALTER TABLE llap_orders_parquet CHANGE tradets ordertime timestamp AFTER p2
+PREHOOK: query: ALTER TABLE llap_orders_parquet CHANGE tradets ordertime timestamp AFTER P2
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@llap_orders_parquet
 PREHOOK: Output: default@llap_orders_parquet
-POSTHOOK: query: ALTER TABLE llap_orders_parquet CHANGE tradets ordertime timestamp AFTER p2
+POSTHOOK: query: ALTER TABLE llap_orders_parquet CHANGE tradets ordertime timestamp AFTER P2
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@llap_orders_parquet
 POSTHOOK: Output: default@llap_orders_parquet
@@ -239,11 +245,11 @@ POSTHOOK: Input: default@llap_orders_parquet
 #### A masked pattern was here ####
 EU	2000-01-04 19:55:46.129	153
 US	2007-06-24 19:23:22.829	12
-PREHOOK: query: ALTER TABLE llap_orders_parquet CHANGE p2 state string
+PREHOOK: query: ALTER TABLE llap_orders_parquet CHANGE P2 state string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@llap_orders_parquet
 PREHOOK: Output: default@llap_orders_parquet
-POSTHOOK: query: ALTER TABLE llap_orders_parquet CHANGE p2 state string
+POSTHOOK: query: ALTER TABLE llap_orders_parquet CHANGE P2 state string
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@llap_orders_parquet
 POSTHOOK: Output: default@llap_orders_parquet
@@ -435,12 +441,11 @@ POSTHOOK: Output: default@mig_source_parquet@region=EU
 POSTHOOK: Output: default@mig_source_parquet@region=US
 POSTHOOK: Lineage: mig_source_parquet PARTITION(region=EU).id SCRIPT []
 POSTHOOK: Lineage: mig_source_parquet PARTITION(region=US).id SCRIPT []
-PREHOOK: query: ALTER TABLE mig_source_parquet SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: ALTER TABLE mig_source_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@mig_source_parquet
-PREHOOK: Output: default@mig_source_parquet
-POSTHOOK: query: ALTER TABLE mig_source_parquet SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: ALTER TABLE mig_source_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@mig_source_parquet
 POSTHOOK: Output: default@mig_source_parquet
 PREHOOK: query: SELECT region, SUM(id) from mig_source_parquet GROUP BY region

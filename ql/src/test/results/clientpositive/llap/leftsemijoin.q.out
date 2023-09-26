@@ -1,11 +1,15 @@
 PREHOOK: query: drop table sales_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table sales_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table things_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table things_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE sales_n1 (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
@@ -95,18 +99,22 @@ Joe	2
 PREHOOK: query: drop table sales_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sales_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sales_n1
 POSTHOOK: query: drop table sales_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sales_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sales_n1
 PREHOOK: query: drop table things_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@things_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@things_n1
 POSTHOOK: query: drop table things_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@things_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@things_n1
 Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name

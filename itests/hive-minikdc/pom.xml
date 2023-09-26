@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-beta-2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it-minikdc</artifactId>
@@ -29,6 +29,30 @@
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8-standalone</artifactId>
+      <version>${wiremock-jre8.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-server-integ</artifactId>
+      <version>${apache-directory-server.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>dom4j</groupId>
+          <artifactId>dom4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.directory.server</groupId>
+      <artifactId>apacheds-test-framework</artifactId>
+      <version>${apache-directory-server.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
@@ -141,6 +165,12 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -207,24 +237,6 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-minikdc</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-reload4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>ch.qos.reload4j</groupId>
-          <artifactId>reload4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>

@@ -25,7 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
@@ -218,6 +221,13 @@ public class ColStatsProcessor implements IStatsProcessor {
       }
 
       start = System. currentTimeMillis();
+      if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
+        boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats);
+        if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
+          setOrRemoveColumnStatsAccurateProperty(db, tbl, colStatDesc.getColName(), success);
+        }
+      }
+      // TODO: Write stats for native tables only (See HIVE-27421)
       db.setPartitionColumnStatistics(request);
       end = System.currentTimeMillis();
       LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");
@@ -227,6 +237,20 @@ public class ColStatsProcessor implements IStatsProcessor {
 
   @Override
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
+  }
+
+  private void setOrRemoveColumnStatsAccurateProperty(Hive db, Table tbl, List<String> colNames, boolean success) throws HiveException {
+    if (CollectionUtils.isEmpty(colNames) || !colStatDesc.isTblLevel()) {
+      return;
+    }
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    if (success) {
+      StatsSetupConst.setColumnStatsState(tbl.getParameters(), colNames);
+    } else {
+      StatsSetupConst.removeColumnStatsState(tbl.getParameters(), colNames);
+    }
+    db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, false);
   }
 
   /**

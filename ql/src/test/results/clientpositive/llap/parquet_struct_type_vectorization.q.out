@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE parquet_struct_type_staging
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_struct_type_staging
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_struct_type
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_struct_type
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parquet_struct_type_staging (
 id int,
 st1 struct<f1:int, f2:string>,

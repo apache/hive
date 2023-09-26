@@ -2603,14 +2603,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(702, split.getLength());
+    assertEquals(709, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(726, split.getLength());
+    assertEquals(733, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -2618,7 +2618,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(253, combineSplit.getLength(bucket));
+      assertEquals(260, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);
@@ -4285,7 +4285,7 @@ public class TestInputOutputFormat {
     result = splitsForStreamingAcidTable(files);
     files.clear();
     assertEquals(1000, result.get(0).getLength());
-    assertEquals(95, result.get(1).getLength());
+    assertEquals(15, result.get(1).getLength());
 
     // 1 incomplete delta with 2 complete and 1 incomplete blocks: (1000 + 1000 + 500/800)
     files.addAll(mockDeltaWithSideFileForStreaming("delta_0000021_0000030_0000", 2500, 2800));
@@ -4293,7 +4293,7 @@ public class TestInputOutputFormat {
     files.clear();
     assertEquals(1000, result.get(0).getLength());
     assertEquals(1000, result.get(1).getLength());
-    assertEquals(800, result.get(2).getLength());
+    assertEquals(500, result.get(2).getLength());
 
     // 1 complete delta but shorter flush_length - though I think this is almost impossible
     files.addAll(mockDeltaWithSideFileForStreaming("delta_0000021_0000030_0000", 1000, 450));

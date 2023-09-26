@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-beta-2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-hplsql</artifactId>
@@ -48,7 +48,7 @@
     <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr4-runtime</artifactId>
-      <version>4.5</version>
+      <version>${antlr4.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -127,7 +127,7 @@
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
-        <version>4.5</version>
+        <version>${antlr4.version}</version>
         <configuration>
           <visitor>true</visitor>
         </configuration>

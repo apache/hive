@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.kafka;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,6 +40,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.errors.AuthenticationException;
 import org.apache.kafka.common.errors.AuthorizationException;
@@ -47,6 +49,7 @@ import org.apache.kafka.common.errors.OffsetMetadataTooLarge;
 import org.apache.kafka.common.errors.SecurityDisabledException;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.errors.UnknownServerException;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +78,9 @@ final class KafkaUtils {
   private static final String JAAS_TEMPLATE_SCRAM =
       "org.apache.kafka.common.security.scram.ScramLoginModule required "
           + "username=\"%s\" password=\"%s\" serviceName=\"%s\" tokenauth=true;";
+  static final Text KAFKA_DELEGATION_TOKEN_KEY = new Text("KAFKA_DELEGATION_TOKEN");
+  private static final Set<String> SSL_CONFIG_KEYS =
+      ImmutableSet.copyOf(new ConfigDef().withClientSslSupport().configKeys().keySet());
 
   private KafkaUtils() {
   }
@@ -137,6 +143,7 @@ final class KafkaUtils {
   }
 
   static void setupKafkaSslProperties(Configuration configuration, Properties props) {
+    copySSLProperties(configuration, props);
     // Setup SSL via credentials keystore if necessary
     final String credKeystore = configuration.get(KafkaTableProperties.HIVE_KAFKA_SSL_CREDENTIAL_KEYSTORE.getName());
     if (!(credKeystore == null) && !credKeystore.isEmpty()) {
@@ -181,11 +188,27 @@ final class KafkaUtils {
     }
   }
 
+  /**
+   * Copies Kafka SSL properties from source configuration to target property map.
+   * <p>
+   * It only copies SSL properties that are present in the source and not present in the target. It is useful to
+   * propagate global configurations to the Kafka client but also account for use-cases where table properties are not
+   * using the Hive specific prefixes ({@link #CONSUMER_CONFIGURATION_PREFIX}, {@link #PRODUCER_CONFIGURATION_PREFIX}).
+   * </p>
+   * @param source the configuration from which we will get the properties 
+   * @param target the property map to which we will set the properties
+   */
+  private static void copySSLProperties(Configuration source, Properties target) {
+    for (String p : SSL_CONFIG_KEYS) {
+      String v = source.get(p);
+      if (v != null && !target.containsKey(p)) {
+        target.setProperty(p, v);
+      }
+    }
+  }
+
   private static void writeStoreToLocal(Configuration configuration, String hdfsLoc, String localDest)
       throws IOException, URISyntaxException {
-    if(!"hdfs".equals(new URI(hdfsLoc).getScheme())) {
-      throw new IllegalArgumentException("Kafka stores must be located in HDFS, but received: " + hdfsLoc);
-    }
     try {
       // Make sure the local resources directory is created
       File localDir = new File(localDest);
@@ -383,7 +406,7 @@ final class KafkaUtils {
 
     if (configuration instanceof JobConf) {
       Credentials creds = ((JobConf) configuration).getCredentials();
-      Token<?> token = creds.getToken(new Text("KAFKA_DELEGATION_TOKEN"));
+      Token<?> token = creds.getToken(KAFKA_DELEGATION_TOKEN_KEY);
 
       if (token != null) {
         log.info("Kafka delegation token has been found: {}", token);
@@ -395,5 +418,32 @@ final class KafkaUtils {
       }
     }
     log.info("Kafka client running with following JAAS = [{}]", jaasConf);
+  }
+
+  /**
+   * Returns the security protocol if one is defined in the properties and null otherwise.
+   * <p>The following properties are examined to determine the protocol:</p>
+   * <ol>
+   *   <li>security.protocol</li>
+   *   <li>kafka.consumer.security.protocol</li>
+   *   <li>kafka.producer.security.protocol</li>
+   * </ol>
+   * <p>and the first non null/not empty is returned.</p>
+   * <p>Defining multiple security protocols at the same time is invalid but this method is lenient and tries to pick
+   * the most reasonable option.</p>
+   * @param props the properties from which to obtain the protocol.
+   * @return the security protocol if one is defined in the properties and null otherwise.
+   */
+  static SecurityProtocol securityProtocol(Properties props) {
+    String[] securityProtocolConfigs = new String[] { CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
+        CONSUMER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
+        PRODUCER_CONFIGURATION_PREFIX + "." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG };
+    for (String c : securityProtocolConfigs) {
+      String v = props.getProperty(c);
+      if (v != null && !v.isEmpty()) {
+        return SecurityProtocol.forName(v);
+      }
+    }
+    return null;
   }
 }

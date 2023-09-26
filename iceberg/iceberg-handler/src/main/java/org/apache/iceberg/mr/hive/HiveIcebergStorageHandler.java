@@ -19,53 +19,78 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.StorageFormat;
+import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -74,26 +99,36 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.FetchFormatter;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
+import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.RowLevelOperationMode;
@@ -111,6 +146,12 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.puffin.Blob;
+import org.apache.iceberg.puffin.BlobMetadata;
+import org.apache.iceberg.puffin.Puffin;
+import org.apache.iceberg.puffin.PuffinCompressionCodec;
+import org.apache.iceberg.puffin.PuffinReader;
+import org.apache.iceberg.puffin.PuffinWriter;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -120,7 +161,11 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
+import org.apache.iceberg.relocated.com.google.common.collect.Streams;
+import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ByteBuffers;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,10 +176,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
-  private static final String ICEBERG = "iceberg";
-  private static final String PUFFIN = "puffin";
+  // Column index for partition metadata table
+  private static final int SPEC_IDX = 1;
+  private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
+  public static final String STATS = "/stats/";
+
   /**
    * Function template for producing a custom sort expression function:
    * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
@@ -313,40 +361,225 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public StorageFormatDescriptor getStorageFormatDescriptor(org.apache.hadoop.hive.metastore.api.Table table)
+      throws SemanticException {
+    if (table.getParameters() != null) {
+      String format = table.getParameters().getOrDefault(TableProperties.DEFAULT_FILE_FORMAT, IOConstants.PARQUET);
+      return StorageFormat.getDescriptor(format, TableProperties.DEFAULT_FILE_FORMAT);
+    }
+    return null;
+  }
+
+  public boolean supportsAppendData(org.apache.hadoop.hive.metastore.api.Table table, boolean withPartClause)
+      throws SemanticException {
+    Table icebergTbl = IcebergTableUtil.getTable(conf, table);
+    if (icebergTbl.spec().isUnpartitioned()) {
+      return true;
+    }
+    // If it is a table which has undergone partition evolution, return false;
+    if (icebergTbl.currentSnapshot() != null) {
+      if (icebergTbl.currentSnapshot().allManifests(icebergTbl.io()).parallelStream()
+          .map(ManifestFile::partitionSpecId)
+          .anyMatch(id -> id < icebergTbl.spec().specId())) {
+        if (withPartClause) {
+          throw new SemanticException("Can not Load into an iceberg table, which has undergone partition evolution " +
+              "using the PARTITION clause");
+        }
+        return false;
+      }
+    }
+    return withPartClause;
+  }
+
+  public void appendFiles(org.apache.hadoop.hive.metastore.api.Table table, URI fromURI, boolean isOverwrite,
+      Map<String, String> partitionSpec)
+      throws SemanticException {
+    Table icebergTbl = IcebergTableUtil.getTable(conf, table);
+    String format = table.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT);
+    HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, partitionSpec, conf);
+  }
+
+  @Override
   public Map<String, String> getBasicStatistics(Partish partish) {
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
-    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-    Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
-    String statsSource = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USE_STATS_FROM).toLowerCase();
+    // For write queries where rows got modified, don't fetch from cache as values could have changed.
+    Table table = getTable(hmsTable);
     Map<String, String> stats = Maps.newHashMap();
-    switch (statsSource) {
-      case ICEBERG:
-        if (table.currentSnapshot() != null) {
-          Map<String, String> summary = table.currentSnapshot().summary();
-          if (summary != null) {
-            if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
-              stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
-            }
-            if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
-              stats.put(StatsSetupConst.ROW_COUNT, summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
-            }
-            if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
-              stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
-            }
+    if (getStatsSource().equals(Constants.ICEBERG)) {
+      if (table.currentSnapshot() != null) {
+        Map<String, String> summary = table.currentSnapshot().summary();
+        if (summary != null) {
+
+          if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
+            stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
           }
-        } else {
-          stats.put(StatsSetupConst.NUM_FILES, "0");
-          stats.put(StatsSetupConst.ROW_COUNT, "0");
-          stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+
+          if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
+            long totalRecords = Long.parseLong(summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+            if (summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
+                summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+
+              long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
+              long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
+
+              long actualRecords = totalRecords - (totalEqDeletes > 0 ? 0 : totalPosDeletes);
+              totalRecords = actualRecords > 0 ? actualRecords : totalRecords;
+              // actualRecords maybe -ve in edge cases
+            }
+            stats.put(StatsSetupConst.ROW_COUNT, String.valueOf(totalRecords));
+          }
+
+          if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
+            stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
+          }
         }
-        break;
-      case PUFFIN:
-        // place holder for puffin
-        break;
-      default:
-        // fall back to metastore
+      } else {
+        stats.put(StatsSetupConst.NUM_FILES, "0");
+        stats.put(StatsSetupConst.ROW_COUNT, "0");
+        stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+      }
     }
     return stats;
+  }
+
+  private Table getTable(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table;
+    final Optional<QueryState> queryState = SessionStateUtil.getQueryState(conf);
+    if (!queryState.isPresent() || queryState.get().getNumModifiedRows() > 0) {
+      table = IcebergTableUtil.getTable(conf, hmsTable.getTTable(), true);
+    } else {
+      table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    }
+    return table;
+  }
+
+  @Override
+  public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return table.currentSnapshot() != null && getStatsSource().equals(Constants.ICEBERG);
+  }
+
+  @Override
+  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<ColumnStatistics> colStats) {
+    Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
+    return writeColStats(colStats.get(0), tbl, snapshotId);
+  }
+
+  private boolean writeColStats(ColumnStatistics tableColStats, Table tbl, String snapshotId) {
+    try {
+      boolean rewriteStats = removeColStatsIfExists(tbl);
+      if (!rewriteStats) {
+        checkAndMergeColStats(tableColStats, tbl);
+      }
+      // Currently, we are only serializing table level stats.
+      byte[] serializeColStats = SerializationUtils.serialize(tableColStats);
+      try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getColStatsPath(tbl).toString()))
+          .createdBy(Constants.HIVE_ENGINE).build()) {
+        writer.add(new Blob(tbl.name() + "-" + snapshotId, ImmutableList.of(1), tbl.currentSnapshot().snapshotId(),
+            tbl.currentSnapshot().sequenceNumber(), ByteBuffer.wrap(serializeColStats), PuffinCompressionCodec.NONE,
+            ImmutableMap.of()));
+        writer.finish();
+        return true;
+      } catch (IOException e) {
+        LOG.warn("Unable to write stats to puffin file", e.getMessage());
+        return false;
+      }
+    } catch (InvalidObjectException | IOException e) {
+      LOG.warn("Unable to invalidate or merge stats: ", e.getMessage());
+      return false;
+    }
+  }
+
+  @Override
+  public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return canSetColStatistics(hmsTable) && canProvideColStats(table, table.currentSnapshot().snapshotId());
+  }
+
+  private boolean canProvideColStats(Table table, long snapshotId) {
+    Path statsPath = getColStatsPath(table, snapshotId);
+    try {
+      FileSystem fs = statsPath.getFileSystem(conf);
+      return  fs.exists(statsPath);
+    } catch (IOException e) {
+      LOG.warn("Exception when trying to find Iceberg column stats for table:{} , snapshot:{} , " +
+          "statsPath: {} , stack trace: {}", table.name(), table.currentSnapshot(), statsPath, e);
+    }
+    return false;
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Path statsPath = getColStatsPath(table);
+    LOG.info("Using stats from puffin file at: {}", statsPath);
+    return readColStats(table, statsPath).getStatsObj();
+  }
+
+  private ColumnStatistics readColStats(Table table, Path statsPath) {
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath.toString())).build()) {
+      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
+      Map<BlobMetadata, ColumnStatistics> collect = Streams.stream(reader.readAll(blobMetadata)).collect(
+          Collectors.toMap(Pair::first, blobMetadataByteBufferPair -> SerializationUtils.deserialize(
+              ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
+      return collect.get(blobMetadata.get(0));
+    } catch (IOException | IndexOutOfBoundsException e) {
+      LOG.warn(" Unable to read iceberg col stats from puffin files: ", e);
+      return new ColumnStatistics();
+    }
+  }
+
+  @Override
+  public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (getStatsSource().equals(Constants.ICEBERG)) {
+      Table table = getTable(hmsTable);
+      if (table.currentSnapshot() != null) {
+        Map<String, String> summary = table.currentSnapshot().summary();
+        if (summary != null && summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
+            summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+
+          long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
+          long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
+          return totalEqDeletes + totalPosDeletes == 0;
+        }
+      }
+    }
+    return false;
+  }
+
+  private String getStatsSource() {
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, Constants.ICEBERG).toLowerCase();
+  }
+
+  private Path getColStatsPath(Table table) {
+    return getColStatsPath(table, table.currentSnapshot().snapshotId());
+  }
+
+  private Path getColStatsPath(Table table, long snapshotId) {
+    return new Path(table.location() + STATS + table.name() + snapshotId);
+  }
+
+  private boolean removeColStatsIfExists(Table tbl) throws IOException {
+    Path statsPath = getColStatsPath(tbl);
+    FileSystem fs = statsPath.getFileSystem(conf);
+    if (fs.exists(statsPath)) {
+      // Analyze table and stats updater thread
+      return fs.delete(statsPath, true);
+    }
+    return SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
+      .filter(opType -> HiveOperation.ANALYZE_TABLE == opType)
+      .isPresent();
+  }
+
+  private void checkAndMergeColStats(ColumnStatistics statsObjNew, Table tbl) throws InvalidObjectException {
+    Long previousSnapshotId = tbl.currentSnapshot().parentId();
+    if (previousSnapshotId != null && canProvideColStats(tbl, previousSnapshotId)) {
+      ColumnStatistics statsObjOld = readColStats(tbl, getColStatsPath(tbl, previousSnapshotId));
+      if (statsObjOld != null && statsObjOld.getStatsObjSize() != 0 && !statsObjNew.getStatsObj().isEmpty()) {
+        MetaStoreServerUtils.mergeColStats(statsObjNew, statsObjOld);
+      }
+    }
   }
 
   /**
@@ -476,21 +709,23 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  public void storageHandlerCommit(Properties commitProperties, Operation operation)
+        throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
+    String snapshotRef = commitProperties.getProperty(Catalogs.SNAPSHOT_REF);
     Configuration configuration = SessionState.getSessionConf();
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef);
     if (jobContextList.isEmpty()) {
       return;
     }
 
     HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
     try {
-      committer.commitJobs(jobContextList);
+      committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
       String ids = jobContextList
           .stream().map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(", "));
@@ -524,7 +759,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean isMetadataTableSupported() {
+  public boolean isTableMetaRefSupported() {
     return true;
   }
 
@@ -548,7 +783,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             hmsTable.getTableName());
         AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec =
             (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
-        icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
+        int numThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
+            HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
+        expireSnapshot(icebergTable, expireSnapshotsSpec, numThreads);
         break;
       case SET_CURRENT_SNAPSHOT:
         AlterTableExecuteSpec.SetCurrentSnapshotSpec setSnapshotVersionSpec =
@@ -557,9 +794,109 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             hmsTable.getTableName(), setSnapshotVersionSpec.getSnapshotId());
         IcebergTableUtil.setCurrentSnapshot(icebergTable, setSnapshotVersionSpec.getSnapshotId());
         break;
+      case FAST_FORWARD:
+        AlterTableExecuteSpec.FastForwardSpec fastForwardSpec =
+            (AlterTableExecuteSpec.FastForwardSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.fastForwardBranch(icebergTable, fastForwardSpec.getSourceBranch(),
+            fastForwardSpec.getTargetBranch());
+        break;
+      case CHERRY_PICK:
+        AlterTableExecuteSpec.CherryPickSpec cherryPickSpec =
+            (AlterTableExecuteSpec.CherryPickSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.cherryPick(icebergTable, cherryPickSpec.getSnapshotId());
+        break;
       default:
         throw new UnsupportedOperationException(
             String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
+    }
+  }
+
+  private void expireSnapshot(Table icebergTable, AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec,
+      int numThreads) {
+    ExecutorService deleteExecutorService = null;
+    try {
+      if (numThreads > 0) {
+        LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
+        deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
+      }
+      if (expireSnapshotsSpec.isExpireByIds()) {
+        expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), deleteExecutorService);
+      } else {
+        expireSnapshotOlderThanTimestamp(icebergTable, expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
+      }
+    } finally {
+      if (deleteExecutorService != null) {
+        deleteExecutorService.shutdown();
+      }
+    }
+  }
+
+  private void expireSnapshotOlderThanTimestamp(Table icebergTable, Long timestamp,
+      ExecutorService deleteExecutorService) {
+    ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots().expireOlderThan(timestamp);
+    if (deleteExecutorService != null) {
+      expireSnapshots.executeDeleteWith(deleteExecutorService);
+    }
+    expireSnapshots.commit();
+  }
+
+  private void expireSnapshotByIds(Table icebergTable, String[] idsToExpire,
+      ExecutorService deleteExecutorService) {
+    if (idsToExpire.length != 0) {
+      ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
+      for (String id : idsToExpire) {
+        expireSnapshots.expireSnapshotId(Long.parseLong(id));
+      }
+      LOG.info("Expiring snapshot on {} for snapshot Ids: {}", icebergTable.name(), Arrays.toString(idsToExpire));
+      if (deleteExecutorService != null) {
+        expireSnapshots = expireSnapshots.executeDeleteWith(deleteExecutorService);
+      }
+      expireSnapshots.commit();
+    }
+  }
+
+  private ExecutorService getDeleteExecutorService(String completeName, int numThreads) {
+    AtomicInteger deleteThreadsIndex = new AtomicInteger(0);
+    return Executors.newFixedThreadPool(numThreads, runnable -> {
+      Thread thread = new Thread(runnable);
+      thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
+      return thread;
+    });
+  }
+
+  @Override
+  public void alterTableSnapshotRefOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      AlterTableSnapshotRefSpec alterTableSnapshotRefSpec) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
+        new UnsupportedOperationException(String.format("Cannot alter %s on iceberg table %s.%s which has no snapshot",
+            alterTableSnapshotRefSpec.getOperationType().getName(), hmsTable.getDbName(), hmsTable.getTableName())));
+
+    switch (alterTableSnapshotRefSpec.getOperationType()) {
+      case CREATE_BRANCH:
+        AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createBranchSpec =
+            (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergBranchExec.createBranch(icebergTable, createBranchSpec);
+        break;
+      case CREATE_TAG:
+        AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec =
+            (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergTagExec.createTag(icebergTable, createTagSpec);
+        break;
+      case DROP_BRANCH:
+        AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec =
+            (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergBranchExec.dropBranch(icebergTable, dropBranchSpec);
+        break;
+      case DROP_TAG:
+        AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec =
+            (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergTagExec.dropTag(icebergTable, dropTagSpec);
+        break;
+      default:
+        throw new UnsupportedOperationException(String.format(
+            "Operation type %s is not supported", alterTableSnapshotRefSpec.getOperationType().getName()));
     }
   }
 
@@ -569,24 +906,50 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public org.apache.hadoop.hive.ql.metadata.Table checkAndSetTableMetaRef(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, String tableMetaRef) throws SemanticException {
+    String refName = HiveUtils.getTableSnapshotRef(tableMetaRef);
+    if (refName != null) {
+      Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+      if (tbl.snapshot(refName) != null) {
+        hmsTable.setSnapshotRef(tableMetaRef);
+        return hmsTable;
+      }
+      throw new SemanticException(String.format("Cannot use snapshotRef (does not exist): %s", refName));
+    }
+    if (IcebergMetadataTables.isValidMetaTable(tableMetaRef)) {
+      hmsTable.setMetaTable(tableMetaRef);
+      return hmsTable;
+    }
+    throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, tableMetaRef);
+  }
+
+  @Override
   public URI getURIForAuth(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws URISyntaxException {
     String dbName = hmsTable.getDbName();
     String tableName = hmsTable.getTableName();
     StringBuilder authURI =
         new StringBuilder(ICEBERG_URI_PREFIX).append(encodeString(dbName)).append("/").append(encodeString(tableName))
             .append("?snapshot=");
-    Optional<String> locationProperty = SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
-    if (locationProperty.isPresent()) {
-      Preconditions.checkArgument(locationProperty.get() != null,
-          "Table location is not set in SessionState. Authorization URI cannot be supplied.");
-      // this property is set during the create operation before the hive table was created
-      // we are returning a dummy iceberg metadata file
-      authURI.append(encodeString(URI.create(locationProperty.get()).getPath()))
-          .append(encodeString("/metadata/dummy.metadata.json"));
+    // If metadata location is provided we should use that location for auth, since during create if the
+    // metadata_location is explicitly provided we register a table using that path.
+    Optional<String> metadataLocation =
+        SessionStateUtil.getProperty(conf, BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+    if (metadataLocation.isPresent()) {
+      authURI.append(encodeString(metadataLocation.get()));
     } else {
-      Table table = IcebergTableUtil.getTable(conf, hmsTable);
-      authURI.append(
-          encodeString(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()));
+      Optional<String> locationProperty =
+          SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
+      if (locationProperty.isPresent()) {
+        // this property is set during the create operation before the hive table was created
+        // we are returning a dummy iceberg metadata file
+        authURI.append(encodeString(URI.create(locationProperty.get()).getPath()))
+            .append(encodeString("/metadata/dummy.metadata.json"));
+      } else {
+        Table table = IcebergTableUtil.getTable(conf, hmsTable);
+        authURI.append(
+            encodeString(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()));
+      }
     }
     LOG.debug("Iceberg storage handler authorization URI {}", authURI);
     return new URI(authURI.toString());
@@ -671,9 +1034,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       case UPDATE:
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-        return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        return ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+      case MERGE:
+        return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default:
         return ImmutableList.of();
     }
@@ -713,6 +1076,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   private void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
+  }
+
+  public StorageHandlerTypes getType() {
+    return StorageHandlerTypes.ICEBERG;
   }
 
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
@@ -1048,11 +1415,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * Generates {@link JobContext}s for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
-   * @param overwrite If we have to overwrite the existing table or just add the new data
+   * @param branchName the name of the branch
    * @return The generated Optional JobContext list or empty if not presents.
    */
   private List<JobContext> generateJobContext(Configuration configuration, String tableName,
-      boolean overwrite) {
+      String branchName) {
     JobConf jobConf = new JobConf(configuration);
     Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
         SessionStateUtil.getCommitInfo(jobConf, tableName);
@@ -1061,11 +1428,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
         JobID jobID = JobID.forName(commitInfo.getJobIdStr());
         commitInfo.getProps().forEach(jobConf::set);
-        jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
         // we should only commit this current table because
         // for multi-table inserts, this hook method will be called sequentially for each target table
         jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+        if (branchName != null) {
+          jobConf.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, branchName);
+        }
 
         jobContextList.add(new JobContextImpl(jobConf, jobID, null));
       }
@@ -1181,11 +1550,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public void addResourcesForCreateTable(Map<String, String> tblProps, HiveConf hiveConf) {
+    String metadataLocation = tblProps.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+    if (StringUtils.isNotEmpty(metadataLocation)) {
+      SessionStateUtil.addResourceOrThrow(hiveConf, BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+          metadataLocation);
+    }
+  }
+
+  @Override
   public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    boolean foundSince = false;
-    for (Snapshot snapshot : table.snapshots()) {
+    return hasAppendsOnly(table.snapshots(), since);
+  }
+
+  @VisibleForTesting
+  Boolean hasAppendsOnly(Iterable<Snapshot> snapshots, SnapshotContext since) {
+    boolean foundSince = since == null;
+    for (Snapshot snapshot : snapshots) {
       if (!foundSince) {
         if (snapshot.snapshotId() == since.getSnapshotId()) {
           foundSince = true;
@@ -1202,5 +1585,79 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     return null;
+  }
+
+  @Override
+  public List<String> showPartitions(DDLOperationContext context, org.apache.hadoop.hive.ql.metadata.Table hmstbl)
+      throws HiveException {
+    Configuration confs = context.getConf();
+    JobConf job = HiveTableUtil.getPartJobConf(confs, hmstbl);
+    Class<? extends InputFormat> formatter = hmstbl.getInputFormatClass();
+
+    try {
+      InputFormat inputFormat = FetchOperator.getInputFormatFromCache(formatter, job);
+      InputSplit[] splits = inputFormat.getSplits(job, 1);
+      try (RecordReader<WritableComparable, Writable> reader = inputFormat.getRecordReader(splits[0], job,
+          Reporter.NULL)) {
+        return getPartitions(context, job, reader, hmstbl);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR,
+          "show partitions for table " + hmstbl.getTableName() + ". " + ErrorMsg.TABLE_NOT_PARTITIONED +
+              " or the table is empty ");
+    }
+  }
+
+  private List<String> getPartitions(DDLOperationContext context, Configuration job,
+      RecordReader<WritableComparable, Writable> reader, org.apache.hadoop.hive.ql.metadata.Table hmstbl)
+      throws Exception {
+
+    List<String> parts = Lists.newArrayList();
+    Writable value = reader.createValue();
+    WritableComparable key = reader.createKey();
+
+    try (FetchFormatter fetcher = new DefaultFetchFormatter()) {
+      fetcher.initialize(job, HiveTableUtil.getSerializationProps());
+      org.apache.hadoop.hive.ql.metadata.Table metaDataPartTable =
+          context.getDb().getTable(hmstbl.getDbName(), hmstbl.getTableName(), "partitions", true);
+      Deserializer currSerDe = metaDataPartTable.getDeserializer();
+      ObjectMapper mapper = new ObjectMapper();
+      Table tbl = getTable(hmstbl);
+      while (reader.next(key, value)) {
+        String[] row =
+            fetcher.convert(currSerDe.deserialize(value), currSerDe.getObjectInspector())
+                .toString().split("\t");
+        parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX], mapper, tbl.spec().specId()));
+      }
+    }
+    Collections.sort(parts);
+    return parts;
+  }
+
+  @Override
+  public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+
+    if (table.spec().isUnpartitioned()) {
+      throw new SemanticException("Writing data into a partition fails when the Iceberg table is unpartitioned.");
+    }
+
+    Map<String, Types.NestedField> mapOfPartColNamesWithTypes = Maps.newHashMap();
+    for (PartitionField partField : table.spec().fields()) {
+      Types.NestedField field = table.schema().findField(partField.sourceId());
+      mapOfPartColNamesWithTypes.put(field.name(), field);
+    }
+
+    for (Map.Entry<String, String> spec : partitionSpec.entrySet()) {
+      Types.NestedField field = mapOfPartColNamesWithTypes.get(spec.getKey());
+      Objects.requireNonNull(field, String.format("%s is not a partition column", spec.getKey()));
+      // If the partition spec value is null, it's a dynamic partition column.
+      if (spec.getValue() != null) {
+        Object partKeyVal = Conversions.fromPartitionString(field.type(), spec.getValue());
+        Objects.requireNonNull(partKeyVal,
+            String.format("Partition spec value for column : %s is invalid", field.name()));
+      }
+    }
   }
 }

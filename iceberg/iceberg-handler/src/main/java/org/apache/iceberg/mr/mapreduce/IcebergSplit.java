@@ -26,7 +26,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.Table;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.util.SerializationUtil;
@@ -37,7 +36,6 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
 
   public static final String[] ANYWHERE = new String[]{"*"};
 
-  private Table table;
   private CombinedScanTask task;
 
   private transient String[] locations;
@@ -47,8 +45,7 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
   public IcebergSplit() {
   }
 
-  IcebergSplit(Table table, Configuration conf, CombinedScanTask task) {
-    this.table = table;
+  IcebergSplit(Configuration conf, CombinedScanTask task) {
     this.task = task;
     this.conf = conf;
   }
@@ -83,10 +80,6 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
 
   @Override
   public void write(DataOutput out) throws IOException {
-    byte[] tableData = SerializationUtil.serializeToBytes(table);
-    out.writeInt(tableData.length);
-    out.write(tableData);
-
     byte[] data = SerializationUtil.serializeToBytes(this.task);
     out.writeInt(data.length);
     out.write(data);
@@ -94,16 +87,8 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    byte[] tableData = new byte[in.readInt()];
-    in.readFully(tableData);
-    this.table = SerializationUtil.deserializeFromBytes(tableData);
-
     byte[] data = new byte[in.readInt()];
     in.readFully(data);
     this.task = SerializationUtil.deserializeFromBytes(data);
-  }
-
-  public Table table() {
-    return table;
   }
 }

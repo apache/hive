@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS union_nullable_test_text
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS union_nullable_test_text
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE union_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -20,8 +22,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@union_nullable_test_text
 PREHOOK: query: DROP TABLE IF EXISTS union_nullable_test_avro
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS union_nullable_test_avro
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE union_nullable_test_avro STORED AS avro tblproperties('avro.schema.literal'='{"name":"nullable", "type":"record", "fields":[{"name":"id", "type":"int"}, {"name":"value", "type":["null", "int", "double"]}]}')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -54,23 +58,29 @@ POSTHOOK: Input: default@union_nullable_test_avro
 PREHOOK: query: DROP TABLE union_nullable_test_avro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_nullable_test_avro
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_nullable_test_avro
 POSTHOOK: query: DROP TABLE union_nullable_test_avro
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_nullable_test_avro
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_nullable_test_avro
 PREHOOK: query: DROP TABLE union_nullable_test_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_nullable_test_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_nullable_test_text
 POSTHOOK: query: DROP TABLE union_nullable_test_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_nullable_test_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_nullable_test_text
 PREHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_text
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_text
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE union_non_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -89,8 +99,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@union_non_nullable_test_text
 PREHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_avro
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_avro
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE union_non_nullable_test_avro STORED AS avro tblproperties('avro.schema.literal'='{"name":"nullable", "type":"record", "fields":[{"name":"id", "type":"int"}, {"name":"value", "type":["int", "double"]}]}')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -122,16 +134,20 @@ POSTHOOK: Input: default@union_non_nullable_test_avro
 PREHOOK: query: DROP TABLE union_non_nullable_test_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_non_nullable_test_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_non_nullable_test_text
 POSTHOOK: query: DROP TABLE union_non_nullable_test_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_non_nullable_test_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_non_nullable_test_text
 PREHOOK: query: DROP TABLE union_non_nullable_test_avro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_non_nullable_test_avro
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_non_nullable_test_avro
 POSTHOOK: query: DROP TABLE union_non_nullable_test_avro
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_non_nullable_test_avro
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_non_nullable_test_avro

@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
 
+import java.util.Arrays;
+
 /**
  * Execute operation specification. It stores the type of the operation and its parameters.
  * The following operations are supported
@@ -34,7 +36,9 @@ public class AlterTableExecuteSpec<T> {
   public enum ExecuteOperationType {
     ROLLBACK,
     EXPIRE_SNAPSHOT,
-    SET_CURRENT_SNAPSHOT
+    SET_CURRENT_SNAPSHOT,
+    FAST_FORWARD,
+    CHERRY_PICK;
   }
 
   private final ExecuteOperationType operationType;
@@ -102,19 +106,38 @@ public class AlterTableExecuteSpec<T> {
    * </ul>
    */
   public static class ExpireSnapshotsSpec {
-    private final long timestampMillis;
+    private long timestampMillis = -1L;
+    private String[] idsToExpire = null;
 
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
+    }
+
+    public ExpireSnapshotsSpec(String ids) {
+      this.idsToExpire = ids.split(",");
     }
 
     public Long getTimestampMillis() {
       return timestampMillis;
     }
 
+    public String[] getIdsToExpire() {
+      return idsToExpire;
+    }
+
+    public boolean isExpireByIds() {
+      return idsToExpire != null;
+    }
+
     @Override
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("timestampMillis", timestampMillis).toString();
+      MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
+      if (isExpireByIds()) {
+        stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
+      } else {
+        stringHelper.add("timestampMillis", timestampMillis);
+      }
+      return stringHelper.toString();
     }
   }
 
@@ -132,6 +155,60 @@ public class AlterTableExecuteSpec<T> {
     }
 
     public Long getSnapshotId() {
+      return snapshotId;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+    }
+  }
+
+    /**
+   * Value object class, that stores the fast-forward operation specific parameters.
+   * <ul>
+   *   <li>source branch: the branch which needs to be fast-forwarded</li>
+     * <li>target branch: the branch to which the source branch needs to be fast-forwarded</li>
+   * </ul>
+   */
+  public static class FastForwardSpec {
+    private final String sourceBranch;
+    private final String targetBranch;
+
+    public FastForwardSpec(String sourceBranch, String targetBranch) {
+      this.sourceBranch = sourceBranch;
+      this.targetBranch = targetBranch;
+    }
+
+    public String getSourceBranch() {
+      return sourceBranch;
+    }
+
+    public String getTargetBranch() {
+      return targetBranch;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("sourceBranch", sourceBranch)
+          .add("targetBranch", targetBranch).toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the cherry-pick operation specific parameters.
+   * <ul>
+   *   <li>snapshotId: the snapshotId which needs to be cherry-picked</li>
+   * </ul>
+   */
+  public static class CherryPickSpec {
+    private final long snapshotId;
+
+    public CherryPickSpec(long snapshotId) {
+      this.snapshotId = snapshotId;
+    }
+
+    public long getSnapshotId() {
       return snapshotId;
     }
 

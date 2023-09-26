@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists dependtest
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists dependtest
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table dependtest (a string) partitioned by (b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -55,8 +57,10 @@ POSTHOOK: Output: default@viewtest
 PREHOOK: query: drop table dependtest
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dependtest
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dependtest
 POSTHOOK: query: drop table dependtest
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dependtest
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dependtest

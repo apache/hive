@@ -393,7 +393,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	5                   
 	rawDataSize         	0                   
-	totalSize           	1505                
+	totalSize           	1516                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -418,9 +418,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n3	0/0/0               	 
-hive.default.cmv_basetable_n6	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n3	:2:9223372036854775807::	 
+default.cmv_basetable_n6	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
@@ -615,7 +615,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
@@ -955,7 +955,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE

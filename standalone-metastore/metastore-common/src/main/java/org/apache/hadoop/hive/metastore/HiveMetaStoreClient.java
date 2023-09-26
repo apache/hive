@@ -55,7 +55,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -139,8 +138,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       "org.apache.hadoop.hive.metastore.HiveMetaStore";
 
   // Method used to create Hive Metastore client. It is called as
-  // HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
-  private static final String HIVE_METASTORE_CREATE_HANDLER_METHOD = "newRetryingHMSHandler";
+  // HiveMetaStore.newHMSHandler("hive client", this.conf, true);
+  private static final String HIVE_METASTORE_CREATE_HANDLER_METHOD = "newHMSHandler";
 
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
@@ -293,10 +292,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     //
     // The code below simulates the following code
     //
-    // client = HiveMetaStore.newRetryingHMSHandler(this.conf);
+    // client = HiveMetaStore.newHMSHandler(this.conf);
     //
     // using reflection API. This is done to avoid dependency of MetastoreClient on Hive Metastore.
-    // Note that newRetryingHMSHandler is static method, so we pass null as the object reference.
+    // Note that newHMSHandler is static method, so we pass null as the object reference.
     //
     try {
       Class<?> clazz = Class.forName(HIVE_METASTORE_CLASS);
@@ -628,8 +627,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     String keyValuePairs = MetastoreConf.getVar(conf,
         ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
     try {
-      List<String> headerKeyValues =
-          Splitter.on(',').trimResults().splitToList(keyValuePairs);
+      String[] headerKeyValues = keyValuePairs.split(",");
       for (String header : headerKeyValues) {
         String[] parts = header.split("=");
         headers.put(parts[0].trim(), parts[1].trim());
@@ -738,6 +736,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
           ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+      int connectionTimeout = (int) MetastoreConf.getTimeVar(conf,
+          ConfVars.CLIENT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
       if (useSSL) {
         String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
         if (trustStorePath.isEmpty()) {
@@ -751,10 +751,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         String trustStoreAlgorithm =
             MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-            trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       } else {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
-            clientSocketTimeout);
+            clientSocketTimeout, connectionTimeout);
       }
       binaryTransport = createAuthBinaryTransport(store, binaryTransport);
     } catch (Exception e) {
@@ -1114,14 +1114,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    */
   @Override
   public int add_partitions(List<Partition> new_parts) throws TException {
-    if (new_parts == null || new_parts.contains(null)) {
-      throw new MetaException("Partitions cannot be null.");
-    }
-    if (!new_parts.isEmpty() && !new_parts.get(0).isSetCatName()) {
-      final String defaultCat = getDefaultCatalog(conf);
-      new_parts.forEach(p -> p.setCatName(defaultCat));
-    }
-    return client.add_partitions(new_parts);
+    List<Partition> ret = add_partitions(new_parts, false, true);
+    return ret != null ? ret.size() : 0;
   }
 
   @Override
@@ -1135,17 +1129,43 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     Partition part = parts.get(0);
     // Have to set it for each partition too
-    if (!part.isSetCatName()) {
-      final String defaultCat = getDefaultCatalog(conf);
-      parts.forEach(p -> p.setCatName(defaultCat));
-    }
+    final String defaultCat = getDefaultCatalog(conf);
     AddPartitionsRequest req = new AddPartitionsRequest(
         part.getDbName(), part.getTableName(), parts, ifNotExists);
+    boolean skipColumnSchemaForPartition =
+            MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    if (!part.isSetCatName() && part.getSd() != null
+            && part.getSd().getCols() != null
+            && skipColumnSchemaForPartition) {
+      for (Partition p : parts) {
+        p.setCatName(defaultCat);
+        p.getSd().getCols().clear();
+        StatsSetupConst.clearColumnStatsState(p.getParameters());
+      }
+    } else if (!part.isSetCatName()) {
+      parts.forEach(p -> p.setCatName(defaultCat));
+    } else if (part.getSd() != null
+            && part.getSd().getCols() != null
+            && skipColumnSchemaForPartition) {
+      parts.forEach(p -> {
+        p.getSd().getCols().clear();
+        StatsSetupConst.clearColumnStatsState(p.getParameters());
+      });
+    }
+    req.setParts(parts);
     req.setCatName(part.isSetCatName() ? part.getCatName() : getDefaultCatalog(conf));
     req.setNeedResult(needResults);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     AddPartitionsResult result = client.add_partitions_req(req);
-    return needResults ? FilterUtils.filterPartitionsIfEnabled(
-        isClientFilterEnabled, filterHook, result.getPartitions()) : null;
+    if (needResults) {
+      List<Partition> new_parts = FilterUtils.filterPartitionsIfEnabled(
+              isClientFilterEnabled, filterHook, result.getPartitions());
+      if (skipColumnSchemaForPartition) {
+        new_parts.forEach(partition -> partition.getSd().setCols(result.getPartitionColSchema()));
+      }
+      return new_parts;
+    }
+    return null;
   }
 
   @Override
@@ -1940,6 +1960,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       context.putToProperties(hive_metastoreConstants.TXN_ID, options.txnId.toString());
     }
     req.setEnvironmentContext(context);
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
 
     return client.drop_partitions_req(req).getPartitions();
   }
@@ -2163,9 +2185,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Partition> listPartitions(String catName, String db_name, String tbl_name,
                                         int max_parts) throws TException {
+    if (db_name == null || tbl_name == null) {
+      throw new MetaException("Database name/Table name should not be null");
+    }
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
     // TODO should we add capabilities here as well as it returns Partition objects
-    List<Partition> parts = client.get_partitions(prependCatalogToDbName(catName, db_name, conf),
-        tbl_name, shrinkMaxtoShort(max_parts));
+    PartitionsRequest req = new PartitionsRequest(db_name, tbl_name);
+    req.setCatName(catName);
+    req.setMaxParts(shrinkMaxtoShort(max_parts));
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
+    List<Partition> parts = client.get_partitions_req(req).getPartitions();
     return deepCopyPartitions(
         FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
@@ -2195,8 +2224,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Partition> listPartitions(String catName, String db_name, String tbl_name,
                                         List<String> part_vals, int max_parts) throws TException {
     // TODO should we add capabilities here as well as it returns Partition objects
-    List<Partition> parts = client.get_partitions_ps(prependCatalogToDbName(catName, db_name, conf),
-        tbl_name, part_vals, shrinkMaxtoShort(max_parts));
+    if (db_name == null || tbl_name == null || part_vals == null) {
+      throw new MetaException("Database name/Table name/partition values should not be null");
+    }
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest(db_name, tbl_name);
+    req.setCatName(catName);
+    req.setPartVals(part_vals);
+    req.setMaxParts(shrinkMaxtoShort(max_parts));
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
+    List<Partition> parts = client.get_partitions_ps_with_auth_req(req).getPartitions();
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
 
@@ -2228,6 +2265,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequestInternal(GetPartitionsPsWithAuthRequest req)
       throws TException {
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     return client.get_partitions_ps_with_auth_req(req);
   }
 
@@ -2253,8 +2292,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected List<Partition> listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
         int maxParts, String userName, List<String> groupNames) throws TException {
-    return client.get_partitions_with_auth(prependCatalogToDbName(catName, dbName, conf),
-        tableName, shrinkMaxtoShort(maxParts), userName, groupNames);
+    if (dbName == null || tableName == null) {
+      throw new MetaException("Database name/Table name should not be null");
+    }
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest(dbName, tableName);
+    req.setCatName(catName);
+    req.setMaxParts(shrinkMaxtoShort(maxParts));
+    req.setUserName(userName);
+    req.setGroupNames(groupNames);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
+    List<Partition> partsList = client.get_partitions_ps_with_auth_req(req).getPartitions();
+    return partsList;
   }
 
   @Override
@@ -2292,8 +2341,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   protected List<Partition> listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
       List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
       throws TException {
-    return client.get_partitions_ps_with_auth(prependCatalogToDbName(catName,
-        dbName, conf), tableName, partialPvals, shrinkMaxtoShort(maxParts), userName, groupNames);
+    if (dbName == null || tableName == null || partialPvals == null) {
+      throw new MetaException("Database name/Table name/partition values should not be null");
+    }
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest(dbName, tableName);
+    req.setCatName(catName);
+    req.setPartVals(partialPvals);
+    req.setMaxParts(shrinkMaxtoShort(maxParts));
+    req.setUserName(userName);
+    req.setGroupNames(groupNames);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
+    return client.get_partitions_ps_with_auth_req(req).getPartitions();
   }
 
   @Override
@@ -2358,6 +2417,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   protected PartitionsByExprResult getPartitionsByExprInternal(PartitionsByExprRequest req) throws TException {
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     return client.get_partitions_by_expr(req);
   }
 
@@ -2517,6 +2578,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     PartitionsResponse res = client.get_partitions_req(req);
     List<Partition> parts = deepCopyPartitions(
             FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));
@@ -2544,6 +2607,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       req.setProcessorIdentifier(processorIdentifier);
+    boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     List<Partition> parts = getPartitionsByNamesInternal(req).getPartitions();
     GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
     res.setPartitions(deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(
@@ -2936,9 +3001,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
                                       List<String> tableTypes) throws TException {
-    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(
-        catName, dbPatterns, conf), tablePatterns, tableTypes);
-    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, catName, dbPatterns, tableMetas);
+    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(catName, dbPatterns, conf),
+        tablePatterns, tableTypes);
+    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, tableMetas);
   }
 
   @Override
@@ -3128,7 +3193,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     req.setDbName(dbName);
     req.setTableName(tblName);
+    boolean skipColumnSchemaForPartition =
+            MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
+    if (newParts != null && !newParts.isEmpty() && newParts.get(0).getSd() != null
+            && newParts.get(0).getSd().getCols() != null
+            && skipColumnSchemaForPartition) {
+      newParts.forEach(p -> p.getSd().getCols().clear());
+    }
     req.setPartitions(newParts);
+    req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     req.setEnvironmentContext(environmentContext);
     req.setValidWriteIdList(writeIdList);
     req.setWriteId(writeId);
@@ -5193,5 +5266,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException{
     return client.abort_Compactions(request);
+  }
+
+  @Override
+  public boolean setProperties(String nameSpace, Map<String, String> properties) throws TException {
+    PropertySetRequest psr = new PropertySetRequest();
+    psr.setNameSpace(nameSpace);
+    psr.setPropertyMap(properties);
+    return client.set_properties(psr);
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
+    PropertyGetRequest request = new PropertyGetRequest();
+    request.setNameSpace(nameSpace);
+    request.setMapPrefix(mapPrefix);
+    request.setMapPredicate(mapPredicate);
+    if (selection != null && selection.length > 0) {
+      request.setMapSelection(Arrays.asList(selection));
+    }
+    PropertyGetResponse response = client.get_properties(request);
+    return response.getProperties();
   }
 }

@@ -1,4 +1,3 @@
---! qt:disabled:flaky HIVE-23691
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:transactional

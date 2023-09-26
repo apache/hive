@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
@@ -45,6 +46,8 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.cleanup.CleanupService;
+import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -122,7 +125,7 @@ public class Context {
   // Some statements, e.g., UPDATE, DELETE, or MERGE, get rewritten into different
   // subqueries that create new contexts. We keep them here so we can clean them
   // up when we are done.
-  private final Set<Context> subContexts;
+  private final List<Context> subContexts;
 
   private String replPolicy;
 
@@ -229,7 +232,7 @@ public class Context {
    * These ops require special handling in various places
    * (note that Insert into Acid table is in OTHER category)
    */
-  public enum Operation {UPDATE, DELETE, MERGE, OTHER}
+  public enum Operation {UPDATE, DELETE, MERGE, IOW, OTHER}
   public enum DestClausePrefix {
     INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
     private final String prefix;
@@ -371,7 +374,7 @@ public class Context {
   private Context(Configuration conf, String executionId) {
     this.conf = conf;
     this.executionId = executionId;
-    this.subContexts = new HashSet<>();
+    this.subContexts = Lists.newArrayList();
 
     // local & non-local tmp location is configurable. however it is the same across
     // all external file systems
@@ -431,7 +434,7 @@ public class Context {
     this.statsSource = ctx.statsSource;
     this.executionIndex = ctx.executionIndex;
     this.viewsTokenRewriteStreams = new HashMap<>();
-    this.subContexts = new HashSet<>();
+    this.subContexts = Lists.newArrayList();
     this.opContext = new CompilationOpContext();
     this.enableUnparse = ctx.enableUnparse;
     this.scheduledQuery = ctx.scheduledQuery;
@@ -741,7 +744,10 @@ public class Context {
           // because that will be taken care by removeResultCacheDir
           FileSystem fs = p.getFileSystem(conf);
           LOG.info("Deleting scratch dir: {}", p);
-          sessionState.getCleanupService().deleteRecursive(p, fs);
+          CleanupService cleanupService = sessionState != null
+              ? sessionState.getCleanupService()
+              : SyncCleanupService.INSTANCE;
+          cleanupService.deleteRecursive(p, fs);
         }
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch", e);

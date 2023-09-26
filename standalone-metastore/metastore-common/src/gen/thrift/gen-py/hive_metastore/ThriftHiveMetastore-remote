@@ -122,12 +122,15 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  GetPartitionNamesPsResponse get_partition_names_ps_req(GetPartitionNamesPsRequest req)')
     print('   get_partition_names_req(PartitionsByExprRequest req)')
     print('   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)')
+    print('   get_partitions_by_filter_req(GetPartitionsByFilterRequest req)')
     print('   get_part_specs_by_filter(string db_name, string tbl_name, string filter, i32 max_parts)')
     print('  PartitionsByExprResult get_partitions_by_expr(PartitionsByExprRequest req)')
     print('  PartitionsSpecByExprResult get_partitions_spec_by_expr(PartitionsByExprRequest req)')
     print('  i32 get_num_partitions_by_filter(string db_name, string tbl_name, string filter)')
     print('   get_partitions_by_names(string db_name, string tbl_name,  names)')
     print('  GetPartitionsByNamesResult get_partitions_by_names_req(GetPartitionsByNamesRequest req)')
+    print('  PropertyGetResponse get_properties(PropertyGetRequest req)')
+    print('  bool set_properties(PropertySetRequest req)')
     print('  void alter_partition(string db_name, string tbl_name, Partition new_part)')
     print('  void alter_partitions(string db_name, string tbl_name,  new_parts)')
     print('  void alter_partitions_with_environment_context(string db_name, string tbl_name,  new_parts, EnvironmentContext environment_context)')
@@ -977,6 +980,12 @@ elif cmd == 'get_partitions_by_filter':
         sys.exit(1)
     pp.pprint(client.get_partitions_by_filter(args[0], args[1], args[2], eval(args[3]),))
 
+elif cmd == 'get_partitions_by_filter_req':
+    if len(args) != 1:
+        print('get_partitions_by_filter_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_partitions_by_filter_req(eval(args[0]),))
+
 elif cmd == 'get_part_specs_by_filter':
     if len(args) != 4:
         print('get_part_specs_by_filter requires 4 args')
@@ -1012,6 +1021,18 @@ elif cmd == 'get_partitions_by_names_req':
         print('get_partitions_by_names_req requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_partitions_by_names_req(eval(args[0]),))
+
+elif cmd == 'get_properties':
+    if len(args) != 1:
+        print('get_properties requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_properties(eval(args[0]),))
+
+elif cmd == 'set_properties':
+    if len(args) != 1:
+        print('set_properties requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.set_properties(eval(args[0]),))
 
 elif cmd == 'alter_partition':
     if len(args) != 3:

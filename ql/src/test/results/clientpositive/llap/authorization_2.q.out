@@ -646,8 +646,10 @@ POSTHOOK: Output: default@src_auth_tmp
 PREHOOK: query: drop table authorization_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@authorization_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@authorization_part
 POSTHOOK: query: drop table authorization_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@authorization_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@authorization_part

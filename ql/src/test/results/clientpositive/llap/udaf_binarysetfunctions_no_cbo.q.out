@@ -1,7 +1,9 @@
 PREHOOK: query: drop table t_n6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table t_n6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t_n6 (id int,px int,y decimal,x decimal)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

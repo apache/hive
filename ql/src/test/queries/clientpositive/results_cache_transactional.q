@@ -1,5 +1,5 @@
 --! qt:dataset:src
-
+--! qt:replace:/(Data size: )\d+/$1#MASKED#/
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
@@ -55,3 +55,24 @@ explain
 select count(*) from tab1_n1 join src on (tab1_n1.key = src.key);
 select count(*) from tab1_n1 join src on (tab1_n1.key = src.key);
 
+-- view on transactional tables
+create view join_count_transactional_view as select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key);
+explain select * from join_count_transactional_view;
+select * from join_count_transactional_view;
+set test.comment="View on transactional tables, should use cache";
+set test.comment;
+explain select * from join_count_transactional_view;
+select * from join_count_transactional_view;
+insert into tab1_n1 select * from default.src limit 1;
+set test.comment="Cache entry should be invalidated from prior insert, should not use cache";
+set test.comment;
+explain select * from join_count_transactional_view;
+
+-- view with non-transactional tables
+create view join_count_view as select count(*) from tab1_n1 join src on (tab1_n1.key = src.key);
+explain select * from join_count_view;
+select * from join_count_view;
+set test.comment="View with non-transactional tables, should not use cache";
+set test.comment;
+explain select * from join_count_view;
+select * from join_count_view;

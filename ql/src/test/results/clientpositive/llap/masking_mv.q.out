@@ -160,7 +160,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	2000                
-	totalSize           	976                 
+	totalSize           	983                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -179,8 +179,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.masking_test_n_mv	0/0/0               	 
+Table name          	Snapshot            	 
+default.masking_test_n_mv	:1:9223372036854775807::	 
 PREHOOK: query: explain
 select key from `masking_test_n_mv`
 PREHOOK: type: QUERY
@@ -862,7 +862,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	2000                
-	totalSize           	976                 
+	totalSize           	983                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -881,8 +881,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.srctnx 	0/0/0               	 
+Table name          	Snapshot            	 
+default.srctnx      	:1:9223372036854775807::	 
 PREHOOK: query: explain
 select key from `masking_test_view_n_mv_2` order by key
 PREHOOK: type: QUERY
@@ -1485,16 +1485,20 @@ POSTHOOK: Output: default@masking_test_view_n_mv_4
 PREHOOK: query: drop table `masking_test_n_mv`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n_mv
 POSTHOOK: query: drop table `masking_test_n_mv`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n_mv
 PREHOOK: query: drop table `srcTnx`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srctnx
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srctnx
 POSTHOOK: query: drop table `srcTnx`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srctnx
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srctnx

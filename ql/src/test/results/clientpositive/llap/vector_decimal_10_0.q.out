@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS decimal_txt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS decimal_txt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS `decimal`
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS `decimal`
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE decimal_txt (`dec` decimal)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -276,16 +280,20 @@ NULL
 PREHOOK: query: DROP TABLE DECIMAL_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_txt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_txt
 POSTHOOK: query: DROP TABLE DECIMAL_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_txt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_txt
 PREHOOK: query: DROP TABLE `DECIMAL`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal
 POSTHOOK: query: DROP TABLE `DECIMAL`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal

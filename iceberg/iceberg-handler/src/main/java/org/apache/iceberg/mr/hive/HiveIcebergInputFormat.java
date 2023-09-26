@@ -50,7 +50,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.mapred.AbstractMapredIcebergRecordReader;
 import org.apache.iceberg.mr.mapred.Container;
@@ -74,7 +74,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   public static final String ICEBERG_DISABLE_VECTORIZATION_PREFIX = "iceberg.disable.vectorization.";
 
   static {
-    if (MetastoreUtil.hive3PresentOnClasspath()) {
+    if (HiveVersion.min(HiveVersion.HIVE_3)) {
       HIVE_VECTORIZED_RECORDREADER_CTOR = DynConstructors.builder(AbstractMapredIcebergRecordReader.class)
           .impl(HIVE_VECTORIZED_RECORDREADER_CLASS,
               IcebergInputFormat.class,
@@ -143,6 +143,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     job.set(InputFormatConfig.AS_OF_TIMESTAMP, job.get(TableScanDesc.AS_OF_TIMESTAMP, "-1"));
     job.set(InputFormatConfig.SNAPSHOT_ID, job.get(TableScanDesc.AS_OF_VERSION, "-1"));
     job.set(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, job.get(TableScanDesc.FROM_VERSION, "-1"));
+    job.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, job.get(TableScanDesc.SNAPSHOT_REF, ""));
 
     String location = job.get(InputFormatConfig.TABLE_LOCATION);
     return Arrays.stream(super.getSplits(job, numSplits))
@@ -158,7 +159,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
             job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
 
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) && Utilities.getIsVectorized(job)) {
-      Preconditions.checkArgument(MetastoreUtil.hive3PresentOnClasspath(), "Vectorization only supported for Hive 3+");
+      Preconditions.checkArgument(HiveVersion.min(HiveVersion.HIVE_3), "Vectorization only supported for Hive 3+");
 
       job.setEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL, InputFormatConfig.InMemoryDataModel.HIVE);
       job.setBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, true);

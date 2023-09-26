@@ -78,10 +78,12 @@ POSTHOOK: Input: tv2@view2
 PREHOOK: query: DROP TABLE invites_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@invites_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@invites_n1
 POSTHOOK: query: DROP TABLE invites_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@invites_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites_n1
 PREHOOK: query: DROP VIEW tv2.view2
 PREHOOK: type: DROPVIEW

@@ -110,7 +110,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
     rewrittenQueryStr.append("(SELECT ");
 
-    ColumnAppender columnAppender = getColumnAppender(SUB_QUERY_ALIAS);
+    ColumnAppender columnAppender = getColumnAppender(SUB_QUERY_ALIAS, DELETE_PREFIX);
     columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
     List<String> deleteValues = columnAppender.getDeleteValues(operation);
     int columnOffset = deleteValues.size();

@@ -82,14 +82,14 @@ class ThriftHiveMetastore_get_all_write_event_info_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1828 = 0;
-                        $_etype1831 = 0;
-                        $xfer += $input->readListBegin($_etype1831, $_size1828);
-                        for ($_i1832 = 0; $_i1832 < $_size1828; ++$_i1832) {
-                            $elem1833 = null;
-                            $elem1833 = new \metastore\WriteEventInfo();
-                            $xfer += $elem1833->read($input);
-                            $this->success []= $elem1833;
+                        $_size1899 = 0;
+                        $_etype1902 = 0;
+                        $xfer += $input->readListBegin($_etype1902, $_size1899);
+                        for ($_i1903 = 0; $_i1903 < $_size1899; ++$_i1903) {
+                            $elem1904 = null;
+                            $elem1904 = new \metastore\WriteEventInfo();
+                            $xfer += $elem1904->read($input);
+                            $this->success []= $elem1904;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -124,8 +124,8 @@ class ThriftHiveMetastore_get_all_write_event_info_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRUCT, count($this->success));
-            foreach ($this->success as $iter1834) {
-                $xfer += $iter1834->write($output);
+            foreach ($this->success as $iter1905) {
+                $xfer += $iter1905->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

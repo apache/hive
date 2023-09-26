@@ -14,28 +14,29 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-beta-2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.0.0-beta-2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Iceberg Modules</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
-    <iceberg.version>1.1.0</iceberg.version>
-    <kryo-shaded.version>4.0.2</kryo-shaded.version>
+    <iceberg.version>1.3.0</iceberg.version>
+    <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.1</iceberg.avro.version>
-    <iceberg.kryo.version>4.0.2</iceberg.kryo.version>
+    <iceberg.kryo.version>5.5.0</iceberg.kryo.version>
     <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
     <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
     <google.errorprone.version>2.5.1</google.errorprone.version>
     <assertj.version>3.19.0</assertj.version>
     <junit.jupiter.version>5.7.2</junit.jupiter.version>
+    <immutables.value.version>2.9.2</immutables.value.version>
     <validate.skip>false</validate.skip>
   </properties>
   <modules>
@@ -45,6 +46,13 @@
     <module>iceberg-catalog</module>
     <module>iceberg-handler</module>
   </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${iceberg.mockito-core.version}</version>
+    </dependency>
+  </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -208,6 +216,11 @@
         <artifactId>mockito-inline</artifactId>
         <version>${iceberg.mockito-core.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.immutables</groupId>
+        <artifactId>value</artifactId>
+        <version>${immutables.value.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
@@ -301,6 +314,11 @@
                   <artifactId>error_prone_core</artifactId>
                   <version>${google.errorprone.version}</version>
                 </path>
+                <dependency>
+                  <groupId>org.immutables</groupId>
+                  <artifactId>value</artifactId>
+                  <version>${immutables.value.version}</version>
+                </dependency>
               </annotationProcessorPaths>
             </configuration>
           </plugin>

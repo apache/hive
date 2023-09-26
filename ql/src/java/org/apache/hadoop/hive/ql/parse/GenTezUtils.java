@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -42,13 +44,16 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.*;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +79,11 @@ public class GenTezUtils {
     context.unionWorkMap.put(leaf, unionWork);
     tezWork.add(unionWork);
     return unionWork;
+  }
+
+  private static boolean isRestrictReducerExtrapolation(Context context) {
+    return context.getOperation() == Context.Operation.DELETE && context.getLoadTableOutputMap().values()
+            .stream().map(WriteEntity::getTable).anyMatch(DDLUtils::isIcebergTable);
   }
 
   public static ReduceWork createReduceWork(
@@ -103,6 +113,14 @@ public class GenTezUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
     reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
+    float minSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION_DEFAULT);
+    reduceWork.setMinSrcFraction(minSrcFraction);
+    float maxSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION_DEFAULT);
+    reduceWork.setMaxSrcFraction(maxSrcFraction);
     reduceWork.setUniformDistribution(reduceSink.getConf().getReducerTraits().contains(UNIFORM));
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
@@ -116,13 +134,19 @@ public class GenTezUtils {
       int minPartition = Math.max(1, (int) (nReducers * minPartitionFactor));
       minPartition = (minPartition > maxReducers) ? maxReducers : minPartition;
 
+      if (isRestrictReducerExtrapolation(context.parseContext.getContext())) {
+        LOG.debug("Overriding maxPartitionFactor to 1.0 to prevent creation of small files after delete operation");
+        maxPartitionFactor = 1f;
+      }
+      
       // max we allow tez to pick
       int maxPartition = Math.max(1, (int) (nReducers * maxPartitionFactor));
       maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
+      LOG.debug("max partition factor={}, max partition={}", maxPartitionFactor, maxPartition);
 
       // reduce only if the parameters are significant
-      if (minPartition < maxPartition &&
-          nReducers * minPartitionFactor >= 1.0) {
+      final float minThreshold = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM_MIN_THRESHOLD);
+      if (minPartition < maxPartition && nReducers * minPartitionFactor >= minThreshold) {
         reduceWork.setAutoReduceParallelism(true);
 
         reduceWork.setMinReduceTasks(minPartition);
@@ -142,7 +166,8 @@ public class GenTezUtils {
     if (reduceWork.isAutoReduceParallelism()) {
       edgeProp =
           new TezEdgeProperty(context.conf, edgeType, true, reduceWork.isSlowStart(),
-              reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer);
+              reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer,
+              reduceWork.getMinSrcFraction(), reduceWork.getMaxSrcFraction());
     } else {
       edgeProp = new TezEdgeProperty(edgeType);
       edgeProp.setSlowStart(reduceWork.isSlowStart());
@@ -445,6 +470,7 @@ public class GenTezUtils {
           replacementMap.put(current, current.getChildOperators().get(0));
         } else {
           parent.removeChildAndAdoptItsChildren(current);
+          operators.remove(current);
         }
       }
 
