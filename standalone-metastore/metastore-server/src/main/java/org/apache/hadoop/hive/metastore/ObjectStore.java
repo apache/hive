@@ -11877,13 +11877,14 @@ public class ObjectStore implements RawStore, Configurable {
         filterBuilder.append(" && dbName == para" + parameterVals.size());
       }
       if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
-        filterBuilder.append(" && ");
+        filterBuilder.append(" && (");
         for (String tableName : rqst.getTableNames()) {
           parameterVals.add(tableName);
           parameterBuilder.append(", java.lang.String para" + parameterVals.size());
-          filterBuilder.append("(tableName == para" + parameterVals.size()+ ") || ");
+          filterBuilder.append("tableName == para" + parameterVals.size()+ " || ");
         }
-        filterBuilder.setLength(filterBuilder.length() - 3); // remove the last " || "
+        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        filterBuilder.append(") ");
       }
       if (rqst.isSetEventTypeSkipList()) {
         for (String eventType : rqst.getEventTypeSkipList()) {
@@ -12252,13 +12253,14 @@ public class ObjectStore implements RawStore, Configurable {
       }
       // Specify list of table names in the query string and parameter types
       if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
-        queryStr = queryStr + " && ";
+        queryStr = queryStr + " && (";
         for (String tableName : rqst.getTableNames()) {
           paramVals.add(tableName.toLowerCase());
-          queryStr = queryStr + "(tableName == tableName" + paramVals.size() + ") || ";
+          queryStr = queryStr + "tableName == tableName" + paramVals.size() + " || ";
           paramSpecs = paramSpecs + ", java.lang.String tableName" + paramVals.size();
         }
-        queryStr = queryStr.substring(0, queryStr.length() - 3); // remove the last " || "
+        queryStr = queryStr.substring(0, queryStr.length() - 4); // remove the last " || "
+        queryStr += ")";
       }
 
       query = pm.newQuery(queryStr);
