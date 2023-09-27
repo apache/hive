@@ -767,6 +767,45 @@ public class ExprNodeDescUtils {
     return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory((PrimitiveTypeInfo) childTi);
   }
 
+
+  /**
+   * Build ExprNodeColumnDesc for the projections in the input operator from
+   * sartpos to endpos(both included). Operator must have an associated
+   * colExprMap.
+   *
+   * @param inputOp
+   *          Input Hive Operator
+   * @param startPos
+   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
+   *          endPos
+   * @param endPos
+   *          end position in the input operator schema; must be &gt;=0.
+   * @return List of ExprNodeDesc
+   */
+  public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
+                                                        boolean addEmptyTabAlias, boolean setColToNonVirtual) {
+    ArrayList<ExprNodeDesc> exprColLst = new ArrayList<ExprNodeDesc>();
+    List<ColumnInfo> colInfoLst = inputOp.getSchema().getSignature();
+
+    String tabAlias;
+    boolean vc;
+    ColumnInfo ci;
+    for (int i = startPos; i <= endPos; i++) {
+      ci = colInfoLst.get(i);
+      tabAlias = ci.getTabAlias();
+      if (addEmptyTabAlias) {
+        tabAlias = "";
+      }
+      vc = ci.getIsVirtualCol();
+      if (setColToNonVirtual) {
+        vc = false;
+      }
+      exprColLst.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(), tabAlias, vc));
+    }
+
+    return exprColLst;
+  }
+
   public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
     for (ExprNodeDesc source : sourceList) {
@@ -1278,44 +1317,6 @@ public class ExprNodeDescUtils {
       }
     }
 
-  }
-
-  /**
-   * Build ExprNodeColumnDesc for the projections in the input operator from
-   * sartpos to endpos(both included). Operator must have an associated
-   * colExprMap.
-   *
-   * @param inputOp
-   *          Input Hive Operator
-   * @param startPos
-   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
-   *          endPos
-   * @param endPos
-   *          end position in the input operator schema; must be &gt;=0.
-   * @return List of ExprNodeDesc
-   */
-  public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
-                                                        boolean addEmptyTabAlias, boolean setColToNonVirtual) {
-    ArrayList<ExprNodeDesc> exprColLst = new ArrayList<ExprNodeDesc>();
-    List<ColumnInfo> colInfoLst = inputOp.getSchema().getSignature();
-
-    String tabAlias;
-    boolean vc;
-    ColumnInfo ci;
-    for (int i = startPos; i <= endPos; i++) {
-      ci = colInfoLst.get(i);
-      tabAlias = ci.getTabAlias();
-      if (addEmptyTabAlias) {
-        tabAlias = "";
-      }
-      vc = ci.getIsVirtualCol();
-      if (setColToNonVirtual) {
-        vc = false;
-      }
-      exprColLst.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(), tabAlias, vc));
-    }
-
-    return exprColLst;
   }
 
   /**
