@@ -121,7 +121,6 @@ public class QBParseInfo {
   private final Map<String, SimpleEntry<Integer, Integer>> destToLimit;
   private final Map<String, SimpleEntry<ASTNode, ASTNode>> destToLimitAST;
 
-
   private int outerQueryLimit;
 
   // used by GroupBy
