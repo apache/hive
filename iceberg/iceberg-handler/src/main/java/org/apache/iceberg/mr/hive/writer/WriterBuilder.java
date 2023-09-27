@@ -125,16 +125,20 @@ public class WriterBuilder {
         properties.get(TableProperties.DELETE_MODE)) &&
         operation == Operation.DELETE;
 
-    Operation op = copyOnWriteMode ? Operation.OTHER : operation;
     HiveIcebergWriter writer;
-    switch (op) {
+    switch (operation) {
       case DELETE:
-        writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
+        if (copyOnWriteMode) {
+          writer = new HiveIcebergCopyOnWriteRecordWriter(dataSchema, specs, currentSpecId, writerFactory,
+            outputFileFactory, io, targetFileSize);
+        } else {
+          writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
             io, targetFileSize, skipRowData);
+        }
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
-            io, targetFileSize, copyOnWriteMode);
+            io, targetFileSize);
         break;
       default:
         // Update and Merge should be splitted to inserts and deletes

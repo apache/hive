@@ -54,6 +54,10 @@ public class FilesForCommit implements Serializable {
     return new FilesForCommit(dataFiles, Collections.emptyList());
   }
 
+  public static FilesForCommit onlyData(Collection<DataFile> dataFiles, Collection<DataFile> referencedDataFiles) {
+    return new FilesForCommit(dataFiles, Collections.emptyList(), referencedDataFiles);
+  }
+
   public static FilesForCommit empty() {
     return new FilesForCommit(Collections.emptyList(), Collections.emptyList());
   }
@@ -87,7 +91,4 @@ public class FilesForCommit implements Serializable {
         .toString();
   }
 
-  public void setReferencedDataFiles(Collection<DataFile> referencedDataFiles) {
-    this.referencedDataFiles = referencedDataFiles;
-  }
 }

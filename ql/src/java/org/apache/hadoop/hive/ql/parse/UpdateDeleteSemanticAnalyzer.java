@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.antlr.runtime.CommonToken;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
@@ -203,8 +202,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
     // Add a sort by clause so that the row ids come out in the correct order
     appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
-    
-    ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
+
+    ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

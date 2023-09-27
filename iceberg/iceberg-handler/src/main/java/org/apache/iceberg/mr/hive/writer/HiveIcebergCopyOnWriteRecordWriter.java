@@ -24,38 +24,63 @@ import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.ClusteredDataWriter;
 import org.apache.iceberg.io.DataWriteResult;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.mapred.Container;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
-class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
+class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
 
   private final int currentSpecId;
 
-  HiveIcebergRecordWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
+  private final GenericRecord rowDataTemplate;
+  private final List<DataFile> referencedDataFiles;
+
+  HiveIcebergCopyOnWriteRecordWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io,
       long targetFileSize) {
     super(schema, specs, io,
         new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, targetFileSize));
     this.currentSpecId = currentSpecId;
+    this.rowDataTemplate = GenericRecord.create(schema);
+    this.referencedDataFiles = Lists.newArrayList();
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
+    PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(record, rowDataTemplate);
+    int specId = IcebergAcidUtil.parseSpecId(record);
+    Record rowData = positionDelete.row();
+
+    if (positionDelete.pos() < 0) {
+      DataFile dataFile =
+          DataFiles.builder(specs.get(specId))
+            .withPath(positionDelete.path().toString())
+            .withPartition(partition(rowData, specId))
+            .withFileSizeInBytes(0)
+            .withRecordCount(0)
+            .build();
+      referencedDataFiles.add(dataFile);
+    } else {
+      writer.write(rowData, specs.get(currentSpecId), partition(rowData, currentSpecId));
+    }
   }
 
   @Override
   public FilesForCommit files() {
     List<DataFile> dataFiles = ((DataWriteResult) writer.result()).dataFiles();
-    return FilesForCommit.onlyData(dataFiles);
+    return FilesForCommit.onlyData(dataFiles, referencedDataFiles);
   }
 }
