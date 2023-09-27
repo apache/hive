@@ -49,7 +49,7 @@ public class MultiDataSourceJdbcResource {
   private final ThreadLocal<ContextNode<String>> threadLocal = new ThreadLocal<>();
 
   private final Map<String, DataSource> dataSources = new HashMap<>();
-  private final Map<String, AutoCloseableTransactionManager> transactionManagers = new HashMap<>();
+  private final Map<String, TransactionContextManager> transactionManagers = new HashMap<>();
   private final Map<String, NamedParameterJdbcTemplate> jdbcTemplates = new HashMap<>();
   private final DatabaseProduct databaseProduct;
 
@@ -70,7 +70,7 @@ public class MultiDataSourceJdbcResource {
   public void registerDataSource(String dataSourceName, DataSource dataSource) {
     dataSources.put(dataSourceName, dataSource);
     jdbcTemplates.put(dataSourceName, new NamedParameterJdbcTemplate(dataSource));
-    transactionManagers.put(dataSourceName, new AutoCloseableTransactionManager(new DataSourceTransactionManager(dataSource)));
+    transactionManagers.put(dataSourceName, new TransactionContextManager(new DataSourceTransactionManager(dataSource)));
   }
 
   /**
@@ -125,12 +125,12 @@ public class MultiDataSourceJdbcResource {
   }
 
   /**
-   * Returns the {@link AutoCloseableTransactionManager} associated with the current {@link Thread}.
+   * Returns the {@link TransactionContextManager} associated with the current {@link Thread}.
    * Can be called only after {@link #bindDataSource(String)} and before {@link #unbindDataSource()}.
    * Ensures that the same instance is returned all the time.
    * @throws IllegalStateException Thrown when there is no bound {@link DataSource}.
    */
-  public AutoCloseableTransactionManager getTransactionManager() {
+  public TransactionContextManager getTransactionManager() {
     return transactionManagers.get(getDataSourceName());
   }
 

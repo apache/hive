@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
@@ -33,21 +35,21 @@ public class FindPotentialCompactionsFunction implements TransactionalFunction<S
   private final long lastChecked;
   private final boolean collectAbortedTxns;
 
-  public FindPotentialCompactionsFunction(int fetchSize, int abortedThreshold, long abortedTimeThreshold, long lastChecked, boolean collectAbortedTxns) {
-    this.fetchSize = fetchSize;
+  public FindPotentialCompactionsFunction(Configuration conf, int abortedThreshold, long abortedTimeThreshold, long lastChecked) {
+    this.fetchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_FETCH_SIZE);
     this.abortedThreshold = abortedThreshold;
     this.abortedTimeThreshold = abortedTimeThreshold;
     this.lastChecked = lastChecked;
-    this.collectAbortedTxns = collectAbortedTxns;
+    this.collectAbortedTxns = !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER);
   }
 
   @Override
-  public Set<CompactionInfo> execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
-    Set<CompactionInfo> candidates = new HashSet<>(jdbcResourceHolder.execute(
+  public Set<CompactionInfo> execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    Set<CompactionInfo> candidates = new HashSet<>(jdbcResource.execute(
         new CompactionCandidateHandler(lastChecked, fetchSize)));
     int remaining = fetchSize - candidates.size();
     if (collectAbortedTxns) {
-      candidates.addAll(jdbcResourceHolder.execute(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold, remaining)));
+      candidates.addAll(jdbcResource.execute(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold, remaining)));
     }
     return candidates;
   }

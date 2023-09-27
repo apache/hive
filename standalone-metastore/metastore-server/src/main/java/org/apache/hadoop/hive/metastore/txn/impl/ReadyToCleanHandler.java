@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
@@ -41,11 +43,11 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
   private final long retentionTime;
   private final int fetchSize;
 
-  public ReadyToCleanHandler(boolean useMinHistoryWriteId, long minOpenTxnWaterMark, long retentionTime, int fetchSize) {
+  public ReadyToCleanHandler(Configuration conf, boolean useMinHistoryWriteId, long minOpenTxnWaterMark, long retentionTime) {
     this.useMinHistoryWriteId = useMinHistoryWriteId;
     this.minOpenTxnWaterMark = minOpenTxnWaterMark;
     this.retentionTime = retentionTime;
-    this.fetchSize = fetchSize;
+    this.fetchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_FETCH_SIZE);
   }
 
   @Override

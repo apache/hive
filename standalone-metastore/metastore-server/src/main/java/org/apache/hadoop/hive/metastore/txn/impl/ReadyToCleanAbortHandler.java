@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -123,9 +125,9 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
     return readyToCleanAborts;
   }
 
-  public ReadyToCleanAbortHandler(long abortedTimeThreshold, int abortedThreshold, int fetchSize) {
+  public ReadyToCleanAbortHandler(Configuration conf, long abortedTimeThreshold, int abortedThreshold) {
     this.abortedTimeThreshold = abortedTimeThreshold;
     this.abortedThreshold = abortedThreshold;
-    this.fetchSize = fetchSize;
+    this.fetchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_FETCH_SIZE);
   }
 }

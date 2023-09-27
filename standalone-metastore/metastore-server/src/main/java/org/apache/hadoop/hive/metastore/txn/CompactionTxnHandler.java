@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.txn.impl.CleanTxnToWriteIdTableFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.FindPotentialCompactionsFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.NextCompactionFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.ReadyToCleanAbortHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.CheckFailedCompactionsHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.CompactionMetricsDataHandler;
@@ -38,7 +39,6 @@ import org.apache.hadoop.hive.metastore.txn.impl.FindColumnsWithStatsHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.GetCompactionInfoHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.InsertCompactionInfoCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.MarkCleanedFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.NextCompactionHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.PurgeCompactionHistoryFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.ReadyToCleanHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.RemoveCompactionMetricsDataCommand;
@@ -112,10 +112,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.ReadOnly
   public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold,
       long abortedTimeThreshold, long lastChecked) throws MetaException {
-    return new FindPotentialCompactionsFunction(
-        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE),
-        abortedThreshold, abortedTimeThreshold, lastChecked,
-        !MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER)).execute(jdbcResource);
+    return new FindPotentialCompactionsFunction(conf, abortedThreshold, abortedTimeThreshold, lastChecked).execute(jdbcResource);
   }
 
   /**
@@ -147,7 +144,7 @@ class CompactionTxnHandler extends TxnHandler {
       throw new MetaException("FindNextCompactRequest is null");
     }
     long poolTimeout = MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_WORKER_POOL_TIMEOUT, TimeUnit.MILLISECONDS);
-    return jdbcResource.execute(new NextCompactionHandler(rqst, jdbcResource, getDbTime(), poolTimeout));
+    return new NextCompactionFunction(rqst, getDbTime(), poolTimeout).execute(jdbcResource);
   }
 
   /**
@@ -175,15 +172,13 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException {
-    return jdbcResource.execute(new ReadyToCleanHandler(useMinHistoryWriteId, minOpenTxnWaterMark, retentionTime, 
-        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)));
+    return jdbcResource.execute(new ReadyToCleanHandler(conf, useMinHistoryWriteId, minOpenTxnWaterMark, retentionTime));
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToCleanAborts(long abortedTimeThreshold, int abortedThreshold) throws MetaException {
-    return jdbcResource.execute(new ReadyToCleanAbortHandler(abortedTimeThreshold, abortedThreshold,
-        MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_FETCH_SIZE)));
+    return jdbcResource.execute(new ReadyToCleanAbortHandler(conf, abortedTimeThreshold, abortedThreshold));
   }
 
   /**
@@ -262,7 +257,6 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.SafeToRetry
   public void cleanEmptyAbortedAndCommittedTxns() throws MetaException {
     LOG.info("Start to clean empty aborted or committed TXNS");
-    //Aborted and committed are terminal states, so nothing about the txn can change
     //after that, so READ COMMITTED is sufficient.
     /*
      * Only delete aborted / committed transaction in a way that guarantees two things:

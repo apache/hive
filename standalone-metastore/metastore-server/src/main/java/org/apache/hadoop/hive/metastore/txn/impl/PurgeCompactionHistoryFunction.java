@@ -50,8 +50,8 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
   }
 
   @Override
-  public Void execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
-    NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
+  public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    NamedParameterJdbcTemplate jdbcTemplate = jdbcResource.getJdbcTemplate();
     List<Long> deleteSet = new ArrayList<>();
     long timeoutThreshold = System.currentTimeMillis() -
         MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS);

@@ -57,9 +57,10 @@ public class ProxyTxnHandler implements InvocationHandler {
 
   /**
    * Gets the proxy interface for the given {@link TxnStore}.
-   * @param realStore The real {@link TxnStore} to proxy.
+   *
+   * @param realStore       The real {@link TxnStore} to proxy.
    * @param sqlRetryHandler Responsible to re-execute the methods in case of failure.
-   * @return Returns the proxy object capable of retrying the failed calls automatically and transparently. 
+   * @return Returns the proxy object capable of retrying the failed calls automatically and transparently.
    */
   public static TxnStore getProxy(TxnStore realStore, SqlRetryHandler sqlRetryHandler, MultiDataSourceJdbcResource jdbcResourceHandler) {
     ProxyTxnHandler handler = new ProxyTxnHandler(realStore, sqlRetryHandler, jdbcResourceHandler);
@@ -97,12 +98,12 @@ public class ProxyTxnHandler implements InvocationHandler {
         return method.invoke(realStore, args);
       } catch (InvocationTargetException | UndeclaredThrowableException e) {
         throw e.getCause();
-      }      
+      }
     };
-    
+
     if (transactional != null) {
       ThrowingSupplier toCall = functionToCall;
-      functionToCall = () -> {        
+      functionToCall = () -> {
         LOG.debug("Invoking method within transactional context: {}", callerId);
         TransactionContext context = null;
         try {
@@ -118,10 +119,10 @@ public class ProxyTxnHandler implements InvocationHandler {
             throw e;
           }
           if (context != null) {
-            if(transactional.rollbackFor().length > 0 || transactional.rollbackForClassName().length > 0) {
+            if (transactional.rollbackFor().length > 0 || transactional.rollbackForClassName().length > 0) {
               if (Arrays.stream(transactional.rollbackFor()).anyMatch(ex -> ex.isInstance(e)) ||
                   Arrays.stream(transactional.rollbackForClassName()).anyMatch(exName -> exName.equals(e.getClass().getName()))) {
-                jdbcResource.getTransactionManager().rollback(context);                
+                jdbcResource.getTransactionManager().rollback(context);
               }
               throw e;
             } else {
@@ -133,8 +134,8 @@ public class ProxyTxnHandler implements InvocationHandler {
           jdbcResource.unbindDataSource();
         }
       };
-    }    
-    
+    }
+
     if (retry != null) {
       SqlRetryCallProperties properties = new SqlRetryCallProperties()
           .withCallerId(callerId)
@@ -168,7 +169,7 @@ public class ProxyTxnHandler implements InvocationHandler {
     }
   }
 
-  private interface ThrowingSupplier {    
+  private interface ThrowingSupplier {
     Object execute() throws Throwable;
   }
 

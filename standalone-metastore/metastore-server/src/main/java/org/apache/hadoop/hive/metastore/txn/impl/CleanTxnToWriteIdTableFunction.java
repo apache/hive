@@ -56,8 +56,8 @@ public class CleanTxnToWriteIdTableFunction implements TransactionalFunction<Voi
   }
 
   @Override
-  public Void execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
-    NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
+  public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    NamedParameterJdbcTemplate jdbcTemplate = jdbcResource.getJdbcTemplate();
     String sql = useMinHistoryLevel ? minHistoryLevelSql : noMinHistoryLevelSql;
     MapSqlParameterSource params = new MapSqlParameterSource()
         .addValue("abortedState", TxnStatus.ABORTED.getSqlConst(), Types.CHAR);

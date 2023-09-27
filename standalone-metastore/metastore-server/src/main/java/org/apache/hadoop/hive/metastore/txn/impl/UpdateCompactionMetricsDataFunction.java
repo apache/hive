@@ -35,20 +35,20 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   }
 
   @Override
-  public Boolean execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
-    CompactionMetricsData prevMetricsData = jdbcResourceHolder.execute(
+  public Boolean execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    CompactionMetricsData prevMetricsData = jdbcResource.execute(
         new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
 
     boolean updateRes;
     if (data.getMetricValue() >= data.getThreshold()) {
       if (prevMetricsData != null) {
-        updateRes = updateCompactionMetricsData(data, prevMetricsData, jdbcResourceHolder.getJdbcTemplate());
+        updateRes = updateCompactionMetricsData(data, prevMetricsData, jdbcResource.getJdbcTemplate());
       } else {
-        updateRes = createCompactionMetricsData(data, jdbcResourceHolder.getJdbcTemplate());
+        updateRes = createCompactionMetricsData(data, jdbcResource.getJdbcTemplate());
       }
     } else {
       if (prevMetricsData != null) {
-        int result = jdbcResourceHolder.execute(new RemoveCompactionMetricsDataCommand(
+        int result = jdbcResource.execute(new RemoveCompactionMetricsDataCommand(
             data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
         updateRes = result > 0;
       } else {

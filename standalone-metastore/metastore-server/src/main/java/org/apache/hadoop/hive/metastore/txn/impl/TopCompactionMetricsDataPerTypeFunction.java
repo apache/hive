@@ -45,11 +45,11 @@ public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFun
   }
 
   @Override
-  public List<CompactionMetricsData> execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
+  public List<CompactionMetricsData> execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     //TODO: Highly inefficient, should be replaced by a single select
     List<CompactionMetricsData> metricsDataList = new ArrayList<>();
     for (CompactionMetricsData.MetricType type : CompactionMetricsData.MetricType.values()) {
-      metricsDataList.addAll(jdbcResourceHolder.getJdbcTemplate().query(
+      metricsDataList.addAll(jdbcResource.getJdbcTemplate().query(
           sqlGenerator.addLimitClause(limit, NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY),
           new MapSqlParameterSource().addValue("type", type.toString()),
           new CompactionMetricsDataMapper(type)));

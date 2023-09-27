@@ -27,11 +27,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * {@link AutoCloseable}, so it can be used in try-with-resources blocks. For more information see {@link TransactionContext}. 
  * @see TransactionContext 
  */
-public class AutoCloseableTransactionManager {
+public class TransactionContextManager {
 
   private final PlatformTransactionManager realTransactionManager;
 
-  AutoCloseableTransactionManager(PlatformTransactionManager realTransactionManager) {
+  TransactionContextManager(PlatformTransactionManager realTransactionManager) {
     this.realTransactionManager = realTransactionManager;
   }
 

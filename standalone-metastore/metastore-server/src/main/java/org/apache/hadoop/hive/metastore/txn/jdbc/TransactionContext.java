@@ -24,14 +24,14 @@ import org.springframework.transaction.TransactionStatus;
  * try-with-resources block. If the {@link TransactionStatus#isCompleted()} is false upon exiting the try block,
  * the transaction will rolled back, otherwise nothing happens.
  * <b>In other words:</b> This wrapper automatically rolls back uncommitted transactions, but the commit
- * needs to be done manually using {@link AutoCloseableTransactionManager#commit(TransactionContext)} method.
+ * needs to be done manually using {@link TransactionContextManager#commit(TransactionContext)} method.
  */
 public class TransactionContext implements AutoCloseable {
 
   private final TransactionStatus transactionStatus;
-  private final AutoCloseableTransactionManager transactionManager;
+  private final TransactionContextManager transactionManager;
 
-  TransactionContext(TransactionStatus transactionStatus, AutoCloseableTransactionManager transactionManager) {
+  TransactionContext(TransactionStatus transactionStatus, TransactionContextManager transactionManager) {
     this.transactionStatus = transactionStatus;
     this.transactionManager = transactionManager;
   }

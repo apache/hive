@@ -50,8 +50,8 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
   }
 
   @Override
-  public Void execute(MultiDataSourceJdbcResource jdbcResourceHolder) throws MetaException {
-    NamedParameterJdbcTemplate jdbcTemplate = jdbcResourceHolder.getJdbcTemplate();
+  public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    NamedParameterJdbcTemplate jdbcTemplate = jdbcResource.getJdbcTemplate();
     MapSqlParameterSource param;
     if (!info.isAbortedTxnCleanup()) {
       param = new MapSqlParameterSource()
@@ -67,7 +67,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
               + "\"CC_ORDER_BY\") "
               + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
               + ":succeeded, \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
-              + getEpochFn(jdbcResourceHolder.getDatabaseProduct()) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
+              + getEpochFn(jdbcResource.getDatabaseProduct()) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
               + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\", "
               + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
               + "\"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", "
