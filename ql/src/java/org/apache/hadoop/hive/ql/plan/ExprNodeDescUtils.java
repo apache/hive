@@ -783,7 +783,7 @@ public class ExprNodeDescUtils {
    * @return List of ExprNodeDesc
    */
   public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
-                                                        boolean addEmptyTabAlias, boolean setColToNonVirtual) {
+      boolean addEmptyTabAlias, boolean setColToNonVirtual) {
     ArrayList<ExprNodeDesc> exprColLst = new ArrayList<ExprNodeDesc>();
     List<ColumnInfo> colInfoLst = inputOp.getSchema().getSignature();
 
