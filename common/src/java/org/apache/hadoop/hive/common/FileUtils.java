@@ -27,6 +27,7 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -1385,6 +1386,47 @@ public final class FileUtils {
         throws IOException {
     return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
         status -> filter.accept(status.getPath()));
+  }
+
+  /**
+   * Resolves a symlink on a local filesystem. In case of any exceptions or scheme other than "file"
+   * it simply returns the original path. Refer to DEBUG level logs for further details.
+   * @param path
+   * @param conf
+   * @return
+   * @throws IOException
+   */
+  public static Path resolveSymlinks(Path path, Configuration conf) throws IOException {
+    if (path == null) {
+      return null;
+    }
+
+    FileSystem srcFs;
+    String scheme = path.toUri().getScheme();
+    if (scheme != null) {
+      srcFs = path.getFileSystem(conf);
+    } else {
+      srcFs = FileSystem.getLocal(conf);
+    }
+    LOG.debug("resolveSymlink path: {}, srcFs class: {}, scheme: {}", path, srcFs.getClass().getName(), scheme);
+
+    /**
+     * If you're about to extend this method to e.g. HDFS, simply remove this check.
+     * There is a known exception reproduced by whroot_external1.q, which can be referred to,
+     * which is because java.nio is not prepared by default for other schemes like "hdfs".
+     */
+    if (!"file".equalsIgnoreCase(scheme)) {
+      LOG.debug("scheme '{}' is not supported for resolving symlinks", scheme);
+      return path;
+    }
+
+    try {
+      java.nio.file.Path srcPath = Paths.get(path.toUri());
+      return new Path(srcPath.toRealPath().toUri());
+    } catch (Exception e) {
+      LOG.debug("exception while calling toRealPath of {}", path, e);
+      return path;
+    }
   }
 
   public static class AdaptingIterator<T> implements Iterator<T> {

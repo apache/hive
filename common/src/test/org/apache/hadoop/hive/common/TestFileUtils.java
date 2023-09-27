@@ -338,4 +338,35 @@ public class TestFileUtils {
     }
     return count;
   }
+
+  @Test
+  public void testResolveSymlinks() throws IOException {
+    HiveConf conf = new HiveConf();
+
+    java.nio.file.Path original = java.nio.file.Files.createTempFile("", "");
+    java.nio.file.Path symlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink");
+    java.nio.file.Files.createSymbolicLink(symlinkPath, original);
+
+    Assert.assertTrue(java.nio.file.Files.isSymbolicLink(symlinkPath));
+
+    // average usage: symlink points to the original
+    Path originalPathResolved = FileUtils.resolveSymlinks(new Path(symlinkPath.toUri()), conf);
+    Assert.assertEquals(originalPathResolved.toUri(), original.toUri());
+
+    // a non-symlink is resolved to itself
+    Path originalPathResolvedFromOriginal = FileUtils.resolveSymlinks(new Path(original.toUri()), conf);
+    Assert.assertEquals(originalPathResolvedFromOriginal.toUri(), original.toUri());
+
+    // nonexistent path is resolved to itself, resolveSymlinks doesn't care if the path doesn't exist
+    Path nonexistentPath = new Path("./non-existent-" + System.currentTimeMillis());
+    Assert.assertEquals(nonexistentPath.toUri(), FileUtils.resolveSymlinks(nonexistentPath, conf).toUri());
+
+    // null: method is supposed to handle null Path, returns null
+    Assert.assertNull(FileUtils.resolveSymlinks(null, conf));
+
+    // hdfs is not supported, return safely with the original path
+    Path hdfsPath = new Path("hdfs://localhost:0/user/hive/warehouse/src");
+    Path resolvedHdfsPath = FileUtils.resolveSymlinks(hdfsPath, conf);
+    Assert.assertEquals(hdfsPath.toUri(), resolvedHdfsPath.toUri());
+  }
 }

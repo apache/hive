@@ -1221,9 +1221,9 @@ public class DagUtils {
         LOG.info("Skipping vertex resource " + file + " that already exists in the session");
         continue;
       }
-      Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));
-      LocalResource localResource = localizeResource(new Path(file),
-          hdfsFilePath, type, conf);
+      Path path = FileUtils.resolveSymlinks(new Path(file), conf);
+      Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(path));
+      LocalResource localResource = localizeResource(path, hdfsFilePath, type, conf);
       tmpResourcesMap.put(file, localResource);
     }
     return tmpResourcesMap;
