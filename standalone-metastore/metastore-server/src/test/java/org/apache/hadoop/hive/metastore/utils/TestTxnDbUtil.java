@@ -97,8 +97,7 @@ public final class TestTxnDbUtil {
       String schemaRootPath = getSchemaRootPath();
       IMetaStoreSchemaInfo metaStoreSchemaInfo =
           MetaStoreSchemaInfoFactory.get(conf, schemaRootPath, dbProduct.getHiveSchemaPostfix());
-      // Use version to create the latest db tables for testing.
-      String initFile = metaStoreSchemaInfo.generateInitFileName(MetastoreVersionInfo.getVersion());
+      String initFile = metaStoreSchemaInfo.generateInitFileName(null);
       try (InputStream is = new FileInputStream(
           metaStoreSchemaInfo.getMetaStoreScriptDir() + File.separator + initFile)) {
         LOG.info("Reinitializing the metastore db with {} on the database {}", initFile,
