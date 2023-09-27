@@ -2799,7 +2799,7 @@ destination
 limitClause
 @init { pushMsg("limit clause", state); }
 @after { popMsg(state); }
-   : KW_LIMIT ((offset=Number COMMA) (numExpr=limitExpression))
+   : KW_LIMIT offset=Number COMMA numExpr=limitExpression
       -> ^(TOK_LIMIT ($offset)? $numExpr)
    | KW_LIMIT (numExpr=limitExpression) (KW_OFFSET (offsetExpr=offsetExpression))?
       -> ^(TOK_LIMIT ($offsetExpr)? $numExpr)

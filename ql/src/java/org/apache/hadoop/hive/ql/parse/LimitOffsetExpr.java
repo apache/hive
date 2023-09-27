@@ -49,7 +49,7 @@ public class LimitOffsetExpr {
   public Integer getDestOffset(RowResolver inputRR, String dest) throws SemanticException {
     Integer offsetValue = this.qbp.getDestLimitOffset(dest);
     ASTNode offsetExpr = this.qbp.getDestOffsetAST(dest);
-    if (offsetValue == null && offsetExpr != null) {
+    if (offsetValue == 0 && offsetExpr != null) {
       try {
         offsetValue = (Integer) ExprNodeDescUtils.genValueFromConstantExpr(inputRR, offsetExpr);
       } catch (SemanticException e) {
