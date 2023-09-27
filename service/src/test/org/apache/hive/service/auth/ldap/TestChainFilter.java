@@ -91,7 +91,7 @@ public class TestChainFilter {
 
   @Test(expected = AuthenticationException.class)
   public void testApplyNegative() throws AuthenticationException, NamingException, IOException {
-    doThrow(AuthenticationException.class).when(filter3).apply((DirSearch) anyObject(), anyString());
+    doThrow(AuthenticationException.class).when(filter3).apply((DirSearch) any(), anyString());
 
     when(factory1.getInstance(any(HiveConf.class))).thenReturn(filter1);
     when(factory3.getInstance(any(HiveConf.class))).thenReturn(filter3);
