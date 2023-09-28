@@ -6771,7 +6771,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void alterTableExecuteOperation(Table table, AlterTableExecuteSpec executeSpec) throws HiveException {
     try {
-      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      HiveStorageHandler storageHandler = Optional.ofNullable(createStorageHandler(table.getTTable())).orElseThrow(() ->
+          new UnsupportedOperationException(String.format("ALTER EXECUTE is not supported for table %s", table.getTableName())));
       storageHandler.executeOperation(table, executeSpec);
     } catch (MetaException e) {
       throw new HiveException(e);
