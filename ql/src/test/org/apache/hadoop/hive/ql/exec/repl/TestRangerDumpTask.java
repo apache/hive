@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -26,8 +27,9 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.logging.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,16 +37,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.ArrayList;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -67,13 +67,9 @@ public class TestRangerDumpTask {
   @Mock
   private ReplicationMetricCollector metricCollector;
 
-  @Mock
-  private ReplLoggerFactory replLoggerFactory;
-
   @Before
   public void setup() throws Exception {
-    when(replLoggerFactory.createRangerDumpLogger(anyString(), anyString())).thenCallRealMethod();
-    task = new RangerDumpTask(mockClient, conf, work, replLoggerFactory);
+    task = new RangerDumpTask(mockClient, conf, work);
     when(mockClient.removeMultiResourcePolicies(Mockito.anyList())).thenCallRealMethod();
     when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
     when(work.getMetricCollector()).thenReturn(metricCollector);
@@ -145,21 +141,27 @@ public class TestRangerDumpTask {
 
   @Test
   public void testSuccessRangerDumpMetrics() throws Exception {
-    RangerDumpLogger logger = mock(RangerDumpLogger.class);
-    when(replLoggerFactory.createRangerDumpLogger(anyString(), anyString())).thenReturn(logger);
+    Logger logger = LoggerFactory.getLogger("ReplState");
+    StringAppender appender = StringAppender.createStringAppender(null);
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
-    when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-      Mockito.any()))
-      .thenReturn(rangerPolicyList);
-    when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
-    when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
-    when(work.getDbName()).thenReturn("testdb");
-    when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
-    when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+    Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+                    Mockito.any()))
+            .thenReturn(rangerPolicyList);
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
+    Mockito.when(work.getDbName()).thenReturn("testdb");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
-    verify(logger).startLog();
-    verify(logger).endLog(any());
+    String logStr = appender.getOutput();
+    Assert.assertEquals(2, StringUtils.countMatches(logStr, "REPL::"));
+    Assert.assertTrue(logStr.contains("RANGER_DUMP_START"));
+    Assert.assertTrue(logStr.contains("RANGER_DUMP_END"));
+    Assert.assertTrue(logStr.contains("{\"dbName\":\"testdb\",\"dumpStartTime"));
+    Assert.assertTrue(logStr.contains("{\"dbName\":\"testdb\",\"actualNumPolicies\":0,\"dumpEndTime\""));
   }
 }

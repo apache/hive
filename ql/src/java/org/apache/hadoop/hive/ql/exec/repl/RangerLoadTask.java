@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
@@ -58,19 +59,16 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
   private transient RangerRestClient rangerRestClient;
 
   private transient ReplLogger replLogger;
-  private final ReplLoggerFactory replLoggerFactory;
 
   public RangerLoadTask() {
     super();
-    this.replLoggerFactory = ReplLoggerFactory.getInstance();
   }
 
   @VisibleForTesting
-  RangerLoadTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerLoadWork work, ReplLoggerFactory replLoggerFactory) {
+  RangerLoadTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerLoadWork work) {
     this.conf = conf;
     this.work = work;
     this.rangerRestClient = rangerRestClient;
-    this.replLoggerFactory = replLoggerFactory;
   }
 
   @Override
@@ -112,7 +110,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         rangerExportPolicyList = rangerRestClient.readRangerPoliciesFromJsonFile(new Path(work.getCurrentDumpPath(),
                 ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME), conf);
         int expectedPolicyCount = rangerExportPolicyList == null ? 0 : rangerExportPolicyList.getListSize();
-        replLogger = replLoggerFactory.createRangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
+        replLogger = new RangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
           work.getCurrentDumpPath().toString(), expectedPolicyCount);
         replLogger.startLog();
         Map<String, Long> metricMap = new HashMap<>();

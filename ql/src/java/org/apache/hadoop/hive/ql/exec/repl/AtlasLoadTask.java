@@ -59,18 +59,14 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final transient Logger LOG = LoggerFactory.getLogger(AtlasLoadTask.class);
 
-  private final ReplLoggerFactory replLoggerFactory;
-
   public AtlasLoadTask() {
     super();
-    replLoggerFactory = ReplLoggerFactory.getInstance();
   }
 
   @VisibleForTesting
-  AtlasLoadTask(final HiveConf conf, final AtlasLoadWork work, ReplLoggerFactory replLoggerFactory) {
+  AtlasLoadTask(final HiveConf conf, final AtlasLoadWork work) {
     this.conf = conf;
     this.work = work;
-    this.replLoggerFactory = replLoggerFactory;
   }
 
   @Override
@@ -83,7 +79,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
       work.getMetricCollector().reportStageStart(getName(), metricMap);
       LOG.info("Loading atlas metadata from srcDb: {} to tgtDb: {} from staging: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
-      AtlasLoadLogger replLogger = replLoggerFactory.createAtlasLoadLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),
+      AtlasLoadLogger replLogger = new AtlasLoadLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),
               atlasReplInfo.getStagingDir().toString());
       replLogger.startLog();
       int importCount = importAtlasMetadata(atlasReplInfo);

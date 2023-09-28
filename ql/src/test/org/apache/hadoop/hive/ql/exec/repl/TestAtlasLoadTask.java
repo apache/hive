@@ -17,24 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.AtlasLoadLogger;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.logging.log4j.Level;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Unit test class for testing Atlas metadata load.
@@ -55,21 +52,28 @@ public class TestAtlasLoadTask {
 
   @Test
   public void testAtlasLoadMetrics() throws Exception {
-    AtlasLoadLogger logger = Mockito.mock(AtlasLoadLogger.class);
     Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
-    ReplLoggerFactory replLoggerFactoryMock = mock(ReplLoggerFactory.class);
-    when(replLoggerFactoryMock.createAtlasLoadLogger(anyString(), anyString(), anyString())).thenReturn(logger);
-    atlasLoadTask = new AtlasLoadTask(conf, work, replLoggerFactoryMock);
+    atlasLoadTask = new AtlasLoadTask(conf, work);
     AtlasLoadTask atlasLoadTaskSpy = Mockito.spy(atlasLoadTask);
     Mockito.when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
+    Logger logger = LoggerFactory.getLogger("ReplState");
+    StringAppender appender = StringAppender.createStringAppender(null);
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:21000/atlas", "srcDB",
-        "tgtDB", "srcCluster", "tgtCluster", new Path("hdfs://tmp"), null, conf);
+            "tgtDB", "srcCluster", "tgtCluster", new Path("hdfs://tmp"), null, conf);
     atlasReplInfo.setSrcFsUri("hdfs://srcFsUri:8020");
     atlasReplInfo.setTgtFsUri("hdfs:tgtFsUri:8020");
     Mockito.doReturn(atlasReplInfo).when(atlasLoadTaskSpy).createAtlasReplInfo();
     int status = atlasLoadTaskSpy.execute();
     Assert.assertEquals(0, status);
-    verify(logger, times(1)).startLog();
-    verify(logger, times(1)).endLog(any());
+    String logStr = appender.getOutput();
+    Assert.assertEquals(2, StringUtils.countMatches(logStr, "REPL::"));
+    Assert.assertTrue(logStr.contains("ATLAS_LOAD_START"));
+    Assert.assertTrue(logStr.contains("ATLAS_LOAD_END"));
+    Assert.assertTrue(logStr.contains("{\"sourceDbName\":\"srcDB\",\"targetDbName\":\"tgtDB\",\"loadStartTime\":"));
+    Assert.assertTrue(logStr.contains("{\"sourceDbName\":\"srcDB\",\"targetDbName\""
+            + ":\"tgtDB\",\"numOfEntities\":0,\"loadEndTime\""));
+    appender.removeFromLogger(logger.getName());
   }
 }

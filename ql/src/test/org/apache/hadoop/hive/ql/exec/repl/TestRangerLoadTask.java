@@ -18,14 +18,16 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.logging.log4j.Level;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,9 +45,6 @@ import java.util.List;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -72,13 +71,9 @@ public class TestRangerLoadTask {
   @Mock
   private ReplicationMetricCollector metricCollector;
 
-  @Mock
-  private ReplLoggerFactory replLoggerFactory;
-
   @Before
   public void setup() throws Exception {
-    when(replLoggerFactory.createRangerLoadLogger(anyString(), anyString(), anyString(), anyLong())).thenCallRealMethod();
-    task = new RangerLoadTask(mockClient, conf, work, replLoggerFactory);
+    task = new RangerLoadTask(mockClient, conf, work);
     when(mockClient.changeDataSet(Mockito.anyList(), Mockito.anyString(), Mockito.anyString()))
       .thenCallRealMethod();
     when(mockClient.getDenyPolicyForReplicatedDb(Mockito.anyString(), Mockito.anyString(),
@@ -131,31 +126,40 @@ public class TestRangerLoadTask {
 
   @Test
   public void testSuccessRangerDumpMetrics() throws Exception {
-    RangerLoadLogger logger = Mockito.mock(RangerLoadLogger.class);
-    when(replLoggerFactory.createRangerLoadLogger(anyString(), anyString(), anyString(), anyLong())).thenReturn(logger);
+    Logger logger = LoggerFactory.getLogger("ReplState");
+    StringAppender appender = StringAppender.createStringAppender(null);
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
     String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
-        + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
-        + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
-        + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
-        + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
-        + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
-        + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
-        + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
-        + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
-        + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
-        + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
+            + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
+            + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
+            + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
+            + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
+            + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
+            + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
+            + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
+            + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
+            + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
+            + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
     RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
-    when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
-    when(work.getSourceDbName()).thenReturn("srcdb");
-    when(work.getTargetDbName()).thenReturn("tgtdb");
+    Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
+    Mockito.when(work.getSourceDbName()).thenReturn("srcdb");
+    Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
     Path rangerDumpPath = new Path("/tmp");
-    when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
-    when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
-    when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
-    verify(logger).startLog();
-    verify(logger).endLog(anyLong());
+    String logStr = appender.getOutput();
+    Assert.assertEquals(2, StringUtils.countMatches(logStr, "REPL::"));
+    Assert.assertTrue(logStr.contains("RANGER_LOAD_START"));
+    Assert.assertTrue(logStr.contains("RANGER_LOAD_END"));
+    Assert.assertTrue(logStr.contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\":\"tgtdb\""
+            + ",\"estimatedNumPolicies\":1,\"loadStartTime\":"));
+    Assert.assertTrue(logStr.contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\""
+            + ":\"tgtdb\",\"actualNumPolicies\":1,\"loadEndTime\""));
+    appender.removeFromLogger(logger.getName());
   }
 
   @Test
