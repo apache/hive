@@ -15875,22 +15875,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * @return table name in db.table form with proper quoting/escaping to be used in a SQL statement
-   */
-  protected String getFullTableNameForSQL(ASTNode n) throws SemanticException {
-    switch (n.getType()) {
-    case HiveParser.TOK_TABNAME:
-      TableName tableName = getQualifiedTableName(n);
-      return HiveTableName.ofNullable(HiveUtils.unparseIdentifier(tableName.getTable(), this.conf),
-          HiveUtils.unparseIdentifier(tableName.getDb(), this.conf), tableName.getTableMetaRef()).getNotEmptyDbTable();
-    case HiveParser.TOK_TABREF:
-      return getFullTableNameForSQL((ASTNode) n.getChild(0));
-    default:
-      throw raiseWrongType("TOK_TABNAME", n);
-    }
-  }
-
-  /**
    * Append list of partition columns to Insert statement, i.e. the 1st set of partCol1,partCol2
    * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
    */

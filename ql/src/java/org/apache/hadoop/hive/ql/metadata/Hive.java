@@ -1528,7 +1528,7 @@ public class Hive {
 
       // TODO: APIs with catalog names
       List<String> partNames = ((null == partSpec)
-        ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
+              ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
       if (snapshot == null) {
         getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames);
       } else {
@@ -4036,6 +4036,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Map<String, String> partSpec, short max) throws HiveException {
     List<String> names = null;
     Table t = getTable(dbName, tblName);
+    if (t.getStorageHandler() != null && t.getStorageHandler().alwaysUnpartitioned()) {
+      return t.getStorageHandler().getPartitionNames(t, partSpec);
+    }
 
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
 
