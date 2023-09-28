@@ -1159,27 +1159,11 @@ public interface RawStore extends Configurable {
   default List<Partition> getPartitionsWithAuth(String catName, String dbName,
        String tblName, short maxParts, String userName, List<String> groupNames)
        throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return getPartitionsWithAuth(catName, dbName, tblName, new GetPartitionsArgs
-        .GetPartitionsArgsBuilder()
-        .max(maxParts).userName(userName).groupNames(groupNames)
-        .build());
+    return listPartitionsPsWithAuth(catName, dbName, tblName,
+        new GetPartitionsArgs.GetPartitionsArgsBuilder()
+            .max(maxParts).userName(userName).groupNames(groupNames)
+            .build());
   }
-
-  /**
-   * Fetch some or all partitions for a table, along with privilege information for a particular
-   * user.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param args additional arguments for getting partitions
-   * @return list of partitions.
-   * @throws MetaException error access the RDBMS.
-   * @throws NoSuchObjectException no such table exists
-   * @throws InvalidObjectException error fetching privilege information.
-   */
-  List<Partition> getPartitionsWithAuth(String catName, String dbName,
-      String tblName, GetPartitionsArgs args)
-      throws MetaException, NoSuchObjectException, InvalidObjectException;
 
   /**
    * Lists partition names that match a given partial specification

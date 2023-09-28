@@ -1635,13 +1635,6 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName,
-                                               GetPartitionsArgs args)
-          throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return objectStore.getPartitionsWithAuth(catName, dbName, tblName, args);
-  }
-
-  @Override
   public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
                                                   GetPartitionsArgs args) throws MetaException, InvalidObjectException, NoSuchObjectException {
     return objectStore.listPartitionsPsWithAuth(catName, dbName, tblName, args);

@@ -716,13 +716,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
         groupNames);
   }
 
-    @Override
-    public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName,
-        GetPartitionsArgs args) throws MetaException, NoSuchObjectException, InvalidObjectException {
-
-        return objectStore.getPartitionsWithAuth(catName, dbName, tblName, args);
-    }
-
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tblName,
       List<String> partVals, short maxParts)

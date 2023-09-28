@@ -3364,41 +3364,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName,
-      GetPartitionsArgs args)
-          throws MetaException, InvalidObjectException {
-    boolean success = false;
-
-    try {
-      openTransaction();
-      List<MPartition> mparts = listMPartitions(catName, dbName, tblName, args.getMax());
-      List<Partition> parts = new ArrayList<>(mparts.size());
-      if (CollectionUtils.isNotEmpty(mparts)) {
-        for (MPartition mpart : mparts) {
-          MTable mtbl = mpart.getTable();
-          Partition part = convertToPart(catName, dbName, tblName,
-              mpart, TxnUtils.isAcidTable(mtbl.getParameters()), args);
-          parts.add(part);
-
-          if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-            String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
-                .getPartitionKeys()), part.getValues());
-            PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(catName, dbName,
-                tblName, partName, args.getUserName(), args.getGroupNames());
-            part.setPrivileges(partAuth);
-          }
-        }
-      }
-      success =  commitTransaction();
-      return parts;
-    } catch (Exception e) {
-      throw new MetaException(e.getMessage());
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
-  }
-
-  @Override
   public Partition getPartitionWithAuth(String catName, String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
@@ -3927,7 +3892,7 @@ public class ObjectStore implements RawStore, Configurable {
    * doesn't support partition privileges.
    */
   private boolean canTryDirectSQL(List<String> partVals) {
-    if (partVals.isEmpty()) {
+    if (partVals == null || partVals.isEmpty()) {
       return true;
     }
     for (String val : partVals) {
@@ -3962,12 +3927,16 @@ public class ObjectStore implements RawStore, Configurable {
       if (!getauth && canTryDirectSQL(part_vals)) {
         LOG.info(
             "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
-            db_name, tbl_name, Joiner.on(',').join(part_vals));
+            db_name, tbl_name, part_vals);
         return getPartitions(catName, db_name, tbl_name, args);
       }
       LOG.debug("executing listPartitionNamesPsWithAuth");
-      Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
-          part_vals, max_parts, null);
+      final Collection parts;
+      if (part_vals != null && !part_vals.isEmpty()) {
+        parts = getPartitionPsQueryResults(catName, db_name, tbl_name, part_vals, max_parts, null);
+      } else {
+        parts = listMPartitions(catName, db_name, tbl_name, max_parts);
+      }
       boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
       for (Object o : parts) {
         Partition part = convertToPart(catName, db_name, tbl_name,

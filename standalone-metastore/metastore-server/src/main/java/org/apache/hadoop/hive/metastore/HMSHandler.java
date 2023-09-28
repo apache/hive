@@ -5545,36 +5545,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<Partition> get_partitions_with_auth(final String dbName,
       final String tblName, final short maxParts, final String userName,
       final List<String> groupNames) throws TException {
-    return get_partitions_with_auth_optional_schema(dbName, tblName,
+    return get_partitions_ps_with_auth(dbName, tblName,
         new GetPartitionsArgs.GetPartitionsArgsBuilder()
             .max(maxParts).userName(userName).groupNames(groupNames)
             .build());
-  }
-
-  private List<Partition> get_partitions_with_auth_optional_schema(final String dbName,
-      final String tblName, GetPartitionsArgs args) throws TException {
-    String[] parsedDbName = parseDbName(dbName, conf);
-    startTableFunction("get_partitions_with_auth", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
-
-    List<Partition> ret = null;
-    Exception ex = null;
-    try {
-      checkLimitNumberOfPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-          tblName, NO_FILTER_STRING, args.getMax());
-
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
-
-      ret = getMS().getPartitionsWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName, args);
-      ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
-    } catch (Exception e) {
-      ex = e;
-      handleException(e).convertIfInstance(InvalidObjectException.class, NoSuchObjectException.class)
-          .rethrowException(e);
-    } finally {
-      endFunction("get_partitions_with_auth", ret != null, ex, tblName);
-    }
-    return ret;
-
   }
 
   private void checkLimitNumberOfPartitionsByFilter(String catName, String dbName,
@@ -6647,8 +6621,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<Partition> ret = null;
     Exception ex = null;
     try {
-      checkLimitNumberOfPartitionsByPs(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-              tbl_name, args.getPart_vals(), args.getMax());
+      if (args.getPart_vals() != null) {
+        checkLimitNumberOfPartitionsByPs(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+            tbl_name, args.getPart_vals(), args.getMax());
+      } else {
+        checkLimitNumberOfPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+            tbl_name, NO_FILTER_STRING, args.getMax());
+      }
       authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().listPartitionsPsWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name, args);
@@ -6666,24 +6645,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest req)
       throws MetaException, NoSuchObjectException, TException {
     String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
-    List<Partition> partitions = null;
-    if (req.getPartVals() == null) {
-      partitions = get_partitions_with_auth_optional_schema(dbName, req.getTblName(), new GetPartitionsArgs.GetPartitionsArgsBuilder()
-          .max(req.getMaxParts()).userName(req.getUserName()).groupNames(req.getGroupNames())
-          .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
-          .includeParamKeyPattern(req.getIncludeParamKeyPattern())
-          .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
-          .build());
-    } else {
-      partitions =
-          get_partitions_ps_with_auth(dbName, req.getTblName(), new GetPartitionsArgs.GetPartitionsArgsBuilder()
-              .part_vals(req.getPartVals()).max(req.getMaxParts())
-              .userName(req.getUserName()).groupNames(req.getGroupNames())
-              .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
-              .includeParamKeyPattern(req.getIncludeParamKeyPattern())
-              .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
-              .build());
-    }
+    List<Partition> partitions =
+        get_partitions_ps_with_auth(dbName, req.getTblName(), new GetPartitionsArgs.GetPartitionsArgsBuilder()
+            .part_vals(req.getPartVals()).max(req.getMaxParts())
+            .userName(req.getUserName()).groupNames(req.getGroupNames())
+            .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+            .includeParamKeyPattern(req.getIncludeParamKeyPattern())
+            .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+            .build());
     GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
     res.setPartitions(partitions);
     return res;
