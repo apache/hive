@@ -87,7 +87,8 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasReplInfo atlasReplInfo = createAtlasReplInfo();
       LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
-      ReplLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getStagingDir().toString());
+      AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
+              atlasReplInfo.getStagingDir().toString());
       replLogger.startLog();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);
