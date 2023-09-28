@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
@@ -67,19 +68,16 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
   private static final transient Logger LOG = LoggerFactory.getLogger(AtlasDumpTask.class);
   private static final long serialVersionUID = 1L;
   private transient AtlasRestClient atlasRestClient;
-  private final ReplLoggerFactory replLoggerFactory;
 
   public AtlasDumpTask() {
     super();
-    replLoggerFactory = ReplLoggerFactory.getInstance();
   }
 
   @VisibleForTesting
-  AtlasDumpTask(final AtlasRestClient atlasRestClient, final HiveConf conf, final AtlasDumpWork work, final ReplLoggerFactory replLoggerFactory) {
+  AtlasDumpTask(final AtlasRestClient atlasRestClient, final HiveConf conf, final AtlasDumpWork work) {
     this.conf = conf;
     this.work = work;
     this.atlasRestClient = atlasRestClient;
-    this.replLoggerFactory = replLoggerFactory;
   }
 
   @Override
@@ -89,7 +87,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasReplInfo atlasReplInfo = createAtlasReplInfo();
       LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
-      AtlasDumpLogger replLogger = replLoggerFactory.createAtlasDumpLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getStagingDir().toString());
+      ReplLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getStagingDir().toString());
       replLogger.startLog();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);

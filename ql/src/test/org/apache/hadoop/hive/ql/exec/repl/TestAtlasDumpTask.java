@@ -26,6 +26,7 @@ import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasServer;
 import org.apache.atlas.model.instance.AtlasObjectId;
 import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,10 +36,11 @@ import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClient;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.logging.log4j.Level;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +49,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
@@ -61,7 +65,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -90,29 +93,35 @@ public class TestAtlasDumpTask {
 
   @Test
   public void testAtlasDumpMetrics() throws Exception {
-    AtlasDumpLogger logger = mock(AtlasDumpLogger.class);
-    when(work.getMetricCollector()).thenReturn(metricCollector);
-    when(conf.get(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname)).thenReturn("http://localhost:21000/atlas");
-    when(conf.get(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname)).thenReturn("tgtDb");
-    when(conf.get(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname)).thenReturn("srcCluster");
-    when(conf.get(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname)).thenReturn("tgtCluster");
-    when(conf.get(ReplUtils.DEFAULT_FS_CONFIG)).thenReturn("hdfs:tgtFsUri:8020");
-    when(work.getStagingDir()).thenReturn(new Path("hdfs://tmp:8020/staging"));
-    when(work.getSrcDB()).thenReturn("srcDB");
-    when(work.isBootstrap()).thenReturn(true);
-    ReplLoggerFactory replLoggerFactoryMock = mock(ReplLoggerFactory.class);
-    when(replLoggerFactoryMock.createAtlasDumpLogger(anyString(), anyString())).thenReturn(logger);
-    atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work, replLoggerFactoryMock);
+    Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname)).thenReturn("http://localhost:21000/atlas");
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname)).thenReturn("tgtDb");
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname)).thenReturn("srcCluster");
+    Mockito.when(conf.get(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname)).thenReturn("tgtCluster");
+    Mockito.when(conf.get(ReplUtils.DEFAULT_FS_CONFIG)).thenReturn("hdfs:tgtFsUri:8020");
+    Mockito.when(work.getStagingDir()).thenReturn(new Path("hdfs://tmp:8020/staging"));
+    Mockito.when(work.getSrcDB()).thenReturn("srcDB");
+    Mockito.when(work.isBootstrap()).thenReturn(true);
+    atlasDumpTask = new AtlasDumpTask(atlasRestClient, conf, work);
     AtlasDumpTask atlasDumpTaskSpy = Mockito.spy(atlasDumpTask);
-    when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
+    Mockito.when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
+    Logger logger = LoggerFactory.getLogger("ReplState");
+    StringAppender appender = StringAppender.createStringAppender(null);
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
     Mockito.doReturn(0L).when(atlasDumpTaskSpy)
-            .dumpAtlasMetaData(any(AtlasRequestBuilder.class), any(AtlasReplInfo.class));
-    Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(any(AtlasReplInfo.class),
-            any(Long.class));
+            .dumpAtlasMetaData(Mockito.any(AtlasRequestBuilder.class), Mockito.any(AtlasReplInfo.class));
+    Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(Mockito.any(AtlasReplInfo.class),
+            Mockito.any(Long.class));
     int status = atlasDumpTaskSpy.execute();
     Assert.assertEquals(0, status);
-    verify(logger, times(1)).startLog();
-    verify(logger, times(1)).endLog(any());
+    String logStr = appender.getOutput();
+    Assert.assertEquals(2, StringUtils.countMatches(logStr, "REPL::"));
+    Assert.assertTrue(logStr.contains("ATLAS_DUMP_START"));
+    Assert.assertTrue(logStr.contains("ATLAS_DUMP_END"));
+    Assert.assertTrue(logStr.contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
+    Assert.assertTrue(logStr.contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
+    appender.removeFromLogger(logger.getName());
   }
 
   @Test
