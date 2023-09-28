@@ -390,12 +390,14 @@ public final class OpProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       Object o = super.process(nd, stack, procCtx, nodeOutputs);
-      Operator<?> operator = (Operator<?>) nd;
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
           HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
-        // remove all the candidate filter operators
-        // when we get to the TS
+        // The lateral view join is allowed to have a filter pushed through it.
+        // We need to remove the filter candidate here once it has been applied.
+        // If we do not remove it here, the candidates will be cleared out through
+        // the getCandidateFilterOps().clear() method in another processor and the
+        // filter candidate would not be removed.
         removeAllCandidates(owi);
       }
       return o;
