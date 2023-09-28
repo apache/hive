@@ -1469,8 +1469,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         spec, FileFormat.PARQUET, ImmutableList.of());
 
     String[] commands = {
-        "DESCRIBE target PARTITION (last_name='Johnson')",
-        "TRUNCATE target PARTITION (last_name='Johnson')"
+        "DESCRIBE target PARTITION (last_name='Johnson')"
     };
 
     for (String command : commands) {
