@@ -32,11 +32,10 @@ import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1352,25 +1351,24 @@ class MetaStoreDirectSql {
       if (colType == FilterType.Date && valType == FilterType.String) {
         // Filter.g cannot parse a quoted date; try to parse date here too.
         try {
-          nodeValue = MetaStoreUtils.PARTITION_DATE_FORMAT.get().parse((String)nodeValue);
+          nodeValue = MetaStoreUtils.convertStringToDate((String)nodeValue);
           valType = FilterType.Date;
-        } catch (ParseException pe) { // do nothing, handled below - types will mismatch
+        } catch (Exception pe) { // do nothing, handled below - types will mismatch
         }
       }
 
       if (colType == FilterType.Timestamp && valType == FilterType.String) {
-        nodeValue = Timestamp.valueOf(LocalDateTime.from(
-            MetaStoreUtils.PARTITION_TIMESTAMP_FORMAT.get().parse((String)nodeValue)));
+        nodeValue = MetaStoreUtils.convertStringToTimestamp((String)nodeValue);
         valType = FilterType.Timestamp;
       }
 
       // We format it so we are sure we are getting the right value
       if (valType == FilterType.Date) {
         // Format
-        nodeValue = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(nodeValue);
+        nodeValue = MetaStoreUtils.convertDateToString((Date)nodeValue);
       } else if (valType == FilterType.Timestamp) {
         //format
-        nodeValue = MetaStoreUtils.PARTITION_TIMESTAMP_FORMAT.get().format(((Timestamp) nodeValue).toLocalDateTime());
+        nodeValue = MetaStoreUtils.convertTimestampToString((Timestamp) nodeValue);
       }
 
       boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
