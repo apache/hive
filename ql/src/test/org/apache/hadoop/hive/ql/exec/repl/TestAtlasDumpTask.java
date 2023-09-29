@@ -227,12 +227,12 @@ public class TestAtlasDumpTask {
 
   @Test
   public void testAtlasClientTimeouts() throws Exception {
-    try (
-            MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
-            MockedStatic<ConfigurationConverter> configurationConverterMockedStatic = mockStatic(ConfigurationConverter.class)
-            ) {
-      userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(mock(UserGroupInformation.class));
-      configurationConverterMockedStatic.when(() -> ConfigurationConverter.getConfiguration(any(Properties.class))).thenCallRealMethod();
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
+         MockedStatic<ConfigurationConverter> configurationConverterMockedStatic = mockStatic(ConfigurationConverter.class)) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).
+              thenReturn(mock(UserGroupInformation.class));
+      configurationConverterMockedStatic.when(() -> ConfigurationConverter.getConfiguration(any(Properties.class))).
+              thenCallRealMethod();
 
       when(conf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT,
               TimeUnit.MILLISECONDS)).thenReturn(20L);

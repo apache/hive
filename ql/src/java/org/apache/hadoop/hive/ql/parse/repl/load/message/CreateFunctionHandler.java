@@ -156,7 +156,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     private String destinationDbName;
 
     PrimaryToReplicaResourceFunction(Context context, MetaData metadata,
-                                     String destinationDbName) {
+       String destinationDbName) {
       this.context = context;
       this.metadata = metadata;
       this.destinationDbName = destinationDbName;

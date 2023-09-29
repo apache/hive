@@ -112,10 +112,8 @@ public class TestCopyUtils {
 
   @Test
   public void testFSCallsFailOnParentExceptions() throws Exception {
-    try (
-            MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
-            MockedStatic<ReplChangeManager> replChangeManagerMockedStatic = mockStatic(ReplChangeManager.class)
-    ) {
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
+         MockedStatic<ReplChangeManager> replChangeManagerMockedStatic = mockStatic(ReplChangeManager.class)) {
       userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(mock(UserGroupInformation.class));
       HiveConf conf = mock(HiveConf.class);
       conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
@@ -175,10 +173,8 @@ public class TestCopyUtils {
 
   @Test
   public void testRetryableFSCalls() throws Exception {
-    try (
-            MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
-            MockedStatic<ReplChangeManager> replChangeManagerMockedStatic = mockStatic(ReplChangeManager.class)
-            ) {
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
+         MockedStatic<ReplChangeManager> replChangeManagerMockedStatic = mockStatic(ReplChangeManager.class)) {
       userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(mock(UserGroupInformation.class));
       HiveConf conf = mock(HiveConf.class);
       conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
