@@ -137,6 +137,19 @@ public class TestDataSourceProviderFactory {
   }
 
   @Test
+  public void testSetHikariCpLifetimeProperty() throws SQLException {
+
+    MetastoreConf.setLongVar(conf, ConfVars.CONNECTION_POOLING_LIFETIME, 300);
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    Assert.assertEquals(300, ((HikariDataSource)ds).getMaxLifetime());
+  }
+
+  @Test
   public void testCreateDbCpDataSource() throws SQLException {
 
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, DbCPDataSourceProvider.DBCP);

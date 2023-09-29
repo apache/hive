@@ -22,6 +22,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
@@ -56,6 +57,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
         DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
     long leakDetectionThreshold = hdpConfig.getLong(LEAK_DETECTION_THRESHOLD, 3600000L);
+    long maxLifetimeMs = MetastoreConf.getLongVar(hdpConfig, MetastoreConf.ConfVars.CONNECTION_POOLING_LIFETIME);
 
     HikariConfig config;
     try {
@@ -68,6 +70,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setUsername(user);
     config.setPassword(passwd);
     config.setLeakDetectionThreshold(leakDetectionThreshold);
+    config.setMaxLifetime(maxLifetimeMs);
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }
