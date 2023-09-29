@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.parser;
 
 import java.sql.Timestamp;
-import java.util.Date;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -486,9 +486,9 @@ public class ExpressionTree {
       // columns have been excluded above, so it will either compare w/string or fail.
       Object val = value;
       if (colType.equals("date") && value instanceof Date) {
-        val = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format((Date)value);
+        val = MetaStoreUtils.convertDateToString((Date)value);
       } else if (colType.equals("timestamp") && value instanceof Timestamp) {
-        val = MetaStoreUtils.PARTITION_TIMESTAMP_FORMAT.get().format(((Timestamp)value).toLocalDateTime());
+        val = MetaStoreUtils.convertTimestampToString((Timestamp)value);
       }
       boolean isStringValue = val instanceof String;
       if (!isStringValue && (!isIntegralSupported || !(val instanceof Long))) {
