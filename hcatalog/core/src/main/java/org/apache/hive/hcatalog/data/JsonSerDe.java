@@ -42,12 +42,16 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
                           serdeConstants.LIST_COLUMN_TYPES,
                           serdeConstants.TIMESTAMP_FORMATS,
                           serdeConstants.SERIALIZATION_ENCODING})
 public class JsonSerDe extends AbstractEncodingAwareSerDe {
+
+  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
 
   private HCatSchema schema;
 
@@ -65,8 +69,8 @@ public class JsonSerDe extends AbstractEncodingAwareSerDe {
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
     try {
       schema = HCatSchemaUtils.getHCatSchema(rowTypeInfo).get(0).getStructSubSchema();
-      log.debug("schema : {}", schema);
-      log.debug("fields : {}", schema.getFieldNames());
+      LOG.debug("schema : {}", schema);
+      LOG.debug("fields : {}", schema.getFieldNames());
     } catch (HCatException e) {
       throw new SerDeException(e);
     }
