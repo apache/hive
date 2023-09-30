@@ -345,13 +345,23 @@ public class TestFileUtils {
 
     java.nio.file.Path original = java.nio.file.Files.createTempFile("", "");
     java.nio.file.Path symlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink");
+    java.nio.file.Path symlinkOfSymlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink.symlink");
+
+    // symlink -> original
     java.nio.file.Files.createSymbolicLink(symlinkPath, original);
+    // symlink -> symlink -> original
+    java.nio.file.Files.createSymbolicLink(symlinkOfSymlinkPath, symlinkPath);
 
     Assert.assertTrue(java.nio.file.Files.isSymbolicLink(symlinkPath));
+    Assert.assertTrue(java.nio.file.Files.isSymbolicLink(symlinkOfSymlinkPath));
 
-    // average usage: symlink points to the original
+    // average usage 1: symlink points to the original
     Path originalPathResolved = FileUtils.resolveSymlinks(new Path(symlinkPath.toUri()), conf);
     Assert.assertEquals(originalPathResolved.toUri(), original.toUri());
+
+    // average usage 2: symlink2 -> symlink -> original points to the original
+    Path originalPathResolved2 = FileUtils.resolveSymlinks(new Path(symlinkOfSymlinkPath.toUri()), conf);
+    Assert.assertEquals(originalPathResolved2.toUri(), original.toUri());
 
     // a non-symlink is resolved to itself
     Path originalPathResolvedFromOriginal = FileUtils.resolveSymlinks(new Path(original.toUri()), conf);
@@ -361,8 +371,12 @@ public class TestFileUtils {
     Path nonexistentPath = new Path("./non-existent-" + System.currentTimeMillis());
     Assert.assertEquals(nonexistentPath.toUri(), FileUtils.resolveSymlinks(nonexistentPath, conf).toUri());
 
-    // null: method is supposed to handle null Path, returns null
-    Assert.assertNull(FileUtils.resolveSymlinks(null, conf));
+    try {
+      FileUtils.resolveSymlinks(null, conf);
+      Assert.fail("IllegalArgumentException should be thrown in case of null input");
+    } catch (IllegalArgumentException e) {
+      Assert.assertEquals("Cannot resolve symlink for a null Path", e.getMessage());
+    }
 
     // hdfs is not supported, return safely with the original path
     Path hdfsPath = new Path("hdfs://localhost:0/user/hive/warehouse/src");

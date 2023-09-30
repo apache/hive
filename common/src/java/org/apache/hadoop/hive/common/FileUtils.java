@@ -1391,26 +1391,19 @@ public final class FileUtils {
   /**
    * Resolves a symlink on a local filesystem. In case of any exceptions or scheme other than "file"
    * it simply returns the original path. Refer to DEBUG level logs for further details.
-   * @param path
-   * @param conf
-   * @return
+   * @param path input path to be resolved
+   * @param conf a Configuration instance to be used while resolving the FileSystem
+   * @return the resolved target Path or the original if the input Path is not a symlink
    * @throws IOException
    */
   public static Path resolveSymlinks(Path path, Configuration conf) throws IOException {
     if (path == null) {
-      return null;
+      throw new IllegalArgumentException("Cannot resolve symlink for a null Path");
     }
 
-    FileSystem srcFs;
     String scheme = path.toUri().getScheme();
-    if (scheme != null) {
-      srcFs = path.getFileSystem(conf);
-    } else {
-      srcFs = FileSystem.getLocal(conf);
-    }
-    LOG.debug("resolveSymlink path: {}, srcFs class: {}, scheme: {}", path, srcFs.getClass().getName(), scheme);
 
-    /**
+    /*
      * If you're about to extend this method to e.g. HDFS, simply remove this check.
      * There is a known exception reproduced by whroot_external1.q, which can be referred to,
      * which is because java.nio is not prepared by default for other schemes like "hdfs".
@@ -1419,6 +1412,14 @@ public final class FileUtils {
       LOG.debug("scheme '{}' is not supported for resolving symlinks", scheme);
       return path;
     }
+
+    FileSystem srcFs;
+    if (scheme != null) {
+      srcFs = path.getFileSystem(conf);
+    } else {
+      srcFs = FileSystem.getLocal(conf);
+    }
+    LOG.debug("resolveSymlink path: {}, srcFs class: {}, scheme: {}", path, srcFs.getClass().getName(), scheme);
 
     try {
       java.nio.file.Path srcPath = Paths.get(path.toUri());

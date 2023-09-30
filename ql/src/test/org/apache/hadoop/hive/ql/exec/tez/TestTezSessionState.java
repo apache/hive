@@ -65,6 +65,6 @@ public class TestTezSessionState {
     LocalResource l2 = sessionState.createJarLocalResource(symlinkPath.toUri().toString());
 
     // local resources point to the same original resource
-    Assert.assertEquals(l1.getResource().toPath().toUri(), l2.getResource().toPath().toUri());
+    Assert.assertEquals(l1.getResource().toPath(), l2.getResource().toPath());
   }
 }
