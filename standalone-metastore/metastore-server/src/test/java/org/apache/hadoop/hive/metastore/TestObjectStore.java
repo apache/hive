@@ -653,12 +653,6 @@ public class TestObjectStore {
     }
     Assert.assertEquals(3, partitions.size());
 
-    try(AutoCloseable c = deadline()) {
-      List<List<ColumnStatistics>> colStats = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_part_col=a0", "test_part_col=a1"), Arrays.asList("test_col1"));
-      Assert.assertEquals(0, colStats.size());
-    }
-
     // drop partitions with directSql
     try(AutoCloseable c = deadline()) {
       objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
@@ -695,12 +689,6 @@ public class TestObjectStore {
       partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
     }
     Assert.assertEquals(3, partitions.size());
-
-    try (AutoCloseable c = deadline()) {
-      List<List<ColumnStatistics>> colStats = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_part_col=a0", "test_part_col=a1"), Arrays.asList("test_col1"));
-      Assert.assertEquals(0, colStats.size());
-    }
 
     // drop partitions with directSql in the 1st session
     try (AutoCloseable c = deadline()) {
@@ -1653,13 +1641,6 @@ public class TestObjectStore {
     Assert.assertEquals(3, objectStore.getPartitionCount());
 
     objectStore.openTransaction();
-
-    try (AutoCloseable c = deadline()) {
-      List<List<ColumnStatistics>> colStats = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_part_col=a0", "test_part_col=a1"), Arrays.asList("test_col1"));
-      Assert.assertEquals(0, colStats.size());
-    }
-
     objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
       @Override
       protected String describeResult() {

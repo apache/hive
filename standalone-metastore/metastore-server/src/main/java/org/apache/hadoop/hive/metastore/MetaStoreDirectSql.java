@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
@@ -302,6 +303,8 @@ class MetaStoreDirectSql {
     try {
       // Force the underlying db to initialize.
       initQueries.add(pm.newQuery(MDatabase.class, "name == ''"));
+      initQueries.add(pm.newQuery(MTableColumnStatistics.class, "colName == ''"));
+      initQueries.add(pm.newQuery(MPartitionColumnStatistics.class, "colName == ''"));
       initQueries.add(pm.newQuery(MConstraint.class, "childIntegerIndex < 0"));
       initQueries.add(pm.newQuery(MNotificationLog.class, "dbName == ''"));
       initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
