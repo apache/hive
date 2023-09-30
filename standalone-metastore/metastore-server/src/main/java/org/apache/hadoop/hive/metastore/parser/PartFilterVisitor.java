@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.metastore.parser;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.LocalDate;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
@@ -40,14 +40,19 @@ import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 
 public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
-  private final DateTimeFormatter dateFormat = createDateTimeFormatter("uuuu-MM-dd");
-  private final DateTimeFormatter timestampFormat = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
+  private static final ThreadLocal<SimpleDateFormat> dateFormat =
+      new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+          SimpleDateFormat val = new SimpleDateFormat("yyyy-MM-dd");
+          val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+          val.setTimeZone(TimeZone.getTimeZone("UTC"));
+          return val;
+        };
+      };
+  private final DateTimeFormatter timestampFormat =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(TimeZone.getTimeZone("UTC").toZoneId());
 
-  private DateTimeFormatter createDateTimeFormatter(String format) {
-    return DateTimeFormatter.ofPattern(format)
-            .withZone(TimeZone.getTimeZone("UTC").toZoneId())
-            .withResolverStyle(ResolverStyle.STRICT);
-  }
 
   /**
    * Override the default behavior for all visit methods. This will only return a non-null result
@@ -247,9 +252,8 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
     PartitionFilterParser.DateContext date = ctx.date();
     String dateValue = unquoteString(date.value.getText());
     try {
-      LocalDate localDate = LocalDate.parse(dateValue, dateFormat);
-      return Date.valueOf(localDate);
-    } catch (DateTimeParseException e) {
+      return new java.sql.Date(dateFormat.get().parse(dateValue).getTime());
+    } catch (ParseException e) {
       throw new ParseCancellationException(e.getMessage());
     }
   }
