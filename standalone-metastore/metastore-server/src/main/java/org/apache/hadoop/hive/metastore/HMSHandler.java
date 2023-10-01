@@ -6914,13 +6914,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     for (String colName : request.getColNames()) {
       lowerCaseColNames.add(colName.toLowerCase());
     }
-    List<String> lowerCasePartNames = new ArrayList<>(request.getPartNames().size());
-    for (String partName : request.getPartNames()) {
-      lowerCasePartNames.add(lowerCaseConvertPartName(partName));
-    }
     try {
       List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
-          catName, dbName, tblName, lowerCasePartNames, lowerCaseColNames,
+          catName, dbName, tblName, request.getPartNames(), lowerCaseColNames,
           request.getEngine(), request.isSetValidWriteIdList() ? request.getValidWriteIdList() : null);
       Map<String, List<ColumnStatisticsObj>> map = new HashMap<>();
       if (stats != null) {
@@ -9179,15 +9175,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     for (String colName : request.getColNames()) {
       lowerCaseColNames.add(colName.toLowerCase());
     }
-    List<String> lowerCasePartNames = new ArrayList<>(request.getPartNames().size());
-    for (String partName : request.getPartNames()) {
-      lowerCasePartNames.add(lowerCaseConvertPartName(partName));
-    }
     AggrStats aggrStats = null;
 
     try {
       aggrStats = getMS().get_aggr_stats_for(catName, dbName, tblName,
-          lowerCasePartNames, lowerCaseColNames, request.getEngine(), request.getValidWriteIdList());
+          request.getPartNames(), lowerCaseColNames, request.getEngine(), request.getValidWriteIdList());
       return aggrStats;
     } finally {
       endFunction("get_aggr_stats_for", aggrStats == null, null, request.getTblName());
