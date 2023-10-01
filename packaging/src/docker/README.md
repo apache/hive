@@ -87,7 +87,6 @@ Launch the HiveServer2 with an embedded Metastore,
    ```shell
     docker run -d -p 10000:10000 -p 10002:10002 --env SERVICE_NAME=hiveserver2 \
          --env SERVICE_OPTS="-Dhive.metastore.uris=thrift://metastore:9083" \
-         --env IS_RESUME="true" \
          --name hiveserver2-standalone apache/hive:${HIVE_VERSION}
    ```
   To save the data between container restarts, you can start the HiveServer2 with a Volume,
@@ -95,7 +94,6 @@ Launch the HiveServer2 with an embedded Metastore,
    docker run -d -p 10000:10000 -p 10002:10002 --env SERVICE_NAME=hiveserver2 \
       --env SERVICE_OPTS="-Dhive.metastore.uris=thrift://metastore:9083" \
       --mount source=warehouse,target=/opt/hive/data/warehouse \
-      --env IS_RESUME="true" \
       --name hiveserver2 apache/hive:${HIVE_VERSION}
    ```
   

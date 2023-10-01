@@ -21,18 +21,22 @@ set -x
 
 : ${DB_DRIVER:=derby}
 
-SKIP_SCHEMA_INIT="${IS_RESUME:-false}"
-
-function initialize_hive {
+function ensure_initialize_hive {
   COMMAND="-initOrUpgradeSchema"
   if [ "$(echo "$HIVE_VER" | cut -d '.' -f1)" -lt "4" ]; then
-     COMMAND="-${SCHEMA_COMMAND:-initSchema}"
+    COMMAND="-${SCHEMA_COMMAND:-initSchema}"
   fi
-  $HIVE_HOME/bin/schematool -dbType $DB_DRIVER $COMMAND
-  if [ $? -eq 0 ]; then
-    echo "Initialized schema successfully.."
+  # Run the schematool script and capture its output
+  output=$(/"$HIVE_HOME"/hive/bin/schematool --verbose -dbType $DB_DRIVER "$COMMAND" 2>&1)
+
+  # Check if the output contains the specified conditions
+  INIT_COMPLETED_STR='Initialization script completed'
+  ALREADY_INIT_HAS_COMPLETED_STR='Error: ERROR: relation "BUCKETING_COLS" already exists'
+
+  if [[ $output == *"$INIT_COMPLETED_STR"* || $output == *"$ALREADY_INIT_HAS_COMPLETED_STR"* ]]; then
+    echo "Completed Condition: '$INIT_COMPLETED_STR' or '$ALREADY_INIT_HAS_COMPLETED_STR' found in the output."
   else
-    echo "Schema initialization failed!"
+    echo "Failed Condition: The output does not contain '$INIT_COMPLETED_STR' nor '$ALREADY_INIT_HAS_COMPLETED_STR'."
     exit 1
   fi
 }
@@ -46,10 +50,9 @@ if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
 fi
 
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx1G $SERVICE_OPTS"
-if [[ "${SKIP_SCHEMA_INIT}" == "false" ]]; then
-  # handles schema initialization
-  initialize_hive
-fi
+
+# handles schema initialization
+ensure_initialize_hive
 
 if [ "${SERVICE_NAME}" == "hiveserver2" ]; then
   export HADOOP_CLASSPATH=$TEZ_HOME/*:$TEZ_HOME/lib/*:$HADOOP_CLASSPATH
