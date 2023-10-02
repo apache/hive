@@ -23,13 +23,13 @@ import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 
+import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.stringInspectorFromStats;
+
 public class StringColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    StringColumnStatsDataInspector aggregateData =
-        (StringColumnStatsDataInspector) aggregateColStats.getStatsData().getStringStats();
-    StringColumnStatsDataInspector newData =
-        (StringColumnStatsDataInspector) newColStats.getStatsData().getStringStats();
+    StringColumnStatsDataInspector aggregateData = stringInspectorFromStats(aggregateColStats);
+    StringColumnStatsDataInspector newData = stringInspectorFromStats(newColStats);
     aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
     aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());

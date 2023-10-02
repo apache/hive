@@ -43,6 +43,10 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
     }
   }
 
+  public DoubleColumnStatsDataInspector(DoubleColumnStatsData other) {
+    super(other);
+  }
+
   @Override
   public DoubleColumnStatsDataInspector deepCopy() {
     return new DoubleColumnStatsDataInspector(this);
