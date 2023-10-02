@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidCleanerWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -121,7 +122,8 @@ public abstract class TaskHandler {
     // been some delta/base dirs
     assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
 
-    return TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+    return new ValidCleanerWriteIdList(
+        TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0)));
   }
 
   protected boolean cleanAndVerifyObsoleteDirectories(CompactionInfo info, String location,
@@ -153,8 +155,7 @@ public abstract class TaskHandler {
     // Make sure there are no leftovers below the compacted watermark
     boolean success = false;
     conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
-    dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
-                    info.getFullTableName(), new long[0], new BitSet(), info.highestWriteId, Long.MAX_VALUE),
+    dir = AcidUtils.getAcidState(fs, path, conf, new ValidCleanerWriteIdList(info.getFullTableName(), info.highestWriteId),
             Ref.from(false), false, dirSnapshots);
 
     List<Path> remained = subtract(CompactorUtil.getObsoleteDirs(dir, isDynPartAbort), deleted);
