@@ -1392,7 +1392,7 @@ public final class FileUtils {
    * Resolves a symlink on a local filesystem. In case of any exceptions or scheme other than "file"
    * it simply returns the original path. Refer to DEBUG level logs for further details.
    * @param path input path to be resolved
-   * @param conf a Configuration instance to be used while resolving the FileSystem
+   * @param conf a Configuration instance to be used while e.g. resolving the FileSystem if necessary
    * @return the resolved target Path or the original if the input Path is not a symlink
    * @throws IOException
    */
@@ -1412,14 +1412,6 @@ public final class FileUtils {
       LOG.debug("scheme '{}' is not supported for resolving symlinks", scheme);
       return path;
     }
-
-    FileSystem srcFs;
-    if (scheme != null) {
-      srcFs = path.getFileSystem(conf);
-    } else {
-      srcFs = FileSystem.getLocal(conf);
-    }
-    LOG.debug("resolveSymlink path: {}, srcFs class: {}, scheme: {}", path, srcFs.getClass().getName(), scheme);
 
     try {
       java.nio.file.Path srcPath = Paths.get(path.toUri());
