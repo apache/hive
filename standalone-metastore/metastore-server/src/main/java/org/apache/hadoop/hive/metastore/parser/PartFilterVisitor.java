@@ -48,7 +48,7 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
           val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
           val.setTimeZone(TimeZone.getTimeZone("UTC"));
           return val;
-        };
+        }
       };
   private final DateTimeFormatter timestampFormat =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(TimeZone.getTimeZone("UTC").toZoneId());
