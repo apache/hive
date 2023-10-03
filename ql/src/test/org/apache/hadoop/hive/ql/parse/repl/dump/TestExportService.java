@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-
 public class TestExportService {
   protected static final Logger LOG = LoggerFactory.getLogger(TestExportService.class);
   @Mock

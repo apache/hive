@@ -103,9 +103,10 @@ public class TestPrimaryToReplicaResourceFunction {
     when(functionObj.getFunctionName()).thenReturn("someFunctionName");
     Task mock = mock(Task.class);
     when(ReplCopyTask.getLoadCopyTask(any(ReplicationSpec.class), any(Path.class), any(Path.class),
-            any(HiveConf.class), any(), any())).thenReturn(mock);
+        any(HiveConf.class), any(), any())).thenReturn(mock);
+
     ResourceUri resourceUri = function.destinationResourceUri(new ResourceUri(ResourceType.JAR,
-    "hdfs://localhost:9000/user/someplace/ab.jar#e094828883"));
+        "hdfs://localhost:9000/user/someplace/ab.jar#e094828883"));
 
     assertThat(resourceUri.getUri(),
         is(equalTo(
