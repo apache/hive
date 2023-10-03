@@ -148,8 +148,8 @@ public class TestRangerDumpTask {
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                    Mockito.any()))
-            .thenReturn(rangerPolicyList);
+    Mockito.any()))
+    .thenReturn(rangerPolicyList);
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");

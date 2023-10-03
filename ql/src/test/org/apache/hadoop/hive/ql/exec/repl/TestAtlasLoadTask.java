@@ -61,7 +61,7 @@ public class TestAtlasLoadTask {
     appender.addToLogger(logger.getName(), Level.INFO);
     appender.start();
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:21000/atlas", "srcDB",
-            "tgtDB", "srcCluster", "tgtCluster", new Path("hdfs://tmp"), null, conf);
+    "tgtDB", "srcCluster", "tgtCluster", new Path("hdfs://tmp"), null, conf);
     atlasReplInfo.setSrcFsUri("hdfs://srcFsUri:8020");
     atlasReplInfo.setTgtFsUri("hdfs:tgtFsUri:8020");
     Mockito.doReturn(atlasReplInfo).when(atlasLoadTaskSpy).createAtlasReplInfo();

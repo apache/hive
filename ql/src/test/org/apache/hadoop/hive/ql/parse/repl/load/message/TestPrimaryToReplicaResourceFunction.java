@@ -105,10 +105,11 @@ public class TestPrimaryToReplicaResourceFunction {
     when(ReplCopyTask.getLoadCopyTask(any(ReplicationSpec.class), any(Path.class), any(Path.class),
             any(HiveConf.class), any(), any())).thenReturn(mock);
     ResourceUri resourceUri = function.destinationResourceUri(new ResourceUri(ResourceType.JAR,
-            "hdfs://localhost:9000/user/someplace/ab.jar#e094828883"));
+    "hdfs://localhost:9000/user/someplace/ab.jar#e094828883"));
+
     assertThat(resourceUri.getUri(),
-            is(equalTo(
-                    "hdfs://somehost:9000/someBasePath/withADir/replicadbname/somefunctionname/" + String
-                            .valueOf(0L) + "/ab.jar")));
+        is(equalTo(
+            "hdfs://somehost:9000/someBasePath/withADir/replicadbname/somefunctionname/" + String
+                .valueOf(0L) + "/ab.jar")));
   }
 }
