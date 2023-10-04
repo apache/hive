@@ -623,7 +623,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               }
             }
             Phase1Ctx ctx_1 = initPhase1Ctx();
-            if (!doPhase1(newAST, getQB(), ctx_1, null)) {
+            if (!doPhase1(newAST, getQB(), ctx_1, null, null)) {
               throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
             }
 
@@ -759,7 +759,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         cboCtx.nodeOfInterest = (ASTNode) subq.getChild(0);
         QB newQB = new QB(null, "", false);
         Phase1Ctx ctx_1 = initPhase1Ctx();
-        doPhase1(cboCtx.nodeOfInterest, newQB, ctx_1, null);
+        doPhase1(cboCtx.nodeOfInterest, newQB, ctx_1, null, null);
         setQB(newQB);
         getMetaData(getQB());
       } else {
@@ -3344,7 +3344,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             qbSQ.setInsideView(qb.isInsideView());
             Phase1Ctx ctx1 = initPhase1Ctx();
             ASTNode subQueryRoot = (ASTNode) next.getChild(1);
-            doPhase1(subQueryRoot, qbSQ, ctx1, null);
+            doPhase1(subQueryRoot, qbSQ, ctx1, null, null);
             getMetaData(qbSQ);
             this.subqueryId++;
             RelNode subQueryRelNode =

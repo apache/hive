@@ -1,0 +1,32 @@
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: with
+    test3 as (
+        with
+            t1 as (
+                select 1 as a
+            ),
+            t2 as (
+                select 1 as b
+            )
+        select * from t1 join t2 on a=b
+    )
+select * from test3
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with
+    test3 as (
+        with
+            t1 as (
+                select 1 as a
+            ),
+            t2 as (
+                select 1 as b
+            )
+        select * from t1 join t2 on a=b
+    )
+select * from test3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	1

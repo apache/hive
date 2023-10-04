@@ -198,7 +198,7 @@ public class ColumnStatsAutoGatherContext {
     ParseContext subPCtx = sem.getParseContext();
     subPCtx.setContext(ctx);
     sem.initParseCtx(subPCtx);
-    sem.doPhase1(child, qb, sem.initPhase1Ctx(), null);
+    sem.doPhase1(child, qb, sem.initPhase1Ctx(), null, null);
     // This will trigger new calls to metastore to collect metadata
     // TODO: cache the information from the metastore
     sem.getMetaData(qb);
