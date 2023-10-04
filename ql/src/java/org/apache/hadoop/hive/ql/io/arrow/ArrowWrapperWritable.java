@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.io.arrow;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.arrow.vector.complex.NullableMapVector;
+import org.apache.arrow.vector.complex.NonNullableStructVector;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,13 +30,13 @@ import java.io.IOException;
 public class ArrowWrapperWritable implements WritableComparable {
   private VectorSchemaRoot vectorSchemaRoot;
   private BufferAllocator allocator;
-  private NullableMapVector rootVector;
+  private NonNullableStructVector rootVector;
 
   public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot) {
     this.vectorSchemaRoot = vectorSchemaRoot;
   }
 
-  public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot, BufferAllocator allocator, NullableMapVector rootVector) {
+  public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot, BufferAllocator allocator, NonNullableStructVector rootVector) {
     this.vectorSchemaRoot = vectorSchemaRoot;
     this.allocator = allocator;
     this.rootVector = rootVector;
@@ -56,7 +56,7 @@ public class ArrowWrapperWritable implements WritableComparable {
     return allocator;
   }
 
-  public NullableMapVector getRootVector() {
+  public NonNullableStructVector getRootVector() {
     return rootVector;
   }
 

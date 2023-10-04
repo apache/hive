@@ -22,9 +22,9 @@ import java.io.IOException;
 
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.complex.NonNullableStructVector;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
-import org.apache.arrow.vector.complex.NullableMapVector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
@@ -50,7 +50,7 @@ public class LlapArrowRecordWriter<K extends Writable, V extends Writable>
   ArrowStreamWriter arrowStreamWriter;
   WritableByteChannelAdapter out;
   BufferAllocator allocator;
-  NullableMapVector rootVector;
+  NonNullableStructVector rootVector;
 
   public LlapArrowRecordWriter(WritableByteChannelAdapter out) {
     this.out = out;

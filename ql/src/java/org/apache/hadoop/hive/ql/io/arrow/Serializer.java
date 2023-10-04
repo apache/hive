@@ -117,7 +117,7 @@ public class Serializer {
         attemptId,
         childAllocatorReservation,
         childAllocatorLimit);
-    rootVector = NullableMapVector.empty(null, allocator);
+    rootVector = StructVector.empty(null, allocator);
     //These last fields are unused in non-serde usage
     vectorizedRowBatch = null;
     vectorAssignRow = null;
