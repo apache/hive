@@ -357,18 +357,32 @@ public class TestFileUtils {
 
     // average usage 1: symlink points to the original
     Path originalPathResolved = FileUtils.resolveSymlinks(new Path(symlinkPath.toUri()), conf);
-    Assert.assertEquals(originalPathResolved.toUri(), original.toUri());
+    Assert.assertEquals(original.toUri(), originalPathResolved.toUri());
 
     // average usage 2: symlink2 -> symlink -> original points to the original
     Path originalPathResolved2 = FileUtils.resolveSymlinks(new Path(symlinkOfSymlinkPath.toUri()), conf);
-    Assert.assertEquals(originalPathResolved2.toUri(), original.toUri());
+    Assert.assertEquals(original.toUri(), originalPathResolved2.toUri());
+
+    // providing a symlink path without scheme: still resolving it as it was 'file' scheme
+    // resolve to the original path then returning without scheme
+    Path originalPathWithoutScheme = Path.getPathWithoutSchemeAndAuthority(new Path(original.toUri()));
+    Path symlinkPathWithoutScheme = Path.getPathWithoutSchemeAndAuthority(new Path(symlinkPath.toUri()));
+    Assert.assertNull(originalPathWithoutScheme.toUri().getScheme());
+    Assert.assertNull(symlinkPathWithoutScheme.toUri().getScheme());
+
+    Path originalPathResolvedWithoutInputScheme = FileUtils.resolveSymlinks(symlinkPathWithoutScheme, conf);
+    // return path also hasn't got a scheme
+    Assert.assertNull("Path without scheme should be resolved to another Path without scheme",
+        originalPathResolvedWithoutInputScheme.toUri().getScheme());
+    Assert.assertEquals(originalPathResolvedWithoutInputScheme, originalPathWithoutScheme);
 
     // a non-symlink is resolved to itself
     Path originalPathResolvedFromOriginal = FileUtils.resolveSymlinks(new Path(original.toUri()), conf);
-    Assert.assertEquals(originalPathResolvedFromOriginal.toUri(), original.toUri());
+    Assert.assertEquals(original.toUri(), originalPathResolvedFromOriginal.toUri());
 
-    // nonexistent path is resolved to itself, resolveSymlinks doesn't care if the path doesn't exist
-    Path nonexistentPath = new Path("./non-existent-" + System.currentTimeMillis());
+    // 1. a nonexistent path is resolved to itself, resolveSymlinks doesn't care if the path doesn't exist
+    // 2. a relative path without a scheme cannot be used to construct an URI, hence we get the input Path back
+    Path nonexistentPath = new Path("./nonexistent-" + System.currentTimeMillis());
     Assert.assertEquals(nonexistentPath.toUri(), FileUtils.resolveSymlinks(nonexistentPath, conf).toUri());
 
     try {
