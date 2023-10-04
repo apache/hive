@@ -679,7 +679,9 @@ public class HiveAlterHandler implements AlterHandler {
       // 1) partition SD Location
       // 2) partition column stats if there are any because of part_name field in HMS table PART_COL_STATS
       // 3) rename the partition directory if it is not an external table
-      if (!tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+      boolean shouldMoveData = !(MetaStoreUtils.isExternalTable(tbl) &&
+          !MetaStoreUtils.isPropertyTrue(tbl.getParameters(), "TRANSLATED_TO_EXTERNAL"));
+      if (shouldMoveData) {
         // TODO: refactor this into a separate method after master merge, this one is too big.
         try {
           db = msdb.getDatabase(catName, dbname);
