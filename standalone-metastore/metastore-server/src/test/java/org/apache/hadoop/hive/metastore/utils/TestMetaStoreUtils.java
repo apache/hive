@@ -18,92 +18,109 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @Category(MetastoreUnitTest.class)
 public class TestMetaStoreUtils {
 
+  private TimeZone defaultTZ;
+
+  @Before
+  public void setup() {
+    defaultTZ = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Hong_Kong")));
+  }
+
   @Test
   public void testConvertDateToString() {
-    TimeZone defaultTZ = TimeZone.getDefault();
-    try {
-      TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Hong_Kong")));
-      String date = MetaStoreUtils.convertDateToString(Date.valueOf("2023-01-01"));
-      assertEquals("2023-01-01", date);
-    } finally {
-      TimeZone.setDefault(defaultTZ);
-    }
+    String date = MetaStoreUtils.convertDateToString(Date.valueOf("2023-01-01"));
+    assertEquals("2023-01-01", date);
   }
 
   @Test
   public void testcConvertTimestampToString() {
-    TimeZone defaultTZ = TimeZone.getDefault();
-    try {
-      TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Hong_Kong")));
-      String timestamp = MetaStoreUtils.convertTimestampToString(Timestamp.valueOf("2023-01-01 10:20:30"));
-      assertEquals("2023-01-01 10:20:30", timestamp);
-    } finally {
-      TimeZone.setDefault(defaultTZ);
-    }
+    String timestamp = MetaStoreUtils.convertTimestampToString(Timestamp.valueOf("2023-01-01 10:20:30"));
+    assertEquals("2023-01-01 10:20:30", timestamp);
   }
 
   @Test
   public void testConvertStringToDate() {
-    TimeZone defaultTZ = TimeZone.getDefault();
-    try {
-      TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Hong_Kong")));
-      Date date = MetaStoreUtils.convertStringToDate("2023-01-01");
-      assertEquals(Date.valueOf("2023-01-01"), date);
-    } finally {
-      TimeZone.setDefault(defaultTZ);
-    }
+    Date date = MetaStoreUtils.convertStringToDate("2023-01-01");
+    assertEquals(Date.valueOf("2023-01-01"), date);
   }
 
   @Test
   public void testConvertStringToTimestamp() {
-    TimeZone defaultTZ = TimeZone.getDefault();
-    try {
-      TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Hong_Kong")));
-      Timestamp timestamp = MetaStoreUtils.convertStringToTimestamp("2023-01-01 10:20:30");
-      assertEquals(Timestamp.valueOf("2023-01-01 10:20:30"), timestamp);
-    } finally {
-      TimeZone.setDefault(defaultTZ);
-    }
+    Timestamp timestamp = MetaStoreUtils.convertStringToTimestamp("2023-01-01 10:20:30");
+    assertEquals(Timestamp.valueOf("2023-01-01 10:20:30"), timestamp);
   }
 
   @Test
   public void testConvertStringToDateToString() {
-    TimeZone defaultTZ = TimeZone.getDefault();
-    try {
-      TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Hong_Kong")));
-      String inputDate = "2023-01-01";
-      Date date = MetaStoreUtils.convertStringToDate(inputDate);
-      String convertedDate = MetaStoreUtils.convertDateToString(date);
-      assertEquals(inputDate, convertedDate);
-    } finally {
-      TimeZone.setDefault(defaultTZ);
-    }
+    String inputDate = "2023-01-01";
+    Date date = MetaStoreUtils.convertStringToDate(inputDate);
+    String convertedDate = MetaStoreUtils.convertDateToString(date);
+    assertEquals(inputDate, convertedDate);
   }
 
   @Test
   public void testConvertStringToTimestampToString() {
-    TimeZone defaultTZ = TimeZone.getDefault();
+    String inputTimestamp = "2023-01-01 10:20:30";
+    Timestamp timestamp = MetaStoreUtils.convertStringToTimestamp(inputTimestamp);
+    String outputTimestamp = MetaStoreUtils.convertTimestampToString(timestamp);
+    assertEquals(inputTimestamp, outputTimestamp);
+  }
+
+  @Test
+  public void testConvertStringToDateForUSTimezone() {
+    TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("America/Los_Angeles")));
+    Date date = MetaStoreUtils.convertStringToDate("2023-10-20");
+    assertEquals(Date.valueOf("2023-10-20"), date);
+  }
+
+  @Test
+  public void testConvertStringToTimestampForUSTimezone() {
+    TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("America/Los_Angeles")));
+    Timestamp timestamp = MetaStoreUtils.convertStringToTimestamp("2023-10-20 10:20:30");
+    assertEquals(Timestamp.valueOf("2023-10-20 10:20:30"), timestamp);
+  }
+
+  @Test
+  public void testShouldThrowExceptionWhileConvertStringToDateIfInputIsInWrongFormat() {
+    String inputDate = "01-01-2023";
     try {
-      TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Hong_Kong")));
-      String inputTimestamp = "2023-01-01 10:20:30";
-      Timestamp timestamp = MetaStoreUtils.convertStringToTimestamp(inputTimestamp);
-      String outputTimestamp = MetaStoreUtils.convertTimestampToString(timestamp);
-      assertEquals(inputTimestamp, outputTimestamp);
-    } finally {
-      TimeZone.setDefault(defaultTZ);
+      MetaStoreUtils.convertStringToDate(inputDate);
+      fail("Should throw exception for the invalid input!!!");
+    } catch (DateTimeParseException dpe) {
+      assertEquals("Text '01-01-2023' could not be parsed at index 0", dpe.getMessage());
     }
+  }
+
+  @Test
+  public void testShouldThrowExceptionWhileConvertStringToTimestampIfInputIsInWrongFormat() {
+    String inputTimestamp = "2023-01-01 10:20:30.0";
+    try {
+      MetaStoreUtils.convertStringToTimestamp(inputTimestamp);
+      fail("Should throw exception for the wrong input!!!");
+    } catch (DateTimeParseException dpe) {
+      assertEquals("Text '2023-01-01 10:20:30.0' could not be parsed, unparsed text found at index 19",
+          dpe.getMessage());
+    }
+  }
+
+  @Before
+  public void tearDown() {
+    TimeZone.setDefault(defaultTZ);
   }
 }
