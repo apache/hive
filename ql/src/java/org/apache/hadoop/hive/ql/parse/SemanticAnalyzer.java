@@ -645,14 +645,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     doPhase1QBExpr(ast, qbexpr, id, alias, false, tabColNames, aliasToCTEs);
   }
 
+  private void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, ASTNode tabColNames)
+      throws SemanticException {
+    doPhase1QBExpr(ast, qbexpr, id, alias, false, tabColNames, aliasToCTEs);
+  }
+
+  @SuppressWarnings("nls")
+  void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView, ASTNode tabColNames)
+      throws SemanticException {
+    doPhase1QBExpr(ast, qbexpr, id, alias, insideView, tabColNames, this.aliasToCTEs);
+  }
+
   @SuppressWarnings("nls")
   void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView, ASTNode tabColNames,
                       Map<String, CTEClause> aliasToCTEs) throws SemanticException {
 
     assert (ast.getToken() != null);
-    if (aliasToCTEs == null) {
-      aliasToCTEs = this.aliasToCTEs;
-    }
     if (ast.getToken().getType() == HiveParser.TOK_QUERY) {
       QB qb = new QB(id, alias, true);
       qb.setInsideView(insideView);
@@ -1283,7 +1291,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Recursively do the first phase of semantic analysis for the subquery
     QBExpr qbexpr = new QBExpr(alias, subqref);
 
-    doPhase1QBExpr(subqref, qbexpr, qb.getId(), alias, qb.isInsideView(), null, null);
+    doPhase1QBExpr(subqref, qbexpr, qb.getId(), alias, qb.isInsideView(), null);
 
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
@@ -1373,7 +1381,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     CTEClause cte = findCTEFromName(qb, cteName, aliasToCTEs);
     ASTNode cteQryNode = cte.cteNode;
     QBExpr cteQBExpr = new QBExpr(cteAlias);
-    doPhase1QBExpr(cteQryNode, cteQBExpr, qb.getId(), cteAlias, cte.withColList, null);
+    doPhase1QBExpr(cteQryNode, cteQBExpr, qb.getId(), cteAlias, cte.withColList);
     qb.rewriteCTEToSubq(cteAlias, cteName, cteQBExpr);
   }
 
@@ -1680,6 +1688,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return alias;
   }
 
+  @SuppressWarnings({"fallthrough", "nls"})
+  boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1, PlannerContext plannerCtx)
+      throws SemanticException {
+    return doPhase1(ast, qb, ctx_1, plannerCtx, this.aliasToCTEs);
+  }
+
   /**
    * Phase 1: (including, but not limited to):
    *
@@ -1700,9 +1714,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1, PlannerContext plannerCtx, Map<String, CTEClause> aliasToCTEs)
       throws SemanticException {
 
-    if (aliasToCTEs == null) {
-      aliasToCTEs = this.aliasToCTEs;
-    }
     boolean phase1Result = true;
     QBParseInfo qbp = qb.getParseInfo();
     boolean skipRecursion = false;
@@ -2162,16 +2173,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return targetColNames;
   }
 
-  private void getMaterializationMetadata(QB qb) throws SemanticException {
+  private Map<String, CTEClause> getMaterializationMetadata(QB qb) throws SemanticException {
     if (qb.isCTAS()) {
-      return;
+      return null;
     }
+    Map<String, CTEClause> materializationAliasToCTEs = new HashMap<>(this.aliasToCTEs);
     try {
-      Map<String, CTEClause> materializationAliasToCTEs = new HashMap<>();
-      for (String key: this.aliasToCTEs.keySet()) {
-        CTEClause clause = this.aliasToCTEs.get(key);
-        materializationAliasToCTEs.put(key, new CTEClause(clause.alias, clause.cteNode, clause.withColList));
-      }
       gatherCTEReferences(qb, rootClause, materializationAliasToCTEs);
       int threshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD);
       for (CTEClause cte : Sets.newHashSet(materializationAliasToCTEs.values())) {
@@ -2187,6 +2194,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       throw new SemanticException(e.getMessage(), e);
     }
+    return materializationAliasToCTEs;
   }
 
   private void gatherCTEReferences(QBExpr qbexpr, CTEClause parent,
@@ -2240,10 +2248,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void getMetaData(QB qb, boolean enableMaterialization) throws SemanticException {
     try {
+      Map<String, CTEClause> materializationAliasToCTEs = null;
       if (enableMaterialization) {
-        getMaterializationMetadata(qb);
+        materializationAliasToCTEs = getMaterializationMetadata(qb);
       }
       getMetaData(qb, null);
+      if (materializationAliasToCTEs != null && !materializationAliasToCTEs.isEmpty()) {
+        this.aliasToCTEs.putAll(materializationAliasToCTEs);
+      }
     } catch (HiveException e) {
       if (e instanceof SemanticException) {
         throw (SemanticException)e;
@@ -2826,7 +2838,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(sb.toString(), e);
     }
     QBExpr qbexpr = new QBExpr(alias);
-    doPhase1QBExpr(viewTree, qbexpr, qb.getId(), alias, true, null, null);
+    doPhase1QBExpr(viewTree, qbexpr, qb.getId(), alias, true, null);
     // if skip authorization, skip checking;
     // if it is inside a view, skip checking;
     // if HIVE_STATS_COLLECT_SCANCOLS is enabled, check.
@@ -3513,7 +3525,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ISubQueryJoinInfo subQueryPredicate) throws SemanticException {
     qbSQ.setSubQueryDef(subQueryPredicate.getSubQuery());
     Phase1Ctx ctx_1 = initPhase1Ctx();
-    doPhase1(subQueryPredicate.getSubQueryAST(), qbSQ, ctx_1, null, null);
+    doPhase1(subQueryPredicate.getSubQueryAST(), qbSQ, ctx_1, null);
     getMetaData(qbSQ);
     return genPlan(qbSQ);
   }
@@ -12874,7 +12886,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 4. continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
-    if (!doPhase1(child, qb, ctx_1, plannerCtx, null)) {
+    if (!doPhase1(child, qb, ctx_1, plannerCtx)) {
       // if phase1Result false return
       return false;
     }
