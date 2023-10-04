@@ -97,6 +97,24 @@ public class TestMetaStoreUtils {
   }
 
   @Test
+  public void testConvertStringToDateToStringForUSTimezone() {
+    TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("America/Los_Angeles")));
+    String inputDate = "2023-02-03";
+    Date date = MetaStoreUtils.convertStringToDate(inputDate);
+    String convertedDate = MetaStoreUtils.convertDateToString(date);
+    assertEquals(inputDate, convertedDate);
+  }
+
+  @Test
+  public void testConvertStringToTimestampToStringForUSTimeZone() {
+    TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("America/Los_Angeles")));
+    String inputTimestamp = "2023-02-03 10:20:30";
+    Timestamp timestamp = MetaStoreUtils.convertStringToTimestamp(inputTimestamp);
+    String outputTimestamp = MetaStoreUtils.convertTimestampToString(timestamp);
+    assertEquals(inputTimestamp, outputTimestamp);
+  }
+
+  @Test
   public void testShouldThrowExceptionWhileConvertStringToDateIfInputIsInWrongFormat() {
     String inputDate = "01-01-2023";
     try {
