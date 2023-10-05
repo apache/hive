@@ -70,14 +70,14 @@ import org.apache.hadoop.mapred.InputFormat;
  * by sub-classes in a {@link org.junit.BeforeClass} initializer
  */
 public abstract class BaseJdbcWithMiniLlap {
-  private static MiniHS2 miniHS2 = null;
+
   private static String dataFileDir;
   private static Path kvDataFilePath;
   private static Path dataTypesFilePath;
   private static Path over10KFilePath;
 
-  private static HiveConf conf = null;
-  private static Connection hs2Conn = null;
+  protected static MiniHS2 miniHS2 = null;
+  protected static HiveConf conf = null;
   protected static Connection hs2Conn = null;
 
   // This method should be called by sub-classes in a @BeforeClass initializer
