@@ -49,51 +49,48 @@ public class PerfLoggerTest {
   public void testMT() throws InterruptedException {
     final PerfLogger pl = PerfLogger.getPerfLogger(null, true);
     // we run concurrently the getEndTimes and perfLogBegin/perfLogEnd:
-    // on a Mac M1, this test fails easily if the perflooger maps are hashmaps
+    // on a Mac M1, this test fails easily if the perflogger maps are hashmaps
     ExecutorService executorService = Executors.newFixedThreadPool(64);
     // An executing threads counter
     AtomicInteger count = new AtomicInteger(0);
     // getEndTimes in a loop
-    executorService.execute(new Runnable() {
-      public void run() {
-        PerfLogger.setPerfLogger(pl);
-        try {
-          count.incrementAndGet();
-          snooze(100);
-          for (int i = 0; i < 64; ++i) {
-            snooze(50);
-            Map<String, Long> et = pl.getEndTimes();
-            Assert.assertNotNull(et);
-          }
-        } finally {
-          count.decrementAndGet();
-          synchronized (count) {
-            count.notifyAll();
-          }
+    executorService.execute(() -> {
+      PerfLogger.setPerfLogger(pl);
+      try {
+        count.incrementAndGet();
+        snooze(100);
+        for (int i = 0; i < 64; ++i) {
+          snooze(50);
+          Map<String, Long> et = pl.getEndTimes();
+          Assert.assertNotNull(et);
+        }
+      } finally {
+        count.decrementAndGet();
+        synchronized (count) {
+          count.notifyAll();
         }
       }
     });
     // 32 threads calling perLogBeing/perfLogEnd
     for(int t = 0; t < 31; ++t) {
-      executorService.execute(new Runnable() {
-        public void run() {
-          try {
-            int cnt = count.incrementAndGet();
-            PerfLogger.setPerfLogger(pl);
-            for (int i = 0; i < 64; ++i) {
-              pl.perfLogBegin("test", PerfLogger.COMPILE + "_ "+  cnt + "_" + i);
-              snooze(50);
-              pl.perfLogEnd("test", PerfLogger.COMPILE + "_ "  + cnt + "_" + i);
-            }
-        } catch(Exception xany) {
-          String msg = xany.getMessage();
-        } finally {
-            count.decrementAndGet();
-            synchronized (count) {
-              count.notifyAll();
-            }
+      executorService.execute(() -> {
+        try {
+          int cnt = count.incrementAndGet();
+          PerfLogger.setPerfLogger(pl);
+          for (int i = 0; i < 64; ++i) {
+            pl.perfLogBegin("test", PerfLogger.COMPILE + "_ "+  cnt + "_" + i);
+            snooze(50);
+            pl.perfLogEnd("test", PerfLogger.COMPILE + "_ "  + cnt + "_" + i);
           }
-      }});
+      } catch(Exception xany) {
+        String msg = xany.getMessage();
+      } finally {
+          count.decrementAndGet();
+          synchronized (count) {
+            count.notifyAll();
+          }
+        }
+    });
     }
     // wait for all threads to end
     while(count.get() != 0) {

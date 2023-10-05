@@ -96,6 +96,9 @@ public class PerfLogger {
   private static final Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<>();
 
+  private PerfLogger() {
+    // Use getPerfLogger to get an instance of PerfLogger
+  }
 
   public static PerfLogger getPerfLogger(HiveConf conf, boolean resetPerfLogger) {
     PerfLogger result = perfLogger.get();
@@ -128,11 +131,10 @@ public class PerfLogger {
   public void perfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
     startTimes.put(method, Long.valueOf(startTime));
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<PERFLOG method={} from={}>", method, callerName);
-    }
+    LOG.debug("<PERFLOG method={} from={}>", method, callerName);
     beginMetrics(method);
   }
+
   /**
    * Call this function in correspondence of PerfLogBegin to mark the end of the measurement.
    * @param callerName
@@ -150,18 +152,18 @@ public class PerfLogger {
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long perfLogEnd(String callerName, String method, String additionalInfo) {
-    Long startTime = startTimes.get(method);
+    long startTime = startTimes.getOrDefault(method, -1L);
     long endTime = System.currentTimeMillis();
+    long duration = startTime < 0 ? -1 : endTime - startTime;
     endTimes.put(method, Long.valueOf(endTime));
-    long duration = startTime == null ? -1 : endTime - startTime.longValue();
 
     if (LOG.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
-      if (startTime != null) {
+      if (startTime >= 0) {
         sb.append(" start=").append(startTime);
       }
       sb.append(" end=").append(endTime);
-      if (startTime != null) {
+      if (duration >= 0) {
         sb.append(" duration=").append(duration);
       }
       sb.append(" from=").append(callerName);
@@ -175,14 +177,12 @@ public class PerfLogger {
     return duration;
   }
 
-  public Long getStartTime(String method) {
-    Long time = startTimes.get(method);
-    return time != null? time.longValue() : 0L;
+  public long getStartTime(String method) {
+    return startTimes.getOrDefault(method, 0L);
   }
 
-  public Long getEndTime(String method) {
-    Long time = endTimes.get(method);
-    return time != null? time.longValue() : 0L;
+  public long getEndTime(String method) {
+    return endTimes.getOrDefault(method, 0L);
   }
 
   public boolean startTimeHasMethod(String method) {
@@ -193,11 +193,11 @@ public class PerfLogger {
     return endTimes.containsKey(method);
   }
 
-  public Long getDuration(String method) {
+  public long getDuration(String method) {
     Long startTime = startTimes.get(method);
     Long endTime = endTimes.get(method);
     if (startTime != null && endTime != null) {
-      return endTime.longValue() - startTime.longValue();
+      return endTime - startTime;
     }
     return 0L;
   }
