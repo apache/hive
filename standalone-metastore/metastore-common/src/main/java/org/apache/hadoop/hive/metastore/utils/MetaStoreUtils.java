@@ -83,13 +83,12 @@ public class MetaStoreUtils {
   private static final DateTimeFormatter TIMESTAMP_FORMATTER = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
 
   private static DateTimeFormatter createDateTimeFormatter(String format) {
-    return DateTimeFormatter.ofPattern(format)
-        .withZone(TimeZone.getTimeZone("UTC").toZoneId())
+    return DateTimeFormatter.ofPattern(format).withZone(TimeZone.getTimeZone("UTC").toZoneId())
         .withResolverStyle(ResolverStyle.STRICT);
   }
 
   /**
-   * Converts java.sql.Date to String format.
+   * Converts java.sql.Date to String format date.
    * @param date - java.sql.Date object.
    * @return Date in string format.
    */
@@ -97,15 +96,30 @@ public class MetaStoreUtils {
     return DATE_FORMATTER.format(date.toLocalDate());
   }
 
+  /**
+   * Converts string format date to java.sql.Date.
+   * @param date Date in string format.
+   * @return java.sql.Date object.
+   */
   public static Date convertStringToDate(String date) {
     LocalDate val = LocalDate.parse(date, DATE_FORMATTER);
     return java.sql.Date.valueOf(val);
   }
 
+  /**
+   * Converts java.sql.Timestamp to string format timestamp.
+   * @param timestamp java.sql.Timestamp object.
+   * @return Timestamp in string format.
+   */
   public static String convertTimestampToString(Timestamp timestamp) {
     return TIMESTAMP_FORMATTER.format(timestamp.toLocalDateTime());
   }
 
+  /**
+   * Converts timestamp string format to java.sql.Timestamp.
+   * @param timestamp Timestamp in string format.
+   * @return java.sql.Timestamp object.
+   */
   public static Timestamp convertStringToTimestamp(String timestamp) {
     LocalDateTime val = LocalDateTime.from(TIMESTAMP_FORMATTER.parse(timestamp));
     return Timestamp.valueOf(val);
