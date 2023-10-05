@@ -25,7 +25,6 @@
   <name>Hive Query Language</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <powermock.version>2.0.2</powermock.version>
     <reflections.version>0.10.2</reflections.version>
     <atlas.version>2.1.0</atlas.version>
   </properties>
@@ -809,20 +808,8 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>${mockito-core.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <version>${powermock.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito2</artifactId>
-      <version>${powermock.version}</version>
+      <artifactId>mockito-inline</artifactId>
+      <version>4.11.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

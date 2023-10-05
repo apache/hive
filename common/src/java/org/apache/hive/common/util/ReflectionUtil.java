@@ -19,14 +19,19 @@
 package org.apache.hive.common.util;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import static java.lang.String.format;
 
 /**
  * Same as Hadoop ReflectionUtils, but (1) does not leak classloaders (or shouldn't anyway, we
@@ -113,6 +118,46 @@ public class ReflectionUtil {
       }
     } catch (Exception e) {
       throw new RuntimeException("Error in configuring object", e);
+    }
+  }
+
+  /**
+   * Sets a declared field in a given object.
+   * Note: if you want to modify a field in a super class, use the {@link ReflectionUtil#setInAllFields } method.
+   * @param object target instance
+   * @param field name of the field to set
+   * @param value new value
+   * @throws RuntimeException in case the field is not found or cannot be set.
+   */
+  public static void setField(Object object, String field, Object value) {
+    try {
+      Field fieldToChange = object.getClass().getDeclaredField(field);
+      fieldToChange.setAccessible(true);
+      fieldToChange.set(object, value);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException(format("Cannot set field %s in object %s", field, object.getClass()));
+    }
+  }
+
+  /**
+   * Sets a declared field in a given object. It finds the field, even if it is declared in a super class.
+   * @param object target instance
+   * @param field name of the field to set
+   * @param value new value
+   * @throws RuntimeException in case the field is not found or cannot be set.
+   */
+  public static void setInAllFields(Object object, String field, Object value) {
+    try {
+      Field fieldToChange = Arrays.stream(FieldUtils.getAllFields(object.getClass()))
+              .filter(f -> f.getName().equals(field))
+              .findFirst()
+              .orElseThrow(NoSuchFieldException::new);
+
+      fieldToChange.setAccessible(true);
+
+      fieldToChange.set(object, value);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException(format("Cannot set field %s in object %s", field, object.getClass()));
     }
   }
 }
