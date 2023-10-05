@@ -124,6 +124,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     if (storageHandler != null) {
       copyOnWriteMode = storageHandler.shouldOverwrite(mTable, operation.name());
     }
+    
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
@@ -177,40 +178,49 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       if (copyOnWriteMode) {
         String whereClause = ctx.getTokenRewriteStream().toString(
             where.getChild(0).getTokenStartIndex(), where.getChild(0).getTokenStopIndex());
+        String filePathCol = HiveUtils.unparseIdentifier("FILE__PATH", conf);
         
-        rewrittenQueryStr.append(" where ");
         // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.
-        rewrittenQueryStr.append("   not(").append(whereClause).append(")");
+        rewrittenQueryStr.append("\nwhere NOT (").append(whereClause).append(")");
+        rewrittenQueryStr.append("\n").append(INDENT);
         // Add the file path filter that matches the delete condition.
-        rewrittenQueryStr.append("   and FILE__PATH in (");
-        rewrittenQueryStr.append("      select `FILE__PATH` from ").append(getFullTableNameForSQL(tabNameNode));
-        rewrittenQueryStr.append("      where ").append(whereClause);
-        rewrittenQueryStr.append("   )");
+        rewrittenQueryStr.append("AND ").append(filePathCol);
+        rewrittenQueryStr.append(" IN ( select ").append(filePathCol).append(" from t )");
+        rewrittenQueryStr.append("\nunion all");
+        rewrittenQueryStr.append("\nselect * from t");
 
-        rewrittenQueryStr.append("   union all ");
-        rewrittenQueryStr.append(" select ");
-        columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
-        rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
-        rewrittenQueryStr.append(" from ( ");
-        rewrittenQueryStr.append("   select ");
-        columnAppender.appendAcidSelectColumnsForTombstone(rewrittenQueryStr, operation);
-        rewrittenQueryStr.append("     row_number() over (partition by FILE__PATH) rn ");
-        rewrittenQueryStr.append("   from ").append(getFullTableNameForSQL(tabNameNode));
-        rewrittenQueryStr.append(" where ").append(whereClause);
-        rewrittenQueryStr.append(" )t where rn=1 ");
+        StringBuilder withQueryStr = new StringBuilder();
+        withQueryStr.append("WITH t AS (");
+        withQueryStr.append("\n").append(INDENT);
+        withQueryStr.append("select ");
+        columnAppender.appendAcidSelectColumnsForTombstone(withQueryStr, operation);
+        withQueryStr.setLength(withQueryStr.length() - 1);
+        withQueryStr.append(" from (");
+        withQueryStr.append("\n").append(INDENT).append(INDENT);
+        withQueryStr.append("select ");
+        columnAppender.appendAcidSelectColumnsForTombstone(withQueryStr, operation);
+        withQueryStr.append(" row_number() OVER (partition by ").append(filePathCol).append(") rn");
+        withQueryStr.append(" from ").append(getFullTableNameForSQL(tabNameNode));
+        withQueryStr.append("\n").append(INDENT).append(INDENT);
+        withQueryStr.append("where ").append(whereClause);
+        withQueryStr.append("\n").append(INDENT);
+        withQueryStr.append(") q");
+        withQueryStr.append("\n").append(INDENT);
+        withQueryStr.append("where rn=1\n)\n");
+        
+        rewrittenQueryStr.insert(0, withQueryStr.toString());
       }
     }
-    // Add a sort by clause so that the row ids come out in the correct order
-    appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
-
+    
+    if (!copyOnWriteMode) {
+      // Add a sort by clause so that the row ids come out in the correct order
+      appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
+    }
     ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 
     ASTNode rewrittenInsert = (ASTNode)rewrittenTree.getChildren().get(1);
-    assert rewrittenInsert.getToken().getType() == HiveParser.TOK_INSERT :
-        "Expected TOK_INSERT as second child of TOK_QUERY but found " + rewrittenInsert.getName();
-
     if (updating()) {
       rewrittenCtx.setOperation(Context.Operation.UPDATE);
       rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
@@ -220,6 +230,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     if (where != null && !copyOnWriteMode) {
+      assert rewrittenInsert.getToken().getType() == HiveParser.TOK_INSERT :
+        "Expected TOK_INSERT as second child of TOK_QUERY but found " + rewrittenInsert.getName();
       // The structure of the AST for the rewritten insert statement is:
       // TOK_QUERY -> TOK_FROM
       //          \-> TOK_INSERT -> TOK_INSERT_INTO

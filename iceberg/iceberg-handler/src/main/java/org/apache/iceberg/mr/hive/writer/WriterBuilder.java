@@ -121,7 +121,7 @@ public class WriterBuilder {
         new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null, deleteFileFormat, null, null, null,
             skipRowData ? null : dataSchema);
 
-    boolean copyOnWriteMode = RowLevelOperationMode.COPY_ON_WRITE.modeName().equals(
+    boolean copyOnWriteMode = RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(
         properties.get(TableProperties.DELETE_MODE)) &&
         operation == Operation.DELETE;
 
