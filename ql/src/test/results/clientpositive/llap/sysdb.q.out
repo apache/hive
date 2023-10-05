@@ -629,6 +629,7 @@ hive_locks	hl_agent_info
 hive_locks	hl_blockedby_ext_id
 hive_locks	hl_blockedby_int_id
 hive_locks	hl_db
+hive_locks	hl_error_message
 hive_locks	hl_heartbeat_count
 hive_locks	hl_host
 hive_locks	hl_last_heartbeat
@@ -663,6 +664,7 @@ locks	blockedby_int_id
 locks	blockedby_int_id
 locks	db
 locks	db
+locks	error_message
 locks	heartbeat_count
 locks	heartbeat_count
 locks	host

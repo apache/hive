@@ -5408,6 +5408,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           response.setErrorMessage(String.format(
               isExclusiveCTAS ? EXCL_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
           response.setState(LockState.NOT_ACQUIRED);
+          if(response != null && isNotBlank(response.getErrorMessage())){
+            stmt = dbConn.createStatement();
+            String updateHiveLockErrorQuery = "UPDATE \"HIVE_LOCKS\"" +
+                    " SET \"HL_ERROR_MESSAGE\" = " + response.getErrorMessage() +
+                    " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId ;
+            LOG.debug("Going to execute query: <{}>", updateHiveLockErrorQuery);
+            stmt.executeUpdate(updateHiveLockErrorQuery);
+            dbConn.commit();
+          }
           return response;
         }
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
@@ -5426,6 +5435,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn.commit();
 
         response.setState(LockState.WAITING);
+        if(response != null && isNotBlank(response.getErrorMessage() )){
+          stmt = dbConn.createStatement();
+          String updateHiveLockErrorQuery = "UPDATE \"HIVE_LOCKS\"" +
+                  " SET \"HL_ERROR_MESSAGE\" = " + response.getErrorMessage() +
+                  " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId ;
+          LOG.debug("Going to execute query: <{}>", updateHiveLockErrorQuery);
+          stmt.executeUpdate(updateHiveLockErrorQuery);
+          dbConn.commit();
+        }
+
         return response;
       }
       // If here, there were no locks that would block any item from 'locksBeingChecked' - acquire them all
