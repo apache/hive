@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.format.ResolverStyle;
 
 /**
  * Formatter for parsing and printing {@link Instant} objects.
@@ -47,7 +48,7 @@ public interface InstantFormatter {
      */
     SIMPLE {
       @Override
-      InstantFormatter newFormatter(ZoneId zone) {
+      InstantFormatter newFormatter(ZoneId zone, ResolverStyle resolverStyle) {
         return new InstantSimpleDateFormatter(zone);
       }
     },
@@ -56,8 +57,8 @@ public interface InstantFormatter {
      */
     DATETIME {
       @Override
-      InstantFormatter newFormatter(ZoneId zone) {
-        return new InstantDateTimeFormatter(zone);
+      InstantFormatter newFormatter(ZoneId zone, ResolverStyle resolverStyle) {
+        return new InstantDateTimeFormatter(zone, resolverStyle);
       }
     };
     /**
@@ -65,7 +66,7 @@ public interface InstantFormatter {
      * @param zone - the zone id 
      * @return a new formatter with the specified zone id.
      */
-    abstract InstantFormatter newFormatter(ZoneId zone);
+    abstract InstantFormatter newFormatter(ZoneId zone, ResolverStyle resolverStyle);
   }
 
   /**
@@ -77,7 +78,9 @@ public interface InstantFormatter {
   static InstantFormatter ofConfiguration(Configuration conf) {
     ZoneId zoneId = TimestampTZUtil.parseTimeZone(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE));
     Type type = Type.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DATETIME_FORMATTER).toUpperCase());
-    return type.newFormatter(zoneId);
+    ResolverStyle resolverStyle = ResolverStyle.valueOf(HiveConf.getVar(conf,
+        HiveConf.ConfVars.HIVE_DATETIME_RESOLVERSTYLE).toUpperCase());
+    return type.newFormatter(zoneId, resolverStyle);
   }
 
   /**
