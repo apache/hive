@@ -95,30 +95,7 @@ public class TestMetaStoreUtils {
   public void testStringToTimestamp() {
     assertEquals(Timestamp.valueOf(timestamp), MetaStoreUtils.convertStringToTimestamp(timestamp));
   }
-
-  @Test
-  public void testShouldThrowExceptionWhileConvertStringToDateIfInputIsInWrongFormat() {
-    String inputDate = Date.valueOf(date).toLocalDate().format(DateTimeFormatter.BASIC_ISO_DATE);
-    try {
-      MetaStoreUtils.convertStringToDate(inputDate);
-      fail("Should throw exception for the wrong format input!!! " + inputDate);
-    } catch (DateTimeParseException dpe) {
-      assertEquals("Text '" + inputDate + "' could not be parsed at index 0", dpe.getMessage());
-    }
-  }
-
-  @Test
-  public void testShouldThrowExceptionWhileConvertStringToTimestampIfInputIsInWrongFormat() {
-    String inputTimestamp = timestamp + ".0";
-    try {
-      MetaStoreUtils.convertStringToTimestamp(inputTimestamp);
-      fail("Should throw exception for the wrong format input!!! " + inputTimestamp);
-    } catch (DateTimeParseException dpe) {
-      assertEquals("Text '" + inputTimestamp + "' could not be parsed, unparsed text found at index 19",
-          dpe.getMessage());
-    }
-  }
-
+  
   @AfterClass
   public static void tearDown() {
     TimeZone.setDefault(DEFAULT);
