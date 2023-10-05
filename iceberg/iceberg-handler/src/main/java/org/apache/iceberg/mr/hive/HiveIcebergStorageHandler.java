@@ -834,7 +834,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
         deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
       }
-      if (expireSnapshotsSpec.isExpireByIds()) {
+      if (expireSnapshotsSpec.isExpireByTimestampRange()) {
+        expireSnapshotByTimestampRange(icebergTable, expireSnapshotsSpec.getFromTimestampMillis(),
+            expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
+      } else if (expireSnapshotsSpec.isExpireByIds()) {
         expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), deleteExecutorService);
       } else {
         expireSnapshotOlderThanTimestamp(icebergTable, expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
@@ -844,6 +847,23 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         deleteExecutorService.shutdown();
       }
     }
+  }
+
+  private void expireSnapshotByTimestampRange(Table icebergTable, Long fromTimestamp, Long toTimestamp,
+      ExecutorService deleteExecutorService) {
+    ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
+    for (Snapshot snapshot : icebergTable.snapshots()) {
+      if (snapshot.timestampMillis() >= fromTimestamp && snapshot.timestampMillis() <= toTimestamp) {
+        expireSnapshots.expireSnapshotId(snapshot.snapshotId());
+        LOG.debug("Expiring snapshot on {} with id: {} and timestamp: {}", icebergTable.name(), snapshot.snapshotId(),
+            snapshot.timestampMillis());
+      }
+    }
+    LOG.info("Expiring snapshot on {} within time range {} -> {}", icebergTable.name(), fromTimestamp, toTimestamp);
+    if (deleteExecutorService != null) {
+      expireSnapshots.executeDeleteWith(deleteExecutorService);
+    }
+    expireSnapshots.commit();
   }
 
   private void expireSnapshotOlderThanTimestamp(Table icebergTable, Long timestamp,
