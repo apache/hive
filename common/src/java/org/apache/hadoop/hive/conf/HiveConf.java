@@ -3860,6 +3860,10 @@ public class HiveConf extends Configuration {
         "is discouraged. It suffers from known bugs that are unlikely to be fixed in subsequent versions of the product." +
         "Furthermore, using SIMPLE formatter may lead to strange behavior, and unexpected results when combined " +
         "with SQL functions/operators that are using the new DATETIME formatter."),
+    HIVE_DATETIME_RESOLVER_STYLE("hive.datetime.formatter.resolver.style", "SMART",
+        new StringSet("SMART", "STRICT", "LENIENT"),
+        "The style used by the hive.datetime.formatter (only applicable to DATETIME) to resolve dates amd times." +
+        "The possible values are STRICT, SMART, and LENIENT and their behavior follows the java.time.format.ResolverStyle API."),
      // HiveServer2 specific configs
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
         "Clear dangling scratch dir periodically in HS2"),
