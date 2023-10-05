@@ -44,8 +44,6 @@ import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.arrow.vector.util.DecimalUtility;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -112,6 +110,7 @@ public class Serializer {
   private int fieldSize;
 
   private final StructVector rootVector;
+  private final DecimalHolder decimalHolder = new DecimalHolder();
 
   //Constructor for non-serde serialization
   public Serializer(Configuration conf, String attemptId, List<TypeInfo> typeInfos, List<String> fieldNames) {
