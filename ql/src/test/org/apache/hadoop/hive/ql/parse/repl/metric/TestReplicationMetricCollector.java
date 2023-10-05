@@ -47,12 +47,10 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareOnlyThisForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -67,9 +65,7 @@ import static org.junit.Assert.assertTrue;
  * Unit Test class for In Memory Replication Metric Collection.
  */
 
-@PowerMockIgnore({ "javax.*", "com.sun.*", "org.w3c.*" })
-@PrepareOnlyThisForTest({MetricSink.class})
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class TestReplicationMetricCollector {
 
   HiveConf conf;
@@ -79,6 +75,8 @@ public class TestReplicationMetricCollector {
 
   @Mock
   private MetricSink metricSinkInstance;
+
+  static MockedStatic<MetricSink> metricSinkMockedStatic;
 
   @Before
   public void setup() throws Exception {
@@ -92,13 +90,14 @@ public class TestReplicationMetricCollector {
   }
 
   private void disableBackgroundThreads() {
-    PowerMockito.mockStatic(MetricSink.class);
-    Mockito.when(MetricSink.getInstance()).thenReturn(metricSinkInstance);
+    metricSinkMockedStatic = Mockito.mockStatic(MetricSink.class);
+    metricSinkMockedStatic.when(MetricSink::getInstance).thenReturn(metricSinkInstance);
   }
 
   @After
   public void finalize() {
     MetricCollector.getInstance().deinit();
+    metricSinkMockedStatic.close();
   }
 
   @Test
