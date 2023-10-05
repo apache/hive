@@ -28,7 +28,7 @@
     <iceberg.version>1.3.0</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
-    <iceberg.avro.version>1.11.1</iceberg.avro.version>
+    <iceberg.avro.version>1.11.3</iceberg.avro.version>
     <iceberg.kryo.version>5.5.0</iceberg.kryo.version>
     <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
