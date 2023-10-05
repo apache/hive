@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
@@ -32,6 +33,7 @@ import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expressions;
@@ -257,5 +259,10 @@ public class IcebergTableUtil {
   public static void cherryPick(Table table, long snapshotId) {
     LOG.debug("Cherry-Picking {} to {}", snapshotId, table.name());
     table.manageSnapshots().cherrypick(snapshotId).commit();
+  }
+
+  public static boolean isV2Table(Map<String, String> props) {
+    return props != null &&
+        "2".equals(props.get(TableProperties.FORMAT_VERSION));
   }
 }

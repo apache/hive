@@ -20,6 +20,8 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,13 +32,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -65,6 +70,7 @@ import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -81,6 +87,7 @@ import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -99,6 +106,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
 import org.apache.thrift.TException;
@@ -597,12 +605,51 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  public void preTruncateTable(org.apache.hadoop.hive.metastore.api.Table table, EnvironmentContext context)
+  public void preTruncateTable(org.apache.hadoop.hive.metastore.api.Table table, EnvironmentContext context,
+      List<String> partNames)
       throws MetaException {
     this.catalogProperties = getCatalogProperties(table);
     this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+    Map<String, PartitionField> partitionFieldMap = icebergTable.spec().fields().stream()
+        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
+    Expression finalExp = CollectionUtils.isEmpty(partNames) ? Expressions.alwaysTrue() : Expressions.alwaysFalse();
+    if (partNames != null) {
+      for (String partName : partNames) {
+        Map<String, String> specMap = Warehouse.makeSpecFromName(partName);
+        Expression subExp = Expressions.alwaysTrue();
+        for (Map.Entry<String, String> entry : specMap.entrySet()) {
+          String partColValue;
+          // Since Iceberg encodes the values in UTF-8, we need to decode it.
+          try {
+            partColValue = URLDecoder.decode(entry.getValue(), "UTF-8");
+          } catch (UnsupportedEncodingException e) {
+            throw new MetaException(String.format("Unable to decode partition path values due to: %s", e));
+          }
+          if (partitionFieldMap.containsKey(entry.getKey())) {
+            PartitionField partitionField = partitionFieldMap.get(entry.getKey());
+            Type resultType = partitionField.transform().getResultType(icebergTable.schema()
+                    .findField(partitionField.sourceId()).type());
+            TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
+            Object value = Conversions.fromPartitionString(resultType, partColValue);
+            Iterable iterable = () -> Collections.singletonList(value).iterator();
+            if (TransformSpec.TransformType.IDENTITY.equals(transformType)) {
+              Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
+              subExp = Expressions.and(subExp, boundPredicate);
+            } else {
+              throw new MetaException(
+                  String.format("Partition transforms are not supported via truncate operation: %s", entry.getKey()));
+            }
+          } else {
+            throw new MetaException(String.format("No partition column/transform name by the name: %s",
+                entry.getKey()));
+          }
+        }
+        finalExp = Expressions.or(finalExp, subExp);
+      }
+    }
+
     DeleteFiles delete = icebergTable.newDelete();
-    delete.deleteFromRowFilter(Expressions.alwaysTrue());
+    delete.deleteFromRowFilter(finalExp);
     delete.commit();
     context.putToProperties("truncateSkipDataDeletion", "true");
   }
@@ -929,7 +976,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     // Hive only supports merge-on-read delete mode, it will actually throw an error if DML operations are attempted on
     // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
     if ((icebergTable == null || ((BaseTable) icebergTable).operations().current().formatVersion() == 1) &&
-        "2".equals(newProps.get(TableProperties.FORMAT_VERSION))) {
+        IcebergTableUtil.isV2Table(newProps)) {
       newProps.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
       newProps.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
       newProps.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);

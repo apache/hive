@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
@@ -698,6 +699,23 @@ public interface HiveStorageHandler extends Configurable {
   default void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support validation of partition values");
+  }
+
+  default boolean canUseTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    return true;
+  }
+
+  default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Map<String, String> partitionSpec) throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
+            "by a partition specification.");
+  }
+
+  default ColumnInfo getColumnInfo(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String colName)
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting column type " +
+            "for a specific column.");
   }
 
 }
