@@ -29,7 +29,7 @@ import java.sql.SQLException;
 
 public class HiveJDBCConnectorProvider extends AbstractJDBCConnectorProvider {
   private static final Logger LOG = LoggerFactory.getLogger(HiveJDBCConnectorProvider.class);
-  private static final String DRIVER_CLASS = "org.apache.hive.jdbc.HiveDriver".intern();
+  private static final String DRIVER_CLASS = "org.apache.hive.jdbc.HiveDriver";
   // for Hive the type for connector is "HIVEJDBC" where as on the table we want it to be "HIVE"
   protected static final String mappedType = "HIVE";
 
