@@ -39,28 +39,6 @@ public class MSSQLConnectorProvider extends AbstractJDBCConnectorProvider {
         driverClassName = DRIVER_CLASS;
     }
 
-    @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
-        ResultSet rs = null;
-        try {
-            rs = getConnection().getMetaData().getColumns(null, scoped_db, tableName, null);
-        } catch (Exception ex) {
-            LOG.warn("Could not retrieve table names from remote datasource, cause:" + ex.getMessage());
-            throw new MetaException("Could not retrieve table names from remote datasource, cause:" + ex);
-        }
-        return rs;
-    }
-
-    @Override protected ResultSet fetchTableNames() throws MetaException {
-        ResultSet rs = null;
-        try {
-            rs = getConnection().getMetaData().getTables(null, scoped_db, null, new String[] { "TABLE" });
-        } catch (SQLException sqle) {
-            LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-            throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle);
-        }
-        return rs;
-    }
-
     @Override protected String getCatalogName() {
         return null;
     }

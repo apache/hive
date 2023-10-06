@@ -28,46 +28,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class HiveJDBCConnectorProvider extends AbstractJDBCConnectorProvider {
-  private static Logger LOG = LoggerFactory.getLogger(HiveJDBCConnectorProvider.class);
-
+  private static final Logger LOG = LoggerFactory.getLogger(HiveJDBCConnectorProvider.class);
   private static final String DRIVER_CLASS = "org.apache.hive.jdbc.HiveDriver".intern();
+  // for Hive the type for connector is "HIVEJDBC" where as on the table we want it to be "HIVE"
+  protected static final String mappedType = "HIVE";
 
   public HiveJDBCConnectorProvider(String dbName, DataConnector dataConn) {
     super(dbName, dataConn, DRIVER_CLASS);
   }
-
-  /**
-   * Returns a list of all table names from the remote database.
-   * @return List A collection of all the table names, null if there are no tables.
-   * @throws MetaException To indicate any failures with executing this API
-   */
-  @Override protected ResultSet fetchTableNames() throws MetaException {
-    ResultSet rs = null;
-    try {
-      rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
-    } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-      throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle);
-    }
-    return rs;
-  }
-
-  /**
-   * Fetch a single table with the given name, returns a Hive Table object from the remote database
-   * @return Table A Table object for the matching table, null otherwise.
-   * @throws MetaException To indicate any failures with executing this API
-   * @param tableName
-   */
-  @Override public ResultSet fetchTableMetadata(String tableName) throws MetaException {
-    ResultSet rs = null;
-    try {
-      rs = getConnection().getMetaData().getColumns(null, scoped_db, tableName, null);
-    } catch (Exception ex) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + ex.getMessage());
-      throw new MetaException("Could not retrieve table names from remote datasource, cause:" + ex);
-    }
-    return rs;
-}
 
   @Override protected String getCatalogName() {
     return null;
@@ -77,24 +45,27 @@ public class HiveJDBCConnectorProvider extends AbstractJDBCConnectorProvider {
     return scoped_db;
   }
 
-  protected String getDataType(String dbDataType, int size) {
+  @Override protected String getDataType(String dbDataType, int size) {
     String mappedType = super.getDataType(dbDataType, size);
     if (!mappedType.equalsIgnoreCase(ColumnType.VOID_TYPE_NAME)) {
       return mappedType;
     }
 
     // map any db specific types here.
-    switch (dbDataType.toLowerCase())
+    switch (dbDataType.trim().toLowerCase())
     {
       case "string":
+      case "varchar":
         mappedType = ColumnType.STRING_TYPE_NAME;
         break;
       default:
+        // TODO Hive has support for complex data types but JDBCSerDe only supports primitive types
+        // SerDe needs to enhanced first to be able to support complex types over federation
         mappedType = ColumnType.VOID_TYPE_NAME;
         break;
-    }
+      }
     return mappedType;
   }
 
-  @Override protected  String getDatasourceType() { return "HIVE"; }
+  @Override protected  String getDatasourceType() { return mappedType; }
 }

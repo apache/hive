@@ -35,21 +35,6 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     super(dbName, dataConn, DRIVER_CLASS);
   }
 
-  @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
-    ResultSet rs = null;
-    try {
-      rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
-    } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-      throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-    }
-    return rs;
-  }
-
-  @Override protected ResultSet fetchTableNames() throws MetaException {
-    return null;
-  }
-
   @Override protected String getCatalogName() {
     return scoped_db;
   }
