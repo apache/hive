@@ -111,7 +111,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       Class.forName(driverClassName);
     } catch (ClassNotFoundException cnfe) {
-      LOG.warn("Driver class not found in classpath:" + driverClassName);
+      LOG.warn("Driver class not found in classpath: {}" + driverClassName);
       throw new RuntimeException("Driver class not found:" + driverClass.getClass().getName(), cnfe);
     }
   }
@@ -121,7 +121,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       close();
       handle = DriverManager.getDriver(jdbcUrl).connect(jdbcUrl, getConnectionProperties());
     } catch (SQLException sqle) {
-      LOG.warn("Could not connect to remote data source at " + jdbcUrl);
+      LOG.warn("Could not connect to remote data source at {}", jdbcUrl);
       throw new ConnectException("Could not connect to remote datasource at " + jdbcUrl + ",cause:" + sqle.getMessage());
     }
   }
@@ -155,7 +155,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       if (handle instanceof Connection)
         return ((Connection) handle).isClosed();
     } catch (SQLException e) {
-      LOG.warn("Could not determine whether jdbc connection is closed or not to "+ jdbcUrl, e);
+      LOG.warn("Could not determine whether jdbc connection, to {}, is closed or not: {} ", jdbcUrl, e);
     }
     return true;
   }
@@ -165,7 +165,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       try {
         ((Connection)handle).close();
       } catch (SQLException sqle) {
-        LOG.warn("Could not close jdbc connection to " + jdbcUrl, sqle);
+        LOG.warn("Could not close jdbc connection to {}: {}", jdbcUrl, sqle);
         throw new RuntimeException(sqle);
       }
     }
@@ -191,7 +191,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
         return tables;
       }
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve tables from remote datasource, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve tables from remote datasource, cause: {}", sqle.getMessage());
       throw new MetaException("Error retrieving remote table:" + sqle);
     } finally {
       try {
@@ -221,7 +221,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
         return tables;
       }
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve table names from remote datasource, cause: {}", sqle.getMessage());
       throw new MetaException("Error retrieving remote table:" + sqle);
     } finally {
       try {
@@ -239,7 +239,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), null, new String[] { "TABLE" });
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve table names from remote datasource, cause: {}", sqle.getMessage());
       throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
     }
     return rs;
@@ -255,7 +255,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), null, new String[] { "TABLE" });
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve table names from remote datasource, cause: {}", sqle.getMessage());
       throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle);
     }
     return rs;
@@ -308,8 +308,8 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       }
       return table;
     } catch (Exception e) {
-      LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
-              + connector.getName());
+      LOG.warn("Exception retrieving remote table {}.{} via data connector {}", scoped_db, tableName
+              ,connector.getName());
       throw new MetaException("Error retrieving remote table:" + e);
     } finally {
       try {
@@ -325,7 +325,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), regex, new String[]{"TABLE"});
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve tables from JDBC table, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve tables from JDBC table, cause: {}", sqle.getMessage());
       throw sqle;
     }
     return rs;
@@ -336,7 +336,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       rs = getConnection().getMetaData().getColumns(getCatalogName(), getDatabaseName(), tableName, null);
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve columns from JDBC table, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve columns from JDBC table, cause: {}", sqle.getMessage());
       throw sqle;
     }
     return rs;
@@ -425,7 +425,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       try {
         return warehouse.getDefaultTablePath(scoped_db, tableName, true).toString();
       } catch (MetaException e) {
-        LOG.info("Error determining default table path, cause:" + e.getMessage());
+        LOG.info("Error determining default table path, cause: {}", e.getMessage());
       }
     }
     return "some_dummy_path";
@@ -440,5 +440,5 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   }
 
   @Override
-  protected String getDatasourceType() { return type; };
+  protected String getDatasourceType() { return type; }
 }
