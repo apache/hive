@@ -4489,25 +4489,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
     try {
       Preconditions.checkNotNull(partitions);
-      byte[] exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-      List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
-              new ArrayList<>();
-      ValidWriteIdList validWriteIdList = null;
+      if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+        partitions.addAll(tbl.getStorageHandler().getPartitionsByExpr(tbl, expr));
+        return false;
+      } else {
+        byte[] exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
+        List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+                new ArrayList<>();
+        ValidWriteIdList validWriteIdList = null;
 
-      PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
-              null);
+        PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
+                null);
 
-      if (AcidUtils.isTransactionalTable(tbl)) {
-        validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        req.setId(tbl.getTTable().getId());
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+          req.setId(tbl.getTTable().getId());
+        }
+
+        boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
+        partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
+
+        return hasUnknownParts;
       }
-
-      boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
-      partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
-
-      return hasUnknownParts;
     } finally {
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR, "HS2-cache");
     }
