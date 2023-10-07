@@ -116,20 +116,16 @@ public class JavaUtils {
     }
   }
 
-  public static <T> T setField(T req, String methodName, Class[] argsCls, Object... args) {
+  public static <T> void setField(T req, String methodName, Class[] argsCls, Object... args) {
     try {
       Method method = req.getClass().getDeclaredMethod(methodName, argsCls);
       method.setAccessible(true);
-      if (method != null) {
-        method.setAccessible(true);
-        method.invoke(req, args);
-      }
+      method.invoke(req, args);
     } catch (Exception e) {
       LOG.error("Unable to invoke the underlying method: {} of the instance: {}, message: {}",
           methodName, req, e.getMessage());
       throw new RuntimeException(e);
     }
-    return req;
   }
 
   /**

@@ -1231,7 +1231,7 @@ public class MetaStoreUtils {
 
   public static <T> T createThriftPartitionsReq(Class<T> clazz, Configuration conf, Object... deepCopy) {
     final T req;
-    if (deepCopy != null && deepCopy.length > 0) {
+    if (deepCopy != null && deepCopy.length == 1) {
       assert clazz.isAssignableFrom(deepCopy[0].getClass());
       req = JavaUtils.newInstance(clazz, new Class[]{clazz}, deepCopy);
     } else {
@@ -1241,8 +1241,9 @@ public class MetaStoreUtils {
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS));
     JavaUtils.setField(req, "setIncludeParamKeyPattern", new Class[]{String.class},
         MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
-    return JavaUtils.setField(req, "setExcludeParamKeyPattern", new Class[]{String.class},
+    JavaUtils.setField(req, "setExcludeParamKeyPattern", new Class[]{String.class},
         MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
+    return req;
   }
 
   /**

@@ -68,7 +68,7 @@ import static org.junit.Assert.assertFalse;
  */
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
-public class TestListPartitionsWithIncludeExcludeParams
+public class TestListPartitionsWithXIncludeParams
     extends TestListPartitions {
 
   private Configuration hiveConf;
@@ -83,7 +83,7 @@ public class TestListPartitionsWithIncludeExcludeParams
     // PartitionExpressionForMetastoreTest.
   }
 
-  public TestListPartitionsWithIncludeExcludeParams(String name,
+  public TestListPartitionsWithXIncludeParams(String name,
       AbstractMetaStoreService metaStore) {
     super(name, metaStore);
     partParams.put("key1", "value1");
