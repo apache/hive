@@ -311,15 +311,16 @@ public class Serializer {
 
     write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
 
+    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
       int selectedIndex = rowIndex;
       if (vectorizedRowBatch.selectedInUse) {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
       if (hiveVector.isNull[selectedIndex]) {
-        BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
+        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
       } else {
-        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
+        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
       }
     }
   }
@@ -372,11 +373,12 @@ public class Serializer {
       write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, vectorizedRowBatch, isNative);
     }
 
+    final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
       if (hiveVector.isNull[rowIndex]) {
-        BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
+        BitVectorHelper.setValidityBit(validityBuffer, rowIndex, 0);
       } else {
-        BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
+        BitVectorHelper.setValidityBitToOne(validityBuffer, rowIndex);
       }
     }
   }
@@ -437,6 +439,7 @@ public class Serializer {
 
     write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
 
+    final ArrowBuf offsetBuffer = arrowVector.getOffsetBuffer();
     int nextOffset = 0;
 
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
@@ -445,14 +448,14 @@ public class Serializer {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
       if (hiveVector.isNull[selectedIndex]) {
-        arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
+        offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
       } else {
-        arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
+        offsetBuffer.setInt(rowIndex * OFFSET_WIDTH, nextOffset);
         nextOffset += (int) hiveVector.lengths[selectedIndex];
         arrowVector.setNotNull(rowIndex);
       }
     }
-    arrowVector.getOffsetBuffer().setInt(size * OFFSET_WIDTH, nextOffset);
+    offsetBuffer.setInt(size * OFFSET_WIDTH, nextOffset);
   }
 
   //Handle cases for both internally constructed
