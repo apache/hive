@@ -577,7 +577,7 @@ public class MetastoreConf {
         "metastore.housekeeping.leader.election",
         "host", new StringSetValidator("host", "lock"),
         "Set to host, HMS will choose the leader by the configured metastore.housekeeping.leader.hostname.\n" +
-        "Set to lock, HMS will use the hive lock to elect the leader."),
+        "Set to lock, HMS will use the Hive lock to elect the leader."),
     METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE("metastore.housekeeping.leader.auditTable",
         "metastore.housekeeping.leader.auditTable", "",
         "Audit the leader election event to a plain json table when configured."),
@@ -590,6 +590,9 @@ public class MetastoreConf {
         "metastore.housekeeping.leader.auditFiles.limit", 10,
         "Limit the number of small audit files when metastore.housekeeping.leader.newAuditFile is true.\n" +
         "If the number of audit files exceeds the limit, then the oldest will be deleted."),
+    METASTORE_HOUSEKEEPING_LEADER_LOCK_NAMESPACE("metastore.housekeeping.leader.lock.namespace",
+        "metastore.housekeeping.leader.lock.namespace", "",
+        "The database where the Hive lock sits when metastore.housekeeping.leader.election is set to lock."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
         "hive.metastore.housekeeping.threads.on", false,
         "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +

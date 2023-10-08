@@ -93,7 +93,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   private String name;
 
-  private void doWork(LockResponse resp, Configuration conf,
+  private synchronized void doWork(LockResponse resp, Configuration conf,
       TableName tableName) throws LeaderException {
     lockId = resp.getLockid();
     assert resp.getState() == LockState.ACQUIRED || resp.getState() == LockState.WAITING;
