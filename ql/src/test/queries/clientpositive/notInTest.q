@@ -42,6 +42,15 @@ explain select * from t3
 select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10);
 
+
+
+explain select id, name, age
+from t3 b where b.age not in
+(select min(age)
+ from (select id, age from t3) a
+ where age < 10 and b.age = a.age)
+ order by name;
+
 set hive.cbo.enable = true;
 
 select * from t3
@@ -76,3 +85,9 @@ explain select * from t3
 select count(*) from t3
 where age not in (select distinct(age)age from t3 t1 where t1.age > 10);
 
+ explain select id, name, age
+         from t3 b where b.age not in
+         (select min(age)
+          from (select id, age from t3) a
+          where age < 10 and b.age = a.age)
+          order by name;
