@@ -1,0 +1,36 @@
+PREHOOK: query: create table tbl1 (key int, f1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: create table tbl1 (key int, f1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: create table tbl2 (f1 int) partitioned by (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: create table tbl2 (f1 int) partitioned by (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: FROM (select key, f1 FROM tbl1 where key=5) a
+INSERT OVERWRITE TABLE tbl2 partition(key=5)
+select f1 WHERE key > 0 GROUP by f1
+INSERT OVERWRITE TABLE tbl2 partition(key=6)
+select f1 WHERE key > 0 GROUP by f1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: default@tbl2@key=5
+PREHOOK: Output: default@tbl2@key=6
+POSTHOOK: query: FROM (select key, f1 FROM tbl1 where key=5) a
+INSERT OVERWRITE TABLE tbl2 partition(key=5)
+select f1 WHERE key > 0 GROUP by f1
+INSERT OVERWRITE TABLE tbl2 partition(key=6)
+select f1 WHERE key > 0 GROUP by f1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: default@tbl2@key=5
+POSTHOOK: Output: default@tbl2@key=6
+POSTHOOK: Lineage: tbl2 PARTITION(key=5).f1 SIMPLE [(tbl1)tbl1.FieldSchema(name:f1, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl2 PARTITION(key=6).f1 SIMPLE [(tbl1)tbl1.FieldSchema(name:f1, type:int, comment:null), ]
