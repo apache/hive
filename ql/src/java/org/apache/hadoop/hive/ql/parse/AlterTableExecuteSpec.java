@@ -109,6 +109,8 @@ public class AlterTableExecuteSpec<T> {
     private long timestampMillis = -1L;
     private String[] idsToExpire = null;
 
+    private long fromTimestampMillis = -1L;
+
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
     }
@@ -117,8 +119,17 @@ public class AlterTableExecuteSpec<T> {
       this.idsToExpire = ids.split(",");
     }
 
+    public ExpireSnapshotsSpec(long fromTimestampMillis, long toTimestampMillis) {
+      this.fromTimestampMillis = fromTimestampMillis;
+      this.timestampMillis = toTimestampMillis;
+    }
+
     public Long getTimestampMillis() {
       return timestampMillis;
+    }
+
+    public Long getFromTimestampMillis() {
+      return fromTimestampMillis;
     }
 
     public String[] getIdsToExpire() {
@@ -129,10 +140,16 @@ public class AlterTableExecuteSpec<T> {
       return idsToExpire != null;
     }
 
+    public boolean isExpireByTimestampRange() {
+      return timestampMillis != -1 && fromTimestampMillis != -1;
+    }
+
     @Override
     public String toString() {
       MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
-      if (isExpireByIds()) {
+      if (isExpireByTimestampRange()) {
+        stringHelper.add("fromTimestampMillis", fromTimestampMillis).add("toTimestampMillis", timestampMillis);
+      } else if (isExpireByIds()) {
         stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
       } else {
         stringHelper.add("timestampMillis", timestampMillis);
