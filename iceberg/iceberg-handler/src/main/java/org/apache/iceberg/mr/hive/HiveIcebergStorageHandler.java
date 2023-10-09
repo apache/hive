@@ -372,10 +372,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     predicate.residualPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
     ExprNodeDesc pushedPredicate = exprNodeDesc.clone();
 
-    if (pushedPredicate.getChildren().removeIf(nodeDesc -> nodeDesc.getCols() != null &&
+    List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
+    if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
         nodeDesc.getCols().contains(VirtualColumn.FILE_PATH.getName()))) {
-      if (pushedPredicate.getChildren().size() == 1) {
-        pushedPredicate = pushedPredicate.getChildren().get(0);
+      if (subExprNodes.size() == 1) {
+        pushedPredicate = subExprNodes.get(0);
+      } else if (subExprNodes.isEmpty()) {
+        pushedPredicate = null;
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;

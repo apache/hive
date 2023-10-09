@@ -193,12 +193,12 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         withQueryStr.append("WITH t AS (");
         withQueryStr.append("\n").append(INDENT);
         withQueryStr.append("select ");
-        columnAppender.appendAcidSelectColumnsForTombstone(withQueryStr, operation);
+        columnAppender.appendAcidSelectColumnsForDeletedRecords(withQueryStr, operation);
         withQueryStr.setLength(withQueryStr.length() - 1);
         withQueryStr.append(" from (");
         withQueryStr.append("\n").append(INDENT).append(INDENT);
         withQueryStr.append("select ");
-        columnAppender.appendAcidSelectColumnsForTombstone(withQueryStr, operation);
+        columnAppender.appendAcidSelectColumnsForDeletedRecords(withQueryStr, operation);
         withQueryStr.append(" row_number() OVER (partition by ").append(filePathCol).append(") rn");
         withQueryStr.append(" from ").append(getFullTableNameForSQL(tabNameNode));
         withQueryStr.append("\n").append(INDENT).append(INDENT);
@@ -271,7 +271,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
 
     updateOutputs(mTable);
-
 
     if (updating()) {
       setUpAccessControlInfoForUpdate(mTable, setCols);

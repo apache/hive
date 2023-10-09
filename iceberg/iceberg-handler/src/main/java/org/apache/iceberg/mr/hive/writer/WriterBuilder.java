@@ -122,8 +122,7 @@ public class WriterBuilder {
             skipRowData ? null : dataSchema);
 
     boolean copyOnWriteMode = RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(
-        properties.get(TableProperties.DELETE_MODE)) &&
-        operation == Operation.DELETE;
+        properties.get(TableProperties.DELETE_MODE)) && operation == Operation.DELETE;
 
     HiveIcebergWriter writer;
     switch (operation) {

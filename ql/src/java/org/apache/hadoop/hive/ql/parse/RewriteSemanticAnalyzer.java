@@ -582,7 +582,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
     public abstract void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation);
    
-    public void appendAcidSelectColumnsForTombstone(StringBuilder stringBuilder, Context.Operation operation) {
+    public void appendAcidSelectColumnsForDeletedRecords(StringBuilder stringBuilder, Context.Operation operation) {
       throw new UnsupportedOperationException();
     }
     
@@ -643,7 +643,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
     
     @Override
-    public void appendAcidSelectColumnsForTombstone(StringBuilder stringBuilder, Context.Operation operation) {
+    public void appendAcidSelectColumnsForDeletedRecords(StringBuilder stringBuilder, Context.Operation operation) {
       appendAcidSelectColumns(stringBuilder, operation, true);
     }
 
