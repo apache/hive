@@ -3069,7 +3069,7 @@ class MetaStoreDirectSql {
   }
 
   public List<Function> getFunctions(String catName) throws MetaException {
-    List<Long> funcIds = getFunctionIds();
+    List<Long> funcIds = getFunctionIds(catName);
     // Get full objects. For Oracle/etc. do it in batches.
     return Batchable.runBatched(batchSize, funcIds, new Batchable<Long, Function>() {
       @Override
@@ -3141,14 +3141,18 @@ class MetaStoreDirectSql {
     return results;
   }
 
-  private List<Long> getFunctionIds() throws MetaException {
+  private List<Long> getFunctionIds(String catName) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
 
-    String queryText = "select " + FUNCS + ".\"FUNC_ID\" from " + FUNCS;
+    String queryText = "select " + FUNCS + ".\"FUNC_ID\" from " + FUNCS +
+        " LEFT JOIN " + DBS + " ON " + FUNCS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\"" +
+        " where " + DBS + ".\"CTLG_NAME\" = ? ";
 
     long start = doTrace ? System.nanoTime() : 0;
+    Object[] params = new Object[1];
+    params[0] = catName;
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-      List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+      List<Object> sqlResult = executeWithArray(query.getInnerQuery(), params, queryText);
       long queryTime = doTrace ? System.nanoTime() : 0;
       MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
       final List<Long> result;
