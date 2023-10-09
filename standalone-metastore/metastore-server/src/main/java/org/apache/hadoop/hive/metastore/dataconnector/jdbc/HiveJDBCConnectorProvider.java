@@ -26,58 +26,46 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
-  private static Logger LOG = LoggerFactory.getLogger(MySQLConnectorProvider.class);
+public class HiveJDBCConnectorProvider extends AbstractJDBCConnectorProvider {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveJDBCConnectorProvider.class);
+  private static final String DRIVER_CLASS = "org.apache.hive.jdbc.HiveDriver";
+  // for Hive the type for connector is "HIVEJDBC" where as on the table we want it to be "HIVE"
+  protected static final String mappedType = "HIVE";
 
-  private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
-
-  public MySQLConnectorProvider(String dbName, DataConnector dataConn) {
+  public HiveJDBCConnectorProvider(String dbName, DataConnector dataConn) {
     super(dbName, dataConn, DRIVER_CLASS);
   }
 
-  /**
-   * Fetch a single table with the given name, returns a Hive Table object from the remote database
-   * @return Table A Table object for the matching table, null otherwise.
-   * @throws MetaException To indicate any failures with executing this API
-   * @param tableName
-   */
-  @Override public ResultSet fetchTableMetadata(String tableName) throws MetaException {
-    try {
-      Statement stmt = getConnection().createStatement();
-      ResultSet rs = stmt.executeQuery(
-          "SELECT table_name, column_name, is_nullable, data_type, character_maximum_length FROM INFORMATION_SCHEMA.Columns where table_schema='"
-              + scoped_db + "' and table_name='" + tableName + "'");
-      return rs;
-    } catch (Exception e) {
-      LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
-          + connector.getName());
-      throw new MetaException("Error retrieving remote table:" + e);
-    }
-  }
-
   @Override protected String getCatalogName() {
-    return scoped_db;
-  }
-
-  @Override protected String getDatabaseName() {
     return null;
   }
 
-  protected String getDataType(String dbDataType, int size) {
+  @Override protected String getDatabaseName() {
+    return scoped_db;
+  }
+
+  @Override protected String getDataType(String dbDataType, int size) {
     String mappedType = super.getDataType(dbDataType, size);
     if (!mappedType.equalsIgnoreCase(ColumnType.VOID_TYPE_NAME)) {
       return mappedType;
     }
 
     // map any db specific types here.
-    switch (dbDataType.toLowerCase())
+    switch (dbDataType.trim().toLowerCase())
     {
-    default:
-      mappedType = ColumnType.VOID_TYPE_NAME;
-      break;
-    }
+      case "string":
+      case "varchar":
+        mappedType = ColumnType.STRING_TYPE_NAME;
+        break;
+      default:
+        // TODO Hive has support for complex data types but JDBCSerDe only supports primitive types
+        // SerDe needs to enhanced first to be able to support complex types over federation
+        mappedType = ColumnType.VOID_TYPE_NAME;
+        break;
+      }
     return mappedType;
   }
+
+  @Override protected  String getDatasourceType() { return mappedType; }
 }
