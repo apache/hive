@@ -88,3 +88,125 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_date_year
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2021-01-01
+PREHOOK: query: create table ice_str_name (first_name string, last_name string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: create table ice_str_name (first_name string, last_name string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: insert into table ice_str_name values ('Alex', 'Clark')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: insert into table ice_str_name values ('Alex', 'Clark')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: insert into table ice_str_name values ('Bob', 'Bob')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: insert into table ice_str_name values ('Bob', 'Bob')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: delete from ice_str_name where first_name = last_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_name
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: delete from ice_str_name where first_name = last_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_name
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: select * from ice_str_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_name
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_str_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_name
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Alex	Clark
+PREHOOK: query: create table ice_int_id (first_id int, last_id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: create table ice_int_id (first_id int, last_id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: insert into table ice_int_id values (7, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: insert into table ice_int_id values (7, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: insert into table ice_int_id values (8, 8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: insert into table ice_int_id values (8, 8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: delete from ice_int_id where first_id = last_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_int_id
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: delete from ice_int_id where first_id = last_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_int_id
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: select * from ice_int_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_int_id
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_int_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_int_id
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+7	9
+PREHOOK: query: drop table ice_date
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: drop table ice_date
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: drop table ice_date_year
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_date_year
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: drop table ice_date_year
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_date_year
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: drop table ice_str_name
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_str_name
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: drop table ice_str_name
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_str_name
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: drop table ice_int_id
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_int_id
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: drop table ice_int_id
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_int_id
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int_id

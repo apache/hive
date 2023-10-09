@@ -24,9 +24,9 @@ import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 public class StorageMetadataUpdateDesc implements DDLDesc {
-  private TableName tableName;
-  private ExprNodeGenericFuncDesc hiveFilter;
-  private Context.Operation operation;
+  private final TableName tableName;
+  private final ExprNodeGenericFuncDesc hiveFilter;
+  private final Context.Operation operation;
 
   public StorageMetadataUpdateDesc(TableName tableName, ExprNodeGenericFuncDesc hiveFilter,
       Context.Operation operation) {

@@ -308,22 +308,26 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   }
 
   private void checkAndPerformStorageMetadataUpdate(Table table, HiveStorageHandler storageHandler) {
-    if (deleting() && storageHandler != null) {
-      Map<String, TableScanOperator> topOps = getParseContext().getTopOps();
-      if (topOps.containsKey(table.getTableName())) {
-        ExprNodeGenericFuncDesc hiveFilter = getParseContext().getTopOps()
-                .get(table.getTableName()).getConf().getFilterExpr();
-        if (hiveFilter != null && ConvertAstToSearchArg.isCompleteConversion(ctx.getConf(), hiveFilter)) {
-          SearchArgument sarg = ConvertAstToSearchArg.create(ctx.getConf(), hiveFilter);
-          if (storageHandler.canPerformMetadataDelete(table, sarg)) {
-            StorageMetadataUpdateDesc desc = new StorageMetadataUpdateDesc(
-                    new TableName(table.getCatName(), table.getDbName(), table.getTableName()), hiveFilter, operation);
-            DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
-            rootTasks = Collections.singletonList(TaskFactory.get(ddlWork));
-          }
-        }
-      }
+    if (!deleting() || storageHandler == null) {
+      return;
     }
+    Map<String, TableScanOperator> topOps = getParseContext().getTopOps();
+    if (!topOps.containsKey(table.getTableName())) {
+      return;
+    }
+    ExprNodeGenericFuncDesc hiveFilter = getParseContext().getTopOps()
+            .get(table.getTableName()).getConf().getFilterExpr();
+    if (hiveFilter == null || !ConvertAstToSearchArg.isCompleteConversion(ctx.getConf(), hiveFilter)) {
+      return;
+    }
+    SearchArgument sarg = ConvertAstToSearchArg.create(ctx.getConf(), hiveFilter);
+    if (!storageHandler.canPerformMetadataDelete(table, sarg)) {
+      return;
+    }
+    StorageMetadataUpdateDesc desc = new StorageMetadataUpdateDesc(
+            new TableName(table.getCatName(), table.getDbName(), table.getTableName()), hiveFilter, operation);
+    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
+    rootTasks = Collections.singletonList(TaskFactory.get(ddlWork));
   }
 
   private boolean updating() {
