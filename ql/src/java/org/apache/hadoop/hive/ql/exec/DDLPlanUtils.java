@@ -546,7 +546,7 @@ public class DDLPlanUtils {
     command.add(DATABASE_NAME, unparseIdentifier(dbName));
     command.add(TABLE_NAME, unparseIdentifier(tblName));
     command.add(COLUMN_NAME, unparseIdentifier(colName));
-    command.add(PARTITION_NAME, unparseIdentifier(ptName));
+    command.add(PARTITION_NAME, ptName);
     command.add(TBLPROPERTIES, addAllColStats(columnStatisticsData));
     if (checkIfDefaultPartition(ptName)) {
       command.add(COMMENT_SQL, "--");
@@ -577,7 +577,7 @@ public class DDLPlanUtils {
         ST command = new ST(EXIST_BIT_VECTORS_PARTITIONED);
         command.add(DATABASE_NAME, unparseIdentifier(dbName));
         command.add(TABLE_NAME, unparseIdentifier(tblName));
-        command.add(PARTITION_NAME, unparseIdentifier(ptName));
+        command.add(PARTITION_NAME, ptName);
         command.add(COLUMN_NAME, unparseIdentifier(statisticsObj.getColName()));
         command.add(BASE_64_VALUE, base64BitVectors);
         alterTableStmt.add(command.render());
@@ -587,7 +587,7 @@ public class DDLPlanUtils {
         ST command = new ST(EXIST_HISTOGRAM_PARTITIONED);
         command.add(DATABASE_NAME, unparseIdentifier(dbName));
         command.add(TABLE_NAME, unparseIdentifier(tblName));
-        command.add(PARTITION_NAME, unparseIdentifier(ptName));
+        command.add(PARTITION_NAME, ptName);
         command.add(COLUMN_NAME, unparseIdentifier(statisticsObj.getColName()));
         command.add(BASE_64_VALUE, base64Histogram);
         alterTableStmt.add(command.render());

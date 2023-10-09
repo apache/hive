@@ -269,7 +269,7 @@ CREATE EXTERNAL TABLE `icepart01`(
   `id` int, 
   `part` int)
 PARTITIONED BY SPEC ( 
-part)
+`part`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
