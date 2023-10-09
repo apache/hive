@@ -72,7 +72,7 @@ public class ConvertAstToSearchArg {
 
   private final SearchArgument.Builder builder;
   private final Configuration conf;
-  private boolean completeConversion = true;
+  private boolean partial = false;
 
   /*
    * Create a new type for handling precision conversions from Decimal -> Double/Float
@@ -106,11 +106,11 @@ public class ConvertAstToSearchArg {
   }
 
   /**
-   * Returns whether the given expression can be completely converted to a search argument.
-   * @return True if the expression can be converted completely, otherwise false.
+   * Returns whether the given expression is partially converted to a search argument from the hive filter.
+   * @return True if the expression is partially converted, otherwise false.
    */
-  public boolean isCompleteConversion() {
-    return completeConversion;
+  public boolean isPartial() {
+    return partial;
   }
 
   /**
@@ -323,13 +323,13 @@ public class ConvertAstToSearchArg {
     String columnName = getColumnName(expression, variable);
     if (columnName == null) {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
-      completeConversion = false;
+      partial = true;
       return;
     }
     BoxType boxType = getType(expression.getChildren().get(variable));
     if (boxType == null) {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
-      completeConversion = false;
+      partial = true;
       return;
     }
 
@@ -379,7 +379,7 @@ public class ConvertAstToSearchArg {
       LOG.warn("Exception thrown during SARG creation. Returning YES_NO_NULL." +
           " Exception: " + e.getMessage());
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
-      completeConversion = false;
+      partial = true;
     }
 
     if (needSwap) {
@@ -448,7 +448,7 @@ public class ConvertAstToSearchArg {
 
       // otherwise, we don't know what to do so make it a maybe
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
-      completeConversion = false;
+      partial = true;
       return;
     }
 
@@ -510,7 +510,7 @@ public class ConvertAstToSearchArg {
       // otherwise, we didn't understand it, so mark it maybe
     } else {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
-      completeConversion = false;
+      partial = true;
     }
   }
 
@@ -564,12 +564,13 @@ public class ConvertAstToSearchArg {
     }
   }
 
-  public static boolean isCompleteConversion(Configuration conf, ExprNodeGenericFuncDesc expression) {
-    return new ConvertAstToSearchArg(conf, expression).isCompleteConversion();
-  }
-
   public static SearchArgument create(Configuration conf, ExprNodeGenericFuncDesc expression) {
     return new ConvertAstToSearchArg(conf, expression).buildSearchArgument();
+  }
+
+  public static ConvertAstToSearchArg.Result createSearchArgument(Configuration conf, ExprNodeGenericFuncDesc expression) {
+    ConvertAstToSearchArg convertAstToSearchArg = new ConvertAstToSearchArg(conf, expression);
+    return new ConvertAstToSearchArg.Result(convertAstToSearchArg.buildSearchArgument(), convertAstToSearchArg.isPartial());
   }
 
   private final static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
@@ -604,6 +605,24 @@ public class ConvertAstToSearchArg {
       kryo.writeObject(out, sarg);
       SerializationUtilities.releaseKryo(kryo);
       return Base64.encodeBase64String(out.toBytes());
+    }
+  }
+
+  public static final class Result {
+    private final SearchArgument sarg;
+    private final boolean partial;
+
+    Result(SearchArgument sarg, boolean partial) {
+      this.sarg = sarg;
+      this.partial = partial;
+    }
+
+    public SearchArgument getSearchArgument() {
+      return sarg;
+    }
+
+    public boolean isPartial() {
+      return partial;
     }
   }
 

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
 import java.util.Arrays;
 
@@ -38,7 +39,8 @@ public class AlterTableExecuteSpec<T> {
     EXPIRE_SNAPSHOT,
     SET_CURRENT_SNAPSHOT,
     FAST_FORWARD,
-    CHERRY_PICK;
+    CHERRY_PICK,
+    DELETE_METADATA;
   }
 
   private final ExecuteOperationType operationType;
@@ -232,6 +234,24 @@ public class AlterTableExecuteSpec<T> {
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+    }
+  }
+
+  public static class DeleteMetadataSpec {
+    private final String branchName;
+    private final SearchArgument sarg;
+
+    public DeleteMetadataSpec(String branchName, SearchArgument sarg) {
+      this.branchName = branchName;
+      this.sarg = sarg;
+    }
+
+    public String getBranchName() {
+      return branchName;
+    }
+
+    public SearchArgument getSarg() {
+      return sarg;
     }
   }
 }

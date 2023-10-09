@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.table.misc.metadata.StorageMetadataUpdateDesc;
+import org.apache.hadoop.hive.ql.ddl.table.execute.AlterTableExecuteDesc;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -70,7 +70,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     switch (tree.getToken().getType()) {
     case HiveParser.TOK_DELETE_FROM:
       operation = Context.Operation.DELETE;
-      reparseAndSuperAnalyze(tree, table, tabNameNode);
+      if (!tryMetadataUpdate(tree, table, tabNameNode)) {
+        reparseAndSuperAnalyze(tree, table, tabNameNode);
+      }
       break;
     case HiveParser.TOK_UPDATE_TABLE:
       boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table, true);
@@ -108,7 +110,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
     
-    boolean shouldTruncate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE) 
+    boolean shouldTruncate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE)
       && children.size() == 1 && deleting();
     if (shouldTruncate) {
       StringBuilder rewrittenQueryStr = new StringBuilder("truncate ").append(getFullTableNameForSQL(tabNameNode));
@@ -289,9 +291,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenCtx.setEnableUnparse(false);
     analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
 
-    // Check if metadata delete is possible and convert the tasks to metadata delete.
-    checkAndPerformStorageMetadataUpdate(mTable, storageHandler);
-
     updateOutputs(mTable);
 
     if (updating()) {
@@ -307,27 +306,63 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
   }
 
-  private void checkAndPerformStorageMetadataUpdate(Table table, HiveStorageHandler storageHandler) {
-    if (!deleting() || storageHandler == null) {
-      return;
+  private boolean tryMetadataUpdate(ASTNode tree, Table table, ASTNode tabNameNode) throws SemanticException {
+    // A feature flag on Hive to perform metadata delete on the source table.
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_DELETE)) {
+      return false;
     }
-    Map<String, TableScanOperator> topOps = getParseContext().getTopOps();
+    TableName tableName = getQualifiedTableName(tabNameNode);
+    if (!deleting() || table.getStorageHandler() == null) {
+      return false;
+    }
+    int whereIndex = 1;
+    List<? extends Node> children = tree.getChildren();
+    if (children.size() <= whereIndex) {
+      return false;
+    }
+    ASTNode whereNode = (ASTNode) children.get(whereIndex);
+    String whereClause = ctx.getTokenRewriteStream().toString(
+        whereNode.getChild(0).getTokenStartIndex(), whereNode.getChild(0).getTokenStopIndex());
+    StringBuilder sb = new StringBuilder("select * from ").append(getFullTableNameForSQL(tabNameNode))
+        .append(" where ").append(whereClause);
+    Context context = new Context(conf);
+    ASTNode rewrittenTree;
+    try {
+      rewrittenTree = ParseUtils.parse(sb.toString(), context);
+    } catch (ParseException pe) {
+      throw new SemanticException(pe);
+    }
+    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, rewrittenTree);
+    sem.analyze(rewrittenTree, context);
+
+    Map<String, TableScanOperator> topOps = sem.getParseContext().getTopOps();
     if (!topOps.containsKey(table.getTableName())) {
-      return;
+      return false;
     }
-    ExprNodeGenericFuncDesc hiveFilter = getParseContext().getTopOps()
-            .get(table.getTableName()).getConf().getFilterExpr();
-    if (hiveFilter == null || !ConvertAstToSearchArg.isCompleteConversion(ctx.getConf(), hiveFilter)) {
-      return;
+    ExprNodeGenericFuncDesc hiveFilter = topOps.get(table.getTableName()).getConf().getFilterExpr();
+    if (hiveFilter == null) {
+      return false;
     }
-    SearchArgument sarg = ConvertAstToSearchArg.create(ctx.getConf(), hiveFilter);
-    if (!storageHandler.canPerformMetadataDelete(table, sarg)) {
-      return;
+    ConvertAstToSearchArg.Result result = ConvertAstToSearchArg.createSearchArgument(ctx.getConf(), hiveFilter);
+    if (result.isPartial()) {
+      return false;
     }
-    StorageMetadataUpdateDesc desc = new StorageMetadataUpdateDesc(
-            new TableName(table.getCatName(), table.getDbName(), table.getTableName()), hiveFilter, operation);
+    SearchArgument sarg = result.getSearchArgument();
+    if (!table.getStorageHandler().canPerformMetadataDelete(table, tableName.getTableMetaRef(), sarg)) {
+      return false;
+    }
+
+    AlterTableExecuteSpec.DeleteMetadataSpec deleteMetadataSpec =
+        new AlterTableExecuteSpec.DeleteMetadataSpec(tableName.getTableMetaRef(), sarg);
+    AlterTableExecuteSpec<AlterTableExecuteSpec.DeleteMetadataSpec> executeSpec =
+        new AlterTableExecuteSpec<>(AlterTableExecuteSpec.ExecuteOperationType.DELETE_METADATA, deleteMetadataSpec);
+    AlterTableExecuteDesc desc = new AlterTableExecuteDesc(tableName, null, executeSpec);
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
     rootTasks = Collections.singletonList(TaskFactory.get(ddlWork));
+    inputs = sem.getInputs();
+    outputs = sem.getOutputs();
+    updateOutputs(table);
+    return true;
   }
 
   private boolean updating() {

@@ -724,18 +724,8 @@ public interface HiveStorageHandler extends Configurable {
             "for a specific column.");
   }
 
-  default boolean supportsMetadataDelete() {
+  default boolean canPerformMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String branchName,
+    SearchArgument searchArgument) {
     return false;
   }
-
-  default boolean canPerformMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SearchArgument searchArgument) {
-    throw new UnsupportedOperationException("Storage handler does not support validation of metadata " +
-            " delete operation using search argument.");
-  }
-
-  default void performMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SearchArgument searchArgument) {
-    throw new UnsupportedOperationException("Storage handler does not support metadata " +
-            " delete operation using search argument.");
-  }
-
 }

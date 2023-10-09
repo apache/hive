@@ -83,11 +83,11 @@ POSTHOOK: Output: default@store_sales
 PREHOOK: query: delete from store_sales where ss_customer_sk > 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@store_sales
-PREHOOK: Output: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: delete from store_sales where ss_customer_sk > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_sales
-POSTHOOK: Output: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from store_sales
 PREHOOK: type: QUERY
 PREHOOK: Input: default@store_sales
