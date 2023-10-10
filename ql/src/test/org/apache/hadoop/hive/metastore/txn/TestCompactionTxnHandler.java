@@ -1056,6 +1056,38 @@ public class TestCompactionTxnHandler {
     assertEquals(1, potentials.size());
   }
 
+  @Test
+  public void testFindReadyToCleanAborts() throws Exception {
+    long txnId = openTxn();
+
+    List<LockComponent> components = new ArrayList<>();
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
+
+    allocateTableWriteIds("mydb", "mytable", txnId);
+    allocateTableWriteIds("mydb", "yourtable", txnId);
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnId);
+    LockResponse res = txnHandler.lock(req);
+    assertSame(res.getState(), LockState.ACQUIRED);
+
+    txnHandler.abortTxn(new AbortTxnRequest((txnId)));
+
+    txnId = openTxn();
+    components = new ArrayList<>();
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
+    allocateTableWriteIds("mydb", "mytable", txnId);
+
+    req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnId);
+    res = txnHandler.lock(req);
+    assertSame(res.getState(), LockState.ACQUIRED);
+
+    List<CompactionInfo> potentials = txnHandler.findReadyToCleanAborts(1, 0);
+    assertEquals(1, potentials.size());
+  }
+
   private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {
     FindNextCompactRequest request = new FindNextCompactRequest();
     request.setWorkerId(workerId);
