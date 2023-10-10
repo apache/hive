@@ -100,3 +100,30 @@ select * from test4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_1
 #### A masked pattern was here ####
+PREHOOK: query: with
+    q1 as (
+        with t3 as (select 1)
+        select * from t3
+    ),
+    q2 as (
+        with t3 as (select * from q1)
+        select * from t3
+    )
+select * from q2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with
+    q1 as (
+        with t3 as (select 1)
+        select * from t3
+    ),
+    q2 as (
+        with t3 as (select * from q1)
+        select * from t3
+    )
+select * from q2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
