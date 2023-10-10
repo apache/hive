@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
+import org.apache.hadoop.hive.ql.parse.UpdateSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -444,7 +444,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
+   * {@link UpdateSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
    * queries.
    * - DELETE FROM T WHERE A = 32 is rewritten into
    * INSERT INTO T SELECT &lt;selectCols&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
@@ -470,7 +470,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
+   * {@link UpdateSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
    * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into
    * INSERT INTO T SELECT &lt;selectCols&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
    *

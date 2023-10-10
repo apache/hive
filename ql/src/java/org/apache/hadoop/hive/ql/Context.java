@@ -169,6 +169,7 @@ public class Context {
   private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
   private int deleteBranchOfUpdateIdx = -1;
   private Operation operation = Operation.OTHER;
+  private boolean splitUpdate = false;
   private WmContext wmContext;
 
   private boolean isExplainPlan = false;
@@ -198,6 +199,11 @@ public class Context {
 
   public void setOperation(Operation operation) {
     this.operation = operation;
+  }
+
+  public void setOperation(Operation operation, boolean splitUpdate) {
+    setOperation(operation);
+    this.splitUpdate = splitUpdate;
   }
 
   public Operation getOperation() {
@@ -305,7 +311,7 @@ public class Context {
       case OTHER:
         return DestClausePrefix.INSERT;
       case UPDATE:
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE)) {
+        if (splitUpdate) {
           return getMergeDestClausePrefix(curNode);
         }
         return DestClausePrefix.UPDATE;
@@ -429,6 +435,7 @@ public class Context {
     this.isUpdateDeleteMerge = ctx.isUpdateDeleteMerge;
     this.isLoadingMaterializedView = ctx.isLoadingMaterializedView;
     this.operation = ctx.operation;
+    this.splitUpdate = ctx.splitUpdate;
     this.wmContext = ctx.wmContext;
     this.isExplainPlan = ctx.isExplainPlan;
     this.statsSource = ctx.statsSource;
@@ -1346,8 +1353,7 @@ public class Context {
   }
 
   public boolean isDeleteBranchOfUpdate(String dest) {
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE) &&
-            !HiveConf.getBoolVar(conf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE)) {
+    if (!splitUpdate) {
       return false;
     }
 

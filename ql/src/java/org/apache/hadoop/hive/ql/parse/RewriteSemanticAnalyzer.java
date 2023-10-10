@@ -17,18 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.antlr.runtime.TokenRewriteStream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
@@ -48,10 +37,11 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.util.Collections.singletonList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -63,11 +53,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   protected static final Logger LOG = LoggerFactory.getLogger(RewriteSemanticAnalyzer.class);
 
   protected boolean useSuper = false;
-  protected static final String INDENT = "  ";
-  private IdentifierQuoter quotedIdentifierHelper;
   private Table targetTable;
-  private String targetTableFullName;
-
 
   RewriteSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -78,7 +64,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     if (useSuper) {
       super.analyzeInternal(tree);
     } else {
-      quotedIdentifierHelper = new IdentifierQuoter(ctx.getTokenRewriteStream());
       analyze(tree);
       cleanUpMetaColumnAccessControl();
     }
@@ -88,8 +73,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
   private void analyze(ASTNode tree) throws SemanticException {
     ASTNode tableName = getTargetTableNode(tree);
-
-    targetTableFullName = getFullTableNameForSQL(tableName);
     targetTable = getTable(tableName, db, true);
     validateTxnManager(targetTable);
     validateTargetTable(targetTable);
@@ -108,52 +91,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     } finally {
       useSuper = false;
     }
-  }
-
-  /**
-   * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
-   * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
-   */
-  protected void addColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr)
-          throws SemanticException {
-    // If the table is partitioned, we need to select the partition columns as well.
-    if (partCols != null) {
-      for (FieldSchema fschema : partCols) {
-        rewrittenQueryStr.append(", ");
-        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
-      }
-    }
-  }
-
-  /**
-   * Append list of columns to rewritten statement.
-   */
-  protected void addColsToSelect(List<FieldSchema> cols, StringBuilder rewrittenQueryStr,
-                                 ASTNode target) throws SemanticException {
-    addColsToSelect(cols, rewrittenQueryStr, getSimpleTableName(target));
-  }
-
-  /**
-   * Append list of columns to rewritten statement.
-   * Column names are qualified with the specified alias and quoted.
-   */
-  protected void addColsToSelect(List<FieldSchema> cols, StringBuilder rewrittenQueryStr, String alias) {
-    // If the table is partitioned, we need to select the partition columns as well.
-    if (cols != null) {
-      for (FieldSchema fschema : cols) {
-        rewrittenQueryStr.append(", ");
-        rewrittenQueryStr.append(alias).append('.');
-        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
-      }
-    }
-  }
-
-  protected void addPartitionColsAsValues(List<FieldSchema> partCols, String alias, List<String> values) {
-    if (partCols == null) {
-      return;
-    }
-    partCols.forEach(
-            fieldSchema -> values.add(alias + "." + HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf)));
   }
 
   /**
@@ -359,7 +296,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    * SemanticAnalyzer will generate a WriteEntity for the target table since it doesn't know/check
    * if the read and write are of the same table in "insert ... select ....".  Since DbTxnManager
    * uses Read/WriteEntity objects to decide which locks to acquire, we get more concurrency if we
-   * have change the table WriteEntity to a set of partition WriteEntity objects based on
+   * have changed the table WriteEntity to a set of partition WriteEntity objects based on
    * ReadEntity objects computed for this table.
    */
   protected void updateOutputs(Table targetTable) {
@@ -430,256 +367,5 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     // Since any DDL now advances the write id, we should ignore the write Id,
     // while comparing two tables
     return targetTable.equalsWithIgnoreWriteId(entity.getTable());
-  }
-
-  /**
-   * Returns the table name to use in the generated query preserving original quotes/escapes if any.
-   * @see #getFullTableNameForSQL(ASTNode)
-   */
-  protected String getSimpleTableName(ASTNode n) throws SemanticException {
-    return HiveUtils.unparseIdentifier(getSimpleTableNameBase(n), this.conf);
-  }
-
-  // Patch up the projection list for updates, putting back the original set expressions.
-  // Walk through the projection list and replace the column names with the
-  // expressions from the original update.  Under the TOK_SELECT (see above) the structure
-  // looks like:
-  // TOK_SELECT -> TOK_SELEXPR -> expr
-  //           \-> TOK_SELEXPR -> expr ...
-  protected void patchProjectionForUpdate(ASTNode insertBranch, Map<Integer, ASTNode> setColExprs) {
-    ASTNode rewrittenSelect = (ASTNode) insertBranch.getChildren().get(1);
-    assert rewrittenSelect.getToken().getType() == HiveParser.TOK_SELECT :
-            "Expected TOK_SELECT as second child of TOK_INSERT but found " + rewrittenSelect.getName();
-    for (Map.Entry<Integer, ASTNode> entry : setColExprs.entrySet()) {
-      ASTNode selExpr = (ASTNode) rewrittenSelect.getChildren().get(entry.getKey());
-      assert selExpr.getToken().getType() == HiveParser.TOK_SELEXPR :
-              "Expected child of TOK_SELECT to be TOK_SELEXPR but was " + selExpr.getName();
-      // Now, change it's child
-      selExpr.setChild(0, entry.getValue());
-    }
-  }
-
-  protected StringBuilder createRewrittenQueryStrBuilder() {
-    return new StringBuilder("FROM\n");
-  }
-
-  protected void appendTarget(StringBuilder rewrittenQueryStr, ASTNode target, String targetName) {
-    rewrittenQueryStr.append(INDENT).append(targetTableFullName);
-    if (isAliased(target)) {
-      rewrittenQueryStr.append(" ").append(targetName);
-    }
-    rewrittenQueryStr.append('\n');
-  }
-
-  protected boolean isAliased(ASTNode n) {
-    switch (n.getType()) {
-      case HiveParser.TOK_TABREF:
-        return findTabRefIdxs(n)[0] != 0;
-      case HiveParser.TOK_TABNAME:
-        return false;
-      case HiveParser.TOK_SUBQUERY:
-        assert n.getChildCount() > 1 : "Expected Derived Table to be aliased";
-        return true;
-      default:
-        throw raiseWrongType("TOK_TABREF|TOK_TABNAME", n);
-    }
-  }
-
-  protected void appendInsertBranch(StringBuilder rewrittenQueryStr, String hintStr, List<String> values) {
-    rewrittenQueryStr.append("INSERT INTO ").append(targetTableFullName);
-    addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
-    rewrittenQueryStr.append("\n");
-
-    rewrittenQueryStr.append(INDENT);
-    rewrittenQueryStr.append("SELECT ");
-    if (isNotBlank(hintStr)) {
-      rewrittenQueryStr.append(hintStr);
-    }
-
-    rewrittenQueryStr.append(StringUtils.join(values, ","));
-    rewrittenQueryStr.append("\n");
-  }
-
-  protected void appendSortBy(StringBuilder rewrittenQueryStr, List<String> keys) {
-    if (keys.isEmpty()) {
-      return;
-    }
-    rewrittenQueryStr.append(INDENT).append("SORT BY ");
-    rewrittenQueryStr.append(StringUtils.join(keys, ","));
-    rewrittenQueryStr.append("\n");
-  }
-
-  /**
-   * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it.
-   * Since HiveLexer.g is written such that it strips away any ` (back ticks) around
-   * quoted identifiers we need to add those back to generated SQL.
-   * Additionally, the parser only produces tokens of type Identifier and never
-   * QuotedIdentifier (HIVE-6013).  So here we just quote all identifiers.
-   * (') around String literals are retained w/o issues
-   */
-  private static class IdentifierQuoter {
-    private final TokenRewriteStream trs;
-    private final IdentityHashMap<ASTNode, ASTNode> visitedNodes = new IdentityHashMap<>();
-
-    IdentifierQuoter(TokenRewriteStream trs) {
-      this.trs = trs;
-      if (trs == null) {
-        throw new IllegalArgumentException("Must have a TokenRewriteStream");
-      }
-    }
-
-    private void visit(ASTNode n) {
-      if (n.getType() == HiveParser.Identifier) {
-        if (visitedNodes.containsKey(n)) {
-          /**
-           * Since we are modifying the stream, it's not idempotent.  Ideally, the caller would take
-           * care to only quote Identifiers in each subtree once, but this makes it safe
-           */
-          return;
-        }
-        visitedNodes.put(n, n);
-        trs.insertBefore(n.getToken(), "`");
-        trs.insertAfter(n.getToken(), "`");
-      }
-      if (n.getChildCount() <= 0) {
-        return;
-      }
-      for (Node c : n.getChildren()) {
-        visit((ASTNode)c);
-      }
-    }
-  }
-
-  /**
-   * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it without
-   * needing to understand what it is (except for QuotedIdentifiers).
-   */
-  protected String getMatchedText(ASTNode n) {
-    quotedIdentifierHelper.visit(n);
-    return ctx.getTokenRewriteStream().toString(n.getTokenStartIndex(),
-            n.getTokenStopIndex() + 1).trim();
-  }
-
-  public static final String DELETE_PREFIX = "__d__";
-  public static final String SUB_QUERY_ALIAS = "s";
-
-  protected ColumnAppender getColumnAppender(String subQueryAlias, String deletePrefix) {
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
-    return nonNativeAcid ? new NonNativeAcidColumnAppender(targetTable, conf, subQueryAlias, deletePrefix) :
-            new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
-  }
-
-  protected static abstract class ColumnAppender {
-    protected final Table table;
-    protected final HiveConf conf;
-    protected final String subQueryAlias;
-
-    protected ColumnAppender(Table table, HiveConf conf, String subQueryAlias) {
-      this.table = table;
-      this.conf = conf;
-      this.subQueryAlias = subQueryAlias;
-    }
-
-    public abstract void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation);
-   
-    public void appendAcidSelectColumnsForDeletedRecords(StringBuilder stringBuilder, Context.Operation operation) {
-      throw new UnsupportedOperationException();
-    }
-    
-    public abstract List<String> getDeleteValues(Context.Operation operation);
-    public abstract List<String> getSortKeys();
-
-    protected String qualify(String columnName) {
-      if (isBlank(subQueryAlias)) {
-        return columnName;
-      }
-      return String.format("%s.%s", subQueryAlias, columnName);
-    }
-  }
-
-  protected static class NativeAcidColumnAppender extends ColumnAppender {
-
-    public NativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias) {
-      super(table, conf, subQueryAlias);
-    }
-
-    @Override
-    public void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation) {
-      stringBuilder.append("ROW__ID,");
-      for (FieldSchema fieldSchema : table.getPartCols()) {
-        String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
-        stringBuilder.append(identifier);
-        stringBuilder.append(",");
-      }
-    }
-
-    @Override
-    public List<String> getDeleteValues(Context.Operation operation) {
-      List<String> deleteValues = new ArrayList<>(1 + table.getPartCols().size());
-      deleteValues.add(qualify("ROW__ID"));
-      for (FieldSchema fieldSchema : table.getPartCols()) {
-        deleteValues.add(qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf)));
-      }
-      return deleteValues;
-    }
-
-    @Override
-    public List<String> getSortKeys() {
-      return singletonList(qualify("ROW__ID"));
-    }
-  }
-
-  protected static class NonNativeAcidColumnAppender extends ColumnAppender {
-    private final String deletePrefix;
-
-    public NonNativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias, String deletePrefix) {
-      super(table, conf, subQueryAlias);
-      this.deletePrefix = deletePrefix;
-    }
-
-    @Override
-    public void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation) {
-      appendAcidSelectColumns(stringBuilder, operation, false);
-    }
-    
-    @Override
-    public void appendAcidSelectColumnsForDeletedRecords(StringBuilder stringBuilder, Context.Operation operation) {
-      appendAcidSelectColumns(stringBuilder, operation, true);
-    }
-
-    private void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation, boolean markRowIdAsDeleted) {
-      List<FieldSchema> acidSelectColumns = table.getStorageHandler().acidSelectColumns(table, operation);
-      for (FieldSchema fieldSchema : acidSelectColumns) {
-        String identifier = markRowIdAsDeleted && fieldSchema.equals(table.getStorageHandler().getRowId()) ? 
-          "-1" : HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
-        stringBuilder.append(identifier);
-
-        if (StringUtils.isNotEmpty(deletePrefix) && !markRowIdAsDeleted) {
-          stringBuilder.append(" AS ");
-          String prefixedIdentifier = HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
-          stringBuilder.append(prefixedIdentifier);
-        }
-        stringBuilder.append(",");
-      }
-    }
-
-    @Override
-    public List<String> getDeleteValues(Context.Operation operation) {
-      List<FieldSchema> acidSelectColumns = table.getStorageHandler().acidSelectColumns(table, operation);
-      List<String> deleteValues = new ArrayList<>(acidSelectColumns.size());
-      for (FieldSchema fieldSchema : acidSelectColumns) {
-        String prefixedIdentifier = HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
-        deleteValues.add(qualify(prefixedIdentifier));
-      }
-      return deleteValues;
-    }
-
-    @Override
-    public List<String> getSortKeys() {
-      return table.getStorageHandler().acidSortColumns(table, Context.Operation.DELETE).stream()
-              .map(fieldSchema -> qualify(
-                      HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
-              .collect(Collectors.toList());
-    }
   }
 }

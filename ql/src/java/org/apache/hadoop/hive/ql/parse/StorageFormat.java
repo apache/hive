@@ -170,7 +170,7 @@ public class StorageFormat {
     return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(name));
   }
 
-  protected void processStorageFormat(String name) throws SemanticException {
+  public void processStorageFormat(String name) throws SemanticException {
     StorageFormatDescriptor descriptor = getDescriptor(name, "STORED AS clause");
     inputFormat = ensureClassExists(descriptor.getInputFormat());
     outputFormat = ensureClassExists(descriptor.getOutputFormat());

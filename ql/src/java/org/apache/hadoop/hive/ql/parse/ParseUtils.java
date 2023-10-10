@@ -675,11 +675,17 @@ public final class ParseUtils {
     return val;
   }
 
+  public static ReparseResult parseRewrittenQuery(Context ctx,
+                                                  StringBuilder rewrittenQueryStr)
+      throws SemanticException {
+    return parseRewrittenQuery(ctx, rewrittenQueryStr.toString());
+  }
+
   /**
    * Parse the newly generated SQL statement to get a new AST.
    */
   public static ReparseResult parseRewrittenQuery(Context ctx,
-      StringBuilder rewrittenQueryStr)
+      String rewrittenQueryStr)
       throws SemanticException {
     // Set dynamic partitioning to nonstrict so that queries do not need any partition
     // references.
@@ -699,12 +705,12 @@ public final class ParseUtils {
     rewrittenCtx.setStatsSource(ctx.getStatsSource());
     rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
     rewrittenCtx.setIsUpdateDeleteMerge(true);
-    rewrittenCtx.setCmd(rewrittenQueryStr.toString());
+    rewrittenCtx.setCmd(rewrittenQueryStr);
 
     ASTNode rewrittenTree;
     try {
-      LOG.info("Going to reparse <" + ctx.getCmd() + "> as \n<" + rewrittenQueryStr.toString() + ">");
-      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx);
+      LOG.info("Going to reparse <" + ctx.getCmd() + "> as \n<" + rewrittenQueryStr + ">");
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr, rewrittenCtx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
     }
