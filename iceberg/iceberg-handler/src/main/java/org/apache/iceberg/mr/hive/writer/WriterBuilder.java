@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -120,11 +121,19 @@ public class WriterBuilder {
         new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null, deleteFileFormat, null, null, null,
             skipRowData ? null : dataSchema);
 
+    boolean copyOnWriteMode = RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(
+        properties.get(TableProperties.DELETE_MODE)) && operation == Operation.DELETE;
+
     HiveIcebergWriter writer;
     switch (operation) {
       case DELETE:
-        writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
+        if (copyOnWriteMode) {
+          writer = new HiveIcebergCopyOnWriteRecordWriter(dataSchema, specs, currentSpecId, writerFactory,
+            outputFileFactory, io, targetFileSize);
+        } else {
+          writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
             io, targetFileSize, skipRowData);
+        }
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,

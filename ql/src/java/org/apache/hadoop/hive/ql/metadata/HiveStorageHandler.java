@@ -463,6 +463,10 @@ public interface HiveStorageHandler extends Configurable {
     return Collections.emptyList();
   }
 
+  default FieldSchema getRowId() {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
    * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into

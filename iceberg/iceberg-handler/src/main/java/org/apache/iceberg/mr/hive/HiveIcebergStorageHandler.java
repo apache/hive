@@ -370,7 +370,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public DecomposedPredicate decomposePredicate(JobConf jobConf, Deserializer deserializer, ExprNodeDesc exprNodeDesc) {
     DecomposedPredicate predicate = new DecomposedPredicate();
     predicate.residualPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
-    predicate.pushedPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
+    ExprNodeDesc pushedPredicate = exprNodeDesc.clone();
+
+    List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
+    if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
+        nodeDesc.getCols().contains(VirtualColumn.FILE_PATH.getName()))) {
+      if (subExprNodes.size() == 1) {
+        pushedPredicate = subExprNodes.get(0);
+      } else if (subExprNodes.isEmpty()) {
+        pushedPredicate = null;
+      }
+    }
+    predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
     return predicate;
   }
 
@@ -1072,6 +1083,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       default:
         return ImmutableList.of();
     }
+  }
+
+  @Override
+  public FieldSchema getRowId() {
+    VirtualColumn rowId = VirtualColumn.ROW_POSITION;
+    return new FieldSchema(rowId.getName(), rowId.getTypeInfo().getTypeName(), "");
   }
 
   @Override
