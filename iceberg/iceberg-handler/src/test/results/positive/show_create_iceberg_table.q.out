@@ -70,12 +70,12 @@ CREATE EXTERNAL TABLE `ice_t_transform`(
   `bucket_field` int, 
   `identity_field` int)
 PARTITIONED BY SPEC ( 
-YEAR(`year_field`),
-MONTH(`month_field`),
-DAY(`day_field`),
-HOUR(`hour_field`),
-TRUNCATE(2, `truncate_field`),
-BUCKET(2, `bucket_field`),
+YEAR(`year_field`), 
+MONTH(`month_field`), 
+DAY(`day_field`), 
+HOUR(`hour_field`), 
+TRUNCATE(2, `truncate_field`), 
+BUCKET(2, `bucket_field`), 
 `identity_field`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
@@ -126,12 +126,12 @@ CREATE EXTERNAL TABLE `ice_t_transform_prop`(
   `bucket_field` int, 
   `identity_field` int)
 PARTITIONED BY SPEC ( 
-YEAR(`year_field`),
-MONTH(`month_field`),
-DAY(`day_field`),
-HOUR(`hour_field`),
-TRUNCATE(2, `truncate_field`),
-BUCKET(2, `bucket_field`),
+YEAR(`year_field`), 
+MONTH(`month_field`), 
+DAY(`day_field`), 
+HOUR(`hour_field`), 
+TRUNCATE(2, `truncate_field`), 
+BUCKET(2, `bucket_field`), 
 `identity_field`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
