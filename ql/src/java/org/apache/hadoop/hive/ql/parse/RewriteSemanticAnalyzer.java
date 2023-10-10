@@ -581,6 +581,11 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
 
     public abstract void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation);
+   
+    public void appendAcidSelectColumnsForDeletedRecords(StringBuilder stringBuilder, Context.Operation operation) {
+      throw new UnsupportedOperationException();
+    }
+    
     public abstract List<String> getDeleteValues(Context.Operation operation);
     public abstract List<String> getSortKeys();
 
@@ -634,12 +639,22 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
     @Override
     public void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation) {
+      appendAcidSelectColumns(stringBuilder, operation, false);
+    }
+    
+    @Override
+    public void appendAcidSelectColumnsForDeletedRecords(StringBuilder stringBuilder, Context.Operation operation) {
+      appendAcidSelectColumns(stringBuilder, operation, true);
+    }
+
+    private void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation, boolean markRowIdAsDeleted) {
       List<FieldSchema> acidSelectColumns = table.getStorageHandler().acidSelectColumns(table, operation);
       for (FieldSchema fieldSchema : acidSelectColumns) {
-        String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
+        String identifier = markRowIdAsDeleted && fieldSchema.equals(table.getStorageHandler().getRowId()) ? 
+          "-1" : HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
         stringBuilder.append(identifier);
-        
-        if (StringUtils.isNotEmpty(deletePrefix)) {
+
+        if (StringUtils.isNotEmpty(deletePrefix) && !markRowIdAsDeleted) {
           stringBuilder.append(" AS ");
           String prefixedIdentifier = HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
           stringBuilder.append(prefixedIdentifier);
