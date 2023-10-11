@@ -37,17 +37,16 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-llap-client</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-exec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-metastore</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.pac4j</groupId>
@@ -164,12 +163,6 @@
                       </includes>
                     </filter>
                     <filter>
-                      <artifact>org.apache.hive.shims:hive-shims-0.23</artifact>
-                      <includes>
-                        <include>**</include>
-                      </includes>
-                    </filter>
-                    <filter>
                       <artifact>org.apache.parquet:parquet-hadoop-bundle</artifact>
                       <excludes>
                         <exclude>shaded/parquet/org/codehaus/jackson/**</exclude>
@@ -178,12 +171,13 @@
                     <filter>
                       <artifact>org.apache.hadoop:hadoop-common</artifact>
                       <includes>
-                        <include>org/apache/hadoop/security/*</include>
+                        <include>org/apache/hadoop/security/**</include>
                         <include>org/apache/hadoop/conf/*</include>
-                        <include>org/apache/hadoop/fs/*</include>
+                        <include>org/apache/hadoop/fs/**</include>
                         <include>org/apache/hadoop/metrics2/*</include>
                         <include>org/apache/hadoop/metrics2/lib/*</include>
                         <include>org/apache/hadoop/metrics2/impl/*</include>
+                        <include>org/apache/hadoop/util/Preconditions.class</include>
                         <include>org/apache/hadoop/util/ReflectionUtils.class</include>
                         <include>org/apache/hadoop/util/ReflectionUtils$1.class</include>
                         <include>org/apache/hadoop/io/Writable.class</include>
@@ -245,7 +239,6 @@
                       <exclude>commons-digester:*</exclude>
                       <exclude>commons-el:*</exclude>
                       <exclude>commons-httpclient:*</exclude>
-                      <exclude>commons-io:*</exclude>
                       <exclude>commons-net:*</exclude>
                       <exclude>commons-pool:*</exclude>
                       <exclude>com.google.code.findbugs:*</exclude>
@@ -302,6 +295,8 @@
                       <exclude>org.apache.hadoop:hadoop-annotations</exclude>
                       <exclude>org.apache.hadoop:hadoop-auth</exclude>
                       <exclude>org.apache.hbase*:*</exclude>
+                      <exclude>org.apache.hive:hive-classification</exclude>
+                      <exclude>org.apache.hive:hive-storage-api</exclude>
                       <exclude>org.apache.hive:hive-vector-code-gen</exclude>
                       <exclude>org.apache.htrace:*</exclude>
                       <exclude>org.apache.logging.log4j:*</exclude>
@@ -311,13 +306,12 @@
                       <exclude>org.codehaus.jettison:*</exclude>
                       <exclude>org.datanucleus:*</exclude>
                       <exclude>org.eclipse.jetty.aggregate:*</exclude>
+                      <exclude>org.eclipse.jetty:*</exclude>
                       <exclude>org.fusesource.leveldbjni:*</exclude>
                       <exclude>org.glassfish.jersey*:*</exclude>
                       <exclude>org.hamcrest:*</exclude>
                       <exclude>org.htrace:*</exclude>
                       <exclude>org.ow2.asm:*</exclude>
-                      <exclude>org.slf4j:slf4j-log4j12</exclude>
-                      <exclude>org.slf4j:slf4j-reload4j</exclude>
                       <exclude>org.tukaani:*</exclude>
                       <exclude>org.xerial.snappy:*</exclude>
                       <exclude>tomcat:*</exclude>
@@ -338,10 +332,6 @@
                     <relocation>
                       <pattern>com.google.common</pattern>
                       <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>org.apache.commons</pattern>
-                      <shadedPattern>org.apache.hive.org.apache.commons</shadedPattern>
                     </relocation>
                     <relocation>
                       <pattern>com.facebook</pattern>
