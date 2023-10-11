@@ -3861,14 +3861,16 @@ public class HiveConf extends Configuration {
         "Furthermore, using SIMPLE formatter may lead to strange behavior, and unexpected results when combined " +
         "with SQL functions/operators that are using the new DATETIME formatter."),
 
-    HIVE_DATETIME_RESOLVERSTYLE("hive.datetime.resolver.style", "SMART", new StringSet("SMART", "STRICT", "LENIENT"),
-        "* SMART: Using smart resolution will perform the sensible default for each field,For example," +
+    HIVE_DATETIME_RESOLVER_STYLE("hive.datetime.formatter.resolver.style", "SMART",
+        new StringSet("SMART", "STRICT", "LENIENT"),
+        "This property only takes effect when the hive.datetime.formatter is set to DATETIME." +
+            "* SMART: Using smart resolution will perform the sensible default for each field,For example," +
             " Any value beyond the last valid day-of-month will be converted to the last valid day-of-month." +
             "* STRICT: Using strict resolution will ensure that all parsed values are within the outer range of valid" +
             " values for the field. For example, resolving year-month and day-of-month will ensure that" +
             " the day-of-month is valid for the year-month, rejecting invalid values." +
-            "* LENIENT: Using lenient resolution will resolve the values in an appropriate lenient manner. For " +
-            "example, lenient mode allows the month to be outside the range 1 to 12. " +
+            "* LENIENT (Not recommended): Using lenient resolution will resolve the values in an appropriate lenient " +
+            "manner .For example, lenient mode allows the month to be outside the range 1 to 12. " +
             "For example, month 15 is treated as being 3 months after month 12."),
 
      // HiveServer2 specific configs

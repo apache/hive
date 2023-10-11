@@ -63,7 +63,8 @@ public interface InstantFormatter {
     };
     /**
      * Creates a new formatter with the specified zone id.
-     * @param zone - the zone id 
+     * @param zone - the zone id
+     * @param resolverStyle - The style is used to control how the input is resolved.
      * @return a new formatter with the specified zone id.
      */
     abstract InstantFormatter newFormatter(ZoneId zone, ResolverStyle resolverStyle);
@@ -79,7 +80,7 @@ public interface InstantFormatter {
     ZoneId zoneId = TimestampTZUtil.parseTimeZone(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE));
     Type type = Type.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DATETIME_FORMATTER).toUpperCase());
     ResolverStyle resolverStyle = ResolverStyle.valueOf(HiveConf.getVar(conf,
-        HiveConf.ConfVars.HIVE_DATETIME_RESOLVERSTYLE).toUpperCase());
+        HiveConf.ConfVars.HIVE_DATETIME_RESOLVER_STYLE).toUpperCase());
     return type.newFormatter(zoneId, resolverStyle);
   }
 

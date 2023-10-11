@@ -82,34 +82,29 @@ public class TestGenericUDFToUnixTimestampEvaluateStringString {
   }
 
   @Test
-  public void testEvaluate() throws HiveException, InterruptedException {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_FORMATTER, formatter);
-    conf.setVar(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE, zone);
-    conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_RESOLVERSTYLE, resolverStyle);
-    SessionState state = SessionState.start(conf);
-    udf.initialize(argInspectors);
-    LongWritable result = (LongWritable) udf.evaluate(
-        new DeferredObject[] { new DeferredJavaObject(new Text(value)), new DeferredJavaObject(new Text(pattern)) });
-    assertEquals(udfDisplayWithInputs(), expectedResult, result);
-    SessionState.endStart(state);
+  public void testEvaluateToUnixTimeStamp() throws HiveException, InterruptedException {
+    testEvaluateWithUDF(udf);
   }
 
   @Test
   public void testEvaluateUnixTimeStamp() throws HiveException, InterruptedException {
+    testEvaluateWithUDF(udfUnixTimeStamp);
+  }
+
+  private void testEvaluateWithUDF(GenericUDF udfToTest) throws HiveException, InterruptedException {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_FORMATTER, formatter);
     conf.setVar(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE, zone);
-    conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_RESOLVERSTYLE, resolverStyle);
+    conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_RESOLVER_STYLE, resolverStyle);
     SessionState state = SessionState.start(conf);
-    udfUnixTimeStamp.initialize(argInspectors);
-    LongWritable result = (LongWritable) udfUnixTimeStamp.evaluate(
+    udfToTest.initialize(argInspectors);
+    LongWritable result = (LongWritable) udfToTest.evaluate(
         new DeferredObject[] { new DeferredJavaObject(new Text(value)), new DeferredJavaObject(new Text(pattern)) });
-    assertEquals(udfDisplayWithInputs(), expectedResult, result);
+    assertEquals(udfDisplayWithInputs(udfToTest), expectedResult, result);
     SessionState.endStart(state);
   }
 
-  private String udfDisplayWithInputs() {
+  private String udfDisplayWithInputs(GenericUDF udf) {
     return udf.getDisplayString(new String[] { value, pattern }) + " sessionZone=" + zone + ", formatter=" + formatter
         + ", resolver Style=" + resolverStyle;
   }
