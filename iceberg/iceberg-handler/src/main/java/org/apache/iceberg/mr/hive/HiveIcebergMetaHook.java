@@ -245,9 +245,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (icebergTable == null) {
-      if (Catalogs.hiveCatalog(conf, catalogProperties)) {
-        catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
-      }
 
       setFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 

@@ -158,8 +158,7 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"9\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
-	iceberg.orc.files.only	true                
+	iceberg.orc.files.only	true
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
@@ -373,8 +372,7 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"9\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
-	iceberg.orc.files.only	false               
+	iceberg.orc.files.only	false
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
@@ -588,8 +586,7 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"9\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
-	iceberg.orc.files.only	false               
+	iceberg.orc.files.only	false
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
