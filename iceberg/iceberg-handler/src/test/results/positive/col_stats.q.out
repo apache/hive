@@ -513,7 +513,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"}]}
-	format-version      	2
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
@@ -556,7 +556,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"int\"}]}
-	format-version      	2
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   

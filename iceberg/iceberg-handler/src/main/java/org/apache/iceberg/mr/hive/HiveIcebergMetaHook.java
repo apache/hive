@@ -541,9 +541,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
       catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(preAlterTableProperties.spec));
       setFileFormat(preAlterTableProperties.format);
-      if (Catalogs.hiveCatalog(conf, catalogProperties)) {
-        catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
-      }
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           preAlterTableProperties.partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else if (currentAlterTableOp != null) {

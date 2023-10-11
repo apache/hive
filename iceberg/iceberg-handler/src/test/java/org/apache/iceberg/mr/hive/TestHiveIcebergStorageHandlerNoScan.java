@@ -1000,9 +1000,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Properties tableProperties = new Properties();
     tableProperties.putAll(hmsParams);
 
-    if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      expectedIcebergProperties.put(TableProperties.ENGINE_HIVE_ENABLED, "true");
-    }
     if (HiveVersion.min(HiveVersion.HIVE_3)) {
       expectedIcebergProperties.put("bucketing_version", "2");
     }

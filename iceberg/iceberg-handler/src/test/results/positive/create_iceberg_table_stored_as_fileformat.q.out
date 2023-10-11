@@ -35,7 +35,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	iceberg.orc.files.only	true
+	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -102,7 +102,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	iceberg.orc.files.only	false
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -169,7 +169,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	iceberg.orc.files.only	false
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -236,7 +236,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	iceberg.orc.files.only	false
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -298,7 +298,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
 	dummy               	dummy_value         
-	iceberg.orc.files.only	true
+	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
