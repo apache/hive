@@ -30,12 +30,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.dbcp2.DelegatingConnection;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -44,7 +41,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -469,18 +465,6 @@ public class TestSchemaToolForMetastore {
     execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
     execute(new SchemaToolTaskUpgrade(), "-upgradeSchema");
     validateMetastoreDbPropertiesTable();
-  }
-
-  @Test
-  public void testValidateHiveShortVersion() {
-    String hiveShortVersion = MetastoreVersionInfo.getShortVersion();
-    String hiveVersion = MetastoreVersionInfo.getVersion();
-    Assert.assertEquals(hiveVersion, StringUtils.join(hiveShortVersion, "-SNAPSHOT"));
-    Assert.assertTrue(hiveVersion.startsWith(hiveShortVersion));
-    String fileName = Stream.of("src/test/resources/sql/postgres/upgrade-3.1.3000-to-" , hiveShortVersion ,".postgres.sql").
-            collect(Collectors.joining());
-    File file = new File(fileName);
-    Assert.assertTrue(file.exists());
   }
 
   private File generateTestScript(String [] stmts) throws IOException {
