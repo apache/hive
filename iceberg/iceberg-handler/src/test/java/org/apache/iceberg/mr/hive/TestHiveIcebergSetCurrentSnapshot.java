@@ -87,5 +87,14 @@ public class TestHiveIcebergSetCurrentSnapshot extends HiveIcebergStorageHandler
         "SnapshotRef unknown_ref does not exist", () -> {
           shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT('unknown_ref')");
         });
+
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT" +
+            "(" + table.currentSnapshot().snapshotId() + ")");
+
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "SnapshotRef " + table.currentSnapshot().snapshotId() + " does not exist", () -> {
+          shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT" +
+              "('" + table.currentSnapshot().snapshotId() + "')");
+        });
   }
 }

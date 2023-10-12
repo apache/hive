@@ -161,7 +161,7 @@ public class AlterTableExecuteSpec<T> {
   /**
    * Value object class, that stores the set snapshot version operation specific parameters
    * <ul>
-   *   <li>snapshot Id: it should be a valid snapshot version</li>
+   *   <li>snapshot Id: it should be a valid snapshot version or a SnapshotRef name</li>
    * </ul>
    */
   public static class SetCurrentSnapshotSpec {
@@ -177,7 +177,7 @@ public class AlterTableExecuteSpec<T> {
 
     @Override
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotIdOrRefName).toString();
+      return MoreObjects.toStringHelper(this).add("snapshotIdOrRefName", snapshotIdOrRefName).toString();
     }
   }
 
