@@ -178,6 +178,6 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
     if (!(t instanceof JDOException || t instanceof NucleusException)) {
       return false;
     }
-    return RecoverableExceptions.isRecoverableException(t);
+    return DatabaseProduct.isRecoverableException(t);
   }
 }

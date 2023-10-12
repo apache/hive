@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -26,7 +27,9 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -47,6 +50,10 @@ import com.google.common.base.Preconditions;
  * */
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
+  private static final Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
+          // TODO: collect more unrecoverable SQLExceptions
+          SQLIntegrityConstraintViolationException.class
+  };
 
   public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
   public DbType dbType;
@@ -152,6 +159,11 @@ public class DatabaseProduct implements Configurable {
       dbt = DbType.UNDEFINED;
     }
     return dbt;
+  }
+
+  public static boolean isRecoverableException(Throwable t) {
+    return Stream.of(unrecoverableSqlExceptions)
+                 .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
   }
 
   public final boolean isDERBY() {

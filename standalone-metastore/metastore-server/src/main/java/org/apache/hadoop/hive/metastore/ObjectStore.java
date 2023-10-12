@@ -4478,7 +4478,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     private void handleDirectSqlError(Exception ex, String savePoint) throws MetaException, NoSuchObjectException {
-      if (!allowJdo || !RecoverableExceptions.isRecoverableException(ex)) {
+      if (!allowJdo || !DatabaseProduct.isRecoverableException(ex)) {
         throw ExceptionHandler.newMetaException(ex);
       }
       String message = null;
