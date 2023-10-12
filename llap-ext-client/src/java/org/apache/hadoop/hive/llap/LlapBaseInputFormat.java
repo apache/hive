@@ -37,6 +37,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -65,6 +66,7 @@ import org.apache.hadoop.mapred.InputSplitWithLocationInfo;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.security.Credentials;
@@ -106,6 +108,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   private String query;
   private boolean useArrow;
   private long arrowAllocatorLimit;
+  private BufferAllocator allocator;
   private final Random rand = new Random();
 
   public static final String URL_KEY = "llap.if.hs2.connection";
@@ -114,6 +117,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String PWD_KEY = "llap.if.pwd";
   public static final String HANDLE_ID = "llap.if.handleid";
   public static final String DB_KEY = "llap.if.database";
+  public static final String SESSION_QUERIES_FOR_GET_NUM_SPLITS = "llap.session.queries.for.get.num.splits";
+  public static final Pattern SET_QUERY_PATTERN = Pattern.compile("^\\s*set\\s+.*=.+$", Pattern.CASE_INSENSITIVE);
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
@@ -125,9 +130,15 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     this.query = query;
   }
 
+  //Exposed only for testing, clients should use LlapBaseInputFormat(boolean, BufferAllocator instead)
   public LlapBaseInputFormat(boolean useArrow, long arrowAllocatorLimit) {
     this.useArrow = useArrow;
     this.arrowAllocatorLimit = arrowAllocatorLimit;
+  }
+
+  public LlapBaseInputFormat(boolean useArrow, BufferAllocator allocator) {
+    this.useArrow = useArrow;
+    this.allocator = allocator;
   }
 
   public LlapBaseInputFormat() {
@@ -206,10 +217,19 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     @SuppressWarnings("rawtypes")
     LlapBaseRecordReader recordReader;
     if(useArrow) {
-      recordReader = new LlapArrowBatchRecordReader(
-          socket.getInputStream(), llapSplit.getSchema(),
-          ArrowWrapperWritable.class, job, llapClient, socket,
-          arrowAllocatorLimit);
+      if(allocator != null) {
+        //Client provided their own allocator
+        recordReader = new LlapArrowBatchRecordReader(
+            socket.getInputStream(), llapSplit.getSchema(),
+            ArrowWrapperWritable.class, job, llapClient, socket,
+            allocator);
+      } else {
+        //Client did not provide their own allocator, use constructor for global allocator
+        recordReader = new LlapArrowBatchRecordReader(
+            socket.getInputStream(), llapSplit.getSchema(),
+            ArrowWrapperWritable.class, job, llapClient, socket,
+            arrowAllocatorLimit);
+      }
     } else {
       recordReader = new LlapBaseRecordReader(socket.getInputStream(),
           llapSplit.getSchema(), BytesWritable.class, job, llapClient, (java.io.Closeable)socket);
@@ -259,6 +279,20 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         if (database != null && !database.isEmpty()) {
           stmt.execute("USE " + database);
         }
+        String sessionQueries = job.get(SESSION_QUERIES_FOR_GET_NUM_SPLITS);
+        if (sessionQueries != null && !sessionQueries.trim().isEmpty()) {
+          String[] queries = sessionQueries.trim().split(",");
+          for (String q : queries) {
+            //allow only set queries
+            if (SET_QUERY_PATTERN.matcher(q).matches()) {
+              LOG.debug("Executing session query: {}", q);
+              stmt.execute(q);
+            } else {
+              LOG.warn("Only SET queries are allowed, not executing this query: {}", q);
+            }
+          }
+        }
+
         ResultSet res = stmt.executeQuery(sql);
         while (res.next()) {
           // deserialize split

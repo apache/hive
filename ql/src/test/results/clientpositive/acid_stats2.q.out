@@ -1,0 +1,265 @@
+PREHOOK: query: create table stats3(key int,value string) stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats3
+POSTHOOK: query: create table stats3(key int,value string) stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats3
+PREHOOK: query: insert into table stats3  values (1, "foo")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats3
+POSTHOOK: query: insert into table stats3  values (1, "foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats3
+POSTHOOK: Lineage: stats3.key SCRIPT []
+POSTHOOK: Lineage: stats3.value SCRIPT []
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+1
+PREHOOK: query: insert into table stats3  values (2, "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats3
+POSTHOOK: query: insert into table stats3  values (2, "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats3
+POSTHOOK: Lineage: stats3.key SCRIPT []
+POSTHOOK: Lineage: stats3.value SCRIPT []
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: update stats3 set value = "baz" where key = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: update stats3 set value = "baz" where key = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: update stats3 set value = "baz" where key = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: update stats3 set value = "baz" where key = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: delete from stats3 where key = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: delete from stats3 where key = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: delete from stats3 where key = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: delete from stats3 where key = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+1
+PREHOOK: query: delete from stats3 where key = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: delete from stats3 where key = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table stats3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: drop table stats3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3

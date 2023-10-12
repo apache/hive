@@ -2875,10 +2875,8 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl
-    // call-2: check existence of side file for mock:/mocktbl/0_0
-    // call-3: check existence of side file for  mock:/mocktbl/0_1
-    assertEquals(3, readOpsDelta);
+    // call-1: getAcidState - mock:/mocktbl
+    assertEquals(1, readOpsDelta);
 
     // enable cache and use default strategy
     conf.set(ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "10Mb");
@@ -2916,7 +2914,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl
+    // call-1: getAcidState - mock:/mocktbl
     assertEquals(1, readOpsDelta);
 
     // revert back to local fs
@@ -3031,7 +3029,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl1
+    // call-1: getAcidState - mock:/mocktbl1
     assertEquals(1, readOpsDelta);
 
     // revert back to local fs
@@ -3150,7 +3148,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl2
+    // call-1: getAcidState - mock:/mocktbl2
     assertEquals(1, readOpsDelta);
 
     // revert back to local fs
@@ -4030,7 +4028,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2");
     OrcSplit split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir, null);
     OrcInputFormat inputFormat = new OrcInputFormat();
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));
@@ -4058,7 +4056,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2,3");
     split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir, null);
     inputFormat = new OrcInputFormat();
     reader = inputFormat.getReader(split, new AcidInputFormat.Options(conf));
     record = 0;
@@ -4176,7 +4174,7 @@ public class TestInputOutputFormat {
     // Specify an OrcSplit that starts beyond the offset of the last stripe.
     OrcSplit split = new OrcSplit(testFilePath, null, lastStripeOffset + 1, lastStripeLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir, null);
     OrcInputFormat inputFormat = new OrcInputFormat();
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));

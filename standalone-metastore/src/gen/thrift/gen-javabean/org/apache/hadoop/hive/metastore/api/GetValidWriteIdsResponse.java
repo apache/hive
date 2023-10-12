@@ -331,14 +331,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // TBL_VALID_WRITE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list634 = iprot.readListBegin();
-                struct.tblValidWriteIds = new java.util.ArrayList<TableValidWriteIds>(_list634.size);
-                @org.apache.thrift.annotation.Nullable TableValidWriteIds _elem635;
-                for (int _i636 = 0; _i636 < _list634.size; ++_i636)
+                org.apache.thrift.protocol.TList _list642 = iprot.readListBegin();
+                struct.tblValidWriteIds = new java.util.ArrayList<TableValidWriteIds>(_list642.size);
+                @org.apache.thrift.annotation.Nullable TableValidWriteIds _elem643;
+                for (int _i644 = 0; _i644 < _list642.size; ++_i644)
                 {
-                  _elem635 = new TableValidWriteIds();
-                  _elem635.read(iprot);
-                  struct.tblValidWriteIds.add(_elem635);
+                  _elem643 = new TableValidWriteIds();
+                  _elem643.read(iprot);
+                  struct.tblValidWriteIds.add(_elem643);
                 }
                 iprot.readListEnd();
               }
@@ -364,9 +364,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(TBL_VALID_WRITE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tblValidWriteIds.size()));
-          for (TableValidWriteIds _iter637 : struct.tblValidWriteIds)
+          for (TableValidWriteIds _iter645 : struct.tblValidWriteIds)
           {
-            _iter637.write(oprot);
+            _iter645.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tblValidWriteIds.size());
-        for (TableValidWriteIds _iter638 : struct.tblValidWriteIds)
+        for (TableValidWriteIds _iter646 : struct.tblValidWriteIds)
         {
-          _iter638.write(oprot);
+          _iter646.write(oprot);
         }
       }
     }
@@ -402,14 +402,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetValidWriteIdsResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list639 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.tblValidWriteIds = new java.util.ArrayList<TableValidWriteIds>(_list639.size);
-        @org.apache.thrift.annotation.Nullable TableValidWriteIds _elem640;
-        for (int _i641 = 0; _i641 < _list639.size; ++_i641)
+        org.apache.thrift.protocol.TList _list647 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tblValidWriteIds = new java.util.ArrayList<TableValidWriteIds>(_list647.size);
+        @org.apache.thrift.annotation.Nullable TableValidWriteIds _elem648;
+        for (int _i649 = 0; _i649 < _list647.size; ++_i649)
         {
-          _elem640 = new TableValidWriteIds();
-          _elem640.read(iprot);
-          struct.tblValidWriteIds.add(_elem640);
+          _elem648 = new TableValidWriteIds();
+          _elem648.read(iprot);
+          struct.tblValidWriteIds.add(_elem648);
         }
       }
       struct.setTblValidWriteIdsIsSet(true);

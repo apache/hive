@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
@@ -26,11 +28,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.hadoop.hive.ql.parse.repl.DumpType.EVENT_ALTER_PARTITION;
+import static org.apache.hadoop.hive.ql.parse.repl.DumpType.EVENT_ALTER_TABLE;
+
 public class TableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     try {
       List<Task<? extends Serializable>> importTasks = new ArrayList<>();
+      long writeId = 0;
+
+      if (context.dmd.getDumpType().equals(EVENT_ALTER_TABLE)) {
+        AlterTableMessage message = deserializer.getAlterTableMessage(context.dmd.getPayload());
+        writeId = message.getWriteId();
+      } else if (context.dmd.getDumpType().equals(EVENT_ALTER_PARTITION)) {
+        AlterPartitionMessage message = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
+        writeId = message.getWriteId();
+      }
 
       context.nestedContext.setConf(context.hiveConf);
       EximUtil.SemanticAnalyzerWrapperContext x =
@@ -43,7 +57,7 @@ public class TableHandler extends AbstractMessageHandler {
       // Also, REPL LOAD doesn't support external table and hence no location set as well.
       ImportSemanticAnalyzer.prepareImport(false, false, false, false,
           (context.precursor != null), null, context.tableName, context.dbName,
-          null, context.location, x, updatedMetadata, context.getTxnMgr());
+          null, context.location, x, updatedMetadata, context.getTxnMgr(), writeId);
 
       return importTasks;
     } catch (Exception e) {

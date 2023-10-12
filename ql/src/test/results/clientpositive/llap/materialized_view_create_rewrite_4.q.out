@@ -275,7 +275,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
-	rawDataSize         	248                 
+	rawDataSize         	0                   
 	totalSize           	734                 
 	transactional       	true                
 	transactional_properties	default             
@@ -513,7 +513,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
-	rawDataSize         	248                 
+	rawDataSize         	0                   
 	totalSize           	734                 
 	transactional       	true                
 	transactional_properties	default             
@@ -760,7 +760,7 @@ STAGE PLANS:
                   alias: cmv_basetable_2_n2
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 2) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
@@ -972,11 +972,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
 	numRows             	3                   
-	rawDataSize         	248                 
-	totalSize           	1499                
+	rawDataSize         	0                   
+	totalSize           	1491                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1620,7 +1621,7 @@ STAGE PLANS:
                   alias: cmv_basetable_2_n2
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 4) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 6) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)

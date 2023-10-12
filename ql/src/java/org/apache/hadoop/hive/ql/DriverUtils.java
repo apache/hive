@@ -33,7 +33,7 @@ public class DriverUtils {
     SessionState.setCurrentSessionState(sessionState);
     boolean isOk = false;
     try {
-      QueryState qs = new QueryState.Builder().withHiveConf(conf).nonIsolated().build();
+      QueryState qs = new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(true).nonIsolated().build();
       Driver driver = new Driver(qs, user, null, null);
       driver.setCompactionWriteIds(writeIds);
       try {

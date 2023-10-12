@@ -59,23 +59,29 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
-import junit.framework.TestCase;
-
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 /**
  * TestHive.
  *
  */
-public class TestHive extends TestCase {
-  protected Hive hm;
-  protected HiveConf hiveConf;
+public class TestHive {
+  protected static Hive hm;
+  protected static HiveConf hiveConf;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    hiveConf = new HiveConf(this.getClass());
+  @BeforeClass
+  public static void setUp() throws Exception {
+    hiveConf = new HiveConf(TestHive.class);
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -94,10 +100,9 @@ public class TestHive extends TestCase {
     }
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @AfterClass
+  public static void tearDown() throws Exception {
     try {
-      super.tearDown();
       // disable trash
       hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
       hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
@@ -324,6 +329,12 @@ public class TestHive extends TestCase {
       tbl.setCreateTime(ft.getTTable().getCreateTime());
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
+      // Txn stuff set by metastore
+      if (tbl.getTTable().isSetWriteId() != ft.getTTable().isSetWriteId()) {
+        // No need to compare this field.
+        ft.getTTable().setWriteId(0);
+        tbl.getTTable().setWriteId(0);
+      }
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
           + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
       assertEquals("SerializationLib is not set correctly", tbl
@@ -593,7 +604,7 @@ public class TestHive extends TestCase {
 
       Table table = createPartitionedTable(dbName, tableName);
       table.getParameters().put("auto.purge", "true");
-      hm.alterTable(tableName, table, null);
+      hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
           .put("ds", "20141216")

@@ -25,11 +25,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -45,6 +41,12 @@ import java.util.Map;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
+
+  // Transactional stats states
+  static final public char STAT_OPEN = 'o';
+  static final public char STAT_INVALID = 'i';
+  static final public char STAT_COMMITTED = 'c';
+  static final public char STAT_OBSOLETE = 's';
 
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse} to a
@@ -219,6 +221,14 @@ public class TxnUtils {
       return false;
     }
     Map<String, String> parameters = table.getParameters();
+    String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+  }
+
+  public static boolean isTransactionalTable(Map<String, String> parameters) {
+    if (parameters == null) {
+      return false;
+    }
     String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }

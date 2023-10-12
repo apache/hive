@@ -328,13 +328,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list586 = iprot.readListBegin();
-                struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list586.size);
-                long _elem587;
-                for (int _i588 = 0; _i588 < _list586.size; ++_i588)
+                org.apache.thrift.protocol.TList _list594 = iprot.readListBegin();
+                struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list594.size);
+                long _elem595;
+                for (int _i596 = 0; _i596 < _list594.size; ++_i596)
                 {
-                  _elem587 = iprot.readI64();
-                  struct.txn_ids.add(_elem587);
+                  _elem595 = iprot.readI64();
+                  struct.txn_ids.add(_elem595);
                 }
                 iprot.readListEnd();
               }
@@ -360,9 +360,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txn_ids.size()));
-          for (long _iter589 : struct.txn_ids)
+          for (long _iter597 : struct.txn_ids)
           {
-            oprot.writeI64(_iter589);
+            oprot.writeI64(_iter597);
           }
           oprot.writeListEnd();
         }
@@ -387,9 +387,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txn_ids.size());
-        for (long _iter590 : struct.txn_ids)
+        for (long _iter598 : struct.txn_ids)
         {
-          oprot.writeI64(_iter590);
+          oprot.writeI64(_iter598);
         }
       }
     }
@@ -398,13 +398,13 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, OpenTxnsResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list591 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list591.size);
-        long _elem592;
-        for (int _i593 = 0; _i593 < _list591.size; ++_i593)
+        org.apache.thrift.protocol.TList _list599 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list599.size);
+        long _elem600;
+        for (int _i601 = 0; _i601 < _list599.size; ++_i601)
         {
-          _elem592 = iprot.readI64();
-          struct.txn_ids.add(_elem592);
+          _elem600 = iprot.readI64();
+          struct.txn_ids.add(_elem600);
         }
       }
       struct.setTxn_idsIsSet(true);

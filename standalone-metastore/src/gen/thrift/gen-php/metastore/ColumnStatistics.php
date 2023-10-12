@@ -37,6 +37,11 @@ class ColumnStatistics
                 'class' => '\metastore\ColumnStatisticsObj',
                 ),
         ),
+        3 => array(
+            'var' => 'isStatsCompliant',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -47,6 +52,10 @@ class ColumnStatistics
      * @var \metastore\ColumnStatisticsObj[]
      */
     public $statsObj = null;
+    /**
+     * @var bool
+     */
+    public $isStatsCompliant = null;
 
     public function __construct($vals = null)
     {
@@ -56,6 +65,9 @@ class ColumnStatistics
             }
             if (isset($vals['statsObj'])) {
                 $this->statsObj = $vals['statsObj'];
+            }
+            if (isset($vals['isStatsCompliant'])) {
+                $this->isStatsCompliant = $vals['isStatsCompliant'];
             }
         }
     }
@@ -90,16 +102,23 @@ class ColumnStatistics
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->statsObj = array();
-                        $_size245 = 0;
-                        $_etype248 = 0;
-                        $xfer += $input->readListBegin($_etype248, $_size245);
-                        for ($_i249 = 0; $_i249 < $_size245; ++$_i249) {
-                            $elem250 = null;
-                            $elem250 = new \metastore\ColumnStatisticsObj();
-                            $xfer += $elem250->read($input);
-                            $this->statsObj []= $elem250;
+                        $_size252 = 0;
+                        $_etype255 = 0;
+                        $xfer += $input->readListBegin($_etype255, $_size252);
+                        for ($_i256 = 0; $_i256 < $_size252; ++$_i256) {
+                            $elem257 = null;
+                            $elem257 = new \metastore\ColumnStatisticsObj();
+                            $xfer += $elem257->read($input);
+                            $this->statsObj []= $elem257;
                         }
                         $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->isStatsCompliant);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -132,10 +151,15 @@ class ColumnStatistics
             }
             $xfer += $output->writeFieldBegin('statsObj', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->statsObj));
-            foreach ($this->statsObj as $iter251) {
-                $xfer += $iter251->write($output);
+            foreach ($this->statsObj as $iter258) {
+                $xfer += $iter258->write($output);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->isStatsCompliant !== null) {
+            $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 3);
+            $xfer += $output->writeBool($this->isStatsCompliant);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

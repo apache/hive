@@ -12,15 +12,18 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetTableResult");
 
   private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetTableResultStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetTableResultTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable Table table; // required
+  private boolean isStatsCompliant; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    TABLE((short)1, "table");
+    TABLE((short)1, "table"),
+    IS_STATS_COMPLIANT((short)2, "isStatsCompliant");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -38,6 +41,8 @@ package org.apache.hadoop.hive.metastore.api;
       switch(fieldId) {
         case 1: // TABLE
           return TABLE;
+        case 2: // IS_STATS_COMPLIANT
+          return IS_STATS_COMPLIANT;
         default:
           return null;
       }
@@ -79,11 +84,16 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
+  private static final int __ISSTATSCOMPLIANT_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.IS_STATS_COMPLIANT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class)));
+    tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetTableResult.class, metaDataMap);
   }
@@ -102,9 +112,11 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public GetTableResult(GetTableResult other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetTable()) {
       this.table = new Table(other.table);
     }
+    this.isStatsCompliant = other.isStatsCompliant;
   }
 
   public GetTableResult deepCopy() {
@@ -114,6 +126,8 @@ package org.apache.hadoop.hive.metastore.api;
   @Override
   public void clear() {
     this.table = null;
+    setIsStatsCompliantIsSet(false);
+    this.isStatsCompliant = false;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -140,6 +154,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public boolean isIsStatsCompliant() {
+    return this.isStatsCompliant;
+  }
+
+  public void setIsStatsCompliant(boolean isStatsCompliant) {
+    this.isStatsCompliant = isStatsCompliant;
+    setIsStatsCompliantIsSet(true);
+  }
+
+  public void unsetIsStatsCompliant() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  /** Returns true if field isStatsCompliant is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsStatsCompliant() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  public void setIsStatsCompliantIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TABLE:
@@ -147,6 +183,14 @@ package org.apache.hadoop.hive.metastore.api;
         unsetTable();
       } else {
         setTable((Table)value);
+      }
+      break;
+
+    case IS_STATS_COMPLIANT:
+      if (value == null) {
+        unsetIsStatsCompliant();
+      } else {
+        setIsStatsCompliant((java.lang.Boolean)value);
       }
       break;
 
@@ -158,6 +202,9 @@ package org.apache.hadoop.hive.metastore.api;
     switch (field) {
     case TABLE:
       return getTable();
+
+    case IS_STATS_COMPLIANT:
+      return isIsStatsCompliant();
 
     }
     throw new java.lang.IllegalStateException();
@@ -172,6 +219,8 @@ package org.apache.hadoop.hive.metastore.api;
     switch (field) {
     case TABLE:
       return isSetTable();
+    case IS_STATS_COMPLIANT:
+      return isSetIsStatsCompliant();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -200,6 +249,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_isStatsCompliant = true && this.isSetIsStatsCompliant();
+    boolean that_present_isStatsCompliant = true && that.isSetIsStatsCompliant();
+    if (this_present_isStatsCompliant || that_present_isStatsCompliant) {
+      if (!(this_present_isStatsCompliant && that_present_isStatsCompliant))
+        return false;
+      if (this.isStatsCompliant != that.isStatsCompliant)
+        return false;
+    }
+
     return true;
   }
 
@@ -210,6 +268,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetTable()) ? 131071 : 524287);
     if (isSetTable())
       hashCode = hashCode * 8191 + table.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetIsStatsCompliant()) ? 131071 : 524287);
+    if (isSetIsStatsCompliant())
+      hashCode = hashCode * 8191 + ((isStatsCompliant) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -228,6 +290,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetTable()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetIsStatsCompliant()).compareTo(other.isSetIsStatsCompliant());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsStatsCompliant()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isStatsCompliant, other.isStatsCompliant);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -260,6 +332,12 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.table);
     }
     first = false;
+    if (isSetIsStatsCompliant()) {
+      if (!first) sb.append(", ");
+      sb.append("isStatsCompliant:");
+      sb.append(this.isStatsCompliant);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -286,6 +364,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -319,6 +399,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // IS_STATS_COMPLIANT
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isStatsCompliant = iprot.readBool();
+              struct.setIsStatsCompliantIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -335,6 +423,11 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.table != null) {
         oprot.writeFieldBegin(TABLE_FIELD_DESC);
         struct.table.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
+        oprot.writeBool(struct.isStatsCompliant);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -355,6 +448,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void write(org.apache.thrift.protocol.TProtocol prot, GetTableResult struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.table.write(oprot);
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetIsStatsCompliant()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeBool(struct.isStatsCompliant);
+      }
     }
 
     @Override
@@ -363,6 +464,11 @@ package org.apache.hadoop.hive.metastore.api;
       struct.table = new Table();
       struct.table.read(iprot);
       struct.setTableIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.isStatsCompliant = iprot.readBool();
+        struct.setIsStatsCompliantIsSet(true);
+      }
     }
   }
 

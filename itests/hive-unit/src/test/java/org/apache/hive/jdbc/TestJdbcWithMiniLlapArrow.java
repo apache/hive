@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -62,9 +64,10 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = defaultConf();
+    conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
     MiniHS2.cleanupLocalDir();
-    miniHS2 = BaseJdbcWithMiniLlap.beforeTest(true);
+    miniHS2 = BaseJdbcWithMiniLlap.beforeTest(conf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
 
     Connection conDefault = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(),

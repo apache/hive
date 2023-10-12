@@ -20,20 +20,19 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.common.util.DateUtils;
 
 import com.google.common.base.Preconditions;
-
 
 /**
  * Abstract class to return various fields from a Timestamp or Date.
@@ -44,8 +43,7 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   protected final int colNum;
   protected final int field;
 
-  protected transient final Calendar calendar = Calendar.getInstance(
-      TimeZone.getTimeZone("UTC"));
+  protected final transient Calendar calendar = DateTimeMath.getProlepticGregorianCalendarUTC();
 
   public VectorUDFTimestampFieldDate(int field, int colNum, int outputColumnNum) {
     super(outputColumnNum);

@@ -2498,6 +2498,8 @@ public class HiveConf extends Configuration {
         "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\b" +
             "transactional tables.  This ensures that inserts (w/o overwrite) running concurrently\n" +
             "are not hidden by the INSERT OVERWRITE."),
+    HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
+        "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     /**
      * @deprecated Use MetastoreConf.TXN_TIMEOUT
      */
@@ -2680,6 +2682,8 @@ public class HiveConf extends Configuration {
     // For Arrow SerDe
     HIVE_ARROW_ROOT_ALLOCATOR_LIMIT("hive.arrow.root.allocator.limit", Long.MAX_VALUE,
         "Arrow root allocator memory size limitation in bytes."),
+    HIVE_ARROW_BATCH_ALLOCATOR_LIMIT("hive.arrow.batch.allocator.limit", 10_000_000_000L,
+        "Max bytes per arrow batch. This is a threshold, the memory is not pre-allocated."),
     HIVE_ARROW_BATCH_SIZE("hive.arrow.batch.size", 1000, "The number of rows sent in one Arrow batch."),
 
     // For Druid storage handler
@@ -3386,6 +3390,16 @@ public class HiveConf extends Configuration {
         "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
         "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
         "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    HIVE_SERVER2_PLAIN_LDAP_BIND_USER("hive.server2.authentication.ldap.binddn", null,
+        "The user with which to bind to the LDAP server, and search for the full domain name " +
+        "of the user being authenticated.\n" +
+        "This should be the full domain name of the user, and should have search access across all " +
+        "users in the LDAP tree.\n" +
+        "If not specified, then the user being authenticated will be used as the bind user.\n" +
+        "For example: CN=bindUser,CN=Users,DC=subdomain,DC=domain,DC=com"),
+    HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD("hive.server2.authentication.ldap.bindpw", null,
+        "The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
+        "If the username is specified, this parameter must also be specified."),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
         "Custom authentication class. Used when property\n" +
         "'hive.server2.authentication' is set to 'CUSTOM'. Provided class\n" +
@@ -3418,12 +3432,6 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
-    HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE("hive.server2.map.fair.scheduler.queue", true,
-        "If the YARN fair scheduler is configured and HiveServer2 is running in non-impersonation mode,\n" +
-        "this setting determines the user for fair scheduler queue mapping.\n" +
-        "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
-        "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
-        "If set to false, all Hive jobs go to the 'hive' user's queue."),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +
@@ -3684,7 +3692,11 @@ public class HiveConf extends Configuration {
         "internal use only. When false, don't suppress fatal exceptions like\n" +
         "NullPointerException, etc so the query will fail and assure it will be noticed",
         true),
-
+    HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED(
+        "hive.vectorized.execution.filesink.arrow.native.enabled", true,
+        "This flag should be set to true to enable the native vectorization\n" +
+        "of queries using the Arrow SerDe and FileSink.\n" +
+        "The default value is true."),
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
         + "partition operations including but not limited to insert, such as alter, describe etc."),
@@ -3706,6 +3718,7 @@ public class HiveConf extends Configuration {
          "Time to wait to finish prewarming spark executors"),
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false, ""),
+    HIVEUSEGOOGLEREGEXENGINE("hive.use.googleregex.engine",false,"whether to use google regex engine or not, default regex engine is java.util.regex"),
 
     HIVECOUNTERGROUP("hive.counters.group.name", "HIVE",
         "The name of counter group for internal Hive variables (CREATED_FILE, FATAL_ERROR, etc.)"),

@@ -262,10 +262,11 @@ public class StatsSetupConst {
     if (params == null) {
       return false;
     }
+    // TODO: should this also check that the basic flag is valid?
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     return stats.columnStats.containsKey(colName);
   }
-  
+
   public static void clearColumnStatsState(Map<String, String> params) {
     if (params == null) {
       return;
@@ -308,7 +309,7 @@ public class StatsSetupConst {
       setColumnStatsState(params, cols);
     }
   }
-  
+
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {
     if (statsAcc == null) {
       return new ColumnStatsAccurate();

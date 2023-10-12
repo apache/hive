@@ -251,7 +251,7 @@ public class CompactorMR {
     // and discovering that in getSplits is too late as we then have no way to pass it to our
     // mapper.
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, writeIds, false, true);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, false, true);
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if(parsedDeltas.size() > maxDeltastoHandle) {
@@ -326,7 +326,7 @@ public class CompactorMR {
       StorageDescriptor sd, ValidWriteIdList writeIds, CompactionInfo ci) throws IOException {
     LOG.debug("Going to delete directories for aborted transactions for MM table "
         + t.getDbName() + "." + t.getTableName());
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()),
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()),
         conf, writeIds, Ref.from(false), false, t.getParameters());
     removeFilesForMmTable(conf, dir);
 
@@ -354,7 +354,7 @@ public class CompactorMR {
       conf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
 
       String user = UserGroupInformation.getCurrentUser().getShortUserName();
-      SessionState sessionState = DriverUtils.setUpSessionState(conf, user, false);
+      SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
 
       // Note: we could skip creating the table and just add table type stuff directly to the
       //       "insert overwrite directory" command if there were no bucketing or list bucketing.
@@ -1028,7 +1028,18 @@ public class CompactorMR {
         AcidOutputFormat<WritableComparable, V> aof =
             instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-        writer = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+        Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+        cleanupTmpLocationOnTaskRetry(options, rootDir);
+        writer = aof.getRawRecordWriter(rootDir, options);
+      }
+   }
+
+    private void cleanupTmpLocationOnTaskRetry(AcidOutputFormat.Options options, Path rootDir) throws IOException {
+      Path tmpLocation = AcidUtils.createFilename(rootDir, options);
+      FileSystem fs = tmpLocation.getFileSystem(jobConf);
+
+      if (fs.exists(tmpLocation)) {
+        fs.delete(tmpLocation, true);
       }
     }
 

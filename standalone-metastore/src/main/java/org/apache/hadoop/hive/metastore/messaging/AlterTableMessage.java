@@ -55,4 +55,6 @@ public abstract class AlterTableMessage extends EventMessage {
     }
     return super.checkValid();
   }
+
+  public abstract Long getWriteId();
 }

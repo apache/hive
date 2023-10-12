@@ -144,6 +144,11 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList) throws MetaException {
+    return getTableModifier.apply(super.getTable(catName, dbName, tableName, writeIdList));
+  }
+
+  @Override
   public Partition getPartition(String catName, String dbName, String tableName,
                                 List<String> partVals) throws NoSuchObjectException, MetaException {
     return getPartitionModifier.apply(super.getPartition(catName, dbName, tableName, partVals));
@@ -161,7 +166,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
-  public void alterTable(String catName, String dbname, String name, Table newTable)
+  public Table alterTable(String catName, String dbname, String name, Table newTable, String queryValidWriteIds)
           throws InvalidObjectException, MetaException {
     if (alterTableModifier != null) {
       CallerArguments args = new CallerArguments(dbname);
@@ -172,7 +177,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
                 " DB: " + dbname + " table: " + name);
       }
     }
-    super.alterTable(catName, dbname, name, newTable);
+    return super.alterTable(catName, dbname, name, newTable, queryValidWriteIds);
   }
 
   @Override
