@@ -3387,7 +3387,7 @@ public class AcidUtils {
     boolean copyOnWriteMode = false;
     HiveStorageHandler storageHandler = table.getStorageHandler();
     if (storageHandler != null) {
-      copyOnWriteMode = storageHandler.shouldOverwrite(table, operation.name());
+      copyOnWriteMode = storageHandler.shouldOverwrite(table, operation);
     }
     return copyOnWriteMode;
   }
