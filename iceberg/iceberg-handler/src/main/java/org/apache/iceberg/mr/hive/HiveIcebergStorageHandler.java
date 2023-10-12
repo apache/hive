@@ -201,7 +201,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
   public static final String STATS = "/stats/";
-  static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
+  static final String WRITE_KEY = "iceberg.mr.output.table";
 
   /**
    * Function template for producing a custom sort expression function:
