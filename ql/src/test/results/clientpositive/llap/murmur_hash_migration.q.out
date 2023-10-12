@@ -955,10 +955,10 @@ POSTHOOK: Input: default@acid_ptn_bucket1@ds=today
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	2	3	NULL	today
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	4	4	1005	today
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	4	2	1003	today
-{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":3}	10	2	10	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	10	2	10	today
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	100	1	100	today
-{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	110	1	110	today
-{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":2}	128	2	128	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":2}	110	1	110	today
+{"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":3}	128	2	128	today
 PREHOOK: query: select ROW__ID, * from acid_ptn_bucket1 where ROW__ID.bucketid = 536936448 and ds='today' order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ptn_bucket1
@@ -972,7 +972,7 @@ POSTHOOK: Input: default@acid_ptn_bucket1@ds=today
 {"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	1	3	NULL	today
 {"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":1}	1	2	NULL	today
 {"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	3	3	1001	today
-{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":2}	103	2	103	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	103	2	103	today
 {"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":1}	111	1	111	today
-{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":3}	117	1	117	today
-{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":0}	129	1	129	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":2}	117	1	117	today
+{"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":3}	129	1	129	today
