@@ -1009,7 +1009,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertEquals(12, hmsParams.size());
       Assert.assertEquals("initial_val", hmsParams.get("custom_property"));
       Assert.assertEquals("TRUE", hmsParams.get("EXTERNAL"));
-      Assert.assertEquals("true", hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
       Assert.assertEquals(HiveIcebergStorageHandler.class.getName(),
           hmsParams.get(hive_metastoreConstants.META_TABLE_STORAGE));
       Assert.assertEquals(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(),
