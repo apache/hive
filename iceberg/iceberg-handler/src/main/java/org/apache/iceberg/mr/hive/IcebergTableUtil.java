@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
@@ -237,11 +238,18 @@ public class IcebergTableUtil {
    * @param table the iceberg table
    * @param value parameter of the rollback, that can be a timestamp in millis or a snapshot id
    */
-  public static void setCurrentSnapshot(Table table, Long value) {
+  public static void setCurrentSnapshot(Table table, String value) {
     ManageSnapshots manageSnapshots = table.manageSnapshots();
+    long snapshotId;
+    try {
+      snapshotId = Long.valueOf(value);
+    } catch (NumberFormatException e) {
+      snapshotId = Optional.ofNullable(table.refs().get(value)).map(ref -> ref.snapshotId()).orElseThrow(() ->
+          new IllegalArgumentException(String.format("SnapshotRef %s does not exist", value)));
+    }
     LOG.debug("Rolling the iceberg table {} from snapshot id {} to snapshot ID {}", table.name(),
         table.currentSnapshot().snapshotId(), value);
-    manageSnapshots.setCurrentSnapshot(value);
+    manageSnapshots.setCurrentSnapshot(snapshotId);
     manageSnapshots.commit();
   }
 

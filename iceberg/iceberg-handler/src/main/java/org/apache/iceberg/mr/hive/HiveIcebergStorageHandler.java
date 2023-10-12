@@ -817,8 +817,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         AlterTableExecuteSpec.SetCurrentSnapshotSpec setSnapshotVersionSpec =
             (AlterTableExecuteSpec.SetCurrentSnapshotSpec) executeSpec.getOperationParams();
         LOG.debug("Executing set current snapshot operation on iceberg table {}.{} to version {}", hmsTable.getDbName(),
-            hmsTable.getTableName(), setSnapshotVersionSpec.getSnapshotId());
-        IcebergTableUtil.setCurrentSnapshot(icebergTable, setSnapshotVersionSpec.getSnapshotId());
+            hmsTable.getTableName(), setSnapshotVersionSpec.getSnapshotIdOrRefName());
+        IcebergTableUtil.setCurrentSnapshot(icebergTable, setSnapshotVersionSpec.getSnapshotIdOrRefName());
         break;
       case FAST_FORWARD:
         AlterTableExecuteSpec.FastForwardSpec fastForwardSpec =

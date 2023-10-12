@@ -165,19 +165,19 @@ public class AlterTableExecuteSpec<T> {
    * </ul>
    */
   public static class SetCurrentSnapshotSpec {
-    private final long snapshotId;
+    private final String snapshotIdOrRefName;
 
-    public SetCurrentSnapshotSpec(Long snapshotId) {
-      this.snapshotId = snapshotId;
+    public SetCurrentSnapshotSpec(String snapshotIdOrRefName) {
+      this.snapshotIdOrRefName = snapshotIdOrRefName;
     }
 
-    public Long getSnapshotId() {
-      return snapshotId;
+    public String getSnapshotIdOrRefName() {
+      return snapshotIdOrRefName;
     }
 
     @Override
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotIdOrRefName).toString();
     }
   }
 
