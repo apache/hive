@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -298,6 +299,7 @@ public class HiveConnection implements java.sql.Connection {
       throw new SQLException(e);
     }
     jdbcUriString = connParams.getJdbcUriString();
+    LOG.debug("Establishing connection to " + jdbcUriString);
     // JDBC URL: jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
     // each list: <key1>=<val1>;<key2>=<val2> and so on
     // sess_var_list -> sessConfMap
@@ -306,6 +308,12 @@ public class HiveConnection implements java.sql.Connection {
     sessConfMap = connParams.getSessionVars();
     setupLoginTimeout();
     if (isKerberosAuthMode()) {
+      // Ensure UserGroupInformation includes any authorized Kerberos principals.
+      LOG.debug("Configuring Kerberos mode");
+      Configuration config = new Configuration();
+      config.set("hadoop.security.authentication", "Kerberos");
+      UserGroupInformation.setConfiguration(config);
+
       if (isEnableCanonicalHostnameCheck()) {
         host = Utils.getCanonicalHostName(connParams.getHost());
       } else {
