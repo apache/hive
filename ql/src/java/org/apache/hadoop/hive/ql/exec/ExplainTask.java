@@ -1448,7 +1448,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           ret = null;
         }
       } else {
-        task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true, sem.getCboInfo(),
+        task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false,
+            conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_INCLUDE_EXTENDED),
+            true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         ret = baos.toString();
       }
