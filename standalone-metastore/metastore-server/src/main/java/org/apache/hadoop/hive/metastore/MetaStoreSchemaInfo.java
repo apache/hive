@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 
+import static org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool.quote;
 
 public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   protected static final String UPGRADE_FILE_PREFIX = "upgrade-";
@@ -45,6 +46,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   protected static final String VERSION_UPGRADE_LIST = "upgrade.order";
   protected static final String PRE_UPGRADE_PREFIX = "pre-";
   protected static final String CREATE_USER_PREFIX = "create-user";
+  private static final String VERSION_QUERY = "SELECT t.<q>SCHEMA_VERSION<q> from <q>VERSION<q> t";
 
   private String[] hiveSchemaVersions;
   private final String metastoreHome;
@@ -234,18 +236,12 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
 
   @Override
   public String getMetaStoreSchemaVersion(MetaStoreConnectionInfo connectionInfo) throws HiveMetaException {
-    String versionQuery;
-    boolean needsQuotedIdentifier = HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType(),
-        connectionInfo.getMetaDbType(), false).needsQuotedIdentifier();
-    if (needsQuotedIdentifier) {
-      versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
-    } else {
-      versionQuery = "select t.SCHEMA_VERSION from VERSION t";
-    }
-    String schema = ( HiveSchemaHelper.DB_HIVE.equals(connectionInfo.getDbType()) ? "SYS" : null );
+    HiveSchemaHelper.NestedScriptParser db =
+        HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType(), connectionInfo.getMetaDbType(), false);
+    String schema = (HiveSchemaHelper.DB_HIVE.equals(connectionInfo.getDbType()) ? "SYS" : null);
     try (Connection metastoreDbConnection = HiveSchemaHelper.getConnectionToMetastore(connectionInfo, schema);
         Statement stmt = metastoreDbConnection.createStatement()) {
-      ResultSet res = stmt.executeQuery(versionQuery);
+      ResultSet res = stmt.executeQuery(quote(VERSION_QUERY, db.needsQuotedIdentifier(), db.getQuoteCharacter()));
       if (!res.next()) {
         throw new HiveMetaException("Could not find version info in metastore VERSION table.");
       }
