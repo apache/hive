@@ -45,29 +45,6 @@ POSTHOOK: query: alter table PARTITIONED_T add partition(dt='2023')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@partitioned_t
 POSTHOOK: Output: default@partitioned_t@dt=2023
-PREHOOK: query: alter table PARTITIONED_T compact 'minor'
-PREHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: Input: default@partitioned_t
-PREHOOK: Output: default@partitioned_t
-POSTHOOK: query: alter table PARTITIONED_T compact 'minor'
-POSTHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: Input: default@partitioned_t
-POSTHOOK: Output: default@partitioned_t
-PREHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
-PREHOOK: type: SHOW COMPACTIONS
-POSTHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
-POSTHOOK: type: SHOW COMPACTIONS
-CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	default	un_partitioned_t_minor	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	un_partitioned_t	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	partitioned_t	dt=2023	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
-PREHOOK: query: alter table PARTITIONED_T add partition(dt='2024')
-PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@partitioned_t
-POSTHOOK: query: alter table PARTITIONED_T add partition(dt='2024')
-POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@partitioned_t
-POSTHOOK: Output: default@partitioned_t@dt=2024
 PREHOOK: query: insert into PARTITIONED_T partition(dt='2023') values ('k1','v1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -98,6 +75,29 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_t@dt=2023
 POSTHOOK: Lineage: partitioned_t PARTITION(dt=2023).key SCRIPT []
 POSTHOOK: Lineage: partitioned_t PARTITION(dt=2023).val SCRIPT []
+PREHOOK: query: alter table PARTITIONED_T partition(dt='2023') compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_t
+PREHOOK: Output: default@partitioned_t@dt=2023
+POSTHOOK: query: alter table PARTITIONED_T partition(dt='2023') compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_t
+POSTHOOK: Output: default@partitioned_t@dt=2023
+PREHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: SHOW COMPACTIONS ORDER BY 'PARTITION' DESC
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	un_partitioned_t_minor	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	un_partitioned_t	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	partitioned_t	dt=2023	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: alter table PARTITIONED_T add partition(dt='2024')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@partitioned_t
+POSTHOOK: query: alter table PARTITIONED_T add partition(dt='2024')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@partitioned_t
+POSTHOOK: Output: default@partitioned_t@dt=2024
 PREHOOK: query: insert into PARTITIONED_T partition(dt='2024') values ('k1','v1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

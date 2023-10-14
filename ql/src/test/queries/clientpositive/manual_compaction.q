@@ -21,15 +21,15 @@ alter table UN_PARTITIONED_T_MINOR compact 'minor';
 
 alter table PARTITIONED_T add partition(dt='2023');
 
-alter table PARTITIONED_T compact 'minor';
+insert into PARTITIONED_T partition(dt='2023') values ('k1','v1');
+insert into PARTITIONED_T partition(dt='2023') values ('k2','v2');
+insert into PARTITIONED_T partition(dt='2023') values ('k3','v3');
+
+alter table PARTITIONED_T partition(dt='2023') compact 'minor';
 
 SHOW COMPACTIONS ORDER BY 'PARTITION' DESC;
 
 alter table PARTITIONED_T add partition(dt='2024');
-
-insert into PARTITIONED_T partition(dt='2023') values ('k1','v1');
-insert into PARTITIONED_T partition(dt='2023') values ('k2','v2');
-insert into PARTITIONED_T partition(dt='2023') values ('k3','v3');
 
 insert into PARTITIONED_T partition(dt='2024') values ('k1','v1');
 insert into PARTITIONED_T partition(dt='2024') values ('k2','v2');
