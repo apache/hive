@@ -161,23 +161,23 @@ public class AlterTableExecuteSpec<T> {
   /**
    * Value object class, that stores the set snapshot version operation specific parameters
    * <ul>
-   *   <li>snapshot Id: it should be a valid snapshot version</li>
+   *   <li>snapshot Id: it should be a valid snapshot version or a SnapshotRef name</li>
    * </ul>
    */
   public static class SetCurrentSnapshotSpec {
-    private final long snapshotId;
+    private final String snapshotIdOrRefName;
 
-    public SetCurrentSnapshotSpec(Long snapshotId) {
-      this.snapshotId = snapshotId;
+    public SetCurrentSnapshotSpec(String snapshotIdOrRefName) {
+      this.snapshotIdOrRefName = snapshotIdOrRefName;
     }
 
-    public Long getSnapshotId() {
-      return snapshotId;
+    public String getSnapshotIdOrRefName() {
+      return snapshotIdOrRefName;
     }
 
     @Override
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+      return MoreObjects.toStringHelper(this).add("snapshotIdOrRefName", snapshotIdOrRefName).toString();
     }
   }
 
