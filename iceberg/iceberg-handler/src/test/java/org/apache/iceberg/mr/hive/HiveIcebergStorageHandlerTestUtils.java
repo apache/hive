@@ -106,7 +106,7 @@ public class HiveIcebergStorageHandlerTestUtils {
   }
 
   static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp, String engine) {
-    shell.openSession();
+    shell.getSession();
 
     for (Map.Entry<String, String> property : testTables.properties().entrySet()) {
       shell.setHiveSessionValue(property.getKey(), property.getValue());

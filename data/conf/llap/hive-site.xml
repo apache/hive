@@ -20,21 +20,9 @@
 <configuration>
 
   <property>
-    <name>hive.metastore.client.cache.maxSize</name>
-    <value>10Mb</value>
-    <description>Max size for hive metastore client local cache</description>
-  </property>
-
-  <property>
     <name>hive.metastore.client.cache.enabled</name>
     <value>true</value>
     <description>This property enables a Caffeiene Cache for Metastore client</description>
-  </property>
-
-  <property>
-    <name>hive.metastore.client.cache.recordStats</name>
-    <value>true</value>
-    <description>This property enables recording metastore client cache stats in DEBUG logs</description>
   </property>
 
 <property>
@@ -132,14 +120,6 @@
   <name>hive.metastore.warehouse.dir</name>
   <value>${test.warehouse.dir}</value>
   <description></description>
-</property>
-
-<property>
-  <name>hive.metastore.metadb.dir</name>
-  <value>file://${test.tmp.dir}/metadb/</value>
-  <description>
-  Required by metastore server or if the uris argument below is not supplied
-  </description>
 </property>
 
 <property>

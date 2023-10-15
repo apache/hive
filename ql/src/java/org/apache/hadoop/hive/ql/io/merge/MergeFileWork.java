@@ -46,7 +46,6 @@ import java.util.List;
 public class MergeFileWork extends MapWork {
 
   private static final Logger LOG = LoggerFactory.getLogger(MergeFileWork.class);
-  private List<Path> inputPaths;
   private Path outputDir;
   private boolean hasDynamicPartitions;
   private boolean isListBucketingAlterTableConcatenate;
@@ -82,14 +81,6 @@ public class MergeFileWork extends MapWork {
       this.addPathToPartitionInfo(path, partDesc);
     }
     this.isListBucketingAlterTableConcatenate = false;
-  }
-
-  public List<Path> getInputPaths() {
-    return inputPaths;
-  }
-
-  public void setInputPaths(List<Path> inputPaths) {
-    this.inputPaths = inputPaths;
   }
 
   public Path getOutputDir() {
@@ -137,8 +128,6 @@ public class MergeFileWork extends MapWork {
         aliases, partDesc);
     // set internal input format for all partition descriptors
     partDesc.setInputFileFormatClass(internalInputFormat);
-    // Add the DP path to the list of input paths
-    inputPaths.add(path);
   }
 
   /**

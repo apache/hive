@@ -345,6 +345,10 @@ public class MetastoreSchemaTool {
 
   // Quote if the database requires it
   protected String quote(String stmt) {
+    return quote(stmt, needsQuotedIdentifier, quoteCharacter);
+  }
+
+  public static String quote(String stmt, boolean needsQuotedIdentifier, String quoteCharacter) {
     stmt = stmt.replace("<q>", needsQuotedIdentifier ? quoteCharacter : "");
     stmt = stmt.replace("<qa>", quoteCharacter);
     return stmt;

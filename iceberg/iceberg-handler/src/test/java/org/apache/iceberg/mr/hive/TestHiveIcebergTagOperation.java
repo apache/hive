@@ -174,4 +174,30 @@ public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEn
       Assert.assertTrue(e.getMessage().contains("Don't support write (insert/delete/update/merge) to iceberg tag"));
     }
   }
+
+  @Test
+  public void testDropTag() throws InterruptedException, IOException {
+    Table table =
+        testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    String tagName = "test_tag_1";
+    shell.executeStatement(String.format("ALTER TABLE customers CREATE TAG %s", tagName));
+    table.refresh();
+    Assert.assertNotNull(table.refs().get(tagName));
+
+    shell.executeStatement(String.format("ALTER TABLE customers DROP TAG IF EXISTS %s", tagName));
+    table.refresh();
+    Assert.assertNull(table.refs().get(tagName));
+
+    try {
+      // drop a non-exist tag
+      shell.executeStatement(String.format("ALTER TABLE customers DROP TAG %s", tagName));
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Tag does not exist: test_tag_1"));
+    }
+  }
 }

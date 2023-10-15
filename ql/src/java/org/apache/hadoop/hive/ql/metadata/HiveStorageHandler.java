@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
@@ -392,6 +393,14 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  /**
+   * Adds specific configurations to session for create table command.
+   * @param tblProps table properties
+   * @param hiveConf configuration
+   */
+  default void addResourcesForCreateTable(Map<String, String> tblProps, HiveConf hiveConf) {
+  }
+
   enum AcidSupportType {
     NONE,
     WITH_TRANSACTIONS,
@@ -452,6 +461,10 @@ public interface HiveStorageHandler extends Configurable {
    */
   default List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     return Collections.emptyList();
+  }
+
+  default FieldSchema getRowId() {
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -543,15 +556,20 @@ public interface HiveStorageHandler extends Configurable {
   default boolean commitInMoveTask() {
     return false;
   }
-
+  
   /**
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
    * @param commitProperties Commit properties which are needed for the handler based commit
-   * @param overwrite If this is an INSERT OVERWRITE then it is true
+   * @param operation the operation type
    * @throws HiveException If there is an error during commit
    */
-  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  default void storageHandlerCommit(Properties commitProperties, Operation operation) throws HiveException {
     throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+    storageHandlerCommit(commitProperties, overwrite ? Operation.IOW : Operation.OTHER);
   }
 
   /**
@@ -680,6 +698,28 @@ public interface HiveStorageHandler extends Configurable {
   default List<String> showPartitions(DDLOperationContext context,
       org.apache.hadoop.hive.ql.metadata.Table tbl) throws UnsupportedOperationException, HiveException {
     throw new UnsupportedOperationException("Storage handler does not support show partitions command");
+  }
+
+  default void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support validation of partition values");
+  }
+
+  default boolean canUseTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    return true;
+  }
+
+  default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Map<String, String> partitionSpec) throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
+            "by a partition specification.");
+  }
+
+  default ColumnInfo getColumnInfo(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String colName)
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting column type " +
+            "for a specific column.");
   }
 
 }

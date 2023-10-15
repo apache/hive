@@ -234,11 +234,14 @@ set hive.cbo.returnpath.hiveop=true ;
 select * from mfgr_brand_price_view_n1;        
         
 -- 24. testLateralViews
+-- HIVE-27470: implement returnpath for lateral views
+set hive.cbo.returnpath.hiveop=false;
 select p_mfgr, p_name, 
 lv_col, p_size, sum(p_size) over w1   as s
 from (select p_mfgr, p_name, p_size, array(1,2,3) arr from part) p 
 lateral view explode(arr) part_lv as lv_col
 window w1 as (distribute by p_mfgr sort by p_size, lv_col rows between 2 preceding and current row);        
+set hive.cbo.returnpath.hiveop=true;
 
 -- 25. testMultipleInserts3SWQs
 CREATE TABLE part_1_n1( 

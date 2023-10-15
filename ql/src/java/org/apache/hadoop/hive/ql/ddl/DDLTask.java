@@ -86,6 +86,10 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
         throw new IllegalArgumentException("Unknown DDL request: " + ddlDesc.getClass());
       }
     } catch (Throwable e) {
+      if(work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
+        LOG.warn("Error while table creation: ", e);
+        return 0;
+      }
       failed(e);
       if(ddlOperation != null) {
         LOG.error("DDLTask failed, DDL Operation: " + ddlOperation.getClass().toString(), e);

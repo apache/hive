@@ -103,11 +103,15 @@ class ZooKeeperHiveClientHelper {
       connParams.setZookeeperKeyStorePassword(
           StringUtils.defaultString(Utils.getPassword(sessionConf, JdbcConnectionParams.ZOOKEEPER_KEYSTORE_PASSWORD),
               ""));
+      connParams.setZookeeperKeyStoreType(
+          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_KEYSTORE_TYPE),""));
       connParams.setZookeeperTrustStoreLocation(
           StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_LOCATION), ""));
       connParams.setZookeeperTrustStorePassword(
           StringUtils.defaultString(Utils.getPassword(sessionConf, JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_PASSWORD),
               ""));
+      connParams.setZookeeperTrustStoreType(
+          StringUtils.defaultString(sessionConf.get(JdbcConnectionParams.ZOOKEEPER_TRUSTSTORE_TYPE),""));
     }
   }
 
@@ -119,8 +123,9 @@ class ZooKeeperHiveClientHelper {
             .retryPolicy(new ExponentialBackoffRetry(1000, 3))
             .zookeeperFactory(
             new SSLZookeeperFactory(connParams.isZooKeeperSslEnabled(), connParams.getZookeeperKeyStoreLocation(),
-                connParams.getZookeeperKeyStorePassword(), connParams.getZookeeperTrustStoreLocation(),
-                connParams.getZookeeperTrustStorePassword()))
+                connParams.getZookeeperKeyStorePassword(), connParams.getZookeeperKeyStoreType(),
+                connParams.getZookeeperTrustStoreLocation(),
+                connParams.getZookeeperTrustStorePassword(), connParams.getZookeeperTrustStoreType()))
             .build();
     zooKeeperClient.start();
     return zooKeeperClient;

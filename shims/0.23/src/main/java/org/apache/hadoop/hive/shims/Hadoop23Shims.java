@@ -410,9 +410,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode,
                        boolean usingLlap) throws IOException {
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
-      conf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 512);
+      conf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 4096);
       conf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 128);
-      conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 512);
+      conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 4096);
 
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
@@ -1519,7 +1519,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public HadoopShims.HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
     if (isHdfsEncryptionSupported()) {
       URI uri = fs.getUri();
-      if ("hdfs".equals(uri.getScheme())) {
+      if ("hdfs".equals(uri.getScheme()) && fs instanceof DistributedFileSystem) {
         return new HdfsEncryptionShim(uri, conf);
       }
     }

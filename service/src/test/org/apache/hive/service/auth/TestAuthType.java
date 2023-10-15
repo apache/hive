@@ -95,11 +95,6 @@ public class TestAuthType {
           HiveAuthConstants.AuthTypes authMech = EnumUtils.getEnumIgnoreCase(HiveAuthConstants.AuthTypes.class,
               authMethods[i]);
           Assert.assertTrue(authType.isEnabled(authMech));
-          if (i == 0) {
-            Assert.assertTrue(authType.isLoadedFirst(authMech));
-          } else {
-            Assert.assertFalse(authType.isLoadedFirst(authMech));
-          }
         }
       }
     } catch (Exception e) {

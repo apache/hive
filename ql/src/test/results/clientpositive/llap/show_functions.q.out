@@ -53,6 +53,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_remove
 array_slice
 array_union
 ascii
@@ -555,6 +556,7 @@ PREHOOK: query: SHOW FUNCTIONS LIKE '%e'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE '%e'
 POSTHOOK: type: SHOWFUNCTIONS
+array_remove
 array_slice
 assert_true
 case
@@ -678,6 +680,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_remove
 array_slice
 array_union
 ascii

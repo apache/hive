@@ -46,6 +46,14 @@ public class IcebergBranchExec {
       snapshotId = createBranchSpec.getSnapshotId();
     } else if (createBranchSpec.getAsOfTime() != null) {
       snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createBranchSpec.getAsOfTime());
+    } else if (createBranchSpec.getAsOfTag() != null) {
+      String tagName = createBranchSpec.getAsOfTag();
+      SnapshotRef snapshotRef = table.refs().get(tagName);
+      if (snapshotRef != null && snapshotRef.isTag()) {
+        snapshotId = snapshotRef.snapshotId();
+      } else {
+        throw new IllegalArgumentException(String.format("Tag %s does not exist", tagName));
+      }
     } else {
       snapshotId = table.currentSnapshot().snapshotId();
     }

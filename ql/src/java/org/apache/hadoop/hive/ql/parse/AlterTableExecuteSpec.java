@@ -36,7 +36,9 @@ public class AlterTableExecuteSpec<T> {
   public enum ExecuteOperationType {
     ROLLBACK,
     EXPIRE_SNAPSHOT,
-    SET_CURRENT_SNAPSHOT
+    SET_CURRENT_SNAPSHOT,
+    FAST_FORWARD,
+    CHERRY_PICK;
   }
 
   private final ExecuteOperationType operationType;
@@ -107,6 +109,8 @@ public class AlterTableExecuteSpec<T> {
     private long timestampMillis = -1L;
     private String[] idsToExpire = null;
 
+    private long fromTimestampMillis = -1L;
+
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
     }
@@ -115,8 +119,17 @@ public class AlterTableExecuteSpec<T> {
       this.idsToExpire = ids.split(",");
     }
 
+    public ExpireSnapshotsSpec(long fromTimestampMillis, long toTimestampMillis) {
+      this.fromTimestampMillis = fromTimestampMillis;
+      this.timestampMillis = toTimestampMillis;
+    }
+
     public Long getTimestampMillis() {
       return timestampMillis;
+    }
+
+    public Long getFromTimestampMillis() {
+      return fromTimestampMillis;
     }
 
     public String[] getIdsToExpire() {
@@ -127,10 +140,16 @@ public class AlterTableExecuteSpec<T> {
       return idsToExpire != null;
     }
 
+    public boolean isExpireByTimestampRange() {
+      return timestampMillis != -1 && fromTimestampMillis != -1;
+    }
+
     @Override
     public String toString() {
       MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
-      if (isExpireByIds()) {
+      if (isExpireByTimestampRange()) {
+        stringHelper.add("fromTimestampMillis", fromTimestampMillis).add("toTimestampMillis", timestampMillis);
+      } else if (isExpireByIds()) {
         stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
       } else {
         stringHelper.add("timestampMillis", timestampMillis);
@@ -142,17 +161,71 @@ public class AlterTableExecuteSpec<T> {
   /**
    * Value object class, that stores the set snapshot version operation specific parameters
    * <ul>
-   *   <li>snapshot Id: it should be a valid snapshot version</li>
+   *   <li>snapshot Id: it should be a valid snapshot version or a SnapshotRef name</li>
    * </ul>
    */
   public static class SetCurrentSnapshotSpec {
+    private final String snapshotIdOrRefName;
+
+    public SetCurrentSnapshotSpec(String snapshotIdOrRefName) {
+      this.snapshotIdOrRefName = snapshotIdOrRefName;
+    }
+
+    public String getSnapshotIdOrRefName() {
+      return snapshotIdOrRefName;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("snapshotIdOrRefName", snapshotIdOrRefName).toString();
+    }
+  }
+
+    /**
+   * Value object class, that stores the fast-forward operation specific parameters.
+   * <ul>
+   *   <li>source branch: the branch which needs to be fast-forwarded</li>
+     * <li>target branch: the branch to which the source branch needs to be fast-forwarded</li>
+   * </ul>
+   */
+  public static class FastForwardSpec {
+    private final String sourceBranch;
+    private final String targetBranch;
+
+    public FastForwardSpec(String sourceBranch, String targetBranch) {
+      this.sourceBranch = sourceBranch;
+      this.targetBranch = targetBranch;
+    }
+
+    public String getSourceBranch() {
+      return sourceBranch;
+    }
+
+    public String getTargetBranch() {
+      return targetBranch;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("sourceBranch", sourceBranch)
+          .add("targetBranch", targetBranch).toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the cherry-pick operation specific parameters.
+   * <ul>
+   *   <li>snapshotId: the snapshotId which needs to be cherry-picked</li>
+   * </ul>
+   */
+  public static class CherryPickSpec {
     private final long snapshotId;
 
-    public SetCurrentSnapshotSpec(Long snapshotId) {
+    public CherryPickSpec(long snapshotId) {
       this.snapshotId = snapshotId;
     }
 
-    public Long getSnapshotId() {
+    public long getSnapshotId() {
       return snapshotId;
     }
 

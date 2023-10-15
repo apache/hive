@@ -184,30 +184,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 ListSink
 
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t
-  LATERAL VIEW
-  INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t
-  LATERAL VIEW
-  INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col1=[$2], col2=[$3], col3=[$4])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
-
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t
@@ -264,20 +240,6 @@ STAGE PLANS:
                 expressions: col1 (type: string), col2 (type: int), col3 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-CBO PLAN:
-HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 30), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 30)))], rowType=[RecordType(VARCHAR(2147483647) col1, INTEGER col2, INTEGER col3)])
-  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
 PREHOOK: type: QUERY
@@ -724,28 +686,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 ListSink
 
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col1, tf.col2, tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col1=[$2], col2=[$3], col3=[$4])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
-
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t,
@@ -806,28 +746,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 ListSink
 
-PREHOOK: query: EXPLAIN CBO
-SELECT t.key
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT t.key
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(key=[$0])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
-
 PREHOOK: query: SELECT t.key
 FROM
   (SELECT key, value FROM mytbl_n1) t,
@@ -887,28 +805,6 @@ STAGE PLANS:
                 expressions: col5 (type: string)
                 outputColumnNames: _col0
                 ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT key, value FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col3=[$4])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, VARCHAR(2147483647) col1, INTEGER col2, VARCHAR(2147483647) col3)])
-    HiveProject(key=[$0], value=[$1])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 
 PREHOOK: query: SELECT tf.col3
 FROM
@@ -1026,28 +922,6 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         ListSink
-
-PREHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN CBO
-SELECT tf.col3
-FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
-  LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl_n1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveProject(col3=[$3])
-  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(INTEGER r, VARCHAR(2147483647) col1, INTEGER col2, INTEGER col3)])
-    HiveProject(r=[row_number() OVER (PARTITION BY 0 ORDER BY $0 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
-      HiveTableScan(table=[[default, mytbl_n1]], table:alias=[mytbl_n1])
 
 PREHOOK: query: SELECT tf.col3
 FROM

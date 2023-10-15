@@ -1,6 +1,6 @@
 PREHOOK: query: create function default.badfunc as 'my.nonexistent.class'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.badfunc
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to load UDF class: java.lang.ClassNotFoundException: my.nonexistent.class
 Please ensure that the JAR file containing this class has been properly installed in the auxiliary directory or was added with ADD JAR command.

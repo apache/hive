@@ -838,11 +838,70 @@ public class TestHive {
       partialSpec.put("hr", "14");
       assertEquals(1, hm.getPartitions(tbl, partialSpec).size());
 
+      // Test get partitions with max_parts
+      assertEquals(1, hm.getPartitions(tbl, new HashMap(), (short) 1).size());
+
       hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed");
       throw e;
+    }
+  }
+
+  @Test
+  public void testGetPartitionsWithMaxLimit() throws Exception {
+    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    String tableName = "table_for_get_partitions_with_max_limit";
+
+    try {
+      Map<String, String> part_spec = new HashMap<String, String>();
+
+      Table table = createPartitionedTable(dbName, tableName);
+      part_spec.clear();
+      part_spec.put("ds", "2025-06-30");
+      part_spec.put("hr", "11");
+      hm.createPartition(table, part_spec);
+
+      Thread.sleep(1);
+      part_spec.clear();
+      part_spec.put("ds", "2023-04-15");
+      part_spec.put("hr", "12");
+      hm.createPartition(table, part_spec);
+
+      Thread.sleep(1);
+      part_spec.clear();
+      part_spec.put("ds", "2023-09-01");
+      part_spec.put("hr", "10");
+      hm.createPartition(table, part_spec);
+
+      // Default
+      Assert.assertEquals(
+          ((List<Partition>) hm.getPartitions(table, new HashMap(), (short) 1)).get(0).getTPartition().getValues(),
+          Arrays.asList("2023-04-15", "12"));
+
+      // Sort by "PARTITIONS"."CREATE_TIME" desc
+      hm.setMetaConf(MetastoreConf.ConfVars.PARTITION_ORDER_EXPR.getVarname(), "\"PARTITIONS\".\"CREATE_TIME\" desc");
+      Assert.assertEquals(
+          ((List<Partition>) hm.getPartitions(table, new HashMap(), (short) 1)).get(0).getTPartition().getValues(),
+          Arrays.asList("2023-09-01", "10"));
+
+      // Sort by "PART_NAME" desc
+      hm.setMetaConf(MetastoreConf.ConfVars.PARTITION_ORDER_EXPR.getVarname(), "\"PART_NAME\" desc");
+      Assert.assertEquals(
+          ((List<Partition>) hm.getPartitions(table, new HashMap(), (short) 1)).get(0).getTPartition().getValues(),
+          Arrays.asList("2025-06-30", "11"));
+
+      // Test MetaStoreClient
+      Assert.assertEquals(
+          hm.getMSC().listPartitions(table.getDbName(), table.getTableName(), (short) 1).get(0).getValues(),
+          Arrays.asList("2025-06-30", "11"));
+    } catch (Exception e) {
+      fail("Unexpected exception: " + StringUtils.stringifyException(e));
+    } finally {
+      hm.setMetaConf(MetastoreConf.ConfVars.PARTITION_ORDER_EXPR.getVarname(),
+         MetastoreConf.ConfVars.PARTITION_ORDER_EXPR.getDefaultVal().toString());
+      cleanUpTableQuietly(dbName, tableName);
     }
   }
 

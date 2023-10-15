@@ -3,7 +3,7 @@
   <parent>
     <artifactId>hive-it</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.0.0-beta-1-SNAPSHOT</version>
+    <version>4.0.0-beta-2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -422,6 +422,12 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>

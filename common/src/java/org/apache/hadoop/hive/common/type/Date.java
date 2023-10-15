@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common.type;
 
 import org.apache.hive.common.util.SuppressFBWarnings;
 
+import java.text.ParsePosition;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,9 +28,11 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
@@ -175,22 +178,16 @@ public class Date implements Comparable<Date> {
    */
   public static Date valueOf(final String text) {
     String s = Objects.requireNonNull(text).trim();
-    int idx = s.indexOf(" ");
-    if (idx != -1) {
-      s = s.substring(0, idx);
-    } else {
-      idx = s.indexOf('T');
-      if (idx != -1) {
-        s = s.substring(0, idx);
-      }
-    }
-    LocalDate localDate;
+    ParsePosition pos = new ParsePosition(0);
     try {
-      localDate = LocalDate.parse(s, PARSE_FORMATTER);
+      TemporalAccessor t = PARSE_FORMATTER.parseUnresolved(s, pos);
+      if (pos.getErrorIndex() >= 0) {
+        throw new DateTimeParseException("Text could not be parsed to date", s, pos.getErrorIndex());
+      }
+      return new Date(LocalDate.of(t.get(YEAR), t.get(MONTH_OF_YEAR), t.get(DAY_OF_MONTH)));
     } catch (DateTimeException e) {
       throw new IllegalArgumentException("Cannot create date, parsing error");
     }
-    return new Date(localDate);
   }
 
   public static Date ofEpochDay(int epochDay) {

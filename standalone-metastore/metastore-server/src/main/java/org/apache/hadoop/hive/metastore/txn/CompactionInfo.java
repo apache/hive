@@ -79,8 +79,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public Set<Long> writeIds;
   public boolean hasUncompactedAborts;
 
-  byte[] metaInfo;
-  String hadoopJobId;
+  public byte[] metaInfo;
+  public String hadoopJobId;
   public String errorMessage;
 
   private String fullPartitionName = null;
@@ -93,12 +93,12 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     this.partName = partName;
     this.type = type;
   }
-  CompactionInfo(long id, String dbname, String tableName, String partName, char state) {
+  public CompactionInfo(long id, String dbname, String tableName, String partName, char state) {
     this(dbname, tableName, partName, null);
     this.id = id;
     this.state = state;
   }
-  CompactionInfo() {}
+  public CompactionInfo() {}
 
   public String getProperty(String key) {
     if (propertiesMap == null) {
@@ -117,7 +117,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
 
   public String getFullPartitionName() {
     if (fullPartitionName == null) {
-      StringBuilder buf = new StringBuilder(dbname);
+      StringBuilder buf = new StringBuilder();
+      buf.append(dbname);
       buf.append('.');
       buf.append(tableName);
       if (partName != null) {

@@ -75,9 +75,10 @@ alterTableStatementSuffix
     | alterStatementSuffixSetPartSpec
     | alterStatementSuffixExecute
     | alterStatementSuffixCreateBranch
-    | alterStatementSuffixCreateTag
-    | alterStatementSuffixConvert
     | alterStatementSuffixDropBranch
+    | alterStatementSuffixCreateTag
+    | alterStatementSuffixDropTag
+    | alterStatementSuffixConvert
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -476,8 +477,14 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_ROLLBACK $rollbackParam)
     | KW_EXECUTE KW_EXPIRE_SNAPSHOTS LPAREN (expireParam=StringLiteral) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
-    | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=Number) RPAREN
+    | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=expression) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
+    | KW_EXECUTE KW_FAST_FORWARD sourceBranch=StringLiteral (targetBranch=StringLiteral)?
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_FAST_FORWARD $sourceBranch $targetBranch?)
+    | KW_EXECUTE KW_CHERRY_PICK snapshotId=Number
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_CHERRY_PICK $snapshotId)
+    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS KW_BETWEEN (fromTimestamp=StringLiteral) KW_AND (toTimestamp=StringLiteral)
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $fromTimestamp $toTimestamp)
     ;
 
 alterStatementSuffixDropBranch
@@ -502,6 +509,9 @@ snapshotIdOfRef
     |
     (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
     -> ^(TOK_AS_OF_TIME $asOfTime)
+    |
+    (KW_FOR KW_TAG KW_AS KW_OF asOfTag=identifier)
+    -> ^(TOK_AS_OF_TAG $asOfTag)
     ;
 
 refRetain
@@ -516,6 +526,13 @@ retentionOfSnapshots
 @after { gParent.popMsg(state); }
     : (KW_WITH KW_SNAPSHOT KW_RETENTION minSnapshotsToKeep=Number KW_SNAPSHOTS (maxSnapshotAge=Number timeUnit=timeUnitQualifiers)?)
     -> ^(TOK_WITH_SNAPSHOT_RETENTION $minSnapshotsToKeep ($maxSnapshotAge $timeUnit)?)
+    ;
+
+alterStatementSuffixDropTag
+@init { gParent.pushMsg("alter table drop tag (if exists) tagName", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_TAG ifExists? tagName=identifier
+    -> ^(TOK_ALTERTABLE_DROP_TAG ifExists? $tagName)
     ;
 
 alterStatementSuffixCreateTag

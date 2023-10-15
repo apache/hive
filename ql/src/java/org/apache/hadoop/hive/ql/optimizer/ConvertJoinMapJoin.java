@@ -1542,9 +1542,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         LOG.info("Selected dynamic partitioned hash join");
         MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
         mapJoinDesc.setDynamicPartitionHashJoin(true);
-        if (mapJoinConversion.getIsFullOuterJoin()) {
-          FullOuterMapJoinOptimization.removeFilterMap(mapJoinDesc);
-        }
+
         // Set OpTraits for dynamically partitioned hash join:
         // bucketColNames: Re-use previous joinOp's bucketColNames. Parent operators should be
         //   reduce sink, which should have bucket columns based on the join keys.

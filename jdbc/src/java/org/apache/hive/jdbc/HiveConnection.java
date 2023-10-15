@@ -1009,7 +1009,9 @@ public class HiveConnection implements java.sql.Connection {
         JdbcConnectionParams.SUNJSSE_ALGORITHM_STRING);
       String keyStorePath = sessConfMap.get(JdbcConnectionParams.SSL_KEY_STORE);
       String keyStorePassword = Utils.getPassword(sessConfMap, JdbcConnectionParams.SSL_KEY_STORE_PASSWORD);
-      KeyStore sslKeyStore = KeyStore.getInstance(JdbcConnectionParams.SSL_KEY_STORE_TYPE);
+      String keyStoreType = sessConfMap.get(JdbcConnectionParams.SSL_KEY_STORE_TYPE);
+      keyStoreType = (!StringUtils.isBlank(keyStoreType)) ? keyStoreType : KeyStore.getDefaultType();
+      KeyStore sslKeyStore = KeyStore.getInstance(keyStoreType);
 
       if (keyStorePath == null || keyStorePath.isEmpty()) {
         throw new IllegalArgumentException(JdbcConnectionParams.SSL_KEY_STORE

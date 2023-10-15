@@ -180,6 +180,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
   private static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
   private static final String TRUST_STORE_NAME = "truststore.jks";
   private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
+  private static final String KEY_STORE_TRUST_STORE_TYPE = "JKS";
 
   private static MiniHS2 miniHS2 = null;
   private static MiniZooKeeperCluster zkCluster = null;
@@ -223,10 +224,14 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
           dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,
           KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE.varname,
+          KEY_STORE_TRUST_STORE_TYPE);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION.varname,
           dataFileDir + File.separator + TRUST_STORE_NAME);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname,
           KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE.varname,
+          KEY_STORE_TRUST_STORE_TYPE);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE.varname, "true");
     }
     miniHS2.start(confOverlay);

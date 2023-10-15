@@ -1,10 +1,10 @@
 PREHOOK: query: CREATE FUNCTION qtest_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.qtest_get_java_boolean
 POSTHOOK: query: CREATE FUNCTION qtest_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.qtest_get_java_boolean
 PREHOOK: query: select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
 PREHOOK: type: QUERY
@@ -31,11 +31,11 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:mydb
 PREHOOK: query: explain create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:mydb
+PREHOOK: Input: database:mydb
 PREHOOK: Output: mydb.func1
 POSTHOOK: query: explain create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:mydb
+POSTHOOK: Input: database:mydb
 POSTHOOK: Output: mydb.func1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -48,11 +48,11 @@ STAGE PLANS:
 
 PREHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:mydb
+PREHOOK: Input: database:mydb
 PREHOOK: Output: mydb.func1
 POSTHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:mydb
+POSTHOOK: Input: database:mydb
 POSTHOOK: Output: mydb.func1
 PREHOOK: query: show functions like mydb.func1
 PREHOOK: type: SHOWFUNCTIONS
@@ -81,11 +81,11 @@ POSTHOOK: Input: default@src
 ABC
 PREHOOK: query: explain drop function mydb.func1
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:mydb
+PREHOOK: Input: database:mydb
 PREHOOK: Output: mydb.func1
 POSTHOOK: query: explain drop function mydb.func1
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:mydb
+POSTHOOK: Input: database:mydb
 POSTHOOK: Output: mydb.func1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -97,11 +97,11 @@ STAGE PLANS:
 
 PREHOOK: query: drop function mydb.func1
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:mydb
+PREHOOK: Input: database:mydb
 PREHOOK: Output: mydb.func1
 POSTHOOK: query: drop function mydb.func1
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:mydb
+POSTHOOK: Input: database:mydb
 POSTHOOK: Output: mydb.func1
 PREHOOK: query: show functions like mydb.func1
 PREHOOK: type: SHOWFUNCTIONS
@@ -178,11 +178,11 @@ POSTHOOK: query: reload function
 POSTHOOK: type: RELOADFUNCTION
 PREHOOK: query: create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:mydb
+PREHOOK: Input: database:mydb
 PREHOOK: Output: mydb.qtest_get_java_boolean
 POSTHOOK: query: create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:mydb
+POSTHOOK: Input: database:mydb
 POSTHOOK: Output: mydb.qtest_get_java_boolean
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
@@ -216,19 +216,19 @@ POSTHOOK: Input: default@src
 ABC	NULL	ABC
 PREHOOK: query: drop function default.qtest_get_java_boolean
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.qtest_get_java_boolean
 POSTHOOK: query: drop function default.qtest_get_java_boolean
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.qtest_get_java_boolean
 PREHOOK: query: drop function mydb.qtest_get_java_boolean
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:mydb
+PREHOOK: Input: database:mydb
 PREHOOK: Output: mydb.qtest_get_java_boolean
 POSTHOOK: query: drop function mydb.qtest_get_java_boolean
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:mydb
+POSTHOOK: Input: database:mydb
 POSTHOOK: Output: mydb.qtest_get_java_boolean
 PREHOOK: query: drop database mydb cascade
 PREHOOK: type: DROPDATABASE

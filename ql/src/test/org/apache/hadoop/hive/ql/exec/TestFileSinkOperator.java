@@ -91,6 +91,7 @@ import java.util.stream.Collectors;
  */
 public class TestFileSinkOperator {
   private static String PARTCOL_NAME = "partval";
+  private static final String tmpPrefix = "-tmp.";
   static final private Logger LOG = LoggerFactory.getLogger(TestFileSinkOperator.class.getName());
 
   private static File tmpdir;
@@ -462,7 +463,7 @@ public class TestFileSinkOperator {
   private Path[] findFilesInBasePath() throws IOException {
     Path parent = basePath.getParent();
     String last = basePath.getName();
-    Path tmpPath = new Path(parent, "_tmp." + last);
+    Path tmpPath = new Path(parent, tmpPrefix + last);
     FileSystem fs = basePath.getFileSystem(jc);
     List<Path> paths = new ArrayList<Path>();
     recurseOnPath(tmpPath, fs, paths);

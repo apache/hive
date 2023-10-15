@@ -14,12 +14,12 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-beta-1-SNAPSHOT</version>
+    <version>4.0.0-beta-2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg</artifactId>
-  <version>4.0.0-beta-1-SNAPSHOT</version>
+  <version>4.0.0-beta-2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Iceberg Modules</name>
   <properties>
@@ -29,7 +29,7 @@
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.1</iceberg.avro.version>
-    <iceberg.kryo.version>5.2.0</iceberg.kryo.version>
+    <iceberg.kryo.version>5.5.0</iceberg.kryo.version>
     <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
     <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
@@ -46,6 +46,13 @@
     <module>iceberg-catalog</module>
     <module>iceberg-handler</module>
   </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${iceberg.mockito-core.version}</version>
+    </dependency>
+  </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>
