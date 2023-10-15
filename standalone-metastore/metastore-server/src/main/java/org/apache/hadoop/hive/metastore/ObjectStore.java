@@ -11598,7 +11598,7 @@ public class ObjectStore implements RawStore, Configurable {
         try {
           return getAllFunctionsViaJDO(catalogName);
         } catch (Exception e) {
-          LOG.error("Failed to convert to funcs", e);
+          LOG.error("Failed to convert to functions", e);
           throw new MetaException(e.getMessage());
         }
       }

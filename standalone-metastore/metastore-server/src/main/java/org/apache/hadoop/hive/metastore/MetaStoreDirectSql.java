@@ -3086,7 +3086,7 @@ class MetaStoreDirectSql {
     final int dbNameIndex = 2;
     final int funcClassNameIndex = 3;
     final int funcOwnerNameIndex = 4;
-    final int funcOwerTypeIndex = 5;
+    final int funcOwnerTypeIndex = 5;
     final int funcCreateTimeIndex = 6;
     final int funcTypeIndex = 7;
 
@@ -3118,7 +3118,7 @@ class MetaStoreDirectSql {
         String dbName = MetastoreDirectSqlUtils.extractSqlString(function[dbNameIndex]);
         String funcClassName = MetastoreDirectSqlUtils.extractSqlString(function[funcClassNameIndex]);
         String funcOwnerName = MetastoreDirectSqlUtils.extractSqlString(function[funcOwnerNameIndex]);
-        String funcOwerType = MetastoreDirectSqlUtils.extractSqlString(function[funcOwerTypeIndex]);
+        String funcOwnerType = MetastoreDirectSqlUtils.extractSqlString(function[funcOwnerTypeIndex]);
         int funcCreateTime = MetastoreDirectSqlUtils.extractSqlInt(function[funcCreateTimeIndex]);
         int funcType = MetastoreDirectSqlUtils.extractSqlInt(function[funcTypeIndex]);
 
@@ -3128,7 +3128,7 @@ class MetaStoreDirectSql {
         func.setCatName(catName);
         func.setClassName(funcClassName);
         func.setOwnerName(funcOwnerName);
-        func.setOwnerType(PrincipalType.valueOf(funcOwerType));
+        func.setOwnerType(PrincipalType.valueOf(funcOwnerType));
         func.setCreateTime(funcCreateTime);
         func.setFunctionType(FunctionType.findByValue(funcType));
         func.setResourceUris(new ArrayList<>());

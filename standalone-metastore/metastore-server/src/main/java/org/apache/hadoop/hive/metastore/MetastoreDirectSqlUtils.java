@@ -518,15 +518,13 @@ class MetastoreDirectSqlUtils {
       TreeMap<Long, Function> functions)
       throws MetaException {
     String queryText;
-    queryText = "select \"FUNC_ID\", \"RESOURCE_TYPE\", \"RESOURCE_URI\" from " +  FUNC_RU + ""
+    queryText = "select \"FUNC_ID\", \"RESOURCE_TYPE\", \"RESOURCE_URI\" from " +  FUNC_RU
         + " where \"FUNC_ID\" in (" + funcIds + ")"
         + " order by \"FUNC_ID\" asc, \"INTEGER_IDX\" asc";
-    loopJoinOrderedResult(pm, functions, queryText, 0, new ApplyFunc<Function>() {
-      @Override
-      public void apply(Function t, Object[] fields) {
-        ResourceUri resourceUri = new ResourceUri(ResourceType.findByValue((int)fields[1]), (String) fields[2]);
-        t.getResourceUris().add(resourceUri);
-      }});
+    loopJoinOrderedResult(pm, functions, queryText, 0, (t, fields) -> {
+      ResourceUri resourceUri = new ResourceUri(ResourceType.findByValue((int)fields[1]), (String) fields[2]);
+      t.getResourceUris().add(resourceUri);
+    });
   }
 
   /**
