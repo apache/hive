@@ -28,22 +28,6 @@ import org.junit.Test;
 
 public class TestTezSessionState {
 
-  private class TestTezSessionPoolManager extends TezSessionPoolManager {
-    public TestTezSessionPoolManager() {
-      super();
-    }
-
-    @Override
-    public void setupPool(HiveConf conf) throws Exception {
-      super.setupPool(conf);
-    }
-
-    @Override
-    public TezSessionPoolSession createSession(String sessionId, HiveConf conf) {
-      return new SampleTezSessionState(sessionId, this, conf);
-    }
-  }
-
   @Test
   public void testSymlinkedLocalFilesAreLocalizedOnce() throws Exception {
     Path jarPath = Files.createTempFile("jar", "");
@@ -57,9 +41,8 @@ public class TestTezSessionState {
 
     HiveConf hiveConf = new HiveConf();
     hiveConf.set(HiveConf.ConfVars.HIVE_JAR_DIRECTORY.varname, "/tmp");
-    TezSessionPoolManager poolManager = new TestTezSessionPoolManager();
 
-    TezSessionState sessionState = poolManager.getSession(null, hiveConf, true, false);
+    TezSessionState sessionState = new TezSessionState(DagUtils.getInstance(), hiveConf);
 
     LocalResource l1 = sessionState.createJarLocalResource(jarPath.toUri().toString());
     LocalResource l2 = sessionState.createJarLocalResource(symlinkPath.toUri().toString());
