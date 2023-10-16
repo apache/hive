@@ -2321,9 +2321,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
         if (tbl.getSd().getLocation() == null
             || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(db, tbl.getTableName() + getTableSuffix(tbl), isExternal(tbl));
+          tblPath = wh.getDefaultTablePath(db, tbl.getTableName() + getTableSuffix(tbl),
+              MetaStoreUtils.isExternalTable(tbl));
         } else {
-          if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
+          if (!MetaStoreUtils.isExternalTable(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
             LOG.warn("Location: " + tbl.getSd().getLocation()
                 + " specified for non-external table:" + tbl.getTableName());
           }
@@ -2971,9 +2972,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
-    if (deleteData && isExternal(tbl)) {
+    if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
       // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
-      return isExternalTablePurge(tbl);
+      return MetaStoreUtils.isExternalTablePurge(tbl);
     }
     return deleteData;
   }
@@ -3412,21 +3413,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(status.getPath(), true, isSkipTrash, needCmRecycle);
       }
     }
-  }
-
-  /**
-   * Is this an external table?
-   *
-   * @param table
-   *          Check if this table is external.
-   * @return True if the table is external, otherwise false.
-   */
-  private boolean isExternal(Table table) {
-    return MetaStoreUtils.isExternalTable(table);
-  }
-
-  private boolean isExternalTablePurge(Table table) {
-    return MetaStoreUtils.isExternalTablePurge(table);
   }
 
   @Override
