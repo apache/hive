@@ -18,8 +18,10 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.KillQuery;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.slf4j.Logger;
@@ -39,6 +41,9 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
           TezSessionState sessionState = entry.getKey();
           String queryId = sessionState.getWmContext().getQueryId();
           try {
+            SessionState ss = new SessionState(new HiveConf());
+            ss.setIsHiveServerQuery(true);
+            SessionState.start(ss);
             KillQuery killQuery = sessionState.getKillQuery();
             // if kill query is null then session might have been released to pool or closed already
             if (killQuery != null) {
