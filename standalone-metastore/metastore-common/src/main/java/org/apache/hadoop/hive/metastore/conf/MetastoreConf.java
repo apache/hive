@@ -1131,13 +1131,13 @@ public class MetastoreConf {
                     + "and thrift communication timeout errors. Set this config to 'true' to ignore column schema in partitions."),
     METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN("metastore.partitions.parameters.exclude.pattern",
         "hive.metastore.partitions.parameters.exclude.pattern", "",
-        "Regex pattern that is used to reduce the response size for get-partitions APIs.\n"
-            + "Any key-value pair whose key is matched with the pattern will be removed from the partition parameters.\n"
+        "SQL pattern used to exclude the matched parameters for get-partitions APIs.\n"
+            + "Any key-value pair from parameters whose key matches with the pattern will be excluded from the partitions.\n"
             + "This property doesn't work for the temporary table."),
     METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN("metastore.partitions.parameters.include.pattern",
         "hive.metastore.partitions.parameters.include.pattern", "",
-        "Regex pattern that is used to select the matched parameters for get-partitions APIs.\n"
-            + "Any key-value pair whose key is matched with the pattern will be included in the partition parameters.\n"
+        "SQL pattern used to select the matched parameters for get-partitions APIs.\n"
+            + "Any key-value pair from parameters whose key matches with the pattern will be included in the partitions.\n"
             + "This property doesn't work for the temporary table."),
     METASTORE_CLIENT_FILTER_ENABLED("metastore.client.filter.enabled", "hive.metastore.client.filter.enabled", true,
         "Enable filtering the metadata read results at HMS client. Default is true."),
