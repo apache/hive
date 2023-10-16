@@ -108,8 +108,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, optimisticLock);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
-    conf.set("tez.grouping.min-size", "1000");
-    conf.set("tez.grouping.max-size", "80000");
+    conf.set("tez.grouping.min-size", "400");
+    conf.set("tez.grouping.max-size", "5000");
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
@@ -145,8 +145,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Assert.fail("In case of TXN_WRITE_X_LOCK = true, the transaction must be retried instead of being aborted.");
       }
       aborted = true;
-      Assert.assertEquals(e.getCause().getClass(), LockException.class);
-      Assert.assertEquals(e.getCauseMessage(), "Transaction manager has aborted the transaction txnid:21.  Reason: Aborting [txnid:21,24] due to a write conflict on default/rebalance_test committed by [txnid:20,24] d/u");
+      Assert.assertEquals(LockException.class, e.getCause().getClass());
+      Assert.assertEquals( "Transaction manager has aborted the transaction txnid:21.  Reason: Aborting [txnid:21,24] due to a write conflict on default/rebalance_test committed by [txnid:20,24] d/u", e.getCauseMessage());
       // Delete the record, so the rest of the test can be the same in both cases
       executeStatementOnDriver("DELETE FROM " + tableName + " WHERE b = 12", driver);
     } finally {
@@ -177,24 +177,26 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":4}\t13\t13",
         },
         {
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t2\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t4\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t3\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t2\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t5\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":10}\t6\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":11}\t5\t3",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t6\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t4\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t2\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":15}\t3\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":16}\t6\t2",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":17}\t5\t2",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t6\t4",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":11}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t3\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t2\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t4\t3",
+        },
+        {
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":15}\t6\t3",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":16}\t5\t2",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t6\t2",
         },
     };
     verifyRebalance(testDataProvider, tableName, null, expectedBuckets,
-        new String[] {"bucket_00000", "bucket_00001", "bucket_00002"}, "base_0000007_v0000020");
+        new String[] {"bucket_00000", "bucket_00001", "bucket_00002", "bucket_00003"}, "base_0000007_v0000020");
   }
 
   @Test
@@ -204,8 +206,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
-    conf.set("tez.grouping.min-size", "1000");
-    conf.set("tez.grouping.max-size", "80000");
+    conf.set("tez.grouping.min-size", "400");
+    conf.set("tez.grouping.max-size", "5000");
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
@@ -228,27 +230,29 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":2}\t15\t15",
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":3}\t14\t14",
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":4}\t13\t13",
-            "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":5}\t12\t12",
         },
         {
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t2\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":5}\t12\t12",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t4\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t3\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t2\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t5\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":10}\t6\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":11}\t5\t3",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t6\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t4\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t2\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":15}\t3\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":16}\t6\t2",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":17}\t5\t2",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t6\t4",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":11}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t3\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t2\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t4\t3",
+        },
+        {
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":15}\t6\t3",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":16}\t5\t2",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t6\t2",
         },
     };
     verifyRebalance(testDataProvider, tableName, null, expectedBuckets,
-        new String[] {"bucket_00000", "bucket_00001", "bucket_00002"}, "base_0000007_v0000020");
+        new String[] {"bucket_00000", "bucket_00001", "bucket_00002","bucket_00003"}, "base_0000007_v0000020");
   }
 
   @Test
@@ -258,8 +262,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
-    conf.set("tez.grouping.min-size", "1000");
-    conf.set("tez.grouping.max-size", "80000");
+    conf.set("tez.grouping.min-size", "400");
+    conf.set("tez.grouping.max-size", "5000");
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
@@ -279,27 +283,30 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t6\t3",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t6\t4",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":4}\t5\t2",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":5}\t5\t3",
         },
         {
+
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":5}\t5\t3",
             "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":6}\t2\t4",
             "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":7}\t3\t3",
             "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
             "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":9}\t4\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":10}\t2\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":11}\t3\t4",
         },
         {
+            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":10}\t2\t3",
+            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":11}\t3\t4",
             "{\"writeid\":2,\"bucketid\":537001984,\"rowid\":12}\t12\t12",
             "{\"writeid\":3,\"bucketid\":537001984,\"rowid\":13}\t13\t13",
             "{\"writeid\":4,\"bucketid\":537001984,\"rowid\":14}\t14\t14",
-            "{\"writeid\":5,\"bucketid\":537001984,\"rowid\":15}\t15\t15",
-            "{\"writeid\":6,\"bucketid\":537001984,\"rowid\":16}\t16\t16",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":17}\t17\t17",
+        },
+        {
+            "{\"writeid\":5,\"bucketid\":537067520,\"rowid\":15}\t15\t15",
+            "{\"writeid\":6,\"bucketid\":537067520,\"rowid\":16}\t16\t16",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t17\t17",
         },
     };
     verifyRebalance(testDataProvider, tableName, null, expectedBuckets,
-        new String[] {"bucket_00000", "bucket_00001", "bucket_00002"}, "base_0000007_v0000020");
+        new String[] {"bucket_00000", "bucket_00001", "bucket_00002","bucket_00003"}, "base_0000007_v0000020");
   }
 
   @Test
@@ -440,8 +447,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
-    conf.set("tez.grouping.min-size", "1000");
-    conf.set("tez.grouping.max-size", "80000");
+    conf.set("tez.grouping.min-size", "400");
+    conf.set("tez.grouping.max-size", "5000");
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
@@ -509,7 +516,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable("default", tableName);
     FileSystem fs = FileSystem.get(conf);
     Assert.assertEquals("Test setup does not match the expected: different buckets",
-        Arrays.asList("bucket_00000_0", "bucket_00001_0", "bucket_00002_0"),
+        Arrays.asList("bucket_00000_0", "bucket_00001_0", "bucket_00002_0","bucket_00003_0"),
         CompactorTestUtil.getBucketFileNames(fs, table, null, "base_0000001"));
     String[][] expectedBuckets = new String[][] {
         {
@@ -519,7 +526,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t6\t4",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":4}\t5\t2",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":5}\t5\t3",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":6}\t2\t4",
             "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t12\t12",
             "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t13\t13",
             "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t14\t14",
@@ -528,13 +534,16 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":0}\t17\t17",
         },
         {
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t3\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t4\t4",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":2}\t4\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":3}\t2\t3",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t2\t4",
         },
         {
-             "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":0}\t3\t4",
+            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":0}\t3\t3",
+            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":1}\t4\t4",
+            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":2}\t4\t3",
+        },
+        {
+            "{\"writeid\":1,\"bucketid\":537067520,\"rowid\":0}\t2\t3",
+            "{\"writeid\":1,\"bucketid\":537067520,\"rowid\":1}\t3\t4",
         },
     };
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
@@ -826,7 +835,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     parameters = Hive.get().getTable(tblName).getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "735", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "736", parameters.get("totalSize"));
   }
 
   @Test
