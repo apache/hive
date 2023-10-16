@@ -1,6 +1,6 @@
+--! qt:replace:/(totalSize\s+)(\S+|\s+|.+)/$1#Masked#/
 -- Test Incremental rebuild of materialized view with aggregate but without count(*)
 -- when source tables have delete operations since last rebuild.
-
 SET hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;

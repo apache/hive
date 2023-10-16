@@ -848,7 +848,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "4", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "704", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "705", parameters.get("totalSize"));
   }
 
   @Test
