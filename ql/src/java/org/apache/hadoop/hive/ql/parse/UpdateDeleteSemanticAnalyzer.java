@@ -129,6 +129,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
     rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
 
+    boolean copyOnWriteMode = AcidUtils.isCopyOnWriteMode(mTable, operation);
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
     // Must be deterministic order set for consistent q-test output across Java versions
@@ -148,7 +149,10 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         String name = nonPartCols.get(i).getName();
         ASTNode setCol = setCols.get(name);
         String identifier = HiveUtils.unparseIdentifier(name, this.conf);
-        rewrittenQueryStr.append(identifier).append(" AS ").append(identifier);
+        rewrittenQueryStr.append(identifier);
+        if (copyOnWriteMode) {
+          rewrittenQueryStr.append(" AS ").append(identifier);
+        }
         if (setCol != null) {
           // This is one of the columns we're setting, record it's position so we can come back
           // later and patch it up.
@@ -160,8 +164,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
-
-    boolean copyOnWriteMode = AcidUtils.isCopyOnWriteMode(mTable, operation);
+    
     ASTNode where = null;
     int whereIndex = deleting() ? 1 : 2;
     
