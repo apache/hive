@@ -84,6 +84,9 @@ public class InitiatorBase extends MetaStoreCompactorThread {
         CollectionUtils.addIgnoreNull(compactionResponses,
             scheduleCompactionIfRequired(ci, table, entry.getValue(), request.getPoolName(), runAs, false));
       } catch (IOException | InterruptedException | MetaException e) {
+        LOG.error(
+            "Error occurred while Checking if we should compact partition " + entry.getKey() + " of table " + table.getDbName() + "."
+                + table.getTableName() + " Exception: " + e.getMessage());
         throw new RuntimeException(e);
       }
     });
