@@ -88,6 +88,37 @@ public class TestAbortedTxnCleaner extends TestHandler {
   }
 
   @Test
+  public void testCleaningOfAbortedDirectoriesForSinglePartition() throws Exception {
+    String dbName = "default", tableName = "handler_part_single_test", partName = "today";
+    Table t = newTable(dbName, tableName, true);
+    Partition p = newPartition(t, partName);
+
+    // 3-aborted deltas & one committed delta
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+    addDeltaFileWithTxnComponents(t, p, 2, false);
+    addDeltaFileWithTxnComponents(t, p, 2, true);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
+    TaskHandler mockedTaskHandler = Mockito.spy(new AbortedTxnCleaner(conf, txnHandler, metadataCache,
+            false, mockedFSRemover));
+    Cleaner cleaner = new Cleaner();
+    cleaner.setConf(conf);
+    cleaner.init(new AtomicBoolean(true));
+    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.run();
+
+    Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+
+    List<Path> directories = getDirectories(conf, t, p);
+    // All aborted directories removed, hence 1 committed delta directory must be present
+    Assert.assertEquals(1, directories.size());
+  }
+
+  @Test
   public void testAbortedCleaningWithThreeTxnsWithDiffWriteIds() throws Exception {
     String dbName = "default", tableName = "handler_unpart_writeid_test";
     Table t = newTable(dbName, tableName, false);
@@ -134,37 +165,6 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     List<Path> directories = getDirectories(conf, t, null);
     Assert.assertEquals(5, directories.size());
-  }
-
-  @Test
-  public void testCleaningOfAbortedDirectoriesForSinglePartition() throws Exception {
-    String dbName = "default", tableName = "handler_part_single_test", partName = "today";
-    Table t = newTable(dbName, tableName, true);
-    Partition p = newPartition(t, partName);
-
-    // 3-aborted deltas & one committed delta
-    addDeltaFileWithTxnComponents(t, p, 2, true);
-    addDeltaFileWithTxnComponents(t, p, 2, true);
-    addDeltaFileWithTxnComponents(t, p, 2, false);
-    addDeltaFileWithTxnComponents(t, p, 2, true);
-
-    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
-    MetadataCache metadataCache = new MetadataCache(true);
-    FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
-    TaskHandler mockedTaskHandler = Mockito.spy(new AbortedTxnCleaner(conf, txnHandler, metadataCache,
-            false, mockedFSRemover));
-    Cleaner cleaner = new Cleaner();
-    cleaner.setConf(conf);
-    cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
-    cleaner.run();
-
-    Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
-
-    List<Path> directories = getDirectories(conf, t, p);
-    // All aborted directories removed, hence 1 committed delta directory must be present
-    Assert.assertEquals(1, directories.size());
   }
 
   @Test

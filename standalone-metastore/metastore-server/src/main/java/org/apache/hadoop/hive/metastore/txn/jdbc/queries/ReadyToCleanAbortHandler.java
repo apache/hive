@@ -77,12 +77,12 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
           " AND (\"res1\".\"TC_PARTITION\" = \"res3\".\"CQ_PARTITION\" " +
           " OR (\"res1\".\"TC_PARTITION\" IS NULL AND \"res3\".\"CQ_PARTITION\" IS NULL))" +
           " WHERE (\"res3\".\"RETRY_RECORD_CHECK\" <= 0 OR \"res3\".\"RETRY_RECORD_CHECK\" IS NULL) " +
-              "AND NOT EXISTS (SELECT 1 " +
-              "                 FROM \"TXN_COMPONENTS\" AS \"txns\" " +
-              "                 WHERE \"txns\".\"TC_DATABASE\" = \"res1\".\"TC_DATABASE\" AND \"txns\".\"TC_TABLE\" = \"res1\".\"TC_TABLE\" " +
-              "                    AND (\"txns\".\"TC_PARTITION\" = \"res1\".\"TC_PARTITION\" " +
-              "                         OR (\"txns\".\"TC_PARTITION\" IS NULL AND \"res1\".\"TC_PARTITION\" IS NULL))" +
-              "                    AND \"txns\".\"TC_WRITEID\" > \"res1\".\"MAX_ABORTED_WRITE_ID\")";
+          " AND NOT EXISTS (SELECT 1 " +
+          " FROM \"COMPACTION_QUEUE\" AS \"cq\" " +
+          " WHERE \"cq\".\"CQ_DATABASE\" = \"res1\".\"TC_DATABASE\" AND \"cq\".\"CQ_TABLE\" = \"res1\".\"TC_TABLE\" " +
+          " AND (\"cq\".\"CQ_PARTITION\" = \"res1\".\"TC_PARTITION\" " +
+          " OR (\"cq\".\"CQ_PARTITION\" IS NULL AND \"res1\".\"TC_PARTITION\" IS NULL))" +
+          " AND \"cq\".\"CQ_HIGHEST_WRITEID\" > \"res1\".\"MAX_ABORTED_WRITE_ID\")";
 
   private final long abortedTimeThreshold;
   private final int abortedThreshold;

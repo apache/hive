@@ -1086,6 +1086,9 @@ public class TestCompactionTxnHandler {
 
     List<CompactionInfo> potentials = txnHandler.findReadyToCleanAborts(1, 0);
     assertEquals(1, potentials.size());
+    CompactionInfo potentialToCleanAbort = potentials.get(0);
+    assertEquals("mydb", potentialToCleanAbort.dbname);
+    assertEquals("yourtable", potentialToCleanAbort.tableName);
   }
 
   private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {
