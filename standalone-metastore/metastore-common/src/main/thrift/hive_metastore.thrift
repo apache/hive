@@ -2346,7 +2346,8 @@ struct GetPartitionsPsWithAuthRequest {
    7: optional list<string> groupNames,
    8: optional string validWriteIdList,
    9: optional i64 id=-1 // table id
-   10: optional bool skipColumnSchemaForPartition
+   10: optional bool skipColumnSchemaForPartition,
+   11: optional list<string> partNames
 }
 
 struct GetPartitionsPsWithAuthResponse {

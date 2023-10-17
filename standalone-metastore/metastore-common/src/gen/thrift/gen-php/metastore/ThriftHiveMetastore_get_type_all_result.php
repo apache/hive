@@ -86,17 +86,17 @@ class ThriftHiveMetastore_get_type_all_result
                 case 0:
                     if ($ftype == TType::MAP) {
                         $this->success = array();
-                        $_size1353 = 0;
-                        $_ktype1354 = 0;
-                        $_vtype1355 = 0;
-                        $xfer += $input->readMapBegin($_ktype1354, $_vtype1355, $_size1353);
-                        for ($_i1357 = 0; $_i1357 < $_size1353; ++$_i1357) {
-                            $key1358 = '';
-                            $val1359 = new \metastore\Type();
-                            $xfer += $input->readString($key1358);
-                            $val1359 = new \metastore\Type();
-                            $xfer += $val1359->read($input);
-                            $this->success[$key1358] = $val1359;
+                        $_size1360 = 0;
+                        $_ktype1361 = 0;
+                        $_vtype1362 = 0;
+                        $xfer += $input->readMapBegin($_ktype1361, $_vtype1362, $_size1360);
+                        for ($_i1364 = 0; $_i1364 < $_size1360; ++$_i1364) {
+                            $key1365 = '';
+                            $val1366 = new \metastore\Type();
+                            $xfer += $input->readString($key1365);
+                            $val1366 = new \metastore\Type();
+                            $xfer += $val1366->read($input);
+                            $this->success[$key1365] = $val1366;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -131,9 +131,9 @@ class ThriftHiveMetastore_get_type_all_result
             }
             $xfer += $output->writeFieldBegin('success', TType::MAP, 0);
             $output->writeMapBegin(TType::STRING, TType::STRUCT, count($this->success));
-            foreach ($this->success as $kiter1360 => $viter1361) {
-                $xfer += $output->writeString($kiter1360);
-                $xfer += $viter1361->write($output);
+            foreach ($this->success as $kiter1367 => $viter1368) {
+                $xfer += $output->writeString($kiter1367);
+                $xfer += $viter1368->write($output);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

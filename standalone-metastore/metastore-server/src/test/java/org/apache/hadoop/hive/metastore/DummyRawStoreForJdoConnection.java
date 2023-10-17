@@ -750,7 +750,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName, short maxParts,
-       String userName, List<String> groupNames, boolean isColumnSchemaRequired)
+       String userName, List<String> groupNames, boolean isColumnSchemaRequired, List<String> partNames)
        throws MetaException, NoSuchObjectException, InvalidObjectException {
     return Collections.emptyList();
   }

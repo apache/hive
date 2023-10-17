@@ -19614,7 +19614,7 @@ void swap(GetPartitionNamesPsResponse &a, GetPartitionNamesPsResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetPartitionNamesPsResponse& obj);
 
 typedef struct _GetPartitionsPsWithAuthRequest__isset {
-  _GetPartitionsPsWithAuthRequest__isset() : catName(false), partVals(false), maxParts(true), userName(false), groupNames(false), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false) {}
+  _GetPartitionsPsWithAuthRequest__isset() : catName(false), partVals(false), maxParts(true), userName(false), groupNames(false), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), partNames(false) {}
   bool catName :1;
   bool partVals :1;
   bool maxParts :1;
@@ -19623,6 +19623,7 @@ typedef struct _GetPartitionsPsWithAuthRequest__isset {
   bool validWriteIdList :1;
   bool id :1;
   bool skipColumnSchemaForPartition :1;
+  bool partNames :1;
 } _GetPartitionsPsWithAuthRequest__isset;
 
 class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
@@ -19652,6 +19653,7 @@ class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
   std::string validWriteIdList;
   int64_t id;
   bool skipColumnSchemaForPartition;
+  std::vector<std::string>  partNames;
 
   _GetPartitionsPsWithAuthRequest__isset __isset;
 
@@ -19674,6 +19676,8 @@ class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
   void __set_id(const int64_t val);
 
   void __set_skipColumnSchemaForPartition(const bool val);
+
+  void __set_partNames(const std::vector<std::string> & val);
 
   bool operator == (const GetPartitionsPsWithAuthRequest & rhs) const
   {
@@ -19712,6 +19716,10 @@ class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
     if (__isset.skipColumnSchemaForPartition != rhs.__isset.skipColumnSchemaForPartition)
       return false;
     else if (__isset.skipColumnSchemaForPartition && !(skipColumnSchemaForPartition == rhs.skipColumnSchemaForPartition))
+      return false;
+    if (__isset.partNames != rhs.__isset.partNames)
+      return false;
+    else if (__isset.partNames && !(partNames == rhs.partNames))
       return false;
     return true;
   }

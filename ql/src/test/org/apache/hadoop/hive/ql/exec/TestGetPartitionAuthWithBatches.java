@@ -21,10 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,10 +34,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -48,11 +42,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class TestGetPartitionInBatches {
+public class TestGetPartitionAuthWithBatches {
 
     private final String catName = "hive";
     private final String dbName = "default";
-    private final String tableName = "test_partition_batch";
+    private final String tableName = "test_partition_batch_with_auth";
     private static HiveConf hiveConf;
     private static HiveMetaStoreClient msc;
     private static Hive hive;
@@ -60,7 +54,9 @@ public class TestGetPartitionInBatches {
 
     @BeforeClass
     public static void setupClass() throws HiveException {
-        hiveConf = new HiveConf(TestGetPartitionInBatches.class);
+        hiveConf = new HiveConf(TestGetPartitionAuthWithBatches.class);
+        hiveConf.set("hive.security.authorization.enabled", "true");
+        hiveConf.set("hive.security.authorization.manager","org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
         hive = Hive.get();
         SessionState.start(hiveConf);
         try {
@@ -91,7 +87,7 @@ public class TestGetPartitionInBatches {
     }
 
     protected Partition buildPartition(String dbName, String tableName, String value,
-        String location) throws MetaException {
+                                       String location) throws MetaException {
         return new PartitionBuilder()
                 .setDbName(dbName)
                 .setTableName(tableName)
@@ -108,13 +104,13 @@ public class TestGetPartitionInBatches {
      * @throws Exception
      */
     @Test
-    public void testgetAllPartitionsOf() throws Exception {
-        Set<org.apache.hadoop.hive.ql.metadata.Partition> part = hive.getAllPartitionsOf(hive.getTable(dbName, tableName));
+    public void testGetPartitionsAPI() throws Exception {
+        List<org.apache.hadoop.hive.ql.metadata.Partition> part = hive.getPartitions(hive.getTable(dbName, tableName));
         Assert.assertEquals(part.size(), 30);
     }
 
     /**
-     * Tests the number of times Hive.getAllPartitionsOf calls are executed with total number of
+     * Tests the number of times Hive.getPartitions calls are executed with total number of
      * partitions to be added are equally divisible by batch size
      *
      * @throws Exception
@@ -124,11 +120,11 @@ public class TestGetPartitionInBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // test with a batch size of 10 and decaying factor of 2
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0, false, null, null);
-        ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0, true, "username", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 3 calls to get partitions
-        verify(spyMSC, times(3)).getPartitionsByNames(req.capture());
-        Assert.assertEquals(10, req.getValue().getNames().size());
+        verify(spyMSC, times(3)).listPartitionsWithAuthInfoRequest(req.capture());
+        req.getAllValues().forEach(part-> Assert.assertEquals(part.getPartNames().size(),10));
     }
 
     /**
@@ -142,14 +138,14 @@ public class TestGetPartitionInBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // there should be 2 calls to get partitions with batch sizes of 19, 11
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0, false, null, null);
-        ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 2 calls to get partitions
-        verify(spyMSC, times(2)).getPartitionsByNames(req.capture());
+        verify(spyMSC, times(2)).listPartitionsWithAuthInfoRequest(req.capture());
         // confirm the batch sizes were 19, 11 in the two calls to get partitions
-        List<GetPartitionsByNamesRequest> apds = req.getAllValues();
-        Assert.assertEquals(19, apds.get(0).getNames().size());
-        Assert.assertEquals(11, apds.get(1).getNames().size());
+        List<GetPartitionsPsWithAuthRequest> apds = req.getAllValues();
+        Assert.assertEquals(19, apds.get(0).getPartNames().size());
+        Assert.assertEquals(11, apds.get(1).getPartNames().size());
     }
 
     /**
@@ -162,11 +158,11 @@ public class TestGetPartitionInBatches {
     public void testSmallNumberOfPartitions() throws Exception {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0, false, null, null);
-        ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 1 call to get partitions
-        verify(spyMSC, times(1)).getPartitionsByNames(req.capture());
-        Assert.assertEquals(30, req.getValue().getNames().size());
+        verify(spyMSC, times(1)).listPartitionsWithAuthInfoRequest(req.capture());
+        Assert.assertEquals(30, req.getValue().getPartNames().size());
     }
 
     /**
@@ -180,21 +176,21 @@ public class TestGetPartitionInBatches {
     public void testRetriesExhaustedBatchSize() throws Exception {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
-        doThrow(MetaException.class).when(spyMSC).getPartitionsByNames(any());
+        doThrow(MetaException.class).when(spyMSC).listPartitionsWithAuthInfoRequest(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0, false, null, null);
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         } catch (Exception ignored) {}
-        ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
+        ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 5 call to get partitions with batch sizes as 30, 15, 7, 3, 1
-        verify(spyMSC, times(5)).getPartitionsByNames(req.capture());
-        List<GetPartitionsByNamesRequest> apds = req.getAllValues();
+        verify(spyMSC, times(5)).listPartitionsWithAuthInfoRequest(req.capture());
+        List<GetPartitionsPsWithAuthRequest> apds = req.getAllValues();
         Assert.assertEquals(5, apds.size());
 
-        Assert.assertEquals(30, apds.get(0).getNames().size());
-        Assert.assertEquals(15, apds.get(1).getNames().size());
-        Assert.assertEquals(7, apds.get(2).getNames().size());
-        Assert.assertEquals(3, apds.get(3).getNames().size());
-        Assert.assertEquals(1, apds.get(4).getNames().size());
+        Assert.assertEquals(30, apds.get(0).getPartNamesSize());
+        Assert.assertEquals(15, apds.get(1).getPartNamesSize());
+        Assert.assertEquals(7, apds.get(2).getPartNamesSize());
+        Assert.assertEquals(3, apds.get(3).getPartNamesSize());
+        Assert.assertEquals(1, apds.get(4).getPartNamesSize());
     }
 
     /**
@@ -205,18 +201,18 @@ public class TestGetPartitionInBatches {
     public void testMaxRetriesReached() throws Exception {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
-        doThrow(MetaException.class).when(spyMSC).getPartitionsByNames(any());
+        doThrow(MetaException.class).when(spyMSC).listPartitionsWithAuthInfoRequest(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2, false, null, null);
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         } catch (Exception ignored) {}
-        ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
+        ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 2 call to get partitions with batch sizes as 30, 15
-        verify(spyMSC, times(2)).getPartitionsByNames(req.capture());
-        List<GetPartitionsByNamesRequest> apds = req.getAllValues();
+        verify(spyMSC, times(2)).listPartitionsWithAuthInfoRequest(req.capture());
+        List<GetPartitionsPsWithAuthRequest> apds = req.getAllValues();
         Assert.assertEquals(2, apds.size());
 
-        Assert.assertEquals(30, apds.get(0).getNames().size());
-        Assert.assertEquals(15, apds.get(1).getNames().size());
+        Assert.assertEquals(30, apds.get(0).getPartNamesSize());
+        Assert.assertEquals(15, apds.get(1).getPartNamesSize());
     }
 
     /**
@@ -232,21 +228,21 @@ public class TestGetPartitionInBatches {
         hive.setMSC(spyMSC);
         // This will throw exception only the first time.
         doThrow(new MetaException()).doCallRealMethod()
-                .when(spyMSC).getPartitionsByNames(any());
+                .when(spyMSC).listPartitionsWithAuthInfoRequest(any());
 
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5, false, null, null);
-        ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // The first call with batch size of 30 will fail, the rest two call will be of size 15 each. Total 3 calls
-        verify(spyMSC, times(3)).getPartitionsByNames(req.capture());
-        List<GetPartitionsByNamesRequest> apds = req.getAllValues();
+        verify(spyMSC, times(3)).listPartitionsWithAuthInfoRequest(req.capture());
+        List<GetPartitionsPsWithAuthRequest> apds = req.getAllValues();
         Assert.assertEquals(3, apds.size());
 
-        Assert.assertEquals(30, apds.get(0).getNames().size());
-        Assert.assertEquals(15, apds.get(1).getNames().size());
-        Assert.assertEquals(15, apds.get(2).getNames().size());
+        Assert.assertEquals(30, apds.get(0).getPartNamesSize());
+        Assert.assertEquals(15, apds.get(1).getPartNamesSize());
+        Assert.assertEquals(15, apds.get(2).getPartNamesSize());
 
-        Set<String> partNames = new HashSet<>(apds.get(1).getNames());
-        partNames.addAll(apds.get(2).getNames());
+        Set<String> partNames = new HashSet<>(apds.get(1).getPartNames());
+        partNames.addAll(apds.get(2).getPartNames());
         assert(partNames.size() == 30);
 
         List<String> partitionNames = hive.getPartitionNames(table.getDbName(),table.getTableName(), (short) -1);

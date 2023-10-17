@@ -4111,6 +4111,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public List<Partition> getPartitions(Table tbl) throws HiveException {
+    int batchSize= MetastoreConf.getIntVar(
+            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    if (batchSize > 0) {
+      return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), true, getUserName(), getGroupNames()));
+    } else {
+      return getPartitionsWithAuth(tbl);
+    }
+  }
+
+  public List<Partition> getPartitionsWithAuth(Table tbl) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
 
@@ -4184,14 +4195,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
             Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
-              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES));
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), false, null, null);
     } else {
       return getAllPartitions(tbl);
     }
   }
 
   public Set<Partition> getAllPartitionsInBatches(Table tbl, int batchSize, int decayingFactor,
-         int maxRetries) throws HiveException {
+         int maxRetries, boolean isAuthRequired, String userName, List<String> groupNames) throws HiveException {
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
@@ -4202,7 +4213,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       public Void execute(int size) throws HiveException {
         try {
           result.clear();
-          new PartitionIterable(Hive.get(), tbl, null, size).forEach(result::add);
+          new PartitionIterable(Hive.get(), tbl, null, size, isAuthRequired, userName, groupNames).forEach(result::add);
           return null;
         } catch (HiveException e) {
           throw e;
@@ -4382,6 +4393,28 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     return partitions;
   }
+
+
+  public List<Partition> getPartitionsAuthByNames(GetPartitionsPsWithAuthRequest req, Table tbl)
+          throws HiveException {
+    if (!tbl.isPartitioned()) {
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+    }
+    List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+    try {
+      GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
+      tParts = res.getPartitions();
+    } catch (Exception e) {
+      LOG.error("Failed getPartitions", e);
+      throw new HiveException(e);
+    }
+    List<Partition> parts = new ArrayList<>(tParts.size());
+    for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+      parts.add(new Partition(tbl, tpart));
+    }
+    return parts;
+  }
+
 
   /**
    * Get a list of Partitions by filter.

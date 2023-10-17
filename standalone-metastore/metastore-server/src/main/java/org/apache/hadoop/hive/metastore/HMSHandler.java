@@ -5537,13 +5537,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<Partition> get_partitions_with_auth(final String dbName,
       final String tblName, final short maxParts, final String userName,
       final List<String> groupNames) throws TException {
-    return get_partitions_with_auth_optional_schema(dbName, tblName, maxParts, userName, groupNames , false);
+    return get_partitions_with_auth_optional_schema(dbName, tblName, maxParts, userName, groupNames , false, null);
 
   }
 
   private List<Partition> get_partitions_with_auth_optional_schema(final String dbName,
       final String tblName, final short maxParts, final String userName,
-      final List<String> groupNames, boolean skipColSchemaForPartitions) throws TException {
+      final List<String> groupNames, boolean skipColSchemaForPartitions, final List<String> partNames) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
     startTableFunction("get_partitions_with_auth", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
 
@@ -5556,7 +5556,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
 
       ret = getMS().getPartitionsWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName,
-          maxParts, userName, groupNames, skipColSchemaForPartitions);
+          maxParts, userName, groupNames, skipColSchemaForPartitions, partNames);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
@@ -6660,7 +6660,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<Partition> partitions = null;
     if (req.getPartVals() == null) {
       partitions = get_partitions_with_auth_optional_schema(dbName, req.getTblName(), req.getMaxParts(), req.getUserName(),
-          req.getGroupNames(), req.isSkipColumnSchemaForPartition());
+          req.getGroupNames(), req.isSkipColumnSchemaForPartition(), req.getPartNames());
     } else {
       partitions =
           get_partitions_ps_with_auth(dbName, req.getTblName(), req.getPartVals(), req.getMaxParts(),

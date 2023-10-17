@@ -79,6 +79,15 @@ class GetPartitionsPsWithAuthRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        11 => array(
+            'var' => 'partNames',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => array(
+                'type' => TType::STRING,
+                ),
+        ),
     );
 
     /**
@@ -121,6 +130,10 @@ class GetPartitionsPsWithAuthRequest
      * @var bool
      */
     public $skipColumnSchemaForPartition = null;
+    /**
+     * @var string[]
+     */
+    public $partNames = null;
 
     public function __construct($vals = null)
     {
@@ -154,6 +167,9 @@ class GetPartitionsPsWithAuthRequest
             }
             if (isset($vals['skipColumnSchemaForPartition'])) {
                 $this->skipColumnSchemaForPartition = $vals['skipColumnSchemaForPartition'];
+            }
+            if (isset($vals['partNames'])) {
+                $this->partNames = $vals['partNames'];
             }
         }
     }
@@ -265,6 +281,22 @@ class GetPartitionsPsWithAuthRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 11:
+                    if ($ftype == TType::LST) {
+                        $this->partNames = array();
+                        $_size1309 = 0;
+                        $_etype1312 = 0;
+                        $xfer += $input->readListBegin($_etype1312, $_size1309);
+                        for ($_i1313 = 0; $_i1313 < $_size1309; ++$_i1313) {
+                            $elem1314 = null;
+                            $xfer += $input->readString($elem1314);
+                            $this->partNames []= $elem1314;
+                        }
+                        $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -300,8 +332,8 @@ class GetPartitionsPsWithAuthRequest
             }
             $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->partVals));
-            foreach ($this->partVals as $iter1309) {
-                $xfer += $output->writeString($iter1309);
+            foreach ($this->partVals as $iter1315) {
+                $xfer += $output->writeString($iter1315);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -322,8 +354,8 @@ class GetPartitionsPsWithAuthRequest
             }
             $xfer += $output->writeFieldBegin('groupNames', TType::LST, 7);
             $output->writeListBegin(TType::STRING, count($this->groupNames));
-            foreach ($this->groupNames as $iter1310) {
-                $xfer += $output->writeString($iter1310);
+            foreach ($this->groupNames as $iter1316) {
+                $xfer += $output->writeString($iter1316);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -341,6 +373,18 @@ class GetPartitionsPsWithAuthRequest
         if ($this->skipColumnSchemaForPartition !== null) {
             $xfer += $output->writeFieldBegin('skipColumnSchemaForPartition', TType::BOOL, 10);
             $xfer += $output->writeBool($this->skipColumnSchemaForPartition);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->partNames !== null) {
+            if (!is_array($this->partNames)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('partNames', TType::LST, 11);
+            $output->writeListBegin(TType::STRING, count($this->partNames));
+            foreach ($this->partNames as $iter1317) {
+                $xfer += $output->writeString($iter1317);
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

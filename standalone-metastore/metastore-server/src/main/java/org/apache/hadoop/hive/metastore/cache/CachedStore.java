@@ -1960,17 +1960,18 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName, short maxParts,
-      String userName, List<String> groupNames, boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException, InvalidObjectException {
+      String userName, List<String> groupNames, boolean skipColSchemaForPartitions, List<String> partNames) throws MetaException,
+      NoSuchObjectException, InvalidObjectException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
-      return rawStore.getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName, groupNames, skipColSchemaForPartitions);
+      return rawStore.getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName, groupNames, skipColSchemaForPartitions, partNames);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null) {
       // The table is not yet loaded in cache
-      return rawStore.getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName, groupNames, skipColSchemaForPartitions);
+      return rawStore.getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName, groupNames, skipColSchemaForPartitions, partNames);
     }
     List<Partition> partitions = new ArrayList<>();
     int count = 0;

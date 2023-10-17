@@ -3362,13 +3362,18 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName,
-      short max, String userName, List<String> groupNames, boolean skipColumnSchemaForPartition)
+      short max, String userName, List<String> groupNames, boolean skipColumnSchemaForPartition, List<String> partNames)
           throws MetaException, InvalidObjectException {
     boolean success = false;
 
     try {
       openTransaction();
-      List<MPartition> mparts = listMPartitions(catName, dbName, tblName, max);
+      List<MPartition> mparts;
+      if (partNames == null) {
+        mparts = listMPartitions(catName, dbName, tblName, max);
+      } else {
+        mparts = listMPartitionsByNames(catName, dbName, tblName, partNames);
+      }
       List<Partition> parts = new ArrayList<>(mparts.size());
       if (CollectionUtils.isNotEmpty(mparts)) {
         for (MPartition mpart : mparts) {
@@ -4026,6 +4031,58 @@ public class ObjectStore implements RawStore, Configurable {
     return partitionNames;
   }
 
+  private List<MPartition> listMPartitionsByNames(String catName, String dbName, String tableName, List<String> partNames) throws Exception {
+    LOG.debug("Executing listMPartitions");
+
+    Preconditions.checkState(this.currentTransaction.isActive());
+
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+
+
+    List<MPartition> result = Collections.emptyList();
+    try (Query query = pm.newQuery(MPartition.class)) {
+      String paramStr = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
+      String filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && (";
+      Object[] params = new Object[partNames.size() + 3];
+      int i = 0;
+      params[i++] = tableName;
+      params[i++] = dbName;
+      params[i++] = catName;
+      int firstI = i;
+      for (String s : partNames) {
+        filter += ((i == firstI) ? "" : " || ") + "partitionName == p" + i;
+        paramStr += ", java.lang.String p" + i;
+        params[i++] = s;
+      }
+      filter += ")";
+      query.setFilter(filter);
+      query.declareParameters(paramStr);
+      query.setOrdering("partitionName ascending");
+      result = (List<MPartition>) query.executeWithArray(params);
+      pm.retrieveAll(result);
+      result = new ArrayList<>(result);
+      return result;
+    }
+
+
+//    try (Query query = pm.newQuery(MPartition.class,
+//            "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && partitionName in :partNames")) {
+//      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+//      query.setParameters("partNames", partNames);
+//      query.setOrdering("partitionName ascending");
+//      final List<MPartition> mparts = (List<MPartition>) query.execute(tableName, dbName, catName);
+//      LOG.debug("Done executing query for listMPartitions");
+//
+//      pm.retrieveAll(mparts);
+//      pm.makeTransientAll(mparts);
+//
+//      LOG.debug("Done retrieving all objects for listMPartitions {}", mparts);
+//
+//      return Collections.unmodifiableList(new ArrayList<>(mparts));
+//    }
+  }
+
   private List<MPartition> listMPartitions(String catName, String dbName, String tableName, int max) throws Exception {
     LOG.debug("Executing listMPartitions");
 
@@ -4034,8 +4091,9 @@ public class ObjectStore implements RawStore, Configurable {
     dbName = normalizeIdentifier(dbName);
     tableName = normalizeIdentifier(tableName);
 
+
     try (Query query = pm.newQuery(MPartition.class,
-        "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3")) {
+            "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3")) {
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setOrdering("partitionName ascending");
       if (max >= 0) {

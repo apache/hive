@@ -1157,7 +1157,7 @@ public interface RawStore extends Configurable {
   default List<Partition> getPartitionsWithAuth(String catName, String dbName,
        String tblName, short maxParts, String userName, List<String> groupNames)
        throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName, groupNames, false);
+    return getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName, groupNames, false, null);
   }
 
   /**
@@ -1175,8 +1175,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error fetching privilege information.
    */
   List<Partition> getPartitionsWithAuth(String catName, String dbName,
-      String tblName, short maxParts, String userName, List<String> groupNames, boolean isColSchemaRequired)
+      String tblName, short maxParts, String userName, List<String> groupNames, boolean isColSchemaRequired, List<String> partNames)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
+
+
 
   /**
    * Lists partition names that match a given partial specification

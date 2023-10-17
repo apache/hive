@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -99,7 +101,18 @@ public class PartitionIterable implements Iterable<Partition> {
           batchCounter++;
         }
         try {
-          batchIter = db.getPartitionsByNames(table, nameBatch, getColStats).iterator();
+          if (!isAuthRequired) {
+            batchIter = db.getPartitionsByNames(table, nameBatch, getColStats).iterator();
+          } else {
+            GetPartitionsPsWithAuthRequest req = new GetPartitionsPsWithAuthRequest();
+            req.setTblName(table.getTableName());
+            req.setDbName(table.getDbName());
+            req.setUserName(userName);
+            req.setGroupNames(groupNames);
+            req.setMaxParts((short) -1);
+            req.setPartNames(nameBatch);
+            batchIter = db.getPartitionsAuthByNames(req, table).iterator();
+          }
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
@@ -130,6 +143,10 @@ public class PartitionIterable implements Iterable<Partition> {
   private List<String> partitionNames = null;
   private int batchSize;
   private boolean getColStats = false;
+  private boolean isAuthRequired = false;
+  private String userName;
+  private List<String> groupNames = null;
+
 
   /**
    * Dummy constructor, which simply acts as an iterator on an already-present
@@ -150,18 +167,34 @@ public class PartitionIterable implements Iterable<Partition> {
     this(db, table, partialPartitionSpec, batchSize, false);
   }
 
+
+  public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
+                           int batchSize, boolean isAuthRequired, String userName, List<String> groupNames) throws HiveException {
+    this(db, table, partialPartitionSpec, batchSize, false, isAuthRequired, userName, groupNames);
+  }
+
   /**
    * Primary constructor that fetches all partitions in a given table, given
    * a Hive object and a table object, and a partial partition spec.
    */
   public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
                            int batchSize, boolean getColStats) throws HiveException {
+    this(db, table, partialPartitionSpec, batchSize, false, false, null, null);
+  }
+
+  public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
+                           int batchSize, boolean getColStats, boolean isAuthRequired, String userName, List<String> groupNames) throws HiveException {
     this.currType = Type.LAZY_FETCH_PARTITIONS;
     this.db = db;
     this.table = table;
     this.partialPartitionSpec = partialPartitionSpec;
     this.batchSize = batchSize;
     this.getColStats = getColStats;
+    this.isAuthRequired = isAuthRequired;
+    if (isAuthRequired) {
+      this.userName = userName;
+      this.groupNames = groupNames;
+    }
 
     if (this.partialPartitionSpec == null){
       partitionNames = db.getPartitionNames(

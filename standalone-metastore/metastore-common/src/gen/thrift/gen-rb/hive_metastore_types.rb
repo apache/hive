@@ -7775,6 +7775,7 @@ class GetPartitionsPsWithAuthRequest
   VALIDWRITEIDLIST = 8
   ID = 9
   SKIPCOLUMNSCHEMAFORPARTITION = 10
+  PARTNAMES = 11
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -7786,7 +7787,8 @@ class GetPartitionsPsWithAuthRequest
     GROUPNAMES => {:type => ::Thrift::Types::LIST, :name => 'groupNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true},
-    SKIPCOLUMNSCHEMAFORPARTITION => {:type => ::Thrift::Types::BOOL, :name => 'skipColumnSchemaForPartition', :optional => true}
+    SKIPCOLUMNSCHEMAFORPARTITION => {:type => ::Thrift::Types::BOOL, :name => 'skipColumnSchemaForPartition', :optional => true},
+    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

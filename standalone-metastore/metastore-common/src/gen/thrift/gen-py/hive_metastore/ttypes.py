@@ -28445,11 +28445,12 @@ class GetPartitionsPsWithAuthRequest(object):
      - validWriteIdList
      - id
      - skipColumnSchemaForPartition
+     - partNames
 
     """
 
 
-    def __init__(self, catName=None, dbName=None, tblName=None, partVals=None, maxParts=-1, userName=None, groupNames=None, validWriteIdList=None, id=-1, skipColumnSchemaForPartition=None,):
+    def __init__(self, catName=None, dbName=None, tblName=None, partVals=None, maxParts=-1, userName=None, groupNames=None, validWriteIdList=None, id=-1, skipColumnSchemaForPartition=None, partNames=None,):
         self.catName = catName
         self.dbName = dbName
         self.tblName = tblName
@@ -28460,6 +28461,7 @@ class GetPartitionsPsWithAuthRequest(object):
         self.validWriteIdList = validWriteIdList
         self.id = id
         self.skipColumnSchemaForPartition = skipColumnSchemaForPartition
+        self.partNames = partNames
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -28530,6 +28532,16 @@ class GetPartitionsPsWithAuthRequest(object):
                     self.skipColumnSchemaForPartition = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.LIST:
+                    self.partNames = []
+                    (_etype1309, _size1306) = iprot.readListBegin()
+                    for _i1310 in range(_size1306):
+                        _elem1311 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.partNames.append(_elem1311)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -28555,8 +28567,8 @@ class GetPartitionsPsWithAuthRequest(object):
         if self.partVals is not None:
             oprot.writeFieldBegin('partVals', TType.LIST, 4)
             oprot.writeListBegin(TType.STRING, len(self.partVals))
-            for iter1306 in self.partVals:
-                oprot.writeString(iter1306.encode('utf-8') if sys.version_info[0] == 2 else iter1306)
+            for iter1312 in self.partVals:
+                oprot.writeString(iter1312.encode('utf-8') if sys.version_info[0] == 2 else iter1312)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.maxParts is not None:
@@ -28570,8 +28582,8 @@ class GetPartitionsPsWithAuthRequest(object):
         if self.groupNames is not None:
             oprot.writeFieldBegin('groupNames', TType.LIST, 7)
             oprot.writeListBegin(TType.STRING, len(self.groupNames))
-            for iter1307 in self.groupNames:
-                oprot.writeString(iter1307.encode('utf-8') if sys.version_info[0] == 2 else iter1307)
+            for iter1313 in self.groupNames:
+                oprot.writeString(iter1313.encode('utf-8') if sys.version_info[0] == 2 else iter1313)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.validWriteIdList is not None:
@@ -28585,6 +28597,13 @@ class GetPartitionsPsWithAuthRequest(object):
         if self.skipColumnSchemaForPartition is not None:
             oprot.writeFieldBegin('skipColumnSchemaForPartition', TType.BOOL, 10)
             oprot.writeBool(self.skipColumnSchemaForPartition)
+            oprot.writeFieldEnd()
+        if self.partNames is not None:
+            oprot.writeFieldBegin('partNames', TType.LIST, 11)
+            oprot.writeListBegin(TType.STRING, len(self.partNames))
+            for iter1314 in self.partNames:
+                oprot.writeString(iter1314.encode('utf-8') if sys.version_info[0] == 2 else iter1314)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -28631,11 +28650,11 @@ class GetPartitionsPsWithAuthResponse(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.partitions = []
-                    (_etype1311, _size1308) = iprot.readListBegin()
-                    for _i1312 in range(_size1308):
-                        _elem1313 = Partition()
-                        _elem1313.read(iprot)
-                        self.partitions.append(_elem1313)
+                    (_etype1318, _size1315) = iprot.readListBegin()
+                    for _i1319 in range(_size1315):
+                        _elem1320 = Partition()
+                        _elem1320.read(iprot)
+                        self.partitions.append(_elem1320)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -28652,8 +28671,8 @@ class GetPartitionsPsWithAuthResponse(object):
         if self.partitions is not None:
             oprot.writeFieldBegin('partitions', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.partitions))
-            for iter1314 in self.partitions:
-                iter1314.write(oprot)
+            for iter1321 in self.partitions:
+                iter1321.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -28817,11 +28836,11 @@ class ReplicationMetricList(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.replicationMetricList = []
-                    (_etype1318, _size1315) = iprot.readListBegin()
-                    for _i1319 in range(_size1315):
-                        _elem1320 = ReplicationMetrics()
-                        _elem1320.read(iprot)
-                        self.replicationMetricList.append(_elem1320)
+                    (_etype1325, _size1322) = iprot.readListBegin()
+                    for _i1326 in range(_size1322):
+                        _elem1327 = ReplicationMetrics()
+                        _elem1327.read(iprot)
+                        self.replicationMetricList.append(_elem1327)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -28838,8 +28857,8 @@ class ReplicationMetricList(object):
         if self.replicationMetricList is not None:
             oprot.writeFieldBegin('replicationMetricList', TType.LIST, 1)
             oprot.writeListBegin(TType.STRUCT, len(self.replicationMetricList))
-            for iter1321 in self.replicationMetricList:
-                iter1321.write(oprot)
+            for iter1328 in self.replicationMetricList:
+                iter1328.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -28964,10 +28983,10 @@ class GetOpenTxnsRequest(object):
             if fid == 1:
                 if ftype == TType.LIST:
                     self.excludeTxnTypes = []
-                    (_etype1325, _size1322) = iprot.readListBegin()
-                    for _i1326 in range(_size1322):
-                        _elem1327 = iprot.readI32()
-                        self.excludeTxnTypes.append(_elem1327)
+                    (_etype1332, _size1329) = iprot.readListBegin()
+                    for _i1333 in range(_size1329):
+                        _elem1334 = iprot.readI32()
+                        self.excludeTxnTypes.append(_elem1334)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -28984,8 +29003,8 @@ class GetOpenTxnsRequest(object):
         if self.excludeTxnTypes is not None:
             oprot.writeFieldBegin('excludeTxnTypes', TType.LIST, 1)
             oprot.writeListBegin(TType.I32, len(self.excludeTxnTypes))
-            for iter1328 in self.excludeTxnTypes:
-                oprot.writeI32(iter1328)
+            for iter1335 in self.excludeTxnTypes:
+                oprot.writeI32(iter1335)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -33329,6 +33348,7 @@ GetPartitionsPsWithAuthRequest.thrift_spec = (
     (8, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 8
     (9, TType.I64, 'id', None, -1, ),  # 9
     (10, TType.BOOL, 'skipColumnSchemaForPartition', None, None, ),  # 10
+    (11, TType.LIST, 'partNames', (TType.STRING, 'UTF8', False), None, ),  # 11
 )
 all_structs.append(GetPartitionsPsWithAuthResponse)
 GetPartitionsPsWithAuthResponse.thrift_spec = (
