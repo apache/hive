@@ -399,7 +399,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       if (predicate.pushedPredicate != null) {
         SearchArgument sarg = ConvertAstToSearchArg.create(conf, predicate.pushedPredicate);
-        expr = Expressions.and(expr, HiveIcebergFilterFactory.generateFilterExpression(sarg));
+        expr = HiveIcebergFilterFactory.generateFilterExpression(sarg);
       }
     } catch (UnsupportedOperationException e) {
       LOG.warn("Unable to create Iceberg filter, continuing without filter (will be applied by Hive later): ", e);

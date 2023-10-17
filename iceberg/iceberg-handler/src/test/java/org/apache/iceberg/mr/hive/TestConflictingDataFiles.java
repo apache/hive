@@ -67,7 +67,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     } catch (Throwable ex) {
       // If retry succeeds then it should not throw an ValidationException.
       Throwable cause = Throwables.getRootCause(ex);
-      if (cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
+      Assert.assertTrue(cause instanceof ValidationException);
+      if (cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
         Assert.fail();
       }
     }
@@ -124,7 +125,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     } catch (Throwable ex) {
       // If retry succeeds then it should not throw an ValidationException.
       Throwable cause = Throwables.getRootCause(ex);
-      if (cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
+      Assert.assertTrue(cause instanceof ValidationException);
+      if (cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
         Assert.fail();
       }
     }
@@ -181,7 +183,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     } catch (Throwable ex) {
       // If retry succeeds then it should not throw an ValidationException.
       Throwable cause = Throwables.getRootCause(ex);
-      if (cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
+      Assert.assertTrue(cause instanceof ValidationException);
+      if (cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
         Assert.fail();
       }
     }
@@ -227,8 +230,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     } catch (Throwable ex) {
       // If retry succeeds then it should not throw an ValidationException.
       Throwable cause = Throwables.getRootCause(ex);
-      Assert.assertTrue(
-          cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting" + ".*files(.*)"));
+      Assert.assertTrue(cause instanceof ValidationException);
+      Assert.assertTrue(cause.getMessage().matches("^Found.*conflicting" + ".*files(.*)"));
     }
 
     List<Object[]> objects =

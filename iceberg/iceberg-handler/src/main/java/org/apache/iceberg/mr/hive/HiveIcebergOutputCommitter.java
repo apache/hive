@@ -490,7 +490,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param filterExpr Filter expression for conflict detection filter
    */
   private void commitWrite(Table table, String branchName, Long snapshotId, long startTime,
-      FilesForCommit results, Operation operation, Expression filterExpr) {
+      FilesForCommit results, Operation operation, Expression conflictDetectionFilter) {
 
     if (!results.replacedDataFiles().isEmpty()) {
       OverwriteFiles write = table.newOverwrite();
@@ -527,7 +527,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
-      Expression conflictDetectionFilter =  Expressions.and(Expressions.alwaysTrue(), filterExpr);
       write.conflictDetectionFilter(conflictDetectionFilter);
 
       if (!results.dataFiles().isEmpty()) {
