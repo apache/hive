@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitionsNoException;
+import static org.apache.hadoop.hive.metastore.tools.Util.createManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.createSchema;
 import static org.apache.hadoop.hive.metastore.tools.Util.throwingSupplierWrapper;
 
@@ -181,22 +182,23 @@ final class HMSBenchmarks {
   }
 
   static DescriptiveStatistics benchmarkCreatePartition(@NotNull MicroBenchmark bench,
-                                                        @NotNull BenchData data) {
+                                                        @NotNull BenchData data,
+                                                        int howMany) {
     final HMSClient client = data.getClient();
     String dbName = data.dbName;
     String tableName = data.tableName;
 
     BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
-    final List<String> values = Collections.singletonList("d1");
     try {
       Table t = client.getTable(dbName, tableName);
-      Partition partition = new Util.PartitionBuilder(t)
-          .withValues(values)
-          .build();
+      List<Partition> parts = createManyPartitions(t, null, Collections.singletonList("d"), howMany);
 
       return bench.measure(null,
-          () -> throwingSupplierWrapper(() -> client.addPartition(partition)),
-          () -> throwingSupplierWrapper(() -> client.dropPartition(dbName, tableName, values)));
+          () -> throwingSupplierWrapper(() -> {
+            parts.forEach(part -> throwingSupplierWrapper(() -> client.addPartition(part)));
+            return null;
+          }),
+          () -> throwingSupplierWrapper(() -> client.dropPartitions(dbName, tableName, null)));
     } catch (TException e) {
       e.printStackTrace();
       return new DescriptiveStatistics();
