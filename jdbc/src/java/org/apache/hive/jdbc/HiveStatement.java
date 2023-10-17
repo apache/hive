@@ -997,8 +997,12 @@ public class HiveStatement implements java.sql.Statement {
 
   @VisibleForTesting
   public String getQueryId() throws SQLException {
+    TOperationHandle stmtHandleTemp = stmtHandle; // cache it, as it might get modified by other thread.
+    if (stmtHandleTemp == null) {
+      throw new SQLException("stmtHandle is null");
+    }
     try {
-      return client.GetQueryId(new TGetQueryIdReq(stmtHandle)).getQueryId();
+      return client.GetQueryId(new TGetQueryIdReq(stmtHandleTemp)).getQueryId();
     } catch (TException e) {
       throw new SQLException(e);
     }

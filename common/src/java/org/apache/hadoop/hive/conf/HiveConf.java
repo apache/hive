@@ -1519,6 +1519,10 @@ public class HiveConf extends Configuration {
     HIVEQUERYID("hive.query.id", "",
         "ID for query being executed (might be multiple per a session)"),
 
+      HIVEQUERYTAG("hive.query.tag", null, "Tag for the queries in the session. User can kill the queries with the tag " +
+        "in another session. Currently there is no tag duplication check, user need to make sure his tag is unique. " +
+        "Also 'kill query' needs to be issued to all HiveServer2 instances to proper kill the queries"),
+
     HIVEJOBNAMELENGTH("hive.jobname.length", 50, "max jobname length"),
 
     // hive jar
@@ -1688,7 +1692,7 @@ public class HiveConf extends Configuration {
         "How many rows with the same key value should be cached in memory per smb joined table."),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000,
         "Number of rows after which size of the grouping keys/aggregation classes is performed"),
-    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.5,
+    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.99,
         "Portion of total memory to be used by map-side group aggregation hash table"),
     HIVEMAPJOINFOLLOWEDBYMAPAGGRHASHMEMORY("hive.mapjoin.followby.map.aggr.hash.percentmemory", (float) 0.3,
         "Portion of total memory to be used by map-side group aggregation hash table, when this group by is followed by map join"),
@@ -5453,6 +5457,7 @@ public class HiveConf extends Configuration {
     ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
     ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
     ConfVars.HIVEQUERYID.varname,
+    ConfVars.HIVEQUERYTAG.varname,
   };
 
   /**
