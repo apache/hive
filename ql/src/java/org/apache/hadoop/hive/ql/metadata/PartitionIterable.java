@@ -179,7 +179,7 @@ public class PartitionIterable implements Iterable<Partition> {
    */
   public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
                            int batchSize, boolean getColStats) throws HiveException {
-    this(db, table, partialPartitionSpec, batchSize, false, false, null, null);
+    this(db, table, partialPartitionSpec, batchSize, getColStats, false, null, null);
   }
 
   public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,

@@ -33,8 +33,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -120,7 +123,7 @@ public class TestGetPartitionAuthWithBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // test with a batch size of 10 and decaying factor of 2
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0, true, "username", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0, null, true, "username", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 3 calls to get partitions
         verify(spyMSC, times(3)).listPartitionsWithAuthInfoRequest(req.capture());
@@ -138,7 +141,7 @@ public class TestGetPartitionAuthWithBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // there should be 2 calls to get partitions with batch sizes of 19, 11
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0, null, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 2 calls to get partitions
         verify(spyMSC, times(2)).listPartitionsWithAuthInfoRequest(req.capture());
@@ -158,7 +161,7 @@ public class TestGetPartitionAuthWithBatches {
     public void testSmallNumberOfPartitions() throws Exception {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0, null, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 1 call to get partitions
         verify(spyMSC, times(1)).listPartitionsWithAuthInfoRequest(req.capture());
@@ -178,7 +181,7 @@ public class TestGetPartitionAuthWithBatches {
         hive.setMSC(spyMSC);
         doThrow(MetaException.class).when(spyMSC).listPartitionsWithAuthInfoRequest(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0, null, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         } catch (Exception ignored) {}
         ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 5 call to get partitions with batch sizes as 30, 15, 7, 3, 1
@@ -203,7 +206,7 @@ public class TestGetPartitionAuthWithBatches {
         hive.setMSC(spyMSC);
         doThrow(MetaException.class).when(spyMSC).listPartitionsWithAuthInfoRequest(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2, null, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         } catch (Exception ignored) {}
         ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // there should be 2 call to get partitions with batch sizes as 30, 15
@@ -230,7 +233,7 @@ public class TestGetPartitionAuthWithBatches {
         doThrow(new MetaException()).doCallRealMethod()
                 .when(spyMSC).listPartitionsWithAuthInfoRequest(any());
 
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5, null, true, "user", new ArrayList<>(Arrays.asList("Grp1", "Grp2")));
         ArgumentCaptor<GetPartitionsPsWithAuthRequest> req = ArgumentCaptor.forClass(GetPartitionsPsWithAuthRequest.class);
         // The first call with batch size of 30 will fail, the rest two call will be of size 15 each. Total 3 calls
         verify(spyMSC, times(3)).listPartitionsWithAuthInfoRequest(req.capture());

@@ -4115,7 +4115,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
-              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), true, getUserName(), getGroupNames()));
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), null, true, getUserName(), getGroupNames()));
     } else {
       return getPartitionsWithAuth(tbl);
     }
@@ -4195,14 +4195,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
             Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
-              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), false, null, null);
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), null,false, null, null);
     } else {
       return getAllPartitions(tbl);
     }
   }
 
   public Set<Partition> getAllPartitionsInBatches(Table tbl, int batchSize, int decayingFactor,
-         int maxRetries, boolean isAuthRequired, String userName, List<String> groupNames) throws HiveException {
+         int maxRetries, Map<String, String> partialPartitionSpec, boolean isAuthRequired, String userName, List<String> groupNames) throws HiveException {
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
@@ -4213,7 +4213,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       public Void execute(int size) throws HiveException {
         try {
           result.clear();
-          new PartitionIterable(Hive.get(), tbl, null, size, isAuthRequired, userName, groupNames).forEach(result::add);
+          new PartitionIterable(Hive.get(), tbl, partialPartitionSpec, size, isAuthRequired, userName, groupNames).forEach(result::add);
           return null;
         } catch (HiveException e) {
           throw e;
@@ -4228,6 +4228,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return result;
   }
 
+
+  public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec,
+                                       short limit) throws HiveException {
+    int batchSize= MetastoreConf.getIntVar(
+            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    if (limit >= 0 || batchSize == 0) {
+      return getPartitionsWithAuth(tbl, partialPartSpec, limit);
+    } else {
+      return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), partialPartSpec, true, getUserName(), getGroupNames()));
+    }
+  }
+
   /**
    * get all the partitions of the table that matches the given partial
    * specification. partition columns whose value is can be anything should be
@@ -4239,7 +4252,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    * @throws HiveException
    */
-  public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec,
+  public List<Partition> getPartitionsWithAuth(Table tbl, Map<String, String> partialPartSpec,
       short limit)
   throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();

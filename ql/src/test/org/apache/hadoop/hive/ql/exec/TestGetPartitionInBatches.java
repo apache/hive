@@ -124,7 +124,7 @@ public class TestGetPartitionInBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // test with a batch size of 10 and decaying factor of 2
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0, false, null, null);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0, null, false, null, null);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 3 calls to get partitions
         verify(spyMSC, times(3)).getPartitionsByNames(req.capture());
@@ -142,7 +142,7 @@ public class TestGetPartitionInBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // there should be 2 calls to get partitions with batch sizes of 19, 11
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0, false, null, null);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0, null, false, null, null);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 2 calls to get partitions
         verify(spyMSC, times(2)).getPartitionsByNames(req.capture());
@@ -162,7 +162,7 @@ public class TestGetPartitionInBatches {
     public void testSmallNumberOfPartitions() throws Exception {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0, false, null, null);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0, null, false, null, null);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 1 call to get partitions
         verify(spyMSC, times(1)).getPartitionsByNames(req.capture());
@@ -182,7 +182,7 @@ public class TestGetPartitionInBatches {
         hive.setMSC(spyMSC);
         doThrow(MetaException.class).when(spyMSC).getPartitionsByNames(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0, false, null, null);
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0, null, false, null, null);
         } catch (Exception ignored) {}
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 5 call to get partitions with batch sizes as 30, 15, 7, 3, 1
@@ -207,7 +207,7 @@ public class TestGetPartitionInBatches {
         hive.setMSC(spyMSC);
         doThrow(MetaException.class).when(spyMSC).getPartitionsByNames(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2, false, null, null);
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2, null, false, null, null);
         } catch (Exception ignored) {}
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 2 call to get partitions with batch sizes as 30, 15
@@ -234,7 +234,7 @@ public class TestGetPartitionInBatches {
         doThrow(new MetaException()).doCallRealMethod()
                 .when(spyMSC).getPartitionsByNames(any());
 
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5, false, null, null);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5, null, false, null, null);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // The first call with batch size of 30 will fail, the rest two call will be of size 15 each. Total 3 calls
         verify(spyMSC, times(3)).getPartitionsByNames(req.capture());

@@ -1637,10 +1637,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName,
-                                               short maxParts, String userName, List<String> groupNames, boolean skipColSchemaForPartitions)
+                                               short maxParts, String userName, List<String> groupNames, boolean skipColSchemaForPartitions, List<String> partNames)
           throws MetaException, NoSuchObjectException, InvalidObjectException {
     return objectStore.getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName,
-            groupNames, skipColSchemaForPartitions);
+            groupNames, skipColSchemaForPartitions, partNames);
   }
 
   @Override
