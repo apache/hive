@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -414,11 +413,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @return The query filter expression or alwaysTrue if not found.
    */
   public static Expression getQueryFilter(Configuration config) {
-    try {
-      return (Expression) SessionStateUtil.getResource(config, InputFormatConfig.QUERY_FILTERS).get();
-    } catch (NoSuchElementException e) {
-      return Expressions.alwaysTrue();
-    }
+    return (Expression) SessionStateUtil.getResource(config, InputFormatConfig.QUERY_FILTERS)
+        .orElse(Expressions.alwaysTrue());
   }
 
   @Override

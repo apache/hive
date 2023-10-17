@@ -95,7 +95,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   }
 
   @Test
-  public void testMultiFiltersUpdate() {
+  public void testMultiFiltersDelete() {
 
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
@@ -109,8 +109,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         TableIdentifier.of("default", "customers"), false));
 
     String[] multiFilterQuery = new String[] {
-        "UPDATE customers SET first_name='Changed' WHERE  last_name='Henderson' " + "OR last_name='Johnson'",
-        "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor' AND customer_id=1" };
+        "DELETE FROM customers  WHERE  last_name='Henderson' OR last_name='Johnson'",
+        "DELETE FROM customers  WHERE  last_name='Taylor' AND customer_id=1" };
 
     try {
       Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
@@ -134,18 +134,15 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
-    Assert.assertEquals(12, objects.size());
+    Assert.assertEquals(9, objects.size());
     List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(1L, "Joanna", "Pierce")
-        .add(1L, "Changed", "Taylor")
         .add(2L, "Jake", "Donnel")
         .add(2L, "Susan", "Morrison")
         .add(2L, "Bob", "Silver")
         .add(2L, "Joanna", "Silver")
         .add(3L, "Marci", "Barna")
         .add(3L, "Blake", "Burr")
-        .add(3L, "Changed", "Henderson")
-        .add(3L, "Changed", "Johnson")
         .add(4L, "Laci", "Zold")
         .add(5L, "Peti", "Rozsaszin").build();
     HiveIcebergTestUtils.validateData(expected,
@@ -228,7 +225,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         shell.closeSession();
       });
     } catch (Throwable ex) {
-      // If retry succeeds then it should not throw an ValidationException.
+      // Since there is a conflict it should throw ValidationException
       Throwable cause = Throwables.getRootCause(ex);
       Assert.assertTrue(cause instanceof ValidationException);
       Assert.assertTrue(cause.getMessage().matches("^Found.*conflicting" + ".*files(.*)"));
