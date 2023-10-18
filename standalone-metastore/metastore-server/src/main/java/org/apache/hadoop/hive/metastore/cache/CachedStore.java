@@ -2005,14 +2005,17 @@ public class CachedStore implements RawStore, Configurable {
       // The table is not yet loaded in cache
       return rawStore.listPartitionsPsWithAuth(catName, dbName, tblName, args);
     }
-    String partNameMatcher = getPartNameMatcher(table, args.getPart_vals());
-    List<Partition> partitions = new ArrayList<>();
+    String partNameMatcher = null;
+    if (args.getPart_vals() != null && !args.getPart_vals().isEmpty()) {
+      partNameMatcher = getPartNameMatcher(table, args.getPart_vals());
+    }
     int maxParts = args.getMax();
+    List<Partition> partitions = new ArrayList<>();
     List<Partition> allPartitions = sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts);
     int count = 0;
     for (Partition part : allPartitions) {
       String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
-      if (partName.matches(partNameMatcher) && (maxParts == -1 || count < maxParts)) {
+      if ((partNameMatcher == null || partName.matches(partNameMatcher)) && (maxParts == -1 || count < maxParts)) {
         PrincipalPrivilegeSet privs =
             getPartitionPrivilegeSet(catName, dbName, tblName, partName, args.getUserName(), args.getGroupNames());
         part.setPrivileges(privs);

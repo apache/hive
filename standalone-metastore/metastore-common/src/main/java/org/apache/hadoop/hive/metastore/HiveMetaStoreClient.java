@@ -2207,6 +2207,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                int maxParts) throws TException {
     List<PartitionSpec> partitionSpecs =
         client.get_partitions_pspec(prependCatalogToDbName(catName, dbName, conf), tableName, maxParts);
+    partitionSpecs = FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs);
     return PartitionSpecProxy.Factory.get(partitionSpecs);
   }
 
