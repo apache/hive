@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -52,8 +52,16 @@ public class TestGenericUDFArrayPosition {
     Object i2 = new IntWritable(1);
     Object i3 = new IntWritable(2);
     Object i4 = new IntWritable(1);
+    Object i5 = new IntWritable(5);
 
     runAndVerify(asList(i1, i2, i3, i4), i2, 2);
+    runAndVerify(asList(i1, i2, i3, i4), i5, 0);
+
+    ObjectInspector[] inputOIfs = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableFloatObjectInspector),
+        PrimitiveObjectInspectorFactory.writableFloatObjectInspector };
+    udf.initialize(inputOIfs);
+
     i1 = new FloatWritable(3.3f);
     i2 = new FloatWritable(1.1f);
     i3 = new FloatWritable(3.3f);
@@ -67,9 +75,15 @@ public class TestGenericUDFArrayPosition {
             PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector),
             PrimitiveObjectInspectorFactory.writableStringObjectInspector };
     udf.initialize(inputOIs);
-    HiveVarchar hiveVarchar = new HiveVarchar("qwerty", 6);
-    HiveVarchar hiveVarchar2 = new HiveVarchar("bb", 2);
+    HiveVarcharWritable hiveVarchar = new HiveVarcharWritable(new HiveVarchar("qwerty", 6));
+    HiveVarcharWritable hiveVarchar2 = new HiveVarcharWritable(new HiveVarchar("bb", 2));
     runAndVerify(asList(hiveVarchar,hiveVarchar2),new Text("bb"),2);
+
+    ObjectInspector[] inputOIs1 = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector),
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector };
+    udf.initialize(inputOIs1);
+    runAndVerify(asList(hiveVarchar,hiveVarchar2),hiveVarchar,1);
 
     ObjectInspector[] inputOIs2 = { ObjectInspectorFactory.getStandardListObjectInspector(
         PrimitiveObjectInspectorFactory.writableStringObjectInspector),

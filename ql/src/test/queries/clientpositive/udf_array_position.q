@@ -26,6 +26,22 @@ SELECT array_position(array(array("a","b","c","d"),array("a","b","c","d"),array(
 
 SELECT array_position(array("aa","bb","cc"),"cc");
 
+create table test as select array('a', 'b', 'c', 'b') as a union all select array('a', 'c', 'd') as a;
+
+select * from test;
+
+select a, array_position(a, 'b') from test;
+
+select a, array_position(a, cast('a' as varchar(5))) from test;
+
+CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>);
+
+insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'));
+
+select top, array_position(top,cast('abc' as VARCHAR(10))), array_position(bottom,cast('def' as VARCHAR(10))) from temp;
+
+select top, array_position(top,'abc'), array_position(bottom,'def') from temp;
+
 # handle null array cases
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/test_null_array;

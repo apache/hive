@@ -45,6 +45,8 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
     transient ListObjectInspector arrayOI;
     transient ObjectInspector[] argumentOIs;
 
+    transient ObjectInspector arrayElementOI;
+
     transient Converter converter;
 
     protected AbstractGenericUDFArrayBase(String functionName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory) {
@@ -68,6 +70,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         //return ObjectInspectors based on expected output type
         arrayOI = (ListObjectInspector) arguments[ARRAY_IDX];
         argumentOIs = arguments;
+        arrayElementOI = arrayOI.getListElementObjectInspector();
         if (outputCategory == ObjectInspector.Category.LIST) {
             return initListOI(arguments);
         } else {
@@ -124,14 +127,14 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         return ObjectInspectorFactory.getStandardListObjectInspector(initOI(arguments));
     }
 
-    void checkValueAndListElementTypes(ObjectInspector arrayElementOI, ObjectInspector valueOI, int elementIndex)
-        throws UDFArgumentTypeException {
+    void checkValueAndListElementTypes(ObjectInspector arrayElementOI, String functionName, ObjectInspector valueOI,
+        int elementIndex) throws UDFArgumentTypeException {
         // Check if list element and value are of same type
         if (!ObjectInspectorUtils.compareTypes(arrayElementOI, valueOI)) {
             throw new UDFArgumentTypeException(elementIndex,
-                String.format("%s type element is expected at function array_position(array<%s>,%s), but %s is found",
-                    arrayElementOI.getTypeName(), arrayElementOI.getTypeName(), arrayElementOI.getTypeName(),
-                    valueOI.getTypeName()));
+                String.format("%s type element is expected at function %s(array<%s>,%s), but %s is found",
+                    arrayElementOI.getTypeName(), functionName, arrayElementOI.getTypeName(),
+                    arrayElementOI.getTypeName(), valueOI.getTypeName()));
         }
     }
 

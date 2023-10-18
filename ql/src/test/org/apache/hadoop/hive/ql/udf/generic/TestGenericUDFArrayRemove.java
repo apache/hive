@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -50,14 +52,51 @@ public class TestGenericUDFArrayRemove {
     Object i2 = new IntWritable(1);
     Object i3 = new IntWritable(2);
     Object i4 = new IntWritable(1);
+    Object i5 = new IntWritable(5);
 
     runAndVerify(asList(i1, i2, i3, i4), i2, asList(i1, i3));
+    runAndVerify(asList(i1, i2, i3, i4), i5, asList(i1, i2, i3, i4));
+    runAndVerify(asList(i1, i2, i3, i4),null,null); //Test null element
+
+    ObjectInspector[] inputOIfs = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableFloatObjectInspector),
+        PrimitiveObjectInspectorFactory.writableFloatObjectInspector };
+    udf.initialize(inputOIfs);
+
     i1 = new FloatWritable(3.3f);
     i2 = new FloatWritable(1.1f);
     i3 = new FloatWritable(3.3f);
     i4 = new FloatWritable(2.20f);
+
     runAndVerify(asList(i1, i2, i3, i4), i1, asList(i2, i4));
-    runAndVerify(asList(i1, i2, i3, i4),null,null); //Test null element
+  }
+
+  @Test public void testVarcharAndString() throws HiveException {
+    ObjectInspector[] inputOIs = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector),
+        PrimitiveObjectInspectorFactory.writableStringObjectInspector };
+    udf.initialize(inputOIs);
+    HiveVarcharWritable hiveVarchar = new HiveVarcharWritable(new HiveVarchar("qwerty", 6));
+    HiveVarcharWritable hiveVarchar2 = new HiveVarcharWritable(new HiveVarchar("bb", 2));
+    runAndVerify(asList(hiveVarchar,hiveVarchar2),new Text("bb"),asList(hiveVarchar));
+
+    ObjectInspector[] inputOIs1 = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector),
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector };
+    udf.initialize(inputOIs1);
+    runAndVerify(asList(hiveVarchar,hiveVarchar2),hiveVarchar,asList(hiveVarchar2));
+
+    ObjectInspector[] inputOIs2 = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableStringObjectInspector),
+        PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector };
+    udf.initialize(inputOIs2);
+    runAndVerify(asList(new Text("bb"),new Text("cc")),hiveVarchar2,asList(new Text("cc")));
+
+    ObjectInspector[] inputOIs3 = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableStringObjectInspector),
+        PrimitiveObjectInspectorFactory.writableStringObjectInspector };
+    udf.initialize(inputOIs3);
+    runAndVerify(asList(new Text("bb"),new Text("cc")),new Text("cc"),asList(new Text("bb")));
   }
 
   @Test public void testList() throws HiveException {

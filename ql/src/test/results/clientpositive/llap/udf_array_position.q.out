@@ -94,6 +94,83 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 3
+PREHOOK: query: create table test as select array('a', 'b', 'c', 'b') as a union all select array('a', 'c', 'd') as a
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test as select array('a', 'b', 'c', 'b') as a union all select array('a', 'c', 'd') as a
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+PREHOOK: query: select * from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+["a","b","c","b"]
+["a","c","d"]
+PREHOOK: query: select a, array_position(a, 'b') from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select a, array_position(a, 'b') from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+["a","b","c","b"]	2
+["a","c","d"]	0
+PREHOOK: query: select a, array_position(a, cast('a' as varchar(5))) from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select a, array_position(a, cast('a' as varchar(5))) from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+["a","b","c","b"]	1
+["a","c","d"]	1
+PREHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp
+POSTHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp
+PREHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@temp
+POSTHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@temp
+POSTHOOK: Lineage: temp.bottom SCRIPT []
+POSTHOOK: Lineage: temp.top SCRIPT []
+PREHOOK: query: select top, array_position(top,cast('abc' as VARCHAR(10))), array_position(bottom,cast('def' as VARCHAR(10))) from temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp
+#### A masked pattern was here ####
+POSTHOOK: query: select top, array_position(top,cast('abc' as VARCHAR(10))), array_position(bottom,cast('def' as VARCHAR(10))) from temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp
+#### A masked pattern was here ####
+["abc"]	1	1
+PREHOOK: query: select top, array_position(top,'abc'), array_position(bottom,'def') from temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp
+#### A masked pattern was here ####
+POSTHOOK: query: select top, array_position(top,'abc'), array_position(bottom,'def') from temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp
+#### A masked pattern was here ####
+["abc"]	1	1
 PREHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE

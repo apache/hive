@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +40,8 @@ public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
 
   private static final int ELEMENT_IDX = 1;
 
+  private transient ObjectInspector valueOI;
+
   public GenericUDFArrayRemove() {
     super(FUNC_NAME, 2, 2, ObjectInspector.Category.LIST);
   }
@@ -46,7 +49,8 @@ public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     ObjectInspector defaultOI = super.initialize(arguments);
-    checkValueAndListElementTypes(arrayOI.getListElementObjectInspector(),arguments[ELEMENT_IDX],ELEMENT_IDX);
+    valueOI = arguments[ELEMENT_IDX];
+    checkValueAndListElementTypes(arrayOI.getListElementObjectInspector(), FUNC_NAME,valueOI,ELEMENT_IDX);
     return defaultOI;
   }
 
@@ -62,7 +66,7 @@ public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
     }
 
     List<?> resultArray = new ArrayList<>(((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array));
-    resultArray.removeIf(value::equals);
+    resultArray.removeIf(listElement -> (ObjectInspectorUtils.compare(value, valueOI, listElement, arrayElementOI) == 0));
     return resultArray.stream().map(o -> converter.convert(o)).collect(Collectors.toList());
   }
 }
