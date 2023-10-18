@@ -94,7 +94,6 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"3\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"10\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"3\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -165,7 +164,6 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"3\",\"deleted-records\":\"10\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"0\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"0\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -234,7 +232,6 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -305,7 +302,6 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"1\",\"deleted-records\":\"5\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"0\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"0\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -392,7 +388,6 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"1\",\"deleted-records\":\"5\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"0\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"0\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
 	external.table.purge	false               
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
