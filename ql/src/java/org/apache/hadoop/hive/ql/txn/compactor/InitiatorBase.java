@@ -78,11 +78,12 @@ public class InitiatorBase extends MetaStoreCompactorThread {
         if (request.getNumberOfBuckets() > 0) {
           ci.numberOfBuckets = request.getNumberOfBuckets();
         }
+        ci.poolName = request.getPoolName();
         LOG.info(
             "Checking to see if we should compact partition " + entry.getKey() + " of table " + table.getDbName() + "."
                 + table.getTableName());
         CollectionUtils.addIgnoreNull(compactionResponses,
-            scheduleCompactionIfRequired(ci, table, entry.getValue(), request.getPoolName(), runAs, false));
+            scheduleCompactionIfRequired(ci, table, entry.getValue(), runAs, false));
       } catch (IOException | InterruptedException | MetaException e) {
         LOG.error(
             "Error occurred while Checking if we should compact partition " + entry.getKey() + " of table " + table.getDbName() + "."
@@ -276,7 +277,7 @@ public class InitiatorBase extends MetaStoreCompactorThread {
   }
 
   protected CompactionResponse scheduleCompactionIfRequired(CompactionInfo ci, Table t,
-      Partition p, String poolName, String runAs, boolean metricsEnabled)
+      Partition p, String runAs, boolean metricsEnabled)
       throws MetaException {
     StorageDescriptor sd = resolveStorageDescriptor(t, p);
     try {
@@ -287,7 +288,6 @@ public class InitiatorBase extends MetaStoreCompactorThread {
       CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs);
       if (type != null) {
         ci.type = type;
-        ci.poolName = poolName;
         return requestCompaction(ci, runAs);
       }
     } catch (InterruptedException e) {

@@ -141,7 +141,7 @@ public class Initiator extends InitiatorBase {
               }
 
               Table t = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci));
-              String poolName = getPoolName(ci, t);
+              ci.poolName = getPoolName(ci, t);
               Partition p = resolvePartition(ci);
               if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
@@ -157,7 +157,7 @@ public class Initiator extends InitiatorBase {
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
                           CompactorUtil.ThrowingRunnable.unchecked(() ->
-                              scheduleCompactionIfRequired(ci, t, p, poolName, runAs, metricsEnabled)), compactionExecutor)
+                              scheduleCompactionIfRequired(ci, t, p, runAs, metricsEnabled)), compactionExecutor)
                       .exceptionally(exc -> {
                         LOG.error("Error while running scheduling the compaction on the table {} / partition {}.", tableName, partition, exc);
                         return null;
