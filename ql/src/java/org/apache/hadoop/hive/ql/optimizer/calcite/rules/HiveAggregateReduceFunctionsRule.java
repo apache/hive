@@ -206,7 +206,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       Map<AggregateCall, RexNode> aggCallMapping,
       List<RexNode> inputExprs) {
     final SqlKind kind = oldCall.getAggregation().getKind();
-    if (isReducible(kind)) {
+    if (isReducible(kind) && !isReducibleWithDoubleOrDecimalType(oldAggRel, oldCall)) {
       switch (kind) {
       case SUM0:
         // replace original SUM0(x) with COALESCE(SUM(x), 0)
@@ -256,6 +256,25 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
           newCalls,
           aggCallMapping,
           oldArgTypes);
+    }
+  }
+
+  private boolean isReducibleWithDoubleOrDecimalType(Aggregate oldAggRel, AggregateCall oldCall) {
+    SqlKind kind = oldCall.getAggregation().getKind();
+    // For double and decimal type, the converted stddev() function SQRT((SUM(x * x) - SUM(x) * SUM(x) / COUNT(x))/ COUNT(x)) is giving wrong results(NaN) for the same x value,
+    // same case for variance() so ignoring conversion for double and decimal types.
+    switch (kind) {
+    case STDDEV_POP:
+    case STDDEV_SAMP:
+    case VAR_POP:
+    case VAR_SAMP:
+      int paramIndex = oldCall.getArgList().get(0);
+      SqlTypeName sqlTypeName = getFieldType(oldAggRel.getInput(), paramIndex).getSqlTypeName();
+      if (SqlTypeName.DOUBLE.equals(sqlTypeName) || SqlTypeName.DECIMAL.equals(sqlTypeName)) {
+        return true;
+      }
+    default:
+      return false;
     }
   }
 
