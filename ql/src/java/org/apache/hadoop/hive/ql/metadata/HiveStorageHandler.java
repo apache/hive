@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -386,10 +387,10 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Returns whether the data should be overwritten for the specific operation.
    * @param mTable the table.
-   * @param operationName operationName of the operation.
+   * @param operation operation type.
    * @return if the data should be overwritten for the specified operation.
    */
-  default boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String operationName) {
+  default boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, Context.Operation operation) {
     return false;
   }
 

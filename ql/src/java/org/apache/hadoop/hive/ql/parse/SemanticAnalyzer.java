@@ -8893,9 +8893,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // For Non-Native ACID tables we should convert the new values as well
       rowFieldsOffset = expressions.size();
-      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table, true)) {
+      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table, true)
+          && rowFields.size() >= rowFieldsOffset + columnNumber) {
         for (int i = 0; i < columnNumber; i++) {
-          ExprNodeDesc column = handleConversion(tableFields.get(i), rowFields.get(rowFieldsOffset + i), converted, dest, i);
+          ExprNodeDesc column = handleConversion(tableFields.get(i), rowFields.get(rowFieldsOffset-columnNumber + i), converted, dest, i);
           expressions.add(column);
         }
       }

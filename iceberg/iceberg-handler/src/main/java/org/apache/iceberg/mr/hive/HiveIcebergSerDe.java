@@ -41,11 +41,13 @@ import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopFileIO;
@@ -163,7 +165,12 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         case DELETE:
           return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
         case UPDATE:
-          return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
+          if (RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(
+                configuration.get(TableProperties.UPDATE_MODE))) {
+            return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+          } else {
+            return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
+          }
         case OTHER:
           return tableSchema;
         default:
