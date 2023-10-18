@@ -101,7 +101,6 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"9\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
@@ -200,7 +199,6 @@ Table Parameters:
 	current-snapshot-summary	{\"deleted-data-files\":\"4\",\"deleted-records\":\"9\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"0\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"0\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
 	external.table.purge	true                
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
