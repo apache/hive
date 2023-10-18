@@ -32,13 +32,13 @@ select a, array_remove(a, 'b') from test;
 
 select a, array_remove(a, cast('a' as varchar(5))) from test;
 
-CREATE TABLE temp (top ARRAY<VARCHAR(10)>);
+CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>);
 
-insert into temp values(array(cast('abc' as VARCHAR(10))));
+insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'));
 
-select top, array_remove(top,cast('abc' as VARCHAR(10))) from temp;
+select top, array_remove(top,cast('abc' as VARCHAR(10))), array_remove(bottom,cast('def' as VARCHAR(10))) from temp;
 
-select top, array_remove(top,'abc') from temp;
+select top, array_remove(top,'abc'), array_remove(bottom,'def') from temp;
 
 # handle null array cases
 

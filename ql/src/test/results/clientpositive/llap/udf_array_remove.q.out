@@ -126,41 +126,42 @@ POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 ["a","b","c","b"]	["b","c","b"]
 ["a","c","d"]	["c","d"]
-PREHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>)
+PREHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@temp
-POSTHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>)
+POSTHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp
-PREHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))))
+PREHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@temp
-POSTHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))))
+POSTHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@temp
+POSTHOOK: Lineage: temp.bottom SCRIPT []
 POSTHOOK: Lineage: temp.top SCRIPT []
-PREHOOK: query: select top, array_remove(top,cast('abc' as VARCHAR(10))) from temp
+PREHOOK: query: select top, array_remove(top,cast('abc' as VARCHAR(10))), array_remove(bottom,cast('def' as VARCHAR(10))) from temp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp
 #### A masked pattern was here ####
-POSTHOOK: query: select top, array_remove(top,cast('abc' as VARCHAR(10))) from temp
+POSTHOOK: query: select top, array_remove(top,cast('abc' as VARCHAR(10))), array_remove(bottom,cast('def' as VARCHAR(10))) from temp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp
 #### A masked pattern was here ####
-["abc"]	[]
-PREHOOK: query: select top, array_remove(top,'abc') from temp
+["abc"]	[]	[]
+PREHOOK: query: select top, array_remove(top,'abc'), array_remove(bottom,'def') from temp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp
 #### A masked pattern was here ####
-POSTHOOK: query: select top, array_remove(top,'abc') from temp
+POSTHOOK: query: select top, array_remove(top,'abc'), array_remove(bottom,'def') from temp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp
 #### A masked pattern was here ####
-["abc"]	[]
+["abc"]	[]	[]
 PREHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
