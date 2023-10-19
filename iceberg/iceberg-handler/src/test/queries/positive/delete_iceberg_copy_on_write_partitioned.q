@@ -1,3 +1,4 @@
+--! qt:replace:/DeleteMetadataSpec(\S*)/#Masked#/
 set hive.explain.user=false;
 
 drop table if exists tbl_ice;

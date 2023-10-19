@@ -212,11 +212,11 @@ POSTHOOK: Output: default@target_ice
 PREHOOK: query: DELETE FROM target_ice WHERE a = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_ice
-PREHOOK: Output: default@target_ice
+#### A masked pattern was here ####
 POSTHOOK: query: DELETE FROM target_ice WHERE a = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@target_ice
-POSTHOOK: Output: default@target_ice
+#### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM target_ice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_ice
