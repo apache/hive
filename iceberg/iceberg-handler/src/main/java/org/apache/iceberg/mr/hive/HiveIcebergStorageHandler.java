@@ -155,10 +155,15 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableScan;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.expressions.ExpressionUtil;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
@@ -175,6 +180,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
@@ -185,6 +191,7 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
+import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -831,6 +838,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         AlterTableExecuteSpec.CherryPickSpec cherryPickSpec =
             (AlterTableExecuteSpec.CherryPickSpec) executeSpec.getOperationParams();
         IcebergTableUtil.cherryPick(icebergTable, cherryPickSpec.getSnapshotId());
+        break;
+      case DELETE_METADATA:
+        AlterTableExecuteSpec.DeleteMetadataSpec deleteMetadataSpec =
+            (AlterTableExecuteSpec.DeleteMetadataSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.performMetadataDelete(icebergTable, deleteMetadataSpec.getBranchName(),
+            deleteMetadataSpec.getSarg());
         break;
       default:
         throw new UnsupportedOperationException(
@@ -1876,6 +1889,47 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     } else {
       throw new SemanticException(String.format("Unable to find a column with the name: %s", colName));
+    }
+  }
+
+  @Override
+  public boolean canPerformMetadataDelete(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      String branchName, SearchArgument sarg) {
+    Expression exp;
+    try {
+      exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("Unable to create Iceberg filter," +
+              " continuing without metadata delete: ", e);
+      return false;
+    }
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+
+    // The following code is inspired & copied from Iceberg's SparkTable.java#canDeleteUsingMetadata
+    if (ExpressionUtil.selectsPartitions(exp, table, false)) {
+      return true;
+    }
+
+    TableScan scan = table.newScan().filter(exp).caseSensitive(false).includeColumnStats().ignoreResiduals();
+    if (branchName != null) {
+      scan.useRef(HiveUtils.getTableSnapshotRef(branchName));
+    }
+
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      Map<Integer, Evaluator> evaluators = Maps.newHashMap();
+      StrictMetricsEvaluator metricsEvaluator =
+          new StrictMetricsEvaluator(SnapshotUtil.schemaFor(table, branchName), exp);
+
+      return Iterables.all(tasks, task -> {
+        DataFile file = task.file();
+        PartitionSpec spec = task.spec();
+        Evaluator evaluator = evaluators.computeIfAbsent(spec.specId(), specId ->
+            new Evaluator(spec.partitionType(), Projections.strict(spec).project(exp)));
+        return evaluator.eval(file.partition()) || metricsEvaluator.eval(file);
+      });
+    } catch (IOException ioe) {
+      LOG.warn("Failed to close task iterable", ioe);
+      return false;
     }
   }
 }
