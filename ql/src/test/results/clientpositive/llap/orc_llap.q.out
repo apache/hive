@@ -126,12 +126,12 @@ PREHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -214,40 +214,40 @@ Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: select count(1) from orc_llap_small y join orc_llap_small x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from orc_llap_small y join orc_llap_small x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 225
 PREHOOK: query: select count(*) from orc_llap_small
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from orc_llap_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 15
 PREHOOK: query: select count(*) from orc_llap_small where cint < 60000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from orc_llap_small where cint < 60000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 0
 PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -309,22 +309,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -558222259686
 PREHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -386,22 +386,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -197609091139
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -463,22 +463,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -562,22 +562,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -201218541193
 PREHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -675,11 +675,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -735462183586256
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: insert into table orc_llap
@@ -720,12 +720,12 @@ PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -787,22 +787,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -1116444519372
 PREHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -864,22 +864,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -395218182278
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -941,22 +941,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1040,22 +1040,22 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -201218418313
 PREHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1160,11 +1160,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -2941848734345024
 PREHOOK: query: DROP TABLE cross_numbers
 PREHOOK: type: DROPTABLE
