@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -64,6 +66,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -84,6 +87,7 @@ import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterPartitionsMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
@@ -778,6 +782,72 @@ public class TestDbNotificationListener
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
       msClient.alter_partition(defaultDbName, tblName, newPart, null);
+      fail("Error: alter partition should've failed");
+    } catch (Exception ex) {
+      // expected
+    }
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(3, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
+  }
+
+  @Test
+  public void alterPartitions() throws Exception {
+    String defaultDbName = "default";
+    String tblName = "alterptns";
+    new TableBuilder()
+        .setDbName(defaultDbName).setTableName(tblName).setOwner("me")
+        .addCol("col1", "int")
+        .addPartCol("col2", "int")
+        .addPartCol("col3", "string")
+        .setLocation(testTempDir)
+        .create(msClient, new HiveConf());
+
+    Table table = msClient.getTable(new GetTableRequest(defaultDbName, tblName));
+    long writeId = 1;
+    List<Partition> partitions = new ArrayList<>();
+    List<List<String>> part_values = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      List<String> values = Arrays.asList(i + "", "part" + i);
+      Partition part = new Partition(values, defaultDbName, tblName,
+          0,  0, table.getSd(), emptyParameters);
+      part.setWriteId(writeId);
+      partitions.add(part);
+      part_values.add(values);
+    }
+    msClient.add_partitions(partitions);
+    partitions.forEach(partition -> partition.setCreateTime(startTime));
+    // event 3
+    msClient.alter_partitions(defaultDbName, tblName, partitions, null, null, writeId);
+
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(3, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(2);
+    assertEquals(firstEventId + 3, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
+    assertEquals(defaultDbName, event.getDbName());
+    assertEquals(tblName, event.getTableName());
+
+    // Parse the message field
+    AlterPartitionsMessage alterPtnsMsg = md.getAlterPartitionsMessage(event.getMessage());
+    assertEquals(defaultDbName, alterPtnsMsg.getDB());
+    assertEquals(tblName, alterPtnsMsg.getTable());
+    assertEquals(table.getPartitionKeys().stream().map(fs -> fs.getName()).collect(Collectors.toList()),
+        alterPtnsMsg.getPartitionKeys());
+    assertEquals(part_values, alterPtnsMsg.getPartitionValues());
+    assertEquals(table.getTableType(), alterPtnsMsg.getTableType());
+
+    // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+
+    // When hive.metastore.transactional.event.listeners is set,
+    // a failed event should not create a new notification
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    try {
+      msClient.alter_partitions(defaultDbName, tblName, partitions, null, null, writeId);
       fail("Error: alter partition should've failed");
     } catch (Exception ex) {
       // expected

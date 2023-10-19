@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.events.AlterDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
@@ -135,6 +136,13 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException {
+  }
+
+  /**
+   * @param event alter partitions event
+   * @throws MetaException
+   */
+  public void onAlterPartitions (AlterPartitionsEvent event)  throws MetaException {
   }
 
   /**

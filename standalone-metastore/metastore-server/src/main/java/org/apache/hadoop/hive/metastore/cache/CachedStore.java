@@ -323,6 +323,10 @@ public class CachedStore implements RawStore, Configurable {
         updateStatsForAlterPart(rawStore, alterPartitionMessage.getTableObj(), catalogName, dbName, tableName,
             alterPartitionMessage.getPtnObjAfter());
         break;
+      case MessageBuilder.ALTER_PARTITIONS_EVENT:
+        AlterPartitionsMessage alterPtnsMessage = deserializer.getAlterPartitionsMessage(message);
+        sharedCache.removePartitionsFromCache(catalogName, dbName, tableName, alterPtnsMessage.getPartitionValues());
+        break;
       case MessageBuilder.DROP_PARTITION_EVENT:
         DropPartitionMessage dropPartitionMessage = deserializer.getDropPartitionMessage(message);
         for (Map<String, String> partMap : dropPartitionMessage.getPartitions()) {
