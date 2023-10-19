@@ -117,19 +117,10 @@ import org.slf4j.LoggerFactory;
  * Tests DbNotificationListener when used as a transactional event listener
  * (hive.metastore.transactional.event.listeners)
  */
-<<<<<<< HEAD
-<<<<<<< HEAD
 public class TestDbNotificationListener
 {
-=======
-//@org.junit.Ignore("TestDbNotificationListener is unstable HIVE-23680")
-=======
-@org.junit.Ignore("TestDbNotificationListener is unstable HIVE-23680")
->>>>>>> 6c6acf442e (Test class uncommented)
-public class TestDbNotificationListener {
->>>>>>> cf271c7a18 (HIVE-27499: Include optional db/table names in the NotificationEvent thrift object)
   private static final Logger LOG = LoggerFactory.getLogger(TestDbNotificationListener.class
-      .getName());
+          .getName());
   private static final int EVENTS_TTL = 30;
   private static final int CLEANUP_SLEEP_TIME = 10;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
