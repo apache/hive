@@ -3911,7 +3911,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       openTransaction();
-
+      LOG.debug("executing listPartitionNamesPsWithAuth");
       MTable mtbl = getMTable(catName, db_name, tbl_name);
       if (mtbl == null) {
         throw new NoSuchObjectException(
@@ -3924,32 +3924,29 @@ public class ObjectStore implements RawStore, Configurable {
       boolean getauth = null != userName && null != groupNames &&
           "TRUE".equalsIgnoreCase(
               mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
-      if (!getauth && canTryDirectSQL(part_vals)) {
+
+      if (canTryDirectSQL(part_vals)) {
         LOG.info(
             "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
             db_name, tbl_name, part_vals);
-        return getPartitions(catName, db_name, tbl_name, args);
-      }
-      LOG.debug("executing listPartitionNamesPsWithAuth");
-      final Collection parts;
-      if (part_vals != null && !part_vals.isEmpty()) {
-        parts = getPartitionPsQueryResults(catName, db_name, tbl_name, part_vals, max_parts, null);
+        partitions = getPartitions(catName, db_name, tbl_name, args);
       } else {
-        parts = listMPartitions(catName, db_name, tbl_name, max_parts);
+        Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
+            part_vals, max_parts, null);
+        boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
+        for (Object o : parts) {
+          Partition part = convertToPart(catName, db_name, tbl_name, (MPartition) o, isAcidTable, args);
+          partitions.add(part);
+        }
       }
-      boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
-      for (Object o : parts) {
-        Partition part = convertToPart(catName, db_name, tbl_name,
-            (MPartition) o, isAcidTable, args);
-        //set auth privileges
-        if (getauth) {
+      if (getauth) {
+        for (Partition part : partitions) {
           String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
               .getPartitionKeys()), part.getValues());
           PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, db_name,
               tbl_name, partName, userName, groupNames);
           part.setPrivileges(partAuth);
         }
-        partitions.add(part);
       }
       success = commitTransaction();
     } catch (InvalidObjectException | NoSuchObjectException | MetaException e) {
