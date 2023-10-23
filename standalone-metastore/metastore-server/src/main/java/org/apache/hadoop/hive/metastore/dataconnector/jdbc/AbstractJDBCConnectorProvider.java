@@ -237,7 +237,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), null, new String[] { "TABLE" });
+      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), null, new String[] { "TABLE", "VIEW" });
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve table names from remote datasource, cause: {}", sqle.getMessage());
       throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
@@ -253,7 +253,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   protected ResultSet fetchTableNames() throws MetaException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), null, new String[] { "TABLE" });
+      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), null, new String[] { "TABLE", "VIEW" });
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve table names from remote datasource, cause: {}", sqle.getMessage());
       throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle);
@@ -323,7 +323,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   private ResultSet fetchTablesViaDBMetaData(String regex) throws SQLException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), regex, new String[]{"TABLE"});
+      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), regex, new String[]{"TABLE", "VIEW"});
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve tables from JDBC table, cause: {}", sqle.getMessage());
       throw sqle;
