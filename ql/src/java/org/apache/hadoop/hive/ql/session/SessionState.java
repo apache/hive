@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.MapRedStats;
@@ -131,6 +132,8 @@ public class SessionState implements ISessionAuthState{
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
+  private static final String CLITOKEN = "HiveClientImpersonationToken";
+
   static final String LOCK_FILE_NAME = "inuse.lck";
   static final String INFO_FILE_NAME = "inuse.info";
 
@@ -729,6 +732,24 @@ public class SessionState implements ISessionAuthState{
     } catch (Exception e) {
       // Catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
+      throw new RuntimeException(e);
+    }
+    try {
+      if(!startSs.isHiveServerQuery){
+        if (getSessionConf().getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL)) {
+          UserGroupInformation UGI = Utils.getUGI();
+          String hmsDelegationTokenStr = Hive.get().getDelegationToken(UGI.getShortUserName(), UGI.getShortUserName());
+          if (hmsDelegationTokenStr != null) {
+            getSessionConf().setVar(ConfVars.METASTORE_TOKEN_SIGNATURE, CLITOKEN);
+            try {
+              SecurityUtils.setTokenStr(UGI, hmsDelegationTokenStr, CLITOKEN);
+            } catch (IOException e) {
+              throw new IOException("Couldn't setup delegation token in the ugi: " + e, e);
+            }
+          }
+        }
+      }
+    }catch (Exception e) {
       throw new RuntimeException(e);
     }
 
