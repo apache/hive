@@ -36,7 +36,7 @@
     <google.errorprone.version>2.5.1</google.errorprone.version>
     <assertj.version>3.24.2</assertj.version>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
-    <immutables.value.version>2.9.2</immutables.value.version>
+    <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
   </properties>
   <modules>
