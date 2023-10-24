@@ -48,11 +48,11 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportFactory;
-import org.junit.Assert;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.attribute.PosixFilePermissions.asFileAttribute;
 import static java.nio.file.attribute.PosixFilePermissions.fromString;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestHiveMetastore {
 
@@ -103,7 +103,7 @@ public class TestHiveMetastore {
         FileSystem fs = Util.getFs(localDirPath, new Configuration());
         String errMsg = "Failed to delete " + localDirPath;
         try {
-          Assert.assertTrue(errMsg, fs.delete(localDirPath, true));
+          assertThat(fs.delete(localDirPath, true)).isEqualTo(errMsg);
         } catch (IOException e) {
           throw new RuntimeException(errMsg, e);
         }
