@@ -86,7 +86,6 @@ import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionsMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
@@ -762,16 +761,18 @@ public class TestDbNotificationListener
     NotificationEvent event = rsp.getEvents().get(2);
     assertEquals(firstEventId + 3, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
+    assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
 
     // Parse the message field
-    AlterPartitionMessage alterPtnMsg = md.getAlterPartitionMessage(event.getMessage());
-    assertEquals(defaultDbName, alterPtnMsg.getDB());
-    assertEquals(tblName, alterPtnMsg.getTable());
-    assertEquals(newPart, alterPtnMsg.getPtnObjAfter());
-    assertEquals(TableType.MANAGED_TABLE.toString(), alterPtnMsg.getTableType());
+    AlterPartitionsMessage alterPtnsMsg = md.getAlterPartitionsMessage(event.getMessage());
+    assertEquals(defaultDbName, alterPtnsMsg.getDB());
+    assertEquals(tblName, alterPtnsMsg.getTable());
+    assertEquals(newPart.getValues(), alterPtnsMsg.getPartitionValues().get(0));
+    assertEquals(partCols.stream()
+        .map(partCol -> partCol.getName()).collect(Collectors.toList()), alterPtnsMsg.getPartitionKeys());
+    assertEquals(TableType.MANAGED_TABLE.toString(), alterPtnsMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
@@ -1600,8 +1601,8 @@ public class TestDbNotificationListener
 
     event = rsp.getEvents().get(26);
     assertEquals(firstEventId + 27, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
-    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
+    assertTrue(event.getMessage().matches(".*\\[\"ds\"\\].*\\[\\[\"todaytwo\"\\]\\].*"));
 
     // Test fromEventId different from the very first
     testEventCounts(defaultDbName, event.getEventId(), null, null, 4);
@@ -1618,13 +1619,13 @@ public class TestDbNotificationListener
 
     event = rsp.getEvents().get(29);
     assertEquals(firstEventId + 30, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
-    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
+    assertTrue(event.getMessage().matches(".*\\[\"ds\"\\].*\\[\\[\"todaytwo\"\\]\\].*"));
 
     event = rsp.getEvents().get(30);
     assertEquals(firstEventId + 31, event.getEventId());
-    assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
-    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
+    assertTrue(event.getMessage().matches(".*\\[\"ds\"\\].*\\[\\[\"todaytwo\"\\]\\].*"));
     testEventCounts(defaultDbName, firstEventId, null, null, 31);
 
     // Test a limit within the available events
