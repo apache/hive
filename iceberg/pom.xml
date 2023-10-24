@@ -207,6 +207,11 @@
         <version>${junit.jupiter.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.esotericsoftware</groupId>
         <artifactId>kryo-shaded</artifactId>
         <version>${kryo-shaded.version}</version>
