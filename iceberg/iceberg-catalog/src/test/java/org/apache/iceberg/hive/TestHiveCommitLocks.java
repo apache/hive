@@ -51,6 +51,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +63,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -204,6 +207,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
 
     spyOps.doCommit(metadataV2, metadataV1);
 
+    verify(spyClient, times(1)).showLocks(any()); // Make sure HiveLock's findLock method is called
     assertThat(spyOps.current().schema().columns()).hasSize(1); // should be 1 again
   }
 
@@ -229,6 +233,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
 
     spyOps.doCommit(metadataV2, metadataV1);
 
+    verify(spyClient, times(1)).showLocks(any()); // Make sure HiveLock's findLock method is called
     assertThat(spyOps.current().schema().columns()).hasSize(1); // should be 1 again
   }
 
@@ -401,6 +406,32 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
         .hasMessageStartingWith("org.apache.iceberg.hive.LockException")
         .hasMessageContaining("Timed out after")
         .hasMessageEndingWith("waiting for lock on hivedb.tbl");
+  }
+
+  @Test
+  public void testPassThroughThriftExceptionsForHiveVersion_1()
+      throws TException, InterruptedException {
+    try (MockedStatic<HiveVersion> ignore = mockStatic(HiveVersion.class)) {
+      // default order is 0, meets the requirements of this test
+      HiveVersion version = mock(HiveVersion.class);
+      when(HiveVersion.current()).thenReturn(version);
+
+      doReturn(emptyLocks).when(spyClient).showLocks(any());
+      doThrow(new TException("Failed to connect to HMS"))
+          .doReturn(waitLockResponse)
+          .when(spyClient)
+          .lock(any());
+      doReturn(waitLockResponse)
+          .doReturn(acquiredLockResponse)
+          .when(spyClient)
+          .checkLock(eq(dummyLockId));
+      doNothing().when(spyClient).heartbeat(eq(0L), eq(dummyLockId));
+
+      assertThatThrownBy(() -> spyOps.doCommit(metadataV2, metadataV1))
+          .isInstanceOf(CommitFailedException.class)
+          .hasMessage(
+              "org.apache.iceberg.hive.LockException: Failed to find lock for table hivedb.tbl");
+    }
   }
 
   @Test
