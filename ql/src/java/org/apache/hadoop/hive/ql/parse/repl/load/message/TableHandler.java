@@ -114,12 +114,12 @@ public class TableHandler extends AbstractMessageHandler {
         writeId = alterTableMessage.getWriteId();
         break;
       case EVENT_ALTER_PARTITION:
-        try {
+        String eventMessage = deserializer.deSerializeGenericString(context.dmd.getPayload());
+        if (eventMessage.contains("\"tableObjJson\":")) {
           AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
           tableType = msg.getTableObj().getTableType();
           writeId = msg.getWriteId();
-        } catch (Exception e) {
-          // AlterPartitionsMessage
+        } else {
           AlterPartitionsMessage msg = deserializer.getAlterPartitionsMessage(context.dmd.getPayload());
           tableType = msg.getTableType();
           writeId = msg.getWriteId();
