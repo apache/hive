@@ -1,7 +1,6 @@
 --! qt:dataset:srcpart
 --! qt:dataset:src1
 --! qt:dataset:src
---! qt:disabled:HIVE-26820 Disable hybridgrace_hashjoin_2.q flaky test
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 -- Hybrid Grace Hash Join

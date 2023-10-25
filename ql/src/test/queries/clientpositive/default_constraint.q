@@ -1,3 +1,4 @@
+--! qt:replace:/(totalSize\s+)(\S+|\s+|.+)/$1#Masked#/
 -- create table
 -- numeric type
 
