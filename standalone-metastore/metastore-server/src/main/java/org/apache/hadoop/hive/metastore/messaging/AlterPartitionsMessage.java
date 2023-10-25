@@ -50,12 +50,12 @@ public abstract class AlterPartitionsMessage extends EventMessage {
       throw new IllegalStateException("Partition keys unset");
     }
     if (getPartitionValues() == null || getPartitionValues().isEmpty()) {
-      new IllegalStateException("Partition values unset.");
+      throw new IllegalStateException("Partition values unset.");
     }
 
     getPartitionsAfter().forEach(partition -> {
       if (getWriteId() != partition.getWriteId()) {
-        new IllegalStateException("Different write id in the same event");
+        throw new IllegalStateException("Different write id in the same event");
       }
     });
 

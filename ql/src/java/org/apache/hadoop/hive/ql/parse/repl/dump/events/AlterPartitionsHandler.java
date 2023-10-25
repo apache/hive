@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 public class AlterPartitionsHandler extends AbstractEventHandler<AlterPartitionsMessage> {
   private final TableName tableName;
   private final List<List<String>> part_vals;
-  // the isTruncateOp is always false now
   private final boolean isTruncateOp;
 
   AlterPartitionsHandler(NotificationEvent event) {
