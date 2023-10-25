@@ -334,27 +334,27 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 90	PLN	18
 100	CZK	12
 110	NULL	NULL
-PREHOOK: query: select * from default.tbl_target_mixed.partitions order by `partition`
+PREHOOK: query: select `partition` from default.tbl_target_mixed.partitions order by `partition`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_mixed
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.tbl_target_mixed.partitions order by `partition`
+POSTHOOK: query: select `partition` from default.tbl_target_mixed.partitions order by `partition`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"ccy":"CZK","c_bucket":1}	0	1	1	449	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"CZK","c_bucket":2}	0	1	1	432	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"EUR","c_bucket":0}	0	1	1	432	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"EUR","c_bucket":1}	0	2	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"EUR","c_bucket":2}	0	3	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"HUF","c_bucket":1}	0	2	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"PLN","c_bucket":0}	0	2	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"PLN","c_bucket":1}	0	1	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"PLN","c_bucket":2}	0	1	1	449	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"USD","c_bucket":0}	0	2	1	462	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"USD","c_bucket":1}	0	3	1	470	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":"USD","c_bucket":2}	0	1	1	432	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
-{"ccy":null,"c_bucket":null}	0	2	1	417	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"CZK","c_bucket":1}
+{"ccy":"CZK","c_bucket":2}
+{"ccy":"EUR","c_bucket":0}
+{"ccy":"EUR","c_bucket":1}
+{"ccy":"EUR","c_bucket":2}
+{"ccy":"HUF","c_bucket":1}
+{"ccy":"PLN","c_bucket":0}
+{"ccy":"PLN","c_bucket":1}
+{"ccy":"PLN","c_bucket":2}
+{"ccy":"USD","c_bucket":0}
+{"ccy":"USD","c_bucket":1}
+{"ccy":"USD","c_bucket":2}
+{"ccy":null,"c_bucket":null}
 PREHOOK: query: select * from default.tbl_target_mixed.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_mixed
