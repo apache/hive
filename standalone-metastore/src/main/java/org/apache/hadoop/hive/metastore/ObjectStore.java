@@ -9840,6 +9840,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     Query query = null;
     try {
+      pm.flush();
       openTransaction();
       lockForUpdate();
       query = pm.newQuery(MNotificationNextId.class);
