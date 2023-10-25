@@ -342,19 +342,19 @@ POSTHOOK: query: select * from default.tbl_target_mixed.partitions order by `par
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"ccy":"CZK","c_bucket":1}	0	1	1	0	0	0	0
-{"ccy":"CZK","c_bucket":2}	0	1	1	0	0	0	0
-{"ccy":"EUR","c_bucket":0}	0	1	1	0	0	0	0
-{"ccy":"EUR","c_bucket":1}	0	2	1	0	0	0	0
-{"ccy":"EUR","c_bucket":2}	0	3	1	0	0	0	0
-{"ccy":"HUF","c_bucket":1}	0	2	1	0	0	0	0
-{"ccy":"PLN","c_bucket":0}	0	2	1	0	0	0	0
-{"ccy":"PLN","c_bucket":1}	0	1	1	0	0	0	0
-{"ccy":"PLN","c_bucket":2}	0	1	1	0	0	0	0
-{"ccy":"USD","c_bucket":0}	0	2	1	0	0	0	0
-{"ccy":"USD","c_bucket":1}	0	3	1	0	0	0	0
-{"ccy":"USD","c_bucket":2}	0	1	1	0	0	0	0
-{"ccy":null,"c_bucket":null}	0	2	1	0	0	0	0
+{"ccy":"CZK","c_bucket":1}	0	1	1	449	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"CZK","c_bucket":2}	0	1	1	432	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"EUR","c_bucket":0}	0	1	1	432	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"EUR","c_bucket":1}	0	2	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"EUR","c_bucket":2}	0	3	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"HUF","c_bucket":1}	0	2	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"PLN","c_bucket":0}	0	2	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"PLN","c_bucket":1}	0	1	1	448	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"PLN","c_bucket":2}	0	1	1	449	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"USD","c_bucket":0}	0	2	1	462	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"USD","c_bucket":1}	0	3	1	470	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":"USD","c_bucket":2}	0	1	1	432	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
+{"ccy":null,"c_bucket":null}	0	2	1	417	0	0	0	0	2023-10-25 03:18:46.52 US/Pacific	8522175492651402772
 PREHOOK: query: select * from default.tbl_target_mixed.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_mixed

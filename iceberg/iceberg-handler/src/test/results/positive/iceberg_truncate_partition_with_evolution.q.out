@@ -208,6 +208,7 @@ POSTHOOK: Input: default@test_ice_int
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":11}
 {"a":22}
+{"a":33}
 {"a":null}
 PREHOOK: query: create table test_ice_bigint (a bigint, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -419,6 +420,7 @@ POSTHOOK: Input: default@test_ice_bigint
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":115674892756}
 {"a":226784902765739}
+{"a":3367849937755673}
 {"a":null}
 PREHOOK: query: create table test_ice_str (a bigint, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -676,6 +678,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"a\"ab"}
 {"b":"ddd"}
 {"b":"eefe"}
+{"b":"rrfdfdf"}
 {"b":null}
 PREHOOK: query: truncate table test_ice_str partition (b = 'a"ab')
 PREHOOK: type: QUERY
@@ -715,6 +718,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"a\"ab"}
 {"b":"ddd"}
 {"b":"eefe"}
+{"b":"rrfdfdf"}
 {"b":null}
 PREHOOK: query: create table test_ice_date (a bigint, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -906,6 +910,7 @@ POSTHOOK: query: select `partition` from default.test_ice_date.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"2022-08-09"}
 {"b":null}
 PREHOOK: query: create table test_ice_double (a double, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -1117,6 +1122,7 @@ POSTHOOK: Input: default@test_ice_double
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":1.156748927566759E11}
 {"a":2.267849027657399E9}
+{"a":3.367849937755674E7}
 {"a":null}
 PREHOOK: query: create table test_ice_double_date (a double, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
@@ -1308,6 +1314,7 @@ POSTHOOK: query: select `partition` from default.test_ice_double_date.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_double_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":3.367849937755674E7,"b":"2022-08-09"}
 {"a":null,"b":null}
 PREHOOK: query: drop table test_ice_int
 PREHOOK: type: DROPTABLE
