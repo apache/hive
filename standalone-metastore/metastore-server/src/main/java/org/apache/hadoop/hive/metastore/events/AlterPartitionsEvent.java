@@ -63,14 +63,19 @@ public class AlterPartitionsEvent extends ListenerEvent {
     return iteratePartitions(new_parts, batchSize);
   }
 
+  /**
+   * The partitions might have different write ids, groups the partitions by write id first,
+   * then iterate each group, for each iteration, there is a maximum number(e.g, the batchSize)
+   * of the partitions returned.
+   * @param partitions partitions in this alter event
+   * @param batchSize the maximum number of partitions returned in each iteration
+   * @return iterator of partitions in bulk
+   */
   private Iterator<List<Partition>> iteratePartitions(List<Partition> partitions,
       final int batchSize) {
     Map<Long, List<Partition>> writeIdToParts = new HashMap<>();
-    partitions.forEach(partition -> {
-      Long writeId = partition.getWriteId();
-      writeIdToParts.putIfAbsent(writeId, new ArrayList<>());
-      writeIdToParts.get(writeId).add(partition);
-    });
+    partitions.forEach(part ->
+        writeIdToParts.computeIfAbsent(part.getWriteId(), k -> new ArrayList<>()).add(part));
     Iterator<Map.Entry<Long, List<Partition>>> iterator = writeIdToParts.entrySet().iterator();
     return new Iterator<List<Partition>>() {
       Map.Entry<Long, List<Partition>> mapEntry;

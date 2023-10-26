@@ -77,11 +77,8 @@ public class TestAlterPartitionsEvent {
     this.expectedParts = expectedParts;
     this.expectedBatch = expectedBatch;
     this.writeIdToParts = new HashMap<>();
-    expectedParts.stream().forEach(partition -> {
-      Long writeId = partition.getWriteId();
-      writeIdToParts.putIfAbsent(writeId, new ArrayList<>());
-      writeIdToParts.get(writeId).add(partition);
-    });
+    expectedParts.stream().forEach(partition ->
+        writeIdToParts.computeIfAbsent(partition.getWriteId(), k -> new ArrayList<>()).add(partition));
   }
 
   @Test
