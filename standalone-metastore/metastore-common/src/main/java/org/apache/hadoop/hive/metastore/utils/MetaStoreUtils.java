@@ -1229,7 +1229,7 @@ public class MetaStoreUtils {
     return result;
   }
 
-  public static <T> T createThriftPartitionsReq(Class<T> clazz, Configuration conf, Object... deepCopy) {
+  public static <T> T createThriftPartitionsReq(Class<T> clazz, Configuration conf, T... deepCopy) {
     final T req;
     if (deepCopy != null && deepCopy.length == 1) {
       assert clazz.isAssignableFrom(deepCopy[0].getClass());
