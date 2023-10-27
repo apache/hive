@@ -1063,7 +1063,7 @@ public final class ObjectInspectorUtils {
     case PRIMITIVE: {
       PrimitiveObjectInspector poi1 = ((PrimitiveObjectInspector) oi1);
       PrimitiveObjectInspector poi2 = ((PrimitiveObjectInspector) oi2);
-      if (poi1.getPrimitiveCategory() != poi2.getPrimitiveCategory() && !isConversionSupported(oi1,oi2)) {
+      if (poi1.getPrimitiveCategory() != poi2.getPrimitiveCategory()) {
         return poi1.getPrimitiveCategory().compareTo(
             poi2.getPrimitiveCategory());
       }
@@ -1120,9 +1120,7 @@ public final class ObjectInspectorUtils {
         }
       }
       case STRING: {
-        if(isConversionSupported(oi1,oi2)){
-          return compareConverted(oi1,o1,oi2,o2);
-        } else if (poi1.preferWritable() || poi2.preferWritable()) {
+        if (poi1.preferWritable() || poi2.preferWritable()) {
           Text t1 = (Text) poi1.getPrimitiveWritableObject(o1);
           Text t2 = (Text) poi2.getPrimitiveWritableObject(o2);
           return t1 == null ? (t2 == null ? 0 : -1) : (t2 == null ? 1
@@ -1140,9 +1138,6 @@ public final class ObjectInspectorUtils {
         return t1.compareTo(t2);
       }
       case VARCHAR: {
-        if(isConversionSupported(oi1,oi2)){
-          return compareConverted(oi1,o1,oi2,o2);
-        }
         HiveVarcharWritable t1 = ((HiveVarcharObjectInspector)poi1).getPrimitiveWritableObject(o1);
         HiveVarcharWritable t2 = ((HiveVarcharObjectInspector)poi2).getPrimitiveWritableObject(o2);
         return t1.compareTo(t2);
@@ -1267,33 +1262,6 @@ public final class ObjectInspectorUtils {
     }
   }
 
-  public static boolean isConversionSupported(ObjectInspector oi1, ObjectInspector oi2) {
-    if (oi1.getCategory() == oi2.getCategory()) {
-      if (oi1.getCategory() == Category.PRIMITIVE) {
-        PrimitiveObjectInspector poi1 = ((PrimitiveObjectInspector) oi1);
-        PrimitiveObjectInspector poi2 = ((PrimitiveObjectInspector) oi2);
-        if ((poi1.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.VARCHAR)
-            && poi2.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.STRING)) || (
-            poi1.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.STRING)
-                && poi2.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.VARCHAR))) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  public static int compareConverted(ObjectInspector oi1, Object o1, ObjectInspector oi2, Object o2) {
-    PrimitiveObjectInspector poi1 = ((PrimitiveObjectInspector) oi1);
-    PrimitiveObjectInspector poi2 = ((PrimitiveObjectInspector) oi2);
-    if (String.valueOf(poi1.getPrimitiveWritableObject(o1))
-        .equals(String.valueOf(poi2.getPrimitiveWritableObject(o2)))) {
-      return 0;
-    } else {
-      return -1;
-    }
-  }
-
   /**
    * Get the list of field names as csv from a StructObjectInspector.
    */
@@ -1372,13 +1340,6 @@ public final class ObjectInspectorUtils {
 
     // If both categories are primitive return the comparison of type names.
     if (c1.equals(Category.PRIMITIVE)) {
-      if (o1.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) || o1.getTypeName()
-          .equals(serdeConstants.STRING_TYPE_NAME)) {
-        if (o2.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) || o2.getTypeName()
-            .equals(serdeConstants.STRING_TYPE_NAME)) {
-          return true;
-        }
-      }
       return o1.getTypeName().equals(o2.getTypeName());
     }
 
