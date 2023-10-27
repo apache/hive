@@ -101,6 +101,14 @@ public class ExpressionTree {
           " for " + Operator.class.getSimpleName());
     }
 
+    public static boolean isEqualOperator(Operator op) {
+      return op == EQUALS;
+    }
+
+    public static boolean isNotEqualOperator(Operator op) {
+      return op == NOTEQUALS || op == NOTEQUALS2;
+    }
+
     @Override
     public String toString() {
       return op;
@@ -376,8 +384,8 @@ public class ExpressionTree {
         params.put(paramName, valueAsString);
       }
 
-      boolean isOpEquals = operator == Operator.EQUALS;
-      if (isOpEquals || operator == Operator.NOTEQUALS || operator == Operator.NOTEQUALS2) {
+      boolean isOpEquals = Operator.isEqualOperator(operator);
+      if (isOpEquals || Operator.isNotEqualOperator(operator)) {
         String partitionKey = partitionKeys.get(partitionColumnIndex).getName();
         makeFilterForEquals(partitionKey, valueAsString, paramName, params,
             partitionColumnIndex, partitionColumnCount, isOpEquals, filterBuilder);
