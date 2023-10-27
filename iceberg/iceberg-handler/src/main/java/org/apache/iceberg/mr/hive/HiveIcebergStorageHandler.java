@@ -864,6 +864,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
       } else if (expireSnapshotsSpec.isExpireByIds()) {
         expireSnapshotByIds(icebergTable, expireSnapshotsSpec.getIdsToExpire(), deleteExecutorService);
+      } else if (expireSnapshotsSpec.isExpireByRetainLast()) {
+        expireSnapshotRetainLast(icebergTable, expireSnapshotsSpec.getNumRetainLast(), deleteExecutorService);
       } else {
         expireSnapshotOlderThanTimestamp(icebergTable, expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
       }
@@ -872,6 +874,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         deleteExecutorService.shutdown();
       }
     }
+  }
+
+  private void expireSnapshotRetainLast(Table icebergTable, int numRetainLast, ExecutorService deleteExecutorService) {
+    ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
+    expireSnapshots.retainLast(numRetainLast);
+    if (deleteExecutorService != null) {
+      expireSnapshots.executeDeleteWith(deleteExecutorService);
+    }
+    expireSnapshots.commit();
   }
 
   private void expireSnapshotByTimestampRange(Table icebergTable, Long fromTimestamp, Long toTimestamp,

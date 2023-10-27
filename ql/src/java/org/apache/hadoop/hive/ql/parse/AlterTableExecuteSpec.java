@@ -113,9 +113,12 @@ public class AlterTableExecuteSpec<T> {
 
     private long fromTimestampMillis = -1L;
 
+    private int numRetainLast = -1;
+
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
     }
+
 
     public ExpireSnapshotsSpec(String ids) {
       this.idsToExpire = ids.split(",");
@@ -124,6 +127,10 @@ public class AlterTableExecuteSpec<T> {
     public ExpireSnapshotsSpec(long fromTimestampMillis, long toTimestampMillis) {
       this.fromTimestampMillis = fromTimestampMillis;
       this.timestampMillis = toTimestampMillis;
+    }
+
+    public ExpireSnapshotsSpec(int numRetainLast) {
+      this.numRetainLast = numRetainLast;
     }
 
     public Long getTimestampMillis() {
@@ -138,12 +145,20 @@ public class AlterTableExecuteSpec<T> {
       return idsToExpire;
     }
 
+    public int getNumRetainLast() {
+      return numRetainLast;
+    }
+
     public boolean isExpireByIds() {
       return idsToExpire != null;
     }
 
     public boolean isExpireByTimestampRange() {
       return timestampMillis != -1 && fromTimestampMillis != -1;
+    }
+
+    public boolean isExpireByRetainLast() {
+      return numRetainLast != -1;
     }
 
     @Override
@@ -153,6 +168,8 @@ public class AlterTableExecuteSpec<T> {
         stringHelper.add("fromTimestampMillis", fromTimestampMillis).add("toTimestampMillis", timestampMillis);
       } else if (isExpireByIds()) {
         stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
+      } else if (isExpireByRetainLast()) {
+        stringHelper.add("numRetainLast", numRetainLast);
       } else {
         stringHelper.add("timestampMillis", timestampMillis);
       }
