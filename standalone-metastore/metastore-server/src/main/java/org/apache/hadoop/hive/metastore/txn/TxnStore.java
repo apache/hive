@@ -198,6 +198,8 @@ public interface TxnStore extends Configurable {
    * @return information on opened transactions
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException;
 

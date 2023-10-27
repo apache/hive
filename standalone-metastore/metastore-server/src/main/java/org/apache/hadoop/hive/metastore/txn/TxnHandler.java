@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.entities.LockInfo;
 import org.apache.hadoop.hive.metastore.txn.impl.HiveMutex;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.AddWriteIdsToMinHistoryCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.DeleteInvalidOpenTxnsCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertTxnComponentsCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveTxnsFromMinHistoryLevelCommand;
@@ -184,6 +185,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
@@ -286,6 +288,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static volatile int maxOpenTxns = 0;
   // Whether number of open transactions reaches the threshold
   private static volatile boolean tooManyOpenTxns = false;
+  // Current number of open txns
+  private static AtomicInteger numOpenTxns;
 
   /**
    * Number of consecutive deadlocks we have seen
@@ -306,8 +310,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private long retryInterval;
   private int retryLimit;
   private int retryNum;
-  // Current number of open txns
-  private AtomicInteger numOpenTxns;
 
   private MutexAPI mutexAPI;
   private static TxnLockHandler txnLockHandler;
@@ -531,124 +533,87 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throw new MetaException("Invalid input for number of txns: " + numTxns);
     }
 
-    try {
-      Connection dbConn = null;
-      Statement stmt = null;
-      jdbcResource.bindDataSource(POOL_TX);
-      try (TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED)) {
-        /*
-         * To make {@link #getOpenTxns()}/{@link #getOpenTxnsInfo()} work correctly, this operation must ensure
-         * that looking at the TXNS table every open transaction could be identified below a given High Water Mark.
-         * One way to do it, would be to serialize the openTxns call with a S4U lock, but that would cause
-         * performance degradation with high transaction load.
-         * To enable parallel openTxn calls, we define a time period (TXN_OPENTXN_TIMEOUT) and consider every
-         * transaction missing from the TXNS table in that period open, and prevent opening transaction outside
-         * the period.
-         * Example: At t[0] there is one open transaction in the TXNS table, T[1].
-         * T[2] acquires the next sequence at t[1] but only commits into the TXNS table at t[10].
-         * T[3] acquires its sequence at t[2], and commits into the TXNS table at t[3].
-         * Then T[3] calculates it’s snapshot at t[4] and puts T[1] and also T[2] in the snapshot’s
-         * open transaction list. T[1] because it is presented as open in TXNS,
-         * T[2] because it is a missing sequence.
-         *
-         * In the current design, there can be several metastore instances running in a given Warehouse.
-         * This makes ideas like reserving a range of IDs to save trips to DB impossible.  For example,
-         * a client may go to MS1 and start a transaction with ID 500 to update a particular row.
-         * Now the same client will start another transaction, except it ends up on MS2 and may get
-         * transaction ID 400 and update the same row.  Now the merge that happens to materialize the snapshot
-         * on read will thing the version of the row from transaction ID 500 is the latest one.
-         *
-         * Longer term we can consider running Active-Passive MS (at least wrt to ACID operations).  This
-         * set could support a write-through cache for added performance.
-         */
-        dbConn = jdbcResource.getConnection();
-        /*
-         * The openTxn and commitTxn must be mutexed, when committing a not read only transaction.
-         * This is achieved by requesting a shared table lock here, and an exclusive one at commit.
-         * Since table locks are working in Derby, we don't need the lockInternal call here.
-         * Example: Suppose we have two transactions with update like x = x+1.
-         * We have T[3,3] that was using a value from a snapshot with T[2,2]. If we allow committing T[3,3]
-         * and opening T[4] parallel it is possible, that T[4] will be using the value from a snapshot with T[2,2],
-         * and we will have a lost update problem
-         */
-        acquireTxnLock(true);
-        // Measure the time from acquiring the sequence value, till committing in the TXNS table
-        StopWatch generateTransactionWatch = new StopWatch();
-        generateTransactionWatch.start();
+    /*
+     * To make {@link #getOpenTxns()}/{@link #getOpenTxnsInfo()} work correctly, this operation must ensure
+     * that looking at the TXNS table every open transaction could be identified below a given High Water Mark.
+     * One way to do it, would be to serialize the openTxns call with a S4U lock, but that would cause
+     * performance degradation with high transaction load.
+     * To enable parallel openTxn calls, we define a time period (TXN_OPENTXN_TIMEOUT) and consider every
+     * transaction missing from the TXNS table in that period open, and prevent opening transaction outside
+     * the period.
+     * Example: At t[0] there is one open transaction in the TXNS table, T[1].
+     * T[2] acquires the next sequence at t[1] but only commits into the TXNS table at t[10].
+     * T[3] acquires its sequence at t[2], and commits into the TXNS table at t[3].
+     * Then T[3] calculates it’s snapshot at t[4] and puts T[1] and also T[2] in the snapshot’s
+     * open transaction list. T[1] because it is presented as open in TXNS,
+     * T[2] because it is a missing sequence.
+     *
+     * In the current design, there can be several metastore instances running in a given Warehouse.
+     * This makes ideas like reserving a range of IDs to save trips to DB impossible.  For example,
+     * a client may go to MS1 and start a transaction with ID 500 to update a particular row.
+     * Now the same client will start another transaction, except it ends up on MS2 and may get
+     * transaction ID 400 and update the same row.  Now the merge that happens to materialize the snapshot
+     * on read will thing the version of the row from transaction ID 500 is the latest one.
+     *
+     * Longer term we can consider running Active-Passive MS (at least wrt to ACID operations).  This
+     * set could support a write-through cache for added performance.
+     */
+    TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
+    /*
+     * The openTxn and commitTxn must be mutexed, when committing a not read only transaction.
+     * This is achieved by requesting a shared table lock here, and an exclusive one at commit.
+     * Since table locks are working in Derby, we don't need the lockInternal call here.
+     * Example: Suppose we have two transactions with update like x = x+1.
+     * We have T[3,3] that was using a value from a snapshot with T[2,2]. If we allow committing T[3,3]
+     * and opening T[4] parallel it is possible, that T[4] will be using the value from a snapshot with T[2,2],
+     * and we will have a lost update problem
+     */
+    acquireTxnLock(true);
+    // Measure the time from acquiring the sequence value, till committing in the TXNS table
+    StopWatch generateTransactionWatch = new StopWatch();
+    generateTransactionWatch.start();
 
-        List<Long> txnIds = new OpenTxnsFunction(rqst, conf, openTxnTimeOutMillis, sqlGenerator, transactionalListeners).execute(jdbcResource);
+    List<Long> txnIds = new OpenTxnsFunction(rqst, conf, openTxnTimeOutMillis, sqlGenerator, transactionalListeners).execute(jdbcResource);
 
-        LOG.debug("Going to commit");
-        context.createSavepoint();
-        generateTransactionWatch.stop();
-        long elapsedMillis = generateTransactionWatch.getTime(TimeUnit.MILLISECONDS);
-        TxnType txnType = rqst.isSetTxn_type() ? rqst.getTxn_type() : TxnType.DEFAULT;
-        if (txnType != TxnType.READ_ONLY && elapsedMillis >= openTxnTimeOutMillis) {
-          /*
-           * The commit was too slow, we can not allow this to continue (except if it is read only,
-           * since that can not cause dirty reads).
-           * When calculating the snapshot for a given transaction, we look back for possible open transactions
-           * (that are not yet committed in the TXNS table), for TXN_OPENTXN_TIMEOUT period.
-           * We can not allow a write transaction, that was slower than TXN_OPENTXN_TIMEOUT to continue,
-           * because there can be other transactions running, that didn't considered this transactionId open,
-           * this could cause dirty reads.
-           */
-          LOG.error("OpenTxnTimeOut exceeded commit duration {}, deleting transactionIds: {}", elapsedMillis, txnIds);
-          deleteInvalidOpenTransactions(dbConn, txnIds);
-          jdbcResource.getTransactionManager().commit(context);
-          /*
-           * We do not throw RetryException directly, to not circumvent the max retry limit
-           */
-          throw new SQLException("OpenTxnTimeOut exceeded", MANUAL_RETRY);
+    LOG.debug("Going to commit");
+    context.createSavepoint();
+    generateTransactionWatch.stop();
+    long elapsedMillis = generateTransactionWatch.getTime(TimeUnit.MILLISECONDS);
+    TxnType txnType = rqst.isSetTxn_type() ? rqst.getTxn_type() : TxnType.DEFAULT;
+    if (txnType != TxnType.READ_ONLY && elapsedMillis >= openTxnTimeOutMillis) {
+      /*
+       * The commit was too slow, we can not allow this to continue (except if it is read only,
+       * since that can not cause dirty reads).
+       * When calculating the snapshot for a given transaction, we look back for possible open transactions
+       * (that are not yet committed in the TXNS table), for TXN_OPENTXN_TIMEOUT period.
+       * We can not allow a write transaction, that was slower than TXN_OPENTXN_TIMEOUT to continue,
+       * because there can be other transactions running, that didn't considered this transactionId open,
+       * this could cause dirty reads.
+       */
+      LOG.error("OpenTxnTimeOut exceeded commit duration {}, deleting transactionIds: {}", elapsedMillis, txnIds);
+
+      if (txnIds.size() > 0) {
+        try {
+          sqlRetryHandler.executeWithRetry(new SqlRetryCallProperties().withCallerId("deleteInvalidOpenTransactions"),
+              () -> {
+                jdbcResource.execute(new DeleteInvalidOpenTxnsCommand(conf, txnIds), maxBatchSize);
+                LOG.info("Removed transactions: ({}) from TXNS", txnIds);
+                jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(conf, txnIds), maxBatchSize);
+                return null;
+              });
+        } catch (TException e) {
+          throw new MetaException(e.getMessage());
         }
-        jdbcResource.getTransactionManager().commit(context);
-        return new OpenTxnsResponse(txnIds);
-      } catch (SQLException e) {
-        LOG.debug("Going to rollback: ", e);
-        checkRetryable(e, "openTxns(" + rqst + ")");
-        throw new MetaException("Unable to select from transaction database " + StringUtils.stringifyException(e));
-      } catch (Exception e) {
-        LOG.debug("Going to rollback: ", e);
-        throw e;
-      } finally {
-        closeStmt(stmt);
       }
-    } catch (RetryException e) {
-      return openTxns(rqst);
-    } finally {
-      jdbcResource.unbindDataSource();
-    }   
-  }
 
-  private void deleteInvalidOpenTransactions(Connection dbConn, List<Long> txnIds) throws MetaException {
-    if (txnIds.size() == 0) {
-      return;
+      jdbcResource.getTransactionManager().commit(context);
+      /*
+       * We cannot throw SQLException directly, as it is not in the throws clause
+       */
+      throw new UncategorizedSQLException(null, null, new SQLException("OpenTxnTimeOut exceeded", MANUAL_RETRY));
     }
-    try {
-      Statement stmt = null;
-      try {
-        stmt = dbConn.createStatement();
 
-        List<String> queries = new ArrayList<>();
-        StringBuilder prefix = new StringBuilder();
-        StringBuilder suffix = new StringBuilder();
-        prefix.append("DELETE FROM \"TXNS\" WHERE ");
-        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnIds, "\"TXN_ID\"", false, false);
-        executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
-        LOG.info("Removed transactions: ({}) from TXNS", txnIds);
-
-        jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(conf, txnIds), maxBatchSize);
-      } catch (SQLException e) {
-        LOG.debug("Going to rollback: ", e);
-        rollbackDBConn(dbConn);
-        checkRetryable(e, "deleteInvalidOpenTransactions(" + txnIds + ")");
-        throw new MetaException("Unable to select from transaction database " + StringUtils.stringifyException(e));
-      } finally {
-        closeStmt(stmt);
-      }
-    } catch (RetryException ex) {
-      deleteInvalidOpenTransactions(dbConn, txnIds);
-    }
+    return new OpenTxnsResponse(txnIds);
   }
 
   @Override
