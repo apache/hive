@@ -11541,6 +11541,33 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Function> getAllFunctions(String catName) throws MetaException {
+    try {
+      return getFunctionsInternal(catName);
+    } catch (NoSuchObjectException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected List<Function> getFunctionsInternal(String catalogName)
+      throws MetaException, NoSuchObjectException {
+    return new GetListHelper<Function>(catalogName, "", "", true, true) {
+      @Override
+      protected List<Function> getSqlResult(GetHelper<List<Function>> ctx) throws MetaException {
+        return directSql.getFunctions(catalogName);
+      }
+      @Override
+      protected List<Function> getJdoResult(GetHelper<List<Function>> ctx) throws MetaException {
+        try {
+          return getAllFunctionsViaJDO(catalogName);
+        } catch (Exception e) {
+          LOG.error("Failed to convert to functions", e);
+          throw new MetaException(e.getMessage());
+        }
+      }
+    }.run(false);
+  }
+
+  private List<Function> getAllFunctionsViaJDO (String catName) {
     boolean commited = false;
     Query query = null;
     try {

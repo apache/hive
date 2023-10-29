@@ -68,6 +68,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -92,6 +94,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
+import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MPartition;
@@ -182,7 +185,7 @@ class MetaStoreDirectSql {
       SDS, SERDES, SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, BUCKETING_COLS, SKEWED_COL_NAMES,
       SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, PARTITION_KEYS, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
       TAB_COL_STATS, PARTITION_KEY_VALS, PART_PRIVS, PART_COL_PRIVS, SKEWED_STRING_LIST, CDS,
-      TBL_COL_PRIVS;
+      TBL_COL_PRIVS, FUNCS, FUNC_RU;
 
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf, String schema) {
     this.pm = pm;
@@ -3063,5 +3066,105 @@ class MetaStoreDirectSql {
     }
     long csId = updateStat.getNextCSIdForMPartitionColumnStatistics(numStats);
     return updateStat.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
+  }
+
+  public List<Function> getFunctions(String catName) throws MetaException {
+    List<Long> funcIds = getFunctionIds(catName);
+    // Get full objects. For Oracle/etc. do it in batches.
+    return Batchable.runBatched(batchSize, funcIds, new Batchable<Long, Function>() {
+      @Override
+      public List<Function> run(List<Long> input) throws MetaException {
+        return getFunctionsFromFunctionIds(input, catName);
+      }
+    });
+  }
+
+  private List<Function> getFunctionsFromFunctionIds(List<Long> funcIdList, String catName) throws MetaException {
+    String funcIds = getIdListForIn(funcIdList);
+    final int funcIdIndex = 0;
+    final int funcNameIndex = 1;
+    final int dbNameIndex = 2;
+    final int funcClassNameIndex = 3;
+    final int funcOwnerNameIndex = 4;
+    final int funcOwnerTypeIndex = 5;
+    final int funcCreateTimeIndex = 6;
+    final int funcTypeIndex = 7;
+
+    String queryText = "SELECT " +
+        FUNCS + ".\"FUNC_ID\", " +
+        FUNCS + ".\"FUNC_NAME\", " +
+        DBS + ".\"NAME\", " +
+        FUNCS + ".\"CLASS_NAME\", " +
+        FUNCS + ".\"OWNER_NAME\", " +
+        FUNCS + ".\"OWNER_TYPE\", " +
+        FUNCS + ".\"CREATE_TIME\", " +
+        FUNCS + ".\"FUNC_TYPE\"" +
+        " FROM " + FUNCS +
+        " LEFT JOIN " + DBS + " ON " + FUNCS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\"" +
+        " where " + FUNCS +".\"FUNC_ID\" in (" + funcIds + ") order by " + FUNCS + ".\"FUNC_NAME\" asc";
+
+    List<Function> results = new ArrayList<>();
+    TreeMap<Long, Function> funcs = new TreeMap<>();
+    final boolean doTrace = LOG.isDebugEnabled();
+    long start = doTrace ? System.nanoTime() : 0;
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> queryResult = executeWithArray(query.getInnerQuery(), null, queryText);
+      long end = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+
+      for (Object[] function : queryResult) {
+        Long funcId = MetastoreDirectSqlUtils.extractSqlLong(function[funcIdIndex]);
+        String funcName = MetastoreDirectSqlUtils.extractSqlString(function[funcNameIndex]);
+        String dbName = MetastoreDirectSqlUtils.extractSqlString(function[dbNameIndex]);
+        String funcClassName = MetastoreDirectSqlUtils.extractSqlString(function[funcClassNameIndex]);
+        String funcOwnerName = MetastoreDirectSqlUtils.extractSqlString(function[funcOwnerNameIndex]);
+        String funcOwnerType = MetastoreDirectSqlUtils.extractSqlString(function[funcOwnerTypeIndex]);
+        int funcCreateTime = MetastoreDirectSqlUtils.extractSqlInt(function[funcCreateTimeIndex]);
+        int funcType = MetastoreDirectSqlUtils.extractSqlInt(function[funcTypeIndex]);
+
+        Function func = new Function();
+        func.setFunctionName(funcName);
+        func.setDbName(dbName);
+        func.setCatName(catName);
+        func.setClassName(funcClassName);
+        func.setOwnerName(funcOwnerName);
+        func.setOwnerType(PrincipalType.valueOf(funcOwnerType));
+        func.setCreateTime(funcCreateTime);
+        func.setFunctionType(FunctionType.findByValue(funcType));
+        func.setResourceUris(new ArrayList<>());
+
+        results.add(func);
+        funcs.put(funcId, func);
+      }
+    }
+    MetastoreDirectSqlUtils.setFunctionResourceUris(FUNC_RU, pm, funcIds, funcs);
+    return results;
+  }
+
+  private List<Long> getFunctionIds(String catName) throws MetaException {
+    boolean doTrace = LOG.isDebugEnabled();
+
+    String queryText = "select " + FUNCS + ".\"FUNC_ID\" from " + FUNCS +
+        " LEFT JOIN " + DBS + " ON " + FUNCS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\"" +
+        " where " + DBS + ".\"CTLG_NAME\" = ? ";
+
+    long start = doTrace ? System.nanoTime() : 0;
+    Object[] params = new Object[1];
+    params[0] = catName;
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object> sqlResult = executeWithArray(query.getInnerQuery(), params, queryText);
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      final List<Long> result;
+      if (sqlResult.isEmpty()) {
+        result = Collections.emptyList();
+      } else {
+        result = new ArrayList<>(sqlResult.size());
+        for (Object fields : sqlResult) {
+          result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+        }
+      }
+      return result;
+    }
   }
 }
