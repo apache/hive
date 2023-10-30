@@ -1,6 +1,5 @@
 --! qt:dataset:alltypesorc
 set hive.explain.user=false;
-set hive.cbo.fallback.strategy=NEVER;
 -- SORT_QUERY_RESULTS
 
 drop table sour1;
