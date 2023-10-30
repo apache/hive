@@ -1,7 +1,6 @@
 -- HIVE-24104: NPE due to null key columns in ReduceSink after deduplication
 -- The query in this test case is not very meaningful but corresponds to a reduced and anonymized version of a query
 -- used in production.
-set hive.cbo.fallback.strategy=NEVER;
 CREATE TABLE TA(id int);
 INSERT INTO TA VALUES(10);
 
