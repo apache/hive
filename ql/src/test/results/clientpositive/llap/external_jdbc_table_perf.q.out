@@ -7262,138 +7262,172 @@ POSTHOOK: Input: default@store_sales
 PREHOOK: query: DROP TABLE catalog_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@catalog_sales
+PREHOOK: Output: database:default
 PREHOOK: Output: default@catalog_sales
 POSTHOOK: query: DROP TABLE catalog_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@catalog_sales
 PREHOOK: query: DROP TABLE catalog_returns
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@catalog_returns
+PREHOOK: Output: database:default
 PREHOOK: Output: default@catalog_returns
 POSTHOOK: query: DROP TABLE catalog_returns
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@catalog_returns
 PREHOOK: query: DROP TABLE store_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_sales
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales
 POSTHOOK: query: DROP TABLE store_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales
 PREHOOK: query: DROP TABLE store_returns
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_returns
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_returns
 POSTHOOK: query: DROP TABLE store_returns
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_returns
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_returns
 PREHOOK: query: DROP TABLE web_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@web_sales
+PREHOOK: Output: database:default
 PREHOOK: Output: default@web_sales
 POSTHOOK: query: DROP TABLE web_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@web_sales
 PREHOOK: query: DROP TABLE web_returns
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@web_returns
+PREHOOK: Output: database:default
 PREHOOK: Output: default@web_returns
 POSTHOOK: query: DROP TABLE web_returns
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@web_returns
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@web_returns
 PREHOOK: query: DROP TABLE customer
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer
 POSTHOOK: query: DROP TABLE customer
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer
 PREHOOK: query: DROP TABLE customer_address
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_address
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_address
 POSTHOOK: query: DROP TABLE customer_address
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer_address
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_address
 PREHOOK: query: DROP TABLE customer_demographics
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_demographics
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_demographics
 POSTHOOK: query: DROP TABLE customer_demographics
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_demographics
 PREHOOK: query: DROP TABLE inventory
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@inventory
+PREHOOK: Output: database:default
 PREHOOK: Output: default@inventory
 POSTHOOK: query: DROP TABLE inventory
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@inventory
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inventory
 PREHOOK: query: DROP TABLE item
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@item
+PREHOOK: Output: database:default
 PREHOOK: Output: default@item
 POSTHOOK: query: DROP TABLE item
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@item
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@item
 PREHOOK: query: DROP TABLE warehouse
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@warehouse
+PREHOOK: Output: database:default
 PREHOOK: Output: default@warehouse
 POSTHOOK: query: DROP TABLE warehouse
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@warehouse
 PREHOOK: query: DROP TABLE date_dim
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_dim
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_dim
 POSTHOOK: query: DROP TABLE date_dim
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_dim
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_dim
 PREHOOK: query: DROP TABLE store
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store
 POSTHOOK: query: DROP TABLE store
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store
 PREHOOK: query: DROP TABLE household_demographics
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@household_demographics
+PREHOOK: Output: database:default
 PREHOOK: Output: default@household_demographics
 POSTHOOK: query: DROP TABLE household_demographics
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@household_demographics
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@household_demographics
 PREHOOK: query: DROP TABLE time_dim
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@time_dim
+PREHOOK: Output: database:default
 PREHOOK: Output: default@time_dim
 POSTHOOK: query: DROP TABLE time_dim
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@time_dim
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@time_dim
 PREHOOK: query: DROP TABLE reason
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@reason
+PREHOOK: Output: database:default
 PREHOOK: Output: default@reason
 POSTHOOK: query: DROP TABLE reason
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@reason
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@reason
 PREHOOK: query: FROM src
 SELECT

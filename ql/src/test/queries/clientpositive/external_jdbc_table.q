@@ -1,9 +1,8 @@
---! qt:disabled:HIVE-25379
 --! qt:dataset:src
 
 set hive.strict.checks.cartesian.product= false;
 
-
+DROP TABLE SIMPLE_DERBY_TABLE1;
 CREATE TABLE simple_hive_table1 (ikey INT, bkey BIGINT, fkey FLOAT, dkey DOUBLE );
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
