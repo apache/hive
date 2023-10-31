@@ -487,6 +487,8 @@ public class HiveConf extends Configuration {
     MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.v2.recordStats", false,
             "This property enables recording metastore client cache stats in DEBUG logs"),
     // QL execution stuff
+    DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE("dfs.xattr.supported.only.on.reserved.namespace", false,
+      "DFS supports xattr only on Reserved Name space (/.reserved/raw)"),
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
     PLAN("hive.exec.plan", "", ""),
     STAGINGDIR("hive.exec.stagingdir", ".hive-staging",
