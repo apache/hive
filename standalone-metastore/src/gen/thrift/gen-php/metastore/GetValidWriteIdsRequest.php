@@ -32,8 +32,13 @@ class GetValidWriteIdsRequest
         ),
         2 => array(
             'var' => 'validTxnList',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
+        ),
+        3 => array(
+            'var' => 'writeId',
+            'isRequired' => false,
+            'type' => TType::I64,
         ),
     );
 
@@ -45,6 +50,10 @@ class GetValidWriteIdsRequest
      * @var string
      */
     public $validTxnList = null;
+    /**
+     * @var int
+     */
+    public $writeId = null;
 
     public function __construct($vals = null)
     {
@@ -54,6 +63,9 @@ class GetValidWriteIdsRequest
             }
             if (isset($vals['validTxnList'])) {
                 $this->validTxnList = $vals['validTxnList'];
+            }
+            if (isset($vals['writeId'])) {
+                $this->writeId = $vals['writeId'];
             }
         }
     }
@@ -80,13 +92,13 @@ class GetValidWriteIdsRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->fullTableNames = array();
-                        $_size545 = 0;
-                        $_etype548 = 0;
-                        $xfer += $input->readListBegin($_etype548, $_size545);
-                        for ($_i549 = 0; $_i549 < $_size545; ++$_i549) {
-                            $elem550 = null;
-                            $xfer += $input->readString($elem550);
-                            $this->fullTableNames []= $elem550;
+                        $_size552 = 0;
+                        $_etype555 = 0;
+                        $xfer += $input->readListBegin($_etype555, $_size552);
+                        for ($_i556 = 0; $_i556 < $_size552; ++$_i556) {
+                            $elem557 = null;
+                            $xfer += $input->readString($elem557);
+                            $this->fullTableNames []= $elem557;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -96,6 +108,13 @@ class GetValidWriteIdsRequest
                 case 2:
                     if ($ftype == TType::STRING) {
                         $xfer += $input->readString($this->validTxnList);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->writeId);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -120,8 +139,8 @@ class GetValidWriteIdsRequest
             }
             $xfer += $output->writeFieldBegin('fullTableNames', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->fullTableNames));
-            foreach ($this->fullTableNames as $iter551) {
-                $xfer += $output->writeString($iter551);
+            foreach ($this->fullTableNames as $iter558) {
+                $xfer += $output->writeString($iter558);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -129,6 +148,11 @@ class GetValidWriteIdsRequest
         if ($this->validTxnList !== null) {
             $xfer += $output->writeFieldBegin('validTxnList', TType::STRING, 2);
             $xfer += $output->writeString($this->validTxnList);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->writeId !== null) {
+            $xfer += $output->writeFieldBegin('writeId', TType::I64, 3);
+            $xfer += $output->writeI64($this->writeId);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

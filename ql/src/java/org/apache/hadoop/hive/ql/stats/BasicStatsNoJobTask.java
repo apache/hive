@@ -75,6 +75,8 @@ import com.google.common.collect.Multimaps;
  * faster to compute the table/partition statistics by reading the footer than scanning all the
  * rows. This task can be used for computing basic stats like numFiles, numRows, fileSize,
  * rawDataSize from ORC footer.
+ * However, this cannot be used for full ACID tables, since some of the files may contain updates
+ * and deletes to existing rows, so summing up the per-file row counts is invalid.
  **/
 public class BasicStatsNoJobTask implements IStatsProcessor {
 
@@ -401,12 +403,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
 
       if (values.get(0).result instanceof Table) {
-        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext);
+        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
         LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, StatCollector.EXTRACT_RESULT_FUNCTION);
-          db.alterPartitions(tableFullName, results, environmentContext);
+          db.alterPartitions(tableFullName, results, environmentContext, true);
           LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {
           throw new RuntimeException("inconsistent");

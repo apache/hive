@@ -172,6 +172,10 @@ public class LogDivertAppender {
    * @param conf  the configuration for HiveServer2 instance
    */
   public static void registerRoutingAppender(org.apache.hadoop.conf.Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false)) {
+      // spare some resources, do not register logger if it is not enabled .
+      return;
+    }
     String loggingLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL);
     OperationLog.LoggingLevel loggingMode = OperationLog.getLoggingLevel(loggingLevel);
     String layout = loggingMode == OperationLog.LoggingLevel.VERBOSE ? verboseLayout : nonVerboseLayout;

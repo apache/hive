@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
-import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
@@ -407,11 +406,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition("", TABLE_NAME, partitions.get(3));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionNullDbName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(null, TABLE_NAME, partitions.get(3));
+    try {
+      client.alter_partition(null, TABLE_NAME, partitions.get(3));
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -421,11 +424,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition(DB_NAME, "", partitions.get(3));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionNullTblName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(DB_NAME, null, partitions.get(3));
+    try {
+      client.alter_partition(DB_NAME, null, partitions.get(3));
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test
@@ -435,7 +442,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
       client.alter_partition(DB_NAME, TABLE_NAME, null);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException | TApplicationException e) {
+    } catch (NullPointerException | TTransportException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -533,11 +540,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition("", TABLE_NAME, partitions.get(3), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionWithEnvironmentCtxNullDbName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(null, TABLE_NAME, partitions.get(3), new EnvironmentContext());
+    try {
+      client.alter_partition(null, TABLE_NAME, partitions.get(3), new EnvironmentContext());
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -547,11 +558,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition(DB_NAME, "", partitions.get(3), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionWithEnvironmentCtxNullTblName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(DB_NAME, null, partitions.get(3), new EnvironmentContext());
+    try {
+      client.alter_partition(DB_NAME, null, partitions.get(3), new EnvironmentContext());
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test
@@ -561,7 +576,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short) -1);
       client.alter_partition(DB_NAME, TABLE_NAME, null, new EnvironmentContext());
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException | TApplicationException e) {
+    } catch (NullPointerException | TTransportException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -677,11 +692,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions("", TABLE_NAME, Lists.newArrayList(part));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsNullDbName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part));
+    try {
+      client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part));
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -691,11 +710,16 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions(DB_NAME, "", Lists.newArrayList(part));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsNullTblName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(DB_NAME, null, Lists.newArrayList(part));
+    try {
+      client.alter_partitions(DB_NAME, null, Lists.newArrayList(part));
+      Assert.fail("didn't throw");
+    } catch (TProtocolException | MetaException e) {
+      // By design
+    }
   }
 
   @Test(expected = NullPointerException.class)
@@ -719,7 +743,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
       client.alter_partitions(DB_NAME, TABLE_NAME, null);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException | TProtocolException | TApplicationException e) {
+    } catch (NullPointerException | TTransportException | TProtocolException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -785,7 +809,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     assertPartitionsHaveCorrectValues(newParts, testValues);
 
     client.alter_partitions(DB_NAME, TABLE_NAME, newParts, new EnvironmentContext());
-    client.alter_partitions(DB_NAME, TABLE_NAME, newParts, null);
+    client.alter_partitions(DB_NAME, TABLE_NAME, newParts);
 
     for (int i = 0; i < testValues.size(); ++i) {
       assertPartitionChanged(oldParts.get(i), testValues.get(i), PARTCOL_SCHEMA);
@@ -834,7 +858,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   public void testAlterPartitionsWithEnvironmentCtxBogusCatalogName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
+    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext(),
+        null, -1);
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -844,11 +869,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions("", TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsWithEnvironmentCtxNullDbName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
+    try {
+      client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -858,11 +887,16 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions(DB_NAME, "", Lists.newArrayList(part), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsWithEnvironmentCtxNullTblName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(DB_NAME, null, Lists.newArrayList(part), new EnvironmentContext());
+    try {
+      client.alter_partitions(DB_NAME, null, Lists.newArrayList(part), new EnvironmentContext());
+      Assert.fail("didn't throw");
+    } catch (MetaException | TProtocolException ex) {
+      // By design.
+    }
   }
 
   @Test(expected = NullPointerException.class)
@@ -888,7 +922,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
       client.alter_partitions(DB_NAME, TABLE_NAME, null, new EnvironmentContext());
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException | TProtocolException | TApplicationException e) {
+    } catch (NullPointerException | TTransportException | TProtocolException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -1012,14 +1046,18 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.renamePartition(DB_NAME, TABLE_NAME, Lists.newArrayList(), partToRename);
   }
 
-  @Test(expected = InvalidOperationException.class)
+  @Test
   public void testRenamePartitionNullOldPartList() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition(DB_NAME, TABLE_NAME, null, partToRename);
+    try {
+      client.renamePartition(DB_NAME, TABLE_NAME, null, partToRename);
+      Assert.fail("should throw");
+    } catch (InvalidOperationException | TProtocolException ex) {
+    }
   }
 
   @Test
@@ -1031,7 +1069,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition partToRename = oldParts.get(3);
       partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
       client.renamePartition(DB_NAME, TABLE_NAME, oldValues.get(3), null);
-    } catch (NullPointerException | TProtocolException | TApplicationException e) {
+    } catch (NullPointerException | TProtocolException e) {
     }
   }
 
@@ -1042,7 +1080,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition("nosuch", DB_NAME, TABLE_NAME, oldValues.get(3), partToRename);
+    client.renamePartition("nosuch", DB_NAME, TABLE_NAME, oldValues.get(3), partToRename, null);
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -1065,24 +1103,32 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.renamePartition(DB_NAME, "", oldValues.get(3), partToRename);
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testRenamePartitionNullDbName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition(null, TABLE_NAME, oldValues.get(3), partToRename);
+    try {
+      client.renamePartition(null, TABLE_NAME, oldValues.get(3), partToRename);
+      Assert.fail("should throw");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testRenamePartitionNullTblName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition(DB_NAME, null, oldValues.get(3), partToRename);
+    try {
+      client.renamePartition(DB_NAME, null, oldValues.get(3), partToRename);
+      Assert.fail("should throw");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = MetaException.class)

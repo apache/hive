@@ -13,17 +13,20 @@ package org.apache.hadoop.hive.metastore.api;
 
   private static final org.apache.thrift.protocol.TField STATS_DESC_FIELD_DESC = new org.apache.thrift.protocol.TField("statsDesc", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField STATS_OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("statsObj", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ColumnStatisticsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ColumnStatisticsTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable ColumnStatisticsDesc statsDesc; // required
   private @org.apache.thrift.annotation.Nullable java.util.List<ColumnStatisticsObj> statsObj; // required
+  private boolean isStatsCompliant; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     STATS_DESC((short)1, "statsDesc"),
-    STATS_OBJ((short)2, "statsObj");
+    STATS_OBJ((short)2, "statsObj"),
+    IS_STATS_COMPLIANT((short)3, "isStatsCompliant");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -43,6 +46,8 @@ package org.apache.hadoop.hive.metastore.api;
           return STATS_DESC;
         case 2: // STATS_OBJ
           return STATS_OBJ;
+        case 3: // IS_STATS_COMPLIANT
+          return IS_STATS_COMPLIANT;
         default:
           return null;
       }
@@ -84,6 +89,9 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
+  private static final int __ISSTATSCOMPLIANT_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.IS_STATS_COMPLIANT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -92,6 +100,8 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.STATS_OBJ, new org.apache.thrift.meta_data.FieldMetaData("statsObj", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatisticsObj.class))));
+    tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnStatistics.class, metaDataMap);
   }
@@ -112,6 +122,7 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public ColumnStatistics(ColumnStatistics other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetStatsDesc()) {
       this.statsDesc = new ColumnStatisticsDesc(other.statsDesc);
     }
@@ -122,6 +133,7 @@ package org.apache.hadoop.hive.metastore.api;
       }
       this.statsObj = __this__statsObj;
     }
+    this.isStatsCompliant = other.isStatsCompliant;
   }
 
   public ColumnStatistics deepCopy() {
@@ -132,6 +144,8 @@ package org.apache.hadoop.hive.metastore.api;
   public void clear() {
     this.statsDesc = null;
     this.statsObj = null;
+    setIsStatsCompliantIsSet(false);
+    this.isStatsCompliant = false;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -198,6 +212,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public boolean isIsStatsCompliant() {
+    return this.isStatsCompliant;
+  }
+
+  public void setIsStatsCompliant(boolean isStatsCompliant) {
+    this.isStatsCompliant = isStatsCompliant;
+    setIsStatsCompliantIsSet(true);
+  }
+
+  public void unsetIsStatsCompliant() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  /** Returns true if field isStatsCompliant is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsStatsCompliant() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
+  }
+
+  public void setIsStatsCompliantIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case STATS_DESC:
@@ -216,6 +252,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case IS_STATS_COMPLIANT:
+      if (value == null) {
+        unsetIsStatsCompliant();
+      } else {
+        setIsStatsCompliant((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -227,6 +271,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case STATS_OBJ:
       return getStatsObj();
+
+    case IS_STATS_COMPLIANT:
+      return isIsStatsCompliant();
 
     }
     throw new java.lang.IllegalStateException();
@@ -243,6 +290,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetStatsDesc();
     case STATS_OBJ:
       return isSetStatsObj();
+    case IS_STATS_COMPLIANT:
+      return isSetIsStatsCompliant();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -280,6 +329,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_isStatsCompliant = true && this.isSetIsStatsCompliant();
+    boolean that_present_isStatsCompliant = true && that.isSetIsStatsCompliant();
+    if (this_present_isStatsCompliant || that_present_isStatsCompliant) {
+      if (!(this_present_isStatsCompliant && that_present_isStatsCompliant))
+        return false;
+      if (this.isStatsCompliant != that.isStatsCompliant)
+        return false;
+    }
+
     return true;
   }
 
@@ -294,6 +352,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetStatsObj()) ? 131071 : 524287);
     if (isSetStatsObj())
       hashCode = hashCode * 8191 + statsObj.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetIsStatsCompliant()) ? 131071 : 524287);
+    if (isSetIsStatsCompliant())
+      hashCode = hashCode * 8191 + ((isStatsCompliant) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -322,6 +384,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetStatsObj()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.statsObj, other.statsObj);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetIsStatsCompliant()).compareTo(other.isSetIsStatsCompliant());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsStatsCompliant()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isStatsCompliant, other.isStatsCompliant);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -362,6 +434,12 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.statsObj);
     }
     first = false;
+    if (isSetIsStatsCompliant()) {
+      if (!first) sb.append(", ");
+      sb.append("isStatsCompliant:");
+      sb.append(this.isStatsCompliant);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -392,6 +470,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -428,18 +508,26 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // STATS_OBJ
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list276 = iprot.readListBegin();
-                struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list276.size);
-                @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem277;
-                for (int _i278 = 0; _i278 < _list276.size; ++_i278)
+                org.apache.thrift.protocol.TList _list284 = iprot.readListBegin();
+                struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list284.size);
+                @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem285;
+                for (int _i286 = 0; _i286 < _list284.size; ++_i286)
                 {
-                  _elem277 = new ColumnStatisticsObj();
-                  _elem277.read(iprot);
-                  struct.statsObj.add(_elem277);
+                  _elem285 = new ColumnStatisticsObj();
+                  _elem285.read(iprot);
+                  struct.statsObj.add(_elem285);
                 }
                 iprot.readListEnd();
               }
               struct.setStatsObjIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // IS_STATS_COMPLIANT
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isStatsCompliant = iprot.readBool();
+              struct.setIsStatsCompliantIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -466,12 +554,17 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(STATS_OBJ_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.statsObj.size()));
-          for (ColumnStatisticsObj _iter279 : struct.statsObj)
+          for (ColumnStatisticsObj _iter287 : struct.statsObj)
           {
-            _iter279.write(oprot);
+            _iter287.write(oprot);
           }
           oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
+        oprot.writeBool(struct.isStatsCompliant);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -494,10 +587,18 @@ package org.apache.hadoop.hive.metastore.api;
       struct.statsDesc.write(oprot);
       {
         oprot.writeI32(struct.statsObj.size());
-        for (ColumnStatisticsObj _iter280 : struct.statsObj)
+        for (ColumnStatisticsObj _iter288 : struct.statsObj)
         {
-          _iter280.write(oprot);
+          _iter288.write(oprot);
         }
+      }
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetIsStatsCompliant()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeBool(struct.isStatsCompliant);
       }
     }
 
@@ -508,17 +609,22 @@ package org.apache.hadoop.hive.metastore.api;
       struct.statsDesc.read(iprot);
       struct.setStatsDescIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list281 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list281.size);
-        @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem282;
-        for (int _i283 = 0; _i283 < _list281.size; ++_i283)
+        org.apache.thrift.protocol.TList _list289 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.statsObj = new java.util.ArrayList<ColumnStatisticsObj>(_list289.size);
+        @org.apache.thrift.annotation.Nullable ColumnStatisticsObj _elem290;
+        for (int _i291 = 0; _i291 < _list289.size; ++_i291)
         {
-          _elem282 = new ColumnStatisticsObj();
-          _elem282.read(iprot);
-          struct.statsObj.add(_elem282);
+          _elem290 = new ColumnStatisticsObj();
+          _elem290.read(iprot);
+          struct.statsObj.add(_elem290);
         }
       }
       struct.setStatsObjIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.isStatsCompliant = iprot.readBool();
+        struct.setIsStatsCompliantIsSet(true);
+      }
     }
   }
 

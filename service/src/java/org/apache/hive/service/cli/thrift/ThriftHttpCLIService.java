@@ -19,9 +19,9 @@
 package org.apache.hive.service.cli.thrift;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.ws.rs.HttpMethod;
 
@@ -59,10 +59,8 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   private static final String APPLICATION_THRIFT = "application/x-thrift";
   protected org.eclipse.jetty.server.Server server;
 
-  private final Runnable oomHook;
-  public ThriftHttpCLIService(CLIService cliService, Runnable oomHook) {
+  public ThriftHttpCLIService(CLIService cliService) {
     super(cliService, ThriftHttpCLIService.class.getSimpleName());
-    this.oomHook = oomHook;
   }
 
   /**
@@ -77,9 +75,9 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       // Start with minWorkerThreads, expand till maxWorkerThreads and reject
       // subsequent requests
       String threadPoolName = "HiveServer2-HttpHandler-Pool";
-      ExecutorService executorService = new ThreadPoolExecutorWithOomHook(minWorkerThreads,
+      ThreadPoolExecutor executorService = new ThreadPoolExecutor(minWorkerThreads,
           maxWorkerThreads,workerKeepAliveTime, TimeUnit.SECONDS,
-          new SynchronousQueue<Runnable>(), new ThreadFactoryWithGarbageCleanup(threadPoolName), oomHook);
+          new SynchronousQueue<Runnable>(), new ThreadFactoryWithGarbageCleanup(threadPoolName));
       ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
 
       // HTTP Server

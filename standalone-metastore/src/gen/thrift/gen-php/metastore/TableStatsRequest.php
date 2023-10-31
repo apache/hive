@@ -45,6 +45,11 @@ class TableStatsRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        5 => array(
+            'var' => 'validWriteIdList',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -63,6 +68,10 @@ class TableStatsRequest
      * @var string
      */
     public $catName = null;
+    /**
+     * @var string
+     */
+    public $validWriteIdList = null;
 
     public function __construct($vals = null)
     {
@@ -78,6 +87,9 @@ class TableStatsRequest
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['validWriteIdList'])) {
+                $this->validWriteIdList = $vals['validWriteIdList'];
             }
         }
     }
@@ -118,13 +130,13 @@ class TableStatsRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->colNames = array();
-                        $_size405 = 0;
-                        $_etype408 = 0;
-                        $xfer += $input->readListBegin($_etype408, $_size405);
-                        for ($_i409 = 0; $_i409 < $_size405; ++$_i409) {
-                            $elem410 = null;
-                            $xfer += $input->readString($elem410);
-                            $this->colNames []= $elem410;
+                        $_size412 = 0;
+                        $_etype415 = 0;
+                        $xfer += $input->readListBegin($_etype415, $_size412);
+                        for ($_i416 = 0; $_i416 < $_size412; ++$_i416) {
+                            $elem417 = null;
+                            $xfer += $input->readString($elem417);
+                            $this->colNames []= $elem417;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -134,6 +146,13 @@ class TableStatsRequest
                 case 4:
                     if ($ftype == TType::STRING) {
                         $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 5:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->validWriteIdList);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -168,8 +187,8 @@ class TableStatsRequest
             }
             $xfer += $output->writeFieldBegin('colNames', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->colNames));
-            foreach ($this->colNames as $iter411) {
-                $xfer += $output->writeString($iter411);
+            foreach ($this->colNames as $iter418) {
+                $xfer += $output->writeString($iter418);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -177,6 +196,11 @@ class TableStatsRequest
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 4);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->validWriteIdList !== null) {
+            $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 5);
+            $xfer += $output->writeString($this->validWriteIdList);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

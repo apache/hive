@@ -25,11 +25,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -45,6 +41,12 @@ import java.util.Map;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
+
+  // Transactional stats states
+  static final public char STAT_OPEN = 'o';
+  static final public char STAT_INVALID = 'i';
+  static final public char STAT_COMMITTED = 'c';
+  static final public char STAT_OBSOLETE = 's';
 
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse} to a
@@ -223,6 +225,14 @@ public class TxnUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
+  public static boolean isTransactionalTable(Map<String, String> parameters) {
+    if (parameters == null) {
+      return false;
+    }
+    String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+  }
+
   /**
    * Should produce the same result as
    * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable(org.apache.hadoop.hive.ql.metadata.Table)}.
@@ -329,6 +339,7 @@ public class TxnUtils {
     // Get configuration parameters
     int maxQueryLength = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    int maxParameters = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_PARAMETERS);
 
     // Check parameter set validity as a public method.
     if (inList == null || inList.size() == 0 || maxQueryLength <= 0 || batchSize <= 0) {
@@ -380,7 +391,7 @@ public class TxnUtils {
       // Compute the size of a query when the 'nextValue' is added to the current query.
       int querySize = querySizeExpected(buf.length(), nextValue.length(), suffix.length(), addParens);
 
-      if (querySize > maxQueryLength * 1024) {
+      if ((querySize > maxQueryLength * 1024) || (currentCount >= maxParameters)) {
         // Check an edge case where the DIRECT_SQL_MAX_QUERY_LENGTH does not allow one 'IN' clause with single value.
         if (cursor4queryOfInClauses == 1 && cursor4InClauseElements == 0) {
           throw new IllegalArgumentException("The current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.getVarname() + " is set too small to have one IN clause with single value!");
@@ -396,7 +407,7 @@ public class TxnUtils {
           buf.delete(buf.length()-newInclausePrefix.length(), buf.length());
         }
 
-        buf.setCharAt(buf.length() - 1, ')'); // replace the "commar" to finish a 'IN' clause string.
+        buf.setCharAt(buf.length() - 1, ')'); // replace the "comma" to finish a 'IN' clause string.
 
         if (addParens) {
           buf.append(")");

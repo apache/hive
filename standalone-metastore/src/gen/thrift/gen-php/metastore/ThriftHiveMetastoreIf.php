@@ -271,6 +271,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function truncate_table($dbName, $tableName, array $partNames);
     /**
+     * @param \metastore\TruncateTableRequest $req
+     * @return \metastore\TruncateTableResponse
+     * @throws \metastore\MetaException
+     */
+    public function truncate_table_req(\metastore\TruncateTableRequest $req);
+    /**
      * @param string $db_name
      * @param string $pattern
      * @return string[]
@@ -389,6 +395,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function alter_table_with_cascade($dbname, $tbl_name, \metastore\Table $new_tbl, $cascade);
+    /**
+     * @param \metastore\AlterTableRequest $req
+     * @return \metastore\AlterTableResponse
+     * @throws \metastore\InvalidOperationException
+     * @throws \metastore\MetaException
+     */
+    public function alter_table_req(\metastore\AlterTableRequest $req);
     /**
      * @param \metastore\Partition $new_part
      * @return \metastore\Partition
@@ -724,6 +737,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function alter_partitions_with_environment_context($db_name, $tbl_name, array $new_parts, \metastore\EnvironmentContext $environment_context);
     /**
+     * @param \metastore\AlterPartitionsRequest $req
+     * @return \metastore\AlterPartitionsResponse
+     * @throws \metastore\InvalidOperationException
+     * @throws \metastore\MetaException
+     */
+    public function alter_partitions_req(\metastore\AlterPartitionsRequest $req);
+    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param \metastore\Partition $new_part
@@ -741,6 +761,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function rename_partition($db_name, $tbl_name, array $part_vals, \metastore\Partition $new_part);
+    /**
+     * @param \metastore\RenamePartitionRequest $req
+     * @return \metastore\RenamePartitionResponse
+     * @throws \metastore\InvalidOperationException
+     * @throws \metastore\MetaException
+     */
+    public function rename_partition_req(\metastore\RenamePartitionRequest $req);
     /**
      * @param string[] $part_vals
      * @param bool $throw_exception
@@ -854,6 +881,24 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\InvalidInputException
      */
     public function update_partition_column_statistics(\metastore\ColumnStatistics $stats_obj);
+    /**
+     * @param \metastore\SetPartitionsStatsRequest $req
+     * @return \metastore\SetPartitionsStatsResponse
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     * @throws \metastore\InvalidInputException
+     */
+    public function update_table_column_statistics_req(\metastore\SetPartitionsStatsRequest $req);
+    /**
+     * @param \metastore\SetPartitionsStatsRequest $req
+     * @return \metastore\SetPartitionsStatsResponse
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     * @throws \metastore\InvalidInputException
+     */
+    public function update_partition_column_statistics_req(\metastore\SetPartitionsStatsRequest $req);
     /**
      * @param string $db_name
      * @param string $tbl_name

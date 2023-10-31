@@ -324,13 +324,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // EVENT_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list780 = iprot.readListBegin();
-                struct.eventIds = new java.util.ArrayList<java.lang.Long>(_list780.size);
-                long _elem781;
-                for (int _i782 = 0; _i782 < _list780.size; ++_i782)
+                org.apache.thrift.protocol.TList _list788 = iprot.readListBegin();
+                struct.eventIds = new java.util.ArrayList<java.lang.Long>(_list788.size);
+                long _elem789;
+                for (int _i790 = 0; _i790 < _list788.size; ++_i790)
                 {
-                  _elem781 = iprot.readI64();
-                  struct.eventIds.add(_elem781);
+                  _elem789 = iprot.readI64();
+                  struct.eventIds.add(_elem789);
                 }
                 iprot.readListEnd();
               }
@@ -356,9 +356,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(EVENT_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.eventIds.size()));
-          for (long _iter783 : struct.eventIds)
+          for (long _iter791 : struct.eventIds)
           {
-            oprot.writeI64(_iter783);
+            oprot.writeI64(_iter791);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetEventIds()) {
         {
           oprot.writeI32(struct.eventIds.size());
-          for (long _iter784 : struct.eventIds)
+          for (long _iter792 : struct.eventIds)
           {
-            oprot.writeI64(_iter784);
+            oprot.writeI64(_iter792);
           }
         }
       }
@@ -403,13 +403,13 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list785 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-          struct.eventIds = new java.util.ArrayList<java.lang.Long>(_list785.size);
-          long _elem786;
-          for (int _i787 = 0; _i787 < _list785.size; ++_i787)
+          org.apache.thrift.protocol.TList _list793 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.eventIds = new java.util.ArrayList<java.lang.Long>(_list793.size);
+          long _elem794;
+          for (int _i795 = 0; _i795 < _list793.size; ++_i795)
           {
-            _elem786 = iprot.readI64();
-            struct.eventIds.add(_elem786);
+            _elem794 = iprot.readI64();
+            struct.eventIds.add(_elem794);
           }
         }
         struct.setEventIdsIsSet(true);

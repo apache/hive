@@ -20,15 +20,16 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * AlterMaterializedViewDesc.
  */
 @Explain(displayName = "Alter Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterMaterializedViewDesc extends DDLDesc implements Serializable {
+public class AlterMaterializedViewDesc extends DDLDesc implements Serializable, DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
-  private String materializedViewName;
+  private String fqMaterializedViewName;
   private boolean rewriteEnable;
 
   /**
@@ -40,6 +41,7 @@ public class AlterMaterializedViewDesc extends DDLDesc implements Serializable {
   };
 
   AlterMaterializedViewTypes op;
+  private long writeId;
 
   public AlterMaterializedViewDesc() {
   }
@@ -53,15 +55,15 @@ public class AlterMaterializedViewDesc extends DDLDesc implements Serializable {
    */
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getMaterializedViewName() {
-    return materializedViewName;
+    return fqMaterializedViewName;
   }
 
   /**
    * @param materializedViewName
    *          the materializedViewName to set
    */
-  public void setMaterializedViewName(String materializedViewName) {
-    this.materializedViewName = materializedViewName;
+  public void setFqMaterializedViewName(String materializedViewName) {
+    this.fqMaterializedViewName = materializedViewName;
   }
 
   /**
@@ -100,6 +102,21 @@ public class AlterMaterializedViewDesc extends DDLDesc implements Serializable {
    */
   public void setOp(AlterMaterializedViewTypes op) {
     this.op = op;
+  }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return fqMaterializedViewName;
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true; // Verified when this is set as DDL Desc for ACID.
   }
 
 }
