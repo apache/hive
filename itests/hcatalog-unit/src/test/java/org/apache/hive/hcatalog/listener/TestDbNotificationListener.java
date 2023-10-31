@@ -1584,7 +1584,7 @@ public class TestDbNotificationListener
 
   @Test
   public void fetchNotificationEventBasedOnTables() throws Exception {
-    String dbName = "test_hive27499";
+    String dbName = "default";
     String table1 = "test_tbl1";
     String table2 = "test_tbl2";
     String table3 = "test_tbl3";
@@ -1607,7 +1607,7 @@ public class TestDbNotificationListener
     assertEquals(24, rsp2.getEventsSize());
     request.unsetTableNames();
     NotificationEventResponse rsp3 = msClient.getNextNotification(request, true, null);
-    assertEquals(37, rsp3.getEventsSize());
+    assertEquals(36, rsp3.getEventsSize());
 
     NotificationEventsCountRequest eventsReq = new NotificationEventsCountRequest(firstEventId, dbName);
     eventsReq.setTableNames(Arrays.asList(table1));
@@ -1615,7 +1615,7 @@ public class TestDbNotificationListener
     eventsReq.setTableNames(Arrays.asList(table1, table2));
     assertEquals(24, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
     eventsReq.unsetTableNames();
-    assertEquals(37, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+    assertEquals(36, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
   }
 
   private void generateSometableEvents(String dbName, String tableName) throws Exception {
