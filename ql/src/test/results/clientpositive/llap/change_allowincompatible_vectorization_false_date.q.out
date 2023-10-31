@@ -41,14 +41,10 @@ POSTHOOK: Lineage: change_allowincompatible_vectorization_false_date PARTITION(s
 PREHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@change_allowincompatible_vectorization_false_date
-PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
-PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date
-POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
-POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
 #### A masked pattern was here ####
 50
 PREHOOK: query: alter table change_allowincompatible_vectorization_false_date change column ts ts timestamp
@@ -62,14 +58,10 @@ POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date
 PREHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@change_allowincompatible_vectorization_false_date
-PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
-PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date
-POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
-POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
 #### A masked pattern was here ####
 50
 PREHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='aaa') values ('2038-03-22 07:26:48.0')

@@ -36,6 +36,16 @@ class SetPartitionsStatsRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        3 => array(
+            'var' => 'writeId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
+        4 => array(
+            'var' => 'validWriteIdList',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -46,6 +56,14 @@ class SetPartitionsStatsRequest
      * @var bool
      */
     public $needMerge = null;
+    /**
+     * @var int
+     */
+    public $writeId = -1;
+    /**
+     * @var string
+     */
+    public $validWriteIdList = null;
 
     public function __construct($vals = null)
     {
@@ -55,6 +73,12 @@ class SetPartitionsStatsRequest
             }
             if (isset($vals['needMerge'])) {
                 $this->needMerge = $vals['needMerge'];
+            }
+            if (isset($vals['writeId'])) {
+                $this->writeId = $vals['writeId'];
+            }
+            if (isset($vals['validWriteIdList'])) {
+                $this->validWriteIdList = $vals['validWriteIdList'];
             }
         }
     }
@@ -81,14 +105,14 @@ class SetPartitionsStatsRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->colStats = array();
-                        $_size259 = 0;
-                        $_etype262 = 0;
-                        $xfer += $input->readListBegin($_etype262, $_size259);
-                        for ($_i263 = 0; $_i263 < $_size259; ++$_i263) {
-                            $elem264 = null;
-                            $elem264 = new \metastore\ColumnStatistics();
-                            $xfer += $elem264->read($input);
-                            $this->colStats []= $elem264;
+                        $_size266 = 0;
+                        $_etype269 = 0;
+                        $xfer += $input->readListBegin($_etype269, $_size266);
+                        for ($_i270 = 0; $_i270 < $_size266; ++$_i270) {
+                            $elem271 = null;
+                            $elem271 = new \metastore\ColumnStatistics();
+                            $xfer += $elem271->read($input);
+                            $this->colStats []= $elem271;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -98,6 +122,20 @@ class SetPartitionsStatsRequest
                 case 2:
                     if ($ftype == TType::BOOL) {
                         $xfer += $input->readBool($this->needMerge);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 3:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->writeId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 4:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->validWriteIdList);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -122,8 +160,8 @@ class SetPartitionsStatsRequest
             }
             $xfer += $output->writeFieldBegin('colStats', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->colStats));
-            foreach ($this->colStats as $iter265) {
-                $xfer += $iter265->write($output);
+            foreach ($this->colStats as $iter272) {
+                $xfer += $iter272->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -131,6 +169,16 @@ class SetPartitionsStatsRequest
         if ($this->needMerge !== null) {
             $xfer += $output->writeFieldBegin('needMerge', TType::BOOL, 2);
             $xfer += $output->writeBool($this->needMerge);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->writeId !== null) {
+            $xfer += $output->writeFieldBegin('writeId', TType::I64, 3);
+            $xfer += $output->writeI64($this->writeId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->validWriteIdList !== null) {
+            $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 4);
+            $xfer += $output->writeString($this->validWriteIdList);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

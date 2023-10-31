@@ -213,8 +213,8 @@ public class LlapCacheAwareFs extends FileSystem {
           return new CacheChunk(buffer, startOffset, endOffset);
         }
       }, gotAllData);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Buffers after cache " + RecordReaderUtils.stringifyDiskRanges(drl));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Buffers after cache " + RecordReaderUtils.stringifyDiskRanges(drl));
       }
       if (gotAllData.value) {
         long sizeRead = 0;

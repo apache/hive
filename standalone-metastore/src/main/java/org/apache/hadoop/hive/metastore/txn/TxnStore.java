@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
@@ -141,6 +142,10 @@ public interface TxnStore extends Configurable {
   Materialization getMaterializationInvalidationInfo(
       final CreationMetadata cm, final String validTxnList)
           throws MetaException;
+
+  @RetrySemantics.ReadOnly
+  long getTxnIdForWriteId(String dbName, String tblName, long writeId)
+      throws MetaException;
 
   LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;

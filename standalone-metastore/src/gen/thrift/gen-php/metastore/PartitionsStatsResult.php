@@ -39,18 +39,30 @@ class PartitionsStatsResult
                     ),
                 ),
         ),
+        2 => array(
+            'var' => 'isStatsCompliant',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
      * @var array
      */
     public $partStats = null;
+    /**
+     * @var bool
+     */
+    public $isStatsCompliant = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['partStats'])) {
                 $this->partStats = $vals['partStats'];
+            }
+            if (isset($vals['isStatsCompliant'])) {
+                $this->isStatsCompliant = $vals['isStatsCompliant'];
             }
         }
     }
@@ -77,28 +89,35 @@ class PartitionsStatsResult
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->partStats = array();
-                        $_size389 = 0;
-                        $_ktype390 = 0;
-                        $_vtype391 = 0;
-                        $xfer += $input->readMapBegin($_ktype390, $_vtype391, $_size389);
-                        for ($_i393 = 0; $_i393 < $_size389; ++$_i393) {
-                            $key394 = '';
-                            $val395 = array();
-                            $xfer += $input->readString($key394);
-                            $val395 = array();
-                            $_size396 = 0;
-                            $_etype399 = 0;
-                            $xfer += $input->readListBegin($_etype399, $_size396);
-                            for ($_i400 = 0; $_i400 < $_size396; ++$_i400) {
-                                $elem401 = null;
-                                $elem401 = new \metastore\ColumnStatisticsObj();
-                                $xfer += $elem401->read($input);
-                                $val395 []= $elem401;
+                        $_size396 = 0;
+                        $_ktype397 = 0;
+                        $_vtype398 = 0;
+                        $xfer += $input->readMapBegin($_ktype397, $_vtype398, $_size396);
+                        for ($_i400 = 0; $_i400 < $_size396; ++$_i400) {
+                            $key401 = '';
+                            $val402 = array();
+                            $xfer += $input->readString($key401);
+                            $val402 = array();
+                            $_size403 = 0;
+                            $_etype406 = 0;
+                            $xfer += $input->readListBegin($_etype406, $_size403);
+                            for ($_i407 = 0; $_i407 < $_size403; ++$_i407) {
+                                $elem408 = null;
+                                $elem408 = new \metastore\ColumnStatisticsObj();
+                                $xfer += $elem408->read($input);
+                                $val402 []= $elem408;
                             }
                             $xfer += $input->readListEnd();
-                            $this->partStats[$key394] = $val395;
+                            $this->partStats[$key401] = $val402;
                         }
                         $xfer += $input->readMapEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 2:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->isStatsCompliant);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -123,15 +142,20 @@ class PartitionsStatsResult
             }
             $xfer += $output->writeFieldBegin('partStats', TType::MAP, 1);
             $output->writeMapBegin(TType::STRING, TType::LST, count($this->partStats));
-            foreach ($this->partStats as $kiter402 => $viter403) {
-                $xfer += $output->writeString($kiter402);
-                $output->writeListBegin(TType::STRUCT, count($viter403));
-                foreach ($viter403 as $iter404) {
-                    $xfer += $iter404->write($output);
+            foreach ($this->partStats as $kiter409 => $viter410) {
+                $xfer += $output->writeString($kiter409);
+                $output->writeListBegin(TType::STRUCT, count($viter410));
+                foreach ($viter410 as $iter411) {
+                    $xfer += $iter411->write($output);
                 }
                 $output->writeListEnd();
             }
             $output->writeMapEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->isStatsCompliant !== null) {
+            $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
+            $xfer += $output->writeBool($this->isStatsCompliant);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

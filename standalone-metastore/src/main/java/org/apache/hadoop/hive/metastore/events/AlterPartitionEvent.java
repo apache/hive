@@ -32,14 +32,16 @@ public class AlterPartitionEvent extends ListenerEvent {
   private final Partition newPart;
   private final Table table;
   private final boolean isTruncateOp;
+  private Long writeId;
 
   public AlterPartitionEvent(Partition oldPart, Partition newPart, Table table, boolean isTruncateOp,
-                             boolean status, IHMSHandler handler) {
+                             boolean status, Long writeId, IHMSHandler handler) {
     super(status, handler);
     this.oldPart = oldPart;
     this.newPart = newPart;
     this.table = table;
     this.isTruncateOp = isTruncateOp;
+    this.writeId = writeId;
   }
 
   /**
@@ -71,5 +73,9 @@ public class AlterPartitionEvent extends ListenerEvent {
    */
   public boolean getIsTruncateOp() {
     return isTruncateOp;
+  }
+
+  public Long getWriteId() {
+    return writeId;
   }
 }

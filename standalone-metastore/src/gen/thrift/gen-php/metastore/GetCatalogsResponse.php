@@ -68,13 +68,13 @@ class GetCatalogsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->names = array();
-                        $_size83 = 0;
-                        $_etype86 = 0;
-                        $xfer += $input->readListBegin($_etype86, $_size83);
-                        for ($_i87 = 0; $_i87 < $_size83; ++$_i87) {
-                            $elem88 = null;
-                            $xfer += $input->readString($elem88);
-                            $this->names []= $elem88;
+                        $_size90 = 0;
+                        $_etype93 = 0;
+                        $xfer += $input->readListBegin($_etype93, $_size90);
+                        for ($_i94 = 0; $_i94 < $_size90; ++$_i94) {
+                            $elem95 = null;
+                            $xfer += $input->readString($elem95);
+                            $this->names []= $elem95;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -101,8 +101,8 @@ class GetCatalogsResponse
             }
             $xfer += $output->writeFieldBegin('names', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->names));
-            foreach ($this->names as $iter89) {
-                $xfer += $output->writeString($iter89);
+            foreach ($this->names as $iter96) {
+                $xfer += $output->writeString($iter96);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

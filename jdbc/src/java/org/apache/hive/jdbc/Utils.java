@@ -134,6 +134,8 @@ public class Utils {
     // Cookie prefix
     static final String HTTP_COOKIE_PREFIX = "http.cookie.";
 
+    public static final String SOCKET_TIMEOUT = "socketTimeout";
+
     // We support ways to specify application name modeled after some existing DBs, since
     // there's no standard approach.
     // MSSQL: applicationName https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url

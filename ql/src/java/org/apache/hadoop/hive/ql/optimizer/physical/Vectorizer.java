@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.filesink.VectorFileSinkArrowOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyStringOperator;
@@ -3499,6 +3500,9 @@ public class Vectorizer implements PhysicalPlanResolver {
      * Similarly, we need a mapping since a value expression can be a calculation and the value
      * will go into a scratch column.
      */
+    boolean supportsValueTypes = true;  // Assume.
+    HashSet<String> notSupportedValueTypes = new HashSet<String>();
+
     int[] bigTableValueColumnMap = new int[allBigTableValueExpressions.length];
     String[] bigTableValueColumnNames = new String[allBigTableValueExpressions.length];
     TypeInfo[] bigTableValueTypeInfos = new TypeInfo[allBigTableValueExpressions.length];
@@ -3513,7 +3517,13 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       ExprNodeDesc exprNode = bigTableExprs.get(i);
       bigTableValueColumnNames[i] = exprNode.toString();
-      bigTableValueTypeInfos[i] = exprNode.getTypeInfo();
+      TypeInfo typeInfo = exprNode.getTypeInfo();
+      if (!(typeInfo instanceof PrimitiveTypeInfo)) {
+        supportsValueTypes = false;
+        Category category = typeInfo.getCategory();
+        notSupportedValueTypes.add(category.toString());
+      }
+      bigTableValueTypeInfos[i] = typeInfo;
     }
     if (bigTableValueExpressionsList.size() == 0) {
       slimmedBigTableValueExpressions = null;
@@ -3746,6 +3756,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (!supportsKeyTypes) {
       vectorDesc.setNotSupportedKeyTypes(new ArrayList(notSupportedKeyTypes));
     }
+    vectorDesc.setSupportsValueTypes(supportsValueTypes);
+    if (!supportsValueTypes) {
+      vectorDesc.setNotSupportedValueTypes(new ArrayList(notSupportedValueTypes));
+    }
 
     // Check common conditions for both Optimized and Fast Hash Tables.
     boolean result = true;    // Assume.
@@ -3755,7 +3769,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         !oneMapJoinCondition ||
         hasNullSafes ||
         !smallTableExprVectorizes ||
-        outerJoinHasNoKeys) {
+        outerJoinHasNoKeys ||
+        !supportsValueTypes) {
       result = false;
     }
 
@@ -4118,6 +4133,48 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     return true;
+  }
+
+  private boolean checkForArrowFileSink(FileSinkDesc fileSinkDesc,
+      boolean isTezOrSpark, VectorizationContext vContext,
+      VectorFileSinkDesc vectorDesc) throws HiveException {
+
+    // Various restrictions.
+
+    boolean isVectorizationFileSinkArrowNativeEnabled =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED);
+
+    String engine = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+
+    String serdeClassName = fileSinkDesc.getTableInfo().getSerdeClassName();
+
+    boolean isOkArrowFileSink =
+        serdeClassName.equals("org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe") &&
+        isVectorizationFileSinkArrowNativeEnabled &&
+        engine.equalsIgnoreCase("tez");
+
+    return isOkArrowFileSink;
+  }
+
+  private Operator<? extends OperatorDesc> specializeArrowFileSinkOperator(
+      Operator<? extends OperatorDesc> op, VectorizationContext vContext, FileSinkDesc desc,
+      VectorFileSinkDesc vectorDesc) throws HiveException {
+
+    Class<? extends Operator<?>> opClass = VectorFileSinkArrowOperator.class;
+
+    Operator<? extends OperatorDesc> vectorOp = null;
+    try {
+      vectorOp = OperatorFactory.getVectorOperator(
+          opClass, op.getCompilationOpContext(), op.getConf(),
+          vContext, vectorDesc);
+    } catch (Exception e) {
+      LOG.info("Vectorizer vectorizeOperator file sink class exception " + opClass.getSimpleName() +
+          " exception " + e);
+      throw new HiveException(e);
+    }
+
+    return vectorOp;
   }
 
   private boolean usesVectorUDFAdaptor(VectorExpression vecExpr) {
@@ -5130,9 +5187,20 @@ public class Vectorizer implements PhysicalPlanResolver {
             FileSinkDesc fileSinkDesc = (FileSinkDesc) op.getConf();
 
             VectorFileSinkDesc vectorFileSinkDesc = new VectorFileSinkDesc();
-            vectorOp = OperatorFactory.getVectorOperator(
-                op.getCompilationOpContext(), fileSinkDesc, vContext, vectorFileSinkDesc);
-            isNative = false;
+            boolean isArrowSpecialization =
+                checkForArrowFileSink(fileSinkDesc, isTezOrSpark, vContext, vectorFileSinkDesc);
+
+            if (isArrowSpecialization) {
+              vectorOp =
+                  specializeArrowFileSinkOperator(
+                      op, vContext, fileSinkDesc, vectorFileSinkDesc);
+              isNative = true;
+            } else {
+              vectorOp =
+                  OperatorFactory.getVectorOperator(
+                      op.getCompilationOpContext(), fileSinkDesc, vContext, vectorFileSinkDesc);
+              isNative = false;
+            }
           }
           break;
         case LIMIT:

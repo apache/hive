@@ -1,0 +1,375 @@
+PREHOOK: query: CREATE EXTERNAL TABLE ext_non_part (col string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_non_part
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_non_part (col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_non_part
+PREHOOK: query: INSERT INTO ext_non_part VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ext_non_part
+POSTHOOK: query: INSERT INTO ext_non_part VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ext_non_part
+POSTHOOK: Lineage: ext_non_part.col SCRIPT []
+PREHOOK: query: CREATE TABLE b LIKE ext_non_part
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b
+POSTHOOK: query: CREATE TABLE b LIKE ext_non_part
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b
+PREHOOK: query: INSERT OVERWRITE TABLE ext_non_part SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@ext_non_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ext_non_part SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@ext_non_part
+POSTHOOK: Lineage: ext_non_part.col SIMPLE [(b)b.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) FROM ext_non_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_non_part
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM ext_non_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_non_part
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table ext_non_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ext_non_part
+PREHOOK: Output: default@ext_non_part
+POSTHOOK: query: drop table ext_non_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ext_non_part
+POSTHOOK: Output: default@ext_non_part
+PREHOOK: query: CREATE TABLE int_non_part (col string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: CREATE TABLE int_non_part (col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_non_part
+PREHOOK: query: INSERT INTO int_non_part VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: INSERT INTO int_non_part VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@int_non_part
+POSTHOOK: Lineage: int_non_part.col SCRIPT []
+PREHOOK: query: INSERT OVERWRITE TABLE int_non_part SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: INSERT OVERWRITE TABLE int_non_part SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_non_part
+POSTHOOK: Lineage: int_non_part.col SIMPLE [(b)b.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) FROM int_non_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_non_part
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM int_non_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_non_part
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table int_non_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@int_non_part
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: drop table int_non_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@int_non_part
+POSTHOOK: Output: default@int_non_part
+PREHOOK: query: drop table b
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@b
+PREHOOK: Output: default@b
+POSTHOOK: query: drop table b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@b
+PREHOOK: query: CREATE EXTERNAL TABLE ext_part (col string) partitioned by (par string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_part
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_part (col string) partitioned by (par string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_part
+PREHOOK: query: INSERT INTO ext_part PARTITION (par='1') VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ext_part@par=1
+POSTHOOK: query: INSERT INTO ext_part PARTITION (par='1') VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ext_part@par=1
+POSTHOOK: Lineage: ext_part PARTITION(par=1).col SCRIPT []
+PREHOOK: query: INSERT INTO ext_part PARTITION (par='2') VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ext_part@par=2
+POSTHOOK: query: INSERT INTO ext_part PARTITION (par='2') VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ext_part@par=2
+POSTHOOK: Lineage: ext_part PARTITION(par=2).col SCRIPT []
+PREHOOK: query: CREATE TABLE b (par string, col string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b
+POSTHOOK: query: CREATE TABLE b (par string, col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b
+PREHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@ext_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+PREHOOK: query: SELECT count(*) FROM ext_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_part
+PREHOOK: Input: default@ext_part@par=1
+PREHOOK: Input: default@ext_part@par=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM ext_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_part
+POSTHOOK: Input: default@ext_part@par=1
+POSTHOOK: Input: default@ext_part@par=2
+#### A masked pattern was here ####
+4
+PREHOOK: query: INSERT INTO b VALUES ('third', '1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@b
+POSTHOOK: query: INSERT INTO b VALUES ('third', '1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@b
+POSTHOOK: Lineage: b.col SCRIPT []
+POSTHOOK: Lineage: b.par SCRIPT []
+PREHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@ext_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@ext_part@par=1
+POSTHOOK: Lineage: ext_part PARTITION(par=1).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) FROM ext_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_part
+PREHOOK: Input: default@ext_part@par=1
+PREHOOK: Input: default@ext_part@par=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM ext_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_part
+POSTHOOK: Input: default@ext_part@par=1
+POSTHOOK: Input: default@ext_part@par=2
+#### A masked pattern was here ####
+3
+PREHOOK: query: SELECT * FROM ext_part ORDER BY par, col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_part
+PREHOOK: Input: default@ext_part@par=1
+PREHOOK: Input: default@ext_part@par=2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ext_part ORDER BY par, col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_part
+POSTHOOK: Input: default@ext_part@par=1
+POSTHOOK: Input: default@ext_part@par=2
+#### A masked pattern was here ####
+third	1
+first	2
+second	2
+PREHOOK: query: drop table ext_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ext_part
+PREHOOK: Output: default@ext_part
+POSTHOOK: query: drop table ext_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ext_part
+POSTHOOK: Output: default@ext_part
+PREHOOK: query: drop table b
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@b
+PREHOOK: Output: default@b
+POSTHOOK: query: drop table b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@b
+PREHOOK: query: CREATE TABLE int_part (col string) partitioned by (par string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_part
+POSTHOOK: query: CREATE TABLE int_part (col string) partitioned by (par string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_part
+PREHOOK: query: INSERT INTO int_part PARTITION (par='1') VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@int_part@par=1
+POSTHOOK: query: INSERT INTO int_part PARTITION (par='1') VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@int_part@par=1
+POSTHOOK: Lineage: int_part PARTITION(par=1).col SCRIPT []
+PREHOOK: query: INSERT INTO int_part PARTITION (par='2') VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@int_part@par=2
+POSTHOOK: query: INSERT INTO int_part PARTITION (par='2') VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@int_part@par=2
+POSTHOOK: Lineage: int_part PARTITION(par=2).col SCRIPT []
+PREHOOK: query: INSERT INTO int_part PARTITION (par='3') VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@int_part@par=3
+POSTHOOK: query: INSERT INTO int_part PARTITION (par='3') VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@int_part@par=3
+POSTHOOK: Lineage: int_part PARTITION(par=3).col SCRIPT []
+PREHOOK: query: CREATE TABLE b (par string, col string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b
+POSTHOOK: query: CREATE TABLE b (par string, col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b
+PREHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@int_part
+POSTHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+PREHOOK: query: SELECT count(*) FROM int_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_part
+PREHOOK: Input: default@int_part@par=1
+PREHOOK: Input: default@int_part@par=2
+PREHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM int_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_part
+POSTHOOK: Input: default@int_part@par=1
+POSTHOOK: Input: default@int_part@par=2
+POSTHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+6
+PREHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par='3') SELECT col FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@int_part@par=3
+POSTHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par='3') SELECT col FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_part@par=3
+POSTHOOK: Lineage: int_part PARTITION(par=3).col SIMPLE [(b)b.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) FROM int_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_part
+PREHOOK: Input: default@int_part@par=1
+PREHOOK: Input: default@int_part@par=2
+PREHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM int_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_part
+POSTHOOK: Input: default@int_part@par=1
+POSTHOOK: Input: default@int_part@par=2
+POSTHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+4
+PREHOOK: query: INSERT INTO b VALUES ('third', '1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@b
+POSTHOOK: query: INSERT INTO b VALUES ('third', '1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@b
+POSTHOOK: Lineage: b.col SCRIPT []
+POSTHOOK: Lineage: b.par SCRIPT []
+PREHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@int_part
+POSTHOOK: query: INSERT OVERWRITE TABLE int_part PARTITION (par) SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_part@par=1
+POSTHOOK: Lineage: int_part PARTITION(par=1).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) FROM int_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_part
+PREHOOK: Input: default@int_part@par=1
+PREHOOK: Input: default@int_part@par=2
+PREHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM int_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_part
+POSTHOOK: Input: default@int_part@par=1
+POSTHOOK: Input: default@int_part@par=2
+POSTHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+3
+PREHOOK: query: SELECT * FROM int_part ORDER BY par, col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_part
+PREHOOK: Input: default@int_part@par=1
+PREHOOK: Input: default@int_part@par=2
+PREHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM int_part ORDER BY par, col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_part
+POSTHOOK: Input: default@int_part@par=1
+POSTHOOK: Input: default@int_part@par=2
+POSTHOOK: Input: default@int_part@par=3
+#### A masked pattern was here ####
+third	1
+first	2
+second	2
+PREHOOK: query: drop table int_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@int_part
+PREHOOK: Output: default@int_part
+POSTHOOK: query: drop table int_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@int_part
+POSTHOOK: Output: default@int_part
+PREHOOK: query: drop table b
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@b
+PREHOOK: Output: default@b
+POSTHOOK: query: drop table b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@b

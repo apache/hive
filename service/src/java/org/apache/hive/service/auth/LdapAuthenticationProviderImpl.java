@@ -18,9 +18,10 @@
 package org.apache.hive.service.auth;
 
 import javax.security.sasl.AuthenticationException;
-
+import javax.naming.NamingException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
@@ -68,9 +69,36 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   @Override
   public void Authenticate(String user, String password) throws AuthenticationException {
     DirSearch search = null;
+    String bindUser = this.conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER);
+    String bindPassword = null;
     try {
-      search = createDirSearch(user, password);
+      char[] rawPassword = this.conf.getPassword(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD.toString());
+      if (rawPassword != null) {
+        bindPassword = new String(rawPassword);
+      }
+    } catch (IOException e) {
+      bindPassword = null;
+    }
+    boolean usedBind = bindUser != null && bindPassword != null;
+    if (!usedBind) {
+      // If no bind user or bind password was specified,
+      // we assume the user we are authenticating has the ability to search
+      // the LDAP tree, so we use it as the "binding" account.
+      // This is the way it worked before bind users were allowed in the LDAP authenticator,
+      // so we keep existing systems working.
+      bindUser = user;
+      bindPassword = password;
+    }
+    try {
+      search = createDirSearch(bindUser, bindPassword);
       applyFilter(search, user);
+      if (usedBind) {
+        // If we used the bind user, then we need to authenticate again,
+        // this time using the full user name we got during the bind process.
+        createDirSearch(search.findUserDn(user), password);
+      }
+    } catch (NamingException e) {
+      throw new AuthenticationException("Unable to find the user in the LDAP tree. " + e.getMessage());
     } finally {
       ServiceUtils.cleanup(LOG, search);
     }

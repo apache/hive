@@ -119,6 +119,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Assert.assertNotNull(appendedPart);
     Partition partition =
         client.getPartition(table.getDbName(), table.getTableName(), partitionValues);
+    appendedPart.setWriteId(partition.getWriteId());
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, partitionValues, "year=2017/month=may");
     verifyPartitionNames(table, Lists.newArrayList("year=2017/month=march", "year=2017/month=april",
@@ -137,6 +138,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Assert.assertNotNull(appendedPart);
     Partition partition =
         client.getPartition(table.getDbName(), table.getTableName(), partitionValues);
+    appendedPart.setWriteId(partition.getWriteId());
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, partitionValues, "year=2017/month=may");
     verifyPartitionNames(table, Lists.newArrayList("year=2017/month=may"));
@@ -290,6 +292,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Assert.assertNotNull(appendedPart);
     Partition partition = client.getPartition(table.getDbName(), table.getTableName(),
         getPartitionValues(partitionName));
+    appendedPart.setWriteId(partition.getWriteId());
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, getPartitionValues(partitionName), partitionName);
     verifyPartitionNames(table, Lists.newArrayList("year=2017/month=march", "year=2017/month=april",
@@ -308,6 +311,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Assert.assertNotNull(appendedPart);
     Partition partition = client.getPartition(table.getDbName(), table.getTableName(),
         getPartitionValues(partitionName));
+    appendedPart.setWriteId(partition.getWriteId());
     Assert.assertEquals(partition, appendedPart);
     verifyPartition(partition, table, getPartitionValues(partitionName), partitionName);
     verifyPartitionNames(table, Lists.newArrayList(partitionName));
@@ -471,12 +475,14 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     Assert.assertEquals("a1", created.getValues().get(0));
     Partition fetched =
         client.getPartition(catName, dbName, tableName, Collections.singletonList("a1"));
+    created.setWriteId(fetched.getWriteId());
     Assert.assertEquals(created, fetched);
 
     created = client.appendPartition(catName, dbName, tableName, "partcol=a2");
     Assert.assertEquals(1, created.getValuesSize());
     Assert.assertEquals("a2", created.getValues().get(0));
     fetched = client.getPartition(catName, dbName, tableName, Collections.singletonList("a2"));
+    created.setWriteId(fetched.getWriteId());
     Assert.assertEquals(created, fetched);
   }
 

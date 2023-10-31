@@ -128,6 +128,7 @@ public class StatsUtils {
 
   /**
    * Collect table, partition and column level statistics
+   * Note: DOES NOT CHECK txn stats.
    * @param conf
    *          - hive configuration
    * @param partList
@@ -226,6 +227,7 @@ public class StatsUtils {
     }
   }
 
+  /** Note: DOES NOT CHECK txn stats. */
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
       List<String> referencedColumns, boolean fetchColStats)
@@ -262,7 +264,10 @@ public class StatsUtils {
       List<ColStatistics> colStats = Lists.newArrayList();
 
       if (fetchColStats) {
-        colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
+        // Note: this is currently called from two notable places (w/false for checkTxn)
+        //       1) StatsRulesProcFactory.TableScanStatsRule via collectStatistics
+        //       2) RelOptHiveTable via getColStats and updateColStats.
+        colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache, false);
         if(colStats == null) {
           colStats = Lists.newArrayList();
         }
@@ -378,8 +383,11 @@ public class StatsUtils {
         // size is 0, aggrStats is null after several retries. Thus, we can
         // skip the step to connect to the metastore.
         if (neededColsToRetrieve.size() > 0 && partNames.size() > 0) {
+          // Note: this is currently called from two notable places (w/false for checkTxn)
+          //       1) StatsRulesProcFactory.TableScanStatsRule via collectStatistics
+          //       2) RelOptHiveTable via getColStats and updateColStats.
           aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
-              neededColsToRetrieve, partNames);
+              neededColsToRetrieve, partNames, false);
         }
 
         boolean statsRetrieved = aggrStats != null &&
@@ -990,7 +998,7 @@ public class StatsUtils {
    */
   public static List<ColStatistics> getTableColumnStats(
       Table table, List<ColumnInfo> schema, List<String> neededColumns,
-      ColumnStatsList colStatsCache) {
+      ColumnStatsList colStatsCache, boolean checkTransactional) {
     if (table.isMaterializedTable()) {
       LOG.debug("Materialized table does not contain table statistics");
       return null;
@@ -1019,7 +1027,7 @@ public class StatsUtils {
     List<ColStatistics> stats = null;
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
-          dbName, tabName, colStatsToRetrieve);
+          dbName, tabName, colStatsToRetrieve, checkTransactional);
       stats = convertColStats(colStat, tabName);
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
