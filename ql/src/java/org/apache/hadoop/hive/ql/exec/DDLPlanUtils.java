@@ -60,8 +60,10 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -252,10 +254,15 @@ public class DDLPlanUtils {
     return allDbStmt;
   }
 
-  public Map<String, String> getTableColumnsToType(Table tbl) {
+  public Map<String, PrimitiveObjectInspector.PrimitiveCategory> getTableColumnsToPrimitiveCategory(Table tbl) {
     List<FieldSchema> fieldSchemas = tbl.getAllCols();
-    Map<String, String> ret = new HashMap<String, String>();
-    fieldSchemas.stream().forEach(f -> ret.put(f.getName(), f.getType()));
+    Map<String, PrimitiveObjectInspector.PrimitiveCategory> ret = new HashMap<>();
+    fieldSchemas.stream().forEach(f ->
+        ret.put(
+            f.getName(),
+            ((PrimitiveTypeInfo)TypeInfoUtils.getTypeInfoFromTypeString(f.getType())).getPrimitiveCategory()
+        )
+    );
     return ret;
   }
 
@@ -267,16 +274,14 @@ public class DDLPlanUtils {
   }
 
   public String getPartitionActualName(Partition pt) {
-    Map<String, String> colTypeMap = getTableColumnsToType(pt.getTable());
+    Map<String, PrimitiveObjectInspector.PrimitiveCategory> colTypeMap =
+        getTableColumnsToPrimitiveCategory(pt.getTable());
     String[] partColsDef = pt.getName().split("/");
     List<String> ptParam = new ArrayList<>();
     for (String partCol : partColsDef) {
       String[] colValue = partCol.split("=");
-      if (colTypeMap.get(colValue[0]).equalsIgnoreCase("string")) {
-        ptParam.add(unparseIdentifier(colValue[0]) + "='" + colValue[1] + "'");
-      } else {
-        ptParam.add(unparseIdentifier(colValue[0]) + "=" + colValue[1]);
-      }
+      ptParam.add(unparseIdentifier(colValue[0]) + "=" +
+          TypeInfoUtils.convertStringToLiteralForSQL(colValue[1], colTypeMap.get(colValue[0])));
     }
     return StringUtils.join(ptParam, ",");
   }
@@ -745,7 +750,7 @@ public class DDLPlanUtils {
     if (!DefaultConstraint.isNotEmpty(dc)) {
       return;
     }
-    Map<String, String> colType = getTableColumnsToType(tb);
+    Map<String, PrimitiveObjectInspector.PrimitiveCategory> colType = getTableColumnsToPrimitiveCategory(tb);
     Map<String, List<DefaultConstraintCol>> defaultConstraints = dc.getDefaultConstraints();
     for (String constraintName : defaultConstraints.keySet()) {
       List<DefaultConstraintCol> defaultConstraintCols = defaultConstraints.get(constraintName);
@@ -754,7 +759,7 @@ public class DDLPlanUtils {
         command.add(DATABASE_NAME, unparseIdentifier(dc.getTableName()));
         command.add(TABLE_NAME, unparseIdentifier(dc.getTableName()));
         command.add(COLUMN_NAME, unparseIdentifier(col.colName));
-        command.add(COL_TYPE, colType.get(col.colName));
+        command.add(COL_TYPE, colType.get(col.colName).name());
         command.add(DEFAULT_VALUE, col.defaultVal);
         command.add(ENABLE, col.enable);
         command.add(VALIDATE, col.validate);
@@ -792,7 +797,7 @@ public class DDLPlanUtils {
     if (!NotNullConstraint.isNotEmpty(nc)) {
       return;
     }
-    Map<String, String> colType = getTableColumnsToType(tb);
+    Map<String, PrimitiveObjectInspector.PrimitiveCategory> colType = getTableColumnsToPrimitiveCategory(tb);
     Map<String, String> notNullConstraints = nc.getNotNullConstraints();
     Map<String, List<String>> enableValidateRely = nc.getEnableValidateRely();
     for (String constraintName : notNullConstraints.keySet()) {
@@ -800,7 +805,7 @@ public class DDLPlanUtils {
       command.add(DATABASE_NAME, unparseIdentifier(nc.getDatabaseName()));
       command.add(TABLE_NAME, unparseIdentifier(nc.getTableName()));
       command.add(COLUMN_NAME, unparseIdentifier(notNullConstraints.get(constraintName)));
-      command.add(COL_TYPE, colType.get(notNullConstraints.get(constraintName)));
+      command.add(COL_TYPE, colType.get(notNullConstraints.get(constraintName)).name());
       command.add(CONSTRAINT_NAME, unparseIdentifier(constraintName));
       command.add(ENABLE, enableValidateRely.get(constraintName).get(0));
       command.add(VALIDATE, enableValidateRely.get(constraintName).get(1));
