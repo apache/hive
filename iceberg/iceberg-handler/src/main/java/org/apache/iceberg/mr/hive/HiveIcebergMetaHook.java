@@ -128,6 +128,10 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.iceberg.TableProperties.DELETE_MODE;
+import static org.apache.iceberg.TableProperties.MERGE_MODE;
+import static org.apache.iceberg.TableProperties.UPDATE_MODE;
+
 public class HiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
   public static final Map<String, String> COMMON_HMS_PROPERTIES = ImmutableMap.of(
@@ -987,35 +991,23 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
     if ((icebergTbl == null || ((BaseTable) icebergTbl).operations().current().formatVersion() == 1) &&
         IcebergTableUtil.isV2Table(newProps)) {
-      if (catalogProperties.get(TableProperties.DELETE_MODE) == null) {
-        catalogProperties.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-        newProps.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-      }
-      if (catalogProperties.get(TableProperties.UPDATE_MODE) == null) {
-        catalogProperties.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-        newProps.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-      }
-      if (catalogProperties.get(TableProperties.MERGE_MODE) == null) {
-        catalogProperties.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-        newProps.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-      }
+      List<String> writeModeList = Arrays.asList(DELETE_MODE, UPDATE_MODE, MERGE_MODE);
+      writeModeList.stream()
+          .filter(writeMode -> catalogProperties.get(writeMode) == null)
+          .forEach(writeMode -> {
+            catalogProperties.put(writeMode, HiveIcebergStorageHandler.MERGE_ON_READ);
+            newProps.put(writeMode, HiveIcebergStorageHandler.MERGE_ON_READ);
+          });
 
       if (context != null) {
         Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
         Map<String, String> contextProperties = context.getProperties();
         if (contextProperties.containsKey(SET_PROPERTIES)) {
-          String propValue = context.getProperties().get(SET_PROPERTIES);
-          List propsList = splitter.splitToList(propValue);
-          if (!propsList.contains(TableProperties.DELETE_MODE)) {
-            propValue += "'" + TableProperties.DELETE_MODE;
-          }
-          if (!propsList.contains(TableProperties.UPDATE_MODE)) {
-            propValue += "'" + TableProperties.UPDATE_MODE;
-          }
-          if (!propsList.contains(TableProperties.MERGE_MODE)) {
-            propValue += "'" + TableProperties.MERGE_MODE;
-          }
-          contextProperties.put(SET_PROPERTIES, propValue);
+          final String[] propValue = {context.getProperties().get(SET_PROPERTIES)};
+          writeModeList.stream()
+              .filter(writeMode -> !splitter.splitToList(propValue[0]).contains(writeMode))
+              .map(writeMode -> propValue[0] += "'" + writeMode)
+              .forEach(writeMode -> contextProperties.put(SET_PROPERTIES, propValue[0]));
         }
       }
     }
