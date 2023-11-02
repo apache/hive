@@ -17,14 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertHiveLocksCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertTxnComponentsCommand;
@@ -37,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
@@ -50,13 +46,9 @@ public class EnqueueLockFunction implements TransactionalFunction<Long> {
       "WHERE \"HL_LOCK_EXT_ID\" = %s";
 
   private final LockRequest lockRequest;
-  private final SQLGenerator sqlGenerator;
-  private final Configuration conf;
 
-  public EnqueueLockFunction(LockRequest lockRequest, SQLGenerator sqlGenerator, Configuration conf) {
+  public EnqueueLockFunction(LockRequest lockRequest) {
     this.lockRequest = lockRequest;
-    this.sqlGenerator = sqlGenerator;
-    this.conf = conf;
   }
 
   /**
@@ -69,11 +61,10 @@ public class EnqueueLockFunction implements TransactionalFunction<Long> {
    */
   @Override
   public Long execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException, TxnAbortedException, NoSuchTxnException {
-    int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
     long txnid = lockRequest.getTxnid();
     if (TxnUtils.isValidTxn(txnid)) {
       //this also ensures that txn is still there in expected state
-      TxnType txnType = jdbcResource.execute(new GetOpenTxnTypeAndLockHandler(sqlGenerator, txnid));
+      TxnType txnType = jdbcResource.execute(new GetOpenTxnTypeAndLockHandler(jdbcResource.getSqlGenerator(), txnid));
       if (txnType == null) {
         new EnsureValidTxnFunction(txnid).execute(jdbcResource);
       }
@@ -81,10 +72,10 @@ public class EnqueueLockFunction implements TransactionalFunction<Long> {
         /* Insert txn components and hive locks (with a temp extLockId) first, before getting the next lock ID in a select-for-update.
            This should minimize the scope of the S4U and decrease the table lock duration. */
     if (txnid > 0) {
-      jdbcResource.execute(new InsertTxnComponentsCommand(lockRequest, jdbcResource.execute(new GetWriteIdsHandler(lockRequest))), maxBatchSize);
+      jdbcResource.execute(new InsertTxnComponentsCommand(lockRequest, jdbcResource.execute(new GetWriteIdsHandler(lockRequest))));
     }
     long tempExtLockId = TxnUtils.generateTemporaryId();
-    jdbcResource.execute(new InsertHiveLocksCommand(lockRequest, tempExtLockId), maxBatchSize);
+    jdbcResource.execute(new InsertHiveLocksCommand(lockRequest, tempExtLockId));
 
     /* Get the next lock id.
      * This has to be atomic with adding entries to HIVE_LOCK entries (1st add in W state) to prevent a race.
@@ -92,7 +83,7 @@ public class EnqueueLockFunction implements TransactionalFunction<Long> {
      * 2nd nl_next=8.  Then 8 goes first to insert into HIVE_LOCKS and acquires the locks.  Then 7 unblocks,
      * and add it's W locks, but it won't see locks from 8 since to be 'fair' {@link #checkLock(java.sql.Connection, long)}
      * doesn't block on locks acquired later than one it's checking*/
-    long extLockId = getNextLockIdForUpdate(jdbcResource.getJdbcTemplate());
+    long extLockId = getNextLockIdForUpdate(jdbcResource);
     incrementLockIdAndUpdateHiveLocks(jdbcResource.getJdbcTemplate().getJdbcTemplate(), extLockId, tempExtLockId);
 
     jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED).createSavepoint();
@@ -100,12 +91,12 @@ public class EnqueueLockFunction implements TransactionalFunction<Long> {
     return extLockId;
   }
 
-  private long getNextLockIdForUpdate(NamedParameterJdbcTemplate jdbcTemplate) throws MetaException {
-    String s = sqlGenerator.addForUpdateClause("SELECT \"NL_NEXT\" FROM \"NEXT_LOCK_ID\"");
+  private long getNextLockIdForUpdate(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    String s = jdbcResource.getSqlGenerator().addForUpdateClause("SELECT \"NL_NEXT\" FROM \"NEXT_LOCK_ID\"");
     LOG.debug("Going to execute query <{}>", s);
     
     try {
-      return jdbcTemplate.queryForObject(s, new MapSqlParameterSource(), Long.class);
+      return jdbcResource.getJdbcTemplate().queryForObject(s, new MapSqlParameterSource(), Long.class);
     } catch (EmptyResultDataAccessException e) {
       LOG.error("Failure to get next lock ID for update! SELECT query returned empty ResultSet.");
       throw new MetaException("Transaction tables not properly " +

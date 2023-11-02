@@ -18,19 +18,23 @@
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.jdbc.InClauseBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,20 +47,15 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
 
   private static final Logger LOG = LoggerFactory.getLogger(PurgeCompactionHistoryFunction.class);
   
-  private final Configuration conf;
-
-  public PurgeCompactionHistoryFunction(Configuration conf) {
-    this.conf = conf;
-  }
-
   @Override
   public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = jdbcResource.getJdbcTemplate();
+    Configuration conf = jdbcResource.getConf();
     List<Long> deleteSet = new ArrayList<>();
     long timeoutThreshold = System.currentTimeMillis() -
         MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, TimeUnit.MILLISECONDS);
     int didNotInitiateRetention = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE);
-    int failedRetention = getFailedCompactionRetention();
+    int failedRetention = getFailedCompactionRetention(conf);
     int succeededRetention = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED);
     int refusedRetention = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_REFUSED);
         /* cc_id is monotonically increasing so for any entity sorts in order of compaction history,
@@ -90,13 +89,10 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
       return null;
     }
 
-    int totalCount = TxnUtils.executeStatementWithInClause(conf, jdbcTemplate,
-        "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_ID\" in (:ids)",
-        new MapSqlParameterSource(), "ids", deleteSet, Long::compareTo);
+    int totalCount = jdbcResource.execute(new DeleteFromCompletedCompacionsCommand(deleteSet));
     LOG.debug("Removed {} records from COMPLETED_COMPACTIONS", totalCount);
     return null;
-  }
-  
+  }  
 
   private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc, long timeoutThreshold) {
     switch (ci.state) {
@@ -139,7 +135,7 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
    * this ensures that the number of failed compaction entries retained is > than number of failed
    * compaction threshold which prevents new compactions from being scheduled.
    */
-  private int getFailedCompactionRetention() {
+  private int getFailedCompactionRetention(Configuration conf) {
     int failedThreshold = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
     int failedRetention = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED);
     if(failedRetention < failedThreshold) {
@@ -166,6 +162,41 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
       this.succeededRetention = succeededRetention;
       this.refusedRetention = refusedRetention;
     }
+  }
+  
+  private static class DeleteFromCompletedCompacionsCommand implements InClauseBatchCommand<Long> {
+    
+    private final List<Long> ids;
+
+    public DeleteFromCompletedCompacionsCommand(List<Long> ids) {
+      this.ids = ids;
+    }
+
+    @Override
+    public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
+      return "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_ID\" in (:ids)";
+    }
+
+    @Override
+    public SqlParameterSource getQueryParameters() {
+      return new MapSqlParameterSource();
+    }
+
+    @Override
+    public List<Long> getInClauseParameters() {
+      return ids;
+    }
+
+    @Override
+    public String getInClauseParameterName() {
+      return "ids";
+    }
+
+    @Override
+    public Comparator<Long> getParameterLengthComparator() {
+      return Long::compareTo;
+    }
+
   }
 
 }

@@ -208,7 +208,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    * @param rs ResultSet after call to rs.next()
    * @throws SQLException
    */
-  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException, MetaException {
+  public static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException {
     CompactionInfo fullCi = new CompactionInfo();
     fullCi.id = rs.getLong(1);
     fullCi.dbname = rs.getString(2);

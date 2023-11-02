@@ -17,13 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -39,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.apache.hadoop.hive.metastore.txn.TxnStore.POOL_TX;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
@@ -52,14 +49,10 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
 
   public static int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 
-  private final Configuration conf;
-  private final SQLGenerator sqlGenerator;
   private final long timeout;
   private final long replicationTxnTimeout;
 
-  public PerformTimeoutsFunction(Configuration conf, SQLGenerator sqlGenerator, long timeout, long replicationTxnTimeout) {
-    this.conf = conf;
-    this.sqlGenerator = sqlGenerator;
+  public PerformTimeoutsFunction(long timeout, long replicationTxnTimeout) {
     this.timeout = timeout;
     this.replicationTxnTimeout = replicationTxnTimeout;
   }
@@ -89,7 +82,7 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
             " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + replicationTxnTimeout +
             ")";
         //safety valve for extreme cases
-        s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
+        s = jdbcResource.getSqlGenerator().addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
 
         LOG.debug("Going to execute query <{}>", s);
         List<List<Long>> timedOutTxns = jdbcResource.getJdbcTemplate().query(s, rs -> {
@@ -119,8 +112,8 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
         for (List<Long> batchToAbort : timedOutTxns) {
           context.releaseSavepoint(savePoint);
           savePoint = context.createSavepoint();
-          int abortedTxns = new AbortTxnsFunction(conf, sqlGenerator, batchToAbort, 
-              true, false, false, TxnErrorMsg.ABORT_TIMEOUT).execute(jdbcResource);
+          int abortedTxns = new AbortTxnsFunction(batchToAbort, true, false, false, 
+              TxnErrorMsg.ABORT_TIMEOUT).execute(jdbcResource);
           if (abortedTxns == batchToAbort.size()) {
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
@@ -134,7 +127,7 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
           }
         }
         LOG.info("Aborted {} transaction(s) due to timeout", numTxnsAborted);
-        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+        if (MetastoreConf.getBoolVar(jdbcResource.getConf(), MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
           Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
         }
       }
@@ -171,7 +164,7 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
       prefix.append(getEpochFn(dbProduct)).append("-").append(timeout);
       prefix.append(" AND \"HL_TXNID\" = 0 AND ");
 
-      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, timedOutLockIds,
+      TxnUtils.buildQueryWithINClause(jdbcResource.getConf(), queries, prefix, suffix, timedOutLockIds,
           "\"HL_LOCK_EXT_ID\"", true, false);
 
       int deletedLocks = 0;

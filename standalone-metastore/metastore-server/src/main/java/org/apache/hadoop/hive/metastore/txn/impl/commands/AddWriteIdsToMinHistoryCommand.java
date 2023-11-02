@@ -23,13 +23,14 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ConditionalCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
+import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand, ConditionalCommand {
+public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand<Object[]>, ConditionalCommand {
 
   private static final String MIN_HISTORY_WRITE_ID_INSERT_QUERY = "INSERT INTO \"MIN_HISTORY_WRITE_ID\" (\"MH_TXNID\", " +
       "\"MH_DATABASE\", \"MH_TABLE\", \"MH_WRITEID\") VALUES (?, ?, ?, ?)";
@@ -55,8 +56,13 @@ public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand
   }
 
   @Override
-  public int[] getParameterTypes() {
-    return null;
+  public ParameterizedPreparedStatementSetter<Object[]> getPreparedStatementSetter() {
+    return (ps, argument) -> {
+      ps.setLong(1, (Long)argument[0]);
+      ps.setString(2, argument[1].toString());
+      ps.setString(3, argument[2].toString());
+      ps.setLong(4, (Long)argument[3]);
+    };
   }
 
   @Override

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,7 +40,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class InsertTxnComponentsCommand implements ParameterizedBatchCommand {
+public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Object[]> {
   
   private final LockRequest lockRequest;
   private final Map<Pair<String, String>, Long> writeIds;
@@ -70,8 +71,15 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand {
   }
 
   @Override
-  public int[] getParameterTypes() {
-    return null;
+  public ParameterizedPreparedStatementSetter<Object[]> getPreparedStatementSetter() {
+    return (ps, argument) -> {
+      ps.setLong(1, (Long)argument[0]);
+      ps.setString(2, argument[1].toString());
+      ps.setString(3, argument[2].toString());
+      ps.setString(4, argument[3].toString());
+      ps.setString(5, argument[4].toString());
+      ps.setLong(6, (Long)argument[5]);
+    };
   }
 
   @Override

@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -58,8 +57,6 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbortTxnsFunction.class);
 
-  private final Configuration conf;
-  private final SQLGenerator sqlGenerator;
   private final List<Long> txnids;
   private final boolean checkHeartbeat;
   private final boolean skipCount;
@@ -72,18 +69,14 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
    * Caller must rollback the transaction if not all transactions were aborted since this will not
    * attempt to delete associated locks in this case.
    *
-   * @param conf Hive configuration object
-   * @param sqlGenerator Helper class to generate complex SQLs 
    * @param txnids list of transactions to abort
    * @param checkHeartbeat value used by {@code  org.apache.hadoop.hive.metastore.txn.TxnHandler#performTimeOuts()} 
    *                       to ensure this doesn't Abort txn which were heartbeated after #performTimeOuts() select 
    *                       and this operation.
    * @param skipCount If true, the method always returns 0, otherwise returns the number of actually aborted txns
    */
-  public AbortTxnsFunction(Configuration conf, SQLGenerator sqlGenerator, List<Long> txnids, boolean checkHeartbeat, 
-                           boolean skipCount, boolean isReplReplayed, TxnErrorMsg txnErrorMsg) {
-    this.conf = conf;
-    this.sqlGenerator = sqlGenerator;
+  public AbortTxnsFunction(List<Long> txnids, boolean checkHeartbeat, boolean skipCount, boolean isReplReplayed, 
+                           TxnErrorMsg txnErrorMsg) {
     this.txnids = txnids;
     this.checkHeartbeat = checkHeartbeat;
     this.skipCount = skipCount;
@@ -101,12 +94,13 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
     if (txnids.isEmpty()) {
       return 0;
     }
+    Configuration conf = jdbcResource.getConf();
     Collections.sort(txnids);    
     LOG.debug("Aborting {} transaction(s) {} due to {}", txnids.size(), txnids, txnErrorMsg);
     
     int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);    
-    jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(conf, txnids), maxBatchSize);
-    jdbcResource.execute(new RemoveWriteIdsFromMinHistoryCommand(conf, txnids), maxBatchSize);
+    jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(conf, txnids));
+    jdbcResource.execute(new RemoveWriteIdsFromMinHistoryCommand(conf, txnids));
     
     Connection dbConn = jdbcResource.getConnection();
     try {
@@ -138,7 +132,7 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
       //If this abort is for REPL_CREATED TXN initiated outside the replication flow, then clean the corresponding entry
       //from REPL_TXN_MAP and mark that database as replication incompatible.
       if (!isReplReplayed) {
-        for (String database : getDbNamesForReplayedTxns(dbConn, txnids)) {
+        for (String database : getDbNamesForReplayedTxns(jdbcResource, dbConn, txnids)) {
           markDbAsReplIncompatible(jdbcResource, database);
         }
         // Delete mapping from REPL_TXN_MAP if it exists.
@@ -169,7 +163,8 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
     }
   }
 
-  private Set<String> getDbNamesForReplayedTxns(Connection dbConn, List<Long> targetTxnIds) throws SQLException {
+  private Set<String> getDbNamesForReplayedTxns(MultiDataSourceJdbcResource jdbcResource, Connection dbConn, 
+                                                List<Long> targetTxnIds) throws SQLException {
     Set<String> dbNames = new HashSet<>();
     if (targetTxnIds.isEmpty()) {
       return dbNames;
@@ -177,11 +172,11 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
     List<String> inQueries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
     prefix.append("SELECT \"RTM_REPL_POLICY\" FROM \"REPL_TXN_MAP\" WHERE ");
-    TxnUtils.buildQueryWithINClause(conf, inQueries, prefix, new StringBuilder(), targetTxnIds,
+    TxnUtils.buildQueryWithINClause(jdbcResource.getConf(), inQueries, prefix, new StringBuilder(), targetTxnIds,
         "\"RTM_TARGET_TXN_ID\"", false, false);
     for (String query : inQueries) {
       LOG.debug("Going to execute select <{}>", query);
-      try (PreparedStatement pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, null);
+      try (PreparedStatement pst = jdbcResource.getSqlGenerator().prepareStmtWithParameters(dbConn, query, null);
            ResultSet rs = pst.executeQuery()) {
         while (rs.next()) {
           dbNames.add(MetaStoreUtils.getDbNameFromReplPolicy(rs.getString(1)));
@@ -193,8 +188,8 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
 
   private void markDbAsReplIncompatible(MultiDataSourceJdbcResource jdbcResource, String database) throws SQLException, MetaException {
     try (Statement stmt = jdbcResource.getConnection().createStatement()){
-      String catalog = MetaStoreUtils.getDefaultCatalog(conf);
-      String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+      String catalog = MetaStoreUtils.getDefaultCatalog(jdbcResource.getConf());
+      String s = jdbcResource.getSqlGenerator().getDbProduct().getPrepareTxnStmt();
       if (s != null) {
         stmt.execute(s);
       }

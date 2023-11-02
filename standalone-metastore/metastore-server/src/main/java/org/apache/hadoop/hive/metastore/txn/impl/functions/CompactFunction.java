@@ -24,21 +24,17 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.CompactionState;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionRequestCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +44,6 @@ import static org.apache.hadoop.hive.metastore.txn.TxnStore.INITIATED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.READY_FOR_CLEANING;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.REFUSED_RESPONSE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.WORKING_STATE;
-import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getFullTableName;
 
 public class CompactFunction implements TransactionalFunction<CompactionResponse> {
@@ -57,13 +52,11 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
   
   private final CompactionRequest rqst;
   private final long openTxnTimeOutMillis;
-  private final SQLGenerator sqlGenerator;
   private final TxnStore.MutexAPI mutexAPI;
 
-  public CompactFunction(CompactionRequest rqst, long openTxnTimeOutMillis, SQLGenerator sqlGenerator, TxnStore.MutexAPI mutexAPI) {
+  public CompactFunction(CompactionRequest rqst, long openTxnTimeOutMillis, TxnStore.MutexAPI mutexAPI) {
     this.rqst = rqst;
     this.openTxnTimeOutMillis = openTxnTimeOutMillis;
-    this.sqlGenerator = sqlGenerator;
     this.mutexAPI = mutexAPI;
   }
 
@@ -115,29 +108,9 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
         return resp;
       }
 
-      long id = generateCompactionQueueId(jdbcResource.getConnection().createStatement());
-      npJdbcTemplate.update("INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", " +
-          "\"CQ_PARTITION\", \"CQ_STATE\", \"CQ_TYPE\", \"CQ_ENQUEUE_TIME\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", " +
-          "\"CQ_ORDER_BY\", \"CQ_TBLPROPERTIES\", \"CQ_RUN_AS\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\") " +
-          "VALUES(:id, :dbName, :tableName, :partition, :state, :type, " + getEpochFn(jdbcResource.getDatabaseProduct()) + 
-              ", :poolName, :buckets, :orderBy, :tblProperties, :runAs, :initiatorId, :initiatorVersion)", 
-          new MapSqlParameterSource()
-              .addValue("id", id)
-              .addValue("dbName", rqst.getDbname())
-              .addValue("tableName", rqst.getTablename())
-              .addValue("partition", rqst.getPartitionname(), Types.VARCHAR)
-              .addValue("state", INITIATED_STATE, Types.VARCHAR)
-              .addValue("type", TxnUtils.thriftCompactionType2DbType(rqst.getType()), Types.VARCHAR)
-              .addValue("poolName", rqst.getPoolName())
-              .addValue("buckets", rqst.isSetNumberOfBuckets() ? rqst.getNumberOfBuckets() : null, Types.INTEGER)
-              .addValue("orderBy", rqst.getOrderByClause(), Types.VARCHAR)
-              .addValue("tblProperties", rqst.getProperties(), Types.VARCHAR)
-              .addValue("runAs", rqst.getRunas(), Types.VARCHAR)
-              .addValue("initiatorId", rqst.getInitiatorId(), Types.VARCHAR)
-              .addValue("initiatorVersion", rqst.getInitiatorVersion(), Types.VARCHAR));
+      long id = new GenerateCompactionQueueIdFunction().execute(jdbcResource);
+      jdbcResource.execute(new InsertCompactionRequestCommand(id, CompactionState.INITIATED, rqst));
       return new CompactionResponse(id, INITIATED_RESPONSE, true);
-    } catch (SQLException e) {
-      throw new MetaException("Unable to put the compaction request into the queue: " + SqlRetryHandler.getMessage(e));
     } finally {
       if (handle != null) {
         handle.releaseLocks();
@@ -145,26 +118,6 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
     }
   }
 
-  @Deprecated
-  long generateCompactionQueueId(Statement stmt) throws SQLException, MetaException {
-    // Get the id for the next entry in the 
-    String s = sqlGenerator.addForUpdateClause("SELECT \"NCQ_NEXT\" FROM \"NEXT_COMPACTION_QUEUE_ID\"");
-    LOG.debug("going to execute query <{}>", s);
-    try (ResultSet rs = stmt.executeQuery(s)) {
-      if (!rs.next()) {
-        throw new IllegalStateException("Transaction tables not properly initiated, "
-            + "no record found in next_compaction_queue_id");
-      }
-      long id = rs.getLong(1);
-      s = "UPDATE \"NEXT_COMPACTION_QUEUE_ID\" SET \"NCQ_NEXT\" = " + (id + 1) + " WHERE \"NCQ_NEXT\" = " + id;
-      LOG.debug("Going to execute update <{}>", s);
-      if (stmt.executeUpdate(s) != 1) {
-        //TODO: Eliminate this id generation by implementing: https://issues.apache.org/jira/browse/HIVE-27121
-        LOG.info("The returned compaction ID ({}) already taken, obtaining new", id);
-        return generateCompactionQueueId(stmt);
-      }
-      return id;
-    }
-  }
+
 
 }

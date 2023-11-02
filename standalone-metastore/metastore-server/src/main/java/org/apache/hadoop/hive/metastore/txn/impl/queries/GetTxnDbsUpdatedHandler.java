@@ -19,41 +19,44 @@ package org.apache.hadoop.hive.metastore.txn.impl.queries;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class GetDatabaseIdHandler implements QueryHandler<Long> {
+/**
+ * Returns the databases updated by txnId.
+ * Queries TXN_TO_WRITE_ID using txnId.
+ */
+public class GetTxnDbsUpdatedHandler implements QueryHandler<List<String>> {
+  
+  private final long txnId;
 
-  private final String database;
-  private final String catalog;
-
-  public GetDatabaseIdHandler(String database, String catalog) {
-    this.database = database;
-    this.catalog = catalog;
+  public GetTxnDbsUpdatedHandler(long txnId) {
+    this.txnId = txnId;
   }
 
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT \"DB_ID\" FROM \"DBS\" WHERE \"NAME\" = :database AND \"CTLG_NAME\" = :catalog";
+    return "SELECT DISTINCT \"T2W_DATABASE\" FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\" WHERE \"T2W_TXNID\" = :txnId";
   }
 
   @Override
   public SqlParameterSource getQueryParameters() {
-    return new MapSqlParameterSource()
-        .addValue("database", database)
-        .addValue("catalog", catalog);
+    return new MapSqlParameterSource().addValue("txnId", txnId);
   }
 
   @Override
-  public Long extractData(ResultSet rs) throws SQLException {
-    if (!rs.next()) {
-      throw new MetaWrapperException(new MetaException("DB with name " + database + " does not exist in catalog " + catalog));
+  public List<String> extractData(ResultSet rs) throws SQLException, DataAccessException {
+    List<String> dbsUpdated = new ArrayList<>();
+    while (rs.next()) {
+      dbsUpdated.add(rs.getString(1));
     }
-    return rs.getLong(1);
+    return dbsUpdated;
   }
 }

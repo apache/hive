@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
@@ -37,11 +36,9 @@ public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFun
           "\"COMPACTION_METRICS_CACHE\" WHERE \"CMC_METRIC_TYPE\" = :type ORDER BY \"CMC_METRIC_VALUE\" DESC";
   
   private final int limit;
-  private final SQLGenerator sqlGenerator;
 
-  public TopCompactionMetricsDataPerTypeFunction(int limit, SQLGenerator sqlGenerator) {
+  public TopCompactionMetricsDataPerTypeFunction(int limit) {
     this.limit = limit;
-    this.sqlGenerator = sqlGenerator;
   }
 
   @Override
@@ -50,7 +47,7 @@ public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFun
     List<CompactionMetricsData> metricsDataList = new ArrayList<>();
     for (CompactionMetricsData.MetricType type : CompactionMetricsData.MetricType.values()) {
       metricsDataList.addAll(jdbcResource.getJdbcTemplate().query(
-          sqlGenerator.addLimitClause(limit, NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY),
+          jdbcResource.getSqlGenerator().addLimitClause(limit, NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY),
           new MapSqlParameterSource().addValue("type", type.toString()),
           new CompactionMetricsDataMapper(type)));
     }

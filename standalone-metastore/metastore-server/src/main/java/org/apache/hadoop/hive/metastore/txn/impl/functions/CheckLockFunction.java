@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -27,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -60,17 +58,13 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
       "Failed to initiate a concurrent CTAS operation with the same table name, lockInfo : %s";
   private static final String ZERO_WAIT_READ_ERR_MSG = "Unable to acquire read lock due to an existing exclusive lock {%s}";
   
-  private final Configuration conf;
-  private final SQLGenerator sqlGenerator;
   private final long extLockId;
   private final long txnId;
   private final boolean zeroWaitReadEnabled;
   private final boolean isExclusiveCTAS;
 
-  public CheckLockFunction(Configuration conf, SQLGenerator sqlGenerator, long extLockId, long txnId, 
+  public CheckLockFunction(long extLockId, long txnId, 
                            boolean zeroWaitReadEnabled, boolean isExclusiveCTAS) {
-    this.conf = conf;
-    this.sqlGenerator = sqlGenerator;
     this.extLockId = extLockId;
     this.txnId = txnId;
     this.zeroWaitReadEnabled = zeroWaitReadEnabled;
@@ -166,7 +160,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
             " since a concurrent committed transaction [" + JavaUtils.txnIdToString(wsInfo.txnId) + "," + wsInfo.commitId +
             "] has already updated resource '" + resourceName + "'";
         LOG.info(msg);
-        int count = new AbortTxnsFunction(conf, sqlGenerator, Collections.singletonList(writeSet.get(0).getTxnId()),
+        int count = new AbortTxnsFunction(Collections.singletonList(writeSet.get(0).getTxnId()),
             false, false, false, TxnErrorMsg.ABORT_CONCURRENT).execute(jdbcResource);
         if (count != 1) {
           throw new IllegalStateException(msg + " FAILED!");
@@ -218,7 +212,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
 
     List<String> subQuery = new ArrayList<>();
     for (String subCond : whereStr) {
-      subQuery.add("(" + sqlGenerator.addLimitClause(1, queryStr + subCond) + ")");
+      subQuery.add("(" + jdbcResource.getSqlGenerator().addLimitClause(1, queryStr + subCond) + ")");
     }
     String query = String.join(" UNION ALL ", subQuery);
 
@@ -286,7 +280,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
 
   // NEVER call this function without first calling heartbeat(long, long)
   private List<LockInfo> getLocksFromLockId(MultiDataSourceJdbcResource jdbcResource, long extLockId) throws MetaException {
-    List<LockInfo> locks = jdbcResource.execute(new GetLocksByLockId(extLockId, -1, sqlGenerator));
+    List<LockInfo> locks = jdbcResource.execute(new GetLocksByLockId(extLockId, -1, jdbcResource.getSqlGenerator()));
     if (locks.isEmpty()) {
       throw new MetaException("This should never happen!  We already " +
           "checked the lock(" + JavaUtils.lockIdToString(extLockId) + ") existed but now we can't find it!");

@@ -19,41 +19,33 @@ package org.apache.hadoop.hive.metastore.txn.impl.queries;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
-public class GetDatabaseIdHandler implements QueryHandler<Long> {
-
-  private final String database;
-  private final String catalog;
-
-  public GetDatabaseIdHandler(String database, String catalog) {
-    this.database = database;
-    this.catalog = catalog;
-  }
-
+public class DbTimeHandler implements QueryHandler<Timestamp> {
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT \"DB_ID\" FROM \"DBS\" WHERE \"NAME\" = :database AND \"CTLG_NAME\" = :catalog";
+    return databaseProduct.getDBTime();
   }
 
   @Override
   public SqlParameterSource getQueryParameters() {
-    return new MapSqlParameterSource()
-        .addValue("database", database)
-        .addValue("catalog", catalog);
+    return new MapSqlParameterSource();
   }
 
   @Override
-  public Long extractData(ResultSet rs) throws SQLException {
-    if (!rs.next()) {
-      throw new MetaWrapperException(new MetaException("DB with name " + database + " does not exist in catalog " + catalog));
+  public Timestamp extractData(ResultSet rs) throws SQLException, DataAccessException {
+    if (rs.next()) {
+      return rs.getTimestamp(1);
+    } else {
+      throw new EmptyResultDataAccessException("Could not obtain DB time", 1);
     }
-    return rs.getLong(1);
   }
 }

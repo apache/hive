@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -29,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.entities.LockInfo;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.CheckLockFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.EnqueueLockFunction;
@@ -52,25 +50,20 @@ public class TxnLockHandlerImpl implements TxnLockHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TxnLockHandlerImpl.class);
 
   private final MultiDataSourceJdbcResource jdbcResource;
-  private final SQLGenerator sqlGenerator;
-  private final Configuration conf;
 
-
-  public TxnLockHandlerImpl(MultiDataSourceJdbcResource jdbcResource, SQLGenerator sqlGenerator, Configuration conf) {
+  public TxnLockHandlerImpl(MultiDataSourceJdbcResource jdbcResource) {
     this.jdbcResource = jdbcResource;
-    this.sqlGenerator = sqlGenerator;
-    this.conf = conf;
   }
 
   @Override
   public long enqueueLock(LockRequest rqst) throws NoSuchTxnException, TxnAbortedException, MetaException {
-    return new EnqueueLockFunction(rqst, sqlGenerator, conf).execute(jdbcResource);
+    return new EnqueueLockFunction(rqst).execute(jdbcResource);
   }
 
   @Override
   public LockResponse checkLock(long extLockId, long txnId, boolean zeroWaitReadEnabled, boolean isExclusiveCTAS) 
       throws NoSuchTxnException, NoSuchLockException, TxnAbortedException, MetaException {
-    return new CheckLockFunction(conf, sqlGenerator, extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS).execute(jdbcResource);
+    return new CheckLockFunction(extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS).execute(jdbcResource);
   }
 
   @Override
@@ -97,7 +90,7 @@ public class TxnLockHandlerImpl implements TxnLockHandler {
     //some query attempted to lock (thus LOCK_WAITING state) but is giving up due to timeout for example
     if (rc < 1) {
       LOG.info("Failure to unlock any locks with extLockId={}.", extLockId);
-      List<LockInfo> lockInfos = jdbcResource.execute(new GetLocksByLockId(extLockId, 1, sqlGenerator));
+      List<LockInfo> lockInfos = jdbcResource.execute(new GetLocksByLockId(extLockId, 1, jdbcResource.getSqlGenerator()));
       if (CollectionUtils.isEmpty(lockInfos)) {
         //didn't find any lock with extLockId but at ReadCommitted there is a possibility that
         //it existed when above delete ran but it didn't have the expected state.

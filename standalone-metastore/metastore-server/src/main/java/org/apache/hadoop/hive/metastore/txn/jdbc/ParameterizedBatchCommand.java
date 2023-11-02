@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.util.List;
 import java.util.function.Function;
@@ -32,7 +33,7 @@ import java.util.function.Function;
  * Please note that for batch command, named parameters cannot be used! 
  * (like <b>UPDATE TBL SET COL1 = :value WHERE ID = :id</b>)
  */
-public interface ParameterizedBatchCommand {
+public interface ParameterizedBatchCommand<T> {
 
   /**
    * The parameterized query string. It is allowed if the query has no parameters at all.
@@ -44,12 +45,12 @@ public interface ParameterizedBatchCommand {
   /**
    * A {@link List} instance containing the required parameters for the query string.
    */
-  List<Object[]> getQueryParameters();
+  List<T> getQueryParameters();
 
   /**
    * The SQL types of the arguments (constants from java.sql.Types). Implementations can return null when not required.
    */
-  int[] getParameterTypes();
+  ParameterizedPreparedStatementSetter<T> getPreparedStatementSetter();
 
   /**
    * @return Returns the result policy to be used to validate the number of affected rows.

@@ -65,7 +65,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
                 "\"CQ_DATABASE\" = :dbName AND " +
                 "(\"CQ_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CQ_PARTITION\" = :partName OR :partName IS NULL) AND " +
-                "(\"CQ_TXN_ID\") != :txnId OR :txnId IS NULL");
+                "(\"CQ_TXN_ID\" != :txnId OR :txnId IS NULL)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE " +
                 "\"CC_DATABASE\" = :dbName AND " +

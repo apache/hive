@@ -19,41 +19,45 @@ package org.apache.hadoop.hive.metastore.txn.impl.queries;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
+import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class GetDatabaseIdHandler implements QueryHandler<Long> {
+public class FindTxnStateHandler implements QueryHandler<TxnStatus> {
+  
+  private final long txnId;
 
-  private final String database;
-  private final String catalog;
-
-  public GetDatabaseIdHandler(String database, String catalog) {
-    this.database = database;
-    this.catalog = catalog;
+  public FindTxnStateHandler(long txnId) {
+    this.txnId = txnId;
   }
 
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT \"DB_ID\" FROM \"DBS\" WHERE \"NAME\" = :database AND \"CTLG_NAME\" = :catalog";
+    return 
+        "SELECT s.STATE from (" +
+          "SELECT '1_txns' AS SOURCE, \"TXN_STATE\" AS STATE FROM \"TXNS\" WHERE \"TXN_ID\" = :txnId "+
+          "UNION " +
+          "SELECT '2_txn_compontents' AS SOURCE, 'c' AS STATE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_TXNID\" = :txnId) s " +
+        "ORDER BY s.SOURCE";
   }
 
   @Override
   public SqlParameterSource getQueryParameters() {
-    return new MapSqlParameterSource()
-        .addValue("database", database)
-        .addValue("catalog", catalog);
+    return new MapSqlParameterSource().addValue("txnId", txnId);
   }
 
   @Override
-  public Long extractData(ResultSet rs) throws SQLException {
+  public TxnStatus extractData(ResultSet rs) throws SQLException, DataAccessException {
     if (!rs.next()) {
-      throw new MetaWrapperException(new MetaException("DB with name " + database + " does not exist in catalog " + catalog));
+        return TxnStatus.fromString(rs.getString("STATE")); 
+    } else {
+      return TxnStatus.UNKNOWN;
     }
-    return rs.getLong(1);
   }
+
 }

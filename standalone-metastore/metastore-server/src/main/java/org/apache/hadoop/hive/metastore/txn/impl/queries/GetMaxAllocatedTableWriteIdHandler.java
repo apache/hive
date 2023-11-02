@@ -18,42 +18,44 @@
 package org.apache.hadoop.hive.metastore.txn.impl.queries;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
+import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class GetDatabaseIdHandler implements QueryHandler<Long> {
+public class GetMaxAllocatedTableWriteIdHandler implements QueryHandler<MaxAllocatedTableWriteIdResponse> {
 
-  private final String database;
-  private final String catalog;
+  private final MaxAllocatedTableWriteIdRequest rqst;
 
-  public GetDatabaseIdHandler(String database, String catalog) {
-    this.database = database;
-    this.catalog = catalog;
+  public GetMaxAllocatedTableWriteIdHandler(MaxAllocatedTableWriteIdRequest rqst) {
+    this.rqst = rqst;
   }
 
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT \"DB_ID\" FROM \"DBS\" WHERE \"NAME\" = :database AND \"CTLG_NAME\" = :catalog";
+    return "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName";
   }
 
   @Override
   public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
-        .addValue("database", database)
-        .addValue("catalog", catalog);
+        .addValue("dbName", rqst.getDbName())
+        .addValue("tableName", rqst.getTableName());
   }
 
   @Override
-  public Long extractData(ResultSet rs) throws SQLException {
-    if (!rs.next()) {
-      throw new MetaWrapperException(new MetaException("DB with name " + database + " does not exist in catalog " + catalog));
+  public MaxAllocatedTableWriteIdResponse extractData(ResultSet rs) throws SQLException, DataAccessException {
+    long maxWriteId = 0l;
+    if (rs.next()) {
+      // The row contains the nextId not the previously allocated
+      maxWriteId = rs.getLong(1) - 1;
     }
-    return rs.getLong(1);
+    return new MaxAllocatedTableWriteIdResponse(maxWriteId);
   }
 }

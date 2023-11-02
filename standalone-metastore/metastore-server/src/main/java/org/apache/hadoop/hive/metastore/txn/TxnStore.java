@@ -237,6 +237,8 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException,  MetaException;
@@ -277,6 +279,8 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.ReadOnly
   long getLatestTxnIdInConflict(long txnid) throws MetaException;
 
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
 
@@ -285,6 +289,8 @@ public interface TxnStore extends Configurable {
   boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
 
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   long cleanupMaterializationRebuildLocks(ValidTxnList validTxnList, long timeout)
       throws MetaException;
 
@@ -431,6 +437,8 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   boolean submitForCleanup(CompactionRequest rqst, long highestWriteId, long txnId) throws MetaException;
 
@@ -453,6 +461,7 @@ public interface TxnStore extends Configurable {
    * @throws NoSuchCompactionException
    * @throws MetaException
    */
+  @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   AbortCompactResponse abortCompactions(AbortCompactionRequest rqst) throws NoSuchCompactionException, MetaException;
 
@@ -467,6 +476,8 @@ public interface TxnStore extends Configurable {
    * partition specified by the request.
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
       GetLatestCommittedCompactionInfoRequest rqst) throws MetaException;

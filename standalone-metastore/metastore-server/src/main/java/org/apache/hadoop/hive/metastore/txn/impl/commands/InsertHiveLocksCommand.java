@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
+import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -36,7 +36,7 @@ import java.util.function.Function;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.entities.LockInfo.LOCK_WAITING;
 
-public class InsertHiveLocksCommand implements ParameterizedBatchCommand {
+public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[]> {
   
   private final LockRequest lockRequest;
   private final long tempExtLockId;
@@ -74,9 +74,20 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand {
   }
 
   @Override
-  public int[] getParameterTypes() {
-    return new int[]{ Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-        Types.CHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR};
+  public ParameterizedPreparedStatementSetter<Object[]> getPreparedStatementSetter() {
+    return (ps, argument) -> {
+      ps.setLong(1, (Long)argument[0]);
+      ps.setLong(2, (Long)argument[1]);
+      ps.setLong(3, (Long)argument[2]);
+      ps.setString(4, argument[3].toString());
+      ps.setString(5, argument[4].toString());
+      ps.setString(6, argument[5].toString());
+      ps.setString(7, argument[6].toString());
+      ps.setString(8, argument[7].toString());
+      ps.setString(9, argument[8].toString());
+      ps.setString(10, argument[9].toString());
+      ps.setString(11, argument[10].toString());
+    };
   }
 
   @Override

@@ -18,21 +18,24 @@
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.jdbc.InClauseBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -42,11 +45,9 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
   private static final Logger LOG = LoggerFactory.getLogger(MarkCleanedFunction.class);
 
   private final CompactionInfo info;
-  private final Configuration conf;
 
-  public MarkCleanedFunction(CompactionInfo info, Configuration conf) {
+  public MarkCleanedFunction(CompactionInfo info) {
     this.info = info;
-    this.conf = conf;
   }
 
   @Override
@@ -111,11 +112,11 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
     }
 
     // Do cleanup of metadata in TXN_COMPONENTS table.
-    removeTxnComponents(info, jdbcTemplate);
+    removeTxnComponents(info, jdbcResource);
     return null;
   }
 
-  private void removeTxnComponents(CompactionInfo info, NamedParameterJdbcTemplate jdbcTemplate) {
+  private void removeTxnComponents(CompactionInfo info, MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     /*
      * compaction may remove data from aborted txns above tc_writeid bit it only guarantees to
      * remove it up to (inclusive) tc_writeid, so it's critical to not remove metadata about
@@ -131,7 +132,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
 
     int totalCount = 0;
     if (!info.hasUncompactedAborts && info.highestWriteId != 0) {
-      totalCount = jdbcTemplate.update(
+      totalCount = jdbcResource.getJdbcTemplate().update(
           "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
               + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
               + "AND \"TC_DATABASE\" = :db AND \"TC_TABLE\" = :table "
@@ -139,13 +140,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
               + "AND \"TC_WRITEID\" <= :id",
           params.addValue("id", info.highestWriteId));
     } else if (CollectionUtils.isNotEmpty(info.writeIds)) {
-      totalCount = TxnUtils.executeStatementWithInClause(conf, jdbcTemplate,
-          "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
-              + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
-              + "AND \"TC_DATABASE\" = :db AND \"TC_TABLE\" = :table "
-              + "AND (:partition is NULL OR \"TC_PARTITION\" = :partition) "
-              + "AND \"TC_WRITEID\" IN (:ids)",
-          params, "ids", new ArrayList<>(info.writeIds), Long::compareTo);
+      totalCount = jdbcResource.execute(new DeleteFromTxnComponentsCommand(params, new ArrayList<>(info.writeIds)));
     }
     LOG.debug("Removed {} records from txn_components", totalCount);
   }
@@ -168,11 +163,52 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
           .addValue("table", info.tableName)
           .addValue("type", Character.toString(TxnStore.ABORT_TXN_CLEANUP_TYPE), Types.CHAR)
           .addValue("partition", info.partName, Types.VARCHAR);
-    }    
+    }
 
     LOG.debug("Going to execute update <{}>", query);
-    int rc = jdbcTemplate.update(query,params);
+    int rc = jdbcTemplate.update(query, params);
     LOG.debug("Removed {} records in COMPACTION_QUEUE", rc);
-  }  
+  }
+
+  private static class DeleteFromTxnComponentsCommand implements InClauseBatchCommand<Long> {
+    
+    private final SqlParameterSource parameterSource;
+    private final List<Long> txnIds;
+
+    public DeleteFromTxnComponentsCommand(SqlParameterSource parameterSource, List<Long> txnIds) {
+      this.parameterSource = parameterSource;
+      this.txnIds = txnIds;
+    }
+
+    @Override
+    public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
+      return "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
+          + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
+          + "AND \"TC_DATABASE\" = :db AND \"TC_TABLE\" = :table "
+          + "AND (:partition is NULL OR \"TC_PARTITION\" = :partition) "
+          + "AND \"TC_WRITEID\" IN (:ids)";
+    }
+
+    @Override
+    public SqlParameterSource getQueryParameters() {
+      return parameterSource;
+    }
+
+    @Override
+    public List<Long> getInClauseParameters() {
+      return txnIds;
+    }
+
+    @Override
+    public String getInClauseParameterName() {
+      return "ids";
+    }
+
+    @Override
+    public Comparator<Long> getParameterLengthComparator() {
+      return Long::compareTo;
+    }
+
+  }
   
 }

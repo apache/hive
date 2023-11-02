@@ -15,45 +15,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.txn.impl.queries;
+package org.apache.hadoop.hive.metastore.txn.impl.commands;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
-import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
+import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.function.Function;
 
-public class GetDatabaseIdHandler implements QueryHandler<Long> {
+public class DeleteReplTxnMapEntryCommand implements ParameterizedCommand {
+    
+  private final long sourceTxnId;
+  private final String replicationPolicy;
 
-  private final String database;
-  private final String catalog;
+  public DeleteReplTxnMapEntryCommand(long sourceTxnId, String replicationPolicy) {
+    this.sourceTxnId = sourceTxnId;
+    this.replicationPolicy = replicationPolicy;
+  }
 
-  public GetDatabaseIdHandler(String database, String catalog) {
-    this.database = database;
-    this.catalog = catalog;
+  @Override
+  public Function<Integer, Boolean> resultPolicy() {
+    return null;
   }
 
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT \"DB_ID\" FROM \"DBS\" WHERE \"NAME\" = :database AND \"CTLG_NAME\" = :catalog";
+    return "DELETE FROM \"REPL_TXN_MAP\" WHERE \"RTM_SRC_TXN_ID\" = :sourceTxnId AND \"RTM_REPL_POLICY\" = :replPolicy";
   }
 
   @Override
   public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
-        .addValue("database", database)
-        .addValue("catalog", catalog);
-  }
-
-  @Override
-  public Long extractData(ResultSet rs) throws SQLException {
-    if (!rs.next()) {
-      throw new MetaWrapperException(new MetaException("DB with name " + database + " does not exist in catalog " + catalog));
-    }
-    return rs.getLong(1);
+        .addValue("sourceTxnId", sourceTxnId)
+        .addValue("replPolicy", replicationPolicy);
   }
 }

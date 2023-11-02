@@ -28,22 +28,24 @@ import static java.util.stream.Collectors.toMap;
  * These are the valid values for Compaction states.
  */
 public enum CompactionState {
-  INITIATED('i'),
-  WORKING('w'),
-  READY_FOR_CLEANING('r'),
-  FAILED('f'),
-  SUCCEEDED('s'),
-  DID_NOT_INITIATE('a'),
-  REFUSED('c'),
-  ABORTED('x');
+  INITIATED('i', "initiated"),
+  WORKING('w', "working"),
+  READY_FOR_CLEANING('r', "ready for cleaning"),
+  FAILED('f', "failed"),
+  SUCCEEDED('s', "succeeded"),
+  DID_NOT_INITIATE('a', "did not initiate"),
+  REFUSED('c', "refused"),
+  ABORTED('x', "aborted");
 
+  private final String message;
   private final char sqlConst;
 
   private static final Map<String, CompactionState> LOOKUP =
       Arrays.stream(CompactionState.values()).collect(toMap(CompactionState::getSqlConst, identity()));
 
-  CompactionState(char sqlConst) {
+  CompactionState(char sqlConst, String message) {
     this.sqlConst = sqlConst;
+    this.message = message;
   }
 
   @Override

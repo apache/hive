@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
@@ -27,10 +26,8 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnHandlingFeatures;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.OpenTxnTimeoutLowBoundaryTxnIdHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.TargetTxnIdListHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
@@ -61,17 +58,13 @@ public class OpenTxnsFunction implements TransactionalFunction<List<Long>> {
       "VALUES(?,%s,%s,?,?,?)";
 
   private final OpenTxnRequest rqst;
-  private final Configuration conf;
   private final long openTxnTimeOutMillis;
-  private final SQLGenerator sqlGenerator;
   private final List<TransactionalMetaStoreEventListener> transactionalListeners;
 
-  public OpenTxnsFunction(OpenTxnRequest rqst, Configuration conf, long openTxnTimeOutMillis, 
-                          SQLGenerator sqlGenerator, List<TransactionalMetaStoreEventListener> transactionalListeners) {
+  public OpenTxnsFunction(OpenTxnRequest rqst, long openTxnTimeOutMillis, 
+                          List<TransactionalMetaStoreEventListener> transactionalListeners) {
     this.rqst = rqst;
-    this.conf = conf;
     this.openTxnTimeOutMillis = openTxnTimeOutMillis;
-    this.sqlGenerator = sqlGenerator;
     this.transactionalListeners = transactionalListeners;
   }
 
@@ -80,7 +73,7 @@ public class OpenTxnsFunction implements TransactionalFunction<List<Long>> {
     DatabaseProduct dbProduct = jdbcResource.getDatabaseProduct();
     int numTxns = rqst.getNum_txns();
     // Make sure the user has not requested an insane amount of txns.
-    int maxTxns = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.TXN_MAX_OPEN_BATCH);
+    int maxTxns = MetastoreConf.getIntVar(jdbcResource.getConf(), MetastoreConf.ConfVars.TXN_MAX_OPEN_BATCH);
     if (numTxns > maxTxns) {
       numTxns = maxTxns;
     }
@@ -124,7 +117,7 @@ public class OpenTxnsFunction implements TransactionalFunction<List<Long>> {
 
       Connection dbConn = jdbcResource.getConnection();
       NamedParameterJdbcTemplate namedParameterJdbcTemplate = jdbcResource.getJdbcTemplate();
-      int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE); 
+      int maxBatchSize = MetastoreConf.getIntVar(jdbcResource.getConf(), MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE); 
       try (PreparedStatement ps = dbConn.prepareStatement(insertQuery, new String[] {"TXN_ID"})) {
         String state = genKeySupport ? TxnStatus.OPEN.getSqlConst() : TXN_TMP_STATE;
         if (numTxns == 1) {
@@ -167,7 +160,7 @@ public class OpenTxnsFunction implements TransactionalFunction<List<Long>> {
         }
 
         try {
-          insertPreparedStmts = sqlGenerator.createInsertValuesPreparedStmt(dbConn,
+          insertPreparedStmts = jdbcResource.getSqlGenerator().createInsertValuesPreparedStmt(dbConn,
               "\"REPL_TXN_MAP\" (\"RTM_REPL_POLICY\", \"RTM_SRC_TXN_ID\", \"RTM_TARGET_TXN_ID\")", rowsRepl,
               paramsList);
           for (PreparedStatement pst : insertPreparedStmts) {
@@ -180,7 +173,7 @@ public class OpenTxnsFunction implements TransactionalFunction<List<Long>> {
 
       if (transactionalListeners != null && !isHiveReplTxn) {
         MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-            EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, txnType), dbConn, sqlGenerator);
+            EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, txnType), dbConn, jdbcResource.getSqlGenerator());
       }
       return txnIds;
     } finally {

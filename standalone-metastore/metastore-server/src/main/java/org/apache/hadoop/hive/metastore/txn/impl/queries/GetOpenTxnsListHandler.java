@@ -66,6 +66,16 @@ public class GetOpenTxnsListHandler implements QueryHandler<OpenTxnList> {
     return null;
   }
 
+  // We need to figure out the HighWaterMark and the list of open transactions.
+  /*
+   * This method need guarantees from
+   * {@link #openTxns(OpenTxnRequest)} and  {@link #commitTxn(CommitTxnRequest)}.
+   * It will look at the TXNS table and find each transaction between the max(txn_id) as HighWaterMark
+   * and the max(txn_id) before the TXN_OPENTXN_TIMEOUT period as LowWaterMark.
+   * Every transaction that is not found between these will be considered as open, since it may appear later.
+   * openTxns must ensure, that no new transaction will be opened with txn_id below LWM and
+   * commitTxn must ensure, that no committed transaction will be removed before the time period expires.
+   */
   @Override
   public OpenTxnList extractData(ResultSet rs) throws SQLException, DataAccessException {
     /*

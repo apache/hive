@@ -29,24 +29,25 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveCompactionMetricsDataCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveDuplicateCompleteTxnComponentsCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.CleanTxnToWriteIdTableFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.FindPotentialCompactionsFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.GenerateCompactionQueueIdFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.MarkCleanedFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.MinOpenTxnIdWaterMarkFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.NextCompactionFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.OpenTxnTimeoutLowBoundaryTxnIdHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.ReadyToCleanAbortHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.PurgeCompactionHistoryFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.TopCompactionMetricsDataPerTypeFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.functions.UpdateCompactionMetricsDataFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.CheckFailedCompactionsHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.CompactionMetricsDataHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.FindColumnsWithStatsHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.GetCompactionInfoHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.MarkCleanedFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.PurgeCompactionHistoryFunction;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.OpenTxnTimeoutLowBoundaryTxnIdHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.ReadyToCleanAbortHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.ReadyToCleanHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveCompactionMetricsDataCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveDuplicateCompleteTxnComponentsCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.TopCompactionMetricsDataPerTypeFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.UpdateCompactionMetricsDataFunction;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.slf4j.Logger;
@@ -56,7 +57,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
@@ -228,7 +228,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.CannotRetry
   public void markCleaned(CompactionInfo info) throws MetaException {
     LOG.debug("Running markCleaned with CompactionInfo: {}", info);
-    new MarkCleanedFunction(info, conf).execute(jdbcResource);
+    new MarkCleanedFunction(info).execute(jdbcResource);
   }
   
   /**
@@ -391,7 +391,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public void purgeCompactionHistory() throws MetaException {
-    new PurgeCompactionHistoryFunction(conf).execute(jdbcResource);
+    new PurgeCompactionHistoryFunction().execute(jdbcResource);
   }
 
   /**
@@ -432,7 +432,7 @@ class CompactionTxnHandler extends TxnHandler {
     if (ciActual.id == 0) {
       //The failure occurred before we even made an entry in COMPACTION_QUEUE
       //generate ID so that we can make an entry in COMPLETED_COMPACTIONS
-      ciActual.id = generateCompactionQueueId();
+      ciActual.id = new GenerateCompactionQueueIdFunction().execute(jdbcResource);
       //this is not strictly accurate, but 'type' cannot be null.
       if (ciActual.type == null) {
         ciActual.type = CompactionType.MINOR;
@@ -481,7 +481,7 @@ class CompactionTxnHandler extends TxnHandler {
        * compactions for any resource.
        */
       try (TxnStore.MutexAPI.LockHandle ignored = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name())) {
-        long id = generateCompactionQueueId();
+        long id = new GenerateCompactionQueueIdFunction().execute(jdbcResource);
         int updCnt = jdbcResource.execute(
             "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
                 " \"CQ_TYPE\", \"CQ_STATE\", \"CQ_RETRY_RETENTION\", \"CQ_ERROR_MESSAGE\", \"CQ_COMMIT_TIME\") " +
@@ -561,17 +561,6 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
-  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, 
-      Long commitId, long tempId) throws SQLException, MetaException {
-    super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
-    
-    if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
-      stmt.executeUpdate("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
-          getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
-    }
-  }
-
-  @Override
   public Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException {
     return Optional.ofNullable(jdbcResource.execute(new GetCompactionInfoHandler(txnId, true)));
   }
@@ -604,7 +593,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   public List<CompactionMetricsData> getTopCompactionMetricsDataPerType(int limit)      
       throws MetaException {
-    return new TopCompactionMetricsDataPerTypeFunction(limit, sqlGenerator).execute(jdbcResource);
+    return new TopCompactionMetricsDataPerTypeFunction(limit).execute(jdbcResource);
   }
 
   @Override

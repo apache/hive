@@ -17,13 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.StackThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.UncategorizedSQLException;
+import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -37,10 +43,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 
@@ -59,13 +67,17 @@ public class MultiDataSourceJdbcResource {
   private final Map<String, TransactionContextManager> transactionManagers = new HashMap<>();
   private final Map<String, NamedParameterJdbcTemplate> jdbcTemplates = new HashMap<>();
   private final DatabaseProduct databaseProduct;
+  private final Configuration conf;
+  private final SQLGenerator sqlGenerator;
 
   /**
    * Creates a new instance of the {@link MultiDataSourceJdbcResource} class
    * @param databaseProduct A {@link DatabaseProduct} instance representing the type of the underlying HMS dabatabe.
    */
-  public MultiDataSourceJdbcResource(DatabaseProduct databaseProduct) {
+  public MultiDataSourceJdbcResource(DatabaseProduct databaseProduct, Configuration conf, SQLGenerator sqlGenerator) {
     this.databaseProduct = databaseProduct;
+    this.conf = conf;
+    this.sqlGenerator = sqlGenerator;
   }
 
   /**
@@ -104,6 +116,17 @@ public class MultiDataSourceJdbcResource {
    */
   public void unbindDataSource() {
     threadLocal.unset();
+  }
+
+  /**
+   * @return Returns the {@link Configuration}  object used to create this {@link MultiDataSourceJdbcResource} instance.
+   */
+  public Configuration getConf() {
+    return conf;
+  }
+  
+  public SQLGenerator getSqlGenerator() {
+    return sqlGenerator;
   }
   
   /**
@@ -172,58 +195,54 @@ public class MultiDataSourceJdbcResource {
   }
 
   /**
-   * Executes a {@link org.springframework.jdbc.core.JdbcTemplate#batchUpdate(String, List)} call using the query string
-   * and parameters obtained from {@link ParameterizedBatchCommand#getParameterizedQueryString(DatabaseProduct)} and
-   * {@link ParameterizedBatchCommand#getQueryParameters()} methods. Validates the resulted number of affected rows using the
+   * Executes a {@link org.springframework.jdbc.core.JdbcTemplate#batchUpdate(String, Collection, int, ParameterizedPreparedStatementSetter)} 
+   * call using the query string obtained from {@link ParameterizedBatchCommand#getParameterizedQueryString(DatabaseProduct)},
+   * the parameters obtained from {@link ParameterizedBatchCommand#getQueryParameters()}, and the
+   * {@link org.springframework.jdbc.core.PreparedStatementSetter} obtained from 
+   * {@link ParameterizedBatchCommand#getPreparedStatementSetter()} methods. The batchSize is coming fomr the 
+   * {@link Configuration} object. After the execution, this method validates the resulted number of affected rows using the
    * {@link ParameterizedBatchCommand#resultPolicy()} function for each element in the batch.
    *
    * @param command The {@link ParameterizedBatchCommand} to execute.
-   * @param maxBatchSize The maximum size of the batch. If the size of the passed command exceeds it, the command will be
-   *                     executed in multiple batches.
    * @return Returns an integer array,containing the number of affected rows for each element in the batch.
    */
-  public int[] execute(ParameterizedBatchCommand command, int maxBatchSize) throws MetaException {
+  public <T> int execute(ParameterizedBatchCommand<T> command) throws MetaException {
     if (!shouldExecute(command)) {
-      return null;
+      return 0;
     }
-    try {
-      String query = command.getParameterizedQueryString(databaseProduct);
+    try {      
+      int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
+      int[][] result = getJdbcTemplate().getJdbcTemplate().batchUpdate(
+          command.getParameterizedQueryString(databaseProduct),
+          command.getQueryParameters(),
+          maxBatchSize,
+          command.getPreparedStatementSetter()
+      );
+      
       Function<Integer, Boolean> resultPolicy = command.resultPolicy();
-      List<Object[]> batchParams = command.getQueryParameters();
-      int start = 0;
-      int end = Math.min(maxBatchSize, batchParams.size());
-      int[] result = new int[batchParams.size()];
-      do {
-        LOG.debug("Going to execute batch command <{}> with batc size {}.", query, end - start);
-        int[] counts;
-        if (command.getParameterTypes() == null) {
-          counts = getJdbcTemplate().getJdbcTemplate().batchUpdate(query, batchParams.subList(start, end));
-        } else {
-          counts = getJdbcTemplate().getJdbcTemplate().batchUpdate(query, batchParams.subList(start, end), command.getParameterTypes());
-        }
-        if (resultPolicy != null && !Arrays.stream(counts).allMatch(resultPolicy::apply)) {
-          LOG.error("The update count was rejected in at least one of the result array. Rolling back.");
-          throw new MetaException("The update count was rejected in at least one of the result array. Rolling back.");
-        }
-        System.arraycopy(counts, 0, result, start, counts.length);
-        start = end;
-        end = Math.min(start + maxBatchSize, batchParams.size());
-      } while (end < batchParams.size());
-      return result;
+      if (resultPolicy != null && !Arrays.stream(result).allMatch(inner -> Arrays.stream(inner).allMatch(resultPolicy::apply))) {
+        LOG.error("The update count was rejected in at least one of the result array. Rolling back.");
+        throw new MetaException("The update count was rejected in at least one of the result array. Rolling back.");        
+      }
+      return Arrays.stream(result).reduce(0, (acc, i) -> acc + Arrays.stream(i).sum(), Integer::sum);      
     } catch (Exception e) {
       handleError(command, e);
       throw e;
     }
   }
-  
-  public void execute(BatchCommand command, int maxBatchSize) {
+
+  /**
+   * Executes all commands wrapped inside the given {@link BatchCommand} instance
+   * @param command The {@link BatchCommand} to execute
+   */
+  public void execute(BatchCommand command) {
     if (!shouldExecute(command)) {
       return;
     }
     try (Statement stmt = getConnection().createStatement()) {
       List<String> queries = command.getQueryStrings(databaseProduct);
       LOG.debug("Going to execute non-parameterized batch commands with batch size {}.", queries.size());
-      executeQueriesInBatchNoCount(databaseProduct, stmt, queries, maxBatchSize);
+      executeQueriesInBatchNoCount(databaseProduct, stmt, queries, MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE));
     } catch (SQLException e) {
       handleError(command, e);
       throw new UncategorizedSQLException(null, null, e);
@@ -231,6 +250,42 @@ public class MultiDataSourceJdbcResource {
       handleError(command, e);
       throw e;
     }
+  }
+  
+  public <T> int execute(InClauseBatchCommand<T> command) throws MetaException {
+    List<T> elements = command.getInClauseParameters();
+    MapSqlParameterSource params = (MapSqlParameterSource)command.getQueryParameters();
+    String query = command.getParameterizedQueryString(databaseProduct);
+    if (CollectionUtils.isEmpty(elements)) {
+      throw new IllegalArgumentException("The elements list cannot be empty! An empty IN clause is invalid!");
+    }
+    if (!Pattern.compile("IN\\s*\\(\\s*:" + command.getInClauseParameterName() + "\\s*\\)", Pattern.CASE_INSENSITIVE).matcher(query).find()) {
+      throw new IllegalArgumentException("The query must contain the IN(:" + command.getInClauseParameterName() + ") clause!");
+    }
+    
+    int regularParametersLength = 0;
+    if (params != null && params.getParameterNames() != null) {
+      regularParametersLength = Arrays.stream(params.getParameterNames()).mapToInt(s -> command.getQueryParameters().getValue(s).toString().length()).sum();
+    }
+    
+    int maxQueryLength = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH) * 1024;
+    int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    // The length of a single element is the string length of the longest element + 2 characters (comma, space) 
+    int elementLength = elements.stream().max(command.getParameterLengthComparator()).get().toString().length() + 2;
+    // estimated base query size: query size + the length of all parameters.
+    int baseQueryLength = query.length() + regularParametersLength;
+    int maxElementsByLength = (maxQueryLength - baseQueryLength) / elementLength;
+
+    int inClauseMaxSize = Math.min(batchSize, maxElementsByLength);
+
+    int fromIndex = 0, totalCount = 0;
+    while (fromIndex < elements.size()) {
+      int endIndex = Math.min(elements.size(), fromIndex + inClauseMaxSize);
+      params.addValue(command.getInClauseParameterName(), elements.subList(fromIndex, endIndex));
+      totalCount += getJdbcTemplate().update(query, params);
+      fromIndex = endIndex;
+    }
+    return totalCount;
   }
   
   /**
