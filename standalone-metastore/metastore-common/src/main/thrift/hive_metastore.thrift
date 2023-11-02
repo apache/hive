@@ -1483,6 +1483,9 @@ struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
     3: optional list<string> eventTypeSkipList,
+    4: optional string catName,
+    5: optional string dbName,
+    6: optional list<string> tableNames
 }
 
 struct NotificationEvent {
@@ -1509,7 +1512,8 @@ struct NotificationEventsCountRequest {
     2: required string dbName,
     3: optional string catName,
     4: optional i64 toEventId,
-    5: optional i64 limit
+    5: optional i64 limit,
+    6: optional list<string> tableNames
 }
 
 struct NotificationEventsCountResponse {

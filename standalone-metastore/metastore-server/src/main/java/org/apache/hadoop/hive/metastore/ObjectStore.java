@@ -11845,8 +11845,36 @@ public class ObjectStore implements RawStore, Configurable {
       long lastEvent = rqst.getLastEvent();
       List<Object> parameterVals = new ArrayList<>();
       parameterVals.add(lastEvent);
+      // filterBuilder parameter is used for construction of conditional clause in the select query
       StringBuilder filterBuilder = new StringBuilder("eventId > para" + parameterVals.size());
+      // parameterBuilder parameter is used for specify what types of parameters will go into the filterBuilder
       StringBuilder parameterBuilder = new StringBuilder("java.lang.Long para" + parameterVals.size());
+      /* A fully constructed query would like:
+      ->  filterBuilder: eventId > para0 && catalogName == para1 && dbName == para2 && (tableName == para3
+          || tableName == para4) && eventType != para5
+      ->  parameterBuilder: java.lang.Long para0, java.lang.String para1, java.lang.String para2
+          , java.lang.String para3, java.lang.String para4, java.lang.String para5
+       */
+      if (rqst.isSetCatName()) {
+        parameterVals.add(normalizeIdentifier(rqst.getCatName()));
+        parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+        filterBuilder.append(" && catalogName == para" + parameterVals.size());
+      }
+      if (rqst.isSetDbName()) {
+        parameterVals.add(normalizeIdentifier(rqst.getDbName()));
+        parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+        filterBuilder.append(" && dbName == para" + parameterVals.size());
+      }
+      if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
+        filterBuilder.append(" && (");
+        for (String tableName : rqst.getTableNames()) {
+          parameterVals.add(normalizeIdentifier(tableName));
+          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+          filterBuilder.append("tableName == para" + parameterVals.size()+ " || ");
+        }
+        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        filterBuilder.append(") ");
+      }
       if (rqst.isSetEventTypeSkipList()) {
         for (String eventType : rqst.getEventTypeSkipList()) {
           parameterVals.add(eventType);
@@ -12211,6 +12239,17 @@ public class ObjectStore implements RawStore, Configurable {
         queryStr = queryStr + " && eventId <= toEventId";
         paramSpecs = paramSpecs + ", java.lang.Long toEventId";
         paramVals.add(Long.valueOf(toEventId));
+      }
+      // Specify list of table names in the query string and parameter types
+      if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
+        queryStr = queryStr + " && (";
+        for (String tableName : rqst.getTableNames()) {
+          paramVals.add(tableName.toLowerCase());
+          queryStr = queryStr + "tableName == tableName" + paramVals.size() + " || ";
+          paramSpecs = paramSpecs + ", java.lang.String tableName" + paramVals.size();
+        }
+        queryStr = queryStr.substring(0, queryStr.length() - 4); // remove the last " || "
+        queryStr += ")";
       }
 
       query = pm.newQuery(queryStr);
