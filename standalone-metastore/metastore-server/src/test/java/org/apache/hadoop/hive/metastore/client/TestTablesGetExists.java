@@ -271,6 +271,27 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Assert.assertEquals("Found functions size", 1, tables.size());
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[6].getTableName()));
 
+    // Find tables by using the wildcard sign "*"
+    tables = client.getTables(DEFAULT_DATABASE, "*");
+    Assert.assertEquals("All tables size", 5, tables.size());
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[0].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[1].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[2].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[3].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[4].getTableName()));
+
+    tables = client.getTables(OTHER_DATABASE, "*");
+    Assert.assertEquals("All tables size", 2, tables.size());
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[5].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[6].getTableName()));
+
+    tables = client.getTables("*", "*");
+    Assert.assertEquals("All tables size", 7, tables.size());
+    tables = client.getTables("d*", "*");
+    Assert.assertEquals("All tables size", 7, tables.size());
+    tables = client.getTables("def*", "*");
+    Assert.assertEquals("All tables size", 5, tables.size());
+
     // Look for tables but do not find any
     tables = client.getTables(DEFAULT_DATABASE, "*_not_such_function_*");
     Assert.assertEquals("No such table size", 0, tables.size());

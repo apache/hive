@@ -17,23 +17,31 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.table.execute.AlterTableExecuteDesc;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -62,11 +70,13 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     switch (tree.getToken().getType()) {
     case HiveParser.TOK_DELETE_FROM:
       operation = Context.Operation.DELETE;
-      reparseAndSuperAnalyze(tree, table, tabNameNode);
+      if (!tryMetadataUpdate(tree, table, tabNameNode)) {
+        reparseAndSuperAnalyze(tree, table, tabNameNode);
+      }
       break;
     case HiveParser.TOK_UPDATE_TABLE:
       boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table, true);
-      if (nonNativeAcid) {
+      if (nonNativeAcid && !AcidUtils.isCopyOnWriteMode(table, Context.Operation.UPDATE)) {
         throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
       }
       operation = Context.Operation.UPDATE;
@@ -100,7 +110,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
     
-    boolean shouldTruncate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE) 
+    boolean shouldTruncate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE)
       && children.size() == 1 && deleting();
     if (shouldTruncate) {
       StringBuilder rewrittenQueryStr = new StringBuilder("truncate ").append(getFullTableNameForSQL(tabNameNode));
@@ -118,12 +128,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       updateOutputs(mTable);
       return;
     }
-
-    boolean copyOnWriteMode = false;
-    HiveStorageHandler storageHandler = mTable.getStorageHandler();
-    if (storageHandler != null) {
-      copyOnWriteMode = storageHandler.shouldOverwrite(mTable, operation.name());
-    }
     
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
@@ -136,6 +140,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
     rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
 
+    boolean copyOnWriteMode = AcidUtils.isCopyOnWriteMode(mTable, operation);
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
     // Must be deterministic order set for consistent q-test output across Java versions
@@ -154,7 +159,11 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         rewrittenQueryStr.append(',');
         String name = nonPartCols.get(i).getName();
         ASTNode setCol = setCols.get(name);
-        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(name, this.conf));
+        String identifier = HiveUtils.unparseIdentifier(name, this.conf);
+        rewrittenQueryStr.append(identifier);
+        if (copyOnWriteMode) {
+          rewrittenQueryStr.append(" AS ").append(identifier);
+        }
         if (setCol != null) {
           // This is one of the columns we're setting, record it's position so we can come back
           // later and patch it up.
@@ -169,17 +178,25 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     ASTNode where = null;
     int whereIndex = deleting() ? 1 : 2;
-    
+
     if (children.size() > whereIndex) {
       where = (ASTNode)children.get(whereIndex);
       assert where.getToken().getType() == HiveParser.TOK_WHERE :
           "Expected where clause, but found " + where.getName();
-      
+
       if (copyOnWriteMode) {
         String whereClause = ctx.getTokenRewriteStream().toString(
             where.getChild(0).getTokenStartIndex(), where.getChild(0).getTokenStopIndex());
         String filePathCol = HiveUtils.unparseIdentifier("FILE__PATH", conf);
-        
+
+        if (updating()) {
+          rewrittenQueryStr.append("\nunion all");
+          rewrittenQueryStr.append("\nselect ");
+          columnAppender.appendAcidSelectColumns(rewrittenQueryStr, Context.Operation.DELETE);
+          rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
+          rewrittenQueryStr.append(" from ");
+          rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
+        }
         // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.
         rewrittenQueryStr.append("\nwhere NOT (").append(whereClause).append(")");
         rewrittenQueryStr.append("\n").append(INDENT);
@@ -193,12 +210,12 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         withQueryStr.append("WITH t AS (");
         withQueryStr.append("\n").append(INDENT);
         withQueryStr.append("select ");
-        columnAppender.appendAcidSelectColumnsForDeletedRecords(withQueryStr, operation);
+        columnAppender.appendAcidSelectColumnsForDeletedRecords(withQueryStr, Context.Operation.DELETE);
         withQueryStr.setLength(withQueryStr.length() - 1);
         withQueryStr.append(" from (");
         withQueryStr.append("\n").append(INDENT).append(INDENT);
         withQueryStr.append("select ");
-        columnAppender.appendAcidSelectColumnsForDeletedRecords(withQueryStr, operation);
+        columnAppender.appendAcidSelectColumnsForDeletedRecords(withQueryStr, Context.Operation.DELETE);
         withQueryStr.append(" row_number() OVER (partition by ").append(filePathCol).append(") rn");
         withQueryStr.append(" from ").append(getFullTableNameForSQL(tabNameNode));
         withQueryStr.append("\n").append(INDENT).append(INDENT);
@@ -207,11 +224,11 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         withQueryStr.append(") q");
         withQueryStr.append("\n").append(INDENT);
         withQueryStr.append("where rn=1\n)\n");
-        
+
         rewrittenQueryStr.insert(0, withQueryStr.toString());
       }
     }
-    
+
     if (!copyOnWriteMode) {
       // Add a sort by clause so that the row ids come out in the correct order
       appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
@@ -220,7 +237,11 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 
-    ASTNode rewrittenInsert = (ASTNode)rewrittenTree.getChildren().get(1);
+    ASTNode rewrittenInsert = (ASTNode) (copyOnWriteMode && updating() ?
+      new ASTSearcher().simpleBreadthFirstSearch(rewrittenTree, HiveParser.TOK_FROM, HiveParser.TOK_SUBQUERY,
+          HiveParser.TOK_UNIONALL).getChild(0).getChild(0) : rewrittenTree)
+      .getChild(1);
+
     if (updating()) {
       rewrittenCtx.setOperation(Context.Operation.UPDATE);
       rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
@@ -229,7 +250,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
     }
 
-    if (where != null && !copyOnWriteMode) {
+    if (where != null && (!copyOnWriteMode || updating())) {
       assert rewrittenInsert.getToken().getType() == HiveParser.TOK_INSERT :
         "Expected TOK_INSERT as second child of TOK_QUERY but found " + rewrittenInsert.getName();
       // The structure of the AST for the rewritten insert statement is:
@@ -283,6 +304,65 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
         }
       }
     }
+  }
+
+  private boolean tryMetadataUpdate(ASTNode tree, Table table, ASTNode tabNameNode) throws SemanticException {
+    // A feature flag on Hive to perform metadata delete on the source table.
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_DELETE)) {
+      return false;
+    }
+    TableName tableName = getQualifiedTableName(tabNameNode);
+    if (!deleting() || table.getStorageHandler() == null) {
+      return false;
+    }
+    int whereIndex = 1;
+    List<? extends Node> children = tree.getChildren();
+    if (children.size() <= whereIndex) {
+      return false;
+    }
+    ASTNode whereNode = (ASTNode) children.get(whereIndex);
+    String whereClause = ctx.getTokenRewriteStream().toString(
+        whereNode.getChild(0).getTokenStartIndex(), whereNode.getChild(0).getTokenStopIndex());
+    StringBuilder sb = new StringBuilder("select * from ").append(getFullTableNameForSQL(tabNameNode))
+        .append(" where ").append(whereClause);
+    Context context = new Context(conf);
+    ASTNode rewrittenTree;
+    try {
+      rewrittenTree = ParseUtils.parse(sb.toString(), context);
+    } catch (ParseException pe) {
+      throw new SemanticException(pe);
+    }
+    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, rewrittenTree);
+    sem.analyze(rewrittenTree, context);
+
+    Map<String, TableScanOperator> topOps = sem.getParseContext().getTopOps();
+    if (!topOps.containsKey(table.getTableName())) {
+      return false;
+    }
+    ExprNodeGenericFuncDesc hiveFilter = topOps.get(table.getTableName()).getConf().getFilterExpr();
+    if (hiveFilter == null) {
+      return false;
+    }
+    ConvertAstToSearchArg.Result result = ConvertAstToSearchArg.createSearchArgument(ctx.getConf(), hiveFilter);
+    if (result.isPartial()) {
+      return false;
+    }
+    SearchArgument sarg = result.getSearchArgument();
+    if (!table.getStorageHandler().canPerformMetadataDelete(table, tableName.getTableMetaRef(), sarg)) {
+      return false;
+    }
+
+    AlterTableExecuteSpec.DeleteMetadataSpec deleteMetadataSpec =
+        new AlterTableExecuteSpec.DeleteMetadataSpec(tableName.getTableMetaRef(), sarg);
+    AlterTableExecuteSpec<AlterTableExecuteSpec.DeleteMetadataSpec> executeSpec =
+        new AlterTableExecuteSpec<>(AlterTableExecuteSpec.ExecuteOperationType.DELETE_METADATA, deleteMetadataSpec);
+    AlterTableExecuteDesc desc = new AlterTableExecuteDesc(tableName, null, executeSpec);
+    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
+    rootTasks = Collections.singletonList(TaskFactory.get(ddlWork));
+    inputs = sem.getInputs();
+    outputs = sem.getOutputs();
+    updateOutputs(table);
+    return true;
   }
 
   private boolean updating() {

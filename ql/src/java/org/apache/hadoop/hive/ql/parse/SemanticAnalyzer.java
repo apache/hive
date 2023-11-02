@@ -6118,7 +6118,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (Map.Entry<ASTNode, ExprNodeDesc> entry : nodeOutputs.entrySet()) {
           ASTNode parameter = entry.getKey();
           ExprNodeDesc expression = entry.getValue();
-          if (!(expression instanceof ExprNodeColumnDesc)) {
+          if (!(expression instanceof ExprNodeColumnDesc) && !ExprNodeConstantDesc.isFoldedFromCol(expression)) {
             continue;
           }
           if (ExprNodeDescUtils.indexOf(expression, reduceValues) >= 0) {
@@ -8914,9 +8914,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // For Non-Native ACID tables we should convert the new values as well
       rowFieldsOffset = expressions.size();
-      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table, true)) {
+      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table, true)
+          && rowFields.size() >= rowFieldsOffset + columnNumber) {
         for (int i = 0; i < columnNumber; i++) {
-          ExprNodeDesc column = handleConversion(tableFields.get(i), rowFields.get(rowFieldsOffset + i), converted, dest, i);
+          ExprNodeDesc column = handleConversion(tableFields.get(i), rowFields.get(rowFieldsOffset-columnNumber + i), converted, dest, i);
           expressions.add(column);
         }
       }

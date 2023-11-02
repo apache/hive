@@ -29,13 +29,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -203,10 +203,10 @@ STAGE PLANS:
         Union 3 
             Vertex: Union 3
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -216,7 +216,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.tbl_ice
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
@@ -248,6 +248,8 @@ POSTHOOK: query: insert into tbl_ice values (444, 'hola', 800), (555, 'schola', 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
+Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 Warning: Shuffle Join MERGEJOIN[222][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 3' is a cross product
 Warning: Shuffle Join MERGEJOIN[220][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 8' is a cross product
 Warning: Shuffle Join MERGEJOIN[224][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 10' is a cross product
@@ -263,13 +265,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-4
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -871,10 +873,10 @@ STAGE PLANS:
         Union 7 
             Vertex: Union 7
 
-  Stage: Stage-2
+  Stage: Stage-5
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-3
     Move Operator
       tables:
           replace: false
@@ -884,10 +886,12 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.tbl_ice
 
-  Stage: Stage-3
+  Stage: Stage-6
     Stats Work
       Basic Stats Work:
 
+Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 Warning: Shuffle Join MERGEJOIN[222][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 3' is a cross product
 Warning: Shuffle Join MERGEJOIN[220][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 8' is a cross product
 Warning: Shuffle Join MERGEJOIN[224][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 10' is a cross product
@@ -946,13 +950,13 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_other
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-4
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -1311,10 +1315,10 @@ STAGE PLANS:
         Union 5 
             Vertex: Union 5
 
-  Stage: Stage-2
+  Stage: Stage-5
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-3
     Move Operator
       tables:
           replace: false
@@ -1324,7 +1328,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.tbl_ice
 
-  Stage: Stage-3
+  Stage: Stage-6
     Stats Work
       Basic Stats Work:
 
@@ -1384,13 +1388,13 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_standard_other
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-4
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -1769,10 +1773,10 @@ STAGE PLANS:
         Union 5 
             Vertex: Union 5
 
-  Stage: Stage-2
+  Stage: Stage-5
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-3
     Move Operator
       tables:
           replace: false
@@ -1782,7 +1786,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.tbl_ice
 
-  Stage: Stage-3
+  Stage: Stage-6
     Stats Work
       Basic Stats Work:
 
