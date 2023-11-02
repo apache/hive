@@ -38,6 +38,7 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -108,6 +109,15 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
     HiveConf.setBoolVar(clientConf, HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL, true);
     SessionState.start(new CliSessionState(clientConf));
     assertNotNull(SecurityUtils.getTokenStrForm(CLITOKEN));
+  }
+
+  @Test
+  public void testNoDelegationTokenFromUGI() throws Exception {
+    HiveConf clientConf = new HiveConf(conf, TestRemoteHiveMetaStoreKerberos.class);
+    HiveConf.setVar(clientConf, HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    HiveConf.setBoolVar(clientConf, HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL, false);
+    SessionState.start(new CliSessionState(clientConf));
+    assertNull(SecurityUtils.getTokenStrForm(CLITOKEN));
   }
 
   @Override
