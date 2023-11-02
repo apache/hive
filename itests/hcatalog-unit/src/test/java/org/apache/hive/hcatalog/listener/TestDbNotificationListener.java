@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -120,7 +121,7 @@ import org.slf4j.LoggerFactory;
 public class TestDbNotificationListener
 {
   private static final Logger LOG = LoggerFactory.getLogger(TestDbNotificationListener.class
-      .getName());
+          .getName());
   private static final int EVENTS_TTL = 30;
   private static final int CLEANUP_SLEEP_TIME = 10;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
@@ -1581,5 +1582,66 @@ public class TestDbNotificationListener
     assertTrue(files.hasNext());
   }
 
+  /**
+   * The method creates some events in notification log and fetches the events
+   * based on the fields set on the NotificationEventRequest object. It includes
+   * setting database name, table name(s), event skip list (i.e., filter out events
+   * that are not required). These fields are optional.
+   * @throws Exception
+   */
+  @Test
+  public void fetchNotificationEventBasedOnTables() throws Exception {
+    String dbName = "default";
+    String table1 = "test_tbl1";
+    String table2 = "test_tbl2";
+    String table3 = "test_tbl3";
+    // Generate some table events
+    generateSometableEvents(dbName, table1);
+    generateSometableEvents(dbName, table2);
+    generateSometableEvents(dbName, table3);
 
+    // Verify events by table names
+    NotificationEventRequest request = new NotificationEventRequest();
+    request.setLastEvent(firstEventId);
+    request.setMaxEvents(-1);
+    request.setDbName(dbName);
+    request.setTableNames(Arrays.asList(table1));
+    NotificationEventResponse rsp1 = msClient.getNextNotification(request, true, null);
+    assertEquals(12, rsp1.getEventsSize());
+    request.setTableNames(Arrays.asList(table1, table2));
+    request.setEventTypeSkipList(Arrays.asList("CREATE_TABLE"));
+    NotificationEventResponse rsp2 = msClient.getNextNotification(request, true, null);
+    // The actual count of events should 24. Having CREATE_TABLE event in the event skip
+    // list will result in events count reduced 22 as it skips fetching 2 create_table events
+    // associated with two different tables.
+    assertEquals(22, rsp2.getEventsSize());
+    request.unsetTableNames();
+    request.unsetEventTypeSkipList();
+    NotificationEventResponse rsp3 = msClient.getNextNotification(request, true, null);
+    assertEquals(36, rsp3.getEventsSize());
+
+    NotificationEventsCountRequest eventsReq = new NotificationEventsCountRequest(firstEventId, dbName);
+    eventsReq.setTableNames(Arrays.asList(table1));
+    assertEquals(12, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+    eventsReq.setTableNames(Arrays.asList(table1, table2));
+    assertEquals(24, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+    eventsReq.unsetTableNames();
+    assertEquals(36, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+  }
+
+  private void generateSometableEvents(String dbName, String tableName) throws Exception {
+    // CREATE_DATABASE event is generated but we filter this out while fetching events.
+    driver.run("create database if not exists "+dbName);
+    driver.run("use "+dbName);
+    // Event 1: CREATE_TABLE event
+    driver.run("create table " + tableName + " (c int) partitioned by (ds string)");
+    // Event 2: ADD_PARTITION, 3: ALTER_PARTITION, 4: UPDATE_PART_COL_STAT_EVENT events
+    driver.run("insert into table " + tableName + " partition (ds = 'today') values (1)");
+    // Event 5: INSERT, 6: ALTER_PARTITION, 7: UPDATE_PART_COL_STAT_EVENT events
+    driver.run("insert into table " + tableName + " partition (ds = 'today') values (2)");
+    // Event 8: INSERT, 9: ALTER_PARTITION, 10: UPDATE_PART_COL_STAT_EVENT events
+    driver.run("insert into table " + tableName + " partition (ds) values (3, 'today')");
+    // Event 11: ADD_PARTITION, Event 12: ALTER_PARTITION events
+    driver.run("alter table " + tableName + " add partition (ds = 'yesterday')");
+  }
 }
