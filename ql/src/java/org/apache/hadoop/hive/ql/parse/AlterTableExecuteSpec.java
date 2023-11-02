@@ -119,7 +119,6 @@ public class AlterTableExecuteSpec<T> {
       this.timestampMillis = timestampMillis;
     }
 
-
     public ExpireSnapshotsSpec(String ids) {
       this.idsToExpire = ids.split(",");
     }
