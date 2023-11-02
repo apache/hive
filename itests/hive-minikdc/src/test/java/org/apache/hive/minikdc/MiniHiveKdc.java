@@ -160,7 +160,7 @@ public class MiniHiveKdc {
     return HIVE_TEST_USER_1;
   }
 
-  public String getHiveMetastoreServicePrincipal() {
+  String getHiveMetastoreServicePrincipal() {
     return HIVE_METASTORE_SERVICE_PRINCIPAL;
   }
 

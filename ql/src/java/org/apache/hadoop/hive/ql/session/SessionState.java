@@ -734,25 +734,7 @@ public class SessionState implements ISessionAuthState{
       // that would cause ClassNoFoundException otherwise
       throw new RuntimeException(e);
     }
-    try {
-      if(!startSs.isHiveServerQuery){
-        if (getSessionConf().getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL)) {
-          UserGroupInformation UGI = Utils.getUGI();
-          String hmsDelegationTokenStr = Hive.get().getDelegationToken(UGI.getShortUserName(), UGI.getShortUserName());
-          if (hmsDelegationTokenStr != null) {
-            getSessionConf().setVar(ConfVars.METASTORE_TOKEN_SIGNATURE, CLITOKEN);
-            try {
-              SecurityUtils.setTokenStr(UGI, hmsDelegationTokenStr, CLITOKEN);
-            } catch (IOException e) {
-              throw new IOException("Couldn't setup delegation token in the ugi: " + e, e);
-            }
-          }
-        }
-      }
-    }catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
+    startSs.setHiveMetastoreDelegationTokenToUGI();
     String engine = HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
     if (!engine.equals("tez") || startSs.isHiveServerQuery) {
       return;
@@ -780,6 +762,32 @@ public class SessionState implements ISessionAuthState{
         startSs.tezSessionState.open();
       } else {
         startSs.tezSessionState.beginOpen(null, console);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Set hive metastore delegation token in current UGI
+   */
+  private void setHiveMetastoreDelegationTokenToUGI() {
+    if (this.isHiveServerQuery) {
+      return;
+    }
+    if (!getSessionConf().getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL)) {
+      return;
+    }
+    try {
+      UserGroupInformation UGI = Utils.getUGI();
+      String hmsDelegationTokenStr = Hive.get().getDelegationToken(UGI.getShortUserName(), UGI.getShortUserName());
+      if (hmsDelegationTokenStr != null) {
+        getSessionConf().setVar(ConfVars.METASTORE_TOKEN_SIGNATURE, CLITOKEN);
+        try {
+          SecurityUtils.setTokenStr(UGI, hmsDelegationTokenStr, CLITOKEN);
+        } catch (IOException e) {
+          throw new IOException("Couldn't set delegation token in the UGI due to: " + e.getMessage(), e);
+        }
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -2323,4 +2331,6 @@ class ResourceMaps {
     }
     return result;
   }
+
+
 }

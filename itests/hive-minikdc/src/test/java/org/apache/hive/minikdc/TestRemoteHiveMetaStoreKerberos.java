@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.metastore.TestHiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
   private static MiniHiveKdc miniKDC;
+  private static final String CLITOKEN = "HiveClientImpersonationToken";
 
   @Before
   public void setUp() throws Exception {
@@ -93,6 +98,16 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
     assertEquals("expected to receive the same number of partitions added", values.size(), partitions.size());
 
     cleanUp(dbName, tblName, typeName);
+  }
+
+
+  @Test
+  public void testGetDelegationTokenFromUGI() throws Exception {
+    HiveConf clientConf = new HiveConf(conf, TestRemoteHiveMetaStoreKerberos.class);
+    HiveConf.setVar(clientConf, HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    HiveConf.setBoolVar(clientConf, HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL, true);
+    SessionState.start(new CliSessionState(clientConf));
+    assertNotNull(SecurityUtils.getTokenStrForm(CLITOKEN));
   }
 
   @Override
