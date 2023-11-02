@@ -36,8 +36,6 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +57,7 @@ public class TestStorageSchemaReader {
   Map<String, String> jdbcTableParams = new HashMap<>();
   Map<String, String> jdbcSerdeParams = new HashMap<>();
 
-  @Before @BeforeEach public void setUp() throws Exception {
+  @Before public void setUp() throws Exception {
     dbName = "sampleDb";
     hiveConf = new HiveConf(this.getClass());
     new DatabaseBuilder().setName(dbName).create(new HiveMetaStoreClient(hiveConf), hiveConf);
@@ -83,7 +81,7 @@ public class TestStorageSchemaReader {
     jdbcTableParams.put("storage_handler", "org.apache.hive.storage.jdbc.JdbcStorageHandler");
   }
 
-  @After @AfterEach public void tearDown() throws Exception {
+  @After public void tearDown() throws Exception {
     new HiveMetaStoreClient(hiveConf).dropDatabase(dbName, true, true, true);
   }
 
