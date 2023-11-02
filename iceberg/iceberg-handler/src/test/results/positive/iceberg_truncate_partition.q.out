@@ -135,10 +135,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"pcol":"abc","datecol":"2019-02-07"}
 {"pcol":"xya","datecol":"2027-01-20"}
 {"pcol":"xyb","datecol":"2025-07-18"}
-{"pcol":"xyz","datecol":"2022-02-07"}
 {"pcol":"xyz","datecol":"2026-07-19"}
 {"pcol":"yab","datecol":"2023-07-26"}
-{"pcol":"yzb","datecol":"2022-02-07"}
 {"pcol":"yzb","datecol":"2023-07-26"}
 PREHOOK: query: truncate table ice_parquet_str_date partition (pcol = 'yzb', datecol = '2023-07-26')
 PREHOOK: type: TRUNCATETABLE
@@ -161,7 +159,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"pcol":"xyb","datecol":"2025-07-18"}
 {"pcol":"xyz","datecol":"2026-07-19"}
 {"pcol":"yab","datecol":"2023-07-26"}
-{"pcol":"yzb","datecol":"2023-07-26"}
 PREHOOK: query: truncate table ice_parquet_str_date partition (pcol = 'xyz')
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@ice_parquet_str_date@pcol=xyz
@@ -300,8 +297,6 @@ POSTHOOK: query: select `partition` from default.ice_parquet_str_int.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_str_int
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"strcol":"abc","pcol":18}
-{"strcol":"def","pcol":18}
 {"strcol":"str","pcol":14}
 {"strcol":"str","pcol":15}
 {"strcol":"str","pcol":16}
@@ -410,7 +405,6 @@ POSTHOOK: query: select `partition` from default.ice_parquet_int.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_int
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"pcol":14}
 {"pcol":15}
 PREHOOK: query: create external table ice_parquet_bigint (
   strcol string,
@@ -517,7 +511,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_bigint
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"pcol":144565734992765839}
-{"pcol":2345578903479709}
 PREHOOK: query: create external table ice_parquet_str (
   strcol string,
   intcol integer,
@@ -622,7 +615,6 @@ POSTHOOK: query: select `partition` from default.ice_parquet_str.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_str
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"pcol":"ghutihkklfng"}
 {"pcol":"iyoorpiyujn"}
 PREHOOK: query: create external table ice_parquet_date (
   strcol string,
@@ -730,7 +722,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"pcol":"2022-01-01"}
-{"pcol":"2022-02-02"}
 {"pcol":"2022-03-03"}
 PREHOOK: query: create external table ice_parquet_double (
   strcol string,
@@ -836,7 +827,6 @@ POSTHOOK: query: select `partition` from default.ice_parquet_double.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_double
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"pcol":2.45}
 {"pcol":3.1567}
 PREHOOK: query: drop table ice_parquet_str_date
 PREHOOK: type: DROPTABLE
