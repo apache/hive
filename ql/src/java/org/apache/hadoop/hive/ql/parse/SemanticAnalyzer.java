@@ -3707,25 +3707,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         /*
          *  Note that: in case of multi dest queries, with even one containing a notIn operator, the code is not changed yet.
-         *  That needs to be worked on as a separate bug
-         * e.g.
-         * from t3 b
-         * INSERT OVERWRITE TABLE t4
-         * select *
-         * where b.age not in
-         * (select a.age
-         * from t3 a
-         * )
-         * order by age
-         * INSERT OVERWRITE TABLE t5
-         * select *
-         * where b.age in
-         * (select c.age
-         * from t3 c
-         * );
+         *  That needs to be worked on as a separate bug : https://issues.apache.org/jira/browse/HIVE-27844
          */
-        boolean notInCheck = (subQuery.getNotInCheck() != null && !qb.isMultiDestQuery() );
-        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo , input, notInCheck);
+        boolean notInCheckPresent = (subQuery.getNotInCheck() != null && !qb.isMultiDestQuery());
+        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo , input, notInCheckPresent);
 
         searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
       }
@@ -3800,7 +3785,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
-                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys, boolean notInCheck) throws SemanticException {
+                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys, boolean OuternotInCheck) throws SemanticException {
 
     /*
      * The notInCheck param is used for the purpose of adding an
@@ -3812,7 +3797,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return input;
     }
 
-    if (!joinTree.getNoOuterJoin() && !notInCheck) {
+    if (!joinTree.getNoOuterJoin() && !OuternotInCheck) {
       return input;
     }
 
@@ -9895,7 +9880,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
                                    Map<String, Operator> map,
-                                   Operator joiningOp, boolean notInCheck) throws SemanticException {
+                                   Operator joiningOp, boolean notInCheckPresent) throws SemanticException {
     QBJoinTree leftChild = joinTree.getJoinSrc();
     Operator joinSrcOp = joiningOp instanceof JoinOperator ? joiningOp : null;
     Operator OuterSrcOp = joiningOp;
@@ -9957,7 +9942,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * is added only for the outer query table.outerqueryCol
          * even after the outer join condition
          */
-        boolean outerNotInCheck = ( notInCheck && (srcOps[i] == OuterSrcOp) );
+        boolean outerNotInCheck = (notInCheckPresent && (srcOps[i] == OuterSrcOp));
         srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i], outerNotInCheck);
       }
       srcOps[i] = genJoinReduceSinkChild(joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
