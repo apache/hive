@@ -23,9 +23,12 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,25 +77,54 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 
 public class MetaStoreUtils {
-  /** A fixed date format to be used for hive partition column values. */
-  public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
-       new ThreadLocal<DateFormat>() {
-    @Override
-    protected DateFormat initialValue() {
-      DateFormat val = new SimpleDateFormat("yyyy-MM-dd");
-      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
-      val.setTimeZone(TimeZone.getTimeZone("UTC"));
-      return val;
-    }
-  };
-  public static final ThreadLocal<DateTimeFormatter> PARTITION_TIMESTAMP_FORMAT =
-      new ThreadLocal<DateTimeFormatter>() {
-        @Override
-        protected DateTimeFormatter initialValue() {
-          return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").
-              withZone(TimeZone.getTimeZone("UTC").toZoneId());
-        }
-  };
+
+  private static final DateTimeFormatter DATE_FORMATTER = createDateTimeFormatter("uuuu-MM-dd");
+
+  private static final DateTimeFormatter TIMESTAMP_FORMATTER = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
+
+  private static DateTimeFormatter createDateTimeFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format).withZone(TimeZone.getTimeZone("UTC").toZoneId())
+        .withResolverStyle(ResolverStyle.STRICT);
+  }
+
+  /**
+   * Converts java.sql.Date to String format date.
+   * @param date - java.sql.Date object.
+   * @return Date in string format.
+   */
+  public static String convertDateToString(Date date) {
+    return DATE_FORMATTER.format(date.toLocalDate());
+  }
+
+  /**
+   * Converts string format date to java.sql.Date.
+   * @param date Date in string format.
+   * @return java.sql.Date object.
+   */
+  public static Date convertStringToDate(String date) {
+    LocalDate val = LocalDate.parse(date, DATE_FORMATTER);
+    return java.sql.Date.valueOf(val);
+  }
+
+  /**
+   * Converts java.sql.Timestamp to string format timestamp.
+   * @param timestamp java.sql.Timestamp object.
+   * @return Timestamp in string format.
+   */
+  public static String convertTimestampToString(Timestamp timestamp) {
+    return TIMESTAMP_FORMATTER.format(timestamp.toLocalDateTime());
+  }
+
+  /**
+   * Converts timestamp string format to java.sql.Timestamp.
+   * @param timestamp Timestamp in string format.
+   * @return java.sql.Timestamp object.
+   */
+  public static Timestamp convertStringToTimestamp(String timestamp) {
+    LocalDateTime val = LocalDateTime.from(TIMESTAMP_FORMATTER.parse(timestamp));
+    return Timestamp.valueOf(val);
+  }
+
   // Indicates a type was derived from the deserializer rather than Hive's metadata.
   public static final String TYPE_FROM_DESERIALIZER = "<derived from deserializer>";
 

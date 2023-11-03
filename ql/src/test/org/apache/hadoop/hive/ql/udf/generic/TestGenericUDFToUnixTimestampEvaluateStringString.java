@@ -51,24 +51,27 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class TestGenericUDFToUnixTimestampEvaluateStringString {
   private final GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
+  private final GenericUDFUnixTimeStamp udfUnixTimeStamp = new GenericUDFUnixTimeStamp();
   private final ObjectInspector[] argInspectors = new ObjectInspector[2];
   private final String value;
   private final String pattern;
   private final String zone;
   private final String formatter;
+  private final String resolverStyle;
   private final LongWritable expectedResult;
 
   public TestGenericUDFToUnixTimestampEvaluateStringString(String value, String pattern, String zone, String formatter,
-      String expectedResult) {
+      String resolverStyle, String expectedResult) {
     this.value = value;
     this.pattern = pattern;
     this.zone = zone;
     this.formatter = formatter;
+    this.resolverStyle = resolverStyle;
     this.expectedResult = expectedResult.equals("null") ? null : new LongWritable(Long.parseLong(expectedResult));
     Arrays.fill(argInspectors, PrimitiveObjectInspectorFactory.writableStringObjectInspector);
   }
 
-  @Parameterized.Parameters(name = "('{0}','{1}'), zone={2}, parserLegacy={3}")
+  @Parameterized.Parameters(name = "('{0}','{1}'), zone={2}, parserLegacy={3}, resolverStyle={4}")
   public static Collection<String[]> readInputs() throws IOException, CsvException {
     CSVParser parser = new CSVParserBuilder().withSeparator(';').withIgnoreQuotations(true).build();
     try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(
@@ -79,19 +82,30 @@ public class TestGenericUDFToUnixTimestampEvaluateStringString {
   }
 
   @Test
-  public void testEvaluate() throws HiveException, InterruptedException {
+  public void testEvaluateToUnixTimeStamp() throws HiveException, InterruptedException {
+    testEvaluateWithUDF(udf);
+  }
+
+  @Test
+  public void testEvaluateUnixTimeStamp() throws HiveException, InterruptedException {
+    testEvaluateWithUDF(udfUnixTimeStamp);
+  }
+
+  private void testEvaluateWithUDF(GenericUDF udfToTest) throws HiveException, InterruptedException {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_FORMATTER, formatter);
     conf.setVar(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE, zone);
+    conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_RESOLVER_STYLE, resolverStyle);
     SessionState state = SessionState.start(conf);
-    udf.initialize(argInspectors);
-    LongWritable result = (LongWritable) udf.evaluate(
+    udfToTest.initialize(argInspectors);
+    LongWritable result = (LongWritable) udfToTest.evaluate(
         new DeferredObject[] { new DeferredJavaObject(new Text(value)), new DeferredJavaObject(new Text(pattern)) });
-    assertEquals(udfDisplayWithInputs(), expectedResult, result);
+    assertEquals(udfDisplayWithInputs(udfToTest), expectedResult, result);
     SessionState.endStart(state);
   }
 
-  private String udfDisplayWithInputs() {
-    return udf.getDisplayString(new String[] { value, pattern }) + " sessionZone=" + zone + ", formatter=" + formatter;
+  private String udfDisplayWithInputs(GenericUDF udf) {
+    return udf.getDisplayString(new String[] { value, pattern }) + " sessionZone=" + zone + ", formatter=" + formatter
+        + ", resolver Style=" + resolverStyle;
   }
 }

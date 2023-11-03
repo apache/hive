@@ -31,6 +31,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+
+import java.time.Instant;
+
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 /**
@@ -47,7 +50,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
   private transient IntObjectInspector inputIntOI;
   private transient LongObjectInspector inputLongOI;
   private transient final Text result = new Text();
-  private transient UnixTimeFormatter formatter;
+  private transient InstantFormatter formatter;
   private transient Converter[] converters = new Converter[2];
   private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[2];
 
@@ -77,7 +80,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       obtainStringConverter(arguments, 1, inputTypes, converters);
     }
     if (formatter == null) {
-      formatter = UnixTimeFormatter.ofConfiguration(SessionState.get() == null ? new HiveConf() : SessionState.getSessionConf());
+      formatter = InstantFormatter.ofConfiguration(SessionState.get() == null ? new HiveConf() : SessionState.getSessionConf());
     }
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
@@ -85,7 +88,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
   @Override
   public void configure(MapredContext context) {
     if (context != null) {
-      formatter = UnixTimeFormatter.ofConfiguration(context.getJobConf());
+      formatter = InstantFormatter.ofConfiguration(context.getJobConf());
     }
   }
 
@@ -101,9 +104,9 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       if (format == null) {
         return null;
       }
-      result.set(formatter.format(unixTime, format));
+      result.set(formatter.format(Instant.ofEpochSecond(unixTime), format));
     } else {
-      result.set(formatter.format(unixTime));
+      result.set(formatter.format(Instant.ofEpochSecond(unixTime)));
     }
     return result;
   }

@@ -1,5 +1,6 @@
 DESCRIBE FUNCTION date_format;
 DESC FUNCTION EXTENDED date_format;
+set hive.datetime.formatter=DATETIME;
 
 set hive.local.time.zone=Africa/Johannesburg;
 

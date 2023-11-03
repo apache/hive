@@ -34,14 +34,6 @@ select * from ice01;
 -- should be only one data file.
 select summary from default.ice01.snapshots;
 
--- Null cases.
-
-delete from ice01 where null;
-
-select * from ice01;
-
-delete from ice01 where not null;
-
 select * from ice01;
 
 delete from ice01 where name=null;

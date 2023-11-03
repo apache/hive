@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaException;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
@@ -2164,7 +2165,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       StringBuilder filterBuilder = new StringBuilder();
       List<String> parameterVals = new ArrayList<>();
-      appendSimpleCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
+      appendPatternCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
       appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
       if(tbl_names != null){
         appendSimpleCondition(filterBuilder, "tableName", lowered_tbl_names.toArray(new String[0]), parameterVals);
@@ -2691,81 +2692,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     openTransaction();
     try {
-      List<MTablePrivilege> tabGrants = null;
-      List<MTableColumnPrivilege> tabColumnGrants = null;
-      MTable table = this.getMTable(catName, dbName, tblName);
-      if (table == null) {
-        throw new InvalidObjectException("Unable to add partitions because "
-            + TableName.getQualified(catName, dbName, tblName) +
-            " does not exist");
-      }
-      if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-        tabGrants = this.listAllTableGrants(catName, dbName, tblName);
-        tabColumnGrants = this.listTableAllColumnGrants(catName, dbName, tblName);
-      }
-      List<MPartition> mParts = new ArrayList<>();
-      List<List<MPartitionPrivilege>> mPartPrivilegesList = new ArrayList<>();
-      List<List<MPartitionColumnPrivilege>> mPartColPrivilegesList = new ArrayList<>();
-      for (Partition part : parts) {
-        if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
-          throw new MetaException("Partition does not belong to target table "
-              + dbName + "." + tblName + ": " + part);
-        }
-        MPartition mpart = convertToMPart(part, table, true);
-        mParts.add(mpart);
-        int now = (int) (System.currentTimeMillis() / 1000);
-        List<MPartitionPrivilege> mPartPrivileges = new ArrayList<>();
-        if (tabGrants != null) {
-          for (MTablePrivilege tab: tabGrants) {
-            MPartitionPrivilege mPartPrivilege = new MPartitionPrivilege(tab.getPrincipalName(), tab.getPrincipalType(),
-                mpart, tab.getPrivilege(), now, tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
-                tab.getAuthorizer());
-            mPartPrivileges.add(mPartPrivilege);
-          }
-        }
-
-        List<MPartitionColumnPrivilege> mPartColumnPrivileges = new ArrayList<>();
-        if (tabColumnGrants != null) {
-          for (MTableColumnPrivilege col : tabColumnGrants) {
-            MPartitionColumnPrivilege mPartColumnPrivilege = new MPartitionColumnPrivilege(col.getPrincipalName(),
-                col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(), now, col.getGrantor(),
-                col.getGrantorType(), col.getGrantOption(), col.getAuthorizer());
-            mPartColumnPrivileges.add(mPartColumnPrivilege);
-          }
-        }
-        mPartPrivilegesList.add(mPartPrivileges);
-        mPartColPrivilegesList.add(mPartColumnPrivileges);
-      }
-      if (CollectionUtils.isNotEmpty(mParts)) {
-        GetHelper<Void> helper = new GetHelper<Void>(null, null, null, true,
-            true) {
-          @Override
-          protected Void getSqlResult(GetHelper<Void> ctx) throws MetaException {
-            directSql.addPartitions(mParts, mPartPrivilegesList, mPartColPrivilegesList);
-            return null;
-          }
-
-          @Override
-          protected Void getJdoResult(GetHelper<Void> ctx) {
-            List<Object> toPersist = new ArrayList<>(mParts);
-            mPartPrivilegesList.forEach(toPersist::addAll);
-            mPartColPrivilegesList.forEach(toPersist::addAll);
-            pm.makePersistentAll(toPersist);
-            pm.flush();
-            return null;
-          }
-
-          @Override
-          protected String describeResult() {
-            return "add partitions";
-          }
-        };
-        try {
-          helper.run(false);
-        } catch (NoSuchObjectException e) {
-          throw new MetaException(e.getMessage());
-        }
-      }
+      addPartitionsInternal(catName, dbName, tblName, parts);
       success = commitTransaction();
     } finally {
       if (!success) {
@@ -2773,6 +2700,85 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return success;
+  }
+
+  private void addPartitionsInternal(String catName, String dbName,
+                                     String tblName, List<Partition> parts)
+      throws MetaException, InvalidObjectException {
+    List<MTablePrivilege> tabGrants = null;
+    List<MTableColumnPrivilege> tabColumnGrants = null;
+    MTable table = this.getMTable(catName, dbName, tblName);
+    if (table == null) {
+      throw new InvalidObjectException("Unable to add partitions because "
+          + TableName.getQualified(catName, dbName, tblName) +
+          " does not exist");
+    }
+    if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+      tabGrants = this.listAllTableGrants(catName, dbName, tblName);
+      tabColumnGrants = this.listTableAllColumnGrants(catName, dbName, tblName);
+    }
+    List<MPartition> mParts = new ArrayList<>();
+    List<List<MPartitionPrivilege>> mPartPrivilegesList = new ArrayList<>();
+    List<List<MPartitionColumnPrivilege>> mPartColPrivilegesList = new ArrayList<>();
+    for (Partition part : parts) {
+      if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
+        throw new MetaException("Partition does not belong to target table "
+            + dbName + "." + tblName + ": " + part);
+      }
+      MPartition mpart = convertToMPart(part, table, true);
+      mParts.add(mpart);
+      int now = (int) (System.currentTimeMillis() / 1000);
+      List<MPartitionPrivilege> mPartPrivileges = new ArrayList<>();
+      if (tabGrants != null) {
+        for (MTablePrivilege tab: tabGrants) {
+          MPartitionPrivilege mPartPrivilege = new MPartitionPrivilege(tab.getPrincipalName(), tab.getPrincipalType(),
+              mpart, tab.getPrivilege(), now, tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
+              tab.getAuthorizer());
+          mPartPrivileges.add(mPartPrivilege);
+        }
+      }
+
+      List<MPartitionColumnPrivilege> mPartColumnPrivileges = new ArrayList<>();
+      if (tabColumnGrants != null) {
+        for (MTableColumnPrivilege col : tabColumnGrants) {
+          MPartitionColumnPrivilege mPartColumnPrivilege = new MPartitionColumnPrivilege(col.getPrincipalName(),
+              col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(), now, col.getGrantor(),
+              col.getGrantorType(), col.getGrantOption(), col.getAuthorizer());
+          mPartColumnPrivileges.add(mPartColumnPrivilege);
+        }
+      }
+      mPartPrivilegesList.add(mPartPrivileges);
+      mPartColPrivilegesList.add(mPartColumnPrivileges);
+    }
+    if (CollectionUtils.isNotEmpty(mParts)) {
+      GetHelper<Void> helper = new GetHelper<Void>(null, null, null, true, true) {
+        @Override
+        protected Void getSqlResult(GetHelper<Void> ctx) throws MetaException {
+          directSql.addPartitions(mParts, mPartPrivilegesList, mPartColPrivilegesList);
+          return null;
+        }
+
+        @Override
+        protected Void getJdoResult(GetHelper<Void> ctx) {
+          List<Object> toPersist = new ArrayList<>(mParts);
+          mPartPrivilegesList.forEach(toPersist::addAll);
+          mPartColPrivilegesList.forEach(toPersist::addAll);
+          pm.makePersistentAll(toPersist);
+          pm.flush();
+          return null;
+        }
+
+        @Override
+        protected String describeResult() {
+          return "add partitions";
+        }
+      };
+      try {
+        helper.run(false);
+      } catch (NoSuchObjectException e) {
+        throw newMetaException(e);
+      }
+    }
   }
 
   private boolean isValidPartition(
@@ -2855,62 +2861,18 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean addPartition(Partition part) throws InvalidObjectException,
       MetaException {
-    boolean success = false;
-    boolean commited = false;
-
+    boolean committed = false;
     try {
       openTransaction();
       String catName = part.isSetCatName() ? part.getCatName() : getDefaultCatalog(conf);
-      MTable table = this.getMTable(catName, part.getDbName(), part.getTableName());
-      if (table == null) {
-        throw new InvalidObjectException("Unable to add partition because "
-            + TableName.getQualified(catName, part.getDbName(), part.getTableName()) +
-            " does not exist");
-      }
-      List<MTablePrivilege> tabGrants = null;
-      List<MTableColumnPrivilege> tabColumnGrants = null;
-      if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-        tabGrants = this.listAllTableGrants(catName, part.getDbName(), part.getTableName());
-        tabColumnGrants = this.listTableAllColumnGrants(
-            catName, part.getDbName(), part.getTableName());
-      }
-      MPartition mpart = convertToMPart(part, table, true);
-      pm.makePersistent(mpart);
-
-      int now = (int) (System.currentTimeMillis() / 1000);
-      List<Object> toPersist = new ArrayList<>();
-      if (tabGrants != null) {
-        for (MTablePrivilege tab: tabGrants) {
-          MPartitionPrivilege partGrant = new MPartitionPrivilege(tab
-              .getPrincipalName(), tab.getPrincipalType(),
-              mpart, tab.getPrivilege(), now, tab.getGrantor(), tab
-                  .getGrantorType(), tab.getGrantOption(), tab.getAuthorizer());
-          toPersist.add(partGrant);
-        }
-      }
-
-      if (tabColumnGrants != null) {
-        for (MTableColumnPrivilege col : tabColumnGrants) {
-          MPartitionColumnPrivilege partColumn = new MPartitionColumnPrivilege(col
-              .getPrincipalName(), col.getPrincipalType(), mpart, col
-              .getColumnName(), col.getPrivilege(), now, col.getGrantor(), col
-              .getGrantorType(), col.getGrantOption(), col.getAuthorizer());
-          toPersist.add(partColumn);
-        }
-
-        if (CollectionUtils.isNotEmpty(toPersist)) {
-          pm.makePersistentAll(toPersist);
-        }
-      }
-
-      commited = commitTransaction();
-      success = true;
+      addPartitionsInternal(catName, part.getDbName(), part.getTableName(), Arrays.asList(part));
+      committed = commitTransaction();
     } finally {
-      if (!commited) {
+      if (!committed) {
         rollbackTransaction();
       }
     }
-    return success;
+    return committed;
   }
 
   @Override
@@ -11539,6 +11501,33 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Function> getAllFunctions(String catName) throws MetaException {
+    try {
+      return getFunctionsInternal(catName);
+    } catch (NoSuchObjectException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected List<Function> getFunctionsInternal(String catalogName)
+      throws MetaException, NoSuchObjectException {
+    return new GetListHelper<Function>(catalogName, "", "", true, true) {
+      @Override
+      protected List<Function> getSqlResult(GetHelper<List<Function>> ctx) throws MetaException {
+        return directSql.getFunctions(catalogName);
+      }
+      @Override
+      protected List<Function> getJdoResult(GetHelper<List<Function>> ctx) throws MetaException {
+        try {
+          return getAllFunctionsViaJDO(catalogName);
+        } catch (Exception e) {
+          LOG.error("Failed to convert to functions", e);
+          throw new MetaException(e.getMessage());
+        }
+      }
+    }.run(false);
+  }
+
+  private List<Function> getAllFunctionsViaJDO (String catName) {
     boolean commited = false;
     Query query = null;
     try {
@@ -11816,8 +11805,36 @@ public class ObjectStore implements RawStore, Configurable {
       long lastEvent = rqst.getLastEvent();
       List<Object> parameterVals = new ArrayList<>();
       parameterVals.add(lastEvent);
+      // filterBuilder parameter is used for construction of conditional clause in the select query
       StringBuilder filterBuilder = new StringBuilder("eventId > para" + parameterVals.size());
+      // parameterBuilder parameter is used for specify what types of parameters will go into the filterBuilder
       StringBuilder parameterBuilder = new StringBuilder("java.lang.Long para" + parameterVals.size());
+      /* A fully constructed query would like:
+      ->  filterBuilder: eventId > para0 && catalogName == para1 && dbName == para2 && (tableName == para3
+          || tableName == para4) && eventType != para5
+      ->  parameterBuilder: java.lang.Long para0, java.lang.String para1, java.lang.String para2
+          , java.lang.String para3, java.lang.String para4, java.lang.String para5
+       */
+      if (rqst.isSetCatName()) {
+        parameterVals.add(normalizeIdentifier(rqst.getCatName()));
+        parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+        filterBuilder.append(" && catalogName == para" + parameterVals.size());
+      }
+      if (rqst.isSetDbName()) {
+        parameterVals.add(normalizeIdentifier(rqst.getDbName()));
+        parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+        filterBuilder.append(" && dbName == para" + parameterVals.size());
+      }
+      if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
+        filterBuilder.append(" && (");
+        for (String tableName : rqst.getTableNames()) {
+          parameterVals.add(normalizeIdentifier(tableName));
+          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+          filterBuilder.append("tableName == para" + parameterVals.size()+ " || ");
+        }
+        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        filterBuilder.append(") ");
+      }
       if (rqst.isSetEventTypeSkipList()) {
         for (String eventType : rqst.getEventTypeSkipList()) {
           parameterVals.add(eventType);
@@ -12182,6 +12199,17 @@ public class ObjectStore implements RawStore, Configurable {
         queryStr = queryStr + " && eventId <= toEventId";
         paramSpecs = paramSpecs + ", java.lang.Long toEventId";
         paramVals.add(Long.valueOf(toEventId));
+      }
+      // Specify list of table names in the query string and parameter types
+      if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
+        queryStr = queryStr + " && (";
+        for (String tableName : rqst.getTableNames()) {
+          paramVals.add(tableName.toLowerCase());
+          queryStr = queryStr + "tableName == tableName" + paramVals.size() + " || ";
+          paramSpecs = paramSpecs + ", java.lang.String tableName" + paramVals.size();
+        }
+        queryStr = queryStr.substring(0, queryStr.length() - 4); // remove the last " || "
+        queryStr += ")";
       }
 
       query = pm.newQuery(queryStr);

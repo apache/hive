@@ -218,11 +218,11 @@ POSTHOOK: Output: default@calls_v2
 PREHOOK: query: delete from calls_v2 where year=2024
 PREHOOK: type: QUERY
 PREHOOK: Input: default@calls_v2
-PREHOOK: Output: default@calls_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: delete from calls_v2 where year=2024
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calls_v2
-POSTHOOK: Output: default@calls_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select s.operation, s.summary['added-records'], s.summary['deleted-records'] from default.calls_v2.snapshots s
   order by s.snapshot_id
 PREHOOK: type: QUERY
@@ -234,8 +234,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calls_v2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 append	10	NULL
+delete	NULL	4
 overwrite	2	NULL
-overwrite	NULL	NULL
 PREHOOK: query: DROP TABLE calls_v2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@calls_v2

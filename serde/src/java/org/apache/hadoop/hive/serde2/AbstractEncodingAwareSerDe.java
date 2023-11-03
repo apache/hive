@@ -43,7 +43,7 @@ public abstract class AbstractEncodingAwareSerDe extends AbstractSerDe {
     super.initialize(configuration, tableProperties, partitionProperties);
     charset = Charset.forName(properties.getProperty(serdeConstants.SERIALIZATION_ENCODING, "UTF-8"));
     if (this.charset.equals(Charsets.ISO_8859_1) || this.charset.equals(Charsets.US_ASCII)) {
-      log.warn("The data may not be properly converted to target charset " + charset);
+      log.warn("{} The data may not be properly converted to target charset {}", getClass().getName(), charset);
     }
   }
 

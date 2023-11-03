@@ -53,6 +53,7 @@ public class AlterTableSnapshotRefSpec<T> {
     private Long maxRefAgeMs;
     private Integer minSnapshotsToKeep;
     private Long maxSnapshotAgeMs;
+    private String asOfTag;
 
     public String getRefName() {
       return refName;
@@ -78,14 +79,19 @@ public class AlterTableSnapshotRefSpec<T> {
       return maxSnapshotAgeMs;
     }
 
+    public String getAsOfTag() {
+      return asOfTag;
+    }
+
     public CreateSnapshotRefSpec(String refName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
-                             Integer minSnapshotsToKeep, Long maxSnapshotAgeMs) {
+                             Integer minSnapshotsToKeep, Long maxSnapshotAgeMs, String asOfTag) {
       this.refName = refName;
       this.snapshotId = snapShotId;
       this.asOfTime = asOfTime;
       this.maxRefAgeMs = maxRefAgeMs;
       this.minSnapshotsToKeep = minSnapshotsToKeep;
       this.maxSnapshotAgeMs = maxSnapshotAgeMs;
+      this.asOfTag = asOfTag;
     }
 
     public String toString() {

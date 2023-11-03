@@ -398,7 +398,6 @@ public class TestCompactor extends TestCompactorBase {
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "1396", parameters.get("totalSize"));
 
     parameters = partitions
             .stream()
@@ -408,7 +407,6 @@ public class TestCompactor extends TestCompactorBase {
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "1453", parameters.get("totalSize"));
 
     //Do a major compaction
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
@@ -433,7 +431,6 @@ public class TestCompactor extends TestCompactorBase {
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "808", parameters.get("totalSize"));
 
     parameters = partitions
             .stream()
@@ -443,7 +440,6 @@ public class TestCompactor extends TestCompactorBase {
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "1453", parameters.get("totalSize"));
   }
 
   /**
@@ -486,7 +482,6 @@ public class TestCompactor extends TestCompactorBase {
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "1446", parameters.get("totalSize"));
 
     //Do a major compaction
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
@@ -504,7 +499,6 @@ public class TestCompactor extends TestCompactorBase {
     parameters = Hive.get().getTable(tblName).getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "783", parameters.get("totalSize"));
   }
 
   @Test

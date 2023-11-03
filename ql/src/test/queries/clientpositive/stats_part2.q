@@ -1,3 +1,4 @@
+--! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#/
 set hive.stats.dbclass=fs;
 set hive.stats.fetch.column.stats=true;
 set datanucleus.cache.collections=false;

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
 import java.util.Arrays;
 
@@ -38,7 +39,8 @@ public class AlterTableExecuteSpec<T> {
     EXPIRE_SNAPSHOT,
     SET_CURRENT_SNAPSHOT,
     FAST_FORWARD,
-    CHERRY_PICK;
+    CHERRY_PICK,
+    DELETE_METADATA;
   }
 
   private final ExecuteOperationType operationType;
@@ -109,6 +111,8 @@ public class AlterTableExecuteSpec<T> {
     private long timestampMillis = -1L;
     private String[] idsToExpire = null;
 
+    private long fromTimestampMillis = -1L;
+
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
     }
@@ -117,8 +121,17 @@ public class AlterTableExecuteSpec<T> {
       this.idsToExpire = ids.split(",");
     }
 
+    public ExpireSnapshotsSpec(long fromTimestampMillis, long toTimestampMillis) {
+      this.fromTimestampMillis = fromTimestampMillis;
+      this.timestampMillis = toTimestampMillis;
+    }
+
     public Long getTimestampMillis() {
       return timestampMillis;
+    }
+
+    public Long getFromTimestampMillis() {
+      return fromTimestampMillis;
     }
 
     public String[] getIdsToExpire() {
@@ -129,10 +142,16 @@ public class AlterTableExecuteSpec<T> {
       return idsToExpire != null;
     }
 
+    public boolean isExpireByTimestampRange() {
+      return timestampMillis != -1 && fromTimestampMillis != -1;
+    }
+
     @Override
     public String toString() {
       MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
-      if (isExpireByIds()) {
+      if (isExpireByTimestampRange()) {
+        stringHelper.add("fromTimestampMillis", fromTimestampMillis).add("toTimestampMillis", timestampMillis);
+      } else if (isExpireByIds()) {
         stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
       } else {
         stringHelper.add("timestampMillis", timestampMillis);
@@ -144,23 +163,23 @@ public class AlterTableExecuteSpec<T> {
   /**
    * Value object class, that stores the set snapshot version operation specific parameters
    * <ul>
-   *   <li>snapshot Id: it should be a valid snapshot version</li>
+   *   <li>snapshot Id: it should be a valid snapshot version or a SnapshotRef name</li>
    * </ul>
    */
   public static class SetCurrentSnapshotSpec {
-    private final long snapshotId;
+    private final String snapshotIdOrRefName;
 
-    public SetCurrentSnapshotSpec(Long snapshotId) {
-      this.snapshotId = snapshotId;
+    public SetCurrentSnapshotSpec(String snapshotIdOrRefName) {
+      this.snapshotIdOrRefName = snapshotIdOrRefName;
     }
 
-    public Long getSnapshotId() {
-      return snapshotId;
+    public String getSnapshotIdOrRefName() {
+      return snapshotIdOrRefName;
     }
 
     @Override
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+      return MoreObjects.toStringHelper(this).add("snapshotIdOrRefName", snapshotIdOrRefName).toString();
     }
   }
 
@@ -215,6 +234,24 @@ public class AlterTableExecuteSpec<T> {
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+    }
+  }
+
+  public static class DeleteMetadataSpec {
+    private final String branchName;
+    private final SearchArgument sarg;
+
+    public DeleteMetadataSpec(String branchName, SearchArgument sarg) {
+      this.branchName = branchName;
+      this.sarg = sarg;
+    }
+
+    public String getBranchName() {
+      return branchName;
+    }
+
+    public SearchArgument getSarg() {
+      return sarg;
     }
   }
 }

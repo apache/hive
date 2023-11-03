@@ -144,7 +144,7 @@ PREHOOK: Input: default@alltypesorc3xcols
 PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
 Structure for hdfs://### HDFS PATH ###
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 24576
 Compression: ZLIB
 Compression size: 131072

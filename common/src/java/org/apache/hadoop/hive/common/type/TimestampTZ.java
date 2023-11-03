@@ -100,4 +100,7 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
     return zonedDateTime.toInstant().getNano();
   }
 
+  public Instant toInstant() {
+    return zonedDateTime.toInstant();
+  }
 }

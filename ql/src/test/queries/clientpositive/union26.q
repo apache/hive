@@ -1,5 +1,6 @@
 --! qt:dataset:srcpart
 -- SORT_QUERY_RESULTS
+set hive.cbo.fallback.strategy=NEVER;
 
 EXPLAIN
 SELECT 

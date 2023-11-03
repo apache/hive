@@ -33,6 +33,11 @@ alter table iceTbl create branch test_branch_4 with snapshot retention 5 snapsho
 -- check the values, four values
 select * from iceTbl for system_version as of 'test_branch_4';
 
+-- Create a branch based on an existing tag.
+alter table iceTbl create tag test_tag;
+explain alter table iceTbl create branch test_branch_10 for tag as of test_tag;
+alter table iceTbl create branch test_branch_10 for tag as of test_tag;
+
 -- drop a branch
 explain alter table iceTbl drop branch test_branch_3;
 alter table iceTbl drop branch test_branch_3;
