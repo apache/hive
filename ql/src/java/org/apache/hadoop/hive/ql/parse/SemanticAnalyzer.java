@@ -3466,7 +3466,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * push filters only for this QBJoinTree. Child QBJoinTrees have already been handled.
          */
         pushJoinFilters(qb, joinTree, aliasToOpInfo, false);
-        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo, input);
+
+        /*
+         *  Note that: in case of multi dest queries, with even one containing a notIn operator, the code is not changed yet.
+         *  That needs to be worked on as a separate bug : https://issues.apache.org/jira/browse/HIVE-27844
+         */
+        boolean notInCheckPresent = (subQuery.getNotInCheck() != null && !qb.isMultiDestQuery());
+        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo , input, notInCheckPresent);
+
         searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
       }
     }
@@ -3519,14 +3526,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * for inner joins push a 'is not null predicate' to the join sources for
    * every non nullSafe predicate.
    */
+
   private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
-                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
+                                                        QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
+    return genNotNullFilterForJoinSourcePlan(qb, input, joinTree, joinKeys, false);
+  }
+
+  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
+                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys, boolean OuternotInCheck) throws SemanticException {
+
+    /*
+     * The notInCheck param is used for the purpose of adding an
+     *  (outerQueryTable.outerQueryCol is not null ) predicate to the join,
+     *  since it is not added naturally because of outer join
+     */
 
     if (qb == null || joinTree == null) {
       return input;
     }
 
-    if (!joinTree.getNoOuterJoin()) {
+    if (!joinTree.getNoOuterJoin() && !OuternotInCheck) {
       return input;
     }
 
@@ -9081,8 +9100,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
                                    Map<String, Operator> map,
                                    Operator joiningOp) throws SemanticException {
+    return genJoinOperator(qb, joinTree, map, joiningOp, false);
+  }
+
+  private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
+                                   Map<String, Operator> map,
+                                   Operator joiningOp, boolean notInCheckPresent) throws SemanticException {
     QBJoinTree leftChild = joinTree.getJoinSrc();
     Operator joinSrcOp = joiningOp instanceof JoinOperator ? joiningOp : null;
+    Operator OuterSrcOp = joiningOp;
 
     if (joinSrcOp == null && leftChild != null) {
       joinSrcOp = genJoinOperator(qb, leftChild, map, null);
@@ -9137,7 +9163,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // generate a ReduceSink operator for the join
       String[] srcs = baseSrc[i] != null ? new String[] {baseSrc[i]} : joinTree.getLeftAliases();
       if (!isCBOExecuted()) {
-        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i]);
+        /*
+         * The condition srcOps[i] == OuterSrcOp is used to make sure that the predicate for notnull check
+         * is added only for the outer query table.outerqueryCol
+         * even after the outer join condition
+         */
+        boolean outerNotInCheck = (notInCheckPresent && (srcOps[i] == OuterSrcOp));
+        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i], outerNotInCheck);
       }
       srcOps[i] = genJoinReduceSinkChild(qb, joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
     }
