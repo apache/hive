@@ -146,7 +146,6 @@ import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.PartitionsTable;
-import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -670,7 +669,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       throws SemanticException {
     // delete records are already clustered by partition spec id and the hash of the partition struct
     // there is no need to do any additional sorting based on partition columns
-    if (writeOperation == Operation.DELETE) {
+    if (writeOperation == Operation.DELETE && !shouldOverwrite(hmsTable, writeOperation)) {
       return null;
     }
 
@@ -1064,32 +1063,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table,
       boolean isWriteOperation) {
     if (IcebergTableUtil.isV2Table(table.getParameters())) {
-      if (isWriteOperation) {
-        checkDMLOperationMode(table);
-      }
       return AcidSupportType.WITHOUT_TRANSACTIONS;
     }
-
     return AcidSupportType.NONE;
-  }
-
-  // TODO: remove the checks as copy-on-write mode implementation for these DML ops get added
-  private static void checkDMLOperationMode(org.apache.hadoop.hive.ql.metadata.Table table) {
-    Map<String, String> opTypes = ImmutableMap.of(
-        TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT);
-
-    for (Map.Entry<String, String> opType : opTypes.entrySet()) {
-      String mode = table.getParameters().get(opType.getKey());
-      RowLevelOperationMode rowLevelOperationMode = RowLevelOperationMode.fromName(
-          mode != null ? mode : opType.getValue()
-      );
-      if (RowLevelOperationMode.COPY_ON_WRITE.equals(rowLevelOperationMode)) {
-        throw new UnsupportedOperationException(
-            String.format("Hive doesn't support copy-on-write mode as %s. Please set '%s'='merge-on-read' on %s " +
-                "before running ACID operations on it.", opType.getKey(), opType.getKey(), table.getTableName())
-        );
-      }
-    }
   }
 
   @Override
@@ -1621,21 +1597,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, Context.Operation operation) {
-    String mode = null;
-    // As of now only update & delete modes are supported, for all others return false
-    if (IcebergTableUtil.isV2Table(mTable.getParameters())) {
-      switch (operation) {
-        case DELETE:
-          mode = mTable.getTTable().getParameters().getOrDefault(TableProperties.DELETE_MODE,
-              TableProperties.DELETE_MODE_DEFAULT);
-          break;
-        case UPDATE:
-          mode = mTable.getTTable().getParameters().getOrDefault(TableProperties.UPDATE_MODE,
-            TableProperties.UPDATE_MODE_DEFAULT);
-          break;
-      }
-    }
-    return COPY_ON_WRITE.equalsIgnoreCase(mode);
+    return IcebergTableUtil.isCopyOnWriteMode(operation, mTable.getParameters()::getOrDefault);
   }
 
   @Override

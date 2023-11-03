@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class SqlGeneratorFactory {
   public static final String DELETE_PREFIX = "__d__";
+  public static final String TARGET_PREFIX = "t__";
   public static final String SUB_QUERY_ALIAS = "s";
 
   private final Table targetTable;

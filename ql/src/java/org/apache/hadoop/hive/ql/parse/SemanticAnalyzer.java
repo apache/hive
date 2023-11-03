@@ -8085,8 +8085,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     inputRR = opParseCtx.get(input).getRowResolver();
 
     List<ColumnInfo> vecCol = new ArrayList<ColumnInfo>();
-
-    if (updating(dest) || deleting(dest)) {
+    
+    if (updating(dest) || deleting(dest) || merging(dest)) {
       if (AcidUtils.isNonNativeAcidTable(destinationTable, true)) {
         destinationTable.getStorageHandler().acidVirtualColumns().stream()
             .map(col -> new ColumnInfo(col.getName(), col.getTypeInfo(), "", true))
@@ -8879,9 +8879,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (dynPart && dpCtx != null && !alreadyContainsPartCols) {
       outColumnCnt += dpCtx.getNumDPCols();
     }
-
+    
     // The numbers of input columns and output columns should match for regular query
-    if (!updating(dest) && !deleting(dest) && inColumnCnt != outColumnCnt) {
+    if (!updating(dest) && !deleting(dest) && !merging(dest) && inColumnCnt != outColumnCnt) {
       String reason = "Table " + dest + " has " + outColumnCnt
           + " columns, but query has " + inColumnCnt + " columns.";
       throw new SemanticException(ASTErrorUtils.getMsg(
@@ -8899,7 +8899,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!(deserializer instanceof MetadataTypedColumnsetSerDe) && !deleting(dest)) {
 
       // If we're updating, add the required virtual columns.
-      int virtualColumnSize = updating(dest) ? AcidUtils.getAcidVirtualColumns(table).size() : 0;
+      int virtualColumnSize = updating(dest) || merging(dest) ? AcidUtils.getAcidVirtualColumns(table).size() : 0;
       for (int i = 0; i < virtualColumnSize; i++) {
         expressions.add(new ExprNodeColumnDesc(rowFields.get(i).getType(),
             rowFields.get(i).getInternalName(), "", true));
@@ -15544,14 +15544,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // figure out if a table is Acid or not.
   private AcidUtils.Operation getAcidType(String destination) {
     return deleting(destination) ? AcidUtils.Operation.DELETE :
-        (updating(destination) ? AcidUtils.Operation.UPDATE :
-            AcidUtils.Operation.INSERT);
+        updating(destination) ? AcidUtils.Operation.UPDATE : AcidUtils.Operation.INSERT;
   }
 
   private Context.Operation getWriteOperation(String destination) {
     return deleting(destination) ? Context.Operation.DELETE :
-        (updating(destination) ? Context.Operation.UPDATE :
-            Context.Operation.OTHER);
+        updating(destination) ? Context.Operation.UPDATE : 
+        merging(destination) ? Context.Operation.MERGE : Context.Operation.OTHER;
   }
 
   private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of, String dest,
@@ -15577,6 +15576,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private boolean deleting(String destination) {
     return destination.startsWith(Context.DestClausePrefix.DELETE.toString());
+  }
+  
+  private boolean merging(String destination) {
+    return destination.startsWith(Context.DestClausePrefix.MERGE.toString());
   }
 
   // Make sure the proper transaction manager that supports ACID is being used

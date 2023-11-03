@@ -45,12 +45,11 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
   private final SetClausePatcher setClausePatcher;
 
 
-  public CopyOnWriteUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory,
-                                   COWWithClauseBuilder cowWithClauseBuilder, SetClausePatcher setClausePatcher) {
+  public CopyOnWriteUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     this.conf = conf;
     this.sqlGeneratorFactory = sqlGeneratorFactory;
-    this.cowWithClauseBuilder = cowWithClauseBuilder;
-    this.setClausePatcher = setClausePatcher;
+    this.cowWithClauseBuilder = new COWWithClauseBuilder();
+    this.setClausePatcher = new SetClausePatcher();
   }
 
   @Override

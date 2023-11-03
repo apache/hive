@@ -240,7 +240,7 @@ public class Context {
    */
   public enum Operation {UPDATE, DELETE, MERGE, IOW, OTHER}
   public enum DestClausePrefix {
-    INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
+    INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-"), MERGE("mergeclause-");
     private final String prefix;
     DestClausePrefix(String prefix) {
       this.prefix = prefix;
@@ -338,11 +338,12 @@ public class Context {
     ASTNode query = (ASTNode) insert.getParent();
     assert query != null && query.getType() == HiveParser.TOK_QUERY;
 
-    for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
+    int tokFromIdx = query.getFirstChildWithType(HiveParser.TOK_FROM).getChildIndex();
+    for (int childIdx = tokFromIdx + 1; childIdx < query.getChildCount(); childIdx++) {
       assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
-      if(insert == query.getChild(childIdx)) {
-        DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx);
-        if(prefix == null) {
+      if (insert == query.getChild(childIdx)) {
+        DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx - tokFromIdx);
+        if (prefix == null) {
           throw new IllegalStateException("Found a node w/o branch mapping: '" +
             getMatchedText(insert) + "'");
         }
