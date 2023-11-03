@@ -71,7 +71,6 @@ public class GenericUDFTimestamp extends GenericUDF {
    * otherwise, it's interpreted as timestamp in seconds.
    */
   private boolean intToTimestampInSeconds = false;
-  private boolean strict = true;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -79,14 +78,13 @@ public class GenericUDFTimestamp extends GenericUDF {
     checkArgPrimitive(arguments, 0);
     checkArgGroups(arguments, 0, tsInputTypes, STRING_GROUP, DATE_GROUP, NUMERIC_GROUP, VOID_GROUP, BOOLEAN_GROUP);
 
-    strict = SessionState.get() != null ? SessionState.get().getConf()
-        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION) : new HiveConf()
-        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION);
     intToTimestampInSeconds = SessionState.get() != null ? SessionState.get().getConf()
         .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS) : new HiveConf()
         .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
 
-    if (strict) {
+    SessionState ss = SessionState.get();
+
+    if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION)) {
       if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(tsInputTypes[0]) == PrimitiveGrouping.NUMERIC_GROUP) {
         throw new UDFArgumentException(
             "Casting NUMERIC types to TIMESTAMP is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
