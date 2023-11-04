@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.HiveObjectPrivilegeBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.HiveObjectRefBuilder;
@@ -645,7 +646,7 @@ public class TestObjectStore {
     List<Partition> partitions;
     try(AutoCloseable c =deadline()) {
       partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          10, false, true);
+          false, true, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(3, partitions.size());
 
@@ -656,7 +657,8 @@ public class TestObjectStore {
     }
     try (AutoCloseable c = deadline()) {
       // query the partitions with JDO, checking the cache is not causing any problem
-      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(1, partitions.size());
   }
@@ -671,16 +673,17 @@ public class TestObjectStore {
     objectStore2.setConf(conf);
 
     createPartitionedTable(false, false);
+    GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build();
     // query the partitions with JDO in the 1st session
     List<Partition> partitions;
     try (AutoCloseable c = deadline()) {
-      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
     }
     Assert.assertEquals(3, partitions.size());
 
     // query the partitions with JDO in the 2nd session
     try (AutoCloseable c = deadline()) {
-      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
     }
     Assert.assertEquals(3, partitions.size());
 
@@ -693,7 +696,7 @@ public class TestObjectStore {
     // query the partitions with JDO in the 2nd session, checking the cache is not causing any
     // problem
     try (AutoCloseable c = deadline()) {
-      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
     }
     Assert.assertEquals(1, partitions.size());
   }
