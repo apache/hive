@@ -728,4 +728,14 @@ public interface HiveStorageHandler extends Configurable {
     SearchArgument searchArgument) {
     return false;
   }
+  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    throw new UnsupportedOperationException("Storage handler does not support getting partition keys " +
+            "for a table.");
+  }
+
+  default List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc desc)
+          throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partitions by expression " +
+            "for a table.");
+  }
 }

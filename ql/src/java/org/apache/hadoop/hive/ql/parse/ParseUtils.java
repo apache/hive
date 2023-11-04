@@ -565,7 +565,9 @@ public final class ParseUtils {
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
     String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     Map<String, String> colTypes = new HashMap<>();
-    for (FieldSchema fs : table.getPartitionKeys()) {
+    List<FieldSchema> partitionKeys = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
+            table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
+    for (FieldSchema fs : partitionKeys) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }
 

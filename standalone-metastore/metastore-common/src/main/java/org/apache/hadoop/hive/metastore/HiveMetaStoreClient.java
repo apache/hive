@@ -120,6 +120,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
+  public static final String SKIP_DROP_PARTITION = "dropPartitionSkip";
   public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
 
   /**
@@ -1931,6 +1932,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                         PartitionDropOptions options) throws TException {
     RequestPartsSpec rps = new RequestPartsSpec();
     List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
+    Table table = getTable(catName, dbName, tblName);
+    HiveMetaHook hook = getHook(table);
+    EnvironmentContext context = new EnvironmentContext();
+    if (hook != null) {
+      hook.preDropPartitions(table, context, partExprs);
+    }
+    if (context.getProperties() != null &&
+        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
+      return Lists.newArrayList();
+    }
     for (Pair<Integer, byte[]> partExpr : partExprs) {
       DropPartitionsExpr dpe = new DropPartitionsExpr();
       dpe.setExpr(partExpr.getRight());
@@ -1944,10 +1955,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
 
-    EnvironmentContext context = null;
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
-      context = getEnvironmentContextWithIfPurgeSet();
+      context.putToProperties("ifPurge", "true");
     }
     if (options.writeId != null) {
       context = Optional.ofNullable(context).orElse(new EnvironmentContext());
