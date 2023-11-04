@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -51,11 +52,16 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -70,9 +76,14 @@ import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.MetadataTableType;
+import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Snapshot;
@@ -89,10 +100,12 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreLock;
+import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mapping.MappingUtil;
 import org.apache.iceberg.mapping.NameMapping;
@@ -106,9 +119,11 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
+import org.apache.iceberg.util.StructProjection;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +144,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS, AlterTableType.RENAME, AlterTableType.EXECUTE, AlterTableType.CREATE_BRANCH,
-      AlterTableType.CREATE_TAG, AlterTableType.DROP_BRANCH, AlterTableType.DROP_TAG);
+      AlterTableType.CREATE_TAG, AlterTableType.DROP_BRANCH, AlterTableType.DROPPARTITION, AlterTableType.DROP_TAG);
   private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
@@ -995,6 +1010,56 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         // If the table doesn't exist, ignore throwing exception from here
       }
     }
+  }
+
+  @Override
+  public void preDropPartitions(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      EnvironmentContext context,
+      List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> partExprs)
+      throws MetaException {
+    Table icebergTbl = IcebergTableUtil.getTable(conf, hmsTable);
+    DeleteFiles deleteFiles = icebergTbl.newDelete();
+    List<Expression> expressions = partExprs.stream().map(partExpr -> {
+      ExprNodeDesc exprNodeDesc = SerializationUtilities
+          .deserializeObjectWithTypeInformation(partExpr.getRight(), true);
+      SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) exprNodeDesc);
+      return HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    }).collect(Collectors.toList());
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
+        .createMetadataTableInstance(icebergTbl, MetadataTableType.PARTITIONS);
+    List<PartitionData> partitionList = Lists.newArrayList();
+    Expression finalExp = Expressions.alwaysFalse();
+    PartitionSpec pSpec = icebergTbl.spec();
+    for (int index = 0; index < expressions.size(); index++) {
+      finalExp = Expressions.or(finalExp, expressions.get(index));
+    }
+    ResidualEvaluator resEval = ResidualEvaluator.of(icebergTbl.spec(), finalExp, false);
+    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+      fileScanTasks.forEach(task ->
+          partitionList.addAll(Sets.newHashSet(CloseableIterable.transform(task.asDataTask().rows(), row -> {
+            StructProjection data = row.get(0, StructProjection.class);
+            return IcebergTableUtil.toPartitionData(data, pSpec.partitionType());
+          })).stream()
+             .filter(partitionData -> resEval.residualFor(partitionData).isEquivalentTo(Expressions.alwaysTrue()))
+             .collect(Collectors.toSet())));
+
+      Expression partitionSetFilter = Expressions.alwaysFalse();
+      for (PartitionData partitionData : partitionList) {
+        Expression partFilter = Expressions.alwaysTrue();
+        for (int index = 0; index < pSpec.fields().size(); index++) {
+          PartitionField field = icebergTbl.spec().fields().get(index);
+          partFilter = Expressions.and(
+              partFilter, Expressions.equal(field.name(), partitionData.get(index, Object.class)));
+        }
+        partitionSetFilter = Expressions.or(partitionSetFilter, partFilter);
+      }
+
+      deleteFiles.deleteFromRowFilter(partitionSetFilter);
+      deleteFiles.commit();
+    } catch (IOException e) {
+      throw new MetaException(String.format("Error while fetching the partitions due to: %s", e));
+    }
+    context.putToProperties(HiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
   }
 
   private class PreAlterTableProperties {
