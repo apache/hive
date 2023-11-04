@@ -1261,6 +1261,23 @@ public class MetaStoreUtils {
     return result;
   }
 
+  public static <T> T createThriftPartitionsReq(Class<T> clazz, Configuration conf, T... deepCopy) {
+    final T req;
+    if (deepCopy != null && deepCopy.length == 1) {
+      assert clazz.isAssignableFrom(deepCopy[0].getClass());
+      req = JavaUtils.newInstance(clazz, new Class[]{clazz}, deepCopy);
+    } else {
+      req = JavaUtils.newInstance(clazz);
+    }
+    JavaUtils.setField(req, "setSkipColumnSchemaForPartition", new Class[]{boolean.class},
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS));
+    JavaUtils.setField(req, "setIncludeParamKeyPattern", new Class[]{String.class},
+        MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
+    JavaUtils.setField(req, "setExcludeParamKeyPattern", new Class[]{String.class},
+        MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
+    return req;
+  }
+
   /**
    * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
    * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"

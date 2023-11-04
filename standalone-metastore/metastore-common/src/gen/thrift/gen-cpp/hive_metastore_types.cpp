@@ -17606,6 +17606,16 @@ void PartitionsByExprRequest::__set_skipColumnSchemaForPartition(const bool val)
   this->skipColumnSchemaForPartition = val;
 __isset.skipColumnSchemaForPartition = true;
 }
+
+void PartitionsByExprRequest::__set_includeParamKeyPattern(const std::string& val) {
+  this->includeParamKeyPattern = val;
+__isset.includeParamKeyPattern = true;
+}
+
+void PartitionsByExprRequest::__set_excludeParamKeyPattern(const std::string& val) {
+  this->excludeParamKeyPattern = val;
+__isset.excludeParamKeyPattern = true;
+}
 std::ostream& operator<<(std::ostream& out, const PartitionsByExprRequest& obj)
 {
   obj.printTo(out);
@@ -17717,6 +17727,22 @@ uint32_t PartitionsByExprRequest::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->includeParamKeyPattern);
+          this->__isset.includeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->excludeParamKeyPattern);
+          this->__isset.excludeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -17787,6 +17813,16 @@ uint32_t PartitionsByExprRequest::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeBool(this->skipColumnSchemaForPartition);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.includeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 11);
+    xfer += oprot->writeString(this->includeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.excludeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 12);
+    xfer += oprot->writeString(this->excludeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -17804,6 +17840,8 @@ void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b) {
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.id, b.id);
   swap(a.skipColumnSchemaForPartition, b.skipColumnSchemaForPartition);
+  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
+  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
   swap(a.__isset, b.__isset);
 }
 
@@ -17818,6 +17856,8 @@ PartitionsByExprRequest::PartitionsByExprRequest(const PartitionsByExprRequest& 
   validWriteIdList = other651.validWriteIdList;
   id = other651.id;
   skipColumnSchemaForPartition = other651.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other651.includeParamKeyPattern;
+  excludeParamKeyPattern = other651.excludeParamKeyPattern;
   __isset = other651.__isset;
 }
 PartitionsByExprRequest& PartitionsByExprRequest::operator=(const PartitionsByExprRequest& other652) {
@@ -17831,6 +17871,8 @@ PartitionsByExprRequest& PartitionsByExprRequest::operator=(const PartitionsByEx
   validWriteIdList = other652.validWriteIdList;
   id = other652.id;
   skipColumnSchemaForPartition = other652.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other652.includeParamKeyPattern;
+  excludeParamKeyPattern = other652.excludeParamKeyPattern;
   __isset = other652.__isset;
   return *this;
 }
@@ -17847,6 +17889,8 @@ void PartitionsByExprRequest::printTo(std::ostream& out) const {
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "skipColumnSchemaForPartition="; (__isset.skipColumnSchemaForPartition ? (out << to_string(skipColumnSchemaForPartition)) : (out << "<null>"));
+  out << ", " << "includeParamKeyPattern="; (__isset.includeParamKeyPattern ? (out << to_string(includeParamKeyPattern)) : (out << "<null>"));
+  out << ", " << "excludeParamKeyPattern="; (__isset.excludeParamKeyPattern ? (out << to_string(excludeParamKeyPattern)) : (out << "<null>"));
   out << ")";
 }
 
@@ -20459,6 +20503,16 @@ void GetPartitionsByNamesRequest::__set_skipColumnSchemaForPartition(const bool 
   this->skipColumnSchemaForPartition = val;
 __isset.skipColumnSchemaForPartition = true;
 }
+
+void GetPartitionsByNamesRequest::__set_includeParamKeyPattern(const std::string& val) {
+  this->includeParamKeyPattern = val;
+__isset.includeParamKeyPattern = true;
+}
+
+void GetPartitionsByNamesRequest::__set_excludeParamKeyPattern(const std::string& val) {
+  this->excludeParamKeyPattern = val;
+__isset.excludeParamKeyPattern = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetPartitionsByNamesRequest& obj)
 {
   obj.printTo(out);
@@ -20601,6 +20655,22 @@ uint32_t GetPartitionsByNamesRequest::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->includeParamKeyPattern);
+          this->__isset.includeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->excludeParamKeyPattern);
+          this->__isset.excludeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -20691,6 +20761,16 @@ uint32_t GetPartitionsByNamesRequest::write(::apache::thrift::protocol::TProtoco
     xfer += oprot->writeBool(this->skipColumnSchemaForPartition);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.includeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 12);
+    xfer += oprot->writeString(this->includeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.excludeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 13);
+    xfer += oprot->writeString(this->excludeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -20709,6 +20789,8 @@ void swap(GetPartitionsByNamesRequest &a, GetPartitionsByNamesRequest &b) {
   swap(a.getFileMetadata, b.getFileMetadata);
   swap(a.id, b.id);
   swap(a.skipColumnSchemaForPartition, b.skipColumnSchemaForPartition);
+  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
+  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
   swap(a.__isset, b.__isset);
 }
 
@@ -20724,6 +20806,8 @@ GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNa
   getFileMetadata = other795.getFileMetadata;
   id = other795.id;
   skipColumnSchemaForPartition = other795.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other795.includeParamKeyPattern;
+  excludeParamKeyPattern = other795.excludeParamKeyPattern;
   __isset = other795.__isset;
 }
 GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPartitionsByNamesRequest& other796) {
@@ -20738,6 +20822,8 @@ GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPar
   getFileMetadata = other796.getFileMetadata;
   id = other796.id;
   skipColumnSchemaForPartition = other796.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other796.includeParamKeyPattern;
+  excludeParamKeyPattern = other796.excludeParamKeyPattern;
   __isset = other796.__isset;
   return *this;
 }
@@ -20755,6 +20841,8 @@ void GetPartitionsByNamesRequest::printTo(std::ostream& out) const {
   out << ", " << "getFileMetadata="; (__isset.getFileMetadata ? (out << to_string(getFileMetadata)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "skipColumnSchemaForPartition="; (__isset.skipColumnSchemaForPartition ? (out << to_string(skipColumnSchemaForPartition)) : (out << "<null>"));
+  out << ", " << "includeParamKeyPattern="; (__isset.includeParamKeyPattern ? (out << to_string(includeParamKeyPattern)) : (out << "<null>"));
+  out << ", " << "excludeParamKeyPattern="; (__isset.excludeParamKeyPattern ? (out << to_string(excludeParamKeyPattern)) : (out << "<null>"));
   out << ")";
 }
 
@@ -49068,6 +49156,16 @@ void PartitionsRequest::__set_skipColumnSchemaForPartition(const bool val) {
   this->skipColumnSchemaForPartition = val;
 __isset.skipColumnSchemaForPartition = true;
 }
+
+void PartitionsRequest::__set_includeParamKeyPattern(const std::string& val) {
+  this->includeParamKeyPattern = val;
+__isset.includeParamKeyPattern = true;
+}
+
+void PartitionsRequest::__set_excludeParamKeyPattern(const std::string& val) {
+  this->excludeParamKeyPattern = val;
+__isset.excludeParamKeyPattern = true;
+}
 std::ostream& operator<<(std::ostream& out, const PartitionsRequest& obj)
 {
   obj.printTo(out);
@@ -49154,6 +49252,22 @@ uint32_t PartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->includeParamKeyPattern);
+          this->__isset.includeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->excludeParamKeyPattern);
+          this->__isset.excludeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -49208,6 +49322,16 @@ uint32_t PartitionsRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeBool(this->skipColumnSchemaForPartition);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.includeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->includeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.excludeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->excludeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -49222,6 +49346,8 @@ void swap(PartitionsRequest &a, PartitionsRequest &b) {
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.id, b.id);
   swap(a.skipColumnSchemaForPartition, b.skipColumnSchemaForPartition);
+  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
+  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
   swap(a.__isset, b.__isset);
 }
 
@@ -49233,6 +49359,8 @@ PartitionsRequest::PartitionsRequest(const PartitionsRequest& other1733) {
   validWriteIdList = other1733.validWriteIdList;
   id = other1733.id;
   skipColumnSchemaForPartition = other1733.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1733.includeParamKeyPattern;
+  excludeParamKeyPattern = other1733.excludeParamKeyPattern;
   __isset = other1733.__isset;
 }
 PartitionsRequest& PartitionsRequest::operator=(const PartitionsRequest& other1734) {
@@ -49243,6 +49371,8 @@ PartitionsRequest& PartitionsRequest::operator=(const PartitionsRequest& other17
   validWriteIdList = other1734.validWriteIdList;
   id = other1734.id;
   skipColumnSchemaForPartition = other1734.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1734.includeParamKeyPattern;
+  excludeParamKeyPattern = other1734.excludeParamKeyPattern;
   __isset = other1734.__isset;
   return *this;
 }
@@ -49256,6 +49386,8 @@ void PartitionsRequest::printTo(std::ostream& out) const {
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "skipColumnSchemaForPartition="; (__isset.skipColumnSchemaForPartition ? (out << to_string(skipColumnSchemaForPartition)) : (out << "<null>"));
+  out << ", " << "includeParamKeyPattern="; (__isset.includeParamKeyPattern ? (out << to_string(includeParamKeyPattern)) : (out << "<null>"));
+  out << ", " << "excludeParamKeyPattern="; (__isset.excludeParamKeyPattern ? (out << to_string(excludeParamKeyPattern)) : (out << "<null>"));
   out << ")";
 }
 
@@ -49402,6 +49534,16 @@ void GetPartitionsByFilterRequest::__set_skipColumnSchemaForPartition(const bool
   this->skipColumnSchemaForPartition = val;
 __isset.skipColumnSchemaForPartition = true;
 }
+
+void GetPartitionsByFilterRequest::__set_includeParamKeyPattern(const std::string& val) {
+  this->includeParamKeyPattern = val;
+__isset.includeParamKeyPattern = true;
+}
+
+void GetPartitionsByFilterRequest::__set_excludeParamKeyPattern(const std::string& val) {
+  this->excludeParamKeyPattern = val;
+__isset.excludeParamKeyPattern = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetPartitionsByFilterRequest& obj)
 {
   obj.printTo(out);
@@ -49478,6 +49620,22 @@ uint32_t GetPartitionsByFilterRequest::read(::apache::thrift::protocol::TProtoco
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->includeParamKeyPattern);
+          this->__isset.includeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->excludeParamKeyPattern);
+          this->__isset.excludeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -49522,6 +49680,16 @@ uint32_t GetPartitionsByFilterRequest::write(::apache::thrift::protocol::TProtoc
     xfer += oprot->writeBool(this->skipColumnSchemaForPartition);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.includeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->includeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.excludeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->excludeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -49535,6 +49703,8 @@ void swap(GetPartitionsByFilterRequest &a, GetPartitionsByFilterRequest &b) {
   swap(a.filter, b.filter);
   swap(a.maxParts, b.maxParts);
   swap(a.skipColumnSchemaForPartition, b.skipColumnSchemaForPartition);
+  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
+  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
   swap(a.__isset, b.__isset);
 }
 
@@ -49545,6 +49715,8 @@ GetPartitionsByFilterRequest::GetPartitionsByFilterRequest(const GetPartitionsBy
   filter = other1743.filter;
   maxParts = other1743.maxParts;
   skipColumnSchemaForPartition = other1743.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1743.includeParamKeyPattern;
+  excludeParamKeyPattern = other1743.excludeParamKeyPattern;
   __isset = other1743.__isset;
 }
 GetPartitionsByFilterRequest& GetPartitionsByFilterRequest::operator=(const GetPartitionsByFilterRequest& other1744) {
@@ -49554,6 +49726,8 @@ GetPartitionsByFilterRequest& GetPartitionsByFilterRequest::operator=(const GetP
   filter = other1744.filter;
   maxParts = other1744.maxParts;
   skipColumnSchemaForPartition = other1744.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1744.includeParamKeyPattern;
+  excludeParamKeyPattern = other1744.excludeParamKeyPattern;
   __isset = other1744.__isset;
   return *this;
 }
@@ -49566,6 +49740,8 @@ void GetPartitionsByFilterRequest::printTo(std::ostream& out) const {
   out << ", " << "filter=" << to_string(filter);
   out << ", " << "maxParts="; (__isset.maxParts ? (out << to_string(maxParts)) : (out << "<null>"));
   out << ", " << "skipColumnSchemaForPartition="; (__isset.skipColumnSchemaForPartition ? (out << to_string(skipColumnSchemaForPartition)) : (out << "<null>"));
+  out << ", " << "includeParamKeyPattern="; (__isset.includeParamKeyPattern ? (out << to_string(includeParamKeyPattern)) : (out << "<null>"));
+  out << ", " << "excludeParamKeyPattern="; (__isset.excludeParamKeyPattern ? (out << to_string(excludeParamKeyPattern)) : (out << "<null>"));
   out << ")";
 }
 
@@ -49981,6 +50157,16 @@ void GetPartitionsPsWithAuthRequest::__set_skipColumnSchemaForPartition(const bo
   this->skipColumnSchemaForPartition = val;
 __isset.skipColumnSchemaForPartition = true;
 }
+
+void GetPartitionsPsWithAuthRequest::__set_includeParamKeyPattern(const std::string& val) {
+  this->includeParamKeyPattern = val;
+__isset.includeParamKeyPattern = true;
+}
+
+void GetPartitionsPsWithAuthRequest::__set_excludeParamKeyPattern(const std::string& val) {
+  this->excludeParamKeyPattern = val;
+__isset.excludeParamKeyPattern = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetPartitionsPsWithAuthRequest& obj)
 {
   obj.printTo(out);
@@ -50115,6 +50301,22 @@ uint32_t GetPartitionsPsWithAuthRequest::read(::apache::thrift::protocol::TProto
           xfer += iprot->skip(ftype);
         }
         break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->includeParamKeyPattern);
+          this->__isset.includeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->excludeParamKeyPattern);
+          this->__isset.excludeParamKeyPattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -50200,6 +50402,16 @@ uint32_t GetPartitionsPsWithAuthRequest::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeBool(this->skipColumnSchemaForPartition);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.includeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 11);
+    xfer += oprot->writeString(this->includeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.excludeParamKeyPattern) {
+    xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 12);
+    xfer += oprot->writeString(this->excludeParamKeyPattern);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -50217,6 +50429,8 @@ void swap(GetPartitionsPsWithAuthRequest &a, GetPartitionsPsWithAuthRequest &b) 
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.id, b.id);
   swap(a.skipColumnSchemaForPartition, b.skipColumnSchemaForPartition);
+  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
+  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
   swap(a.__isset, b.__isset);
 }
 
@@ -50231,6 +50445,8 @@ GetPartitionsPsWithAuthRequest::GetPartitionsPsWithAuthRequest(const GetPartitio
   validWriteIdList = other1773.validWriteIdList;
   id = other1773.id;
   skipColumnSchemaForPartition = other1773.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1773.includeParamKeyPattern;
+  excludeParamKeyPattern = other1773.excludeParamKeyPattern;
   __isset = other1773.__isset;
 }
 GetPartitionsPsWithAuthRequest& GetPartitionsPsWithAuthRequest::operator=(const GetPartitionsPsWithAuthRequest& other1774) {
@@ -50244,6 +50460,8 @@ GetPartitionsPsWithAuthRequest& GetPartitionsPsWithAuthRequest::operator=(const 
   validWriteIdList = other1774.validWriteIdList;
   id = other1774.id;
   skipColumnSchemaForPartition = other1774.skipColumnSchemaForPartition;
+  includeParamKeyPattern = other1774.includeParamKeyPattern;
+  excludeParamKeyPattern = other1774.excludeParamKeyPattern;
   __isset = other1774.__isset;
   return *this;
 }
@@ -50260,6 +50478,8 @@ void GetPartitionsPsWithAuthRequest::printTo(std::ostream& out) const {
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "skipColumnSchemaForPartition="; (__isset.skipColumnSchemaForPartition ? (out << to_string(skipColumnSchemaForPartition)) : (out << "<null>"));
+  out << ", " << "includeParamKeyPattern="; (__isset.includeParamKeyPattern ? (out << to_string(includeParamKeyPattern)) : (out << "<null>"));
+  out << ", " << "excludeParamKeyPattern="; (__isset.excludeParamKeyPattern ? (out << to_string(excludeParamKeyPattern)) : (out << "<null>"));
   out << ")";
 }
 
