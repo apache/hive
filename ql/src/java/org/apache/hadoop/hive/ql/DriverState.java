@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -25,6 +28,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * Represents the driver's state. Also has mechanism for locking for the time of state transitions.
  */
 public class DriverState {
+  private static final String CLASS_NAME = Driver.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
   private static ThreadLocal<DriverState> tlInstance = new ThreadLocal<DriverState>() {
     @Override
     protected DriverState initialValue() {
@@ -89,6 +95,10 @@ public class DriverState {
   public void compilingWithLocking() {
     lock();
     try {
+      if (isDestroyed() || isClosed()) {
+        LOG.warn("FAILED: Query command could not be compiled because driver has been cancelled, closed or destroyed.");
+        return;
+      }
       driverState = State.COMPILING;
     } finally {
       unlock();
