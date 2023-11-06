@@ -172,6 +172,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return (p == null) ? t.getSd() : p.getSd();
   }
 
+  protected StorageDescriptor resolveStorageDescriptor(Table t) {
+    return resolveStorageDescriptor(t, null);
+  }
+
   /**
    * Determine whether to run this job as the current user or whether we need a doAs to switch
    * users.

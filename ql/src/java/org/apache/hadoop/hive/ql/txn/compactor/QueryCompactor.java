@@ -49,7 +49,7 @@ import java.util.stream.Stream;
 /**
  * Common interface for query based compactions.
  */
-abstract class QueryCompactor implements Compactor {
+public abstract class QueryCompactor implements Compactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
   private static final String COMPACTOR_PREFIX = "compactor.";
@@ -68,6 +68,22 @@ abstract class QueryCompactor implements Compactor {
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {}
 
+  protected SessionState setupQueryCompactionSession(HiveConf conf, CompactionInfo compactionInfo, Map<String, String> tblProperties) {
+    String queueName = HiveConf.getVar(conf, HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
+    if (queueName != null && queueName.length() > 0) {
+      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
+    }
+    Util.disableLlapCaching(conf);
+    conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
+    Util.overrideConfProps(conf, compactionInfo, tblProperties);
+    String user = compactionInfo.runAs;
+    SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
+    sessionState.setCompaction(true);
+    return sessionState;
+  }
+  
   /**
    * Run all the queries which performs the compaction.
    * @param conf hive configuration, must be not null.
@@ -86,18 +102,7 @@ abstract class QueryCompactor implements Compactor {
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
       List<String> createQueries, List<String> compactionQueries, List<String> dropQueries,
       Map<String, String> tblProperties) throws IOException {
-    String queueName = HiveConf.getVar(conf, HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
-    if (queueName != null && queueName.length() > 0) {
-      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
-    }
-    Util.disableLlapCaching(conf);
-    conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
-    Util.overrideConfProps(conf, compactionInfo, tblProperties);
-    String user = compactionInfo.runAs;
-    SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
-    sessionState.setCompaction(true);
+    SessionState sessionState = setupQueryCompactionSession(conf, compactionInfo, tblProperties);
     long compactorTxnId = Compactor.getCompactorTxnId(conf);
     try {
       for (String query : createQueries) {
