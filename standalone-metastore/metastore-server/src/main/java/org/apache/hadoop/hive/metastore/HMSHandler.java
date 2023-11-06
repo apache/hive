@@ -6694,6 +6694,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
             .includeParamKeyPattern(req.getIncludeParamKeyPattern())
             .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+            .partNames(req.getPartNames())
             .build());
     GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
     res.setPartitions(partitions);

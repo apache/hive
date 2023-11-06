@@ -89,6 +89,15 @@ class GetPartitionsPsWithAuthRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        13 => array(
+            'var' => 'partNames',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => array(
+                'type' => TType::STRING,
+                ),
+        ),
     );
 
     /**
@@ -139,6 +148,10 @@ class GetPartitionsPsWithAuthRequest
      * @var string
      */
     public $excludeParamKeyPattern = null;
+    /**
+     * @var string[]
+     */
+    public $partNames = null;
 
     public function __construct($vals = null)
     {
@@ -178,6 +191,9 @@ class GetPartitionsPsWithAuthRequest
             }
             if (isset($vals['excludeParamKeyPattern'])) {
                 $this->excludeParamKeyPattern = $vals['excludeParamKeyPattern'];
+            }
+            if (isset($vals['partNames'])) {
+                $this->partNames = $vals['partNames'];
             }
         }
     }
@@ -303,6 +319,22 @@ class GetPartitionsPsWithAuthRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 13:
+                    if ($ftype == TType::LST) {
+                        $this->partNames = array();
+                        $_size1323 = 0;
+                        $_etype1326 = 0;
+                        $xfer += $input->readListBegin($_etype1326, $_size1323);
+                        for ($_i1327 = 0; $_i1327 < $_size1323; ++$_i1327) {
+                            $elem1328 = null;
+                            $xfer += $input->readString($elem1328);
+                            $this->partNames []= $elem1328;
+                        }
+                        $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -338,8 +370,8 @@ class GetPartitionsPsWithAuthRequest
             }
             $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->partVals));
-            foreach ($this->partVals as $iter1323) {
-                $xfer += $output->writeString($iter1323);
+            foreach ($this->partVals as $iter1329) {
+                $xfer += $output->writeString($iter1329);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -360,8 +392,8 @@ class GetPartitionsPsWithAuthRequest
             }
             $xfer += $output->writeFieldBegin('groupNames', TType::LST, 7);
             $output->writeListBegin(TType::STRING, count($this->groupNames));
-            foreach ($this->groupNames as $iter1324) {
-                $xfer += $output->writeString($iter1324);
+            foreach ($this->groupNames as $iter1330) {
+                $xfer += $output->writeString($iter1330);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -389,6 +421,18 @@ class GetPartitionsPsWithAuthRequest
         if ($this->excludeParamKeyPattern !== null) {
             $xfer += $output->writeFieldBegin('excludeParamKeyPattern', TType::STRING, 12);
             $xfer += $output->writeString($this->excludeParamKeyPattern);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->partNames !== null) {
+            if (!is_array($this->partNames)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('partNames', TType::LST, 13);
+            $output->writeListBegin(TType::STRING, count($this->partNames));
+            foreach ($this->partNames as $iter1331) {
+                $xfer += $output->writeString($iter1331);
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
