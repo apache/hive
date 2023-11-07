@@ -75,8 +75,10 @@ import org.stringtemplate.v4.ST;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -697,12 +699,7 @@ public class DDLPlanUtils {
     command.add(TABLE_NAME, unparseIdentifier(pr.getTableName()));
     command.add(DATABASE_NAME, unparseIdentifier(pr.getDatabaseName()));
     command.add(CONSTRAINT_NAME, unparseIdentifier(pr.getConstraintName()));
-    command.add(
-        COL_NAMES,
-        pr.getColNames().values().stream()
-            .map(x -> unparseIdentifier(x))
-            .collect(Collectors.joining(","))
-    );
+    command.add(COL_NAMES, unparseListOfIdentifiersAndJoin(pr.getColNames().values(), ","));
     command.add(ENABLE, pr.getEnable());
     command.add(VALIDATE, pr.getValidate());
     command.add(RELY, pr.getRely());
@@ -716,8 +713,8 @@ public class DDLPlanUtils {
     Map<String, List<ForeignKeyInfo.ForeignKeyCol>> all = fr.getForeignKeys();
     for (String key : all.keySet()) {
       List<ForeignKeyInfo.ForeignKeyCol> fkCols = all.get(key);
-      List<String> parentCols = new ArrayList<>();
-      List<String> childCols = new ArrayList<>();
+      Set<String> parentCols = new LinkedHashSet<>(fkCols.size());
+      Set<String> childCols = new LinkedHashSet<>(fkCols.size());
 
       for (ForeignKeyInfo.ForeignKeyCol fkc: fkCols) {
         parentCols.add(fkc.parentColName);
@@ -727,23 +724,21 @@ public class DDLPlanUtils {
       command.add(CHILD_TABLE_NAME, unparseIdentifier(fr.getChildTableName()));
       command.add(DATABASE_NAME, unparseIdentifier(fr.getChildDatabaseName()));
       command.add(CONSTRAINT_NAME, unparseIdentifier(key));
-      command.add(CHILD_COL_NAME,
-          childCols.stream()
-              .map(HiveUtils::unparseIdentifier)
-              .collect(Collectors.joining(", "))
-          );
+      command.add(CHILD_COL_NAME, unparseListOfIdentifiersAndJoin(childCols, ", "));
       command.add(DATABASE_NAME_FR, unparseIdentifier(fkCols.get(0).parentDatabaseName));
       command.add(PARENT_TABLE_NAME, unparseIdentifier(fkCols.get(0).parentTableName));
-      command.add(PARENT_COL_NAME,
-          parentCols.stream()
-              .map(HiveUtils::unparseIdentifier)
-              .collect(Collectors.joining(", "))
-          );
+      command.add(PARENT_COL_NAME, unparseListOfIdentifiersAndJoin(parentCols, ", "));
       command.add(ENABLE, fkCols.get(0).enable);
       command.add(VALIDATE, fkCols.get(0).validate);
       command.add(RELY, fkCols.get(0).rely);
       constraints.add(command.render());
     }
+  }
+
+  private String unparseListOfIdentifiersAndJoin(Collection<String> collection, String delimiter) {
+    return collection.stream()
+        .map(HiveUtils::unparseIdentifier)
+        .collect(Collectors.joining(delimiter));
   }
 
   public void getAlterTableStmtUniqueConstraint(UniqueConstraint uq, List<String> constraints) {
@@ -760,12 +755,7 @@ public class DDLPlanUtils {
       for (UniqueConstraint.UniqueConstraintCol col : uniqueConstraints.get(key)) {
         colNames.add(col.colName);
       }
-      command.add(
-          COLUMN_NAME,
-          colNames.stream()
-              .map(x -> unparseIdentifier(x))
-              .collect(Collectors.joining(","))
-      );
+      command.add(COLUMN_NAME, unparseListOfIdentifiersAndJoin(colNames, ","));
       command.add(ENABLE, uniqueConstraints.get(key).get(0).enable);
       command.add(VALIDATE, uniqueConstraints.get(key).get(0).validate);
       command.add(RELY, uniqueConstraints.get(key).get(0).rely);
@@ -1041,11 +1031,7 @@ public class DDLPlanUtils {
     if (bucketCols.isEmpty()) {
       return "";
     }
-    List<String> unparsedBucketCols = bucketCols.stream()
-        .map(x -> unparseIdentifier(x))
-        .collect(Collectors.toList());
-
-    String buckets = "CLUSTERED BY (\n  " + StringUtils.join(unparsedBucketCols, ",\n  ") + ")\n";
+    String buckets = "CLUSTERED BY (\n  " + unparseListOfIdentifiersAndJoin(bucketCols, ",\n  ") + ")\n";
 
     List<Order> sortColumns = table.getSortCols();
     if (!sortColumns.isEmpty()) {
@@ -1068,17 +1054,13 @@ public class DDLPlanUtils {
       return "";
     }
 
-    List<String> unparsedSkewedColNames = skewedInfo.getSkewedColNames().stream()
-        .map(x -> unparseIdentifier(x))
-        .collect(Collectors.toList());
-
     List<String> columnValuesList = new ArrayList<>();
     for (List<String> columnValues : skewedInfo.getSkewedColValues()) {
       columnValuesList.add("('" + StringUtils.join(columnValues, "','") + "')");
     }
 
     String skewed =
-      "SKEWED BY (" + StringUtils.join(unparsedSkewedColNames, ",") + ")\n" +
+      "SKEWED BY (" + unparseListOfIdentifiersAndJoin(skewedInfo.getSkewedColNames(), ",") + ")\n" +
         "  ON (" + StringUtils.join(columnValuesList, ",") + ")";
     if (table.isStoredAsSubDirectories()) {
       skewed += "\n  STORED AS DIRECTORIES";
