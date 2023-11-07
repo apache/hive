@@ -17,38 +17,64 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+
+import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,6 +85,8 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class CompactorUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CompactorUtil.class);
   public static final String COMPACTOR = "compactor";
+  private static final String COMPACTOR_THRESHOLD_PREFIX = "compactorthreshold.";
+
   /**
    * List of accepted properties for defining the compactor's job queue.
    *
@@ -294,5 +322,227 @@ public class CompactorUtil {
     requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
         !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
     return requestBuilder.build();
+  }
+
+  private static CompactionResponse requestCompaction(CompactionInfo ci, String runAs, String hostname,
+      TxnStore txnHandler) throws MetaException {
+    CompactionRequest compactionRequest = new CompactionRequest(ci.dbname, ci.tableName, ci.type);
+    if (ci.partName != null)
+      compactionRequest.setPartitionname(ci.partName);
+    compactionRequest.setRunas(runAs);
+    if (StringUtils.isEmpty(ci.initiatorId)) {
+      compactionRequest.setInitiatorId(hostname + "-" + Thread.currentThread().getId());
+    } else {
+      compactionRequest.setInitiatorId(ci.initiatorId);
+    }
+    compactionRequest.setInitiatorVersion(ci.initiatorVersion);
+    compactionRequest.setPoolName(ci.poolName);
+    LOG.info("Requesting compaction: " + compactionRequest);
+    CompactionResponse resp = txnHandler.compact(compactionRequest);
+    if (resp.isAccepted()) {
+      ci.id = resp.getId();
+    }
+    return resp;
+  }
+
+  private static CompactionType determineCompactionType(CompactionInfo ci, AcidDirectory dir,
+      Map<String, String> tblProperties, long baseSize, long deltaSize, HiveConf conf) {
+    boolean noBase = false;
+    List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
+    if (baseSize == 0 && deltaSize > 0) {
+      noBase = true;
+    } else {
+      String deltaPctProp =
+          tblProperties.get(COMPACTOR_THRESHOLD_PREFIX + HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD);
+      float deltaPctThreshold = deltaPctProp == null ? HiveConf.getFloatVar(conf,
+          HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD) : Float.parseFloat(deltaPctProp);
+      boolean bigEnough = (float) deltaSize / (float) baseSize > deltaPctThreshold;
+      boolean multiBase = dir.getObsolete().stream().anyMatch(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX));
+
+      boolean initiateMajor = bigEnough || (deltaSize == 0 && multiBase);
+      if (LOG.isDebugEnabled()) {
+        StringBuilder msg = new StringBuilder("delta size: ");
+        msg.append(deltaSize);
+        msg.append(" base size: ");
+        msg.append(baseSize);
+        msg.append(" multiBase ");
+        msg.append(multiBase);
+        msg.append(" deltaSize ");
+        msg.append(deltaSize);
+        msg.append(" threshold: ");
+        msg.append(deltaPctThreshold);
+        msg.append(" delta/base ratio > ").append(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD.varname)
+            .append(": ");
+        msg.append(bigEnough);
+        msg.append(".");
+        if (!initiateMajor) {
+          msg.append("not");
+        }
+        msg.append(" initiating major compaction.");
+        LOG.debug(msg.toString());
+      }
+      if (initiateMajor)
+        return CompactionType.MAJOR;
+    }
+
+    String deltaNumProp =
+        tblProperties.get(COMPACTOR_THRESHOLD_PREFIX + HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD);
+    int deltaNumThreshold = deltaNumProp == null ? HiveConf.getIntVar(conf,
+        HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD) : Integer.parseInt(deltaNumProp);
+    boolean enough = deltas.size() > deltaNumThreshold;
+    if (!enough) {
+      LOG.debug(
+          "Not enough deltas to initiate compaction for table=" + ci.tableName + "partition=" + ci.partName
+              + ". Found: " + deltas.size() + " deltas, threshold is " + deltaNumThreshold);
+      return null;
+    }
+    // If there's no base file, do a major compaction
+    LOG.debug("Found " + deltas.size() + " delta files, and " + (noBase ? "no" : "has") + " base," + "requesting "
+        + (noBase ? "major" : "minor") + " compaction");
+
+    return noBase || !isMinorCompactionSupported(conf, tblProperties,
+        dir) ? CompactionType.MAJOR : CompactionType.MINOR;
+  }
+
+  private static long getBaseSize(AcidDirectory dir) throws IOException {
+    long baseSize = 0;
+    if (dir.getBase() != null) {
+      baseSize = getDirSize(dir.getFs(), dir.getBase());
+    } else {
+      for (HadoopShims.HdfsFileStatusWithId origStat : dir.getOriginalFiles()) {
+        baseSize += origStat.getFileStatus().getLen();
+      }
+    }
+    return baseSize;
+  }
+
+  private static long getDirSize(FileSystem fs, AcidUtils.ParsedDirectory dir) throws IOException {
+    return dir.getFiles(fs, Ref.from(false)).stream().map(HadoopShims.HdfsFileStatusWithId::getFileStatus)
+        .mapToLong(FileStatus::getLen).sum();
+  }
+
+  private static CompactionType checkForCompaction(final CompactionInfo ci, final ValidWriteIdList writeIds,
+      final StorageDescriptor sd, final Map<String, String> tblProperties, final String runAs, TxnStore txnHandler,
+      HiveConf conf) throws IOException, InterruptedException {
+    // If it's marked as too many aborted, we already know we need to compact
+    if (ci.tooManyAborts) {
+      LOG.debug("Found too many aborted transactions for "
+          + ci.getFullPartitionName() + ", " + "initiating major compaction");
+      return CompactionType.MAJOR;
+    }
+
+    if (ci.hasOldAbort) {
+      HiveConf.ConfVars oldAbortedTimeoutProp = HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD;
+      LOG.debug(
+          "Found an aborted transaction for " + ci.getFullPartitionName() + " with age older than threshold "
+              + oldAbortedTimeoutProp + ": " + conf.getTimeVar(oldAbortedTimeoutProp, TimeUnit.HOURS) + " hours. "
+              + "Initiating minor compaction.");
+      return CompactionType.MINOR;
+    }
+    AcidDirectory acidDirectory = AcidUtils.getAcidState(sd, writeIds, conf);
+    long baseSize = getBaseSize(acidDirectory);
+    FileSystem fs = acidDirectory.getFs();
+    Map<Path, Long> deltaSizes = new HashMap<>();
+    for (AcidUtils.ParsedDelta delta : acidDirectory.getCurrentDirectories()) {
+      deltaSizes.put(delta.getPath(), getDirSize(fs, delta));
+    }
+    long deltaSize = deltaSizes.values().stream().reduce(0L, Long::sum);
+    AcidMetricService.updateMetricsFromInitiator(ci.dbname, ci.tableName, ci.partName, conf, txnHandler, baseSize,
+        deltaSizes, acidDirectory.getObsolete());
+
+    if (runJobAsSelf(runAs)) {
+      return determineCompactionType(ci, acidDirectory, tblProperties, baseSize, deltaSize, conf);
+    } else {
+      LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(runAs, UserGroupInformation.getLoginUser());
+      CompactionType compactionType;
+      try {
+        compactionType = ugi.doAs(
+            (PrivilegedExceptionAction<CompactionType>) () -> determineCompactionType(ci, acidDirectory, tblProperties,
+                baseSize, deltaSize, conf));
+      } finally {
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+              exception);
+        }
+      }
+      return compactionType;
+    }
+  }
+
+  private static ValidWriteIdList resolveValidWriteIds(Table t, TxnStore txnHandler, HiveConf conf)
+      throws NoSuchTxnException, MetaException {
+    ValidTxnList validTxnList = new ValidReadTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+    // The response will have one entry per table and hence we get only one ValidWriteIdList
+    String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
+    GetValidWriteIdsRequest validWriteIdsRequest =
+        new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
+    validWriteIdsRequest.setValidTxnList(validTxnList.writeToString());
+
+    return TxnUtils.createValidCompactWriteIdList(
+        txnHandler.getValidWriteIds(validWriteIdsRequest).getTblValidWriteIds().get(0));
+  }
+
+  public static CompactionResponse scheduleCompactionIfRequired(CompactionInfo ci, Table t, Partition p, String runAs,
+      boolean metricsEnabled, String hostName, TxnStore txnHandler, HiveConf conf) throws MetaException {
+    StorageDescriptor sd = resolveStorageDescriptor(t, p);
+    try {
+      ValidWriteIdList validWriteIds = resolveValidWriteIds(t, txnHandler, conf);
+
+      checkInterrupt(Initiator.class.getName());
+
+      CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs, txnHandler, conf);
+      if (type != null) {
+        ci.type = type;
+        return requestCompaction(ci, runAs, hostName, txnHandler);
+      }
+    } catch (InterruptedException e) {
+      //Handle InterruptedException separately so the compactionInfo won't be marked as failed.
+      LOG.info("Initiator pool is being shut down, task received interruption.");
+    } catch (Throwable ex) {
+      String errorMessage = "Caught exception while trying to determine if we should compact " + ci
+              + ". Marking " + "failed to avoid repeated failures, " + ex;
+      LOG.error(errorMessage);
+      ci.errorMessage = errorMessage;
+      if (metricsEnabled) {
+        Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER).inc();
+      }
+      txnHandler.markFailed(ci);
+    }
+    return null;
+  }
+
+  public static CompactionResponse initiateCompactionForPartition(Table table, Partition partition,
+      CompactionRequest compactionRequest, String hostName, TxnStore txnHandler, HiveConf inputConf) throws MetaException {
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+    HiveConf conf = new HiveConf(inputConf);
+    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    CompactionResponse compactionResponse;
+    CompactionInfo compactionInfo =
+        new CompactionInfo(table.getDbName(), table.getTableName(), compactionRequest.getPartitionname(),
+            compactionRequest.getType());
+    compactionInfo.initiatorId = compactionRequest.getInitiatorId();
+    compactionInfo.orderByClause = compactionRequest.getOrderByClause();
+    compactionInfo.initiatorVersion = compactionRequest.getInitiatorVersion();
+    if (compactionRequest.getNumberOfBuckets() > 0) {
+      compactionInfo.numberOfBuckets = compactionRequest.getNumberOfBuckets();
+    }
+    compactionInfo.poolName = compactionRequest.getPoolName();
+    try {
+      StorageDescriptor sd = resolveStorageDescriptor(table, partition);
+      String runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
+      LOG.info("Checking to see if we should compact partition {} of table {}.{}", compactionInfo.partName,
+          table.getDbName(), table.getTableName());
+      compactionResponse =
+          scheduleCompactionIfRequired(compactionInfo, table, partition, runAs, false, hostName,
+              txnHandler, conf);
+    } catch (IOException | InterruptedException | MetaException e) {
+      LOG.error("Error occurred while Checking if we should compact partition {} of table {}.{} Exception: {}",
+          compactionInfo.partName, table.getDbName(), table.getTableName(), e.getMessage());
+      throw new RuntimeException(e);
+    }
+    return compactionResponse;
   }
 }
