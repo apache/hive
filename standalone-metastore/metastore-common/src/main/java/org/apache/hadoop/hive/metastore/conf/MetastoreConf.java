@@ -1277,7 +1277,7 @@ public class MetastoreConf {
         "Sleep interval between retries to acquire a notification lock as described part of property "
             + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
     NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED("metastore.alterPartitions.notification.v2.enabled",
-        "hive.metastore.alterPartitions.notification.v2.enabled", false,
+        "hive.metastore.alterPartitions.notification.v2.enabled", true,
         "This property enables sending a single notification event on alter partitions"),
     ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
         "hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
