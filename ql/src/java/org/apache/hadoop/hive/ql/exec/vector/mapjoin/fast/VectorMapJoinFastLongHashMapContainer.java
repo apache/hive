@@ -109,10 +109,13 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
     private NonMatchedLongHashMapIterator(MatchTracker matchTracker,
         VectorMapJoinFastLongHashMap[] vectorMapJoinFastLongHashMaps, int numThreads) {
       super(matchTracker);
+
+      assert matchTracker.getIsPartitioned();
+
       hashMapIterators = new VectorMapJoinFastLongHashMap.NonMatchedLongHashMapIterator[numThreads];
       for (int i = 0; i < numThreads; ++i) {
-        hashMapIterators[i] = new VectorMapJoinFastLongHashMap.NonMatchedLongHashMapIterator(matchTracker,
-            vectorMapJoinFastLongHashMaps[i]);
+        hashMapIterators[i] = new VectorMapJoinFastLongHashMap.NonMatchedLongHashMapIterator(
+            matchTracker.getPartition(i), vectorMapJoinFastLongHashMaps[i]);
       }
       index = 0;
       this.numThreads = numThreads;
@@ -185,8 +188,14 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
 
   public JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult,
       MatchTracker matchTracker) {
+    assert matchTracker == null || matchTracker.getIsPartitioned();
+
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    return vectorMapJoinFastLongHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(key, hashMapResult, matchTracker);
+    int partition = (int) ((numThreads - 1) & hashCode);
+    MatchTracker childMatchTracker = matchTracker != null ? matchTracker.getPartition(partition) : null;
+
+    return vectorMapJoinFastLongHashMaps[partition].lookup(key, hashMapResult,
+        childMatchTracker);
   }
 
   public long getEstimatedMemorySize() {
@@ -208,11 +217,13 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
 
   @Override
   public MatchTracker createMatchTracker() {
-    int count = 0;
-    for (int i = 0; i < numThreads; ++i) {
-      count += vectorMapJoinFastLongHashMaps[i].logicalHashBucketCount;
+    MatchTracker parentMatchTracker = MatchTracker.createPartitioned(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      int childSize = vectorMapJoinFastLongHashMaps[i].logicalHashBucketCount;
+      parentMatchTracker.addPartition(i, childSize);
     }
-    return MatchTracker.create(count);
+
+    return parentMatchTracker;
   }
 
   @Override
