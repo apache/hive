@@ -1003,11 +1003,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
         Map<String, String> contextProperties = context.getProperties();
         if (contextProperties.containsKey(SET_PROPERTIES)) {
-          final String[] propValue = {context.getProperties().get(SET_PROPERTIES)};
-          writeModeList.stream()
-              .filter(writeMode -> !splitter.splitToList(propValue[0]).contains(writeMode))
-              .map(writeMode -> propValue[0] += "'" + writeMode)
-              .forEach(writeMode -> contextProperties.put(SET_PROPERTIES, propValue[0]));
+          String propValue = context.getProperties().get(SET_PROPERTIES);
+          String writeModeStr = writeModeList.stream().filter(writeMode ->
+              !splitter.splitToList(propValue).contains(writeMode)).collect(Collectors.joining("'"));
+          if (!writeModeStr.isEmpty()) {
+            contextProperties.put(SET_PROPERTIES, propValue + "'" + writeModeStr);
+          }
         }
       }
     }
