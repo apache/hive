@@ -54,6 +54,7 @@ import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOpera
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.SET_CURRENT_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.VERSION;
+import static org.apache.hadoop.hive.ql.parse.HiveLexer.KW_RETAIN;
 
 /**
  * Analyzer for ALTER TABLE ... EXECUTE commands.
@@ -141,7 +142,12 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
         SessionState.get().getConf().getLocalTimeZone();
     ASTNode firstNode = (ASTNode) children.get(1);
     String firstNodeText = PlanUtils.stripQuotes(firstNode.getText().trim());
-    if (children.size() == 3) {
+    if (firstNode.getType() == KW_RETAIN) {
+      ASTNode numRetainLastNode = (ASTNode) children.get(2);
+      String numToRetainText = PlanUtils.stripQuotes(numRetainLastNode.getText());
+      int numToRetain = Integer.parseInt(numToRetainText);
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(numToRetain));
+    } else if (children.size() == 3) {
       ASTNode secondNode = (ASTNode) children.get(2);
       String secondNodeText = PlanUtils.stripQuotes(secondNode.getText().trim());
       TimestampTZ fromTime = TimestampTZUtil.parse(firstNodeText, timeZone);
