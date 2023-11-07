@@ -113,7 +113,7 @@ CREATE EXTERNAL TABLE `emp_iceberg`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
-company)
+`company`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -150,7 +150,7 @@ CREATE EXTERNAL TABLE `emp_like1`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
-company)
+`company`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -216,7 +216,7 @@ CREATE EXTERNAL TABLE `emp_like2`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
-company)
+`company`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 

@@ -1,11 +1,11 @@
 CREATE TABLE TEST(
   col1 varchar(100) NOT NULL COMMENT "comment for column 1",
   col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
-  col3 decimal CHECK (col3 + col4 > 1) enable novalidate rely,
+  `col 3` decimal CHECK (`col 3` + col4 > 1) enable novalidate rely,
   col4 decimal NOT NULL,
   col5 varchar(100),
   primary key(col1, col2) disable novalidate rely,
-  constraint c3_c4_check CHECK((col3 + col4)/(col3 - col4) > 3) enable novalidate norely,
+  constraint c3_c4_check CHECK((`col 3` + col4)/(`col 3` - col4) > 3) enable novalidate norely,
   constraint c4_unique UNIQUE(col4) disable novalidate rely)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
