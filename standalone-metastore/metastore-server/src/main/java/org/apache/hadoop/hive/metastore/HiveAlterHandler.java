@@ -911,9 +911,19 @@ public class HiveAlterHandler implements AlterHandler {
       msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, writeId, writeIdList);
 
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(oldParts, new_parts, tbl, false, true, handler),
-            environmentContext);
+        boolean shouldSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
+            MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+        if (shouldSingleEvent) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
+              new AlterPartitionsEvent(oldParts, new_parts, tbl, false, true, handler), environmentContext);
+        } else {
+          for (Partition newPart : new_parts) {
+            Partition oldPart = oldPartMap.get(newPart.getValues());
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
+                new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
+                environmentContext);
+          }
+        }
       }
       success = msdb.commitTransaction();
     } catch (InvalidObjectException | NoSuchObjectException e) {

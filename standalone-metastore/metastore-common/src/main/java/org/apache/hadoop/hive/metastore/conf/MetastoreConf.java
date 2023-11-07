@@ -1276,6 +1276,9 @@ public class MetastoreConf {
         "hive.notification.sequence.lock.retry.sleep.interval", 10, TimeUnit.SECONDS,
         "Sleep interval between retries to acquire a notification lock as described part of property "
             + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
+    NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED("metastore.alterPartitions.notification.v2.enabled",
+        "hive.metastore.alterPartitions.notification.v2.enabled", false,
+        "This property enables sending a single notification event on alter partitions"),
     ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
         "hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
         "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +
