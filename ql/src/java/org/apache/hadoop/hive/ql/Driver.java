@@ -508,6 +508,10 @@ public class Driver implements IDriver {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
     lDrvState.stateLock.lock();
     try {
+      if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
+        LOG.warn("FAILED: Query command could not be compiled because driver has been cancelled, closed or destroyed.");
+        return;
+      }
       lDrvState.driverState = DriverState.COMPILING;
     } finally {
       lDrvState.stateLock.unlock();
