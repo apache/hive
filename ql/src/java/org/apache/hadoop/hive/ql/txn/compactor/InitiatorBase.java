@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -50,7 +49,6 @@ import org.apache.hive.common.util.Ref;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -61,9 +59,9 @@ public class InitiatorBase extends MetaStoreCompactorThread {
 
   static final private String COMPACTOR_THRESHOLD_PREFIX = "compactorthreshold.";
 
-  private List<CompactionResponse> initiateCompactionForMultiplePartitions(Table table,
+  private Map<CompactionResponse, String> initiateCompactionForMultiplePartitions(Table table,
       Map<String, Partition> partitions, CompactionRequest request) {
-    List<CompactionResponse> compactionResponses = new ArrayList<>();
+    Map<CompactionResponse, String> compactionResponses = new HashMap<>();
     partitions.entrySet().parallelStream().forEach(entry -> {
       try {
         StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(table, entry.getValue());
@@ -80,8 +78,10 @@ public class InitiatorBase extends MetaStoreCompactorThread {
         LOG.info(
             "Checking to see if we should compact partition " + entry.getKey() + " of table " + table.getDbName() + "."
                 + table.getTableName());
-        CollectionUtils.addIgnoreNull(compactionResponses,
-            scheduleCompactionIfRequired(ci, table, entry.getValue(), runAs, false));
+        CompactionResponse compactionResponse = scheduleCompactionIfRequired(ci, table, entry.getValue(), runAs, false);
+        if(compactionResponse != null){
+          compactionResponses.put(compactionResponse, entry.getKey());
+        }
       } catch (IOException | InterruptedException | MetaException e) {
         LOG.error(
             "Error occurred while Checking if we should compact partition " + entry.getKey() + " of table " + table.getDbName() + "."
@@ -92,13 +92,13 @@ public class InitiatorBase extends MetaStoreCompactorThread {
     return compactionResponses;
   }
 
-  public List<CompactionResponse> initiateCompactionForTable(CompactionRequest request, Table table, Map<String, Partition> partitions) throws Exception {
+  public Map<CompactionResponse, String> initiateCompactionForTable(CompactionRequest request, Table table, Map<String, Partition> partitions) throws Exception {
     ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
     if (request.getPartitionname()!= null || partitions.isEmpty()) {
-      List<CompactionResponse> responses = new ArrayList<>();
-      responses.add(txnHandler.compact(request));
+      Map<CompactionResponse, String> responses = new HashMap<>();
+      responses.put(txnHandler.compact(request), request.getPartitionname());
       return responses;
     } else {
       return initiateCompactionForMultiplePartitions(table, partitions, request);

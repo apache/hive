@@ -37,7 +37,11 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.txn.compactor.InitiatorBase;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
@@ -80,15 +84,17 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       Optional<String> partitionName =  partitionMap.keySet().stream().findFirst();
       partitionName.ifPresent(compactionRequest::setPartitionname);
     }
-    List<CompactionResponse> compactionResponses =
+    Map<CompactionResponse, String> compactionResponses =
         initiatorBase.initiateCompactionForTable(compactionRequest, table.getTTable(), partitionMap);
-    for (CompactionResponse compactionResponse : compactionResponses) {
+    for (Map.Entry<CompactionResponse, String> compactionResponseEntry : compactionResponses.entrySet()) {
+      CompactionResponse compactionResponse = compactionResponseEntry.getKey();
       if (!compactionResponse.isAccepted()) {
         String message;
         if (compactionResponse.isSetErrormessage()) {
           message = compactionResponse.getErrormessage();
           throw new HiveException(ErrorMsg.COMPACTION_REFUSED, table.getDbName(), table.getTableName(),
-              "CompactionId: " + compactionResponse.getId(), message);
+              compactionResponseEntry.getValue() == null ? "" :
+                  "(partition=" + compactionResponseEntry.getValue() + ")", message);
         }
         context.getConsole().printInfo(
             "Compaction already enqueued with id " + compactionResponse.getId() + "; State is "
