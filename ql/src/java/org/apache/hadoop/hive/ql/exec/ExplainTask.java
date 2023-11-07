@@ -464,9 +464,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     basicDef.add(ddlPlanUtils.getAlterTableStmtTableStatsBasic(tbl));
   }
 
-  public void addConstraints(Table tbl, List<String> constraints, Set<String> allTableNames,
-      DDLPlanUtils ddlPlanUtils){
-    constraints.addAll(ddlPlanUtils.populateConstraints(tbl, allTableNames));
+  public void addConstraints(Table tbl, List<String> constraints, DDLPlanUtils ddlPlanUtils){
+    constraints.addAll(ddlPlanUtils.populateConstraints(tbl));
   }
 
   public void addStats(Table table,List<String> alterTableStmt ,Map<String, List<Partition>> tablePartitionsMap,
@@ -524,7 +523,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       } else {
         addCreateTableStatement(table, tableCreateStmt, ddlPlanUtils);
         addPKandBasicStats(table, tableBasicDef, ddlPlanUtils);
-        addConstraints(table, alterTableStmt, tableMap.keySet(), ddlPlanUtils);
+        addConstraints(table, alterTableStmt, ddlPlanUtils);
         addStats(table, alterTableStmt, tablePartitionsMap, ddlPlanUtils);
       }
     }
