@@ -28,9 +28,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * Represents the driver's state. Also has mechanism for locking for the time of state transitions.
  */
 public class DriverState {
-  private static final String CLASS_NAME = Driver.class.getName();
-  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-
   private static ThreadLocal<DriverState> tlInstance = new ThreadLocal<DriverState>() {
     @Override
     protected DriverState initialValue() {
@@ -96,10 +93,10 @@ public class DriverState {
     lock();
     try {
       if (isDestroyed() || isClosed()) {
-        LOG.warn("FAILED: Query command could not be compiled because driver has been cancelled, closed or destroyed.");
-        return;
+        abort();
+      } else {
+        driverState = State.COMPILING;
       }
-      driverState = State.COMPILING;
     } finally {
       unlock();
     }
