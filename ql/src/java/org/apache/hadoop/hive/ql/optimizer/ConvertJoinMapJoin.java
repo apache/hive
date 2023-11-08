@@ -83,6 +83,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.math.DoubleMath;
 
+import static org.apache.hadoop.hive.ql.exec.OperatorUtils.hasMoreOperatorsThan;
+
 /**
  * ConvertJoinMapJoin is an optimization that replaces a common join
  * (aka shuffle join) with a map join (aka broadcast or fragment replicate
@@ -755,6 +757,14 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         LOG.debug("External table {} found in join and also could not provide statistics - disabling SMB join.", sb);
         return false;
       }
+      for (Operator<?> grandParent : parentOp.getParentOperators()) {
+        if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 2)) {
+          LOG.info(
+              "We cannot convert to SMB because one of the join branches has more than one GBY in the same reducer");
+          return false;
+        }
+      }
+
       // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
       // This is a workaround for now. Right fix would be to refactor code in the
       // MapRecordProcessor and ReduceRecordProcessor with respect to the sources.

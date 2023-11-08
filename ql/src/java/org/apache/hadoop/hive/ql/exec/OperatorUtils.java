@@ -176,6 +176,37 @@ public class OperatorUtils {
     return found;
   }
 
+  /**
+   * Check whether there are more operators in the specified operator tree branch than the give limit
+   * @param start root of the operator tree to check
+   * @param opClazz type of operator to track
+   * @param limit maximum allowed number of operator in a branch of the tree
+   * @return true of limit is exceeded false otherwise
+   * @param <T> type of operator to track
+   */
+  public static <T> boolean hasMoreOperatorsThan(Operator<?> start, Class<T> opClazz, int limit) {
+    int count = limit;
+    if (count <= 0) {
+      return true;
+    };
+
+    if (start instanceof ReduceSinkOperator) {
+      return false;
+    }
+
+    if (opClazz.isInstance(start)) {
+      count--;
+    }
+
+    if (start.getParentOperators() != null) {
+      for (Operator<?> parent : start.getParentOperators()) {
+        if (hasMoreOperatorsThan(parent, opClazz, count)) {
+          return true;
+        }
+      }
+    }
+    return count <= 0;
+  }
 
   public static void setChildrenCollector(List<Operator<? extends OperatorDesc>> childOperators, OutputCollector out) {
     if (childOperators == null) {
