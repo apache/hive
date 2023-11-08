@@ -48,4 +48,6 @@ public interface MergeRewriter {
    * @return the number of prefixes set.
    */
   int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx);
+
+  void setOperation(Context context);
 }

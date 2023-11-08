@@ -109,7 +109,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
               "MergeSemanticAnalyzer");
     }
 
-    ctx.setOperation(Context.Operation.MERGE);
     ASTNode source = (ASTNode)tree.getChild(1);
     String targetName = getSimpleTableName(targetNameNode);
     String sourceName = getSimpleTableName(source);
@@ -141,6 +140,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
+    mergeRewriter.setOperation(ctx);
     mergeRewriter.handleSource(hasWhenNotMatchedInsertClause(whenClauses), sourceAlias, onClauseAsText);
 
     // Add the hint if any
@@ -215,7 +215,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, mergeRewriter.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
-    rewrittenCtx.setOperation(Context.Operation.MERGE);
+    mergeRewriter.setOperation(rewrittenCtx);
 
     //set dest name mapping on new context; 1st child is TOK_FROM
     int insClauseIdx = 1;

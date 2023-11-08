@@ -54,4 +54,9 @@ public class SplitMergeRewriter extends NativeMergeRewriter {
     rewrittenCtx.addDeleteOfUpdateDestNamePrefix(insClauseIdx + 1, Context.DestClausePrefix.DELETE);
     return 2;
   }
+
+  @Override
+  public void setOperation(Context context) {
+    context.setOperation(Context.Operation.MERGE, true);
+  }
 }

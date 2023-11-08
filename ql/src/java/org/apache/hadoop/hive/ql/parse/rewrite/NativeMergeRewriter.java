@@ -194,6 +194,11 @@ public class NativeMergeRewriter implements MergeRewriter {
   }
 
   @Override
+  public void setOperation(Context context) {
+    context.setOperation(Context.Operation.MERGE);
+  }
+
+  @Override
   public String toString() {
     return sqlBuilder.toString();
   }
