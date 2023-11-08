@@ -2331,6 +2331,4 @@ class ResourceMaps {
     }
     return result;
   }
-
-
 }
