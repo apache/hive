@@ -28,6 +28,7 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.Date;
@@ -1116,34 +1117,37 @@ public final class PrimitiveObjectInspectorUtils {
     Date result = null;
     switch (oi.getPrimitiveCategory()) {
     case VOID:
-      result = null;
       break;
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o).trim();
       try {
-        result = Date.valueOf(s);
-      } catch (IllegalArgumentException e) {
-        Timestamp ts = getTimestampFromString(s);
-        if (ts != null) {
-          result = Date.ofEpochMilli(ts.toEpochMilli());
+        if (s.length() == DATE_LENGTH) {
+          result = Date.valueOf(s);
         } else {
-          result = null;
+          Timestamp ts = getTimestampFromString(s);
+          if (ts != null) {
+            result = Date.ofEpochMilli(ts.toEpochMilli());
+          }
         }
+      } catch (IllegalArgumentException e) {
+        // Do nothing
       }
       break;
     case CHAR:
     case VARCHAR: {
       String val = getString(o, oi).trim();
       try {
-        result = Date.valueOf(val);
-      } catch (IllegalArgumentException e) {
-        Timestamp ts = getTimestampFromString(val);
-        if (ts != null) {
-          result = Date.ofEpochMilli(ts.toEpochMilli());
+        if (val.length() == DATE_LENGTH) {
+          result = Date.valueOf(val);
         } else {
-          result = null;
+          Timestamp ts = getTimestampFromString(val);
+          if (ts != null) {
+            result = Date.ofEpochMilli(ts.toEpochMilli());
+          }
         }
+      } catch (IllegalArgumentException e) {
+        // Do nothing
       }
       break;
     }
@@ -1247,28 +1251,21 @@ public final class PrimitiveObjectInspectorUtils {
     return result;
   }
 
+  private final static int TS_LENGTH = "yyyy-mm-dd hh:mm:ss".length();
+  private final static int DATE_LENGTH = "YYYY-MM-DD".length();
+
   public static Timestamp getTimestampFromString(String s) {
-    Timestamp result;
     s = s.trim();
     s = trimNanoTimestamp(s);
 
+    if(StringUtils.isEmpty(s))
+      return null;
+
     try {
-      result = Timestamp.valueOf(s);
-    } catch (IllegalArgumentException e) {
-      // Let's try to parse it as timestamp with time zone and transform
-      try {
-        result = Timestamp.valueOf(TimestampTZUtil.parse(s).getZonedDateTime()
-            .toLocalDateTime().toString());
-      } catch (DateTimeException e2) {
-        // Last try: we try to parse it as date and transform
-        try {
-          result = Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
-        } catch (IllegalArgumentException e3) {
-          result = null;
-        }
-      }
+      return TimestampUtils.stringToTimestamp(s);
+    } catch (IllegalArgumentException | DateTimeException e) {
+      return null;
     }
-    return result;
   }
 
   private static String trimNanoTimestamp(String s) {
@@ -1276,13 +1273,28 @@ public final class PrimitiveObjectInspectorUtils {
     // Throw away extra if more than 9 decimal places
     int periodIdx = s.indexOf(".");
     if (periodIdx != -1) {
-      int secondSpace = firstSpace < 0 ? -1 : s.indexOf(' ', firstSpace + 1);
-      int maxLength = secondSpace == -1 ? s.length() : secondSpace;
+      int secondSpaceOrPlus = firstSpace < 0 ? -1 : s.indexOf(' ', firstSpace + 1);
+      secondSpaceOrPlus = firstSpace < 0 || secondSpaceOrPlus != -1 ?
+          secondSpaceOrPlus : s.indexOf('+', firstSpace + 1);
+      int maxLength = secondSpaceOrPlus == -1 ? s.length() : secondSpaceOrPlus;
       if (maxLength - periodIdx > 9) {
         s = s.substring(0, periodIdx + 10).concat(s.substring(maxLength, s.length()));
       }
     }
     return s;
+  }
+
+  private static boolean isValidTimeStamp(final String s) {
+    if (s.length() == TS_LENGTH ||
+            (s.contains(".") &&
+                    s.substring(0, s.indexOf('.')).length() == TS_LENGTH)) {
+      // Possible timestamp
+      if (s.charAt(DATE_LENGTH) == '-') {
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 
   public static TimestampTZ getTimestampLocalTZ(Object o, PrimitiveObjectInspector oi,
