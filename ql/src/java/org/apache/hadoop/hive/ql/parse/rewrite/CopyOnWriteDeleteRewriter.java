@@ -30,13 +30,13 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
 
   private final HiveConf conf;
   protected final SqlBuilderFactory sqlBuilderFactory;
-  private final COWWithClauseBuilder COWWithClauseBuilder;
+  private final COWWithClauseBuilder cowWithClauseBuilder;
 
   public CopyOnWriteDeleteRewriter(
-      HiveConf conf, SqlBuilderFactory sqlBuilderFactory, COWWithClauseBuilder COWWithClauseBuilder) {
+      HiveConf conf, SqlBuilderFactory sqlBuilderFactory, COWWithClauseBuilder cowWithClauseBuilder) {
     this.sqlBuilderFactory = sqlBuilderFactory;
     this.conf = conf;
-    this.COWWithClauseBuilder = COWWithClauseBuilder;
+    this.cowWithClauseBuilder = cowWithClauseBuilder;
   }
 
   @Override
@@ -50,7 +50,7 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
 
     MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
 
-    COWWithClauseBuilder.appendWith(sqlBuilder, filePathCol, whereClause);
+    cowWithClauseBuilder.appendWith(sqlBuilder, filePathCol, whereClause);
 
     sqlBuilder.append("insert into table ");
     sqlBuilder.append(sqlBuilder.getTargetTableFullName());

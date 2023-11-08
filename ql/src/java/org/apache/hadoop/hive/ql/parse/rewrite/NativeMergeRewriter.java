@@ -171,7 +171,7 @@ public class NativeMergeRewriter implements MergeRewriter {
         format.processStorageFormat("TextFile");
         Table table = db.newTable(tableName);
         table.setSerializationLib(format.getSerde());
-        List<FieldSchema> fields = new ArrayList<FieldSchema>();
+        List<FieldSchema> fields = new ArrayList<>();
         fields.add(new FieldSchema("val", "int", null));
         table.setFields(fields);
         table.setDataLocation(Warehouse.getDnsPath(new Path(SessionState.get().getTempTableSpace(),

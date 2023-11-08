@@ -37,7 +37,7 @@ import java.util.Map;
 
 public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
-  private final Context.Operation OPERATION = Context.Operation.UPDATE;
+  private static final Context.Operation OPERATION = Context.Operation.UPDATE;
 
   private final HiveConf conf;
   protected final SqlBuilderFactory sqlBuilderFactory;

@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -53,7 +52,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   protected static final Logger LOG = LoggerFactory.getLogger(RewriteSemanticAnalyzer.class);
 
   protected boolean useSuper = false;
-  private Table targetTable;
 
   RewriteSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -73,7 +71,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
   private void analyze(ASTNode tree) throws SemanticException {
     ASTNode tableName = getTargetTableNode(tree);
-    targetTable = getTable(tableName, db, true);
+    Table targetTable = getTable(tableName, db, true);
     validateTxnManager(targetTable);
     validateTargetTable(targetTable);
     analyze(tree, targetTable, tableName);

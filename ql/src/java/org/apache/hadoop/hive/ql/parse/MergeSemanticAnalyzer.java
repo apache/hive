@@ -270,15 +270,12 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    */
   private boolean handleCardinalityViolation(boolean onlyHaveWhenNotMatchedClause) {
     if (!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
-      LOG.info("Merge statement cardinality violation check is disabled: " +
+      LOG.info("Merge statement cardinality violation check is disabled: {}",
           HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK.varname);
       return false;
     }
-    if (onlyHaveWhenNotMatchedClause) {
-      //if no update or delete in Merge, there is no need to to do cardinality check
-      return false;
-    }
-    return true;
+    //if no update or delete in Merge, there is no need to do cardinality check
+    return !onlyHaveWhenNotMatchedClause;
   }
 
   /**

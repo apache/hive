@@ -21,13 +21,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
-
-import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory.DELETE_PREFIX;
 
 public class MergeRewriterFactory {
   protected final HiveConf conf;

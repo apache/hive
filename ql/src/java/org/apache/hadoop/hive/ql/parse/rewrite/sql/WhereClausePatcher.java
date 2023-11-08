@@ -19,11 +19,14 @@ package org.apache.hadoop.hive.ql.parse.rewrite.sql;
 
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class WhereClausePatcher {
-  public void patch(ASTNode rewrittenInsert, ASTNode whereTree) {
-    assert rewrittenInsert.getToken().getType() == HiveParser.TOK_INSERT :
-        "Expected TOK_INSERT as second child of TOK_QUERY but found " + rewrittenInsert.getName();
+  public void patch(ASTNode rewrittenInsert, ASTNode whereTree) throws SemanticException {
+    if (rewrittenInsert.getToken().getType() != HiveParser.TOK_INSERT) {
+      throw new SemanticException(
+          "Expected TOK_INSERT as second child of TOK_QUERY but found " + rewrittenInsert.getName());
+    }
     // The structure of the AST for the rewritten insert statement is:
     // TOK_QUERY -> TOK_FROM
     //          \-> TOK_INSERT -> TOK_INSERT_INTO

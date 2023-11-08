@@ -709,7 +709,7 @@ public final class ParseUtils {
 
     ASTNode rewrittenTree;
     try {
-      LOG.info("Going to reparse <" + ctx.getCmd() + "> as \n<" + rewrittenQueryStr + ">");
+      LOG.info("Going to reparse <{}> as \n<{}>", ctx.getCmd(), rewrittenQueryStr);
       rewrittenTree = ParseUtils.parse(rewrittenQueryStr, rewrittenCtx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);

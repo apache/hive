@@ -39,15 +39,15 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
 
   private final HiveConf conf;
   private final SqlBuilderFactory sqlBuilderFactory;
-  private final COWWithClauseBuilder COWWithClauseBuilder;
+  private final COWWithClauseBuilder cowWithClauseBuilder;
   private final SetClausePatcher setClausePatcher;
 
 
   public CopyOnWriteUpdateRewriter(HiveConf conf, SqlBuilderFactory sqlBuilderFactory,
-                                   COWWithClauseBuilder COWWithClauseBuilder, SetClausePatcher setClausePatcher) {
+                                   COWWithClauseBuilder cowWithClauseBuilder, SetClausePatcher setClausePatcher) {
     this.conf = conf;
     this.sqlBuilderFactory = sqlBuilderFactory;
-    this.COWWithClauseBuilder = COWWithClauseBuilder;
+    this.cowWithClauseBuilder = cowWithClauseBuilder;
     this.setClausePatcher = setClausePatcher;
   }
 
@@ -62,7 +62,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
 
     MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
 
-    COWWithClauseBuilder.appendWith(sqlBuilder, filePathCol, whereClause);
+    cowWithClauseBuilder.appendWith(sqlBuilder, filePathCol, whereClause);
 
     sqlBuilder.append("insert into table ");
     sqlBuilder.appendTargetTableName();
