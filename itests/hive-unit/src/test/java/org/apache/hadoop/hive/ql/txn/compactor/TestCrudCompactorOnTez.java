@@ -77,7 +77,6 @@ import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -602,7 +601,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test
-  @Ignore("HIVE-27848")
   public void secondCompactionShouldBeRefusedBeforeEnqueueing() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
 

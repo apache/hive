@@ -89,12 +89,10 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     for (Map.Entry<CompactionResponse, String> compactionResponseEntry : compactionResponses.entrySet()) {
       CompactionResponse compactionResponse = compactionResponseEntry.getKey();
       if (!compactionResponse.isAccepted()) {
-        String message;
         if (compactionResponse.isSetErrormessage()) {
-          message = compactionResponse.getErrormessage();
           throw new HiveException(ErrorMsg.COMPACTION_REFUSED, table.getDbName(), table.getTableName(),
               compactionResponseEntry.getValue() == null ? "" :
-                  "(partition=" + compactionResponseEntry.getValue() + ")", message);
+                  "(partition=" + compactionResponseEntry.getValue() + ")", compactionResponse.getErrormessage());
         }
         context.getConsole().printInfo(
             "Compaction already enqueued with id " + compactionResponse.getId() + "; State is "
