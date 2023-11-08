@@ -128,6 +128,10 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.iceberg.TableProperties.DELETE_MODE;
+import static org.apache.iceberg.TableProperties.MERGE_MODE;
+import static org.apache.iceberg.TableProperties.UPDATE_MODE;
+
 public class HiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
   public static final Map<String, String> COMMON_HMS_PROPERTIES = ImmutableMap.of(
@@ -428,7 +432,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
     } else {
-      setDeleteModeOnTableProperties(icebergTable, hmsTable.getParameters());
+      setDeleteModeOnTableProperties(icebergTable, hmsTable.getParameters(), context);
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
     }
 
@@ -741,7 +745,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     // Remove creation related properties
     PARAMETERS_TO_REMOVE.forEach(hmsParams::remove);
 
-    setDeleteModeOnTableProperties(null, hmsParams);
+    setDeleteModeOnTableProperties(null, hmsParams, null);
   }
 
   /**
@@ -981,14 +985,32 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   // TODO: remove this if copy-on-write mode gets implemented in Hive
-  private static void setDeleteModeOnTableProperties(Table icebergTable, Map<String, String> newProps) {
+  private void setDeleteModeOnTableProperties(Table icebergTbl, Map<String, String> newProps,
+      EnvironmentContext context) {
     // Hive only supports merge-on-read delete mode, it will actually throw an error if DML operations are attempted on
     // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
-    if ((icebergTable == null || ((BaseTable) icebergTable).operations().current().formatVersion() == 1) &&
+    if ((icebergTbl == null || ((BaseTable) icebergTbl).operations().current().formatVersion() == 1) &&
         IcebergTableUtil.isV2Table(newProps)) {
-      newProps.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-      newProps.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
-      newProps.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+      List<String> writeModeList = Arrays.asList(DELETE_MODE, UPDATE_MODE, MERGE_MODE);
+      writeModeList.stream()
+          .filter(writeMode -> catalogProperties.get(writeMode) == null)
+          .forEach(writeMode -> {
+            catalogProperties.put(writeMode, HiveIcebergStorageHandler.MERGE_ON_READ);
+            newProps.put(writeMode, HiveIcebergStorageHandler.MERGE_ON_READ);
+          });
+
+      if (context != null) {
+        Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
+        Map<String, String> contextProperties = context.getProperties();
+        if (contextProperties.containsKey(SET_PROPERTIES)) {
+          String propValue = context.getProperties().get(SET_PROPERTIES);
+          String writeModeStr = writeModeList.stream().filter(writeMode ->
+              !splitter.splitToList(propValue).contains(writeMode)).collect(Collectors.joining("'"));
+          if (!writeModeStr.isEmpty()) {
+            contextProperties.put(SET_PROPERTIES, propValue + "'" + writeModeStr);
+          }
+        }
+      }
     }
   }
 
