@@ -146,6 +146,7 @@ public class MessageBuilder {
   public static final String ALTER_DATACONNECTOR_EVENT = "ALTER_DATACONNECTOR";
   public static final String DROP_DATACONNECTOR_EVENT = "DROP_DATACONNECTOR";
   public static final String RELOAD_EVENT = "RELOAD";
+  public static final String CONFIG_CHANGE_EVENT = "CONFIG_CHANGE_EVENT";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
 

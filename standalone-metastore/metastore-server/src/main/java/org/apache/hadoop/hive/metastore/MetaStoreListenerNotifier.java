@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
+import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -290,6 +291,8 @@ public class MetaStoreListenerNotifier {
               ((listener, event) -> listener.onCommitCompaction((CommitCompactionEvent) event, null, null)))
           .put(EventType.RELOAD,
                   ((listener, event) -> listener.onReload((ReloadEvent) event)))
+          .put(EventType.CONFIG_CHANGE,
+              ((listener, event) -> listener.onConfigChange((ConfigChangeEvent) event)))
           .build()
   );
 
