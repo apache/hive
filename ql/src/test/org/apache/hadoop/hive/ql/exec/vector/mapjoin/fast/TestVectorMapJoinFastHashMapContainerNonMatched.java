@@ -181,19 +181,19 @@ public class TestVectorMapJoinFastHashMapContainerNonMatched {
   public void testStringHashMapContainer() throws Exception {
     Random random = new Random();
 
-    String keyA = VectorRandomRowSource.getRandString(random, false);
+    String keyA = VectorRandomRowSource.getRandString(random, 5, false);
     while ((getHashCode(keyA) & (initialCapacity - 1)) != 0) {
-      keyA = VectorRandomRowSource.getRandString(random, false);
+      keyA = VectorRandomRowSource.getRandString(random, 5, false);
     }
 
-    String keyB = VectorRandomRowSource.getRandString(random, false);
+    String keyB = VectorRandomRowSource.getRandString(random, 5, false);
     while ((getHashCode(keyB) & (initialCapacity - 1)) != 0 && !keyB.equals(keyA)) {
-      keyB = VectorRandomRowSource.getRandString(random, false);
+      keyB = VectorRandomRowSource.getRandString(random, 5, false);
     }
 
-    String keyC = VectorRandomRowSource.getRandString(random, false);
+    String keyC = VectorRandomRowSource.getRandString(random, 5, false);
     while ((getHashCode(keyC) & (initialCapacity - 1)) != 1) {
-      keyC = VectorRandomRowSource.getRandString(random, false);
+      keyC = VectorRandomRowSource.getRandString(random, 5, false);
     }
 
     TableDesc tableDesc = new TableDesc();
