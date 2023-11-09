@@ -18,93 +18,42 @@
 
 package org.apache.hive.jdbc;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+
 import java.math.BigDecimal;
+
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
-import org.junit.AfterClass;
-import org.junit.Test;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Connection;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.Test;
 
 /**
- * TestJdbcWithMiniLlap for Arrow format
+ * TestJdbcWithMiniLlap for Arrow format with vectorized output sink
  */
-@Ignore("unstable HIVE-23549")
-public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
+public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
 
-  private static MiniHS2 miniHS2 = null;
-  private static final String tableName = "testJdbcMinihs2Tbl";
-  private static String dataFileDir;
-  private static final String testDbName = "testJdbcMinihs2";
-  private static final String tag = "mytag";
-
-  private static class ExceptionHolder {
-    Throwable throwable;
-  }
 
   @BeforeClass
   public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
     conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
-    conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, "org.apache.hadoop.hive.ql.security" +
-            ".SessionStateUserAuthenticator");
-    conf.setVar(ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
-    conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
-    conf.setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST_APPEND, ConfVars.HIVE_SUPPORT_CONCURRENCY
-            .varname + "|" + ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname);
-    MiniHS2.cleanupLocalDir();
-    miniHS2 = BaseJdbcWithMiniLlap.beforeTest(conf);
-    dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
-
-    Connection conDefault = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(),
-            System.getProperty("user.name"), "bar");
-    Statement stmt = conDefault.createStatement();
-    String tblName = testDbName + "." + tableName;
-    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
-    String udfName = SleepMsUDF.class.getName();
-    stmt.execute("drop database if exists " + testDbName + " cascade");
-    stmt.execute("create database " + testDbName);
-    stmt.execute("set role admin");
-    stmt.execute("dfs -put " + dataFilePath.toString() + " " + "kv1.txt");
-    stmt.execute("use " + testDbName);
-    stmt.execute("create table " + tblName + " (int_col int, value string) ");
-    stmt.execute("load data inpath 'kv1.txt' into table " + tblName);
-    stmt.execute("create function sleepMsUDF as '" + udfName + "'");
-    stmt.execute("grant select on table " + tblName + " to role public");
-
-    stmt.close();
-    conDefault.close();
-  }
-
-  @AfterClass
-  public static void afterTest() {
-    if (miniHS2 != null && miniHS2.isStarted()) {
-      miniHS2.stop();
-    }
+    conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
+    BaseJdbcWithMiniLlap.beforeTest(conf);
   }
 
   @Override
@@ -290,143 +239,173 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
   }
 
-  /**
-   * SleepMsUDF
-   */
-  public static class SleepMsUDF extends UDF {
-    public Integer evaluate(int value, int ms) {
-      try {
-        Thread.sleep(ms);
-      } catch (InterruptedException e) {
-        // No-op
-      }
-      return value;
+
+  @Test
+  public void testTypesNestedInListWithLimitAndFilters() throws Exception {
+    try (Statement statement = hs2Conn.createStatement()) {
+      statement.execute("CREATE TABLE complex_tbl(c1 array<string>, " +
+          "c2 array<struct<f1:string,f2:string>>, " +
+          "c3 array<array<struct<f1:string,f2:string>>>, " +
+          "c4 int) STORED AS ORC");
+
+      statement.executeUpdate("INSERT INTO complex_tbl VALUES " +
+          "(" +
+          "ARRAY('a1', 'a2', 'a3', null), " +
+          "ARRAY(NAMED_STRUCT('f1','a1', 'f2','a2'), NAMED_STRUCT('f1','a3', 'f2','a4')), " +
+          "ARRAY((ARRAY(NAMED_STRUCT('f1','a1', 'f2','a2'), NAMED_STRUCT('f1','a3', 'f2','a4')))), " +
+          "1),      " +
+          "(" +
+          "ARRAY('b1'), " +
+          "ARRAY(NAMED_STRUCT('f1','b1', 'f2','b2'), NAMED_STRUCT('f1','b3', 'f2','b4')), " +
+          "ARRAY((ARRAY(NAMED_STRUCT('f1','b1', 'f2','b2'), NAMED_STRUCT('f1','b3', 'f2','b4'))), " +
+          "(ARRAY(NAMED_STRUCT('f1','b5', 'f2','b6'), NAMED_STRUCT('f1','b7', 'f2','b8')))), " +
+          "2), " +
+          "(" +
+          "ARRAY('c1', 'c2'), ARRAY(NAMED_STRUCT('f1','c1', 'f2','c2'), NAMED_STRUCT('f1','c3', 'f2','c4'), " +
+          "NAMED_STRUCT('f1','c5', 'f2','c6')), ARRAY((ARRAY(NAMED_STRUCT('f1','c1', 'f2','c2'), " +
+          "NAMED_STRUCT('f1','c3', 'f2','c4'))), (ARRAY(NAMED_STRUCT('f1','c5', 'f2','c6'), " +
+          "NAMED_STRUCT('f1','c7', 'f2','c8'))), (ARRAY(NAMED_STRUCT('f1','c9', 'f2','c10'), " +
+          "NAMED_STRUCT('f1','c11', 'f2','c12')))), " +
+          "3), " +
+          "(" +
+          "ARRAY(null), " +
+          "ARRAY(NAMED_STRUCT('f1','d1', 'f2','d2'), NAMED_STRUCT('f1','d3', 'f2','d4'), " +
+          "NAMED_STRUCT('f1','d5', 'f2','d6'), NAMED_STRUCT('f1','d7', 'f2','d8')), " +
+          "ARRAY((ARRAY(NAMED_STRUCT('f1','d1', 'f2', 'd2')))), " +
+          "4)");
+
     }
-  }
 
-  /**
-   * Test CLI kill command of a query that is running.
-   * We spawn 2 threads - one running the query and
-   * the other attempting to cancel.
-   * We're using a dummy udf to simulate a query,
-   * that runs for a sufficiently long time.
-   * @throws Exception
-   */
-  private void testKillQueryInternal(String user, String killUser, boolean useTag, final
-      ExceptionHolder stmtHolder, final ExceptionHolder tKillHolder) throws Exception {
-    Connection con1 = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(testDbName),
-            user, "bar");
-    Connection con2 = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(testDbName),
-            killUser, "bar");
-
-    final Statement stmt2 = con2.createStatement();
-    final HiveStatement stmt1 = (HiveStatement)con1.createStatement();
-    final StringBuffer stmtQueryId = new StringBuffer();
-
-    // Thread executing the query
-    Thread tExecute = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          System.out.println("Executing query: ");
-          stmt1.execute("set hive.llap.execution.mode = none");
-
-          if (useTag) {
-            stmt1.execute("set hive.query.tag = " + tag);
-          }
-          // The test table has 500 rows, so total query time should be ~ 500*500ms
-          stmt1.executeAsync("select sleepMsUDF(t1.int_col, 100), t1.int_col, t2.int_col " +
-                  "from " + tableName + " t1 join " + tableName + " t2 on t1.int_col = t2.int_col");
-          stmtQueryId.append(stmt1.getQueryId());
-          stmt1.getUpdateCount();
-        } catch (SQLException e) {
-          stmtHolder.throwable = e;
-        }
-      }
+    List<Object[]> expected = new ArrayList<>();
+    expected.add(new Object[]{
+        asList("a1", "a2", "a3", null),
+        asList(asList("a1", "a2"), asList("a3", "a4")),
+        asList(asList(asList("a1", "a2"), asList("a3", "a4"))),
+        1
+    });
+    expected.add(new Object[]{
+        asList("b1"),
+        asList(asList("b1", "b2"), asList("b3", "b4")),
+        asList(asList(asList("b1", "b2"), asList("b3", "b4")), asList(asList("b5", "b6"), asList("b7", "b8"))),
+        2
+    });
+    expected.add(new Object[]{
+        asList("c1", "c2"),
+        asList(asList("c1", "c2"), asList("c3", "c4"), asList("c5", "c6")),
+        asList(asList(asList("c1", "c2"), asList("c3", "c4")), asList(asList("c5", "c6"), asList("c7", "c8")),
+            asList(asList("c9", "c10"), asList("c11", "c12"))),
+        3
+    });
+    List<String> nullList = new ArrayList<>();
+    nullList.add(null);
+    expected.add(new Object[]{
+        nullList,
+        asList(asList("d1", "d2"), asList("d3", "d4"), asList("d5", "d6"), asList("d7", "d8")),
+        asList(asList(asList("d1", "d2"))),
+        4
     });
 
-    tExecute.start();
+    // test without limit and filters (i.e VectorizedRowBatch#selectedInUse=false)
+    RowCollector2 rowCollector = new RowCollector2();
+    String query = "select * from complex_tbl";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(0),
+        expected.get(1),
+        expected.get(2),
+        expected.get(3));
 
-    // wait for other thread to create the stmt handle
-    int count = 0;
-    while (count < 15) {
-      try {
-        tKillHolder.throwable = null;
-        Thread.sleep(2000);
-        String queryId;
-        if (useTag) {
-          queryId = tag;
-        } else {
-          if (stmtQueryId.length() != 0) {
-            queryId = stmtQueryId.toString();
-          } else {
-            count++;
-            continue;
-          }
-        }
-        System.out.println("Killing query: " + queryId);
-        if (killUser.equals(System.getProperty("user.name"))) {
-          stmt2.execute("set role admin");
-        }
-        stmt2.execute("kill query '" + queryId + "'");
-        stmt2.close();
-        break;
-      } catch (SQLException e) {
-        count++;
-        tKillHolder.throwable = e;
-      }
-    }
+    // test with filter
+    rowCollector = new RowCollector2();
+    query = "select * from complex_tbl where c4 > 1 ";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(1), expected.get(2), expected.get(3));
 
-    tExecute.join();
-    try {
-      stmt1.close();
-      con1.close();
-      con2.close();
-    } catch (Exception e) {
-      // ignore error
-    }
+    // test with limit
+    rowCollector = new RowCollector2();
+    query = "select * from complex_tbl limit 3";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(0), expected.get(1), expected.get(2));
+
+    // test with filters and limit
+    rowCollector = new RowCollector2();
+    query = "select * from complex_tbl where c4 > 1 limit 2";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(1), expected.get(2));
+
   }
 
   @Test
-  @Override
-  public void testKillQuery() throws Exception {
-    testKillQueryById();
-    testKillQueryByTagNegative();
-    testKillQueryByTagAdmin();
-    testKillQueryByTagOwner();
+  public void testTypesNestedInMapWithLimitAndFilters() throws Exception {
+    try (Statement statement = hs2Conn.createStatement()) {
+      statement.execute("CREATE TABLE complex_tbl2(c1 map<int, string>," +
+          " c2 map<int, array<string>>, " +
+          " c3 map<int, struct<f1:string,f2:string>>, c4 int) STORED AS ORC");
+
+      statement.executeUpdate("INSERT INTO complex_tbl2 VALUES " +
+          "(MAP(1, 'a1'), MAP(1, ARRAY('a1', 'a2')), MAP(1, NAMED_STRUCT('f1','a1', 'f2','a2')), " +
+          "1), " +
+          "(MAP(1, 'b1',2, 'b2'), MAP(1, ARRAY('b1', 'b2'), 2, ARRAY('b3') ), " +
+          "MAP(1, NAMED_STRUCT('f1','b1', 'f2','b2')), " +
+          "2), " +
+          "(MAP(1, 'c1',2, 'c2'), MAP(1, ARRAY('c1', 'c2'), 2, ARRAY('c3') ), " +
+          "MAP(1, NAMED_STRUCT('f1','c1', 'f2','c2'), 2, NAMED_STRUCT('f1', 'c3', 'f2', 'c4') ), " +
+          "3)");
+
+    }
+
+    List<Object[]> expected = new ArrayList<>();
+    expected.add(new Object[]{
+        ImmutableMap.of(1, "a1"),
+        ImmutableMap.of(1, asList("a1", "a2")),
+        ImmutableMap.of(1, asList("a1", "a2")),
+        1,
+    });
+    expected.add(new Object[]{
+        ImmutableMap.of(1, "b1", 2, "b2"),
+        ImmutableMap.of(1, asList("b1", "b2"), 2, asList("b3")),
+        ImmutableMap.of(1, asList("b1", "b2")),
+        2,
+    });
+    expected.add(new Object[]{
+        ImmutableMap.of(1, "c1", 2, "c2"),
+        ImmutableMap.of(1, asList("c1", "c2"), 2, asList("c3")),
+        ImmutableMap.of(1, asList("c1", "c2"), 2, asList("c3", "c4")),
+        3,
+    });
+
+
+    // test without limit and filters (i.e. VectorizedRowBatch#selectedInUse=false)
+    RowCollector2 rowCollector = new RowCollector2();
+    String query = "select * from complex_tbl2";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(0), expected.get(1), expected.get(2));
+
+    // test with filter
+    rowCollector = new RowCollector2();
+    query = "select * from complex_tbl2 where c4 > 1 ";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(1), expected.get(2));
+
+    // test with limit
+    rowCollector = new RowCollector2();
+    query = "select * from complex_tbl2 limit 2";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(0), expected.get(1));
+
+    // test with filters and limit
+    rowCollector = new RowCollector2();
+    query = "select * from complex_tbl2 where c4 > 1 limit 1";
+    processQuery(query, 1, rowCollector);
+    verifyResult(rowCollector.rows, expected.get(1));
+
   }
 
-  public void testKillQueryById() throws Exception {
-    ExceptionHolder tExecuteHolder = new ExceptionHolder();
-    ExceptionHolder tKillHolder = new ExceptionHolder();
-    testKillQueryInternal(System.getProperty("user.name"), System.getProperty("user.name"), false,
-            tExecuteHolder, tKillHolder);
-    assertNotNull("tExecute", tExecuteHolder.throwable);
-    assertNull("tCancel", tKillHolder.throwable);
+  private void verifyResult(List<Object[]> actual, Object[]... expected) {
+    assertEquals(expected.length, actual.size());
+    for (int i = 0; i < expected.length; i++) {
+      assertArrayEquals(expected[i], actual.get(i));
+    }
   }
 
-  public void testKillQueryByTagNegative() throws Exception {
-    ExceptionHolder tExecuteHolder = new ExceptionHolder();
-    ExceptionHolder tKillHolder = new ExceptionHolder();
-    testKillQueryInternal("user1", "user2", true, tExecuteHolder, tKillHolder);
-    assertNotNull("tCancel", tKillHolder.throwable);
-    assertTrue(tKillHolder.throwable.getMessage(), tKillHolder.throwable.getMessage().contains("No privilege"));
-  }
-
-  public void testKillQueryByTagAdmin() throws Exception {
-    ExceptionHolder tExecuteHolder = new ExceptionHolder();
-    ExceptionHolder tKillHolder = new ExceptionHolder();
-    testKillQueryInternal("user1", System.getProperty("user.name"), true, tExecuteHolder, tKillHolder);
-    assertNotNull("tExecute", tExecuteHolder.throwable);
-    assertNull("tCancel", tKillHolder.throwable);
-  }
-
-  public void testKillQueryByTagOwner() throws Exception {
-    ExceptionHolder tExecuteHolder = new ExceptionHolder();
-    ExceptionHolder tKillHolder = new ExceptionHolder();
-    testKillQueryInternal("user1", "user1", true, tExecuteHolder, tKillHolder);
-    assertNotNull("tExecute", tExecuteHolder.throwable);
-    assertNull("tCancel", tKillHolder.throwable);
-  }
 }
 

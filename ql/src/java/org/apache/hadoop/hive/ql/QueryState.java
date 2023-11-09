@@ -23,7 +23,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.LineageState;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapreduce.MRJobConfig;
+import org.apache.tez.dag.api.TezConfiguration;
 
 /**
  * The class to store query level info such as queryId. Multiple queries can run
@@ -54,6 +56,11 @@ public class QueryState {
   // id cannot be queried for some reason like hive server restart.
   private String queryTag = null;
 
+  static public final String USERID_TAG = "userid";
+  /**
+   * Holds the number of rows affected for insert queries.
+   */
+  private long numModifiedRows = 0;
   /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
@@ -107,21 +114,25 @@ public class QueryState {
   }
 
   public String getQueryTag() {
-    return queryTag;
+    return HiveConf.getVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
   }
 
   public void setQueryTag(String queryTag) {
-    this.queryTag = queryTag;
+    HiveConf.setVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG, queryTag);
   }
 
-  public static void setMapReduceJobTag(HiveConf queryConf, String queryTag) {
-    String jobTag = queryConf.get(MRJobConfig.JOB_TAGS);
-    if (jobTag == null) {
+  public static void setApplicationTag(HiveConf queryConf, String queryTag) {
+    String jobTag = HiveConf.getVar(queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
+    if (jobTag == null || jobTag.isEmpty()) {
       jobTag = queryTag;
     } else {
       jobTag = jobTag.concat("," + queryTag);
     }
+    if (SessionState.get() != null) {
+      jobTag = jobTag.concat("," + USERID_TAG + "=" + SessionState.get().getUserName());
+    }
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
+    queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
   }
 
   /**
@@ -233,7 +244,7 @@ public class QueryState {
       if (generateNewQueryId) {
         String queryId = QueryPlan.makeQueryId();
         queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
-        setMapReduceJobTag(queryConf, queryId);
+        setApplicationTag(queryConf, queryId);
 
         // FIXME: druid storage handler relies on query.id to maintain some staging directories
         // expose queryid to session level
