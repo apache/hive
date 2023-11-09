@@ -757,11 +757,17 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         LOG.debug("External table {} found in join and also could not provide statistics - disabling SMB join.", sb);
         return false;
       }
-      for (Operator<?> grandParent : parentOp.getParentOperators()) {
-        if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 2)) {
-          LOG.info(
-              "We cannot convert to SMB because one of the join branches has more than one GBY in the same reducer");
-          return false;
+      // GBY operators buffers one record. These are processed when ReduceRecordSources flushes the operator tree
+      // when end of record stream reached. If the tree has more than two GBY operators CommonMergeJoinOperator can
+      // not process all buffered records.
+      // HIVE-27788
+      if (parentOp.getParentOperators() != null) {
+        for (Operator<?> grandParent : parentOp.getParentOperators()) {
+          if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 2)) {
+            LOG.info("We cannot convert to SMB join " +
+                "because one of the join branches has more than one Group by operators in the same reducer.");
+            return false;
+          }
         }
       }
 

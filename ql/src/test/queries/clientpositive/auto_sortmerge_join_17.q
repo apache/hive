@@ -6,8 +6,6 @@ values
 (2, 'val_2'),
 (9, 'val_9');
 
-set hive.optimize.semijoin.conversion = false;
-
 explain
 SELECT t1.key from
 (SELECT  key , row_number() over(partition by key order by value desc) as rk from tbl1_n5) t1

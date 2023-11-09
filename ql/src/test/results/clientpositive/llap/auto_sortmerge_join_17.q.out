@@ -81,7 +81,7 @@ STAGE PLANS:
                         key expressions: _col0 (type: int), _col1 (type: string)
                         null sort order: zz
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                         Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -130,7 +130,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
@@ -154,10 +154,11 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: int)
-                    mode: complete
+                    minReductionHashAggr: 0.4
+                    mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
