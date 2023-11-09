@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -279,7 +278,6 @@ public class TestDbNotificationListener
     conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(conf));
@@ -770,9 +768,8 @@ public class TestDbNotificationListener
     AlterPartitionsMessage alterPtnsMsg = md.getAlterPartitionsMessage(event.getMessage());
     assertEquals(defaultDbName, alterPtnsMsg.getDB());
     assertEquals(tblName, alterPtnsMsg.getTable());
-    assertEquals(newPart.getValues(), alterPtnsMsg.getPartitionValues().get(0));
-    assertEquals(partCols.stream()
-        .map(partCol -> partCol.getName()).collect(Collectors.toList()), alterPtnsMsg.getPartitionKeys());
+    assertEquals(newPart, alterPtnsMsg.getPartitionObjs().iterator().next());
+    assertEquals(1, alterPtnsMsg.getPartitions().size());
     assertEquals(TableType.MANAGED_TABLE.toString(), alterPtnsMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
@@ -806,21 +803,16 @@ public class TestDbNotificationListener
         .create(msClient, new HiveConf());
 
     Table table = msClient.getTable(new GetTableRequest(defaultDbName, tblName));
-    long writeId = 1;
     List<Partition> partitions = new ArrayList<>();
-    List<List<String>> part_values = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
       List<String> values = Arrays.asList(i + "", "part" + i);
       Partition part = new Partition(values, defaultDbName, tblName,
           0,  0, table.getSd(), emptyParameters);
-      part.setWriteId(writeId);
       partitions.add(part);
-      part_values.add(values);
     }
     msClient.add_partitions(partitions);
     partitions.forEach(partition -> partition.setCreateTime(startTime));
-    // event 3
-    msClient.alter_partitions(defaultDbName, tblName, partitions, null, null, writeId);
+    msClient.alter_partitions(defaultDbName, tblName, partitions, null, null, -1);
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
@@ -831,14 +823,16 @@ public class TestDbNotificationListener
     assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
-
     // Parse the message field
     AlterPartitionsMessage alterPtnsMsg = md.getAlterPartitionsMessage(event.getMessage());
     assertEquals(defaultDbName, alterPtnsMsg.getDB());
     assertEquals(tblName, alterPtnsMsg.getTable());
-    assertEquals(table.getPartitionKeys().stream().map(fs -> fs.getName()).collect(Collectors.toList()),
-        alterPtnsMsg.getPartitionKeys());
-    assertEquals(part_values, alterPtnsMsg.getPartitionValues());
+    Iterator<Partition> expectedIterator = partitions.iterator(),
+        actualIterator = alterPtnsMsg.getPartitionObjs().iterator();
+    while (expectedIterator.hasNext() && actualIterator.hasNext()) {
+      assertEquals(expectedIterator.next(), actualIterator.next());
+    }
+    assertFalse(expectedIterator.hasNext() || actualIterator.hasNext());
     assertEquals(table.getTableType(), alterPtnsMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
@@ -849,7 +843,7 @@ public class TestDbNotificationListener
     // a failed event should not create a new notification
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
-      msClient.alter_partitions(defaultDbName, tblName, partitions, null, null, writeId);
+      msClient.alter_partitions(defaultDbName, tblName, partitions, null, null, -1);
       fail("Error: alter partition should've failed");
     } catch (Exception ex) {
       // expected
@@ -1603,7 +1597,7 @@ public class TestDbNotificationListener
     event = rsp.getEvents().get(26);
     assertEquals(firstEventId + 27, event.getEventId());
     assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
-    assertTrue(event.getMessage().matches(".*\\[\"ds\"\\].*\\[\\[\"todaytwo\"\\]\\].*"));
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
 
     // Test fromEventId different from the very first
     testEventCounts(defaultDbName, event.getEventId(), null, null, 4);
@@ -1621,12 +1615,12 @@ public class TestDbNotificationListener
     event = rsp.getEvents().get(29);
     assertEquals(firstEventId + 30, event.getEventId());
     assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
-    assertTrue(event.getMessage().matches(".*\\[\"ds\"\\].*\\[\\[\"todaytwo\"\\]\\].*"));
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
 
     event = rsp.getEvents().get(30);
     assertEquals(firstEventId + 31, event.getEventId());
     assertEquals(EventType.ALTER_PARTITIONS.toString(), event.getEventType());
-    assertTrue(event.getMessage().matches(".*\\[\"ds\"\\].*\\[\\[\"todaytwo\"\\]\\].*"));
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
     testEventCounts(defaultDbName, firstEventId, null, null, 31);
 
     // Test a limit within the available events

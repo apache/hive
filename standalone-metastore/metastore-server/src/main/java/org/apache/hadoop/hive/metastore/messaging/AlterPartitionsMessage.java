@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.metastore.messaging;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 public abstract class AlterPartitionsMessage extends EventMessage {
 
@@ -31,33 +33,36 @@ public abstract class AlterPartitionsMessage extends EventMessage {
 
   public abstract String getTableType();
 
+  public abstract Table getTableObj() throws Exception;
+
   public abstract boolean getIsTruncateOp();
 
   public abstract Long getWriteId();
 
-  public abstract List<String> getPartitionKeys();
+  /**
+   * Getter for list of partitions.
+   * @return List of maps, where each map identifies values for each partition-key, for every altered partition.
+   */
+  public abstract List<Map<String, String>> getPartitions();
 
-  public abstract List<List<String>> getPartitionValues();
-
-  public abstract List<Partition> getPartitionsAfter();
+  public abstract Iterable<Partition> getPartitionObjs() throws Exception;
 
   @Override
   public EventMessage checkValid() {
-    if (getTable() == null) {
+    if (getTable() == null)
       throw new IllegalStateException("Table name unset.");
-    }
-    if (getPartitionKeys() == null || getPartitionKeys().isEmpty()) {
-      throw new IllegalStateException("Partition keys unset");
-    }
-    if (getPartitionValues() == null || getPartitionValues().isEmpty()) {
-      throw new IllegalStateException("Partition values unset.");
-    }
+    if (getPartitions() == null)
+      throw new IllegalStateException("Partition-list unset.");
 
-    getPartitionsAfter().forEach(partition -> {
-      if (getWriteId() != partition.getWriteId()) {
-        throw new IllegalStateException("Different write id in the same event");
-      }
-    });
+    try {
+      getPartitionObjs().forEach(partition -> {
+        if (getWriteId() != partition.getWriteId()) {
+          throw new IllegalStateException("Different write id in the same event");
+        }
+      });
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to get the partition objects");
+    }
 
     return super.checkValid();
   }

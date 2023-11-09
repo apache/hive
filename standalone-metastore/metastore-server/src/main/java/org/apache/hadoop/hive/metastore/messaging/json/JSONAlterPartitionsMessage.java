@@ -18,19 +18,25 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionsMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
+import org.apache.thrift.TException;
 
 public class JSONAlterPartitionsMessage extends AlterPartitionsMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
 
   @JsonProperty
   String isTruncateOp;
@@ -39,12 +45,10 @@ public class JSONAlterPartitionsMessage extends AlterPartitionsMessage {
   Long timestamp, writeId;
 
   @JsonProperty
-  List<String> partitionKeys;
+  List<Map<String, String>> partitions;
 
   @JsonProperty
-  List<List<String>> partitionValues;
-
-  List<Partition> partitionsAfter;
+  List<String> partitionListJson;
 
   /**
    * Default constructor, needed for Jackson.
@@ -59,14 +63,22 @@ public class JSONAlterPartitionsMessage extends AlterPartitionsMessage {
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
     this.tableType = tableObj.getTableType();
-    this.partitionsAfter = partitionsAfter;
-    this.partitionKeys = tableObj.getPartitionKeys().stream()
-        .map(column -> column.getName()).collect(Collectors.toList());
-    this.partitionValues = new ArrayList<>(partitionsAfter.size());
-    partitionsAfter.forEach(partition -> partitionValues.add(new ArrayList<>(partition.getValues())));
     this.isTruncateOp = Boolean.toString(isTruncateOp);
     this.timestamp = timestamp;
     this.writeId = writeId;
+    this.partitions = new ArrayList<>();
+    this.partitionListJson = new ArrayList<>();
+    try {
+      this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
+      Iterator<Partition> iterator = partitionsAfter.iterator();
+      while (iterator.hasNext()) {
+        Partition partitionObj = iterator.next();
+        partitions.add(MessageBuilder.getPartitionKeyValues(tableObj, partitionObj));
+        partitionListJson.add(MessageBuilder.createPartitionObjJson(partitionObj));
+      }
+    } catch (TException e) {
+      throw new IllegalArgumentException("Could not serialize: ", e);
+    }
     checkValid();
   }
 
@@ -101,6 +113,11 @@ public class JSONAlterPartitionsMessage extends AlterPartitionsMessage {
   }
 
   @Override
+  public Table getTableObj() throws Exception {
+    return (Table) MessageBuilder.getTObj(tableObjJson,Table.class);
+  }
+
+  @Override
   public boolean getIsTruncateOp() {
     return Boolean.parseBoolean(isTruncateOp);
   }
@@ -111,18 +128,22 @@ public class JSONAlterPartitionsMessage extends AlterPartitionsMessage {
   }
 
   @Override
-  public List<String> getPartitionKeys() {
-    return partitionKeys;
+  public List<Map<String, String>> getPartitions() {
+    return partitions;
   }
 
   @Override
-  public List<List<String>> getPartitionValues() {
-    return partitionValues;
-  }
-
-  @Override
-  public List<Partition> getPartitionsAfter() {
-    return partitionsAfter;
+  public Iterable<Partition> getPartitionObjs() throws Exception {
+    // glorified cast from Iterable<TBase> to Iterable<Partition>
+    return Iterables.transform(
+        MessageBuilder.getTObjs(partitionListJson, Partition.class),
+        new Function<Object, Partition>() {
+          @Nullable
+          @Override
+          public Partition apply(@Nullable Object input) {
+            return (Partition) input;
+          }
+        });
   }
 
   @Override

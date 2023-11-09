@@ -325,7 +325,9 @@ public class CachedStore implements RawStore, Configurable {
         break;
       case MessageBuilder.ALTER_PARTITIONS_EVENT:
         AlterPartitionsMessage alterPtnsMessage = deserializer.getAlterPartitionsMessage(message);
-        sharedCache.removePartitionsFromCache(catalogName, dbName, tableName, alterPtnsMessage.getPartitionValues());
+        List<List<String>> part_vals = new ArrayList<>();
+        alterPtnsMessage.getPartitionObjs().forEach(part -> part_vals.add(part.getValues()));
+        sharedCache.removePartitionsFromCache(catalogName, dbName, tableName, part_vals);
         break;
       case MessageBuilder.DROP_PARTITION_EVENT:
         DropPartitionMessage dropPartitionMessage = deserializer.getDropPartitionMessage(message);

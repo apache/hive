@@ -21,9 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionsMessage;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -34,16 +32,16 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 public class AlterPartitionsHandler extends AbstractEventHandler<AlterPartitionsMessage> {
-  private final TableName tableName;
-  private final List<List<String>> part_vals;
   private final boolean isTruncateOp;
+  private final org.apache.hadoop.hive.metastore.api.Table tableObject;
+  private final Iterable<org.apache.hadoop.hive.metastore.api.Partition> partitions;
 
-  AlterPartitionsHandler(NotificationEvent event) {
+  AlterPartitionsHandler(NotificationEvent event) throws Exception {
     super(event);
     AlterPartitionsMessage apm = eventMessage;
-    tableName = TableName.fromString(event.getCatName(), apm.getDB(), apm.getTable());
-    part_vals = apm.getPartitionValues();
     isTruncateOp = apm.getIsTruncateOp();
+    tableObject = apm.getTableObj();
+    partitions = apm.getPartitionObjs();
   }
 
   @Override
@@ -62,7 +60,7 @@ public class AlterPartitionsHandler extends AbstractEventHandler<AlterPartitions
       return;
     }
 
-    Table qlMdTable = withinContext.db.getTable(tableName);
+    Table qlMdTable = new Table(tableObject);
     if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
         withinContext.getTablesForBootstrap(), withinContext.oldReplScope,  withinContext.hiveConf)) {
       return;
@@ -70,17 +68,16 @@ public class AlterPartitionsHandler extends AbstractEventHandler<AlterPartitions
 
     if (!isTruncateOp) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
-      List<String> partNames = new ArrayList<>(part_vals.size());
-      for (List<String> vals : part_vals) {
-        partNames.add(Warehouse.makePartName(qlMdTable.getPartCols(), vals));
+      List<Partition> partitionObjs = new ArrayList<>();
+      for (org.apache.hadoop.hive.metastore.api.Partition part : partitions) {
+        partitionObjs.add(new Partition(qlMdTable, part));
       }
-      List<Partition> partitions = withinContext.db.getPartitionsByNames(qlMdTable, partNames);
       Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
       EximUtil.createExportDump(
           metaDataPath.getFileSystem(withinContext.hiveConf),
           metaDataPath,
           qlMdTable,
-          partitions,
+          partitionObjs,
           withinContext.replicationSpec,
           withinContext.hiveConf);
     }
