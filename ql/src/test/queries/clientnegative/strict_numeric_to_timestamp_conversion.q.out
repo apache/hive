@@ -1,0 +1,2 @@
+Error: Error while compiling statement: FAILED: SemanticException Line 0:-1 Wrong arguments '1000': Casting NUMERIC types to TIMESTAMP is prohibited (hive.strict.timestamp.conversion) (state=42000,code=40000)
+
