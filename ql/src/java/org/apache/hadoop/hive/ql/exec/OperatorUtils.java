@@ -177,7 +177,7 @@ public class OperatorUtils {
   }
 
   /**
-   * Check whether there are more operators in the specified operator tree branch than the give limit
+   * Check whether there are more operators in the specified operator tree branch than the given limit
    * @param start root of the operator tree to check
    * @param opClazz type of operator to track
    * @param limit maximum allowed number of operator in a branch of the tree
