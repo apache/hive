@@ -665,7 +665,16 @@ public class Stmt {
   /**
    * Assignment from SELECT statement 
    */
-  public Integer assignFromSelect(HplsqlParser.Assignment_stmt_select_itemContext ctx) { 
+  public Integer assignFromSelect(HplsqlParser.Assignment_stmt_select_itemContext ctx) {
+    if (exec.buildSql) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(exec.getFormattedText(ctx, ctx.start.getStartIndex(), ctx.select_stmt().getStart().getStartIndex()-1));
+      sb.append(evalPop(ctx.select_stmt()).toString());
+      sb.append(")");
+      exec.stackPush(sb);
+      return 0;
+    }
+
     String sql = evalPop(ctx.select_stmt()).toString();
     if (trace) {
       trace(ctx, sql);
@@ -1152,9 +1161,26 @@ public class Stmt {
    */
   public Integer update(HplsqlParser.Update_stmtContext ctx) {
     trace(ctx, "UPDATE");
-    String sql = exec.getFormattedText(ctx);
-    trace(ctx, sql);
-    QueryResult query = queryExecutor.executeQuery(sql, ctx);
+    HplsqlParser.Update_assignmentContext update_assignmentContext = ctx.update_assignment();
+    StringBuilder sql = new StringBuilder(
+        exec.getFormattedText(ctx, ctx.start.getStartIndex(), (update_assignmentContext.start.getStartIndex() - 1)));
+    boolean oldBuildSql = exec.buildSql;
+    exec.buildSql = true;
+    sql.append(evalPop(update_assignmentContext).toString());
+    Token last = update_assignmentContext.getStop();
+    HplsqlParser.Where_clauseContext where_clauseContext = ctx.where_clause();
+    if (where_clauseContext != null) {
+      exec.append(sql, evalPop(where_clauseContext).toString(), last, where_clauseContext.getStart());
+      last = where_clauseContext.getStop();
+    }
+    HplsqlParser.Update_upsertContext update_upsertContext = ctx.update_upsert();
+    if (update_upsertContext != null) {
+      exec.append(sql, exec.getFormattedText(update_upsertContext, update_upsertContext.start.getStartIndex(),
+                    update_upsertContext.stop.getStopIndex()), last, update_upsertContext.getStart());
+    }
+    exec.buildSql = oldBuildSql;
+    trace(ctx, sql.toString());
+    QueryResult query = queryExecutor.executeQuery(sql.toString(), ctx);
     if (query.error()) {
       exec.signal(query);
       return 1;
