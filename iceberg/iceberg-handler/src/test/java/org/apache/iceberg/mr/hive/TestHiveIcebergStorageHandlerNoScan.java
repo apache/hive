@@ -1957,7 +1957,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     // Test create v1 iceberg table and check its properties before and after it upgrades to v2
     identifier = TableIdentifier.of("default", "customers_v1");
-    shell.executeStatement("CREATE TABLE customers_v1 (id int, name string) Stored by Iceberg stored as ORC");
+    shell.executeStatement("CREATE TABLE customers_v1 (id int, name string) Stored by Iceberg stored as ORC " +
+        "TBLPROPERTIES ('format-version'='1')");
     icebergTable = testTables.loadTable(identifier);
     hmsTable = shell.metastore().getTable("default", "customers_v1");
     icePros = icebergTable.properties();
