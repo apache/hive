@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 import java.util.Set;
 
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentSnapshotMaterializationRule.NULL_SNAPSHOT_ID;
+
 /**
  * Calcite rule to push down predicates contains {@link VirtualColumn#SNAPSHOT_ID} reference to TableScan.
  * <p>
@@ -124,7 +126,8 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
       }
 
       RelOptHiveTable hiveTable = (RelOptHiveTable) relOptTable;
-      hiveTable.getHiveTableMD().setVersionIntervalFrom(Long.toString(snapshotId));
+      String snapshotIdText = snapshotId != NULL_SNAPSHOT_ID ? Long.toString(snapshotId) : null;
+      hiveTable.getHiveTableMD().setVersionIntervalFrom(snapshotIdText);
       return true;
     }
 
