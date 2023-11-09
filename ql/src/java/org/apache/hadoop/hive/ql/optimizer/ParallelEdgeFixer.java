@@ -330,9 +330,9 @@ public class ParallelEdgeFixer extends Transform {
   public static Optional<Set<String>> colMappingInverseKeys(ReduceSinkOperator rs) {
     Map<String, String> ret = new HashMap<String, String>();
     Map<String, ExprNodeDesc> exprMap = rs.getColumnExprMap();
-    Set<String> neededColumns = new HashSet<String>();
 
     if (!rs.getSchema().getColumnNames().stream().allMatch(exprMap::containsKey)) {
+      // Cannot invert RS because exprMap does not contain all of the RS's input columns.
       return Optional.empty();
     }
 
@@ -340,21 +340,15 @@ public class ParallelEdgeFixer extends Transform {
       for (Entry<String, ExprNodeDesc> e : exprMap.entrySet()) {
         String columnName = extractColumnName(e.getValue());
         if (rs.getSchema().getColumnInfo(e.getKey()) == null) {
-          // ignore incorrectly mapped columns (if there's any) - but require its input to be present
-          neededColumns.add(columnName);
-        } else {
-          ret.put(columnName, e.getKey());
+          // Cannot invert RS because the column needed by expression is not mapped correctly.
+          return Optional.empty();
         }
-      }
-      neededColumns.removeAll(ret.keySet());
-      if (!neededColumns.isEmpty()) {
-        // There is no way to compute all parts of neededColumns
-        return Optional.empty();
+        ret.put(columnName, e.getKey());
       }
       return Optional.of(new TreeSet<>(ret.values()));
     } catch (SemanticException e) {
       return Optional.empty();
     }
-
   }
 }
+
