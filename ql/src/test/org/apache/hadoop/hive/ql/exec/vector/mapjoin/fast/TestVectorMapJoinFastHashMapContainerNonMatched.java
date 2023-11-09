@@ -125,7 +125,7 @@ public class TestVectorMapJoinFastHashMapContainerNonMatched {
     }
 
     long keyB = random.nextLong();
-    while ((HashCodeUtil.calculateLongHashCode(keyB) & (initialCapacity - 1)) != 0 && keyB != keyA) {
+    while ((HashCodeUtil.calculateLongHashCode(keyB) & (initialCapacity - 1)) != 0 || keyB == keyA) {
       keyB = random.nextLong();
     }
 
@@ -187,7 +187,7 @@ public class TestVectorMapJoinFastHashMapContainerNonMatched {
     }
 
     String keyB = VectorRandomRowSource.getRandString(random, 5, false);
-    while ((getHashCode(keyB) & (initialCapacity - 1)) != 0 && !keyB.equals(keyA)) {
+    while ((getHashCode(keyB) & (initialCapacity - 1)) != 0 || keyB.equals(keyA)) {
       keyB = VectorRandomRowSource.getRandString(random, 5, false);
     }
 
@@ -257,7 +257,7 @@ public class TestVectorMapJoinFastHashMapContainerNonMatched {
     }
 
     BytesWritable keyB = createRandomMultiKey(random, serializeWrite);
-    while ((getHashCode(keyB) & (initialCapacity - 1)) != 0 && keyB != keyA) {
+    while ((getHashCode(keyB) & (initialCapacity - 1)) != 0 || keyB == keyA) {
       keyB = createRandomMultiKey(random, serializeWrite);
     }
 
