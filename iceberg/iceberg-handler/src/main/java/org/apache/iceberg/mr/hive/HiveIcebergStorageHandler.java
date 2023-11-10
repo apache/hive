@@ -167,6 +167,7 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
+import org.apache.iceberg.hadoop.HadoopTableOperations;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
@@ -538,7 +539,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       FileSystem fs = statsPath.getFileSystem(conf);
       return  fs.exists(statsPath);
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOG.warn("Exception when trying to find Iceberg column stats for table:{} , snapshot:{} , " +
           "statsPath: {} , stack trace: {}", table.name(), table.currentSnapshot(), statsPath, e);
     }
@@ -593,6 +594,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private Path getColStatsPath(Table table, long snapshotId) {
+    if (((BaseTable) table).operations() instanceof HadoopTableOperations) {
+      return new Path(table.location() + STATS + snapshotId);
+    }
     return new Path(table.location() + STATS + table.name() + snapshotId);
   }
 
