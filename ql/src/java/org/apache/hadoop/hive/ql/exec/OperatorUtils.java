@@ -188,7 +188,7 @@ public class OperatorUtils {
     int count = limit;
     if (count <= 0) {
       return true;
-    };
+    }
 
     if (start instanceof ReduceSinkOperator) {
       return false;
