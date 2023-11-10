@@ -75,6 +75,11 @@ class Partition
             'type' => TType::STRUCT,
             'class' => '\metastore\PrincipalPrivilegeSet',
         ),
+        9 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -109,6 +114,10 @@ class Partition
      * @var \metastore\PrincipalPrivilegeSet
      */
     public $privileges = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -136,6 +145,9 @@ class Partition
             }
             if (isset($vals['privileges'])) {
                 $this->privileges = $vals['privileges'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -238,6 +250,13 @@ class Partition
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -311,6 +330,11 @@ class Partition
             }
             $xfer += $output->writeFieldBegin('privileges', TType::STRUCT, 8);
             $xfer += $this->privileges->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 9);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

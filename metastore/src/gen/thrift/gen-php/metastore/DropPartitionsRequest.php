@@ -63,6 +63,11 @@ class DropPartitionsRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        9 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -97,6 +102,10 @@ class DropPartitionsRequest
      * @var bool
      */
     public $needResult = true;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -124,6 +133,9 @@ class DropPartitionsRequest
             }
             if (isset($vals['needResult'])) {
                 $this->needResult = $vals['needResult'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -205,6 +217,13 @@ class DropPartitionsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -263,6 +282,11 @@ class DropPartitionsRequest
         if ($this->needResult !== null) {
             $xfer += $output->writeFieldBegin('needResult', TType::BOOL, 8);
             $xfer += $output->writeBool($this->needResult);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 9);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

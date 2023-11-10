@@ -863,16 +863,18 @@ class HiveObjectRef(object):
      - objectName
      - partValues
      - columnName
+     - catName
 
     """
 
 
-    def __init__(self, objectType=None, dbName=None, objectName=None, partValues=None, columnName=None,):
+    def __init__(self, objectType=None, dbName=None, objectName=None, partValues=None, columnName=None, catName=None,):
         self.objectType = objectType
         self.dbName = dbName
         self.objectName = objectName
         self.partValues = partValues
         self.columnName = columnName
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -913,6 +915,11 @@ class HiveObjectRef(object):
                     self.columnName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -945,6 +952,10 @@ class HiveObjectRef(object):
         if self.columnName is not None:
             oprot.writeFieldBegin('columnName', TType.STRING, 5)
             oprot.writeString(self.columnName.encode('utf-8') if sys.version_info[0] == 2 else self.columnName)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 6)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -2155,11 +2166,12 @@ class Database(object):
      - privileges
      - ownerName
      - ownerType
+     - catalogName
 
     """
 
 
-    def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None,):
+    def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None,):
         self.name = name
         self.description = description
         self.locationUri = locationUri
@@ -2167,6 +2179,7 @@ class Database(object):
         self.privileges = privileges
         self.ownerName = ownerName
         self.ownerType = ownerType
+        self.catalogName = catalogName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -2219,6 +2232,11 @@ class Database(object):
                     self.ownerType = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.catalogName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -2260,6 +2278,10 @@ class Database(object):
         if self.ownerType is not None:
             oprot.writeFieldBegin('ownerType', TType.I32, 7)
             oprot.writeI32(self.ownerType)
+            oprot.writeFieldEnd()
+        if self.catalogName is not None:
+            oprot.writeFieldBegin('catalogName', TType.STRING, 8)
+            oprot.writeString(self.catalogName.encode('utf-8') if sys.version_info[0] == 2 else self.catalogName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -2791,11 +2813,12 @@ class Table(object):
      - privileges
      - temporary
      - rewriteEnabled
+     - catName
 
     """
 
 
-    def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=False, rewriteEnabled=None,):
+    def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=False, rewriteEnabled=None, catName=None,):
         self.tableName = tableName
         self.dbName = dbName
         self.owner = owner
@@ -2811,6 +2834,7 @@ class Table(object):
         self.privileges = privileges
         self.temporary = temporary
         self.rewriteEnabled = rewriteEnabled
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -2910,6 +2934,11 @@ class Table(object):
                     self.rewriteEnabled = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 16:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -2987,6 +3016,10 @@ class Table(object):
             oprot.writeFieldBegin('rewriteEnabled', TType.BOOL, 15)
             oprot.writeBool(self.rewriteEnabled)
             oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 16)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -3016,11 +3049,12 @@ class Partition(object):
      - sd
      - parameters
      - privileges
+     - catName
 
     """
 
 
-    def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None,):
+    def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None,):
         self.values = values
         self.dbName = dbName
         self.tableName = tableName
@@ -3029,6 +3063,7 @@ class Partition(object):
         self.sd = sd
         self.parameters = parameters
         self.privileges = privileges
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -3092,6 +3127,11 @@ class Partition(object):
                     self.privileges.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -3140,6 +3180,10 @@ class Partition(object):
         if self.privileges is not None:
             oprot.writeFieldBegin('privileges', TType.STRUCT, 8)
             self.privileges.write(oprot)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 9)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -3442,16 +3486,18 @@ class PartitionSpec(object):
      - rootPath
      - sharedSDPartitionSpec
      - partitionList
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tableName=None, rootPath=None, sharedSDPartitionSpec=None, partitionList=None,):
+    def __init__(self, dbName=None, tableName=None, rootPath=None, sharedSDPartitionSpec=None, partitionList=None, catName=None,):
         self.dbName = dbName
         self.tableName = tableName
         self.rootPath = rootPath
         self.sharedSDPartitionSpec = sharedSDPartitionSpec
         self.partitionList = partitionList
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -3489,6 +3535,11 @@ class PartitionSpec(object):
                     self.partitionList.read(iprot)
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -3518,6 +3569,10 @@ class PartitionSpec(object):
         if self.partitionList is not None:
             oprot.writeFieldBegin('partitionList', TType.STRUCT, 5)
             self.partitionList.write(oprot)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 6)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -4784,16 +4839,18 @@ class ColumnStatisticsDesc(object):
      - tableName
      - partName
      - lastAnalyzed
+     - catName
 
     """
 
 
-    def __init__(self, isTblLevel=None, dbName=None, tableName=None, partName=None, lastAnalyzed=None,):
+    def __init__(self, isTblLevel=None, dbName=None, tableName=None, partName=None, lastAnalyzed=None, catName=None,):
         self.isTblLevel = isTblLevel
         self.dbName = dbName
         self.tableName = tableName
         self.partName = partName
         self.lastAnalyzed = lastAnalyzed
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -4829,6 +4886,11 @@ class ColumnStatisticsDesc(object):
                     self.lastAnalyzed = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -4858,6 +4920,10 @@ class ColumnStatisticsDesc(object):
         if self.lastAnalyzed is not None:
             oprot.writeFieldBegin('lastAnalyzed', TType.I64, 5)
             oprot.writeI64(self.lastAnalyzed)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 6)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -5887,16 +5953,18 @@ class PartitionsByExprRequest(object):
      - expr
      - defaultPartitionName
      - maxParts
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, expr=None, defaultPartitionName=None, maxParts=-1,):
+    def __init__(self, dbName=None, tblName=None, expr=None, defaultPartitionName=None, maxParts=-1, catName=None,):
         self.dbName = dbName
         self.tblName = tblName
         self.expr = expr
         self.defaultPartitionName = defaultPartitionName
         self.maxParts = maxParts
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -5932,6 +6000,11 @@ class PartitionsByExprRequest(object):
                     self.maxParts = iprot.readI16()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -5961,6 +6034,10 @@ class PartitionsByExprRequest(object):
         if self.maxParts is not None:
             oprot.writeFieldBegin('maxParts', TType.I16, 5)
             oprot.writeI16(self.maxParts)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 6)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -6232,15 +6309,17 @@ class PartitionsStatsRequest(object):
      - tblName
      - colNames
      - partNames
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None,):
+    def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None,):
         self.dbName = dbName
         self.tblName = tblName
         self.colNames = colNames
         self.partNames = partNames
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6281,6 +6360,11 @@ class PartitionsStatsRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6312,6 +6396,10 @@ class PartitionsStatsRequest(object):
             for iter363 in self.partNames:
                 oprot.writeString(iter363.encode('utf-8') if sys.version_info[0] == 2 else iter363)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 5)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -6413,16 +6501,18 @@ class AddPartitionsRequest(object):
      - parts
      - ifNotExists
      - needResult
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=True,):
+    def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=True, catName=None,):
         self.dbName = dbName
         self.tblName = tblName
         self.parts = parts
         self.ifNotExists = ifNotExists
         self.needResult = needResult
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6464,6 +6554,11 @@ class AddPartitionsRequest(object):
                     self.needResult = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6496,6 +6591,10 @@ class AddPartitionsRequest(object):
         if self.needResult is not None:
             oprot.writeFieldBegin('needResult', TType.BOOL, 5)
             oprot.writeBool(self.needResult)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 6)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -6755,11 +6854,12 @@ class DropPartitionsRequest(object):
      - ignoreProtection
      - environmentContext
      - needResult
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, parts=None, deleteData=None, ifExists=True, ignoreProtection=None, environmentContext=None, needResult=True,):
+    def __init__(self, dbName=None, tblName=None, parts=None, deleteData=None, ifExists=True, ignoreProtection=None, environmentContext=None, needResult=True, catName=None,):
         self.dbName = dbName
         self.tblName = tblName
         self.parts = parts
@@ -6768,6 +6868,7 @@ class DropPartitionsRequest(object):
         self.ignoreProtection = ignoreProtection
         self.environmentContext = environmentContext
         self.needResult = needResult
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6820,6 +6921,11 @@ class DropPartitionsRequest(object):
                     self.needResult = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -6862,6 +6968,10 @@ class DropPartitionsRequest(object):
             oprot.writeFieldBegin('needResult', TType.BOOL, 8)
             oprot.writeBool(self.needResult)
             oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 9)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -6897,11 +7007,12 @@ class PartitionValuesRequest(object):
      - partitionOrder
      - ascending
      - maxParts
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, partitionKeys=None, applyDistinct=True, filter=None, partitionOrder=None, ascending=True, maxParts=-1,):
+    def __init__(self, dbName=None, tblName=None, partitionKeys=None, applyDistinct=True, filter=None, partitionOrder=None, ascending=True, maxParts=-1, catName=None,):
         self.dbName = dbName
         self.tblName = tblName
         self.partitionKeys = partitionKeys
@@ -6910,6 +7021,7 @@ class PartitionValuesRequest(object):
         self.partitionOrder = partitionOrder
         self.ascending = ascending
         self.maxParts = maxParts
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -6972,6 +7084,11 @@ class PartitionValuesRequest(object):
                     self.maxParts = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -7019,6 +7136,10 @@ class PartitionValuesRequest(object):
         if self.maxParts is not None:
             oprot.writeFieldBegin('maxParts', TType.I64, 8)
             oprot.writeI64(self.maxParts)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 9)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -7258,11 +7379,12 @@ class Function(object):
      - createTime
      - functionType
      - resourceUris
+     - catName
 
     """
 
 
-    def __init__(self, functionName=None, dbName=None, className=None, ownerName=None, ownerType=None, createTime=None, functionType=None, resourceUris=None,):
+    def __init__(self, functionName=None, dbName=None, className=None, ownerName=None, ownerType=None, createTime=None, functionType=None, resourceUris=None, catName=None,):
         self.functionName = functionName
         self.dbName = dbName
         self.className = className
@@ -7271,6 +7393,7 @@ class Function(object):
         self.createTime = createTime
         self.functionType = functionType
         self.resourceUris = resourceUris
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -7327,6 +7450,11 @@ class Function(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -7371,6 +7499,10 @@ class Function(object):
             for iter433 in self.resourceUris:
                 iter433.write(oprot)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 9)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -12969,6 +13101,7 @@ HiveObjectRef.thrift_spec = (
     (3, TType.STRING, 'objectName', 'UTF8', None, ),  # 3
     (4, TType.LIST, 'partValues', (TType.STRING, 'UTF8', False), None, ),  # 4
     (5, TType.STRING, 'columnName', 'UTF8', None, ),  # 5
+    (6, TType.STRING, 'catName', 'UTF8', None, ),  # 6
 )
 all_structs.append(PrivilegeGrantInfo)
 PrivilegeGrantInfo.thrift_spec = (
@@ -13076,6 +13209,7 @@ Database.thrift_spec = (
     (5, TType.STRUCT, 'privileges', [PrincipalPrivilegeSet, None], None, ),  # 5
     (6, TType.STRING, 'ownerName', 'UTF8', None, ),  # 6
     (7, TType.I32, 'ownerType', None, None, ),  # 7
+    (8, TType.STRING, 'catalogName', 'UTF8', None, ),  # 8
 )
 all_structs.append(SerDeInfo)
 SerDeInfo.thrift_spec = (
@@ -13131,6 +13265,7 @@ Table.thrift_spec = (
     (13, TType.STRUCT, 'privileges', [PrincipalPrivilegeSet, None], None, ),  # 13
     (14, TType.BOOL, 'temporary', None, False, ),  # 14
     (15, TType.BOOL, 'rewriteEnabled', None, None, ),  # 15
+    (16, TType.STRING, 'catName', 'UTF8', None, ),  # 16
 )
 all_structs.append(Partition)
 Partition.thrift_spec = (
@@ -13143,6 +13278,7 @@ Partition.thrift_spec = (
     (6, TType.STRUCT, 'sd', [StorageDescriptor, None], None, ),  # 6
     (7, TType.MAP, 'parameters', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 7
     (8, TType.STRUCT, 'privileges', [PrincipalPrivilegeSet, None], None, ),  # 8
+    (9, TType.STRING, 'catName', 'UTF8', None, ),  # 9
 )
 all_structs.append(PartitionWithoutSD)
 PartitionWithoutSD.thrift_spec = (
@@ -13173,6 +13309,7 @@ PartitionSpec.thrift_spec = (
     (3, TType.STRING, 'rootPath', 'UTF8', None, ),  # 3
     (4, TType.STRUCT, 'sharedSDPartitionSpec', [PartitionSpecWithSharedSD, None], None, ),  # 4
     (5, TType.STRUCT, 'partitionList', [PartitionListComposingSpec, None], None, ),  # 5
+    (6, TType.STRING, 'catName', 'UTF8', None, ),  # 6
 )
 all_structs.append(Index)
 Index.thrift_spec = (
@@ -13287,6 +13424,7 @@ ColumnStatisticsDesc.thrift_spec = (
     (3, TType.STRING, 'tableName', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'partName', 'UTF8', None, ),  # 4
     (5, TType.I64, 'lastAnalyzed', None, None, ),  # 5
+    (6, TType.STRING, 'catName', 'UTF8', None, ),  # 6
 )
 all_structs.append(ColumnStatistics)
 ColumnStatistics.thrift_spec = (
@@ -13372,6 +13510,7 @@ PartitionsByExprRequest.thrift_spec = (
     (3, TType.STRING, 'expr', 'BINARY', None, ),  # 3
     (4, TType.STRING, 'defaultPartitionName', 'UTF8', None, ),  # 4
     (5, TType.I16, 'maxParts', None, -1, ),  # 5
+    (6, TType.STRING, 'catName', 'UTF8', None, ),  # 6
 )
 all_structs.append(TableStatsResult)
 TableStatsResult.thrift_spec = (
@@ -13397,6 +13536,7 @@ PartitionsStatsRequest.thrift_spec = (
     (2, TType.STRING, 'tblName', 'UTF8', None, ),  # 2
     (3, TType.LIST, 'colNames', (TType.STRING, 'UTF8', False), None, ),  # 3
     (4, TType.LIST, 'partNames', (TType.STRING, 'UTF8', False), None, ),  # 4
+    (5, TType.STRING, 'catName', 'UTF8', None, ),  # 5
 )
 all_structs.append(AddPartitionsResult)
 AddPartitionsResult.thrift_spec = (
@@ -13411,6 +13551,7 @@ AddPartitionsRequest.thrift_spec = (
     (3, TType.LIST, 'parts', (TType.STRUCT, [Partition, None], False), None, ),  # 3
     (4, TType.BOOL, 'ifNotExists', None, None, ),  # 4
     (5, TType.BOOL, 'needResult', None, True, ),  # 5
+    (6, TType.STRING, 'catName', 'UTF8', None, ),  # 6
 )
 all_structs.append(DropPartitionsResult)
 DropPartitionsResult.thrift_spec = (
@@ -13440,6 +13581,7 @@ DropPartitionsRequest.thrift_spec = (
     (6, TType.BOOL, 'ignoreProtection', None, None, ),  # 6
     (7, TType.STRUCT, 'environmentContext', [EnvironmentContext, None], None, ),  # 7
     (8, TType.BOOL, 'needResult', None, True, ),  # 8
+    (9, TType.STRING, 'catName', 'UTF8', None, ),  # 9
 )
 all_structs.append(PartitionValuesRequest)
 PartitionValuesRequest.thrift_spec = (
@@ -13452,6 +13594,7 @@ PartitionValuesRequest.thrift_spec = (
     (6, TType.LIST, 'partitionOrder', (TType.STRUCT, [FieldSchema, None], False), None, ),  # 6
     (7, TType.BOOL, 'ascending', None, True, ),  # 7
     (8, TType.I64, 'maxParts', None, -1, ),  # 8
+    (9, TType.STRING, 'catName', 'UTF8', None, ),  # 9
 )
 all_structs.append(PartitionValuesRow)
 PartitionValuesRow.thrift_spec = (
@@ -13480,6 +13623,7 @@ Function.thrift_spec = (
     (6, TType.I32, 'createTime', None, None, ),  # 6
     (7, TType.I32, 'functionType', None, None, ),  # 7
     (8, TType.LIST, 'resourceUris', (TType.STRUCT, [ResourceUri, None], False), None, ),  # 8
+    (9, TType.STRING, 'catName', 'UTF8', None, ),  # 9
 )
 all_structs.append(TxnInfo)
 TxnInfo.thrift_spec = (

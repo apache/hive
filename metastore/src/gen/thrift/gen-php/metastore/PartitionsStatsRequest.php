@@ -49,6 +49,11 @@ class PartitionsStatsRequest
                 'type' => TType::STRING,
                 ),
         ),
+        5 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -67,6 +72,10 @@ class PartitionsStatsRequest
      * @var string[]
      */
     public $partNames = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -82,6 +91,9 @@ class PartitionsStatsRequest
             }
             if (isset($vals['partNames'])) {
                 $this->partNames = $vals['partNames'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -151,6 +163,13 @@ class PartitionsStatsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 5:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -197,6 +216,11 @@ class PartitionsStatsRequest
                 $xfer += $output->writeString($iter363);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 5);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

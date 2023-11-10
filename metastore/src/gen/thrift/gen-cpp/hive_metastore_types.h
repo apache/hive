@@ -881,12 +881,13 @@ void swap(Type &a, Type &b);
 std::ostream& operator<<(std::ostream& out, const Type& obj);
 
 typedef struct _HiveObjectRef__isset {
-  _HiveObjectRef__isset() : objectType(false), dbName(false), objectName(false), partValues(false), columnName(false) {}
+  _HiveObjectRef__isset() : objectType(false), dbName(false), objectName(false), partValues(false), columnName(false), catName(false) {}
   bool objectType :1;
   bool dbName :1;
   bool objectName :1;
   bool partValues :1;
   bool columnName :1;
+  bool catName :1;
 } _HiveObjectRef__isset;
 
 class HiveObjectRef : public virtual ::apache::thrift::TBase {
@@ -894,7 +895,7 @@ class HiveObjectRef : public virtual ::apache::thrift::TBase {
 
   HiveObjectRef(const HiveObjectRef&);
   HiveObjectRef& operator=(const HiveObjectRef&);
-  HiveObjectRef() : objectType((HiveObjectType::type)0), dbName(), objectName(), columnName() {
+  HiveObjectRef() : objectType((HiveObjectType::type)0), dbName(), objectName(), columnName(), catName() {
   }
 
   virtual ~HiveObjectRef() noexcept;
@@ -907,6 +908,7 @@ class HiveObjectRef : public virtual ::apache::thrift::TBase {
   std::string objectName;
   std::vector<std::string>  partValues;
   std::string columnName;
+  std::string catName;
 
   _HiveObjectRef__isset __isset;
 
@@ -920,6 +922,8 @@ class HiveObjectRef : public virtual ::apache::thrift::TBase {
 
   void __set_columnName(const std::string& val);
 
+  void __set_catName(const std::string& val);
+
   bool operator == (const HiveObjectRef & rhs) const
   {
     if (!(objectType == rhs.objectType))
@@ -931,6 +935,10 @@ class HiveObjectRef : public virtual ::apache::thrift::TBase {
     if (!(partValues == rhs.partValues))
       return false;
     if (!(columnName == rhs.columnName))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -1718,7 +1726,7 @@ void swap(GrantRevokeRoleResponse &a, GrantRevokeRoleResponse &b);
 std::ostream& operator<<(std::ostream& out, const GrantRevokeRoleResponse& obj);
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
@@ -1726,6 +1734,7 @@ typedef struct _Database__isset {
   bool privileges :1;
   bool ownerName :1;
   bool ownerType :1;
+  bool catalogName :1;
 } _Database__isset;
 
 class Database : public virtual ::apache::thrift::TBase {
@@ -1733,7 +1742,7 @@ class Database : public virtual ::apache::thrift::TBase {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0) {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName() {
   }
 
   virtual ~Database() noexcept;
@@ -1748,6 +1757,7 @@ class Database : public virtual ::apache::thrift::TBase {
    * @see PrincipalType
    */
   PrincipalType::type ownerType;
+  std::string catalogName;
 
   _Database__isset __isset;
 
@@ -1764,6 +1774,8 @@ class Database : public virtual ::apache::thrift::TBase {
   void __set_ownerName(const std::string& val);
 
   void __set_ownerType(const PrincipalType::type val);
+
+  void __set_catalogName(const std::string& val);
 
   bool operator == (const Database & rhs) const
   {
@@ -1786,6 +1798,10 @@ class Database : public virtual ::apache::thrift::TBase {
     if (__isset.ownerType != rhs.__isset.ownerType)
       return false;
     else if (__isset.ownerType && !(ownerType == rhs.ownerType))
+      return false;
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
       return false;
     return true;
   }
@@ -2074,7 +2090,7 @@ void swap(StorageDescriptor &a, StorageDescriptor &b);
 std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj);
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), catName(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2090,6 +2106,7 @@ typedef struct _Table__isset {
   bool privileges :1;
   bool temporary :1;
   bool rewriteEnabled :1;
+  bool catName :1;
 } _Table__isset;
 
 class Table : public virtual ::apache::thrift::TBase {
@@ -2097,7 +2114,7 @@ class Table : public virtual ::apache::thrift::TBase {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName() {
   }
 
   virtual ~Table() noexcept;
@@ -2116,6 +2133,7 @@ class Table : public virtual ::apache::thrift::TBase {
   PrincipalPrivilegeSet privileges;
   bool temporary;
   bool rewriteEnabled;
+  std::string catName;
 
   _Table__isset __isset;
 
@@ -2148,6 +2166,8 @@ class Table : public virtual ::apache::thrift::TBase {
   void __set_temporary(const bool val);
 
   void __set_rewriteEnabled(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2187,6 +2207,10 @@ class Table : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const Table &rhs) const {
@@ -2206,7 +2230,7 @@ void swap(Table &a, Table &b);
 std::ostream& operator<<(std::ostream& out, const Table& obj);
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false) {}
   bool values :1;
   bool dbName :1;
   bool tableName :1;
@@ -2215,6 +2239,7 @@ typedef struct _Partition__isset {
   bool sd :1;
   bool parameters :1;
   bool privileges :1;
+  bool catName :1;
 } _Partition__isset;
 
 class Partition : public virtual ::apache::thrift::TBase {
@@ -2222,7 +2247,7 @@ class Partition : public virtual ::apache::thrift::TBase {
 
   Partition(const Partition&);
   Partition& operator=(const Partition&);
-  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0) {
+  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName() {
   }
 
   virtual ~Partition() noexcept;
@@ -2234,6 +2259,7 @@ class Partition : public virtual ::apache::thrift::TBase {
   StorageDescriptor sd;
   std::map<std::string, std::string>  parameters;
   PrincipalPrivilegeSet privileges;
+  std::string catName;
 
   _Partition__isset __isset;
 
@@ -2252,6 +2278,8 @@ class Partition : public virtual ::apache::thrift::TBase {
   void __set_parameters(const std::map<std::string, std::string> & val);
 
   void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const Partition & rhs) const
   {
@@ -2272,6 +2300,10 @@ class Partition : public virtual ::apache::thrift::TBase {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -2456,12 +2488,13 @@ void swap(PartitionListComposingSpec &a, PartitionListComposingSpec &b);
 std::ostream& operator<<(std::ostream& out, const PartitionListComposingSpec& obj);
 
 typedef struct _PartitionSpec__isset {
-  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false) {}
+  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false) {}
   bool dbName :1;
   bool tableName :1;
   bool rootPath :1;
   bool sharedSDPartitionSpec :1;
   bool partitionList :1;
+  bool catName :1;
 } _PartitionSpec__isset;
 
 class PartitionSpec : public virtual ::apache::thrift::TBase {
@@ -2469,7 +2502,7 @@ class PartitionSpec : public virtual ::apache::thrift::TBase {
 
   PartitionSpec(const PartitionSpec&);
   PartitionSpec& operator=(const PartitionSpec&);
-  PartitionSpec() : dbName(), tableName(), rootPath() {
+  PartitionSpec() : dbName(), tableName(), rootPath(), catName() {
   }
 
   virtual ~PartitionSpec() noexcept;
@@ -2478,6 +2511,7 @@ class PartitionSpec : public virtual ::apache::thrift::TBase {
   std::string rootPath;
   PartitionSpecWithSharedSD sharedSDPartitionSpec;
   PartitionListComposingSpec partitionList;
+  std::string catName;
 
   _PartitionSpec__isset __isset;
 
@@ -2490,6 +2524,8 @@ class PartitionSpec : public virtual ::apache::thrift::TBase {
   void __set_sharedSDPartitionSpec(const PartitionSpecWithSharedSD& val);
 
   void __set_partitionList(const PartitionListComposingSpec& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionSpec & rhs) const
   {
@@ -2506,6 +2542,10 @@ class PartitionSpec : public virtual ::apache::thrift::TBase {
     if (__isset.partitionList != rhs.__isset.partitionList)
       return false;
     else if (__isset.partitionList && !(partitionList == rhs.partitionList))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -3299,9 +3339,10 @@ void swap(ColumnStatisticsObj &a, ColumnStatisticsObj &b);
 std::ostream& operator<<(std::ostream& out, const ColumnStatisticsObj& obj);
 
 typedef struct _ColumnStatisticsDesc__isset {
-  _ColumnStatisticsDesc__isset() : partName(false), lastAnalyzed(false) {}
+  _ColumnStatisticsDesc__isset() : partName(false), lastAnalyzed(false), catName(false) {}
   bool partName :1;
   bool lastAnalyzed :1;
+  bool catName :1;
 } _ColumnStatisticsDesc__isset;
 
 class ColumnStatisticsDesc : public virtual ::apache::thrift::TBase {
@@ -3309,7 +3350,7 @@ class ColumnStatisticsDesc : public virtual ::apache::thrift::TBase {
 
   ColumnStatisticsDesc(const ColumnStatisticsDesc&);
   ColumnStatisticsDesc& operator=(const ColumnStatisticsDesc&);
-  ColumnStatisticsDesc() : isTblLevel(0), dbName(), tableName(), partName(), lastAnalyzed(0) {
+  ColumnStatisticsDesc() : isTblLevel(0), dbName(), tableName(), partName(), lastAnalyzed(0), catName() {
   }
 
   virtual ~ColumnStatisticsDesc() noexcept;
@@ -3318,6 +3359,7 @@ class ColumnStatisticsDesc : public virtual ::apache::thrift::TBase {
   std::string tableName;
   std::string partName;
   int64_t lastAnalyzed;
+  std::string catName;
 
   _ColumnStatisticsDesc__isset __isset;
 
@@ -3330,6 +3372,8 @@ class ColumnStatisticsDesc : public virtual ::apache::thrift::TBase {
   void __set_partName(const std::string& val);
 
   void __set_lastAnalyzed(const int64_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const ColumnStatisticsDesc & rhs) const
   {
@@ -3346,6 +3390,10 @@ class ColumnStatisticsDesc : public virtual ::apache::thrift::TBase {
     if (__isset.lastAnalyzed != rhs.__isset.lastAnalyzed)
       return false;
     else if (__isset.lastAnalyzed && !(lastAnalyzed == rhs.lastAnalyzed))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -3919,9 +3967,10 @@ void swap(PartitionsByExprResult &a, PartitionsByExprResult &b);
 std::ostream& operator<<(std::ostream& out, const PartitionsByExprResult& obj);
 
 typedef struct _PartitionsByExprRequest__isset {
-  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true) {}
+  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true), catName(false) {}
   bool defaultPartitionName :1;
   bool maxParts :1;
+  bool catName :1;
 } _PartitionsByExprRequest__isset;
 
 class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
@@ -3929,7 +3978,7 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
 
   PartitionsByExprRequest(const PartitionsByExprRequest&);
   PartitionsByExprRequest& operator=(const PartitionsByExprRequest&);
-  PartitionsByExprRequest() : dbName(), tblName(), expr(), defaultPartitionName(), maxParts(-1) {
+  PartitionsByExprRequest() : dbName(), tblName(), expr(), defaultPartitionName(), maxParts(-1), catName() {
   }
 
   virtual ~PartitionsByExprRequest() noexcept;
@@ -3938,6 +3987,7 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
   std::string expr;
   std::string defaultPartitionName;
   int16_t maxParts;
+  std::string catName;
 
   _PartitionsByExprRequest__isset __isset;
 
@@ -3950,6 +4000,8 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
   void __set_defaultPartitionName(const std::string& val);
 
   void __set_maxParts(const int16_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionsByExprRequest & rhs) const
   {
@@ -3966,6 +4018,10 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
     if (__isset.maxParts != rhs.__isset.maxParts)
       return false;
     else if (__isset.maxParts && !(maxParts == rhs.maxParts))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -4103,13 +4159,17 @@ void swap(TableStatsRequest &a, TableStatsRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const TableStatsRequest& obj);
 
+typedef struct _PartitionsStatsRequest__isset {
+  _PartitionsStatsRequest__isset() : catName(false) {}
+  bool catName :1;
+} _PartitionsStatsRequest__isset;
 
 class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
  public:
 
   PartitionsStatsRequest(const PartitionsStatsRequest&);
   PartitionsStatsRequest& operator=(const PartitionsStatsRequest&);
-  PartitionsStatsRequest() : dbName(), tblName() {
+  PartitionsStatsRequest() : dbName(), tblName(), catName() {
   }
 
   virtual ~PartitionsStatsRequest() noexcept;
@@ -4117,6 +4177,9 @@ class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
   std::string tblName;
   std::vector<std::string>  colNames;
   std::vector<std::string>  partNames;
+  std::string catName;
+
+  _PartitionsStatsRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
@@ -4125,6 +4188,8 @@ class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
   void __set_colNames(const std::vector<std::string> & val);
 
   void __set_partNames(const std::vector<std::string> & val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionsStatsRequest & rhs) const
   {
@@ -4135,6 +4200,10 @@ class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
     if (!(colNames == rhs.colNames))
       return false;
     if (!(partNames == rhs.partNames))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -4199,8 +4268,9 @@ void swap(AddPartitionsResult &a, AddPartitionsResult &b);
 std::ostream& operator<<(std::ostream& out, const AddPartitionsResult& obj);
 
 typedef struct _AddPartitionsRequest__isset {
-  _AddPartitionsRequest__isset() : needResult(true) {}
+  _AddPartitionsRequest__isset() : needResult(true), catName(false) {}
   bool needResult :1;
+  bool catName :1;
 } _AddPartitionsRequest__isset;
 
 class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
@@ -4208,7 +4278,7 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
 
   AddPartitionsRequest(const AddPartitionsRequest&);
   AddPartitionsRequest& operator=(const AddPartitionsRequest&);
-  AddPartitionsRequest() : dbName(), tblName(), ifNotExists(0), needResult(true) {
+  AddPartitionsRequest() : dbName(), tblName(), ifNotExists(0), needResult(true), catName() {
   }
 
   virtual ~AddPartitionsRequest() noexcept;
@@ -4217,6 +4287,7 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
   std::vector<Partition>  parts;
   bool ifNotExists;
   bool needResult;
+  std::string catName;
 
   _AddPartitionsRequest__isset __isset;
 
@@ -4229,6 +4300,8 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
   void __set_ifNotExists(const bool val);
 
   void __set_needResult(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const AddPartitionsRequest & rhs) const
   {
@@ -4243,6 +4316,10 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
     if (__isset.needResult != rhs.__isset.needResult)
       return false;
     else if (__isset.needResult && !(needResult == rhs.needResult))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -4408,12 +4485,13 @@ void swap(RequestPartsSpec &a, RequestPartsSpec &b);
 std::ostream& operator<<(std::ostream& out, const RequestPartsSpec& obj);
 
 typedef struct _DropPartitionsRequest__isset {
-  _DropPartitionsRequest__isset() : deleteData(false), ifExists(true), ignoreProtection(false), environmentContext(false), needResult(true) {}
+  _DropPartitionsRequest__isset() : deleteData(false), ifExists(true), ignoreProtection(false), environmentContext(false), needResult(true), catName(false) {}
   bool deleteData :1;
   bool ifExists :1;
   bool ignoreProtection :1;
   bool environmentContext :1;
   bool needResult :1;
+  bool catName :1;
 } _DropPartitionsRequest__isset;
 
 class DropPartitionsRequest : public virtual ::apache::thrift::TBase {
@@ -4421,7 +4499,7 @@ class DropPartitionsRequest : public virtual ::apache::thrift::TBase {
 
   DropPartitionsRequest(const DropPartitionsRequest&);
   DropPartitionsRequest& operator=(const DropPartitionsRequest&);
-  DropPartitionsRequest() : dbName(), tblName(), deleteData(0), ifExists(true), ignoreProtection(0), needResult(true) {
+  DropPartitionsRequest() : dbName(), tblName(), deleteData(0), ifExists(true), ignoreProtection(0), needResult(true), catName() {
   }
 
   virtual ~DropPartitionsRequest() noexcept;
@@ -4433,6 +4511,7 @@ class DropPartitionsRequest : public virtual ::apache::thrift::TBase {
   bool ignoreProtection;
   EnvironmentContext environmentContext;
   bool needResult;
+  std::string catName;
 
   _DropPartitionsRequest__isset __isset;
 
@@ -4451,6 +4530,8 @@ class DropPartitionsRequest : public virtual ::apache::thrift::TBase {
   void __set_environmentContext(const EnvironmentContext& val);
 
   void __set_needResult(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const DropPartitionsRequest & rhs) const
   {
@@ -4480,6 +4561,10 @@ class DropPartitionsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.needResult && !(needResult == rhs.needResult))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const DropPartitionsRequest &rhs) const {
@@ -4499,12 +4584,13 @@ void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
 std::ostream& operator<<(std::ostream& out, const DropPartitionsRequest& obj);
 
 typedef struct _PartitionValuesRequest__isset {
-  _PartitionValuesRequest__isset() : applyDistinct(true), filter(false), partitionOrder(false), ascending(true), maxParts(true) {}
+  _PartitionValuesRequest__isset() : applyDistinct(true), filter(false), partitionOrder(false), ascending(true), maxParts(true), catName(false) {}
   bool applyDistinct :1;
   bool filter :1;
   bool partitionOrder :1;
   bool ascending :1;
   bool maxParts :1;
+  bool catName :1;
 } _PartitionValuesRequest__isset;
 
 class PartitionValuesRequest : public virtual ::apache::thrift::TBase {
@@ -4512,7 +4598,7 @@ class PartitionValuesRequest : public virtual ::apache::thrift::TBase {
 
   PartitionValuesRequest(const PartitionValuesRequest&);
   PartitionValuesRequest& operator=(const PartitionValuesRequest&);
-  PartitionValuesRequest() : dbName(), tblName(), applyDistinct(true), filter(), ascending(true), maxParts(-1LL) {
+  PartitionValuesRequest() : dbName(), tblName(), applyDistinct(true), filter(), ascending(true), maxParts(-1LL), catName() {
   }
 
   virtual ~PartitionValuesRequest() noexcept;
@@ -4524,6 +4610,7 @@ class PartitionValuesRequest : public virtual ::apache::thrift::TBase {
   std::vector<FieldSchema>  partitionOrder;
   bool ascending;
   int64_t maxParts;
+  std::string catName;
 
   _PartitionValuesRequest__isset __isset;
 
@@ -4542,6 +4629,8 @@ class PartitionValuesRequest : public virtual ::apache::thrift::TBase {
   void __set_ascending(const bool val);
 
   void __set_maxParts(const int64_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionValuesRequest & rhs) const
   {
@@ -4570,6 +4659,10 @@ class PartitionValuesRequest : public virtual ::apache::thrift::TBase {
     if (__isset.maxParts != rhs.__isset.maxParts)
       return false;
     else if (__isset.maxParts && !(maxParts == rhs.maxParts))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -4714,7 +4807,7 @@ void swap(ResourceUri &a, ResourceUri &b);
 std::ostream& operator<<(std::ostream& out, const ResourceUri& obj);
 
 typedef struct _Function__isset {
-  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false), resourceUris(false) {}
+  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false), resourceUris(false), catName(false) {}
   bool functionName :1;
   bool dbName :1;
   bool className :1;
@@ -4723,6 +4816,7 @@ typedef struct _Function__isset {
   bool createTime :1;
   bool functionType :1;
   bool resourceUris :1;
+  bool catName :1;
 } _Function__isset;
 
 class Function : public virtual ::apache::thrift::TBase {
@@ -4730,7 +4824,7 @@ class Function : public virtual ::apache::thrift::TBase {
 
   Function(const Function&);
   Function& operator=(const Function&);
-  Function() : functionName(), dbName(), className(), ownerName(), ownerType((PrincipalType::type)0), createTime(0), functionType((FunctionType::type)0) {
+  Function() : functionName(), dbName(), className(), ownerName(), ownerType((PrincipalType::type)0), createTime(0), functionType((FunctionType::type)0), catName() {
   }
 
   virtual ~Function() noexcept;
@@ -4750,6 +4844,7 @@ class Function : public virtual ::apache::thrift::TBase {
    */
   FunctionType::type functionType;
   std::vector<ResourceUri>  resourceUris;
+  std::string catName;
 
   _Function__isset __isset;
 
@@ -4769,6 +4864,8 @@ class Function : public virtual ::apache::thrift::TBase {
 
   void __set_resourceUris(const std::vector<ResourceUri> & val);
 
+  void __set_catName(const std::string& val);
+
   bool operator == (const Function & rhs) const
   {
     if (!(functionName == rhs.functionName))
@@ -4786,6 +4883,10 @@ class Function : public virtual ::apache::thrift::TBase {
     if (!(functionType == rhs.functionType))
       return false;
     if (!(resourceUris == rhs.resourceUris))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }

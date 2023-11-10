@@ -46,6 +46,11 @@ class ColumnStatisticsDesc
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        6 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -68,6 +73,10 @@ class ColumnStatisticsDesc
      * @var int
      */
     public $lastAnalyzed = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -86,6 +95,9 @@ class ColumnStatisticsDesc
             }
             if (isset($vals['lastAnalyzed'])) {
                 $this->lastAnalyzed = $vals['lastAnalyzed'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -144,6 +156,13 @@ class ColumnStatisticsDesc
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -181,6 +200,11 @@ class ColumnStatisticsDesc
         if ($this->lastAnalyzed !== null) {
             $xfer += $output->writeFieldBegin('lastAnalyzed', TType::I64, 5);
             $xfer += $output->writeI64($this->lastAnalyzed);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 6);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

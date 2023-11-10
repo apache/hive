@@ -98,7 +98,7 @@ enum PartitionEventType {
   LOAD_DONE = 1,
 }
 
-// Enums for transaction and lock management 
+// Enums for transaction and lock management
 enum TxnState {
     COMMITTED = 1,
     ABORTED = 2,
@@ -157,6 +157,7 @@ struct HiveObjectRef{
   3: string objectName,
   4: list<string> partValues,
   5: string columnName,
+  6: optional string catName,
 }
 
 struct PrivilegeGrantInfo {
@@ -250,7 +251,8 @@ struct Database {
   4: map<string, string> parameters, // properties associated with the database
   5: optional PrincipalPrivilegeSet privileges,
   6: optional string ownerName,
-  7: optional PrincipalType ownerType
+  7: optional PrincipalType ownerType,
+  8: optional string catalogName
 }
 
 // This object holds the information needed by SerDes
@@ -305,7 +307,8 @@ struct Table {
   12: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
-  15: optional bool rewriteEnabled     // rewrite enabled or not
+  15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional string catName
 }
 
 struct Partition {
@@ -316,7 +319,8 @@ struct Partition {
   5: i32          lastAccessTime,
   6: StorageDescriptor   sd,
   7: map<string, string> parameters,
-  8: optional PrincipalPrivilegeSet privileges
+  8: optional PrincipalPrivilegeSet privileges,
+  9: optional string catName
 }
 
 struct PartitionWithoutSD {
@@ -342,7 +346,8 @@ struct PartitionSpec {
   2: string tableName,
   3: string rootPath,
   4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
-  5: optional PartitionListComposingSpec partitionList
+  5: optional PartitionListComposingSpec partitionList,
+  6: optional string catName
 }
 
 struct Index {
@@ -444,7 +449,8 @@ struct ColumnStatisticsDesc {
 2: required string dbName,
 3: required string tableName,
 4: optional string partName,
-5: optional i64 lastAnalyzed
+5: optional i64 lastAnalyzed,
+6: optional string catName
 }
 
 struct ColumnStatistics {
@@ -498,7 +504,7 @@ struct ForeignKeysResponse {
 }
 
 struct DropConstraintRequest {
-  1: required string dbname, 
+  1: required string dbname,
   2: required string tablename,
   3: required string constraintname
 }
@@ -523,7 +529,8 @@ struct PartitionsByExprRequest {
   2: required string tblName,
   3: required binary expr,
   4: optional string defaultPartitionName,
-  5: optional i16 maxParts=-1
+  5: optional i16 maxParts=-1,
+  6: optional string catName
 }
 
 struct TableStatsResult {
@@ -544,7 +551,8 @@ struct PartitionsStatsRequest {
  1: required string dbName,
  2: required string tblName,
  3: required list<string> colNames,
- 4: required list<string> partNames
+ 4: required list<string> partNames,
+ 5: optional string catName
 }
 
 // Return type for add_partitions_req
@@ -558,7 +566,8 @@ struct AddPartitionsRequest {
   2: required string tblName,
   3: required list<Partition> parts,
   4: required bool ifNotExists,
-  5: optional bool needResult=true
+  5: optional bool needResult=true,
+  6: optional string catName
 }
 
 // Return type for drop_partitions_req
@@ -586,7 +595,8 @@ struct DropPartitionsRequest {
   5: optional bool ifExists=true, // currently verified on client
   6: optional bool ignoreProtection,
   7: optional EnvironmentContext environmentContext,
-  8: optional bool needResult=true
+  8: optional bool needResult=true,
+  9: optional string catName
 }
 
 struct PartitionValuesRequest {
@@ -598,6 +608,7 @@ struct PartitionValuesRequest {
   6: optional list<FieldSchema> partitionOrder;
   7: optional bool ascending = true;
   8: optional i64 maxParts = -1;
+  9: optional string catName
 }
 
 struct PartitionValuesRow {
@@ -633,6 +644,7 @@ struct Function {
   6: i32              createTime,
   7: FunctionType     functionType,
   8: list<ResourceUri> resourceUris,
+  9: optional string  catName
 }
 
 // Structs for transaction and locks
@@ -853,7 +865,7 @@ struct FireEventRequest {
 struct FireEventResponse {
     // NOP for now, this is just a place holder for future responses
 }
-    
+
 struct MetadataPpdResult {
   1: optional binary metadata,
   2: optional binary includeBitset
@@ -1081,7 +1093,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_primary_key(1:AddPrimaryKeyRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_foreign_key(1:AddForeignKeyRequest req)
-      throws(1:NoSuchObjectException o1, 2:MetaException o2)  
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
@@ -1491,13 +1503,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ShowLocksResponse show_locks(1:ShowLocksRequest rqst)
   void heartbeat(1:HeartbeatRequest ids) throws (1:NoSuchLockException o1, 2:NoSuchTxnException o2, 3:TxnAbortedException o3)
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
-  void compact(1:CompactionRequest rqst) 
-  CompactionResponse compact2(1:CompactionRequest rqst) 
+  void compact(1:CompactionRequest rqst)
+  CompactionResponse compact2(1:CompactionRequest rqst)
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
 
   // Notification logging calls
-  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
+  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst)
   CurrentNotificationEventId get_current_notificationEventId()
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()

@@ -48,6 +48,11 @@ class PartitionSpec
             'type' => TType::STRUCT,
             'class' => '\metastore\PartitionListComposingSpec',
         ),
+        6 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -70,6 +75,10 @@ class PartitionSpec
      * @var \metastore\PartitionListComposingSpec
      */
     public $partitionList = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -88,6 +97,9 @@ class PartitionSpec
             }
             if (isset($vals['partitionList'])) {
                 $this->partitionList = $vals['partitionList'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -148,6 +160,13 @@ class PartitionSpec
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -191,6 +210,11 @@ class PartitionSpec
             }
             $xfer += $output->writeFieldBegin('partitionList', TType::STRUCT, 5);
             $xfer += $this->partitionList->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 6);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

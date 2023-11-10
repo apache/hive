@@ -68,6 +68,11 @@ class Function
                 'class' => '\metastore\ResourceUri',
                 ),
         ),
+        9 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -102,6 +107,10 @@ class Function
      * @var \metastore\ResourceUri[]
      */
     public $resourceUris = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -129,6 +138,9 @@ class Function
             }
             if (isset($vals['resourceUris'])) {
                 $this->resourceUris = $vals['resourceUris'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -218,6 +230,13 @@ class Function
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -277,6 +296,11 @@ class Function
                 $xfer += $iter433->write($output);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 9);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

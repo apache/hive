@@ -46,6 +46,11 @@ class PartitionsByExprRequest
             'isRequired' => false,
             'type' => TType::I16,
         ),
+        6 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -68,6 +73,10 @@ class PartitionsByExprRequest
      * @var int
      */
     public $maxParts = -1;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -86,6 +95,9 @@ class PartitionsByExprRequest
             }
             if (isset($vals['maxParts'])) {
                 $this->maxParts = $vals['maxParts'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -144,6 +156,13 @@ class PartitionsByExprRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -181,6 +200,11 @@ class PartitionsByExprRequest
         if ($this->maxParts !== null) {
             $xfer += $output->writeFieldBegin('maxParts', TType::I16, 5);
             $xfer += $output->writeI16($this->maxParts);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 6);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

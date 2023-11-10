@@ -19,6 +19,7 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
   private static final org.apache.thrift.protocol.TField PARTITION_ORDER_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionOrder", org.apache.thrift.protocol.TType.LIST, (short)6);
   private static final org.apache.thrift.protocol.TField ASCENDING_FIELD_DESC = new org.apache.thrift.protocol.TField("ascending", org.apache.thrift.protocol.TType.BOOL, (short)7);
   private static final org.apache.thrift.protocol.TField MAX_PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("maxParts", org.apache.thrift.protocol.TType.I64, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new PartitionValuesRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new PartitionValuesRequestTupleSchemeFactory();
@@ -31,6 +32,7 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
   private @org.apache.thrift.annotation.Nullable java.util.List<FieldSchema> partitionOrder; // optional
   private boolean ascending; // optional
   private long maxParts; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -41,7 +43,8 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
     FILTER((short)5, "filter"),
     PARTITION_ORDER((short)6, "partitionOrder"),
     ASCENDING((short)7, "ascending"),
-    MAX_PARTS((short)8, "maxParts");
+    MAX_PARTS((short)8, "maxParts"),
+    CAT_NAME((short)9, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -73,6 +76,8 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
           return ASCENDING;
         case 8: // MAX_PARTS
           return MAX_PARTS;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -118,7 +123,7 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
   private static final int __ASCENDING_ISSET_ID = 1;
   private static final int __MAXPARTS_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.APPLY_DISTINCT,_Fields.FILTER,_Fields.PARTITION_ORDER,_Fields.ASCENDING,_Fields.MAX_PARTS};
+  private static final _Fields optionals[] = {_Fields.APPLY_DISTINCT,_Fields.FILTER,_Fields.PARTITION_ORDER,_Fields.ASCENDING,_Fields.MAX_PARTS,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -140,6 +145,8 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("maxParts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionValuesRequest.class, metaDataMap);
   }
@@ -195,6 +202,9 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
     }
     this.ascending = other.ascending;
     this.maxParts = other.maxParts;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public PartitionValuesRequest deepCopy() {
@@ -214,6 +224,7 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
 
     this.maxParts = -1L;
 
+    this.catName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -434,6 +445,30 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MAXPARTS_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -500,6 +535,14 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -530,6 +573,9 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
     case MAX_PARTS:
       return getMaxParts();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -557,6 +603,8 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
       return isSetAscending();
     case MAX_PARTS:
       return isSetMaxParts();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -646,6 +694,15 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -684,6 +741,10 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
     hashCode = hashCode * 8191 + ((isSetMaxParts()) ? 131071 : 524287);
     if (isSetMaxParts())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(maxParts);
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -776,6 +837,16 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -856,6 +927,16 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
       if (!first) sb.append(", ");
       sb.append("maxParts:");
       sb.append(this.maxParts);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -1001,6 +1082,14 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1072,6 +1161,13 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
         oprot.writeI64(struct.maxParts);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1114,7 +1210,10 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
       if (struct.isSetMaxParts()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetApplyDistinct()) {
         oprot.writeBool(struct.applyDistinct);
       }
@@ -1135,6 +1234,9 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
       }
       if (struct.isSetMaxParts()) {
         oprot.writeI64(struct.maxParts);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
@@ -1157,7 +1259,7 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
         }
       }
       struct.setPartitionKeysIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.applyDistinct = iprot.readBool();
         struct.setApplyDistinctIsSet(true);
@@ -1187,6 +1289,10 @@ public class PartitionValuesRequest implements org.apache.thrift.TBase<Partition
       if (incoming.get(4)) {
         struct.maxParts = iprot.readI64();
         struct.setMaxPartsIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }
