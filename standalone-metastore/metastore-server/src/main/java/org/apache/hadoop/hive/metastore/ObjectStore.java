@@ -4431,6 +4431,9 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     private void handleDirectSqlError(Exception ex, String savePoint) throws MetaException, NoSuchObjectException {
+      if (!allowJdo || !DatabaseProduct.isRecoverableException(ex)) {
+        throw ExceptionHandler.newMetaException(ex);
+      }
       String message = null;
       try {
         message = generateShorterMessage(ex);
@@ -4439,12 +4442,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
       LOG.warn(message); // Don't log the exception, people just get confused.
       LOG.debug("Full DirectSQL callstack for debugging (not an error)", ex);
-      if (!allowJdo) {
-        if (ex instanceof MetaException) {
-          throw (MetaException)ex;
-        }
-        throw new MetaException(ex.getMessage());
-      }
       if (!isInTxn) {
         JDOException rollbackEx = null;
         try {
