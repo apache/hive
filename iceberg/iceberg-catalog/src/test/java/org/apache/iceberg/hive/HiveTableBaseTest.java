@@ -30,8 +30,8 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.types.Types;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.apache.iceberg.PartitionSpec.builderFor;
 import static org.apache.iceberg.TableMetadataParser.getFileExtension;
@@ -55,12 +55,12 @@ public class HiveTableBaseTest extends HiveMetastoreTest {
 
   private Path tableLocation;
 
-  @Before
+  @BeforeEach
   public void createTestTable() {
     this.tableLocation = new Path(catalog.createTable(TABLE_IDENTIFIER, schema, partitionSpec).location());
   }
 
-  @After
+  @AfterEach
   public void dropTestTable() throws Exception {
     // drop the table data
     tableLocation.getFileSystem(hiveConf).delete(tableLocation, true);
