@@ -1107,7 +1107,7 @@
         <column name="DESCRIPTION" length="1000" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name ="propertyContent">
-        <column name="PROPERTY_CONTENT" jdbc-type="BLOB" allows-null="true"/>
+        <column name="PROPERTYCONTENT" jdbc-type="BLOB" allows-null="true"/>
       </field>
     </class>
 
