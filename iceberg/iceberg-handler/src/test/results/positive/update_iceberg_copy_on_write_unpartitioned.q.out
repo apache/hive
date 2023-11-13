@@ -2130,3 +2130,83 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 333	Changed forever	56
 444	The last one	800
 555	Changed again	801
+PREHOOK: query: explain update tbl_ice set b='All'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: explain update tbl_ice set b='All'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@tbl_ice
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_ice
+                  Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: int), 'All' (type: string), c (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 9 Data size: 855 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 9 Data size: 855 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.tbl_ice
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.tbl_ice
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: update tbl_ice set b='All'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: update tbl_ice set b='All'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: select * from tbl_ice order by a, b, c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_ice order by a, b, c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	All	50
+2	All	51
+3	All	52
+4	All	53
+5	All	54
+111	All	55
+333	All	56
+444	All	800
+555	All	801
