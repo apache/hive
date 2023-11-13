@@ -43,13 +43,13 @@ import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class NativeMergeRewriter implements Rewriter<MergeStatement> {
+public class MergeRewriter implements Rewriter<MergeStatement> {
 
   private final Hive db;
   private final HiveConf conf;
   private final SqlBuilderFactory sqlBuilderFactory;
 
-  public NativeMergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
+  public MergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
     this.db = db;
     this.conf = conf;
     this.sqlBuilderFactory = sqlBuilderFactory;

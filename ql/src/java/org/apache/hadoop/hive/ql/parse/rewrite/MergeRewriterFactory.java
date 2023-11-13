@@ -59,6 +59,6 @@ public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
     if (splitUpdate) {
       return new SplitMergeRewriter(db, conf, sqlBuilderFactory);
     }
-    return new NativeMergeRewriter(db, conf, sqlBuilderFactory);
+    return new MergeRewriter(db, conf, sqlBuilderFactory);
   }
 }

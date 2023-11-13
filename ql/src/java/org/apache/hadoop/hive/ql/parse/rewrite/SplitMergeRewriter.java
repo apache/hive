@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SplitMergeRewriter extends NativeMergeRewriter {
+public class SplitMergeRewriter extends MergeRewriter {
 
   public SplitMergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
     super(db, conf, sqlBuilderFactory);
