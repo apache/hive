@@ -30,6 +30,7 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.FileUtils.unescapePathName;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -1435,7 +1436,8 @@ class MetaStoreDirectSql {
       }
 
       if (colType == FilterType.Timestamp && valType == FilterType.String) {
-        nodeValue = MetaStoreUtils.convertStringToTimestamp((String)nodeValue);
+        // timestamp value may be escaped in client side, so we need unescape it here.
+        nodeValue = MetaStoreUtils.convertStringToTimestamp(unescapePathName((String) nodeValue));
         valType = FilterType.Timestamp;
       }
 
@@ -1530,12 +1532,20 @@ class MetaStoreDirectSql {
         Map<String, String> partKeyToVal = new HashMap<>();
         partKeyToVal.put(partCol.getName(), nodeValue.toString());
         String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
-        if (partColCount == 1) {
-          // Case where there is no other partition columns
+        if (colType == FilterType.Date) {
+          // Some engines like Pig will record both date and time values, in which case we need
+          // match PART_NAME by like clause.
+          escapedNameFragment += "%";
+        }
+        if (colType != FilterType.Date && partColCount == 1) {
+          // Case where partition column type is not date and there is no other partition columns
           params.add(escapedNameFragment);
           filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " =? " : " !=? ");
         } else {
-          if (partColIndex + 1 == partColCount) {
+          if (partColCount == 1) {
+            // Case where partition column type is date and there is no other partition columns
+            params.add(escapedNameFragment);
+          } else if (partColIndex + 1 == partColCount) {
             // Case where the partition column is at the end of the name.
             params.add("%/" + escapedNameFragment);
           } else if (partColIndex == 0) {
