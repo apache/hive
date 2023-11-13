@@ -146,17 +146,21 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       return false;
     }
 
-    AlterTableExecuteSpec.DeleteMetadataSpec deleteMetadataSpec =
-        new AlterTableExecuteSpec.DeleteMetadataSpec(tableName.getTableMetaRef(), sarg);
-    AlterTableExecuteSpec<AlterTableExecuteSpec.DeleteMetadataSpec> executeSpec =
-        new AlterTableExecuteSpec<>(AlterTableExecuteSpec.ExecuteOperationType.DELETE_METADATA, deleteMetadataSpec);
-    AlterTableExecuteDesc desc = new AlterTableExecuteDesc(tableName, null, executeSpec);
-    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
+    DDLWork ddlWork = createDDLWorkOfMetadataUpdate(tableName, sarg);
     rootTasks = Collections.singletonList(TaskFactory.get(ddlWork));
     inputs = sem.getInputs();
     outputs = sem.getOutputs();
     updateOutputs(table);
     return true;
+  }
+
+  private DDLWork createDDLWorkOfMetadataUpdate(TableName tableName, SearchArgument sarg) throws SemanticException {
+    AlterTableExecuteSpec.DeleteMetadataSpec deleteMetadataSpec =
+        new AlterTableExecuteSpec.DeleteMetadataSpec(tableName.getTableMetaRef(), sarg);
+    AlterTableExecuteSpec<AlterTableExecuteSpec.DeleteMetadataSpec> executeSpec =
+        new AlterTableExecuteSpec<>(AlterTableExecuteSpec.ExecuteOperationType.DELETE_METADATA, deleteMetadataSpec);
+    AlterTableExecuteDesc desc = new AlterTableExecuteDesc(tableName, null, executeSpec);
+    return new DDLWork(getInputs(), getOutputs(), desc);
   }
 
   @Override
