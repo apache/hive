@@ -89,7 +89,9 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
       return null;
     }
 
-    int totalCount = jdbcResource.execute(new DeleteFromCompletedCompacionsCommand(deleteSet));
+    int totalCount = jdbcResource.execute(new InClauseBatchCommand<>(
+        "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_ID\" in (:ids)",
+        new MapSqlParameterSource().addValue("ids", deleteSet), "ids", Long::compareTo));
     LOG.debug("Removed {} records from COMPLETED_COMPACTIONS", totalCount);
     return null;
   }  
@@ -164,39 +166,4 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
     }
   }
   
-  private static class DeleteFromCompletedCompacionsCommand implements InClauseBatchCommand<Long> {
-    
-    private final List<Long> ids;
-
-    public DeleteFromCompletedCompacionsCommand(List<Long> ids) {
-      this.ids = ids;
-    }
-
-    @Override
-    public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
-      return "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE \"CC_ID\" in (:ids)";
-    }
-
-    @Override
-    public SqlParameterSource getQueryParameters() {
-      return new MapSqlParameterSource();
-    }
-
-    @Override
-    public List<Long> getInClauseParameters() {
-      return ids;
-    }
-
-    @Override
-    public String getInClauseParameterName() {
-      return "ids";
-    }
-
-    @Override
-    public Comparator<Long> getParameterLengthComparator() {
-      return Long::compareTo;
-    }
-
-  }
-
 }

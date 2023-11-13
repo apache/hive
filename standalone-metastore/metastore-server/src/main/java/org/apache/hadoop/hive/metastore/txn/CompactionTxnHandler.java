@@ -19,16 +19,12 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
-import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveCompactionMetricsDataCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveDuplicateCompleteTxnComponentsCommand;
@@ -55,8 +51,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
@@ -85,7 +79,7 @@ class CompactionTxnHandler extends TxnHandler {
     synchronized (CompactionTxnHandler.class) {
       if (!initialized) {
         int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS);
-        try (DataSourceProvider.DataSourceNameConfigurator configurator =
+        try (DataSourceProvider.DataSourceNameConfigurator ignored =
                  new DataSourceProvider.DataSourceNameConfigurator(conf, "compactor")) {
           jdbcResource.registerDataSource(POOL_COMPACTOR, setupJdbcConnectionPool(conf, maxPoolSize));
           initialized = true;
@@ -565,26 +559,6 @@ class CompactionTxnHandler extends TxnHandler {
     return Optional.ofNullable(jdbcResource.execute(new GetCompactionInfoHandler(txnId, true)));
   }
 
-  @Override
-  protected void createCommitNotificationEvent(Connection conn, long txnid, TxnType txnType)
-      throws MetaException, SQLException {
-    super.createCommitNotificationEvent(conn, txnid, txnType);
-    if (transactionalListeners != null) {
-      //Please note that TxnHandler and CompactionTxnHandler are using different DataSources (to have different pools).
-      //This call must use the same transaction and connection as TxnHandler.commitTxn(), therefore we are passing the 
-      //datasource wrapper comming from TxnHandler. Without this, the getCompactionByTxnId(long txnId) call would be
-      //executed using a different connection obtained from CompactionTxnHandler's own datasourceWrapper. 
-      CompactionInfo compactionInfo = getCompactionByTxnId(txnid).orElse(null);
-      if (compactionInfo != null) {
-        MetaStoreListenerNotifier
-            .notifyEventWithDirectSql(transactionalListeners, EventMessage.EventType.COMMIT_COMPACTION,
-                new CommitCompactionEvent(txnid, compactionInfo), conn, sqlGenerator);
-      } else {
-        LOG.warn("No compaction queue record found for Compaction type transaction commit. txnId:" + txnid);
-      }
-    }
-  }
-  
   @Override
   public boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException {
     return new UpdateCompactionMetricsDataFunction(data).execute(jdbcResource);

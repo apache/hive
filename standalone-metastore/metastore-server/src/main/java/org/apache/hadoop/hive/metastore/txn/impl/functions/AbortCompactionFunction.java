@@ -151,7 +151,7 @@ public class AbortCompactionFunction implements TransactionalFunction<AbortCompa
     }
 
     @Override
-    public AbortCompactionResponseElement execute() throws DataAccessException {
+    public AbortCompactionResponseElement execute() {
       try (TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED)) {
         compactionInfo.state = TxnStore.ABORTED_STATE;
         compactionInfo.errorMessage = "Compaction Aborted by Abort Comapction request.";

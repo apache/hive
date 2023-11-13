@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -26,10 +28,13 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.OperationType;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnHandlingFeatures;
@@ -37,8 +42,12 @@ import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.DeleteReplTxnMapEntryCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompletedTxnComponentsCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveTxnsFromMinHistoryLevelCommand;
+import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveWriteIdsFromMinHistoryCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.FindTxnStateHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.GetCompactionInfoHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.GetHighWaterMarkHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.GetOpenTxnTypeAndLockHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.TargetTxnIdListHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
@@ -47,21 +56,21 @@ import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
@@ -70,12 +79,14 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
 
   private static final Logger LOG = LoggerFactory.getLogger(CommitTxnFunction.class);
 
-  private static final String COMPL_TXN_COMPONENTS_INSERT_QUERY = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" " +
-      "(\"CTC_TXNID\"," + " \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\")" +
-      " VALUES (%s, ?, ?, ?, ?, %s)";
-
   private final CommitTxnRequest rqst;
-  
+  private final List<TransactionalMetaStoreEventListener> transactionalListeners;
+
+  public CommitTxnFunction(CommitTxnRequest rqst, List<TransactionalMetaStoreEventListener> transactionalListeners) {
+    this.rqst = rqst;
+    this.transactionalListeners = transactionalListeners;
+  }
+
   @Override
   public TxnType execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException, NoSuchTxnException, TxnAbortedException {
     char isUpdateDelete = 'N';
@@ -84,420 +95,360 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
 
     boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
-    //start a new transaction
-    jdbcResource.bindDataSource(POOL_TX);
-    try (TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED)) {
-      Connection dbConn = null;
-      Statement stmt = null;
-      Long commitId = null;
-      try {
-        lockInternal();
-        //make sure we are using the connection bound to the transaction, so obtain it via DataSourceUtils.getConnection() 
-        dbConn = jdbcResource.getConnection();
-        stmt = dbConn.createStatement();
+    // Get the current TXN
+    TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
+    Long commitId = null;
 
-        if (rqst.isSetReplLastIdInfo()) {
-          updateReplId(dbConn, rqst.getReplLastIdInfo());
-        }
+    if (rqst.isSetReplLastIdInfo()) {
+      updateReplId(jdbcResource, rqst.getReplLastIdInfo());
+    }
 
+    if (isReplayedReplTxn) {
+      assert (rqst.isSetReplPolicy());
+      sourceTxnId = rqst.getTxnid();
+      List<Long> targetTxnIds = jdbcResource.execute(new TargetTxnIdListHandler(rqst.getReplPolicy(), Collections.singletonList(sourceTxnId)));
+      if (targetTxnIds.isEmpty()) {
+        // Idempotent case where txn was already closed or commit txn event received without
+        // corresponding open txn event.
+        LOG.info("Target txn id is missing for source txn id : {} and repl policy {}", sourceTxnId,
+            rqst.getReplPolicy());
+        jdbcResource.getTransactionManager().rollback(context);
+        return null;
+      }
+      assert targetTxnIds.size() == 1;
+      txnid = targetTxnIds.get(0);
+    }
+
+    /**
+     * Runs at READ_COMMITTED with S4U on TXNS row for "txnid".  S4U ensures that no other
+     * operation can change this txn (such acquiring locks). While lock() and commitTxn()
+     * should not normally run concurrently (for same txn) but could due to bugs in the client
+     * which could then corrupt internal transaction manager state.  Also competes with abortTxn().
+     */
+    TxnType txnType = jdbcResource.execute(new GetOpenTxnTypeAndLockHandler(jdbcResource.getSqlGenerator(), txnid));
+    if (txnType == null) {
+      //if here, txn was not found (in expected state)
+      TxnStatus actualTxnStatus = jdbcResource.execute(new FindTxnStateHandler(txnid));
+      if (actualTxnStatus == TxnStatus.COMMITTED) {
         if (isReplayedReplTxn) {
-          assert (rqst.isSetReplPolicy());
-          sourceTxnId = rqst.getTxnid();
-          List<Long> targetTxnIds = jdbcResource.execute(new TargetTxnIdListHandler(rqst.getReplPolicy(), Collections.singletonList(sourceTxnId)));
-          if (targetTxnIds.isEmpty()) {
-            // Idempotent case where txn was already closed or commit txn event received without
-            // corresponding open txn event.
-            LOG.info("Target txn id is missing for source txn id : {} and repl policy {}", sourceTxnId,
-                rqst.getReplPolicy());
-            jdbcResource.getTransactionManager().rollback(context);
-            return null;
-          }
-          assert targetTxnIds.size() == 1;
-          txnid = targetTxnIds.get(0);
+          // in case of replication, idempotent is taken care by getTargetTxnId
+          LOG.warn("Invalid state COMMITTED for transactions started using replication replay task");
         }
+        /**
+         * This makes the operation idempotent
+         * (assume that this is most likely due to retry logic)
+         */
+        LOG.info("Nth commitTxn({}) msg", JavaUtils.txnIdToString(txnid));
+        return null;
+      }
+      TxnUtils.raiseTxnUnexpectedState(actualTxnStatus, txnid);
+    }
+
+    String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
+        OperationType.UPDATE + "," + OperationType.DELETE + ")";
+    long tempCommitId = TxnUtils.generateTemporaryId();
+
+    if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
+      new AcquireTxnLockFunction(false).execute(jdbcResource);
+      commitId = jdbcResource.execute(new GetHighWaterMarkHandler());
+
+    } else if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn) {
+      String writeSetInsertSql = "INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\"," +
+          "   \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
+          " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + tempCommitId + ", \"TC_OPERATION_TYPE\" ";
+
+      boolean isUpdateOrDelete = jdbcResource.getJdbcTemplate().query(
+          jdbcResource.getSqlGenerator().addLimitClause(1, "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix),
+          ResultSet::next);
+      
+      if (isUpdateOrDelete) {
+        isUpdateDelete = 'Y';
+        //if here it means currently committing txn performed update/delete and we should check WW conflict
+        /**
+         * "select distinct" is used below because
+         * 1. once we get to multi-statement txns, we only care to record that something was updated once
+         * 2. if {@link #addDynamicPartitions(AddDynamicPartitions)} is retried by caller it may create
+         *  duplicate entries in TXN_COMPONENTS
+         * but we want to add a PK on WRITE_SET which won't have unique rows w/o this distinct
+         * even if it includes all of its columns
+         *
+         * First insert into write_set using a temporary commitID, which will be updated in a separate call,
+         * see: {@link #updateWSCommitIdAndCleanUpMetadata(Statement, long, TxnType, Long, long)}}.
+         * This should decrease the scope of the S4U lock on the next_txn_id table.
+         */
+        Object undoWriteSetForCurrentTxn = context.createSavepoint();
+        jdbcResource.getJdbcTemplate().update(
+            writeSetInsertSql + (TxnHandlingFeatures.useMinHistoryLevel() ? conflictSQLSuffix :
+            "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"= :txnid AND \"TC_OPERATION_TYPE\" <> :type"),
+            new MapSqlParameterSource()
+                .addValue("txnId", txnid)
+                .addValue("type", OperationType.COMPACT.getSqlConst()));
 
         /**
-         * Runs at READ_COMMITTED with S4U on TXNS row for "txnid".  S4U ensures that no other
-         * operation can change this txn (such acquiring locks). While lock() and commitTxn()
-         * should not normally run concurrently (for same txn) but could due to bugs in the client
-         * which could then corrupt internal transaction manager state.  Also competes with abortTxn().
+         * This S4U will mutex with other commitTxn() and openTxns().
+         * -1 below makes txn intervals look like [3,3] [4,4] if all txns are serial
+         * Note: it's possible to have several txns have the same commit id.  Suppose 3 txns start
+         * at the same time and no new txns start until all 3 commit.
+         * We could've incremented the sequence for commitId as well but it doesn't add anything functionally.
          */
-        TxnType txnType = jdbcResource.execute(new GetOpenTxnTypeAndLockHandler(sqlGenerator, txnid));
-        if (txnType == null) {
-          //if here, txn was not found (in expected state)
-          TxnStatus actualTxnStatus = jdbcResource.execute(new FindTxnStateHandler(txnid));
-          if (actualTxnStatus == TxnStatus.COMMITTED) {
-            if (isReplayedReplTxn) {
-              // in case of replication, idempotent is taken care by getTargetTxnId
-              LOG.warn("Invalid state COMMITTED for transactions started using replication replay task");
-            }
-            /**
-             * This makes the operation idempotent
-             * (assume that this is most likely due to retry logic)
-             */
-            LOG.info("Nth commitTxn({}) msg", JavaUtils.txnIdToString(txnid));
-            return null;
-          }
-          TxnUtils.raiseTxnUnexpectedState(actualTxnStatus, txnid);
-        }
+        new AcquireTxnLockFunction(false).execute(jdbcResource);
+        commitId = jdbcResource.execute(new GetHighWaterMarkHandler());
 
-        String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
-            OperationType.UPDATE + "," + OperationType.DELETE + ")";
-        long tempCommitId = TxnUtils.generateTemporaryId();
-
-        if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
-          acquireTxnLock(false);
-          commitId = getHighWaterMark();
-
-        } else if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn) {
-          String writeSetInsertSql = "INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\"," +
-              "   \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
-              " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + tempCommitId + ", \"TC_OPERATION_TYPE\" ";
-
-          if (isUpdateOrDelete(stmt, conflictSQLSuffix)) {
-            isUpdateDelete = 'Y';
-            //if here it means currently committing txn performed update/delete and we should check WW conflict
-            /**
-             * "select distinct" is used below because
-             * 1. once we get to multi-statement txns, we only care to record that something was updated once
-             * 2. if {@link #addDynamicPartitions(AddDynamicPartitions)} is retried by caller it may create
-             *  duplicate entries in TXN_COMPONENTS
-             * but we want to add a PK on WRITE_SET which won't have unique rows w/o this distinct
-             * even if it includes all of its columns
-             *
-             * First insert into write_set using a temporary commitID, which will be updated in a separate call,
-             * see: {@link #updateWSCommitIdAndCleanUpMetadata(Statement, long, TxnType, Long, long)}}.
-             * This should decrease the scope of the S4U lock on the next_txn_id table.
-             */
-            Object undoWriteSetForCurrentTxn = context.createSavepoint();
-            stmt.executeUpdate(writeSetInsertSql + (TxnHandlingFeatures.useMinHistoryLevel() ? conflictSQLSuffix :
-                "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT));
-
-            /**
-             * This S4U will mutex with other commitTxn() and openTxns().
-             * -1 below makes txn intervals look like [3,3] [4,4] if all txns are serial
-             * Note: it's possible to have several txns have the same commit id.  Suppose 3 txns start
-             * at the same time and no new txns start until all 3 commit.
-             * We could've incremented the sequence for commitId as well but it doesn't add anything functionally.
-             */
-            acquireTxnLock(false);
-            commitId = getHighWaterMark();
-
-            if (!rqst.isExclWriteEnabled()) {
-              /**
-               * see if there are any overlapping txns that wrote the same element, i.e. have a conflict
-               * Since entire commit operation is mutexed wrt other start/commit ops,
-               * committed.ws_commit_id <= current.ws_commit_id for all txns
-               * thus if committed.ws_commit_id < current.ws_txnid, transactions do NOT overlap
-               * For example, [17,20] is committed, [6,80] is being committed right now - these overlap
-               * [17,20] committed and [21,21] committing now - these do not overlap.
-               * [17,18] committed and [18,19] committing now - these overlap  (here 18 started while 17 was still running)
-               */
-              try (ResultSet rs = checkForWriteConflict(stmt, txnid)) {
-                if (rs.next()) {
-                  //found a conflict, so let's abort the txn
-                  String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
-                  StringBuilder resource = new StringBuilder(rs.getString(3)).append("/").append(rs.getString(4));
-                  String partitionName = rs.getString(5);
-                  if (partitionName != null) {
-                    resource.append('/').append(partitionName);
-                  }
-                  String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
-                      " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
-                  //remove WRITE_SET info for current txn since it's about to abort
-                  context.rollbackToSavepoint(undoWriteSetForCurrentTxn);
-                  LOG.info(msg);
-                  //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
-                  if (abortTxns(Collections.singletonList(txnid), false, isReplayedReplTxn,
-                      TxnErrorMsg.ABORT_WRITE_CONFLICT) != 1) {
-                    throw new IllegalStateException(msg + " FAILED!");
-                  }
-                  jdbcResource.getTransactionManager().commit(context);
-                  throw new TxnAbortedException(msg);
-                }
-              }
-            }
-          } else if (!TxnHandlingFeatures.useMinHistoryLevel()) {
-            stmt.executeUpdate(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid +
-                " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT);
-            commitId = getHighWaterMark();
-          }
-        } else {
-          /*
-           * current txn didn't update/delete anything (may have inserted), so just proceed with commit
-           *
-           * We only care about commit id for write txns, so for RO (when supported) txns we don't
-           * have to mutex on NEXT_TXN_ID.
-           * Consider: if RO txn is after a W txn, then RO's openTxns() will be mutexed with W's
-           * commitTxn() because both do S4U on NEXT_TXN_ID and thus RO will see result of W txn.
-           * If RO < W, then there is no reads-from relationship.
-           * In replication flow we don't expect any write write conflict as it should have been handled at source.
+        if (!rqst.isExclWriteEnabled()) {
+          /**
+           * see if there are any overlapping txns that wrote the same element, i.e. have a conflict
+           * Since entire commit operation is mutexed wrt other start/commit ops,
+           * committed.ws_commit_id <= current.ws_commit_id for all txns
+           * thus if committed.ws_commit_id < current.ws_txnid, transactions do NOT overlap
+           * For example, [17,20] is committed, [6,80] is being committed right now - these overlap
+           * [17,20] committed and [21,21] committing now - these do not overlap.
+           * [17,18] committed and [18,19] committing now - these overlap  (here 18 started while 17 was still running)
            */
-          assert true;
-        }
-
-
-        if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
-          moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
-        } else if (isReplayedReplTxn) {
-          if (rqst.isSetWriteEventInfos()) {
-            String sql = String.format(COMPL_TXN_COMPONENTS_INSERT_QUERY, txnid, quoteChar(isUpdateDelete));
-            try (PreparedStatement pstmt = dbConn.prepareStatement(sql)) {
-              int insertCounter = 0;
-              for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
-                pstmt.setString(1, writeEventInfo.getDatabase());
-                pstmt.setString(2, writeEventInfo.getTable());
-                pstmt.setString(3, writeEventInfo.getPartition());
-                pstmt.setLong(4, writeEventInfo.getWriteId());
-
-                pstmt.addBatch();
-                insertCounter++;
-                if (insertCounter % maxBatchSize == 0) {
-                  LOG.debug("Executing a batch of <{}> queries. Batch size: {}", sql, maxBatchSize);
-                  pstmt.executeBatch();
-                }
-              }
-              if (insertCounter % maxBatchSize != 0) {
-                LOG.debug("Executing a batch of <{}> queries. Batch size: {}", sql, insertCounter % maxBatchSize);
-                pstmt.executeBatch();
-              }
+          WriteSetInfo info = checkForWriteConflict(jdbcResource, txnid);
+          if (info != null) {
+            //found a conflict, so let's abort the txn
+            String committedTxn = "[" + JavaUtils.txnIdToString(info.txnId) + "," + info.committedCommitId + "]";
+            StringBuilder resource = new StringBuilder(info.database).append("/").append(info.table);
+            if (info.partition != null) {
+              resource.append('/').append(info.partition);
             }
+            String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
+                " committed by " + committedTxn + " " + info.currentOperationType + "/" + info.committedOperationType;
+            //remove WRITE_SET info for current txn since it's about to abort
+            context.rollbackToSavepoint(undoWriteSetForCurrentTxn);
+            LOG.info(msg);
+            //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
+            if (new AbortTxnsFunction(Collections.singletonList(txnid), false, false, 
+                isReplayedReplTxn, TxnErrorMsg.ABORT_WRITE_CONFLICT).execute(jdbcResource) != 1) {
+              throw new IllegalStateException(msg + " FAILED!");
+            }
+            jdbcResource.getTransactionManager().commit(context);
+            throw new TxnAbortedException(msg);
           }
-          jdbcResource.execute(new DeleteReplTxnMapEntryCommand(sourceTxnId, rqst.getReplPolicy()));
         }
-        updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempCommitId);
-        jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(conf, ImmutableList.of(txnid)), maxBatchSize);
-        removeWriteIdsFromMinHistory(dbConn, ImmutableList.of(txnid));
-        if (rqst.isSetKeyValue()) {
-          updateKeyValueAssociatedWithTxn(rqst, stmt);
-        }
-
-        if (!isHiveReplTxn) {
-          createCommitNotificationEvent(jdbcResource.getConnection(), txnid , txnType);
-        }
-
-        LOG.debug("Going to commit");
-        jdbcResource.getTransactionManager().commit(context);
-
-        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
-          Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
-        }
-      } catch (SQLException e) {
-        LOG.debug("Going to rollback: ", e);
-        jdbcResource.getTransactionManager().rollback(context);
-        checkRetryable(e, "commitTxn(" + rqst + ")");
-        throw new MetaException("Unable to update transaction database "
-            + StringUtils.stringifyException(e));
-      } finally {
-        closeStmt(stmt);
-        unlockInternal();
+      } else if (!TxnHandlingFeatures.useMinHistoryLevel()) {
+        jdbcResource.getJdbcTemplate().update(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = :tnxId AND \"TC_OPERATION_TYPE\" <> :type",
+            new MapSqlParameterSource()
+                .addValue("txnId", txnid)
+                .addValue("type", OperationType.COMPACT.getSqlConst()));
+        commitId = jdbcResource.execute(new GetHighWaterMarkHandler());
       }
-    } catch (RetryException e) {
-      commitTxn(rqst);
-    } finally {
-      jdbcResource.unbindDataSource();
-    }  
+    } else {
+      /*
+       * current txn didn't update/delete anything (may have inserted), so just proceed with commit
+       *
+       * We only care about commit id for write txns, so for RO (when supported) txns we don't
+       * have to mutex on NEXT_TXN_ID.
+       * Consider: if RO txn is after a W txn, then RO's openTxns() will be mutexed with W's
+       * commitTxn() because both do S4U on NEXT_TXN_ID and thus RO will see result of W txn.
+       * If RO < W, then there is no reads-from relationship.
+       * In replication flow we don't expect any write write conflict as it should have been handled at source.
+       */
+      assert true;
+    }
+
+
+    if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
+      moveTxnComponentsToCompleted(jdbcResource, txnid, isUpdateDelete);
+    } else if (isReplayedReplTxn) {
+      jdbcResource.execute(new InsertCompletedTxnComponentsCommand(txnid, isUpdateDelete, rqst.getWriteEventInfos()));
+      jdbcResource.execute(new DeleteReplTxnMapEntryCommand(sourceTxnId, rqst.getReplPolicy()));
+    }
+    updateWSCommitIdAndCleanUpMetadata(jdbcResource, txnid, txnType, commitId, tempCommitId);
+    jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(ImmutableList.of(txnid)));
+    jdbcResource.execute(new RemoveWriteIdsFromMinHistoryCommand(ImmutableList.of(txnid)));
+    if (rqst.isSetKeyValue()) {
+      updateKeyValueAssociatedWithTxn(jdbcResource, rqst);
+    }
+
+    if (!isHiveReplTxn) {
+      createCommitNotificationEvent(jdbcResource, txnid , txnType);
+    }
+
+    LOG.debug("Going to commit");
+    jdbcResource.getTransactionManager().commit(context);
+
+    if (MetastoreConf.getBoolVar(jdbcResource.getConf(), MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+      Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
+    }
+    return txnType;
   }
 
-  private void updateReplId(Connection dbConn, ReplLastIdInfo replLastIdInfo) throws SQLException, MetaException {
-    PreparedStatement pst = null;
-    PreparedStatement pstInt = null;
-    ResultSet rs = null;
-    ResultSet prs = null;
-    Statement stmt = null;
-    String query;
-    List<String> params;
+  private void updateReplId(MultiDataSourceJdbcResource jdbcResource, ReplLastIdInfo replLastIdInfo) throws MetaException {
     String lastReplId = Long.toString(replLastIdInfo.getLastReplId());
     String catalog = replLastIdInfo.isSetCatalog() ? normalizeIdentifier(replLastIdInfo.getCatalog()) :
-        MetaStoreUtils.getDefaultCatalog(conf);
+        MetaStoreUtils.getDefaultCatalog(jdbcResource.getConf());
     String db = normalizeIdentifier(replLastIdInfo.getDatabase());
     String table = replLastIdInfo.isSetTable() ? normalizeIdentifier(replLastIdInfo.getTable()) : null;
     List<String> partList = replLastIdInfo.isSetPartitionList() ? replLastIdInfo.getPartitionList() : null;
 
-    try {
-      stmt = dbConn.createStatement();
+    String s = jdbcResource.getSqlGenerator().getDbProduct().getPrepareTxnStmt();
+    if (s != null) {
+      jdbcResource.getJdbcTemplate().execute(s, ps -> null);
+    }
 
-      String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
-      if (s != null) {
-        stmt.execute(s);
+    // not used select for update as it will be updated by single thread only from repl load
+    long dbId = updateDatabaseProp(jdbcResource, catalog, db, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
+    if (table != null) {
+      long tableId = updateTableProp(jdbcResource, catalog, db, dbId, table, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
+      if (partList != null && !partList.isEmpty()) {
+        updatePartitionProp(jdbcResource, tableId, partList, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
       }
-
-      long dbId = getDatabaseId(dbConn, db, catalog);
-
-      // not used select for update as it will be updated by single thread only from repl load
-      updateDatabaseProp(dbConn, db, dbId, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
-
-      if (table == null) {
-        // if only database last repl id to be updated.
-        return;
-      }
-
-      query = "SELECT \"TBL_ID\" FROM \"TBLS\" WHERE \"TBL_NAME\" = ? AND \"DB_ID\" = " + dbId;
-      params = Arrays.asList(table);
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + query.replace("?", "{}") + ">", quoteString(table));
-      }
-
-      rs = pst.executeQuery();
-      if (!rs.next()) {
-        throw new MetaException("Table with name " + table + " does not exist in db " + catalog + "." + db);
-      }
-      long tblId = rs.getLong(1);
-      rs.close();
-      pst.close();
-
-      // select for update is not required as only one task will update this during repl load.
-      rs = stmt.executeQuery("SELECT \"PARAM_VALUE\" FROM \"TABLE_PARAMS\" WHERE \"PARAM_KEY\" = " +
-          "'repl.last.id' AND \"TBL_ID\" = " + tblId);
-      if (!rs.next()) {
-        query = "INSERT INTO \"TABLE_PARAMS\" VALUES ( " + tblId + " , 'repl.last.id' , ? )";
-      } else {
-        query = "UPDATE \"TABLE_PARAMS\" SET \"PARAM_VALUE\" = ? WHERE \"TBL_ID\" = " + tblId +
-            " AND \"PARAM_KEY\" = 'repl.last.id'";
-      }
-      rs.close();
-
-      params = Arrays.asList(lastReplId);
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Updating repl id for table <" + query.replace("?", "{}") + ">", lastReplId);
-      }
-      if (pst.executeUpdate() != 1) {
-        //only one row insert or update should happen
-        throw new RuntimeException("TABLE_PARAMS is corrupted for table " + table);
-      }
-      pst.close();
-
-      if (partList == null || partList.isEmpty()) {
-        return;
-      }
-
-      List<String> questions = new ArrayList<>();
-      for(int i = 0; i < partList.size(); ++i) {
-        questions.add("?");
-      }
-
-      List<String> queries = new ArrayList<>();
-      StringBuilder prefix = new StringBuilder();
-      StringBuilder suffix = new StringBuilder();
-      prefix.append("SELECT \"PART_ID\" FROM \"PARTITIONS\" WHERE \"TBL_ID\" = " + tblId + " and ");
-
-      // Populate the complete query with provided prefix and suffix
-      List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
-          questions, "\"PART_NAME\"", true, false);
-      int totalCount = 0;
-      assert queries.size() == counts.size();
-      params = Arrays.asList(lastReplId);
-      for (int i = 0; i < queries.size(); i++) {
-        query = queries.get(i);
-        int partCount = counts.get(i);
-
-        LOG.debug("Going to execute query {} with partitions {}", query,
-            partList.subList(totalCount, (totalCount + partCount)));
-        pst = dbConn.prepareStatement(query);
-        for (int j = 0; j < partCount; j++) {
-          pst.setString(j + 1, partList.get(totalCount + j));
-        }
-        totalCount += partCount;
-        prs = pst.executeQuery();
-        while (prs.next()) {
-          long partId = prs.getLong(1);
-          rs = stmt.executeQuery("SELECT \"PARAM_VALUE\" FROM \"PARTITION_PARAMS\" WHERE \"PARAM_KEY\" " +
-              " = 'repl.last.id' AND \"PART_ID\" = " + partId);
-          if (!rs.next()) {
-            query = "INSERT INTO \"PARTITION_PARAMS\" VALUES ( " + partId + " , 'repl.last.id' , ? )";
-          } else {
-            query = "UPDATE \"PARTITION_PARAMS\" SET \"PARAM_VALUE\" = ? " +
-                " WHERE \"PART_ID\" = " + partId + " AND \"PARAM_KEY\" = 'repl.last.id'";
-          }
-          rs.close();
-
-          pstInt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Updating repl id for part <" + query.replace("?", "{}") + ">", lastReplId);
-          }
-          if (pstInt.executeUpdate() != 1) {
-            //only one row insert or update should happen
-            throw new RuntimeException("PARTITION_PARAMS is corrupted for partition " + partId);
-          }
-          partCount--;
-          pstInt.close();
-        }
-        if (partCount != 0) {
-          throw new MetaException(partCount + " Number of partition among " + partList + " does not exist in table " +
-              catalog + "." + db + "." + table);
-        }
-        prs.close();
-        pst.close();
-      }
-    } finally {
-      closeStmt(stmt);
-      close(rs);
-      close(prs);
-      closeStmt(pst);
-      closeStmt(pstInt);
     }
   }
 
-  private void updateDatabaseProp(Connection dbConn, String database,
-                                  long dbId, String prop, String propValue) throws SQLException {
-    ResultSet rs = null;
-    PreparedStatement pst = null;
-    try {
-      String query = "SELECT \"PARAM_VALUE\" FROM \"DATABASE_PARAMS\" WHERE \"PARAM_KEY\" = " +
-          "'" + prop + "' AND \"DB_ID\" = " + dbId;
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, null);
-      rs = pst.executeQuery();
-      query = null;
-      if (!rs.next()) {
-        query = "INSERT INTO \"DATABASE_PARAMS\" VALUES ( " + dbId + " , '" + prop + "' , ? )";
-      } else if (!rs.getString(1).equals(propValue)) {
-        query = "UPDATE \"DATABASE_PARAMS\" SET \"PARAM_VALUE\" = ? WHERE \"DB_ID\" = " + dbId +
-            " AND \"PARAM_KEY\" = '" + prop + "'";
-      }
-      closeStmt(pst);
-      if (query == null) {
-        LOG.info("Database property: {} with value: {} already updated for db: {}", prop, propValue, database);
-        return;
-      }
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(propValue));
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Updating " + prop + " for db: " + database + " <" + query.replace("?", "{}") + ">", propValue);
-      }
-      if (pst.executeUpdate() != 1) {
-        //only one row insert or update should happen
-        throw new RuntimeException("DATABASE_PARAMS is corrupted for database: " + database);
-      }
-    } finally {
-      close(rs);
-      closeStmt(pst);
+  private long updateDatabaseProp(MultiDataSourceJdbcResource jdbcResource, String catalog, String database, 
+                                  String prop, String propValue) throws MetaException {
+    String query = 
+        "SELECT d.\"DB_ID\", dp.\"PARAM_KEY\", dp.\"PARAM_VALUE\" FROM \"DATABASE_PARAMS\" dp\n" +
+            "RIGHT JOIN \"DBS\" d ON dp.\"DB_ID\" = d.\"DB_ID\" " +
+        "WHERE \"NAME\" = :dbName  and \"CTLG_NAME\" = :catalog";
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Going to execute query <" + query + ">");
     }
+    DbEntityParam dbEntityParam = jdbcResource.getJdbcTemplate().query(query,
+        new MapSqlParameterSource()
+            .addValue("dbName", database)
+            .addValue("catalog", catalog),
+        //no row means database no found
+        rs -> rs.next()
+            ? new DbEntityParam(rs.getLong("DB_ID"), rs.getString("PARAM_KEY"), rs.getString("PARAM_VALUE"))
+            : null);
+
+    if (dbEntityParam == null) {
+      throw new MetaException("DB with name " + database + " does not exist in catalog " + catalog);
+    }
+
+    //TODO: would be better to replace with MERGE or UPSERT
+    String command;
+    if (dbEntityParam.key == null) {
+      command = "INSERT INTO \"DATABASE_PARAMS\" VALUES (:dbId, :key, :value)";
+    } else if (!dbEntityParam.value.equals(propValue)) {
+      command = "UPDATE \"DATABASE_PARAMS\" SET \"PARAM_VALUE\" = :value WHERE \"DB_ID\" = :dbId AND \"PARAM_KEY\" = :key";
+    } else {
+      LOG.info("Database property: {} with value: {} already updated for db: {}", prop, propValue, database);
+      return dbEntityParam.id;      
+    }
+    
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Updating {} for db: {}  using command {}", prop, database, command);
+    }
+    SqlParameterSource params = new MapSqlParameterSource()
+        .addValue("dbId", dbEntityParam.id)
+        .addValue("key", prop)
+        .addValue("value", propValue);
+    if (jdbcResource.getJdbcTemplate().update(command, params) != 1) {
+      //only one row insert or update should happen
+      throw new RuntimeException("DATABASE_PARAMS is corrupted for database: " + database);
+    }
+    return dbEntityParam.id;
   }
 
-  private long getDatabaseId(Connection dbConn, String database, String catalog) throws SQLException, MetaException {
-    ResultSet rs = null;
-    PreparedStatement pst = null;
-    try {
-      String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = ?  and \"CTLG_NAME\" = ?";
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(database, catalog));
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + query.replace("?", "{}") + ">",
-            quoteString(database), quoteString(catalog));
-      }
-      rs = pst.executeQuery();
-      if (!rs.next()) {
-        throw new MetaException("DB with name " + database + " does not exist in catalog " + catalog);
-      }
-      return rs.getLong(1);
-    } finally {
-      close(rs);
-      closeStmt(pst);
+  private long updateTableProp(MultiDataSourceJdbcResource jdbcResource, String catalog, String db, long dbId,
+                                  String table, String prop, String propValue) throws MetaException {
+    String query = 
+        "SELECT t.\"TBL_ID\", tp.\"PARAM_KEY\", tp.\"PARAM_VALUE\" FROM \"TABLE_PARAMS\" tp " +
+            "RIGHT JOIN \"TBLS\" t ON tp.\"TBL_ID\" = t.\"TBL_ID\" " +
+        "WHERE t.\"DB_ID\" = :dbId AND t.\"TBL_NAME\" = :tableName";
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Going to execute query <" + query + ">");
     }
+    DbEntityParam dbEntityParam = jdbcResource.getJdbcTemplate().query(query,
+        new MapSqlParameterSource()
+            .addValue("tableName", table)
+            .addValue("dbId", dbId),
+        //no row means table no found
+        rs -> rs.next() 
+            ? new DbEntityParam(rs.getLong("TBL_ID"), rs.getString("PARAM_KEY"), rs.getString("PARAM_VALUE")) 
+            : null);
+
+    if (dbEntityParam == null) {
+      throw new MetaException("Table with name " + table + " does not exist in db " + catalog + "." + db);
+    }
+
+    //TODO: would be better to replace with MERGE or UPSERT
+    String command;
+    if (dbEntityParam.key == null) {
+      command = "INSERT INTO \"TABLE_PARAMS\" VALUES (:tblId, :key, :value)";
+    } else if (!dbEntityParam.value.equals(propValue)) {
+      command = "UPDATE \"TABLE_PARAMS\" SET \"PARAM_VALUE\" = :value WHERE \"TBL_ID\" = :dbId AND \"PARAM_KEY\" = :key";
+    } else {
+      LOG.info("Database property: {} with value: {} already updated for db: {}", prop, propValue, db);
+      return dbEntityParam.id;
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Updating {} for table: {}  using command {}", prop, table, command);
+    }
+    SqlParameterSource params = new MapSqlParameterSource()
+        .addValue("tblId", dbEntityParam.id)
+        .addValue("key", prop)
+        .addValue("value", propValue);
+    if (jdbcResource.getJdbcTemplate().update(command, params) != 1) {
+      //only one row insert or update should happen
+      throw new RuntimeException("TABLE_PARAMS is corrupted for table: " + table);
+    }
+    return dbEntityParam.id;
+  }
+  
+  private void updatePartitionProp(MultiDataSourceJdbcResource jdbcResource, long tableId,
+                                   List<String> partList, String prop, String propValue) {
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+    //language=SQL
+    prefix.append(
+        "SELECT p.\"PART_ID\", pp.\"PARAM_KEY\", pp.\"PARAM_VALUE\" FROM \"PARTITION_PARAMS\" pp\n" +
+        "RIGHT JOIN \"PARTITIONS\" p ON pp.\"PART_ID\" = p.\"PART_ID\" WHERE p.\"TBL_ID\" = :tblId AND pp.\"PARAM_KEY\" = :key");
+
+    // Populate the complete query with provided prefix and suffix
+    TxnUtils.buildQueryWithINClauseStrings(jdbcResource.getConf(), queries, prefix, suffix, partList,
+        "\"PART_NAME\"", true, false);
+    SqlParameterSource params = new MapSqlParameterSource()
+        .addValue("tblId", tableId)
+        .addValue("key", prop);
+    List<DbEntityParam> partitionParams = new ArrayList<>();
+    for(String query : queries) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Going to execute query <" + query + ">");
+      }
+      jdbcResource.getJdbcTemplate().query(query, params,
+          (ResultSet rs) -> {
+            while (rs.next()) {
+              partitionParams.add(new DbEntityParam(rs.getLong("PART_ID"), rs.getString("PARAM_KEY"), rs.getString("PARAM_VALUE")));
+            }
+          });
+    }
+
+    //TODO: would be better to replace with MERGE or UPSERT
+    int maxBatchSize = MetastoreConf.getIntVar(jdbcResource.getConf(), MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
+    //all insert in one batch
+    int[][] inserts = jdbcResource.getJdbcTemplate().getJdbcTemplate().batchUpdate(
+        "INSERT INTO \"PARTITION_PARAMS\" VALUES (?, ?, ?)",
+        partitionParams.stream().filter(p -> p.key == null).collect(Collectors.toList()), maxBatchSize,
+        (ps, argument) -> {
+          ps.setLong(1, argument.id);
+          ps.setString(2, argument.key);
+          ps.setString(3, propValue);
+        });
+    //all update in one batch
+    int[][] updates =jdbcResource.getJdbcTemplate().getJdbcTemplate().batchUpdate(
+        "UPDATE \"PARTITION_PARAMS\" SET \"PARAM_VALUE\" = ? WHERE \"PART_ID\" = ? AND \"PARAM_KEY\" = ?",
+        partitionParams.stream().filter(p -> p.key != null && !propValue.equals(p.value)).collect(Collectors.toList()), maxBatchSize,
+        (ps, argument) -> {
+          ps.setString(1, propValue);
+          ps.setLong(2, argument.id);
+          ps.setString(3, argument.key);
+        });
+
+    if (Arrays.stream(inserts).flatMapToInt(IntStream::of).sum() + Arrays.stream(updates).flatMapToInt(IntStream::of).sum() != partList.size()) {
+      throw new RuntimeException("PARTITION_PARAMS is corrupted, update failed");      
+    }    
   }
 
-  private ResultSet checkForWriteConflict(Statement stmt, long txnid) throws SQLException, MetaException {
-    String writeConflictQuery = sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
+  private WriteSetInfo checkForWriteConflict(MultiDataSourceJdbcResource jdbcResource, long txnid) throws MetaException {
+    String writeConflictQuery = jdbcResource.getSqlGenerator().addLimitClause(1, 
+        "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
         "\"COMMITTED\".\"WS_DATABASE\", \"COMMITTED\".\"WS_TABLE\", \"COMMITTED\".\"WS_PARTITION\", " +
         "\"CUR\".\"WS_COMMIT_ID\" \"CUR_WS_COMMIT_ID\", \"CUR\".\"WS_OPERATION_TYPE\" \"CUR_OP\", " +
         "\"COMMITTED\".\"WS_OPERATION_TYPE\" \"COMMITTED_OP\" FROM \"WRITE_SET\" \"COMMITTED\" INNER JOIN \"WRITE_SET\" \"CUR\" " +
@@ -506,11 +457,11 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         //and for non partitioned - always at table level, thus the same table should never
         //have entries with partition key and w/o
         "AND (\"COMMITTED\".\"WS_PARTITION\"=\"CUR\".\"WS_PARTITION\" OR (\"COMMITTED\".\"WS_PARTITION\" IS NULL AND \"CUR\".\"WS_PARTITION\" IS NULL)) " +
-        "WHERE \"CUR\".\"WS_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\"" + //txns overlap; could replace ws_txnid
+        "WHERE \"CUR\".\"WS_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\" " + //txns overlap; could replace ws_txnid
         // with txnid, though any decent DB should infer this
-        " AND \"CUR\".\"WS_TXNID\"=" + txnid + //make sure RHS of join only has rows we just inserted as
+        "AND \"CUR\".\"WS_TXNID\"= :txnId " + //make sure RHS of join only has rows we just inserted as
         // part of this commitTxn() op
-        " AND \"COMMITTED\".\"WS_TXNID\" <> " + txnid + //and LHS only has committed txns
+        "AND \"COMMITTED\".\"WS_TXNID\" <> :txnId " + //and LHS only has committed txns
         //U+U and U+D and D+D is a conflict and we don't currently track I in WRITE_SET at all
         //it may seem like D+D should not be in conflict but consider 2 multi-stmt txns
         //where each does "delete X + insert X, where X is a row with the same PK.  This is
@@ -518,27 +469,42 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         //The same happens when Hive splits U=I+D early so it looks like 2 branches of a
         //multi-insert stmt (an Insert and a Delete branch).  It also 'feels'
         // un-serializable to allow concurrent deletes
-        " and (\"COMMITTED\".\"WS_OPERATION_TYPE\" IN(" + OperationType.UPDATE +
-        ", " + OperationType.DELETE +
-        ") AND \"CUR\".\"WS_OPERATION_TYPE\" IN(" + OperationType.UPDATE+ ", "
-        + OperationType.DELETE + "))");
+        "AND (\"COMMITTED\".\"WS_OPERATION_TYPE\" IN(:opUpdate, :opDelete) " +
+        "AND \"CUR\".\"WS_OPERATION_TYPE\" IN(:opUpdate, :opDelete))");
     LOG.debug("Going to execute query: <{}>", writeConflictQuery);
-    return stmt.executeQuery(writeConflictQuery);
+    return jdbcResource.getJdbcTemplate().query(writeConflictQuery,
+        new MapSqlParameterSource()
+            .addValue("txnId", txnid)
+            .addValue("opUpdate", OperationType.UPDATE.getSqlConst())
+            .addValue("opDelete", OperationType.DELETE.getSqlConst()),
+        (ResultSet rs) -> {
+          if(rs.next()) {
+            return new WriteSetInfo(rs.getLong("WS_TXNID"), rs.getLong("CUR_WS_COMMIT_ID"),
+                rs.getLong("WS_COMMIT_ID"), rs.getString("CUR_OP"), rs.getString("COMMITTED_OP"),
+                rs.getString("WS_DATABASE"), rs.getString("WS_TABLE"), rs.getString("WS_PARTITION"));
+          } else {
+            return null;
+          }
+        });
   }
 
-  private void moveTxnComponentsToCompleted(Statement stmt, long txnid, char isUpdateDelete) throws SQLException {
+  private void moveTxnComponentsToCompleted(MultiDataSourceJdbcResource jdbcResource, long txnid, char isUpdateDelete) {
     // Move the record from txn_components into completed_txn_components so that the compactor
     // knows where to look to compact.
-    String s = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
-        "\"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") SELECT \"TC_TXNID\"," +
-        " \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_WRITEID\", '" + isUpdateDelete +
-        "' FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid +
-        //we only track compactor activity in TXN_COMPONENTS to handle the case where the
-        //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
-        " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT;
-    LOG.debug("Going to execute insert <{}>", s);
+    String query = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
+        "\"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") SELECT \"TC_TXNID\", " +
+        "\"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_WRITEID\", :flag FROM \"TXN_COMPONENTS\" " +
+        "WHERE \"TC_TXNID\" = :txnid AND \"TC_OPERATION_TYPE\" <> :type";
+    //we only track compactor activity in TXN_COMPONENTS to handle the case where the
+    //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
+    LOG.debug("Going to execute insert <{}>", query);
+    int affectedRows = jdbcResource.getJdbcTemplate().update(query,
+        new MapSqlParameterSource()
+            .addValue("flag", Character.toString(isUpdateDelete), Types.CHAR)
+            .addValue("txnid", txnid)
+            .addValue("type", OperationType.COMPACT.getSqlConst(), Types.CHAR));
 
-    if ((stmt.executeUpdate(s)) < 1) {
+    if (affectedRows < 1) {
       //this can be reasonable for an empty txn START/COMMIT or read-only txn
       //also an IUD with DP that didn't match any rows.
       LOG.info("Expected to move at least one record from txn_components to "
@@ -546,23 +512,25 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     }
   }
 
-  private void updateKeyValueAssociatedWithTxn(CommitTxnRequest rqst, Statement stmt) throws SQLException {
+  private void updateKeyValueAssociatedWithTxn(MultiDataSourceJdbcResource jdbcResource, CommitTxnRequest rqst) {
     if (!rqst.getKeyValue().getKey().startsWith(TxnStore.TXN_KEY_START)) {
       String errorMsg = "Error updating key/value in the sql backend with"
           + " txnId=" + rqst.getTxnid() + ","
           + " tableId=" + rqst.getKeyValue().getTableId() + ","
           + " key=" + rqst.getKeyValue().getKey() + ","
           + " value=" + rqst.getKeyValue().getValue() + "."
-          + " key should start with " + TXN_KEY_START + ".";
+          + " key should start with " + TxnStore.TXN_KEY_START + ".";
       LOG.warn(errorMsg);
       throw new IllegalArgumentException(errorMsg);
     }
-    String s = "UPDATE \"TABLE_PARAMS\" SET"
-        + " \"PARAM_VALUE\" = " + quoteString(rqst.getKeyValue().getValue())
-        + " WHERE \"TBL_ID\" = " + rqst.getKeyValue().getTableId()
-        + " AND \"PARAM_KEY\" = " + quoteString(rqst.getKeyValue().getKey());
-    LOG.debug("Going to execute update <{}>", s);
-    int affectedRows = stmt.executeUpdate(s);
+    String query = "UPDATE \"TABLE_PARAMS\" SET \"PARAM_VALUE\" = :value WHERE \"TBL_ID\" = :id AND \"PARAM_KEY\" = :key";
+    LOG.debug("Going to execute update <{}>", query);
+    int affectedRows = jdbcResource.getJdbcTemplate().update(query,
+        new MapSqlParameterSource()
+            .addValue("value", rqst.getKeyValue().getValue())
+            .addValue("id", rqst.getKeyValue().getTableId())
+            .addValue("key", rqst.getKeyValue().getKey()));
+    
     if (affectedRows != 1) {
       String errorMsg = "Error updating key/value in the sql backend with"
           + " txnId=" + rqst.getTxnid() + ","
@@ -579,9 +547,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
   /**
    * See overridden method in CompactionTxnHandler also.
    */
-  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType,
-                                                    Long commitId, long tempId) throws SQLException, MetaException {
-    List<String> queryBatch = new ArrayList<>(5);
+  private void updateWSCommitIdAndCleanUpMetadata(MultiDataSourceJdbcResource jdbcResource, long txnid, TxnType txnType,
+                                                    Long commitId, long tempId) throws MetaException {
+    List<String> queryBatch = new ArrayList<>(6);
     // update write_set with real commitId
     if (commitId != null) {
       queryBatch.add("UPDATE \"WRITE_SET\" SET \"WS_COMMIT_ID\" = " + commitId +
@@ -597,20 +565,76 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     if (txnType == TxnType.MATER_VIEW_REBUILD) {
       queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
     }
-    // execute all in one batch
-    executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);
-
     if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
-      stmt.executeUpdate("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
-          getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
+      queryBatch.add("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
+          getEpochFn(jdbcResource.getDatabaseProduct()) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
     
+    // execute all in one batch
+    jdbcResource.getJdbcTemplate().getJdbcTemplate().batchUpdate(queryBatch.toArray(new String[0]));
   }
 
-  private boolean isUpdateOrDelete(Statement stmt, String conflictSQLSuffix) throws SQLException, MetaException {
-    try (ResultSet rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
-        "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix))) {
-      return rs.next();
+  /**
+   * Create Notifiaction Events on txn commit
+   * @param txnid committed txn
+   * @param txnType transaction type
+   * @throws MetaException ex
+   */
+  private void createCommitNotificationEvent(MultiDataSourceJdbcResource jdbcResource, long txnid, TxnType txnType)
+      throws MetaException {
+    if (transactionalListeners != null) {
+      MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+          EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, txnType), jdbcResource.getConnection(), jdbcResource.getSqlGenerator());
+
+      //Please note that TxnHandler and CompactionTxnHandler are using different DataSources (to have different pools).
+      //This call must use the same transaction and connection as TxnHandler.commitTxn(), therefore we are passing the 
+      //datasource wrapper comming from TxnHandler. Without this, the getCompactionByTxnId(long txnId) call would be
+      //executed using a different connection obtained from CompactionTxnHandler's own datasourceWrapper. 
+      CompactionInfo compactionInfo = jdbcResource.execute(new GetCompactionInfoHandler(txnid, true));
+      if (compactionInfo != null) {
+        MetaStoreListenerNotifier
+            .notifyEventWithDirectSql(transactionalListeners, EventMessage.EventType.COMMIT_COMPACTION,
+                new CommitCompactionEvent(txnid, compactionInfo), jdbcResource.getConnection(), jdbcResource.getSqlGenerator());
+      } else {
+        LOG.warn("No compaction queue record found for Compaction type transaction commit. txnId:" + txnid);
+      }
+      
+    }
+  }
+
+  private static class DbEntityParam {
+    final long id;
+    final String key;
+    final String value;
+
+    public DbEntityParam(long id, String key, String value) {
+      this.id = id;
+      this.key = key;
+      this.value = value;
+    }
+  }
+  
+  private static class WriteSetInfo {
+    final long txnId;
+    final long currentCommitId;
+    final long committedCommitId;
+    final String currentOperationType;
+    final String committedOperationType;
+    final String database;
+    final String table;
+    final String partition;
+
+    public WriteSetInfo(long txnId, long currentCommitId, long committedCommitId, 
+                        String currentOperationType, String committedOperationType, 
+                        String database, String table, String partition) {
+      this.txnId = txnId;
+      this.currentCommitId = currentCommitId;
+      this.committedCommitId = committedCommitId;
+      this.currentOperationType = currentOperationType;
+      this.committedOperationType = committedOperationType;
+      this.database = database;
+      this.table = table;
+      this.partition = partition;
     }
   }
 

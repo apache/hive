@@ -18,35 +18,58 @@
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.Comparator;
-import java.util.List;
 
-public interface InClauseBatchCommand<T> extends ParameterizedQuery {
+/**
+ * Represents a query with an IN() clause. The values inside the IN() clause are passed separately
+ * @param <T>
+ */
+public class InClauseBatchCommand<T> implements ParameterizedQuery {
+
+  
+  private final String query;
+  private final SqlParameterSource queryParameters;
+  private final String inClauseParameterName;
+  private final Comparator<T> parmeterLengthComparator;
+  
+
+  public InClauseBatchCommand(String query, SqlParameterSource queryParameters, 
+                              String inClauseParameterName, Comparator<T> parmeterLengthComparator) {
+    this.query = query;
+    this.queryParameters = queryParameters;
+    this.inClauseParameterName = inClauseParameterName;
+    this.parmeterLengthComparator = parmeterLengthComparator;
+  }
 
   /**
    * The parameterized query string. The query must have exactly parameter inside the IN clause, and can have zero or 
    * more parameters everywhere else in the query string.
    * @see ParameterizedQuery#getParameterizedQueryString(DatabaseProduct) 
    */
-  String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException;
+  public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
+    return query;
+  }
 
-  /**
-   * The list of the parameters for the IN clause. If the list is too long, it will be split and the query will
-   * be executed multiple times.
-   */
-  List<T> getInClauseParameters();
+  @Override
+  public SqlParameterSource getQueryParameters() {
+    return queryParameters;
+  }
 
   /**
    * @return Returns with the name of the parameter which is inside the IN clause.
    */
-  String getInClauseParameterName();
+  public String getInClauseParameterName() {
+    return inClauseParameterName;
+  }
 
   /**
    * @return Returns a {@link Comparator<T>} instance which can be used to determine the longest element in the 
    * list IN clause parameters. This is required to be able to estimate the final legth of the command.
    */
-  Comparator<T> getParameterLengthComparator(); 
+  public Comparator<T> getParameterLengthComparator() {
+    return parmeterLengthComparator;
+  }
   
 }

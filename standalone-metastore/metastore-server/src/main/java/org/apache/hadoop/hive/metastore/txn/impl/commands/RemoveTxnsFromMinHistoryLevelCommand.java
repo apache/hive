@@ -17,32 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore.txn.impl.commands;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.txn.TxnHandlingFeatures;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.txn.jdbc.BatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ConditionalCommand;
+import org.apache.hadoop.hive.metastore.txn.jdbc.InClauseBatchCommand;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class RemoveTxnsFromMinHistoryLevelCommand implements BatchCommand, ConditionalCommand {
+public class RemoveTxnsFromMinHistoryLevelCommand extends InClauseBatchCommand<Long> implements ConditionalCommand {
 
-  private final Configuration conf;
-  private final List<Long> txnids;
-
-  public RemoveTxnsFromMinHistoryLevelCommand(Configuration conf, List<Long> txnids) {
-    this.conf = conf;
-    this.txnids = txnids;
-  }
-
-  @Override
-  public List<String> getQueryStrings(DatabaseProduct databaseProduct) {
-    List<String> queries = new ArrayList<>();
-    TxnUtils.buildQueryWithINClause(conf, queries, new StringBuilder("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE "), 
-        new StringBuilder(), txnids, "\"MHL_TXNID\"", false, false);
-    return queries;
+  public RemoveTxnsFromMinHistoryLevelCommand(List<Long> txnids) {
+    super("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE \"MHL_TXNID\" IN (:txnIds)",
+        new MapSqlParameterSource().addValue("txnIds", txnids), "txnIds", Long::compareTo);
   }
 
   @Override

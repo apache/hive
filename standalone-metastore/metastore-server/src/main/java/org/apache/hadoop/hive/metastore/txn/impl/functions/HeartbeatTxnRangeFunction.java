@@ -28,9 +28,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
-import org.springframework.jdbc.UncategorizedSQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,9 +41,15 @@ import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 public class HeartbeatTxnRangeFunction implements TransactionalFunction<HeartbeatTxnRangeResponse> {
-  
+
+  private static final Logger LOG = LoggerFactory.getLogger(HeartbeatTxnRangeFunction.class);
+
   private final HeartbeatTxnRangeRequest rqst;
-  
+
+  public HeartbeatTxnRangeFunction(HeartbeatTxnRangeRequest rqst) {
+    this.rqst = rqst;
+  }
+
   @Override
   public HeartbeatTxnRangeResponse execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     HeartbeatTxnRangeResponse rsp = new HeartbeatTxnRangeResponse();
@@ -50,54 +57,49 @@ public class HeartbeatTxnRangeFunction implements TransactionalFunction<Heartbea
     Set<Long> aborted = new HashSet<>();
     rsp.setNosuch(nosuch);
     rsp.setAborted(aborted);
-    try {
-      /**
-       * READ_COMMITTED is sufficient since {@link #heartbeatTxn(java.sql.Connection, long)}
-       * only has 1 update statement in it and
-       * we only update existing txns, i.e. nothing can add additional txns that this operation
-       * would care about (which would have required SERIALIZABLE)
-       */
-      /*do fast path first (in 1 statement) if doesn't work, rollback and do the long version*/
-      List<String> queries = new ArrayList<>();
-      int numTxnsToHeartbeat = (int) (rqst.getMax() - rqst.getMin() + 1);
-      List<Long> txnIds = new ArrayList<>(numTxnsToHeartbeat);
-      for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
-        txnIds.add(txn);
-      }
-      TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
-      Object savePoint = context.createSavepoint();
-      TxnUtils.buildQueryWithINClause(conf, queries,
-          new StringBuilder("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + getEpochFn(jdbcResource.getDatabaseProduct()) +
-              " WHERE \"TXN_STATE\" = " + TxnStatus.OPEN + " AND "),
-          new StringBuilder(""), txnIds, "\"TXN_ID\"", true, false);
-      int updateCnt = 0;
-      for (String query : queries) {
-        LOG.debug("Going to execute update <{}>", query);
-        updateCnt += stmt.executeUpdate(query);
-      }
-      if (updateCnt == numTxnsToHeartbeat) {
-        //fast pass worked, i.e. all txns we were asked to heartbeat were Open as expected
-        context.rollbackToSavepoint(savePoint);
-        return rsp;
-      }
-      //if here, do the slow path so that we can return info txns which were not in expected state
+    /**
+     * READ_COMMITTED is sufficient since {@link #heartbeatTxn(java.sql.Connection, long)}
+     * only has 1 update statement in it and
+     * we only update existing txns, i.e. nothing can add additional txns that this operation
+     * would care about (which would have required SERIALIZABLE)
+     */
+    /*do fast path first (in 1 statement) if doesn't work, rollback and do the long version*/
+    List<String> queries = new ArrayList<>();
+    int numTxnsToHeartbeat = (int) (rqst.getMax() - rqst.getMin() + 1);
+    List<Long> txnIds = new ArrayList<>(numTxnsToHeartbeat);
+    for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
+      txnIds.add(txn);
+    }
+    TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
+    Object savePoint = context.createSavepoint();
+    TxnUtils.buildQueryWithINClause(jdbcResource.getConf(), queries,
+        new StringBuilder("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + getEpochFn(jdbcResource.getDatabaseProduct()) +
+            " WHERE \"TXN_STATE\" = " + TxnStatus.OPEN + " AND "),
+        new StringBuilder(""), txnIds, "\"TXN_ID\"", true, false);
+    int updateCnt = 0;
+    for (String query : queries) {
+      LOG.debug("Going to execute update <{}>", query);
+      updateCnt += jdbcResource.getJdbcTemplate().update(query, new MapSqlParameterSource());
+    }
+    if (updateCnt == numTxnsToHeartbeat) {
+      //fast pass worked, i.e. all txns we were asked to heartbeat were Open as expected
       context.rollbackToSavepoint(savePoint);
-      for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
-        try {
-          new HeartBeatTxnFunction(txn).execute(jdbcResource);
-        } catch (NoSuchTxnException e) {
-          nosuch.add(txn);
-        } catch (TxnAbortedException e) {
-          aborted.add(txn);
-        } catch (NoSuchLockException e) {
-          throw new RuntimeException(e);
-        }
-      }
       return rsp;
-    } catch (SQLException e) {
-      throw new UncategorizedSQLException(null, null, e);
-    } finally {
-      closeStmt(stmt);
-    }  
+    }
+    //if here, do the slow path so that we can return info txns which were not in expected state
+    context.rollbackToSavepoint(savePoint);
+    for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
+      try {
+        new HeartBeatTxnFunction(txn).execute(jdbcResource);
+      } catch (NoSuchTxnException e) {
+        nosuch.add(txn);
+      } catch (TxnAbortedException e) {
+        aborted.add(txn);
+      } catch (NoSuchLockException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return rsp;
   }
+
 }

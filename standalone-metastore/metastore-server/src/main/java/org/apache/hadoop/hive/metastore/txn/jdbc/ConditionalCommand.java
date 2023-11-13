@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.txn.jdbc;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 
 /**
- * {@link ParameterizedCommand}. {@link ParameterizedBatchCommand}, and {@link BatchCommand} implementations can also
+ * {@link ParameterizedCommand}. {@link ParameterizedBatchCommand}, and {@link InClauseBatchCommand} implementations can also
  * implement this interface, marking that the execution is conditial, and the command wants to get notified about 
  * execution errors. Can be used to implement commands depending on some feature flag(s).  
  */

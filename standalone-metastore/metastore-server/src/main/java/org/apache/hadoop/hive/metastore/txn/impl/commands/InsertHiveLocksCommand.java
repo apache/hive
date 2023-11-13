@@ -79,14 +79,14 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[
       ps.setLong(1, (Long)argument[0]);
       ps.setLong(2, (Long)argument[1]);
       ps.setLong(3, (Long)argument[2]);
-      ps.setString(4, argument[3].toString());
-      ps.setString(5, argument[4].toString());
-      ps.setString(6, argument[5].toString());
-      ps.setString(7, argument[6].toString());
-      ps.setString(8, argument[7].toString());
-      ps.setString(9, argument[8].toString());
-      ps.setString(10, argument[9].toString());
-      ps.setString(11, argument[10].toString());
+      ps.setString(4, (String)argument[3]);
+      ps.setString(5, (String)argument[4]);
+      ps.setString(6, (String)argument[5]);
+      ps.setString(7, (String)argument[6]);
+      ps.setString(8, (String)argument[7]);
+      ps.setString(9, (String)argument[8]);
+      ps.setString(10, (String)argument[9]);
+      ps.setString(11, (String)argument[10]);
     };
   }
 

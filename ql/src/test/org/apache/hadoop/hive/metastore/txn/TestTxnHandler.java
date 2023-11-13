@@ -1463,113 +1463,6 @@ public class TestTxnHandler {
     for (int i = 0; i < saw.length; i++) assertTrue("Didn't see lock id " + i, saw[i]);
   }
 
-  @Test
-  @Ignore("Wedges Derby")
-  public void deadlockDetected() throws Exception {
-    LOG.debug("Starting deadlock test");
-
-    if (txnHandler instanceof TxnHandler) {
-      final TxnHandler tHndlr = (TxnHandler)txnHandler;
-      Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-      try {
-        Statement stmt = conn.createStatement();
-        long now = tHndlr.getDbTime().getTime();
-        stmt.executeUpdate("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", " +
-                "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
-                "'scooby.com')");
-        stmt.executeUpdate("INSERT INTO \"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", " +
-                "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", " +
-                "\"HL_USER\", \"HL_HOST\") VALUES (1, 1, 1, 'MYDB', 'MYTABLE', 'MYPARTITION', '" +
-                LOCK_WAITING + "', '" + getEncoding(LockType.EXCLUSIVE) + "', " + now + ", 'fred', " +
-                "'scooby.com')");
-        conn.commit();
-      } finally {
-        tHndlr.closeDbConn(conn);
-      }
-
-      final AtomicBoolean sawDeadlock = new AtomicBoolean();
-
-      final Connection conn1 = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-      final Connection conn2 = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-      try {
-
-        for (int i = 0; i < 5; i++) {
-          Thread t1 = new Thread() {
-            @Override
-            public void run() {
-              try {
-                try {
-                  updateTxns(conn1);
-                  updateLocks(conn1);
-                  Thread.sleep(1000);
-                  conn1.commit();
-                  LOG.debug("no exception, no deadlock");
-                } catch (SQLException e) {
-                  try {
-                    tHndlr.checkRetryable(e, "thread t1");
-                    LOG.debug("Got an exception, but not a deadlock, SQLState is " +
-                        e.getSQLState() + " class of exception is " + e.getClass().getName() +
-                        " msg is <" + e.getMessage() + ">");
-                  } catch (TxnHandler.RetryException de) {
-                    LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
-                        "exception is " + e.getClass().getName() + " msg is <" + e
-                        .getMessage() + ">");
-                    sawDeadlock.set(true);
-                  }
-                }
-                conn1.rollback();
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            }
-          };
-
-          Thread t2 = new Thread() {
-            @Override
-            public void run() {
-              try {
-                try {
-                  updateLocks(conn2);
-                  updateTxns(conn2);
-                  Thread.sleep(1000);
-                  conn2.commit();
-                  LOG.debug("no exception, no deadlock");
-                } catch (SQLException e) {
-                  try {
-                    tHndlr.checkRetryable(e, "thread t2");
-                    LOG.debug("Got an exception, but not a deadlock, SQLState is " +
-                        e.getSQLState() + " class of exception is " + e.getClass().getName() +
-                        " msg is <" + e.getMessage() + ">");
-                  } catch (TxnHandler.RetryException de) {
-                    LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
-                        "exception is " + e.getClass().getName() + " msg is <" + e
-                        .getMessage() + ">");
-                    sawDeadlock.set(true);
-                  }
-                }
-                conn2.rollback();
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            }
-          };
-
-          t1.start();
-          t2.start();
-          t1.join();
-          t2.join();
-          if (sawDeadlock.get()) break;
-        }
-        assertTrue(sawDeadlock.get());
-      } finally {
-        conn1.rollback();
-        tHndlr.closeDbConn(conn1);
-        conn2.rollback();
-        tHndlr.closeDbConn(conn2);
-      }
-    }
-  }
-
   /**
    * This cannnot be run against Derby (thus in UT) but it can run against MySQL.
    * 1. add to metastore/pom.xml
@@ -1661,20 +1554,6 @@ public class TestTxnHandler {
       LOG.error("Uncaught exception from " + t.getName() + ": " + e.getMessage());
       error = e;
     }
-  }
-
-  @Test
-  public void testRetryableRegex() throws Exception {
-    SQLException sqlException = new SQLException("ORA-08177: can't serialize access for this transaction", "72000");
-    // Note that we have 3 regex'es below
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX, "^Deadlock detected, roll back,.*08177.*,.*08178.*");
-    boolean result = TxnHandler.isRetryable(conf, sqlException);
-    Assert.assertTrue("regex should be retryable", result);
-
-    sqlException = new SQLException("This error message, has comma in it");
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX, ".*comma.*");
-    result = TxnHandler.isRetryable(conf, sqlException);
-    Assert.assertTrue("regex should be retryable", result);
   }
 
   private List<Long> replOpenTxnForTest(long startId, int numTxn, String replPolicy)

@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn.impl.functions;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
@@ -30,12 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_STATE;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -140,7 +136,15 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
               + "AND \"TC_WRITEID\" <= :id",
           params.addValue("id", info.highestWriteId));
     } else if (CollectionUtils.isNotEmpty(info.writeIds)) {
-      totalCount = jdbcResource.execute(new DeleteFromTxnComponentsCommand(params, new ArrayList<>(info.writeIds)));
+      MapSqlParameterSource parameterSource = new MapSqlParameterSource(params.getValues());
+      parameterSource.addValue("ids", new ArrayList<>(info.writeIds));
+      totalCount = jdbcResource.execute(new InClauseBatchCommand<>(
+          "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
+              + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
+              + "AND \"TC_DATABASE\" = :db AND \"TC_TABLE\" = :table "
+              + "AND (:partition is NULL OR \"TC_PARTITION\" = :partition) "
+              + "AND \"TC_WRITEID\" IN (:ids)", 
+          params, "ids", Long::compareTo));
     }
     LOG.debug("Removed {} records from txn_components", totalCount);
   }
@@ -170,45 +174,4 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
     LOG.debug("Removed {} records in COMPACTION_QUEUE", rc);
   }
 
-  private static class DeleteFromTxnComponentsCommand implements InClauseBatchCommand<Long> {
-    
-    private final SqlParameterSource parameterSource;
-    private final List<Long> txnIds;
-
-    public DeleteFromTxnComponentsCommand(SqlParameterSource parameterSource, List<Long> txnIds) {
-      this.parameterSource = parameterSource;
-      this.txnIds = txnIds;
-    }
-
-    @Override
-    public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
-      return "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
-          + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
-          + "AND \"TC_DATABASE\" = :db AND \"TC_TABLE\" = :table "
-          + "AND (:partition is NULL OR \"TC_PARTITION\" = :partition) "
-          + "AND \"TC_WRITEID\" IN (:ids)";
-    }
-
-    @Override
-    public SqlParameterSource getQueryParameters() {
-      return parameterSource;
-    }
-
-    @Override
-    public List<Long> getInClauseParameters() {
-      return txnIds;
-    }
-
-    @Override
-    public String getInClauseParameterName() {
-      return "ids";
-    }
-
-    @Override
-    public Comparator<Long> getParameterLengthComparator() {
-      return Long::compareTo;
-    }
-
-  }
-  
 }

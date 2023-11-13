@@ -99,8 +99,8 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
     LOG.debug("Aborting {} transaction(s) {} due to {}", txnids.size(), txnids, txnErrorMsg);
     
     int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);    
-    jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(conf, txnids));
-    jdbcResource.execute(new RemoveWriteIdsFromMinHistoryCommand(conf, txnids));
+    jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(txnids));
+    jdbcResource.execute(new RemoveWriteIdsFromMinHistoryCommand(txnids));
     
     Connection dbConn = jdbcResource.getConnection();
     try {

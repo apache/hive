@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -74,11 +75,11 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
   public ParameterizedPreparedStatementSetter<Object[]> getPreparedStatementSetter() {
     return (ps, argument) -> {
       ps.setLong(1, (Long)argument[0]);
-      ps.setString(2, argument[1].toString());
-      ps.setString(3, argument[2].toString());
-      ps.setString(4, argument[3].toString());
-      ps.setString(5, argument[4].toString());
-      ps.setLong(6, (Long)argument[5]);
+      ps.setString(2, (String)argument[1]);
+      ps.setString(3, (String)argument[2]);
+      ps.setString(4, (String)argument[3]);
+      ps.setString(5, (String)argument[4]);
+      ps.setObject(6, argument[5], Types.BIGINT);
     };
   }
 

@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.StackThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -40,8 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,8 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-
-import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 
 /**
  * Holds multiple {@link DataSource}s as a single object and offers JDBC related resources. 
@@ -231,63 +226,52 @@ public class MultiDataSourceJdbcResource {
     }
   }
 
-  /**
-   * Executes all commands wrapped inside the given {@link BatchCommand} instance
-   * @param command The {@link BatchCommand} to execute
-   */
-  public void execute(BatchCommand command) {
+  public <T> int execute(InClauseBatchCommand<T> command) throws MetaException {
     if (!shouldExecute(command)) {
-      return;
+      return -1;
     }
-    try (Statement stmt = getConnection().createStatement()) {
-      List<String> queries = command.getQueryStrings(databaseProduct);
-      LOG.debug("Going to execute non-parameterized batch commands with batch size {}.", queries.size());
-      executeQueriesInBatchNoCount(databaseProduct, stmt, queries, MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE));
-    } catch (SQLException e) {
-      handleError(command, e);
-      throw new UncategorizedSQLException(null, null, e);
+    
+    List<T> elements;    
+    try {
+      try {
+        //noinspection unchecked
+        elements = (List<T>) command.getQueryParameters().getValue(command.getInClauseParameterName());
+      } catch (ClassCastException e) {
+        throw new MetaException("The parameter " + command.getInClauseParameterName() + "must be of type List<T>!");
+      }
+      MapSqlParameterSource params = (MapSqlParameterSource) command.getQueryParameters();
+      String query = command.getParameterizedQueryString(databaseProduct);
+      if (CollectionUtils.isEmpty(elements)) {
+        throw new IllegalArgumentException("The elements list cannot be empty! An empty IN clause is invalid!");
+      }
+      if (!Pattern.compile("IN\\s*\\(\\s*:" + command.getInClauseParameterName() + "\\s*\\)", Pattern.CASE_INSENSITIVE).matcher(query).find()) {
+        throw new IllegalArgumentException("The query must contain the IN(:" + command.getInClauseParameterName() + ") clause!");
+      }
+
+      int maxQueryLength = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH) * 1024;
+      int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+      // The length of a single element is the string length of the longest element + 2 characters (comma, space) 
+      int elementLength = elements.stream().max(command.getParameterLengthComparator()).get().toString().length() + 2;
+      // estimated base query size: query size + the length of all parameters.
+      int baseQueryLength = query.length();
+      int maxElementsByLength = (maxQueryLength - baseQueryLength) / elementLength;
+
+      int inClauseMaxSize = Math.min(batchSize, maxElementsByLength);
+
+      int fromIndex = 0, totalCount = 0;
+      while (fromIndex < elements.size()) {
+        int endIndex = Math.min(elements.size(), fromIndex + inClauseMaxSize);
+        params.addValue(command.getInClauseParameterName(), elements.subList(fromIndex, endIndex));
+        totalCount += getJdbcTemplate().update(query, params);
+        fromIndex = endIndex;
+      }
+      return totalCount;
     } catch (Exception e) {
       handleError(command, e);
       throw e;
     }
   }
-  
-  public <T> int execute(InClauseBatchCommand<T> command) throws MetaException {
-    List<T> elements = command.getInClauseParameters();
-    MapSqlParameterSource params = (MapSqlParameterSource)command.getQueryParameters();
-    String query = command.getParameterizedQueryString(databaseProduct);
-    if (CollectionUtils.isEmpty(elements)) {
-      throw new IllegalArgumentException("The elements list cannot be empty! An empty IN clause is invalid!");
-    }
-    if (!Pattern.compile("IN\\s*\\(\\s*:" + command.getInClauseParameterName() + "\\s*\\)", Pattern.CASE_INSENSITIVE).matcher(query).find()) {
-      throw new IllegalArgumentException("The query must contain the IN(:" + command.getInClauseParameterName() + ") clause!");
-    }
-    
-    int regularParametersLength = 0;
-    if (params != null && params.getParameterNames() != null) {
-      regularParametersLength = Arrays.stream(params.getParameterNames()).mapToInt(s -> command.getQueryParameters().getValue(s).toString().length()).sum();
-    }
-    
-    int maxQueryLength = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH) * 1024;
-    int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
-    // The length of a single element is the string length of the longest element + 2 characters (comma, space) 
-    int elementLength = elements.stream().max(command.getParameterLengthComparator()).get().toString().length() + 2;
-    // estimated base query size: query size + the length of all parameters.
-    int baseQueryLength = query.length() + regularParametersLength;
-    int maxElementsByLength = (maxQueryLength - baseQueryLength) / elementLength;
 
-    int inClauseMaxSize = Math.min(batchSize, maxElementsByLength);
-
-    int fromIndex = 0, totalCount = 0;
-    while (fromIndex < elements.size()) {
-      int endIndex = Math.min(elements.size(), fromIndex + inClauseMaxSize);
-      params.addValue(command.getInClauseParameterName(), elements.subList(fromIndex, endIndex));
-      totalCount += getJdbcTemplate().update(query, params);
-      fromIndex = endIndex;
-    }
-    return totalCount;
-  }
-  
   /**
    * Executes a {@link NamedParameterJdbcTemplate#update(String, org.springframework.jdbc.core.namedparam.SqlParameterSource)}
    * calls using the query string and {@link SqlParameterSource}. Validates the resulted number of affected rows using the
@@ -342,5 +326,5 @@ public class MultiDataSourceJdbcResource {
       ((ConditionalCommand)command).onError(databaseProduct, e);
     }
   }
-
+  
 }

@@ -25,18 +25,29 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
-import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
 
 public class LockMaterializationRebuildFunction implements TransactionalFunction<LockResponse> {
-  
+
+  private static final Logger LOG = LoggerFactory.getLogger(LockMaterializationRebuildFunction.class);
+
+  private final String dbName;
+  private final String tableName;
+  private final long txnId;
+  private final TxnStore.MutexAPI mutexAPI;
+
+  public LockMaterializationRebuildFunction(String dbName, String tableName, long txnId, TxnStore.MutexAPI mutexAPI) {
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.txnId = txnId;
+    this.mutexAPI = mutexAPI;
+  }
+
   @Override
   public LockResponse execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     if (LOG.isDebugEnabled()) {
@@ -44,56 +55,38 @@ public class LockMaterializationRebuildFunction implements TransactionalFunction
           JavaUtils.txnIdToString(txnId), TableName.getDbTable(dbName, tableName));
     }
 
-    TxnStore.MutexAPI.LockHandle handle = null;
-    Connection dbConn = null;
-    PreparedStatement pst = null;
-    ResultSet rs = null;
-    try {
-      lockInternal();
-      /**
-       * MUTEX_KEY.MaterializationRebuild lock ensures that there is only 1 entry in
-       * Initiated/Working state for any resource. This ensures we do not run concurrent
-       * rebuild operations on any materialization.
-       */
-      handle = getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name());
-      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+    /**
+     * MUTEX_KEY.MaterializationRebuild lock ensures that there is only 1 entry in
+     * Initiated/Working state for any resource. This ensures we do not run concurrent
+     * rebuild operations on any materialization.
+     */
+    try (TxnStore.MutexAPI.LockHandle ignored = mutexAPI.acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name())){
+      MapSqlParameterSource params = new MapSqlParameterSource()
+          .addValue("dbName", dbName)
+          .addValue("tableName", tableName);
 
-      List<String> params = Arrays.asList(dbName, tableName);
       String selectQ = "SELECT \"MRL_TXN_ID\" FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE" +
-          " \"MRL_DB_NAME\" = ? AND \"MRL_TBL_NAME\" = ?";
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, selectQ, params);
+          " \"MRL_DB_NAME\" = :dbName AND \"MRL_TBL_NAME\" = :tableName";
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + selectQ.replace("?", "{}") + ">",
-            quoteString(dbName), quoteString(tableName));
+        LOG.debug("Going to execute query {}", selectQ);
       }
-      rs = pst.executeQuery();
-      if(rs.next()) {
+      boolean found = jdbcResource.getJdbcTemplate().query(selectQ, params, ResultSet::next);
+      
+      if(found) {
         LOG.info("Ignoring request to rebuild {}/{} since it is already being rebuilt", dbName, tableName);
         return new LockResponse(txnId, LockState.NOT_ACQUIRED);
       }
+      
       String insertQ = "INSERT INTO \"MATERIALIZATION_REBUILD_LOCKS\" " +
-          "(\"MRL_TXN_ID\", \"MRL_DB_NAME\", \"MRL_TBL_NAME\", \"MRL_LAST_HEARTBEAT\") VALUES (" + txnId +
-          ", ?, ?, " + Instant.now().toEpochMilli() + ")";
-      closeStmt(pst);
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, insertQ, params);
+          "(\"MRL_TXN_ID\", \"MRL_DB_NAME\", \"MRL_TBL_NAME\", \"MRL_LAST_HEARTBEAT\") " +
+          "VALUES (:txnId, :dbName, :tableName, " + Instant.now().toEpochMilli() + ")";
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute update <" + insertQ.replace("?", "{}") + ">",
-            quoteString(dbName), quoteString(tableName));
+        LOG.debug("Going to execute update {}", insertQ);
       }
-      pst.executeUpdate();
-      LOG.debug("Going to commit");
-      dbConn.commit();
+      jdbcResource.getJdbcTemplate().update(insertQ, params.addValue("txnId", txnId));
       return new LockResponse(txnId, LockState.ACQUIRED);
-    } catch (SQLException ex) {
-      LOG.warn("lockMaterializationRebuild failed due to " + getMessage(ex), ex);
-      throw new MetaException("Unable to retrieve materialization invalidation information due to " +
-          StringUtils.stringifyException(ex));
-    } finally {
-      close(rs, pst, dbConn);
-      if(handle != null) {
-        handle.releaseLocks();
-      }
-      unlockInternal();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 }

@@ -318,6 +318,8 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
@@ -326,6 +328,8 @@ public interface TxnStore extends Configurable {
    * @param rqst table for which the maximum writeId is requested
    * @return the maximum allocated writeId
    */
+  @SqlRetry
+  @Transactional(POOL_TX)
   MaxAllocatedTableWriteIdResponse getMaxAllocatedTableWrited(MaxAllocatedTableWriteIdRequest rqst)
       throws MetaException;
 

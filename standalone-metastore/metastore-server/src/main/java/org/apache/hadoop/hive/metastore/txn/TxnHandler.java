@@ -18,28 +18,18 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.MaterializationSnapshot;
-import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
-import org.apache.hadoop.hive.metastore.api.AbortCompactionResponseElement;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -47,10 +37,8 @@ import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
@@ -65,8 +53,6 @@ import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
@@ -77,7 +63,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
 import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
@@ -86,22 +71,17 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
-import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
-import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
-import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
-import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -111,12 +91,9 @@ import org.apache.hadoop.hive.metastore.txn.entities.LockInfo;
 import org.apache.hadoop.hive.metastore.txn.impl.HiveMutex;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.AddWriteIdsToMinHistoryCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.DeleteInvalidOpenTxnsCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.DeleteReplTxnMapEntryCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionRequestCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertTxnComponentsCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveTxnsFromMinHistoryLevelCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveWriteIdsFromMinHistoryCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.AbortCompactionFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.AbortTxnFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.AbortTxnsFunction;
@@ -127,7 +104,6 @@ import org.apache.hadoop.hive.metastore.txn.impl.functions.CompactFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.EnsureValidTxnFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.GenerateCompactionQueueIdFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.GetMaterializationInvalidationInfoFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.GetValidWriteIdsForTableFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.GetValidWriteIdsFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.HeartBeatLockFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.HeartBeatTxnFunction;
@@ -140,7 +116,7 @@ import org.apache.hadoop.hive.metastore.txn.impl.functions.PerformTimeoutsFuncti
 import org.apache.hadoop.hive.metastore.txn.impl.functions.ReleaseMaterializationRebuildLocks;
 import org.apache.hadoop.hive.metastore.txn.impl.functions.ReplTableWriteIdStateFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.CountOpenTxnsHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.FindTxnStateHandler;
+import org.apache.hadoop.hive.metastore.txn.impl.queries.GetHighWaterMarkHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.GetLatestCommittedCompactionInfoHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.GetLocksByLockId;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.GetMaxAllocatedTableWriteIdHandler;
@@ -158,76 +134,53 @@ import org.apache.hadoop.hive.metastore.txn.jdbc.NoPoolConnectionPool;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryCallProperties;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryFunction;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import javax.sql.DataSource;
-import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringUtils.repeat;
-import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
-import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
  * server.
- *
+ * <p>
  * Note on log messages:  Please include txnid:X and lockid info using
  * {@link JavaUtils#txnIdToString(long)}
  * and {@link JavaUtils#lockIdToString(long)} in all messages.
  * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
  * so keeping the format consistent makes grep'ing the logs much easier.
- *
+ * <p>
  * Note on HIVE_LOCKS.hl_last_heartbeat.
  * For locks that are part of transaction, we set this 0 (would rather set it to NULL but
  * Currently the DB schema has this NOT NULL) and only update/read heartbeat from corresponding
  * transaction in TXNS.
- *
+ * <p>
  * In general there can be multiple metastores where this logic can execute, thus the DB is
  * used to ensure proper mutexing of operations.
  * Select ... For Update (or equivalent: either MsSql with(updlock) or actual Update stmt) is
@@ -239,21 +192,21 @@ import static org.springframework.transaction.TransactionDefinition.PROPAGATION_
  *  This allows almost all operations to run at READ_COMMITTED and minimizes DB deadlocks.
  * 3. checkLock() - this is mutexted entirely since we must ensure that while we check if some lock
  *  can be granted, no other (strictly speaking "earlier") lock can change state.
- *
+ * <p>
  * The exception to this is Derby which doesn't support proper S4U.  Derby is always running embedded
  * (this is the only supported configuration for Derby)
  * in the same JVM as HiveMetaStoreHandler thus we use JVM wide lock to properly sequnce the operations.
- *
+ * <p>
 
  * If we ever decide to run remote Derby server, according to
  * https://db.apache.org/derby/docs/10.0/manuals/develop/develop78.html all transactions will be
  * seriazlied, so that would also work though has not been tested.
- *
+ * <p>
  * General design note:
  * It's imperative that any operation on a txn (e.g. commit), ensure (atomically) that this txn is
  * still valid and active.  In the code this is usually achieved at the same time the txn record
  * is locked for some operation.
- *
+ * <p>
  * Note on retry logic:
  * Metastore has retry logic in both {@link org.apache.hadoop.hive.metastore.RetryingMetaStoreClient}
  * and {@link org.apache.hadoop.hive.metastore.RetryingHMSHandler}.  The retry logic there is very
@@ -265,6 +218,7 @@ import static org.springframework.transaction.TransactionDefinition.PROPAGATION_
  * the metstore call stack should have logic not to retry.  There are {@link RetrySemantics}
  * annotations to document the behavior.
  */
+@SuppressWarnings("SqlSourceToSinkFlow")
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
@@ -273,7 +227,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static DataSource connPool;
   private static DataSource connPoolMutex;
-  private static DataSource connPoolCompaction;
 
   private static final String MANUAL_RETRY = "ManualRetry";
 
@@ -359,7 +312,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       TxnHandlingFeatures.setUseMinHistoryWriteId(checkIfTableIsUsable("MIN_HISTORY_WRITE_ID", 
               MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID))
       );      
-      // override the config if table does not exists anymore
+      // override the config if table does not exist anymore
       // this helps to roll out his feature when multiple HMS is accessing the same backend DB
       TxnHandlingFeatures.setUseMinHistoryLevel(checkIfTableIsUsable("MIN_HISTORY_LEVEL",
           MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_LEVEL)));
@@ -395,24 +348,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     jdbcResource.bindDataSource(POOL_TX);
     try {
-      int i = jdbcResource.getJdbcTemplate().query("SELECT 1 FROM \"" + tableName + "\"", new MapSqlParameterSource(),
-          new ResultSetExtractor<Integer>() {
-            @Override
-            public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
-              if (rs.next()) {
-                return rs.getInt(1);
-              }
-              return -1;
+      jdbcResource.getJdbcTemplate().query("SELECT 1 FROM \"" + tableName + "\"", new MapSqlParameterSource(),
+          rs -> {
+            if (rs.next()) {
+              return rs.getInt(1);
             }
+            return -1;
           }); 
     } catch (DataAccessException e) {
       LOG.debug("Catching sql exception in " + tableName + " check", e);
-      if (e.getCause() instanceof SQLException)
-      if (dbProduct.isTableNotExistsError((SQLException) e.getCause())) {
-        return false;
-      } else {
-        throw new MetaException(
-            "Unable to select from transaction database: " + SqlRetryHandler.getMessage(e) + StringUtils.stringifyException(e));
+      if (e.getCause() instanceof SQLException) {
+        if (dbProduct.isTableNotExistsError(e)) {
+          return false;
+        } else {
+          throw new MetaException(
+              "Unable to select from transaction database: " + SqlRetryHandler.getMessage(e) + StringUtils.stringifyException(e));
+        }
       }
     } finally {
       jdbcResource.unbindDataSource();
@@ -446,7 +397,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis)).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
+    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis)).toOpenTxnsResponse(Collections.singletonList(TxnType.READ_ONLY));
   }
 
   @Override
@@ -540,13 +491,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
        */
       LOG.error("OpenTxnTimeOut exceeded commit duration {}, deleting transactionIds: {}", elapsedMillis, txnIds);
 
-      if (txnIds.size() > 0) {
+      if (!txnIds.isEmpty()) {
         try {
           sqlRetryHandler.executeWithRetry(new SqlRetryCallProperties().withCallerId("deleteInvalidOpenTransactions"),
               () -> {
-                jdbcResource.execute(new DeleteInvalidOpenTxnsCommand(conf, txnIds));
+                jdbcResource.execute(new DeleteInvalidOpenTxnsCommand(txnIds));
                 LOG.info("Removed transactions: ({}) from TXNS", txnIds);
-                jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(conf, txnIds));
+                jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(txnIds));
                 return null;
               });
         } catch (TException e) {
@@ -572,19 +523,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   public void setOpenTxnTimeOutMillis(long openTxnTimeOutMillis) {
     TxnHandler.openTxnTimeOutMillis = openTxnTimeOutMillis;
-  }
-
-  private long getHighWaterMark() throws MetaException {
-    try {
-      return jdbcResource.getJdbcTemplate().queryForObject("SELECT MAX(\"TXN_ID\") FROM \"TXNS\"",
-          new MapSqlParameterSource(), Long.class);
-    } catch (EmptyResultDataAccessException e) {
-      throw new MetaException("Transaction tables not properly " + "initialized, null record found in MAX(TXN_ID)");
-    }
-  }
-
-  private List<Long> getTargetTxnIdList(String replPolicy, List<Long> sourceTxnIdList) throws MetaException {
-    return jdbcResource.execute(new TargetTxnIdListHandler(replPolicy, sourceTxnIdList));
   }
 
   @Override
@@ -665,14 +603,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   /**
    * Concurrency/isolation notes:
-   * This is mutexed with {@link #openTxns(OpenTxnRequest)} and other {@link #commitTxn(CommitTxnRequest)}
+   * This is mutexed with {@link #openTxns(OpenTxnRequest)} and other commitTxn(CommitTxnRequest)
    * operations using select4update on NEXT_TXN_ID. Also, mutexes on TXNS table for specific txnid:X
    * see more notes below.
    * In order to prevent lost updates, we need to determine if any 2 transactions overlap.  Each txn
    * is viewed as an interval [M,N]. M is the txnid and N is taken from the same NEXT_TXN_ID sequence
    * so that we can compare commit time of txn T with start time of txn S.  This sequence can be thought of
    * as a logical time counter. If S.commitTime < T.startTime, T and S do NOT overlap.
-   *
+   * <p>
    * Motivating example:
    * Suppose we have multi-statement transactions T and S both of which are attempting x = x + 1
    * In order to prevent lost update problem, then the non-overlapping txns must lock in the snapshot
@@ -691,21 +629,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent("No-op if already committed")
   public void commitTxn(CommitTxnRequest rqst) throws NoSuchTxnException, TxnAbortedException, MetaException {
-    new CommitTxnFunction().execute(jdbcResource);
-  }
-
-  /**
-   * Create Notifiaction Events on txn commit
-   * @param txnid committed txn
-   * @param txnType transaction type
-   * @throws MetaException ex
-   */
-  protected void createCommitNotificationEvent(Connection conn, long txnid, TxnType txnType)
-      throws MetaException, SQLException {
-    if (transactionalListeners != null) {
-      MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-          EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, txnType), conn, sqlGenerator);
-    }
+    new CommitTxnFunction(rqst, transactionalListeners).execute(jdbcResource);
   }
 
   /**
@@ -741,7 +665,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+   * Replicate Table Write Ids state to mark aborted write ids and writeid high watermark.
    * @param rqst info on table/partitions and writeid snapshot to replicate.
    * @throws MetaException
    */
@@ -760,7 +684,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst) throws MetaException {
-    return new AllocateTableWriteIdsFunction().execute(jdbcResource);
+    return new AllocateTableWriteIdsFunction(rqst, transactionalListeners).execute(jdbcResource);
   }
 
   @Override
@@ -791,14 +715,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      * if there are concurrent open transactions
      */
     acquireTxnLock(false);
-    long highWaterMark = getHighWaterMark();
+    long highWaterMark = jdbcResource.execute(new GetHighWaterMarkHandler());
     if (highWaterMark >= rqst.getSeedTxnId()) {
       throw new MetaException(MessageFormat
           .format("Invalid txnId seed {}, the highWaterMark is {}", rqst.getSeedTxnId(), highWaterMark));
     }
-    jdbcResource.getJdbcTemplate().getJdbcTemplate().execute((Statement stmt) -> {
-      return stmt.execute(dbProduct.getTxnSeedFn(rqst.getSeedTxnId()));
-    });
+    jdbcResource.getJdbcTemplate().getJdbcTemplate().execute((Statement stmt) -> stmt.execute(dbProduct.getTxnSeedFn(rqst.getSeedTxnId())));
   }
 
   @Override
@@ -847,27 +769,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return new GetMaterializationInvalidationInfoFunction(creationMetadata, validTxnListStr).execute(jdbcResource);
   }
 
-  private boolean executeBoolean(String queryText, List<String> params, String errorMessage) throws MetaException {
-    PreparedStatement pst = null;
-    ResultSet rs = null;
-    try {
-      LOG.debug("Going to execute query <{}>", queryText);
-      pst = sqlGenerator.prepareStmtWithParameters(jdbcResource.getConnection(), queryText, params);
-      pst.setMaxRows(1);
-      rs = pst.executeQuery();
-
-      return rs.next();
-    } catch (SQLException ex) {
-      LOG.warn(errorMessage, ex);
-      throw new MetaException(errorMessage + " " + StringUtils.stringifyException(ex));
-    } finally {
-      close(rs, pst, null);
-    }
-  }
-
   @Override
   public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws MetaException {
-    return new LockMaterializationRebuildFunction().execute(jdbcResource);
+    return new LockMaterializationRebuildFunction(dbName, tableName, txnId, mutexAPI).execute(jdbcResource);
   }
 
   @Override
@@ -889,13 +793,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @Override
   public long cleanupMaterializationRebuildLocks(ValidTxnList validTxnList, long timeout) throws MetaException {
-    return new ReleaseMaterializationRebuildLocks().execute(jdbcResource);
+    return new ReleaseMaterializationRebuildLocks(validTxnList, timeout).execute(jdbcResource);
   }
 
   /**
    * As much as possible (i.e. in absence of retries) we want both operations to be done on the same
    * connection (but separate transactions).
-   *
    * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
    * there will be a duplicate set of locks but both sets will belong to the same txn so they
    * will not conflict with each other.  For locks w/o txn context (i.e. read-only query), this
@@ -919,18 +822,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * Why doesn't this get a txnid as parameter?  The caller should either know the txnid or know there isn't one.
    * Either way getTxnIdFromLockId() will not be needed.  This would be a Thrift change.
-   *
+   * <p>
    * Also, when lock acquisition returns WAITING, it's retried every 15 seconds (best case, see DbLockManager.backoff(),
    * in practice more often)
    * which means this is heartbeating way more often than hive.txn.timeout and creating extra load on DB.
-   *
+   * <p>
    * The clients that operate in blocking mode, can't heartbeat a lock until the lock is acquired.
    * We should make CheckLockRequest include timestamp or last request to skip unnecessary heartbeats. Thrift change.
-   *
+   * <p>
    * {@link #checkLock(java.sql.Connection, long, long, boolean, boolean)}  must run at SERIALIZABLE
    * (make sure some lock we are checking against doesn't move from W to A in another txn)
    * but this method can heartbeat in separate txn at READ_COMMITTED.
-   *
+   * <p>
    * Retry-by-caller note:
    * Retryable because {@link #checkLock(Connection, long, long, boolean, boolean)} is
    */
@@ -987,7 +890,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.SafeToRetry
   public HeartbeatTxnRangeResponse heartbeatTxnRange(HeartbeatTxnRangeRequest rqst) throws MetaException {
-    return new HeartbeatTxnRangeFunction().execute(jdbcResource);
+    return new HeartbeatTxnRangeFunction(rqst).execute(jdbcResource);
   }
 
   @Override
@@ -1069,7 +972,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * specifically: TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS, COMPACTION_QUEUE, COMPLETED_COMPACTIONS
    * Retry-by-caller note: this is only idempotent assuming it's only called by dropTable/Db/etc
    * operations.
-   *
+   * <p>
    * HIVE_LOCKS and WS_SET are cleaned up by {@link AcidHouseKeeperService}, if turned on
    */
   @Override
@@ -1101,7 +1004,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * For testing only, do not use.
    */
   @VisibleForTesting
-  public int numLocksInLockTable() throws SQLException, MetaException {
+  public int numLocksInLockTable() {
     int count = jdbcResource.getJdbcTemplate().queryForObject("SELECT COUNT(*) FROM \"HIVE_LOCKS\"", new MapSqlParameterSource(), Integer.TYPE);
     jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED).setRollbackOnly();
     return count;
@@ -1225,7 +1128,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * Acquire the global txn lock, used to mutex the openTxn and commitTxn.
    * @param shared either SHARED_READ or EXCLUSIVE
-   * @throws SQLException
    */
   private void acquireTxnLock(boolean shared) throws MetaException {
     String sqlStmt = sqlGenerator.createTxnLockStatement(shared);
