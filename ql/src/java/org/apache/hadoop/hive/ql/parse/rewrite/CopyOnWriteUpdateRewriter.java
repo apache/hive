@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -59,7 +60,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
     Tree wherePredicateNode = updateBlock.getWhereTree().getChild(0);
     String whereClause = context.getTokenRewriteStream().toString(
         wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
-    String filePathCol = HiveUtils.unparseIdentifier("FILE__PATH", conf);
+    String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.name(), conf);
 
     MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
 

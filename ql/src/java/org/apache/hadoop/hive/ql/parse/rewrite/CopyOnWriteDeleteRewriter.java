@@ -21,6 +21,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
@@ -47,7 +48,7 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
     Tree wherePredicateNode = deleteBlock.getWhereTree().getChild(0);
     String whereClause = context.getTokenRewriteStream().toString(
         wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
-    String filePathCol = HiveUtils.unparseIdentifier("FILE__PATH", conf);
+    String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.name(), conf);
 
     MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
 
