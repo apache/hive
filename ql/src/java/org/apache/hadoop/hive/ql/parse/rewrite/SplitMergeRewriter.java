@@ -19,33 +19,37 @@ package org.apache.hadoop.hive.ql.parse.rewrite;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SplitMergeRewriter extends NativeMergeRewriter {
-  public SplitMergeRewriter(MultiInsertSqlBuilder sqlBuilder, HiveConf conf) {
-    super(sqlBuilder, conf);
+
+  public SplitMergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
+    super(db, conf, sqlBuilderFactory);
   }
 
   @Override
-  public void handleWhenMatchedUpdate(Table targetTable, String targetAlias, Map<String, String> newValues,
-                                      String hintStr, String onClauseAsString,
-                                      String extraPredicate, String deleteExtraPredicate) {
+  public void handleWhenMatchedUpdate(Table targetTable, String targetAlias, String onClauseAsString,
+                                      MergeStatement.UpdateClause updateClause, String hintStr,
+                                      MultiInsertSqlBuilder sqlBuilder) {
     sqlBuilder.append("    -- update clause (insert part)\n");
     List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
-    addValues(targetTable, targetAlias, newValues, values);
+    addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
     sqlBuilder.appendInsertBranch(hintStr, values);
 
-    addWhereClauseOfUpdate(onClauseAsString, extraPredicate, deleteExtraPredicate);
+    addWhereClauseOfUpdate(
+        onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
 
     sqlBuilder.append("\n");
 
     sqlBuilder.append("    -- update clause (delete part)\n");
-    handleWhenMatchedDelete(hintStr, onClauseAsString, extraPredicate, deleteExtraPredicate);
+    handleWhenMatchedDelete(onClauseAsString,
+        updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlBuilder);
   }
 
   @Override

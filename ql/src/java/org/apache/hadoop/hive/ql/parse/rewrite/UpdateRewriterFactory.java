@@ -39,7 +39,7 @@ public class UpdateRewriterFactory implements RewriterFactory<UpdateStatement> {
     this.conf = conf;
   }
 
-  public Rewriter<UpdateStatement> createRewriter(Table table, String targetTableFullName)
+  public Rewriter<UpdateStatement> createRewriter(Table table, String targetTableFullName, String subQueryAlias)
       throws SemanticException {
     boolean splitUpdate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE);
     boolean copyOnWriteMode = false;

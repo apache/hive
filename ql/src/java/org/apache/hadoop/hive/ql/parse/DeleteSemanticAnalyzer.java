@@ -77,7 +77,8 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       return;
     }
 
-    Rewriter<DeleteStatement> rewriter = rewriterFactory.createRewriter(table, getFullTableNameForSQL(tableName));
+    Rewriter<DeleteStatement> rewriter =
+        rewriterFactory.createRewriter(table, getFullTableNameForSQL(tableName), null);
     ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, new DeleteStatement(table, where));
 
     Context rewrittenCtx = rr.rewrittenCtx;

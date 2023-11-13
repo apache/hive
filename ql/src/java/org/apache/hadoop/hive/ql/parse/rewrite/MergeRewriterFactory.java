@@ -21,33 +21,44 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 
-public class MergeRewriterFactory {
-  protected final HiveConf conf;
+public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
+  private final Hive db;
+  private final HiveConf conf;
 
-  public MergeRewriterFactory(HiveConf conf) {
+  public MergeRewriterFactory(HiveConf conf) throws SemanticException {
+    try {
+      this.db = Hive.get(conf);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
     this.conf = conf;
   }
 
-  public MergeRewriter createMergeRewriter(Table targetTable, String targetTableFullName, String subQueryAlias)
+  @Override
+  public Rewriter<MergeStatement> createRewriter(Table table, String targetTableFullName, String subQueryAlias)
       throws SemanticException {
     boolean splitUpdate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE);
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table, true);
     if (nonNativeAcid && !splitUpdate) {
       throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
     }
 
-    MultiInsertSqlBuilder sqlBuilder = new SqlBuilderFactory(
-        targetTable,
+    SqlBuilderFactory sqlBuilderFactory = new SqlBuilderFactory(
+        table,
         targetTableFullName,
         conf,
         subQueryAlias,
-        StringUtils.EMPTY).createSqlBuilder();
+        StringUtils.EMPTY);
 
-    return splitUpdate ? new SplitMergeRewriter(sqlBuilder, conf) : new NativeMergeRewriter(sqlBuilder, conf);
+    if (splitUpdate) {
+      return new SplitMergeRewriter(db, conf, sqlBuilderFactory);
+    }
+    return new NativeMergeRewriter(db, conf, sqlBuilderFactory);
   }
 }

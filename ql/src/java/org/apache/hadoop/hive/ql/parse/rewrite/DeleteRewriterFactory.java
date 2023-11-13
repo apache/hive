@@ -34,7 +34,7 @@ public class DeleteRewriterFactory implements RewriterFactory<DeleteStatement> {
     this.conf = conf;
   }
 
-  public Rewriter<DeleteStatement> createRewriter(Table table, String targetTableFullName) {
+  public Rewriter<DeleteStatement> createRewriter(Table table, String targetTableFullName, String subQueryAlias) {
     boolean copyOnWriteMode = false;
     HiveStorageHandler storageHandler = table.getStorageHandler();
     if (storageHandler != null) {

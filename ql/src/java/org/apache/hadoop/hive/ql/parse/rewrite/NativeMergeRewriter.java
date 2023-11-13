@@ -1,20 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,26 +11,92 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class NativeMergeRewriter implements MergeRewriter {
-  protected final MultiInsertSqlBuilder sqlBuilder;
-  protected final HiveConf conf;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-  public NativeMergeRewriter(MultiInsertSqlBuilder sqlBuilder, HiveConf conf) {
-    this.sqlBuilder = sqlBuilder;
+public class NativeMergeRewriter implements Rewriter<MergeStatement> {
+
+  private final Hive db;
+  private final HiveConf conf;
+  private final SqlBuilderFactory sqlBuilderFactory;
+
+  public NativeMergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
+    this.db = db;
     this.conf = conf;
+    this.sqlBuilderFactory = sqlBuilderFactory;
   }
 
   @Override
-  public void handleSource(boolean hasWhenNotMatchedClause, String sourceAlias, String onClauseAsText) {
+  public ParseUtils.ReparseResult rewrite(Context ctx, MergeStatement mergeStatement) throws SemanticException {
+
+    setOperation(ctx);
+    MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
+    handleSource(mergeStatement.getInsertClause() != null, mergeStatement.getSourceAlias(),
+        mergeStatement.getOnClauseAsText(), sqlBuilder);
+
+    String hintStr = mergeStatement.getHintStr();
+    if (mergeStatement.getUpdateClause() != null) {
+      handleWhenMatchedUpdate(mergeStatement.getTargetTable(), mergeStatement.getTargetAlias(),
+          mergeStatement.getOnClauseAsText(), mergeStatement.getUpdateClause(), hintStr, sqlBuilder);
+      hintStr = null;
+    }
+
+    if (mergeStatement.getDeleteClause() != null) {
+      handleWhenMatchedDelete(
+          mergeStatement.getOnClauseAsText(), mergeStatement.getDeleteClause(), hintStr, sqlBuilder);
+      hintStr = null;
+    }
+
+    if (mergeStatement.getInsertClause() != null) {
+      handleWhenNotMatchedInsert(
+          mergeStatement.getTargetName(), mergeStatement.getInsertClause(), hintStr, sqlBuilder);
+    }
+
+    boolean validateCardinalityViolation = mergeStatement.shouldValidateCardinalityViolation(conf);
+    if (validateCardinalityViolation) {
+      handleCardinalityViolation(mergeStatement.getTargetName(), mergeStatement.getOnClauseAsText(), sqlBuilder);
+    }
+
+    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, sqlBuilder.toString());
+    Context rewrittenCtx = rr.rewrittenCtx;
+    ASTNode rewrittenTree = rr.rewrittenTree;
+    setOperation(rewrittenCtx);
+
+    //set dest name mapping on new context; 1st child is TOK_FROM
+    int insClauseIdx = 1;
+    if (mergeStatement.getUpdateClause() != null) {
+      insClauseIdx += addDestNamePrefixOfUpdate(insClauseIdx, rewrittenCtx);
+    }
+    if (mergeStatement.getDeleteClause() != null) {
+      rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.DELETE);
+      ++insClauseIdx;
+    }
+    if (mergeStatement.getInsertClause() != null) {
+      rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
+      ++insClauseIdx;
+    }
+
+    if (validateCardinalityViolation) {
+      //here means the last branch of the multi-insert is Cardinality Validation
+      rewrittenCtx.addDestNamePrefix(rewrittenTree.getChildCount() - 1, Context.DestClausePrefix.INSERT);
+    }
+
+    return rr;
+  }
+
+  private void handleSource(
+      boolean hasWhenNotMatchedClause, String sourceAlias, String onClauseAsText, MultiInsertSqlBuilder sqlBuilder) {
     sqlBuilder.append("FROM\n");
     sqlBuilder.append("(SELECT ");
     sqlBuilder.appendAcidSelectColumns(Context.Operation.MERGE);
@@ -61,40 +110,40 @@ public class NativeMergeRewriter implements MergeRewriter {
     sqlBuilder.indent().append("ON ").append(onClauseAsText).append('\n');
   }
 
-  @Override
-  public void handleWhenNotMatchedInsert(String targetFullName, String columnListText, String hintStr,
-                                         String valuesClause, String predicate, String extraPredicate) {
+  private void handleWhenNotMatchedInsert(String targetFullName, MergeStatement.InsertClause insertClause,
+                                          String hintStr, MultiInsertSqlBuilder sqlBuilder) {
     sqlBuilder.append("INSERT INTO ").append(targetFullName);
-    if (columnListText != null) {
-      sqlBuilder.append(' ').append(columnListText);
+    if (insertClause.getColumnListText() != null) {
+      sqlBuilder.append(' ').append(insertClause.getColumnListText());
     }
 
     sqlBuilder.append("    -- insert clause\n  SELECT ");
-    if (hintStr != null) {
+    if (isNotBlank(hintStr)) {
       sqlBuilder.append(hintStr);
     }
 
-    sqlBuilder.append(valuesClause).append("\n   WHERE ").append(predicate);
+    sqlBuilder.append(insertClause.getValuesClause()).append("\n   WHERE ").append(insertClause.getPredicate());
 
-    if (extraPredicate != null) {
+    if (insertClause.getExtraPredicate() != null) {
       //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
-      sqlBuilder.append(" AND ").append(extraPredicate);
+      sqlBuilder.append(" AND ").append(insertClause.getExtraPredicate());
     }
     sqlBuilder.append('\n');
   }
 
-  @Override
-  public void handleWhenMatchedUpdate(Table targetTable, String targetAlias, Map<String, String> newValues, String hintStr,
-                                      String onClauseAsString, String extraPredicate, String deleteExtraPredicate) {
+  protected void handleWhenMatchedUpdate(Table targetTable, String targetAlias, String onClauseAsString,
+                                         MergeStatement.UpdateClause updateClause, String hintStr,
+                                         MultiInsertSqlBuilder sqlBuilder) {
 
     sqlBuilder.append("    -- update clause").append("\n");
     List<String> valuesAndAcidSortKeys = new ArrayList<>(
         targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
     valuesAndAcidSortKeys.addAll(sqlBuilder.getSortKeys());
-    addValues(targetTable, targetAlias, newValues, valuesAndAcidSortKeys);
+    addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
     sqlBuilder.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
 
-    addWhereClauseOfUpdate(onClauseAsString, extraPredicate, deleteExtraPredicate);
+    addWhereClauseOfUpdate(
+        onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
 
     sqlBuilder.appendSortBy(sqlBuilder.getSortKeys());
   }
@@ -115,8 +164,8 @@ public class NativeMergeRewriter implements MergeRewriter {
             String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
   }
 
-  protected void addWhereClauseOfUpdate(String onClauseAsString,
-                                          String extraPredicate, String deleteExtraPredicate) {
+  protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
+                                        MultiInsertSqlBuilder sqlBuilder) {
     sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
     if (extraPredicate != null) {
       //we have WHEN MATCHED AND <boolean expr> THEN DELETE
@@ -127,9 +176,15 @@ public class NativeMergeRewriter implements MergeRewriter {
     }
   }
 
-  @Override
-  public void handleWhenMatchedDelete(String hintStr, String onClauseAsString, String extraPredicate,
-                                      String updateExtraPredicate) {
+  private void handleWhenMatchedDelete(String onClauseAsString, MergeStatement.DeleteClause deleteClause,
+                                       String hintStr, MultiInsertSqlBuilder sqlBuilder) {
+    handleWhenMatchedDelete(onClauseAsString,
+        deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlBuilder);
+  }
+
+
+  protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
+                                         String hintStr, MultiInsertSqlBuilder sqlBuilder) {
     sqlBuilder.appendDeleteBranch(hintStr);
 
     sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
@@ -144,8 +199,7 @@ public class NativeMergeRewriter implements MergeRewriter {
     sqlBuilder.appendSortKeys();
   }
 
-  @Override
-  public void handleCardinalityViolation(String targetAlias, String onClauseAsString, Hive db, HiveConf conf)
+  private void handleCardinalityViolation(String targetAlias, String onClauseAsString, MultiInsertSqlBuilder sqlBuilder)
       throws SemanticException {
     //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
     // given session, i.e. the name can be fixed across all invocations
@@ -182,24 +236,17 @@ public class NativeMergeRewriter implements MergeRewriter {
         table.setOutputFormatClass(format.getOutputFormat());
         db.createTable(table, true);
       }
-    } catch(HiveException | MetaException e) {
+    } catch (HiveException | MetaException e) {
       throw new SemanticException(e.getMessage(), e);
     }
   }
 
-  @Override
-  public int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
-    rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
-    return 1;
-  }
-
-  @Override
-  public void setOperation(Context context) {
+  protected void setOperation(Context context) {
     context.setOperation(Context.Operation.MERGE);
   }
 
-  @Override
-  public String toString() {
-    return sqlBuilder.toString();
+  protected int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
+    rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
+    return 1;
   }
 }

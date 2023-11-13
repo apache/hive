@@ -26,8 +26,9 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.rewrite.MergeRewriter;
-import org.apache.hadoop.hive.ql.parse.rewrite.MergeRewriterFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.MergeStatement;
+import org.apache.hadoop.hive.ql.parse.rewrite.Rewriter;
+import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 
 
 import java.util.ArrayList;
@@ -38,13 +39,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
+ * merge statements. It works by rewriting the updates and deletes into insert statements (since
+ * they are actually inserts) and then doing some patch up to make them work as merges instead.
+ */
 public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
+
+  private final RewriterFactory<MergeStatement> rewriterFactory;
+
   private int numWhenMatchedUpdateClauses;
   private int numWhenMatchedDeleteClauses;
   private IdentifierQuoter quotedIdentifierHelper;
 
-  MergeSemanticAnalyzer(QueryState queryState) throws SemanticException {
+  MergeSemanticAnalyzer(QueryState queryState, RewriterFactory<MergeStatement> rewriterFactory)
+      throws SemanticException {
     super(queryState);
+    this.rewriterFactory = rewriterFactory;
   }
 
   @Override
@@ -114,6 +125,9 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     String sourceName = getSimpleTableName(source);
     ASTNode onClause = (ASTNode) tree.getChild(2);
     String onClauseAsText = getMatchedText(onClause);
+    MergeStatement.MergeStatementBuilder mergeStatementBuilder = MergeStatement
+        .withTarget(targetTable, getFullTableNameForSQL(targetNameNode), targetName)
+        .onClauseAsText(onClauseAsText);
 
     int whenClauseBegins = 3;
     boolean hasHint = false;
@@ -125,30 +139,14 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
     List<ASTNode> whenClauses = findWhenClauses(tree, whenClauseBegins);
 
-    String subQueryAlias = isAliased(targetNameNode) ? targetName : targetTable.getTTable().getTableName();
-    MergeRewriter mergeRewriter = new MergeRewriterFactory(conf).createMergeRewriter(
-        targetTable, getFullTableNameForSQL(targetNameNode), subQueryAlias);
-
-    String sourceAlias;
-    if (source.getType() == HiveParser.TOK_SUBQUERY) {
-      //this includes the mandatory alias
-      sourceAlias = getMatchedText(source);
-    } else {
-      sourceAlias = getFullTableNameForSQL(source);
-      if (isAliased(source)) {
-        sourceAlias = String.format("%s %s", sourceAlias, sourceName);
-      }
-    }
-
-    mergeRewriter.setOperation(ctx);
-    mergeRewriter.handleSource(hasWhenNotMatchedInsertClause(whenClauses), sourceAlias, onClauseAsText);
+    mergeStatementBuilder.sourceAlias(getSourceAlias(source, sourceName));
 
     // Add the hint if any
-    String hintStr = null;
     if (hasHint) {
-      hintStr = " /*+ " + qHint.getText() + " */ ";
+      mergeStatementBuilder.hintStr(String.format(" /*+ %s */ ", qHint.getText()));
     }
-    /**
+
+    /*
      * We allow at most 2 WHEN MATCHED clause, in which case 1 must be Update the other Delete
      * If we have both update and delete, the 1st one (in SQL code) must have "AND <extra predicate>"
      * so that the 2nd can ensure not to process the same rows.
@@ -158,31 +156,27 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     int numInsertClauses = 0;
     numWhenMatchedUpdateClauses = 0;
     numWhenMatchedDeleteClauses = 0;
-    boolean hintProcessed = false;
     for (ASTNode whenClause : whenClauses) {
       switch (getWhenClauseOperation(whenClause).getType()) {
       case HiveParser.TOK_INSERT:
         numInsertClauses++;
-        handleInsert(whenClause, mergeRewriter, targetNameNode, onClause,
-            targetTable, targetName, onClauseAsText, hintProcessed ? null : hintStr);
-        hintProcessed = true;
+        mergeStatementBuilder.insertClause(
+            handleInsert(whenClause, onClause, targetTable, targetName, onClauseAsText));
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
-        String s = handleUpdate(whenClause, mergeRewriter, targetNameNode,
-            onClauseAsText, targetTable, extraPredicate, hintProcessed ? null : hintStr);
-        hintProcessed = true;
+        MergeStatement.UpdateClause updateClause = handleUpdate(whenClause, targetTable, extraPredicate);
+        mergeStatementBuilder.updateClause(updateClause);
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
-          extraPredicate = s; //i.e. it's the 1st WHEN MATCHED
+          extraPredicate = updateClause.getExtraPredicate(); //i.e. it's the 1st WHEN MATCHED
         }
         break;
       case HiveParser.TOK_DELETE:
         numWhenMatchedDeleteClauses++;
-        String s1 = handleDelete(whenClause, mergeRewriter,
-            onClauseAsText, extraPredicate, hintProcessed ? null : hintStr);
-        hintProcessed = true;
+        MergeStatement.DeleteClause deleteClause = handleDelete(whenClause, extraPredicate);
+        mergeStatementBuilder.deleteClause(deleteClause);
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
-          extraPredicate = s1; //i.e. it's the 1st WHEN MATCHED
+          extraPredicate = deleteClause.getExtraPredicate(); //i.e. it's the 1st WHEN MATCHED
         }
         break;
       default:
@@ -201,93 +195,38 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
 
-    if (!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
-      LOG.info("Merge statement cardinality violation check is disabled: " +
-          HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK.varname);
-    }
-
-    boolean validateCardinalityViolation = handleCardinalityViolation(
-        numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0);
-    if (validateCardinalityViolation) {
-      mergeRewriter.handleCardinalityViolation(getSimpleTableName(targetNameNode), onClauseAsText, db, conf);
-    }
-
-    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, mergeRewriter.toString());
+    String subQueryAlias = isAliased(targetNameNode) ? targetName : targetTable.getTTable().getTableName();
+    Rewriter<MergeStatement> rewriter = rewriterFactory.createRewriter(
+        targetTable, getFullTableNameForSQL(targetNameNode), subQueryAlias);
+    ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, mergeStatementBuilder.build());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
-    mergeRewriter.setOperation(rewrittenCtx);
-
-    //set dest name mapping on new context; 1st child is TOK_FROM
-    int insClauseIdx = 1;
-    for (int whenClauseIdx = 0;
-        insClauseIdx < rewrittenTree.getChildCount() - (validateCardinalityViolation ? 1 : 0/*skip cardinality violation clause*/);
-        whenClauseIdx++) {
-      //we've added Insert clauses in order or WHEN items in whenClauses
-      switch (getWhenClauseOperation(whenClauses.get(whenClauseIdx)).getType()) {
-      case HiveParser.TOK_INSERT:
-        rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
-        ++insClauseIdx;
-        break;
-      case HiveParser.TOK_UPDATE:
-        insClauseIdx += mergeRewriter.addDestNamePrefixOfUpdate(insClauseIdx, rewrittenCtx);
-        break;
-      case HiveParser.TOK_DELETE:
-        rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.DELETE);
-        ++insClauseIdx;
-        break;
-      default:
-        assert false;
-      }
-    }
-    if (validateCardinalityViolation) {
-      //here means the last branch of the multi-insert is Cardinality Validation
-      rewrittenCtx.addDestNamePrefix(rewrittenTree.getChildCount() - 1, Context.DestClausePrefix.INSERT);
-    }
 
     analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
     updateOutputs(targetTable);
   }
 
-  /**
-   * If there is no WHEN NOT MATCHED THEN INSERT, we don't outer join.
-   */
-  private boolean hasWhenNotMatchedInsertClause(List<ASTNode> whenClauses) {
-    for (ASTNode whenClause : whenClauses) {
-      if (getWhenClauseOperation(whenClause).getType() == HiveParser.TOK_INSERT) {
-        return true;
+  private String getSourceAlias(ASTNode source, String sourceName) throws SemanticException {
+    String sourceAlias;
+    if (source.getType() == HiveParser.TOK_SUBQUERY) {
+      //this includes the mandatory alias
+      sourceAlias = getMatchedText(source);
+    } else {
+      sourceAlias = getFullTableNameForSQL(source);
+      if (isAliased(source)) {
+        sourceAlias = String.format("%s %s", sourceAlias, sourceName);
       }
     }
-    return false;
+    return sourceAlias;
   }
 
   /**
-   * Per SQL Spec ISO/IEC 9075-2:2011(E) Section 14.2 under "General Rules" Item 6/Subitem a/Subitem 2/Subitem B,
-   * an error should be raised if > 1 row of "source" matches the same row in "target".
-   * This should not affect the runtime of the query as it's running in parallel with other
-   * branches of the multi-insert.  It won't actually write any data to merge_tmp_table since the
-   * cardinality_violation() UDF throws an error whenever it's called killing the query
-   * @return true if another Insert clause was added
-   */
-  private boolean handleCardinalityViolation(boolean onlyHaveWhenNotMatchedClause) {
-    if (!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
-      LOG.info("Merge statement cardinality violation check is disabled: {}",
-          HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK.varname);
-      return false;
-    }
-    //if no update or delete in Merge, there is no need to do cardinality check
-    return !onlyHaveWhenNotMatchedClause;
-  }
-
-  /**
-   * @param onClauseAsString - because there is no clone() and we need to use in multiple places
    * @param deleteExtraPredicate - see notes at caller
    */
-  private String handleUpdate(ASTNode whenMatchedUpdateClause, MergeRewriter mergeRewriter, ASTNode target,
-                              String onClauseAsString, Table targetTable, String deleteExtraPredicate, String hintStr)
-      throws SemanticException {
+  private MergeStatement.UpdateClause handleUpdate(ASTNode whenMatchedUpdateClause, Table targetTable,
+                                                   String deleteExtraPredicate) throws SemanticException {
     assert whenMatchedUpdateClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedUpdateClause).getType() == HiveParser.TOK_UPDATE;
-    String targetName = getSimpleTableName(target);
     Map<String, String> newValuesMap = new HashMap<>(targetTable.getCols().size() + targetTable.getPartCols().size());
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
     //columns being updated -> update expressions; "setRCols" (last param) is null because we use actual expressions
@@ -329,24 +268,19 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     String extraPredicate = getWhenClausePredicate(whenMatchedUpdateClause);
-    mergeRewriter.handleWhenMatchedUpdate(targetTable,
-        targetName, newValuesMap, hintStr, onClauseAsString, extraPredicate, deleteExtraPredicate);
 
     setUpAccessControlInfoForUpdate(targetTable, setColsExprs);
-    return extraPredicate;
+    return new MergeStatement.UpdateClause(extraPredicate, deleteExtraPredicate, newValuesMap);
   }
 
   /**
-   * @param onClauseAsString - because there is no clone() and we need to use in multiple places
    * @param updateExtraPredicate - see notes at caller
    */
-  protected String handleDelete(ASTNode whenMatchedDeleteClause, MergeRewriter mergeRewriter,
-                                String onClauseAsString, String updateExtraPredicate,
-                                String hintStr) {
+  protected MergeStatement.DeleteClause handleDelete(
+      ASTNode whenMatchedDeleteClause, String updateExtraPredicate) {
     assert whenMatchedDeleteClause.getType() == HiveParser.TOK_MATCHED;
     String extraPredicate = getWhenClausePredicate(whenMatchedDeleteClause);
-    mergeRewriter.handleWhenMatchedDelete(hintStr, onClauseAsString, extraPredicate, updateExtraPredicate);
-    return extraPredicate;
+    return new MergeStatement.DeleteClause(extraPredicate, updateExtraPredicate);
   }
 
   private static String addParseInfo(ASTNode n) {
@@ -399,9 +333,9 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * @param targetTableNameInSourceQuery - simple name/alias
    * @throws SemanticException
    */
-  private void handleInsert(ASTNode whenNotMatchedClause, MergeRewriter mergeRewriter, ASTNode target,
-                            ASTNode onClause, Table targetTable, String targetTableNameInSourceQuery, String onClauseAsString,
-                            String hintStr) throws SemanticException {
+  private MergeStatement.InsertClause handleInsert(ASTNode whenNotMatchedClause, ASTNode onClause,
+                                                   Table targetTable, String targetTableNameInSourceQuery,
+                                                   String onClauseAsString) throws SemanticException {
     ASTNode whenClauseOperation = getWhenClauseOperation(whenNotMatchedClause);
     assert whenNotMatchedClause.getType() == HiveParser.TOK_NOT_MATCHED;
     assert whenClauseOperation.getType() == HiveParser.TOK_INSERT;
@@ -434,8 +368,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     valuesClause = valuesClause.substring(1, valuesClause.length() - 1); //strip '(' and ')'
 
     String extraPredicate = getWhenClausePredicate(whenNotMatchedClause);
-    mergeRewriter.handleWhenNotMatchedInsert(getFullTableNameForSQL(target), getMatchedText(columnListNode), hintStr,
-        valuesClause, oca.getPredicate(), extraPredicate);
+    return new MergeStatement.InsertClause(
+        getMatchedText(columnListNode), valuesClause, oca.getPredicate(), extraPredicate);
   }
 
   private void collectDefaultValues(

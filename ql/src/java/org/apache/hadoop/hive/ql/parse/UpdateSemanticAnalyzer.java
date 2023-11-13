@@ -76,7 +76,8 @@ public class UpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     UpdateStatement updateBlock = new UpdateStatement(
         table, where, setClause, setCols, colNameToDefaultConstraint);
 
-    Rewriter<UpdateStatement> rewriter = rewriterFactory.createRewriter(table, getFullTableNameForSQL(tableName));
+    Rewriter<UpdateStatement> rewriter =
+        rewriterFactory.createRewriter(table, getFullTableNameForSQL(tableName), null);
 
     ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, updateBlock);
 

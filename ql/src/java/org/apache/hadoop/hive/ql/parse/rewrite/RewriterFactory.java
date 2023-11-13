@@ -21,5 +21,5 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public interface RewriterFactory<T> {
-  Rewriter<T> createRewriter(Table table, String targetTableFullName) throws SemanticException;
+  Rewriter<T> createRewriter(Table table, String targetTableFullName, String subQueryAlias) throws SemanticException;
 }
