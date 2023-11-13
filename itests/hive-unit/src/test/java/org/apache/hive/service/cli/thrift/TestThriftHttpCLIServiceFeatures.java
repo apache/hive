@@ -19,6 +19,7 @@
 package org.apache.hive.service.cli.thrift;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -112,9 +113,8 @@ public class TestThriftHttpCLIServiceFeatures  {
       requestHeaders.add(currHeaders);
 
       Header[] headers = httpRequest.getHeaders("Cookie");
-      cookieHeader = "";
       for (Header h : headers) {
-        cookieHeader = cookieHeader + h.getName() + ":" + h.getValue();
+        cookieHeader = (cookieHeader == null ? "" : cookieHeader) + h.getName() + ":" + h.getValue();
       }
     }
 
@@ -124,6 +124,10 @@ public class TestThriftHttpCLIServiceFeatures  {
 
     public String getCookieHeader() {
       return cookieHeader;
+    }
+
+    public boolean hasCookieHeader() {
+      return cookieHeader != null;
     }
   }
 
@@ -245,22 +249,10 @@ public class TestThriftHttpCLIServiceFeatures  {
    */
   @Test
   public void testAdditionalHttpHeaders() throws Exception {
-    TTransport transport;
-    DefaultHttpClient hClient = new DefaultHttpClient();
-    String httpUrl = getHttpUrl();
-    Map<String, String> additionalHeaders = new HashMap<String, String>();
+    Map<String, String> additionalHeaders = new HashMap<>();
     additionalHeaders.put("key1", "value1");
     additionalHeaders.put("key2", "value2");
-    HttpBasicAuthInterceptorWithLogging authInt =
-      new HttpBasicAuthInterceptorWithLogging(ThriftCLIServiceTest.USERNAME, ThriftCLIServiceTest.PASSWORD, null, null,
-      false, additionalHeaders, null);
-    hClient.addRequestInterceptor(authInt);
-    transport = new THttpClient(httpUrl, hClient);
-    TCLIService.Client httpClient = getClient(transport);
-
-    // Create a new open session request object
-    TOpenSessionReq openReq = new TOpenSessionReq();
-    httpClient.OpenSession(openReq).getSessionHandle();
+    HttpBasicAuthInterceptorWithLogging authInt = openSessionWithTestInterceptor(additionalHeaders, null);
     ArrayList<String> headers = authInt.getRequestHeaders();
 
     for (String h : headers) {
@@ -275,13 +267,30 @@ public class TestThriftHttpCLIServiceFeatures  {
    */
   @Test
   public void testCustomCookies() throws Exception {
+
+    // test if request interceptor adds custom cookies
+    Map<String, String> additionalHeaders = new HashMap<>();
+    Map<String, String> cookieHeaders = new HashMap<>();
+    cookieHeaders.put("key1", "value1");
+    cookieHeaders.put("key2", "value2");
+    HttpBasicAuthInterceptorWithLogging authInt = openSessionWithTestInterceptor(additionalHeaders, cookieHeaders);
+    assertTrue(authInt.hasCookieHeader());
+    String cookieHeader = authInt.getCookieHeader();
+    assertTrue(cookieHeader.contains("key1=value1"));
+    assertTrue(cookieHeader.contains("key2=value2"));
+
+    // test if request interceptor does not add empty Cookie header
+    // when no custom cookies are defined
+    Map<String, String> emptyCookieHeaders = new HashMap<>();
+    HttpBasicAuthInterceptorWithLogging authInt2 = openSessionWithTestInterceptor(additionalHeaders, emptyCookieHeaders);
+    assertFalse(authInt2.hasCookieHeader());
+  }
+
+  public HttpBasicAuthInterceptorWithLogging openSessionWithTestInterceptor(
+          Map<String, String> additionalHeaders, Map<String, String> cookieHeaders) throws Exception {
     TTransport transport;
     DefaultHttpClient hClient = new DefaultHttpClient();
     String httpUrl = getHttpUrl();
-    Map<String, String> additionalHeaders = new HashMap<String, String>();
-    Map<String, String> cookieHeaders = new HashMap<String, String>();
-    cookieHeaders.put("key1", "value1");
-    cookieHeaders.put("key2", "value2");
     HttpBasicAuthInterceptorWithLogging authInt =
       new HttpBasicAuthInterceptorWithLogging(ThriftCLIServiceTest.USERNAME, ThriftCLIServiceTest.PASSWORD, null, null,
       false, additionalHeaders, cookieHeaders);
@@ -292,11 +301,8 @@ public class TestThriftHttpCLIServiceFeatures  {
     // Create a new open session request object
     TOpenSessionReq openReq = new TOpenSessionReq();
     httpClient.OpenSession(openReq).getSessionHandle();
-    String cookieHeader = authInt.getCookieHeader();
-    assertTrue(cookieHeader.contains("key1=value1"));
-    assertTrue(cookieHeader.contains("key2=value2"));
+    return authInt;
   }
-
 
   /**
    * This factory creates a mocked HiveAuthorizer class.
