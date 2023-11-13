@@ -795,11 +795,12 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     ArrayList<ExprNodeDesc> rsValueCols = new ArrayList<ExprNodeDesc>();
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
     ArrayList<ColumnInfo> rsColInfos = new ArrayList<>();
-    for (int colPos = 0; colPos < gb.getSchema().getSignature().size(); colPos++) {
-      String gbyColName = gb.getSchema().getSignature().get(colPos).getInternalName();
+    List<ColumnInfo> gbySchema = gb.getSchema().getSignature();
+    for (int colPos = 0; colPos < gbySchema.size(); colPos++) {
+      String gbyColName = gbySchema.get(colPos).getInternalName();
       gbOutputNames.add(gbyColName);
 
-      TypeInfo typInfo = gb.getSchema().getSignature().get(colPos).getType();
+      TypeInfo typInfo = gbySchema.get(colPos).getType();
       ExprNodeColumnDesc rsValExpr = new ExprNodeColumnDesc(typInfo, gbyColName, "", false);
       rsValueCols.add(rsValExpr);
       columnExprMap.put(Utilities.ReduceField.VALUE + "." + gbyColName, rsValExpr);
