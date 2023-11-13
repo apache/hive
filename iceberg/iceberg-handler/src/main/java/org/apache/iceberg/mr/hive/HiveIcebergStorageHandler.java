@@ -167,7 +167,6 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
-import org.apache.iceberg.hadoop.HadoopTableOperations;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
@@ -211,7 +210,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
-  public static final String STATS = "/stats/";
+  public static final String STATS = "/stats/snap-";
 
   /**
    * Function template for producing a custom sort expression function:
@@ -594,10 +593,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private Path getColStatsPath(Table table, long snapshotId) {
-    if (((BaseTable) table).operations() instanceof HadoopTableOperations) {
-      return new Path(table.location() + STATS + snapshotId);
-    }
-    return new Path(table.location() + STATS + table.name() + snapshotId);
+    return new Path(table.location() + STATS + snapshotId);
   }
 
   private boolean removeColStatsIfExists(Table tbl) throws IOException {
