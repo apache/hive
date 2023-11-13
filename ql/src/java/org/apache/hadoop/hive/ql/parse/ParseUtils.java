@@ -675,8 +675,7 @@ public final class ParseUtils {
     return val;
   }
 
-  public static ReparseResult parseRewrittenQuery(Context ctx,
-                                                  StringBuilder rewrittenQueryStr)
+  public static ReparseResult parseRewrittenQuery(Context ctx, StringBuilder rewrittenQueryStr)
       throws SemanticException {
     return parseRewrittenQuery(ctx, rewrittenQueryStr.toString());
   }
