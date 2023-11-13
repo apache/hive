@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -43,9 +44,9 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
   public ParseUtils.ReparseResult rewrite(Context context, DeleteStatement deleteBlock)
       throws SemanticException {
 
+    Tree wherePredicateNode = deleteBlock.getWhereTree().getChild(0);
     String whereClause = context.getTokenRewriteStream().toString(
-        deleteBlock.getWhereTree().getChild(0).getTokenStartIndex(),
-        deleteBlock.getWhereTree().getChild(0).getTokenStopIndex());
+        wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
     String filePathCol = HiveUtils.unparseIdentifier("FILE__PATH", conf);
 
     MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
