@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.hbase;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +73,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNull;
 import org.junit.Test;
@@ -340,7 +342,12 @@ public class TestHBaseSerDe {
     // Serialize
     assertEquals(PutWritable.class, serDe.getSerializedClass());
     PutWritable serializedPut = (PutWritable) serDe.serialize(row, oi);
-    assertEquals("Serialized data", p.toString(),String.valueOf(serializedPut.getPut()));
+    Put serializedPutObject = serializedPut.getPut();
+    assertTrue(p.getFamilyCellMap().equals(serializedPutObject.getFamilyCellMap()));
+    assertTrue(Arrays.equals(p.getRow(), serializedPutObject.getRow()));
+    assertEquals(p.getTimestamp(), serializedPutObject.getTimestamp());
+    assertEquals(p.getDurability(), serializedPutObject.getDurability());
+    assertEquals(p.getTTL(), serializedPutObject.getTTL());
   }
 
   // No specifications default to UTF8 String storage for backwards compatibility
@@ -805,7 +812,11 @@ public class TestHBaseSerDe {
 
     // Serialize
     Put serializedPut = ((PutWritable) hbaseSerDe.serialize(row, soi)).getPut();
-    assertEquals("Serialized data: ", p.toString(), serializedPut.toString());
+    assertTrue(p.getFamilyCellMap().equals(serializedPut.getFamilyCellMap()));
+    assertTrue(Arrays.equals(p.getRow(), serializedPut.getRow()));
+    assertEquals(p.getTimestamp(), serializedPut.getTimestamp());
+    assertEquals(p.getDurability(), serializedPut.getDurability());
+    assertEquals(p.getTTL(), serializedPut.getTTL());
   }
 
   @Test
@@ -924,7 +935,11 @@ public class TestHBaseSerDe {
     Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
 
     if (p != null) {
-      assertEquals("Serialized put:", p.toString(), put.toString());
+      assertTrue(p.getFamilyCellMap().equals(put.getFamilyCellMap()));
+      assertTrue(Arrays.equals(p.getRow(), put.getRow()));
+      assertEquals(p.getTimestamp(), put.getTimestamp());
+      assertEquals(p.getDurability(), put.getDurability());
+      assertEquals(p.getTTL(), put.getTTL());
     }
   }
 
@@ -1049,7 +1064,11 @@ public class TestHBaseSerDe {
     // Now serialize
     Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
 
-    assertEquals("Serialized put:", p.toString(), put.toString());
+    assertTrue(p.getFamilyCellMap().equals(put.getFamilyCellMap()));
+    assertTrue(Arrays.equals(p.getRow(), put.getRow()));
+    assertEquals(p.getTimestamp(), put.getTimestamp());
+    assertEquals(p.getDurability(), put.getDurability());
+    assertEquals(p.getTTL(), put.getTTL());
   }
 
   @Test
@@ -1528,7 +1547,11 @@ public class TestHBaseSerDe {
     // Now serialize
     Put put = ((PutWritable) serDe.serialize(row, soi)).getPut();
 
-    assertEquals("Serialized put:", p.toString(), put.toString());
+    assertTrue(p.getFamilyCellMap().equals(put.getFamilyCellMap()));
+    assertTrue(Arrays.equals(p.getRow(), put.getRow()));
+    assertEquals(p.getTimestamp(), put.getTimestamp());
+    assertEquals(p.getDurability(), put.getDurability());
+    assertEquals(p.getTTL(), put.getTTL());
   }
 
   private void deserializeAndSerializeHiveAvro(HBaseSerDe serDe, Result r, Put p,
