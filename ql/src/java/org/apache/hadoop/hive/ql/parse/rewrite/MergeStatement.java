@@ -19,10 +19,14 @@
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class MergeStatement {
@@ -40,14 +44,13 @@ public class MergeStatement {
     private String sourceAlias;
     private String onClauseAsText;
     private String hintStr;
-    private InsertClause insertClause;
-    private UpdateClause updateClause;
-    private DeleteClause deleteClause;
+    private final List<WhenClause> whenClauses;
 
     private MergeStatementBuilder(Table targetTable, String targetName, String targetAlias) {
       this.targetTable = targetTable;
       this.targetName = targetName;
       this.targetAlias = targetAlias;
+      whenClauses = new ArrayList<>(3);
     }
 
     public MergeStatementBuilder sourceName(String sourceName) {
@@ -66,24 +69,15 @@ public class MergeStatement {
       this.hintStr = hintStr;
       return this;
     }
-    public MergeStatementBuilder insertClause(InsertClause insertClause) {
-      this.insertClause = insertClause;
-      return this;
-    }
 
-    public MergeStatementBuilder updateClause(UpdateClause updateClause) {
-      this.updateClause = updateClause;
-      return this;
-    }
-
-    public MergeStatementBuilder deleteClause(DeleteClause deleteClause) {
-      this.deleteClause = deleteClause;
+    public MergeStatementBuilder addWhenClause(WhenClause whenClause) {
+      whenClauses.add(whenClause);
       return this;
     }
 
     public MergeStatement build() {
       return new MergeStatement(targetTable, targetName, targetAlias, sourceName, sourceAlias, onClauseAsText, hintStr,
-          insertClause, updateClause, deleteClause);
+          Collections.unmodifiableList(whenClauses));
     }
   }
 
@@ -94,13 +88,10 @@ public class MergeStatement {
   private final String sourceAlias;
   private final String onClauseAsText;
   private final String hintStr;
-  private final InsertClause insertClause;
-  private final UpdateClause updateClause;
-  private final DeleteClause deleteClause;
+  private final List<WhenClause> whenClauses;
 
   private MergeStatement(Table targetTable, String targetName, String targetAlias, String sourceName, String sourceAlias,
-                         String onClauseAsText, String hintStr, InsertClause insertClause, UpdateClause updateClause,
-                         DeleteClause deleteClause) {
+                         String onClauseAsText, String hintStr, List<WhenClause> whenClauses) {
     this.targetTable = targetTable;
     this.targetName = targetName;
     this.targetAlias = targetAlias;
@@ -108,9 +99,7 @@ public class MergeStatement {
     this.sourceAlias = sourceAlias;
     this.onClauseAsText = onClauseAsText;
     this.hintStr = hintStr;
-    this.insertClause = insertClause;
-    this.updateClause = updateClause;
-    this.deleteClause = deleteClause;
+    this.whenClauses = whenClauses;
   }
 
   public Table getTargetTable() {
@@ -141,16 +130,18 @@ public class MergeStatement {
     return hintStr;
   }
 
-  public InsertClause getInsertClause() {
-    return insertClause;
+  public List<WhenClause> getWhenClauses() {
+    return whenClauses;
   }
 
-  public UpdateClause getUpdateClause() {
-    return updateClause;
-  }
+  public boolean hasWhenNotMatchedInsertClause() {
+    for (WhenClause whenClause : whenClauses) {
+      if (whenClause instanceof InsertClause) {
+        return true;
+      }
+    }
 
-  public DeleteClause getDeleteClause() {
-    return deleteClause;
+    return false;
   }
 
   /**
@@ -168,11 +159,11 @@ public class MergeStatement {
       return false;
     }
     //if no update or delete in Merge, there is no need to do cardinality check
-    boolean onlyHaveWhenNotMatchedClause = updateClause == null && deleteClause == null;
+    boolean onlyHaveWhenNotMatchedClause = whenClauses.size() == 1 && whenClauses.get(0) instanceof InsertClause;
     return !onlyHaveWhenNotMatchedClause;
   }
 
-  public static class WhenClause {
+  public static abstract class WhenClause {
     private final String extraPredicate;
 
     public WhenClause(String extraPredicate) {
@@ -182,6 +173,8 @@ public class MergeStatement {
     public String getExtraPredicate() {
       return extraPredicate;
     }
+
+    public abstract void toSql(MergeSqlBuilder sqlBuilder);
   }
 
   public static class InsertClause extends WhenClause {
@@ -208,6 +201,11 @@ public class MergeStatement {
     public String getPredicate() {
       return predicate;
     }
+
+    @Override
+    public void toSql(MergeSqlBuilder sqlBuilder) {
+      sqlBuilder.appendWhenNotMatchedInsertClause(this);
+    }
   }
 
   public static class UpdateClause extends WhenClause {
@@ -227,6 +225,11 @@ public class MergeStatement {
     public String getDeleteExtraPredicate() {
       return deleteExtraPredicate;
     }
+
+    @Override
+    public void toSql(MergeSqlBuilder sqlBuilder) {
+      sqlBuilder.appendWhenMatchedUpdateClause(this);
+    }
   }
 
   public static class DeleteClause extends WhenClause {
@@ -240,5 +243,16 @@ public class MergeStatement {
     public String getUpdateExtraPredicate() {
       return updateExtraPredicate;
     }
+
+    @Override
+    public void toSql(MergeSqlBuilder sqlBuilder) {
+      sqlBuilder.appendWhenMatchedDeleteClause(this);
+    }
+  }
+
+  public interface MergeSqlBuilder {
+    void appendWhenNotMatchedInsertClause(InsertClause insertClause);
+    void appendWhenMatchedUpdateClause(UpdateClause updateClause);
+    void appendWhenMatchedDeleteClause(DeleteClause deleteClause);
   }
 }

@@ -160,13 +160,13 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       switch (getWhenClauseOperation(whenClause).getType()) {
       case HiveParser.TOK_INSERT:
         numInsertClauses++;
-        mergeStatementBuilder.insertClause(
+        mergeStatementBuilder.addWhenClause(
             handleInsert(whenClause, onClause, targetTable, targetName, onClauseAsText));
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
         MergeStatement.UpdateClause updateClause = handleUpdate(whenClause, targetTable, extraPredicate);
-        mergeStatementBuilder.updateClause(updateClause);
+        mergeStatementBuilder.addWhenClause(updateClause);
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
           extraPredicate = updateClause.getExtraPredicate(); //i.e. it's the 1st WHEN MATCHED
         }
@@ -174,7 +174,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       case HiveParser.TOK_DELETE:
         numWhenMatchedDeleteClauses++;
         MergeStatement.DeleteClause deleteClause = handleDelete(whenClause, extraPredicate);
-        mergeStatementBuilder.deleteClause(deleteClause);
+        mergeStatementBuilder.addWhenClause(deleteClause);
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
           extraPredicate = deleteClause.getExtraPredicate(); //i.e. it's the 1st WHEN MATCHED
         }

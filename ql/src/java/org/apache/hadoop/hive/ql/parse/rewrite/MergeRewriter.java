@@ -38,21 +38,37 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class MergeRewriter implements Rewriter<MergeStatement> {
 
   private final Hive db;
-  private final HiveConf conf;
+  protected final HiveConf conf;
   private final SqlBuilderFactory sqlBuilderFactory;
+  private final Map<Class, List<Context.DestClausePrefix>> destClausePrefixMapping;
 
   public MergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
     this.db = db;
     this.conf = conf;
     this.sqlBuilderFactory = sqlBuilderFactory;
+    destClausePrefixMapping = new HashMap<>(3);
+    destClausePrefixMapping.put(MergeStatement.InsertClause.class, singletonList(Context.DestClausePrefix.INSERT));
+    destClausePrefixMapping.put(MergeStatement.DeleteClause.class, singletonList(Context.DestClausePrefix.DELETE));
+    destClausePrefixMapping.put(MergeStatement.UpdateClause.class, singletonList(Context.DestClausePrefix.UPDATE));
+  }
+
+  protected MergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory,
+                          Map<Class, List<Context.DestClausePrefix>> destClausePrefixMapping) {
+    this.db = db;
+    this.conf = conf;
+    this.sqlBuilderFactory = sqlBuilderFactory;
+    this.destClausePrefixMapping = destClausePrefixMapping;
   }
 
   @Override
@@ -60,25 +76,12 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
 
     setOperation(ctx);
     MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
-    handleSource(mergeStatement.getInsertClause() != null, mergeStatement.getSourceAlias(),
+    handleSource(mergeStatement.hasWhenNotMatchedInsertClause(), mergeStatement.getSourceAlias(),
         mergeStatement.getOnClauseAsText(), sqlBuilder);
 
-    String hintStr = mergeStatement.getHintStr();
-    if (mergeStatement.getUpdateClause() != null) {
-      handleWhenMatchedUpdate(mergeStatement.getTargetTable(), mergeStatement.getTargetAlias(),
-          mergeStatement.getOnClauseAsText(), mergeStatement.getUpdateClause(), hintStr, sqlBuilder);
-      hintStr = null;
-    }
-
-    if (mergeStatement.getDeleteClause() != null) {
-      handleWhenMatchedDelete(
-          mergeStatement.getOnClauseAsText(), mergeStatement.getDeleteClause(), hintStr, sqlBuilder);
-      hintStr = null;
-    }
-
-    if (mergeStatement.getInsertClause() != null) {
-      handleWhenNotMatchedInsert(
-          mergeStatement.getTargetName(), mergeStatement.getInsertClause(), hintStr, sqlBuilder);
+    MergeStatement.MergeSqlBuilder mergeSqlBuilder = createMergeSqlBuilder(mergeStatement, sqlBuilder);
+    for (MergeStatement.WhenClause whenClause : mergeStatement.getWhenClauses()) {
+      whenClause.toSql(mergeSqlBuilder);
     }
 
     boolean validateCardinalityViolation = mergeStatement.shouldValidateCardinalityViolation(conf);
@@ -93,16 +96,12 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
 
     //set dest name mapping on new context; 1st child is TOK_FROM
     int insClauseIdx = 1;
-    if (mergeStatement.getUpdateClause() != null) {
-      insClauseIdx += addDestNamePrefixOfUpdate(insClauseIdx, rewrittenCtx);
-    }
-    if (mergeStatement.getDeleteClause() != null) {
-      rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.DELETE);
-      ++insClauseIdx;
-    }
-    if (mergeStatement.getInsertClause() != null) {
-      rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
-      ++insClauseIdx;
+    for (MergeStatement.WhenClause whenClause : mergeStatement.getWhenClauses()) {
+      List<Context.DestClausePrefix> prefixes = destClausePrefixMapping.get(whenClause.getClass());
+      for (Context.DestClausePrefix prefix : prefixes) {
+        rewrittenCtx.addDestNamePrefix(insClauseIdx, prefix);
+        insClauseIdx++;
+      }
     }
 
     if (validateCardinalityViolation) {
@@ -111,6 +110,11 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
     }
 
     return rr;
+  }
+
+  protected MergeWhenClauseSqlBuilder createMergeSqlBuilder(
+      MergeStatement mergeStatement, MultiInsertSqlBuilder sqlBuilder) {
+    return new MergeWhenClauseSqlBuilder(conf, sqlBuilder, mergeStatement);
   }
 
   private void handleSource(
@@ -126,95 +130,6 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
     sqlBuilder.indent().append(sourceAlias);
     sqlBuilder.append('\n');
     sqlBuilder.indent().append("ON ").append(onClauseAsText).append('\n');
-  }
-
-  private void handleWhenNotMatchedInsert(String targetFullName, MergeStatement.InsertClause insertClause,
-                                          String hintStr, MultiInsertSqlBuilder sqlBuilder) {
-    sqlBuilder.append("INSERT INTO ").append(targetFullName);
-    if (insertClause.getColumnListText() != null) {
-      sqlBuilder.append(' ').append(insertClause.getColumnListText());
-    }
-
-    sqlBuilder.append("    -- insert clause\n  SELECT ");
-    if (isNotBlank(hintStr)) {
-      sqlBuilder.append(hintStr);
-    }
-
-    sqlBuilder.append(insertClause.getValuesClause()).append("\n   WHERE ").append(insertClause.getPredicate());
-
-    if (insertClause.getExtraPredicate() != null) {
-      //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
-      sqlBuilder.append(" AND ").append(insertClause.getExtraPredicate());
-    }
-    sqlBuilder.append('\n');
-  }
-
-  protected void handleWhenMatchedUpdate(Table targetTable, String targetAlias, String onClauseAsString,
-                                         MergeStatement.UpdateClause updateClause, String hintStr,
-                                         MultiInsertSqlBuilder sqlBuilder) {
-
-    sqlBuilder.append("    -- update clause").append("\n");
-    List<String> valuesAndAcidSortKeys = new ArrayList<>(
-        targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
-    valuesAndAcidSortKeys.addAll(sqlBuilder.getSortKeys());
-    addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
-    sqlBuilder.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
-
-    addWhereClauseOfUpdate(
-        onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
-
-    sqlBuilder.appendSortBy(sqlBuilder.getSortKeys());
-  }
-
-  protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
-                           List<String> values) {
-    for (FieldSchema fieldSchema : targetTable.getCols()) {
-      if (newValues.containsKey(fieldSchema.getName())) {
-        values.add(newValues.get(fieldSchema.getName()));
-      } else {
-        values.add(
-            String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf)));
-      }
-    }
-
-    targetTable.getPartCols().forEach(fieldSchema ->
-        values.add(
-            String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
-  }
-
-  protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
-                                        MultiInsertSqlBuilder sqlBuilder) {
-    sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
-    if (extraPredicate != null) {
-      //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-      sqlBuilder.append(" AND ").append(extraPredicate);
-    }
-    if (deleteExtraPredicate != null) {
-      sqlBuilder.append(" AND NOT(").append(deleteExtraPredicate).append(")");
-    }
-  }
-
-  private void handleWhenMatchedDelete(String onClauseAsString, MergeStatement.DeleteClause deleteClause,
-                                       String hintStr, MultiInsertSqlBuilder sqlBuilder) {
-    handleWhenMatchedDelete(onClauseAsString,
-        deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlBuilder);
-  }
-
-
-  protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
-                                         String hintStr, MultiInsertSqlBuilder sqlBuilder) {
-    sqlBuilder.appendDeleteBranch(hintStr);
-
-    sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
-    if (extraPredicate != null) {
-      //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-      sqlBuilder.append(" AND ").append(extraPredicate);
-    }
-    if (updateExtraPredicate != null) {
-      sqlBuilder.append(" AND NOT(").append(updateExtraPredicate).append(")");
-    }
-    sqlBuilder.append("\n").indent();
-    sqlBuilder.appendSortKeys();
   }
 
   private void handleCardinalityViolation(String targetAlias, String onClauseAsString, MultiInsertSqlBuilder sqlBuilder)
@@ -266,5 +181,114 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
   protected int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
     rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
     return 1;
+  }
+
+  protected static class MergeWhenClauseSqlBuilder implements MergeStatement.MergeSqlBuilder {
+
+    private final HiveConf conf;
+    protected final MultiInsertSqlBuilder sqlBuilder;
+    protected final MergeStatement mergeStatement;
+    protected String hintStr;
+
+    MergeWhenClauseSqlBuilder(HiveConf conf, MultiInsertSqlBuilder sqlBuilder, MergeStatement mergeStatement) {
+      this.conf = conf;
+      this.sqlBuilder = sqlBuilder;
+      this.mergeStatement = mergeStatement;
+      this.hintStr = mergeStatement.getHintStr();
+    }
+
+    @Override
+    public void appendWhenNotMatchedInsertClause(MergeStatement.InsertClause insertClause) {
+      sqlBuilder.append("INSERT INTO ").append(mergeStatement.getTargetName());
+      if (insertClause.getColumnListText() != null) {
+        sqlBuilder.append(' ').append(insertClause.getColumnListText());
+      }
+
+      sqlBuilder.append("    -- insert clause\n  SELECT ");
+      if (isNotBlank(hintStr)) {
+        sqlBuilder.append(hintStr);
+        hintStr = null;
+      }
+
+      sqlBuilder.append(insertClause.getValuesClause()).append("\n   WHERE ").append(insertClause.getPredicate());
+
+      if (insertClause.getExtraPredicate() != null) {
+        //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
+        sqlBuilder.append(" AND ").append(insertClause.getExtraPredicate());
+      }
+      sqlBuilder.append('\n');
+    }
+
+
+    @Override
+    public void appendWhenMatchedUpdateClause(MergeStatement.UpdateClause updateClause) {
+      Table targetTable = mergeStatement.getTargetTable();
+      String targetAlias = mergeStatement.getTargetAlias();
+      String onClauseAsString = mergeStatement.getOnClauseAsText();
+
+      sqlBuilder.append("    -- update clause").append("\n");
+      List<String> valuesAndAcidSortKeys = new ArrayList<>(
+          targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
+      valuesAndAcidSortKeys.addAll(sqlBuilder.getSortKeys());
+      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
+      sqlBuilder.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
+      hintStr = null;
+
+      addWhereClauseOfUpdate(
+          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
+
+      sqlBuilder.appendSortBy(sqlBuilder.getSortKeys());
+    }
+
+    protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
+                             List<String> values) {
+      for (FieldSchema fieldSchema : targetTable.getCols()) {
+        if (newValues.containsKey(fieldSchema.getName())) {
+          values.add(newValues.get(fieldSchema.getName()));
+        } else {
+          values.add(
+              String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf)));
+        }
+      }
+
+      targetTable.getPartCols().forEach(fieldSchema ->
+          values.add(
+              String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
+    }
+
+    protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
+                                          MultiInsertSqlBuilder sqlBuilder) {
+      sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
+      if (extraPredicate != null) {
+        //we have WHEN MATCHED AND <boolean expr> THEN DELETE
+        sqlBuilder.append(" AND ").append(extraPredicate);
+      }
+      if (deleteExtraPredicate != null) {
+        sqlBuilder.append(" AND NOT(").append(deleteExtraPredicate).append(")");
+      }
+    }
+
+    @Override
+    public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
+      handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(),
+          deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlBuilder);
+      hintStr = null;
+    }
+
+    protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
+                                         String hintStr, MultiInsertSqlBuilder sqlBuilder) {
+      sqlBuilder.appendDeleteBranch(hintStr);
+
+      sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
+      if (extraPredicate != null) {
+        //we have WHEN MATCHED AND <boolean expr> THEN DELETE
+        sqlBuilder.append(" AND ").append(extraPredicate);
+      }
+      if (updateExtraPredicate != null) {
+        sqlBuilder.append(" AND NOT(").append(updateExtraPredicate).append(")");
+      }
+      sqlBuilder.append("\n").indent();
+      sqlBuilder.appendSortKeys();
+    }
   }
 }

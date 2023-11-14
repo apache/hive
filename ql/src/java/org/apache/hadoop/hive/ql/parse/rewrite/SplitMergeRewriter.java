@@ -25,31 +25,62 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.singletonList;
 
 public class SplitMergeRewriter extends MergeRewriter {
 
+  private static final Map<Class, List<Context.DestClausePrefix>> DEST_CLAUSE_PREFIX_MAPPING;
+
+  static {
+    DEST_CLAUSE_PREFIX_MAPPING = new HashMap<>(3);
+    DEST_CLAUSE_PREFIX_MAPPING.put(MergeStatement.InsertClause.class, singletonList(Context.DestClausePrefix.INSERT));
+    DEST_CLAUSE_PREFIX_MAPPING.put(MergeStatement.DeleteClause.class, singletonList(Context.DestClausePrefix.DELETE));
+    DEST_CLAUSE_PREFIX_MAPPING.put(MergeStatement.UpdateClause.class,
+        Arrays.asList(Context.DestClausePrefix.INSERT, Context.DestClausePrefix.DELETE));
+  }
+
   public SplitMergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
-    super(db, conf, sqlBuilderFactory);
+    super(db, conf, sqlBuilderFactory, DEST_CLAUSE_PREFIX_MAPPING);
   }
 
   @Override
-  public void handleWhenMatchedUpdate(Table targetTable, String targetAlias, String onClauseAsString,
-                                      MergeStatement.UpdateClause updateClause, String hintStr,
-                                      MultiInsertSqlBuilder sqlBuilder) {
-    sqlBuilder.append("    -- update clause (insert part)\n");
-    List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
-    addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
-    sqlBuilder.appendInsertBranch(hintStr, values);
+  protected MergeWhenClauseSqlBuilder createMergeSqlBuilder(
+      MergeStatement mergeStatement, MultiInsertSqlBuilder sqlBuilder) {
+    return new SplitMergeWhenClauseSqlBuilder(conf, sqlBuilder, mergeStatement);
+  }
 
-    addWhereClauseOfUpdate(
-        onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
+  static class SplitMergeWhenClauseSqlBuilder extends MergeWhenClauseSqlBuilder {
 
-    sqlBuilder.append("\n");
+    SplitMergeWhenClauseSqlBuilder(HiveConf conf, MultiInsertSqlBuilder sqlBuilder, MergeStatement mergeStatement) {
+      super(conf, sqlBuilder, mergeStatement);
+    }
 
-    sqlBuilder.append("    -- update clause (delete part)\n");
-    handleWhenMatchedDelete(onClauseAsString,
-        updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlBuilder);
+    @Override
+    public void appendWhenMatchedUpdateClause(MergeStatement.UpdateClause updateClause) {
+      Table targetTable = mergeStatement.getTargetTable();
+      String targetAlias = mergeStatement.getTargetAlias();
+      String onClauseAsString = mergeStatement.getOnClauseAsText();
+
+      sqlBuilder.append("    -- update clause (insert part)\n");
+      List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
+      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
+      sqlBuilder.appendInsertBranch(hintStr, values);
+      hintStr = null;
+
+      addWhereClauseOfUpdate(
+          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
+
+      sqlBuilder.append("\n");
+
+      sqlBuilder.append("    -- update clause (delete part)\n");
+      handleWhenMatchedDelete(onClauseAsString,
+          updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlBuilder);
+    }
   }
 
   @Override
@@ -63,4 +94,5 @@ public class SplitMergeRewriter extends MergeRewriter {
   public void setOperation(Context context) {
     context.setOperation(Context.Operation.MERGE, true);
   }
+
 }
