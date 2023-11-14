@@ -21,8 +21,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,20 +31,21 @@ import static java.util.Arrays.asList;
 
 public class SplitMergeRewriter extends MergeRewriter {
 
-  public SplitMergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
-    super(db, conf, sqlBuilderFactory);
+  public SplitMergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
+    super(db, conf, sqlGeneratorFactory);
   }
 
   @Override
-  protected MergeWhenClauseSqlBuilder createMergeSqlBuilder(
-      MergeStatement mergeStatement, MultiInsertSqlBuilder sqlBuilder) {
-    return new SplitMergeWhenClauseSqlBuilder(conf, sqlBuilder, mergeStatement);
+  protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
+      MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
+    return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement);
   }
 
-  static class SplitMergeWhenClauseSqlBuilder extends MergeWhenClauseSqlBuilder {
+  static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
 
-    SplitMergeWhenClauseSqlBuilder(HiveConf conf, MultiInsertSqlBuilder sqlBuilder, MergeStatement mergeStatement) {
-      super(conf, sqlBuilder, mergeStatement);
+    SplitMergeWhenClauseSqlGenerator(
+        HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
+      super(conf, sqlGenerator, mergeStatement);
     }
 
     @Override
@@ -53,20 +54,20 @@ public class SplitMergeRewriter extends MergeRewriter {
       String targetAlias = mergeStatement.getTargetAlias();
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
-      sqlBuilder.append("    -- update clause (insert part)\n");
+      sqlGenerator.append("    -- update clause (insert part)\n");
       List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
-      sqlBuilder.appendInsertBranch(hintStr, values);
+      sqlGenerator.appendInsertBranch(hintStr, values);
       hintStr = null;
 
       addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
+          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
 
-      sqlBuilder.append("\n");
+      sqlGenerator.append("\n");
 
-      sqlBuilder.append("    -- update clause (delete part)\n");
+      sqlGenerator.append("    -- update clause (delete part)\n");
       handleWhenMatchedDelete(onClauseAsString,
-          updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlBuilder);
+          updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlGenerator);
     }
   }
 

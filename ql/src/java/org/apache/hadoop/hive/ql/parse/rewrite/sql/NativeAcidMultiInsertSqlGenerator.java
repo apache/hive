@@ -28,8 +28,8 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 
-public class NativeAcidMultiInsertSqlBuilder extends MultiInsertSqlBuilder {
-  public NativeAcidMultiInsertSqlBuilder(Table table, String targetTableFullName, HiveConf conf, String subQueryAlias) {
+public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
+  public NativeAcidMultiInsertSqlGenerator(Table table, String targetTableFullName, HiveConf conf, String subQueryAlias) {
     super(table, targetTableFullName, conf, subQueryAlias);
   }
 

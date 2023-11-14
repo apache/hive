@@ -21,24 +21,24 @@ import org.apache.hadoop.hive.ql.Context;
 
 public class COWWithClauseBuilder {
 
-  public void appendWith(MultiInsertSqlBuilder sqlBuilder, String filePathCol, String whereClause) {
-    sqlBuilder.append("WITH t AS (");
-    sqlBuilder.append("\n");
-    sqlBuilder.append("select ");
-    sqlBuilder.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE);
-    sqlBuilder.removeLastChar();
-    sqlBuilder.append(" from (");
-    sqlBuilder.append("\n");
-    sqlBuilder.append("select ");
-    sqlBuilder.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE);
-    sqlBuilder.append(" row_number() OVER (partition by ").append(filePathCol).append(") rn");
-    sqlBuilder.append(" from ");
-    sqlBuilder.append(sqlBuilder.getTargetTableFullName());
-    sqlBuilder.append("\n");
-    sqlBuilder.append("where ").append(whereClause);
-    sqlBuilder.append("\n");
-    sqlBuilder.append(") q");
-    sqlBuilder.append("\n");
-    sqlBuilder.append("where rn=1\n)\n");
+  public void appendWith(MultiInsertSqlGenerator sqlGenerator, String filePathCol, String whereClause) {
+    sqlGenerator.append("WITH t AS (");
+    sqlGenerator.append("\n");
+    sqlGenerator.append("select ");
+    sqlGenerator.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE);
+    sqlGenerator.removeLastChar();
+    sqlGenerator.append(" from (");
+    sqlGenerator.append("\n");
+    sqlGenerator.append("select ");
+    sqlGenerator.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE);
+    sqlGenerator.append(" row_number() OVER (partition by ").append(filePathCol).append(") rn");
+    sqlGenerator.append(" from ");
+    sqlGenerator.append(sqlGenerator.getTargetTableFullName());
+    sqlGenerator.append("\n");
+    sqlGenerator.append("where ").append(whereClause);
+    sqlGenerator.append("\n");
+    sqlGenerator.append(") q");
+    sqlGenerator.append("\n");
+    sqlGenerator.append("where rn=1\n)\n");
   }
 }

@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
   private final Hive db;
@@ -49,7 +49,7 @@ public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
       throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
     }
 
-    SqlBuilderFactory sqlBuilderFactory = new SqlBuilderFactory(
+    SqlGeneratorFactory sqlGeneratorFactory = new SqlGeneratorFactory(
         table,
         targetTableFullName,
         conf,
@@ -57,8 +57,8 @@ public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
         StringUtils.EMPTY);
 
     if (splitUpdate) {
-      return new SplitMergeRewriter(db, conf, sqlBuilderFactory);
+      return new SplitMergeRewriter(db, conf, sqlGeneratorFactory);
     }
-    return new MergeRewriter(db, conf, sqlBuilderFactory);
+    return new MergeRewriter(db, conf, sqlGeneratorFactory);
   }
 }

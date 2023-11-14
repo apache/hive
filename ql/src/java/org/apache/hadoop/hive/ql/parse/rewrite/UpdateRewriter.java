@@ -24,9 +24,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetClausePatcher;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.WhereClausePatcher;
 
 import java.util.HashMap;
@@ -38,14 +38,14 @@ public class UpdateRewriter implements Rewriter<UpdateStatement> {
   public static final Context.Operation OPERATION = Context.Operation.UPDATE;
 
   protected final HiveConf conf;
-  protected final SqlBuilderFactory sqlBuilderFactory;
+  protected final SqlGeneratorFactory sqlGeneratorFactory;
   private final WhereClausePatcher whereClausePatcher;
   private final SetClausePatcher setClausePatcher;
 
-  public UpdateRewriter(HiveConf conf, SqlBuilderFactory sqlBuilderFactory,
+  public UpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory,
                         WhereClausePatcher whereClausePatcher, SetClausePatcher setClausePatcher) {
     this.conf = conf;
-    this.sqlBuilderFactory = sqlBuilderFactory;
+    this.sqlGeneratorFactory = sqlGeneratorFactory;
     this.whereClausePatcher = whereClausePatcher;
     this.setClausePatcher = setClausePatcher;
   }
@@ -54,24 +54,24 @@ public class UpdateRewriter implements Rewriter<UpdateStatement> {
   public ParseUtils.ReparseResult rewrite(Context context, UpdateStatement updateBlock)
       throws SemanticException {
 
-    MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
+    MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    sqlBuilder.append("insert into table ");
-    sqlBuilder.appendTargetTableName();
-    sqlBuilder.appendPartitionColsOfTarget();
+    sqlGenerator.append("insert into table ");
+    sqlGenerator.appendTargetTableName();
+    sqlGenerator.appendPartitionColsOfTarget();
 
-    int columnOffset = sqlBuilder.getDeleteValues(OPERATION).size();
-    sqlBuilder.append(" select ");
-    sqlBuilder.appendAcidSelectColumns(OPERATION);
-    sqlBuilder.removeLastChar();
+    int columnOffset = sqlGenerator.getDeleteValues(OPERATION).size();
+    sqlGenerator.append(" select ");
+    sqlGenerator.appendAcidSelectColumns(OPERATION);
+    sqlGenerator.removeLastChar();
 
     Map<Integer, ASTNode> setColExprs = new HashMap<>(updateBlock.getSetCols().size());
     List<FieldSchema> nonPartCols = updateBlock.getTargetTable().getCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
-      sqlBuilder.append(",");
+      sqlGenerator.append(",");
       String name = nonPartCols.get(i).getName();
       ASTNode setCol = updateBlock.getSetCols().get(name);
-      sqlBuilder.append(HiveUtils.unparseIdentifier(name, this.conf));
+      sqlGenerator.append(HiveUtils.unparseIdentifier(name, this.conf));
       if (setCol != null) {
         // This is one of the columns we're setting, record it's position so we can come back
         // later and patch it up.
@@ -80,13 +80,13 @@ public class UpdateRewriter implements Rewriter<UpdateStatement> {
       }
     }
 
-    sqlBuilder.append(" from ");
-    sqlBuilder.appendTargetTableName();
+    sqlGenerator.append(" from ");
+    sqlGenerator.appendTargetTableName();
 
     // Add a sort by clause so that the row ids come out in the correct order
-    sqlBuilder.appendSortBy(sqlBuilder.getSortKeys());
+    sqlGenerator.appendSortBy(sqlGenerator.getSortKeys());
 
-    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlBuilder.toString());
+    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

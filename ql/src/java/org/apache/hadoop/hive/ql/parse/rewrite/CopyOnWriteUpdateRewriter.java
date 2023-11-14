@@ -29,9 +29,9 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetClausePatcher;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,15 +40,15 @@ import java.util.Map;
 public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
 
   private final HiveConf conf;
-  private final SqlBuilderFactory sqlBuilderFactory;
+  private final SqlGeneratorFactory sqlGeneratorFactory;
   private final COWWithClauseBuilder cowWithClauseBuilder;
   private final SetClausePatcher setClausePatcher;
 
 
-  public CopyOnWriteUpdateRewriter(HiveConf conf, SqlBuilderFactory sqlBuilderFactory,
+  public CopyOnWriteUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory,
                                    COWWithClauseBuilder cowWithClauseBuilder, SetClausePatcher setClausePatcher) {
     this.conf = conf;
-    this.sqlBuilderFactory = sqlBuilderFactory;
+    this.sqlGeneratorFactory = sqlGeneratorFactory;
     this.cowWithClauseBuilder = cowWithClauseBuilder;
     this.setClausePatcher = setClausePatcher;
   }
@@ -62,28 +62,28 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
         wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
     String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.name(), conf);
 
-    MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
+    MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    cowWithClauseBuilder.appendWith(sqlBuilder, filePathCol, whereClause);
+    cowWithClauseBuilder.appendWith(sqlGenerator, filePathCol, whereClause);
 
-    sqlBuilder.append("insert into table ");
-    sqlBuilder.appendTargetTableName();
-    sqlBuilder.appendPartitionColsOfTarget();
+    sqlGenerator.append("insert into table ");
+    sqlGenerator.appendTargetTableName();
+    sqlGenerator.appendPartitionColsOfTarget();
 
-    int columnOffset = sqlBuilder.getDeleteValues(Context.Operation.UPDATE).size();
-    sqlBuilder.append(" select ");
-    sqlBuilder.appendAcidSelectColumns(Context.Operation.UPDATE);
-    sqlBuilder.removeLastChar();
+    int columnOffset = sqlGenerator.getDeleteValues(Context.Operation.UPDATE).size();
+    sqlGenerator.append(" select ");
+    sqlGenerator.appendAcidSelectColumns(Context.Operation.UPDATE);
+    sqlGenerator.removeLastChar();
 
     Map<Integer, ASTNode> setColExprs = new HashMap<>(updateBlock.getSetCols().size());
     List<FieldSchema> nonPartCols = updateBlock.getTargetTable().getCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
-      sqlBuilder.append(',');
+      sqlGenerator.append(',');
       String name = nonPartCols.get(i).getName();
       ASTNode setCol = updateBlock.getSetCols().get(name);
       String identifier = HiveUtils.unparseIdentifier(name, this.conf);
-      sqlBuilder.append(identifier);
-      sqlBuilder.append(" AS ").append(identifier);
+      sqlGenerator.append(identifier);
+      sqlGenerator.append(" AS ").append(identifier);
       if (setCol != null) {
         // This is one of the columns we're setting, record it's position so we can come back
         // later and patch it up.
@@ -92,29 +92,29 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
       }
     }
 
-    sqlBuilder.append(" from ");
-    sqlBuilder.appendTargetTableName();
+    sqlGenerator.append(" from ");
+    sqlGenerator.appendTargetTableName();
 
     if (updateBlock.getWhereTree() != null) {
-      sqlBuilder.append("\nwhere ");
-      sqlBuilder.append(whereClause);
-      sqlBuilder.append("\nunion all");
-      sqlBuilder.append("\nselect ");
-      sqlBuilder.appendAcidSelectColumns(Context.Operation.DELETE);
-      sqlBuilder.removeLastChar();
-      sqlBuilder.append(" from ");
-      sqlBuilder.appendTargetTableName();
+      sqlGenerator.append("\nwhere ");
+      sqlGenerator.append(whereClause);
+      sqlGenerator.append("\nunion all");
+      sqlGenerator.append("\nselect ");
+      sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
+      sqlGenerator.removeLastChar();
+      sqlGenerator.append(" from ");
+      sqlGenerator.appendTargetTableName();
       // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.
-      sqlBuilder.append("\nwhere NOT (").append(whereClause).append(")");
-      sqlBuilder.append("\n").indent();
+      sqlGenerator.append("\nwhere NOT (").append(whereClause).append(")");
+      sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.
-      sqlBuilder.append("AND ").append(filePathCol);
-      sqlBuilder.append(" IN ( select ").append(filePathCol).append(" from t )");
-      sqlBuilder.append("\nunion all");
-      sqlBuilder.append("\nselect * from t");
+      sqlGenerator.append("AND ").append(filePathCol);
+      sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
+      sqlGenerator.append("\nunion all");
+      sqlGenerator.append("\nselect * from t");
     }
 
-    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlBuilder.toString());
+    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

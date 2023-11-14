@@ -28,10 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class NonNativeAcidMultiInsertSqlBuilder extends MultiInsertSqlBuilder {
+public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   private final String deletePrefix;
 
-  public NonNativeAcidMultiInsertSqlBuilder(
+  public NonNativeAcidMultiInsertSqlGenerator(
       Table table, String targetTableFullName, HiveConf conf, String subQueryAlias, String deletePrefix) {
     super(table, targetTableFullName, conf, subQueryAlias);
     this.deletePrefix = deletePrefix;

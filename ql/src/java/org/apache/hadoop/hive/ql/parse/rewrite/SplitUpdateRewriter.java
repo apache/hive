@@ -26,9 +26,9 @@ import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetClausePatcher;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,12 +40,12 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
   private static final Context.Operation OPERATION = Context.Operation.UPDATE;
 
   private final HiveConf conf;
-  protected final SqlBuilderFactory sqlBuilderFactory;
+  protected final SqlGeneratorFactory sqlGeneratorFactory;
   private final SetClausePatcher setClausePatcher;
 
-  public SplitUpdateRewriter(HiveConf conf, SqlBuilderFactory sqlBuilderFactory, SetClausePatcher setClausePatcher) {
+  public SplitUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory, SetClausePatcher setClausePatcher) {
     this.conf = conf;
-    this.sqlBuilderFactory = sqlBuilderFactory;
+    this.sqlGeneratorFactory = sqlGeneratorFactory;
     this.setClausePatcher = setClausePatcher;
   }
 
@@ -54,13 +54,13 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
       throws SemanticException {
     Map<Integer, ASTNode> setColExprs = new HashMap<>(updateBlock.getSetClauseTree().getChildCount());
 
-    MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
+    MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    sqlBuilder.append("FROM\n");
-    sqlBuilder.append("(SELECT ");
+    sqlGenerator.append("FROM\n");
+    sqlGenerator.append("(SELECT ");
 
-    sqlBuilder.appendAcidSelectColumns(OPERATION);
-    List<String> deleteValues = sqlBuilder.getDeleteValues(OPERATION);
+    sqlGenerator.appendAcidSelectColumns(OPERATION);
+    List<String> deleteValues = sqlGenerator.getDeleteValues(OPERATION);
     int columnOffset = deleteValues.size();
 
     List<String> insertValues = new ArrayList<>(updateBlock.getTargetTable().getCols().size());
@@ -71,7 +71,7 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
       if (first) {
         first = false;
       } else {
-        sqlBuilder.append(",");
+        sqlGenerator.append(",");
       }
 
       String name = nonPartCols.get(i).getName();
@@ -81,36 +81,36 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
       if (setCol != null) {
         if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
             setCol.getChildCount() == 1 && setCol.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
-          sqlBuilder.append(updateBlock.getColNameToDefaultConstraint().get(name));
+          sqlGenerator.append(updateBlock.getColNameToDefaultConstraint().get(name));
         } else {
-          sqlBuilder.append(identifier);
+          sqlGenerator.append(identifier);
           // This is one of the columns we're setting, record it's position so we can come back
           // later and patch it up. 0th is ROW_ID
           setColExprs.put(i + columnOffset, setCol);
         }
       } else {
-        sqlBuilder.append(identifier);
+        sqlGenerator.append(identifier);
       }
-      sqlBuilder.append(" AS ");
-      sqlBuilder.append(identifier);
+      sqlGenerator.append(" AS ");
+      sqlGenerator.append(identifier);
 
-      insertValues.add(sqlBuilder.qualify(identifier));
+      insertValues.add(sqlGenerator.qualify(identifier));
     }
     if (updateBlock.getTargetTable().getPartCols() != null) {
       updateBlock.getTargetTable().getPartCols().forEach(
-          fieldSchema -> insertValues.add(sqlBuilder.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
+          fieldSchema -> insertValues.add(sqlGenerator.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
     }
 
-    sqlBuilder.append(" FROM ").append(sqlBuilder.getTargetTableFullName()).append(") ");
-    sqlBuilder.appendSubQueryAlias().append("\n");
+    sqlGenerator.append(" FROM ").append(sqlGenerator.getTargetTableFullName()).append(") ");
+    sqlGenerator.appendSubQueryAlias().append("\n");
 
-    sqlBuilder.appendInsertBranch(null, insertValues);
-    sqlBuilder.appendInsertBranch(null, deleteValues);
+    sqlGenerator.appendInsertBranch(null, insertValues);
+    sqlGenerator.appendInsertBranch(null, deleteValues);
 
-    List<String> sortKeys = sqlBuilder.getSortKeys();
-    sqlBuilder.appendSortBy(sortKeys);
+    List<String> sortKeys = sqlGenerator.getSortKeys();
+    sqlGenerator.appendSortBy(sortKeys);
 
-    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlBuilder.toString());
+    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

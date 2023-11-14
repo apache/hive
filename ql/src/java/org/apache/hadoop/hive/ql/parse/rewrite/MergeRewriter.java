@@ -33,8 +33,8 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
@@ -47,33 +47,33 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
   private final Hive db;
   protected final HiveConf conf;
-  private final SqlBuilderFactory sqlBuilderFactory;
+  private final SqlGeneratorFactory sqlGeneratorFactory;
 
-  public MergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
+  public MergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     this.db = db;
     this.conf = conf;
-    this.sqlBuilderFactory = sqlBuilderFactory;
+    this.sqlGeneratorFactory = sqlGeneratorFactory;
   }
 
   @Override
   public ParseUtils.ReparseResult rewrite(Context ctx, MergeStatement mergeStatement) throws SemanticException {
 
     setOperation(ctx);
-    MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
+    MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
     handleSource(mergeStatement.hasWhenNotMatchedInsertClause(), mergeStatement.getSourceAlias(),
-        mergeStatement.getOnClauseAsText(), sqlBuilder);
+        mergeStatement.getOnClauseAsText(), sqlGenerator);
 
-    MergeStatement.MergeSqlBuilder mergeSqlBuilder = createMergeSqlBuilder(mergeStatement, sqlBuilder);
+    MergeStatement.MergeSqlGenerator mergeSqlGenerator = createMergeSqlGenerator(mergeStatement, sqlGenerator);
     for (MergeStatement.WhenClause whenClause : mergeStatement.getWhenClauses()) {
-      whenClause.toSql(mergeSqlBuilder);
+      whenClause.toSql(mergeSqlGenerator);
     }
 
     boolean validateCardinalityViolation = mergeStatement.shouldValidateCardinalityViolation(conf);
     if (validateCardinalityViolation) {
-      handleCardinalityViolation(mergeStatement.getTargetAlias(), mergeStatement.getOnClauseAsText(), sqlBuilder);
+      handleCardinalityViolation(mergeStatement.getTargetAlias(), mergeStatement.getOnClauseAsText(), sqlGenerator);
     }
 
-    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, sqlBuilder.toString());
+    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
     setOperation(rewrittenCtx);
@@ -96,43 +96,44 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     return rr;
   }
 
-  protected MergeWhenClauseSqlBuilder createMergeSqlBuilder(
-      MergeStatement mergeStatement, MultiInsertSqlBuilder sqlBuilder) {
-    return new MergeWhenClauseSqlBuilder(conf, sqlBuilder, mergeStatement);
+  protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
+      MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
+    return new MergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement);
   }
 
-  private void handleSource(
-      boolean hasWhenNotMatchedClause, String sourceAlias, String onClauseAsText, MultiInsertSqlBuilder sqlBuilder) {
-    sqlBuilder.append("FROM\n");
-    sqlBuilder.append("(SELECT ");
-    sqlBuilder.appendAcidSelectColumns(Context.Operation.MERGE);
-    sqlBuilder.appendAllColsOfTargetTable();
-    sqlBuilder.append(" FROM ").appendTargetTableName().append(") ");
-    sqlBuilder.appendSubQueryAlias();
-    sqlBuilder.append('\n');
-    sqlBuilder.indent().append(hasWhenNotMatchedClause ? "RIGHT OUTER JOIN" : "INNER JOIN").append("\n");
-    sqlBuilder.indent().append(sourceAlias);
-    sqlBuilder.append('\n');
-    sqlBuilder.indent().append("ON ").append(onClauseAsText).append('\n');
+  private void handleSource(boolean hasWhenNotMatchedClause, String sourceAlias, String onClauseAsText,
+                            MultiInsertSqlGenerator sqlGenerator) {
+    sqlGenerator.append("FROM\n");
+    sqlGenerator.append("(SELECT ");
+    sqlGenerator.appendAcidSelectColumns(Context.Operation.MERGE);
+    sqlGenerator.appendAllColsOfTargetTable();
+    sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
+    sqlGenerator.appendSubQueryAlias();
+    sqlGenerator.append('\n');
+    sqlGenerator.indent().append(hasWhenNotMatchedClause ? "RIGHT OUTER JOIN" : "INNER JOIN").append("\n");
+    sqlGenerator.indent().append(sourceAlias);
+    sqlGenerator.append('\n');
+    sqlGenerator.indent().append("ON ").append(onClauseAsText).append('\n');
   }
 
-  private void handleCardinalityViolation(String targetAlias, String onClauseAsString, MultiInsertSqlBuilder sqlBuilder)
+  private void handleCardinalityViolation(
+      String targetAlias, String onClauseAsString, MultiInsertSqlGenerator sqlGenerator)
       throws SemanticException {
     //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
     // given session, i.e. the name can be fixed across all invocations
     String tableName = "merge_tmp_table";
-    List<String> sortKeys = sqlBuilder.getSortKeys();
-    sqlBuilder.append("INSERT INTO ").append(tableName)
+    List<String> sortKeys = sqlGenerator.getSortKeys();
+    sqlGenerator.append("INSERT INTO ").append(tableName)
         .append("\n  SELECT cardinality_violation(")
         .append(StringUtils.join(sortKeys, ","));
-    sqlBuilder.appendPartColsOfTargetTableWithComma(targetAlias);
+    sqlGenerator.appendPartColsOfTargetTableWithComma(targetAlias);
 
-    sqlBuilder.append(")\n WHERE ").append(onClauseAsString)
+    sqlGenerator.append(")\n WHERE ").append(onClauseAsString)
         .append(" GROUP BY ").append(StringUtils.join(sortKeys, ","));
 
-    sqlBuilder.appendPartColsOfTargetTableWithComma(targetAlias);
+    sqlGenerator.appendPartColsOfTargetTableWithComma(targetAlias);
 
-    sqlBuilder.append(" HAVING count(*) > 1");
+    sqlGenerator.append(" HAVING count(*) > 1");
     //say table T has partition p, we are generating
     //select cardinality_violation(ROW_ID, p) WHERE ... GROUP BY ROW__ID, p
     //the Group By args are passed to cardinality_violation to add the violating value to the error msg
@@ -162,40 +163,40 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     context.setOperation(Context.Operation.MERGE);
   }
 
-  protected static class MergeWhenClauseSqlBuilder implements MergeStatement.MergeSqlBuilder {
+  protected static class MergeWhenClauseSqlGenerator implements MergeStatement.MergeSqlGenerator {
 
     private final HiveConf conf;
-    protected final MultiInsertSqlBuilder sqlBuilder;
+    protected final MultiInsertSqlGenerator sqlGenerator;
     protected final MergeStatement mergeStatement;
     protected String hintStr;
 
-    MergeWhenClauseSqlBuilder(HiveConf conf, MultiInsertSqlBuilder sqlBuilder, MergeStatement mergeStatement) {
+    MergeWhenClauseSqlGenerator(HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
       this.conf = conf;
-      this.sqlBuilder = sqlBuilder;
+      this.sqlGenerator = sqlGenerator;
       this.mergeStatement = mergeStatement;
       this.hintStr = mergeStatement.getHintStr();
     }
 
     @Override
     public void appendWhenNotMatchedInsertClause(MergeStatement.InsertClause insertClause) {
-      sqlBuilder.append("INSERT INTO ").append(mergeStatement.getTargetName());
+      sqlGenerator.append("INSERT INTO ").append(mergeStatement.getTargetName());
       if (insertClause.getColumnListText() != null) {
-        sqlBuilder.append(' ').append(insertClause.getColumnListText());
+        sqlGenerator.append(' ').append(insertClause.getColumnListText());
       }
 
-      sqlBuilder.append("    -- insert clause\n  SELECT ");
+      sqlGenerator.append("    -- insert clause\n  SELECT ");
       if (isNotBlank(hintStr)) {
-        sqlBuilder.append(hintStr);
+        sqlGenerator.append(hintStr);
         hintStr = null;
       }
 
-      sqlBuilder.append(insertClause.getValuesClause()).append("\n   WHERE ").append(insertClause.getPredicate());
+      sqlGenerator.append(insertClause.getValuesClause()).append("\n   WHERE ").append(insertClause.getPredicate());
 
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
-        sqlBuilder.append(" AND ").append(insertClause.getExtraPredicate());
+        sqlGenerator.append(" AND ").append(insertClause.getExtraPredicate());
       }
-      sqlBuilder.append('\n');
+      sqlGenerator.append('\n');
     }
 
 
@@ -205,18 +206,18 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       String targetAlias = mergeStatement.getTargetAlias();
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
-      sqlBuilder.append("    -- update clause").append("\n");
+      sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
           targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
-      valuesAndAcidSortKeys.addAll(sqlBuilder.getSortKeys());
+      valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys());
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
-      sqlBuilder.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
+      sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
       hintStr = null;
 
       addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlBuilder);
+          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
 
-      sqlBuilder.appendSortBy(sqlBuilder.getSortKeys());
+      sqlGenerator.appendSortBy(sqlGenerator.getSortKeys());
     }
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
@@ -236,38 +237,38 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     }
 
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
-                                          MultiInsertSqlBuilder sqlBuilder) {
-      sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
+                                          MultiInsertSqlGenerator sqlGenerator) {
+      sqlGenerator.indent().append("WHERE ").append(onClauseAsString);
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        sqlBuilder.append(" AND ").append(extraPredicate);
+        sqlGenerator.append(" AND ").append(extraPredicate);
       }
       if (deleteExtraPredicate != null) {
-        sqlBuilder.append(" AND NOT(").append(deleteExtraPredicate).append(")");
+        sqlGenerator.append(" AND NOT(").append(deleteExtraPredicate).append(")");
       }
     }
 
     @Override
     public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
       handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(),
-          deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlBuilder);
+          deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlGenerator);
       hintStr = null;
     }
 
     protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
-                                         String hintStr, MultiInsertSqlBuilder sqlBuilder) {
-      sqlBuilder.appendDeleteBranch(hintStr);
+                                         String hintStr, MultiInsertSqlGenerator sqlGenerator) {
+      sqlGenerator.appendDeleteBranch(hintStr);
 
-      sqlBuilder.indent().append("WHERE ").append(onClauseAsString);
+      sqlGenerator.indent().append("WHERE ").append(onClauseAsString);
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        sqlBuilder.append(" AND ").append(extraPredicate);
+        sqlGenerator.append(" AND ").append(extraPredicate);
       }
       if (updateExtraPredicate != null) {
-        sqlBuilder.append(" AND NOT(").append(updateExtraPredicate).append(")");
+        sqlGenerator.append(" AND NOT(").append(updateExtraPredicate).append(")");
       }
-      sqlBuilder.append("\n").indent();
-      sqlBuilder.appendSortKeys();
+      sqlGenerator.append("\n").indent();
+      sqlGenerator.appendSortKeys();
     }
   }
 }

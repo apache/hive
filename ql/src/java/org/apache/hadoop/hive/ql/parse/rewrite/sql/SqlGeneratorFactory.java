@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
-public class SqlBuilderFactory {
+public class SqlGeneratorFactory {
   public static final String DELETE_PREFIX = "__d__";
   public static final String SUB_QUERY_ALIAS = "s";
 
@@ -31,7 +31,7 @@ public class SqlBuilderFactory {
   private final String subQueryAlias;
   private final String deletePrefix;
 
-  public SqlBuilderFactory(
+  public SqlGeneratorFactory(
       Table targetTable, String targetTableFullName, HiveConf conf, String subQueryAlias, String deletePrefix) {
     this.targetTable = targetTable;
     this.targetTableFullName = targetTableFullName;
@@ -40,9 +40,9 @@ public class SqlBuilderFactory {
     this.deletePrefix = deletePrefix;
   }
 
-  public MultiInsertSqlBuilder createSqlBuilder() {
+  public MultiInsertSqlGenerator createSqlGenerator() {
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
-    return nonNativeAcid ? new NonNativeAcidMultiInsertSqlBuilder(targetTable, targetTableFullName, conf, subQueryAlias, deletePrefix) :
-        new NativeAcidMultiInsertSqlBuilder(targetTable, targetTableFullName, conf, subQueryAlias);
+    return nonNativeAcid ? new NonNativeAcidMultiInsertSqlGenerator(targetTable, targetTableFullName, conf, subQueryAlias, deletePrefix) :
+        new NativeAcidMultiInsertSqlGenerator(targetTable, targetTableFullName, conf, subQueryAlias);
   }
 }

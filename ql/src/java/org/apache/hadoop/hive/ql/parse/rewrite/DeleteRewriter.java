@@ -21,38 +21,38 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.WhereClausePatcher;
 
 public class DeleteRewriter implements Rewriter<DeleteStatement> {
 
-  protected final SqlBuilderFactory sqlBuilderFactory;
+  protected final SqlGeneratorFactory sqlGeneratorFactory;
   private final WhereClausePatcher whereClausePatcher;
 
-  public DeleteRewriter(SqlBuilderFactory sqlBuilderFactory, WhereClausePatcher whereClausePatcher) {
-    this.sqlBuilderFactory = sqlBuilderFactory;
+  public DeleteRewriter(SqlGeneratorFactory sqlGeneratorFactory, WhereClausePatcher whereClausePatcher) {
+    this.sqlGeneratorFactory = sqlGeneratorFactory;
     this.whereClausePatcher = whereClausePatcher;
   }
 
   @Override
   public ParseUtils.ReparseResult rewrite(Context context, DeleteStatement deleteBlock)
       throws SemanticException {
-    MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
+    MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    sqlBuilder.append("insert into table ");
-    sqlBuilder.append(sqlBuilder.getTargetTableFullName());
-    sqlBuilder.appendPartitionColsOfTarget();
+    sqlGenerator.append("insert into table ");
+    sqlGenerator.append(sqlGenerator.getTargetTableFullName());
+    sqlGenerator.appendPartitionColsOfTarget();
 
-    sqlBuilder.append(" select ");
-    sqlBuilder.appendAcidSelectColumns(Context.Operation.DELETE);
-    sqlBuilder.removeLastChar();
-    sqlBuilder.append(" from ");
-    sqlBuilder.append(sqlBuilder.getTargetTableFullName());
+    sqlGenerator.append(" select ");
+    sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
+    sqlGenerator.removeLastChar();
+    sqlGenerator.append(" from ");
+    sqlGenerator.append(sqlGenerator.getTargetTableFullName());
 
-    sqlBuilder.appendSortBy(sqlBuilder.getSortKeys());
+    sqlGenerator.appendSortBy(sqlGenerator.getSortKeys());
 
-    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlBuilder.toString());
+    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 

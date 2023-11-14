@@ -22,10 +22,10 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.WhereClausePatcher;
 
-import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory.DELETE_PREFIX;
+import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.DELETE_PREFIX;
 
 public class DeleteRewriterFactory implements RewriterFactory<DeleteStatement> {
   protected final HiveConf conf;
@@ -41,13 +41,13 @@ public class DeleteRewriterFactory implements RewriterFactory<DeleteStatement> {
       copyOnWriteMode = storageHandler.shouldOverwrite(table, Context.Operation.DELETE);
     }
 
-    SqlBuilderFactory sqlBuilderFactory = new SqlBuilderFactory(
+    SqlGeneratorFactory sqlGeneratorFactory = new SqlGeneratorFactory(
         table, targetTableFullName, conf, null, DELETE_PREFIX);
 
     if (copyOnWriteMode) {
-      return new CopyOnWriteDeleteRewriter(conf, sqlBuilderFactory, new COWWithClauseBuilder());
+      return new CopyOnWriteDeleteRewriter(conf, sqlGeneratorFactory, new COWWithClauseBuilder());
     } else {
-      return new DeleteRewriter(sqlBuilderFactory, new WhereClausePatcher());
+      return new DeleteRewriter(sqlGeneratorFactory, new WhereClausePatcher());
     }
   }
 }

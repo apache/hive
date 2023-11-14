@@ -176,7 +176,7 @@ public class MergeStatement {
       return extraPredicate;
     }
 
-    public abstract void toSql(MergeSqlBuilder sqlBuilder);
+    public abstract void toSql(MergeSqlGenerator sqlGenerator);
     public abstract List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier);
   }
 
@@ -206,8 +206,8 @@ public class MergeStatement {
     }
 
     @Override
-    public void toSql(MergeSqlBuilder sqlBuilder) {
-      sqlBuilder.appendWhenNotMatchedInsertClause(this);
+    public void toSql(MergeSqlGenerator sqlGenerator) {
+      sqlGenerator.appendWhenNotMatchedInsertClause(this);
     }
 
     @Override
@@ -235,8 +235,8 @@ public class MergeStatement {
     }
 
     @Override
-    public void toSql(MergeSqlBuilder sqlBuilder) {
-      sqlBuilder.appendWhenMatchedUpdateClause(this);
+    public void toSql(MergeSqlGenerator sqlGenerator) {
+      sqlGenerator.appendWhenMatchedUpdateClause(this);
     }
 
     @Override
@@ -258,8 +258,8 @@ public class MergeStatement {
     }
 
     @Override
-    public void toSql(MergeSqlBuilder sqlBuilder) {
-      sqlBuilder.appendWhenMatchedDeleteClause(this);
+    public void toSql(MergeSqlGenerator sqlGenerator) {
+      sqlGenerator.appendWhenMatchedDeleteClause(this);
     }
 
     @Override
@@ -268,7 +268,7 @@ public class MergeStatement {
     }
   }
 
-  public interface MergeSqlBuilder {
+  public interface MergeSqlGenerator {
     void appendWhenNotMatchedInsertClause(InsertClause insertClause);
     void appendWhenMatchedUpdateClause(UpdateClause updateClause);
     void appendWhenMatchedDeleteClause(DeleteClause deleteClause);

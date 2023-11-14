@@ -29,7 +29,7 @@ import java.util.List;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public abstract class MultiInsertSqlBuilder {
+public abstract class MultiInsertSqlGenerator {
   private static final String INDENT = "  ";
 
   protected final Table targetTable;
@@ -38,7 +38,8 @@ public abstract class MultiInsertSqlBuilder {
   protected final String subQueryAlias;
   protected final StringBuilder queryStr;
 
-  protected MultiInsertSqlBuilder(Table targetTable, String targetTableFullName, HiveConf conf, String subQueryAlias) {
+  protected MultiInsertSqlGenerator(
+      Table targetTable, String targetTableFullName, HiveConf conf, String subQueryAlias) {
     this.targetTable = targetTable;
     this.targetTableFullName = targetTableFullName;
     this.conf = conf;
@@ -126,7 +127,7 @@ public abstract class MultiInsertSqlBuilder {
     appendSortBy(getSortKeys());
   }
 
-  public MultiInsertSqlBuilder append(String sqlTextFragment) {
+  public MultiInsertSqlGenerator append(String sqlTextFragment) {
     queryStr.append(sqlTextFragment);
     return this;
   }
@@ -181,22 +182,22 @@ public abstract class MultiInsertSqlBuilder {
     }
   }
 
-  public MultiInsertSqlBuilder appendTargetTableName() {
+  public MultiInsertSqlGenerator appendTargetTableName() {
     queryStr.append(targetTableFullName);
     return this;
   }
 
-  public MultiInsertSqlBuilder append(char c) {
+  public MultiInsertSqlGenerator append(char c) {
     queryStr.append(c);
     return this;
   }
 
-  public MultiInsertSqlBuilder indent() {
+  public MultiInsertSqlGenerator indent() {
     queryStr.append(INDENT);
     return this;
   }
 
-  public MultiInsertSqlBuilder appendSubQueryAlias() {
+  public MultiInsertSqlGenerator appendSubQueryAlias() {
     queryStr.append(subQueryAlias);
     return this;
   }

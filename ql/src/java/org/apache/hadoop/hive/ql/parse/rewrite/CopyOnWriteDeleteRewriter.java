@@ -25,18 +25,18 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
 
   private final HiveConf conf;
-  protected final SqlBuilderFactory sqlBuilderFactory;
+  protected final SqlGeneratorFactory sqlGeneratorFactory;
   private final COWWithClauseBuilder cowWithClauseBuilder;
 
   public CopyOnWriteDeleteRewriter(
-      HiveConf conf, SqlBuilderFactory sqlBuilderFactory, COWWithClauseBuilder cowWithClauseBuilder) {
-    this.sqlBuilderFactory = sqlBuilderFactory;
+      HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory, COWWithClauseBuilder cowWithClauseBuilder) {
+    this.sqlGeneratorFactory = sqlGeneratorFactory;
     this.conf = conf;
     this.cowWithClauseBuilder = cowWithClauseBuilder;
   }
@@ -50,31 +50,31 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
         wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
     String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.name(), conf);
 
-    MultiInsertSqlBuilder sqlBuilder = sqlBuilderFactory.createSqlBuilder();
+    MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    cowWithClauseBuilder.appendWith(sqlBuilder, filePathCol, whereClause);
+    cowWithClauseBuilder.appendWith(sqlGenerator, filePathCol, whereClause);
 
-    sqlBuilder.append("insert into table ");
-    sqlBuilder.append(sqlBuilder.getTargetTableFullName());
-    sqlBuilder.appendPartitionColsOfTarget();
+    sqlGenerator.append("insert into table ");
+    sqlGenerator.append(sqlGenerator.getTargetTableFullName());
+    sqlGenerator.appendPartitionColsOfTarget();
 
-    sqlBuilder.append(" select ");
-    sqlBuilder.appendAcidSelectColumns(Context.Operation.DELETE);
-    sqlBuilder.removeLastChar();
+    sqlGenerator.append(" select ");
+    sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
+    sqlGenerator.removeLastChar();
 
-    sqlBuilder.append(" from ");
-    sqlBuilder.append(sqlBuilder.getTargetTableFullName());
+    sqlGenerator.append(" from ");
+    sqlGenerator.append(sqlGenerator.getTargetTableFullName());
 
     // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.
-    sqlBuilder.append("\nwhere NOT (").append(whereClause).append(")");
-    sqlBuilder.append("\n");
+    sqlGenerator.append("\nwhere NOT (").append(whereClause).append(")");
+    sqlGenerator.append("\n");
     // Add the file path filter that matches the delete condition.
-    sqlBuilder.append("AND ").append(filePathCol);
-    sqlBuilder.append(" IN ( select ").append(filePathCol).append(" from t )");
-    sqlBuilder.append("\nunion all");
-    sqlBuilder.append("\nselect * from t");
+    sqlGenerator.append("AND ").append(filePathCol);
+    sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
+    sqlGenerator.append("\nunion all");
+    sqlGenerator.append("\nselect * from t");
 
-    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlBuilder.toString());
+    ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
 
     rewrittenCtx.setOperation(Context.Operation.DELETE);
