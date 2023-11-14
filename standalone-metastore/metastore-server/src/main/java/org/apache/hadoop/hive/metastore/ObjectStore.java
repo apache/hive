@@ -2315,7 +2315,7 @@ public class ObjectStore implements RawStore, Configurable {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     } else {
-      if (tableType.equals(TableType.VIRTUAL_VIEW.toString()) || tableType.equals(TableType.MATERIALIZED_VIEW.toString())) {
+      if (!tableType.equals(TableType.MANAGED_TABLE.toString()) && !tableType.equals(TableType.EXTERNAL_TABLE.toString())) {
         viewOriginalText = mtbl.getViewOriginalText();
         viewExpandedText = mtbl.getViewExpandedText();
       }
