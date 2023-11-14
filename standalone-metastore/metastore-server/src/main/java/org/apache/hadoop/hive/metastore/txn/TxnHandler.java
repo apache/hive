@@ -224,13 +224,7 @@ import static org.springframework.transaction.TransactionDefinition.PROPAGATION_
 abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
-
-  private static DataSource connPool;
-  private static DataSource connPoolMutex;
-
   private static final String MANUAL_RETRY = "ManualRetry";
-
-  protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
   // Maximum number of open transactions that's allowed
   private static volatile int maxOpenTxns = 0;
@@ -239,22 +233,27 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Current number of open txns
   private static AtomicInteger numOpenTxns;
 
-  /**
-   * Number of consecutive deadlocks we have seen
-   */
-  protected Configuration conf;
+  private static DataSource connPool;
+  private static DataSource connPoolMutex;
+
   protected static DatabaseProduct dbProduct;
   protected static SQLGenerator sqlGenerator;
   protected static long openTxnTimeOutMillis;
 
+  /**
+   * Number of consecutive deadlocks we have seen
+   */
+  protected Configuration conf;
+
+  protected List<TransactionalMetaStoreEventListener> transactionalListeners;
   // (End user) Transaction timeout, in milliseconds.
   private long timeout;
   private long replicationTxnTimeout;
 
   private MutexAPI mutexAPI;
-  private static TxnLockHandler txnLockHandler;
-  private static SqlRetryHandler sqlRetryHandler;
-  protected static MultiDataSourceJdbcResource jdbcResource;
+  private TxnLockHandler txnLockHandler;
+  private SqlRetryHandler sqlRetryHandler;
+  protected MultiDataSourceJdbcResource jdbcResource;
 
   private static final String hostname = JavaUtils.hostname();
 
@@ -265,7 +264,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * This is logically part of c'tor and must be called prior to any other method.
    * Not physically part of c'tor due to use of reflection
    */
-  public void setConf(Configuration conf){
+  public void setConf(Configuration conf) {
     this.conf = conf;
 
     int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
@@ -291,14 +290,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       if (sqlGenerator == null) {
         sqlGenerator = new SQLGenerator(dbProduct, conf);
-      }
-      
-      if (jdbcResource == null) {
-        jdbcResource = new MultiDataSourceJdbcResource(dbProduct, conf, sqlGenerator);
-        jdbcResource.registerDataSource(POOL_TX, connPool);
-        jdbcResource.registerDataSource(POOL_MUTEX, connPoolMutex);
       }      
     }
+
+    if (jdbcResource == null) {
+      jdbcResource = new MultiDataSourceJdbcResource(dbProduct, conf, sqlGenerator);
+      jdbcResource.registerDataSource(POOL_TX, connPool);
+      jdbcResource.registerDataSource(POOL_MUTEX, connPoolMutex);
+    }
+    
     mutexAPI = new HiveMutex(sqlGenerator, jdbcResource);
 
     numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);

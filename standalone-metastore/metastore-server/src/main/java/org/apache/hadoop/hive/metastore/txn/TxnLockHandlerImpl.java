@@ -104,7 +104,7 @@ public class TxnLockHandlerImpl implements TxnLockHandler {
       LockInfo lockInfo = lockInfos.get(0);
       if (TxnUtils.isValidTxn(lockInfo.getTxnId())) {
         String msg = "Unlocking locks associated with transaction not permitted.  " + lockInfo;
-        //if a lock is associated with a txn we can only "unlock" if if it's in WAITING state
+        //if a lock is associated with a txn we can only "unlock" it if it's in WAITING state
         // which really means that the caller wants to give up waiting for the lock
         LOG.error(msg);
         throw new TxnOpenException(msg);

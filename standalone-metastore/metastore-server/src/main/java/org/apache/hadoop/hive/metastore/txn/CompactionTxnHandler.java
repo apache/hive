@@ -78,14 +78,15 @@ class CompactionTxnHandler extends TxnHandler {
     super.setConf(conf);
     synchronized (CompactionTxnHandler.class) {
       if (!initialized) {
-        int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS);
         try (DataSourceProvider.DataSourceNameConfigurator ignored =
                  new DataSourceProvider.DataSourceNameConfigurator(conf, "compactor")) {
-          jdbcResource.registerDataSource(POOL_COMPACTOR, setupJdbcConnectionPool(conf, maxPoolSize));
           initialized = true;
         }
       }
     }
+    
+    int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS);
+    jdbcResource.registerDataSource(POOL_COMPACTOR, setupJdbcConnectionPool(conf, maxPoolSize));
   }
   
   /**

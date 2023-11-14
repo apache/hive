@@ -43,7 +43,7 @@ public class InsertCompletedTxnComponentsCommand implements ParameterizedBatchCo
     return
         "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" " +
         "(\"CTC_TXNID\", \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") " +
-        "VALUES (?, ?, ?, ?, ?, %s)";
+        "VALUES (?, ?, ?, ?, ?, ?)";
   }
 
   @Override

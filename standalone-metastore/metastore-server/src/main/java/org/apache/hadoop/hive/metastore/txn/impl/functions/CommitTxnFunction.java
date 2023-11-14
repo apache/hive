@@ -227,7 +227,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
           }
         }
       } else if (!TxnHandlingFeatures.useMinHistoryLevel()) {
-        jdbcResource.getJdbcTemplate().update(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = :tnxId AND \"TC_OPERATION_TYPE\" <> :type",
+        jdbcResource.getJdbcTemplate().update(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = :txnId AND \"TC_OPERATION_TYPE\" <> :type",
             new MapSqlParameterSource()
                 .addValue("txnId", txnid)
                 .addValue("type", OperationType.COMPACT.getSqlConst()));
@@ -251,7 +251,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
       moveTxnComponentsToCompleted(jdbcResource, txnid, isUpdateDelete);
     } else if (isReplayedReplTxn) {
-      jdbcResource.execute(new InsertCompletedTxnComponentsCommand(txnid, isUpdateDelete, rqst.getWriteEventInfos()));
+      if (rqst.isSetWriteEventInfos() && !rqst.getWriteEventInfos().isEmpty()) {
+        jdbcResource.execute(new InsertCompletedTxnComponentsCommand(txnid, isUpdateDelete, rqst.getWriteEventInfos()));
+      }
       jdbcResource.execute(new DeleteReplTxnMapEntryCommand(sourceTxnId, rqst.getReplPolicy()));
     }
     updateWSCommitIdAndCleanUpMetadata(jdbcResource, txnid, txnType, commitId, tempCommitId);
