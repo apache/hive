@@ -33,6 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hive.common.AcidConstants;
 import org.apache.hadoop.hive.common.AcidMetaDataFile;
 import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
@@ -72,6 +73,7 @@ import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -587,7 +589,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return HMSHandlerContext.getTxnStore(conf);
   }
 
-  static RawStore newRawStoreForConf(Configuration conf) throws MetaException {
+  public static RawStore newRawStoreForConf(Configuration conf) throws MetaException {
     Configuration newConf = new Configuration(conf);
     String rawStoreClassName = MetastoreConf.getVar(newConf, ConfVars.RAW_STORE_IMPL);
     LOG.info("Opening raw store with implementation class: {}", rawStoreClassName);
@@ -1291,6 +1293,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                   return null;
                 }
               });
+            } catch (SnapshotException e) {
+              LOG.error(
+                  "Couldn't delete managed directory " + dbMgdPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());
             } catch (IOException | InterruptedException e) {
               LOG.error(
                   "Couldn't delete managed directory " + dbMgdPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());

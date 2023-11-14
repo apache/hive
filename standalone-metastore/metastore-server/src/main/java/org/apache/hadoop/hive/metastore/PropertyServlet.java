@@ -37,6 +37,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -65,7 +66,7 @@ public class PropertyServlet extends HttpServlet {
   /** The configuration. */
   private final Configuration configuration;
   /** The security. */
-  private final ServletSecurity security;
+  private final SecureServletCaller security;
 
   PropertyServlet(Configuration configuration) {
     String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
@@ -344,6 +345,10 @@ public class PropertyServlet extends HttpServlet {
       return null;
     }
     String cli = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    return startServer(conf, port, cli, new PropertyServlet(conf));
+  }
+
+  public static Server startServer(Configuration conf, int port, String path, Servlet servlet) throws Exception {
     // HTTP Server
     Server server = new Server();
     server.setStopAtShutdown(true);
@@ -359,14 +364,34 @@ public class PropertyServlet extends HttpServlet {
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
     ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(new PropertyServlet(conf)); //
-    handler.addServletWithMapping(holder, "/"+cli+"/*");
+    holder.setServlet(servlet); //
+    handler.addServletWithMapping(holder, "/"+path+"/*");
     server.start();
     if (!server.isStarted()) {
-      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", cli, port);
+      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", path, port);
     } else {
       LOGGER.info("started property-maps servlet server on {}", server.getURI());
     }
     return server;
   }
+
+  /*
+  public static void main(String[] args) throws Exception {
+    HttpServlet servlet = createServlet(null);
+    ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+    context.setContextPath("/");
+    ServletHolder servletHolder = new ServletHolder(servlet);
+    servletHolder.setInitParameter("javax.ws.rs.Application", "ServiceListPublic");
+    context.addServlet(servletHolder, "/*");
+    context.setVirtualHosts(null);
+    context.setGzipHandler(new GzipHandler());
+
+    Server httpServer =
+        new Server(PropertyUtil.propertyAsInt(System.getenv(), "REST_PORT", 8181));
+    httpServer.setHandler(context);
+
+    httpServer.start();
+    httpServer.join();
+  }
+  */
 }

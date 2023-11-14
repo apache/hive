@@ -60,6 +60,9 @@
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
     <module>kafka-handler</module>
+<!--
+    <module>hms-catalog</module>
+-->
   </modules>
   <properties>
     <standalone-metastore.version>4.0.0-beta-2-SNAPSHOT</standalone-metastore.version>
@@ -175,6 +178,9 @@
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
+
+    <thrift.home>/usr/local</thrift.home>
+
     <log4j2.version>2.18.0</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>

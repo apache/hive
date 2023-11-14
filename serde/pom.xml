@@ -54,6 +54,11 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-storage-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-classification</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
@@ -248,6 +253,12 @@
       <artifactId>mockito-core</artifactId>
       <version>${mockito-core.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-classification</artifactId>
+      <version>4.0.0-beta-2-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <profiles>

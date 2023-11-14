@@ -379,7 +379,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       throws Exception {
     LOG.info("Attempting to start http metastore server on port: {}", port);
     // login principal if security is enabled
-    ServletSecurity.loginServerPincipal(conf);
+    ServletSecurity.loginServerPrincipal(conf);
 
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
