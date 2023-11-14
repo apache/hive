@@ -17,6 +17,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -24,6 +25,7 @@ import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -93,12 +95,13 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
 
   private static RelDataType snapshotIdType = null;
 
-  private static RelDataType snapshotIdType(RelBuilder relBuilder) {
+  @VisibleForTesting
+  static RelDataType snapshotIdType(RelDataTypeFactory typeFactory) {
     if (snapshotIdType == null) {
       try {
-        snapshotIdType = relBuilder.getTypeFactory().createSqlType(
+        snapshotIdType = typeFactory.createSqlType(
             TypeConverter.convert(VirtualColumn.SNAPSHOT_ID.getTypeInfo(),
-                relBuilder.getTypeFactory()).getSqlTypeName());
+                typeFactory).getSqlTypeName());
       } catch (CalciteSemanticException e) {
         throw new RuntimeException(e);
       }
@@ -145,7 +148,7 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
     relBuilder.push(tableScan);
     List<RexNode> conds = new ArrayList<>();
     final RexNode literalHighWatermark = rexBuilder.makeLiteral(
-        snapshotId, snapshotIdType(relBuilder), false);
+        snapshotId, snapshotIdType(relBuilder.getTypeFactory()), false);
     conds.add(
         rexBuilder.makeCall(
             SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
