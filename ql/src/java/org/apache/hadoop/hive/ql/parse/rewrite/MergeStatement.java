@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.singletonList;
+
 public class MergeStatement {
   protected static final Logger LOG = LoggerFactory.getLogger(MergeStatement.class);
 
@@ -175,6 +177,7 @@ public class MergeStatement {
     }
 
     public abstract void toSql(MergeSqlBuilder sqlBuilder);
+    public abstract List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier);
   }
 
   public static class InsertClause extends WhenClause {
@@ -206,6 +209,11 @@ public class MergeStatement {
     public void toSql(MergeSqlBuilder sqlBuilder) {
       sqlBuilder.appendWhenNotMatchedInsertClause(this);
     }
+
+    @Override
+    public List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier) {
+      return supplier.getInsertDestClausePrefixes();
+    }
   }
 
   public static class UpdateClause extends WhenClause {
@@ -230,6 +238,11 @@ public class MergeStatement {
     public void toSql(MergeSqlBuilder sqlBuilder) {
       sqlBuilder.appendWhenMatchedUpdateClause(this);
     }
+
+    @Override
+    public List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier) {
+      return supplier.getUpdateDestClausePrefixes();
+    }
   }
 
   public static class DeleteClause extends WhenClause {
@@ -248,11 +261,31 @@ public class MergeStatement {
     public void toSql(MergeSqlBuilder sqlBuilder) {
       sqlBuilder.appendWhenMatchedDeleteClause(this);
     }
+
+    @Override
+    public List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier) {
+      return supplier.getDeleteDestClausePrefixes();
+    }
   }
 
   public interface MergeSqlBuilder {
     void appendWhenNotMatchedInsertClause(InsertClause insertClause);
     void appendWhenMatchedUpdateClause(UpdateClause updateClause);
     void appendWhenMatchedDeleteClause(DeleteClause deleteClause);
+  }
+
+  public interface DestClausePrefixSupplier {
+    default List<Context.DestClausePrefix> getInsertDestClausePrefixes()
+    {
+      return singletonList(Context.DestClausePrefix.INSERT);
+    }
+    default List<Context.DestClausePrefix> getUpdateDestClausePrefixes()
+    {
+      return singletonList(Context.DestClausePrefix.UPDATE);
+    }
+    default List<Context.DestClausePrefix> getDeleteDestClausePrefixes()
+    {
+      return singletonList(Context.DestClausePrefix.DELETE);
+    }
   }
 }

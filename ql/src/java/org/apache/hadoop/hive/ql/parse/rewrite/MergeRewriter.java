@@ -38,37 +38,21 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class MergeRewriter implements Rewriter<MergeStatement> {
+public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.DestClausePrefixSupplier {
 
   private final Hive db;
   protected final HiveConf conf;
   private final SqlBuilderFactory sqlBuilderFactory;
-  private final Map<Class, List<Context.DestClausePrefix>> destClausePrefixMapping;
 
   public MergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
     this.db = db;
     this.conf = conf;
     this.sqlBuilderFactory = sqlBuilderFactory;
-    destClausePrefixMapping = new HashMap<>(3);
-    destClausePrefixMapping.put(MergeStatement.InsertClause.class, singletonList(Context.DestClausePrefix.INSERT));
-    destClausePrefixMapping.put(MergeStatement.DeleteClause.class, singletonList(Context.DestClausePrefix.DELETE));
-    destClausePrefixMapping.put(MergeStatement.UpdateClause.class, singletonList(Context.DestClausePrefix.UPDATE));
-  }
-
-  protected MergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory,
-                          Map<Class, List<Context.DestClausePrefix>> destClausePrefixMapping) {
-    this.db = db;
-    this.conf = conf;
-    this.sqlBuilderFactory = sqlBuilderFactory;
-    this.destClausePrefixMapping = destClausePrefixMapping;
   }
 
   @Override
@@ -97,7 +81,7 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
     //set dest name mapping on new context; 1st child is TOK_FROM
     int insClauseIdx = 1;
     for (MergeStatement.WhenClause whenClause : mergeStatement.getWhenClauses()) {
-      List<Context.DestClausePrefix> prefixes = destClausePrefixMapping.get(whenClause.getClass());
+      List<Context.DestClausePrefix> prefixes = whenClause.getDestClausePrefix(this);
       for (Context.DestClausePrefix prefix : prefixes) {
         rewrittenCtx.addDestNamePrefix(insClauseIdx, prefix);
         insClauseIdx++;
@@ -176,11 +160,6 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
 
   protected void setOperation(Context context) {
     context.setOperation(Context.Operation.MERGE);
-  }
-
-  protected int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
-    rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
-    return 1;
   }
 
   protected static class MergeWhenClauseSqlBuilder implements MergeStatement.MergeSqlBuilder {

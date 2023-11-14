@@ -25,27 +25,14 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlBuilderFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 
 public class SplitMergeRewriter extends MergeRewriter {
 
-  private static final Map<Class, List<Context.DestClausePrefix>> DEST_CLAUSE_PREFIX_MAPPING;
-
-  static {
-    DEST_CLAUSE_PREFIX_MAPPING = new HashMap<>(3);
-    DEST_CLAUSE_PREFIX_MAPPING.put(MergeStatement.InsertClause.class, singletonList(Context.DestClausePrefix.INSERT));
-    DEST_CLAUSE_PREFIX_MAPPING.put(MergeStatement.DeleteClause.class, singletonList(Context.DestClausePrefix.DELETE));
-    DEST_CLAUSE_PREFIX_MAPPING.put(MergeStatement.UpdateClause.class,
-        Arrays.asList(Context.DestClausePrefix.INSERT, Context.DestClausePrefix.DELETE));
-  }
-
   public SplitMergeRewriter(Hive db, HiveConf conf, SqlBuilderFactory sqlBuilderFactory) {
-    super(db, conf, sqlBuilderFactory, DEST_CLAUSE_PREFIX_MAPPING);
+    super(db, conf, sqlBuilderFactory);
   }
 
   @Override
@@ -84,15 +71,12 @@ public class SplitMergeRewriter extends MergeRewriter {
   }
 
   @Override
-  public int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
-    rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
-    rewrittenCtx.addDeleteOfUpdateDestNamePrefix(insClauseIdx + 1, Context.DestClausePrefix.DELETE);
-    return 2;
-  }
-
-  @Override
   public void setOperation(Context context) {
     context.setOperation(Context.Operation.MERGE, true);
   }
 
+  @Override
+  public List<Context.DestClausePrefix> getUpdateDestClausePrefixes() {
+    return asList(Context.DestClausePrefix.INSERT, Context.DestClausePrefix.DELETE);
+  }
 }
