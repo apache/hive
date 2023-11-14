@@ -121,12 +121,12 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     ASTNode source = (ASTNode)tree.getChild(1);
-    String targetName = getSimpleTableName(targetNameNode);
+    String targetAlias = getSimpleTableName(targetNameNode);
     String sourceName = getSimpleTableName(source);
     ASTNode onClause = (ASTNode) tree.getChild(2);
     String onClauseAsText = getMatchedText(onClause);
     MergeStatement.MergeStatementBuilder mergeStatementBuilder = MergeStatement
-        .withTarget(targetTable, getFullTableNameForSQL(targetNameNode), targetName)
+        .withTarget(targetTable, getFullTableNameForSQL(targetNameNode), targetAlias)
         .onClauseAsText(onClauseAsText);
 
     int whenClauseBegins = 3;
@@ -161,7 +161,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       case HiveParser.TOK_INSERT:
         numInsertClauses++;
         mergeStatementBuilder.addWhenClause(
-            handleInsert(whenClause, onClause, targetTable, targetName, onClauseAsText));
+            handleInsert(whenClause, onClause, targetTable, targetAlias, onClauseAsText));
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
@@ -195,7 +195,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
 
-    String subQueryAlias = isAliased(targetNameNode) ? targetName : targetTable.getTTable().getTableName();
+    String subQueryAlias = isAliased(targetNameNode) ? targetAlias : targetTable.getTTable().getTableName();
     Rewriter<MergeStatement> rewriter = rewriterFactory.createRewriter(
         targetTable, getFullTableNameForSQL(targetNameNode), subQueryAlias);
     ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, mergeStatementBuilder.build());

@@ -86,7 +86,7 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
 
     boolean validateCardinalityViolation = mergeStatement.shouldValidateCardinalityViolation(conf);
     if (validateCardinalityViolation) {
-      handleCardinalityViolation(mergeStatement.getTargetName(), mergeStatement.getOnClauseAsText(), sqlBuilder);
+      handleCardinalityViolation(mergeStatement.getTargetAlias(), mergeStatement.getOnClauseAsText(), sqlBuilder);
     }
 
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, sqlBuilder.toString());
