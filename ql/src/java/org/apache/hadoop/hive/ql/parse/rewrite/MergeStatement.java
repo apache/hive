@@ -155,7 +155,7 @@ public class MergeStatement {
 
   /**
    * Per SQL Spec ISO/IEC 9075-2:2011(E) Section 14.2 under "General Rules" Item 6/Subitem a/Subitem 2/Subitem B,
-   * an error should be raised if > 1 row of "source" matches the same row in "target".
+   * an error should be raised if &gt; 1 row of "source" matches the same row in "target".
    * This should not affect the runtime of the query as it's running in parallel with other
    * branches of the multi-insert.  It won't actually write any data to merge_tmp_table since the
    * cardinality_violation() UDF throws an error whenever it's called killing the query
