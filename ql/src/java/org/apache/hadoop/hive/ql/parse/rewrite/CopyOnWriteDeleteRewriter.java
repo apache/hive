@@ -48,7 +48,7 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
     Tree wherePredicateNode = deleteBlock.getWhereTree().getChild(0);
     String whereClause = context.getTokenRewriteStream().toString(
         wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
-    String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.name(), conf);
+    String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.getName(), conf);
 
     MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
