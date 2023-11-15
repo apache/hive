@@ -44,7 +44,7 @@ public class SqlRetryHandler {
   private static final Logger LOG = LoggerFactory.getLogger(SqlRetryHandler.class);
 
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
-  private static final String MANUAL_RETRY = "ManualRetry";
+  static final String MANUAL_RETRY = "ManualRetry";
 
   private final StackThreadLocal<Object> threadLocal = new StackThreadLocal<>();
 

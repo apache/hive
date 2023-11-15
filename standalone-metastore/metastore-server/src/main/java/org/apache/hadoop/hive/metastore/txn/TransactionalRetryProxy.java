@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
+import org.apache.hadoop.hive.metastore.txn.jdbc.ProgrammaticRollbackException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryCallProperties;
@@ -109,7 +110,7 @@ public class TransactionalRetryProxy<T> implements InvocationHandler {
         TransactionContext context = null;
         try {
           jdbcResource.bindDataSource(transactional);
-          context = jdbcResource.getTransactionManager().getTransaction(transactional.propagation().value());
+          context = jdbcResource.getTransactionManager().getNewTransaction(transactional.propagation().value());
           Object result = toCall.execute();
           LOG.debug("Successfull method invocation within transactional context: {}, going to commit.", callerId);
           if (context.isRollbackOnly()) {
@@ -118,6 +119,11 @@ public class TransactionalRetryProxy<T> implements InvocationHandler {
             jdbcResource.getTransactionManager().commit(context);
           }
           return result;
+        } catch (ProgrammaticRollbackException e) {
+          if (context != null && !context.isCompleted()) {
+            jdbcResource.getTransactionManager().rollback(context);
+          }          
+          return e.getResult();
         } catch (Exception e) {
           if (context != null) {
             if (transactional.noRollbackFor().length > 0 || transactional.noRollbackForClassName().length > 0) {

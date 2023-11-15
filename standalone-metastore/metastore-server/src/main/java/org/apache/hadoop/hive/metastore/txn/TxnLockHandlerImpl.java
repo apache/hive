@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.txn.impl.functions.EnqueueLockFunction;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.GetLocksByLockId;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.ShowLocksHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
+import org.apache.hadoop.hive.metastore.txn.jdbc.ProgrammaticRollbackException;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,6 @@ import java.sql.Types;
 import java.util.List;
 
 import static org.apache.hadoop.hive.metastore.txn.entities.LockInfo.LOCK_WAITING;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 public class TxnLockHandlerImpl implements TxnLockHandler {
 
@@ -97,9 +97,8 @@ public class TxnLockHandlerImpl implements TxnLockHandler {
         LOG.info("No lock in {} mode found for unlock({})", LOCK_WAITING,
             JavaUtils.lockIdToString(rqst.getLockid()));
         
-        jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED).setRollbackOnly();
         //bail here to make the operation idempotent
-        return;
+        throw new ProgrammaticRollbackException(null);
       }
       LockInfo lockInfo = lockInfos.get(0);
       if (TxnUtils.isValidTxn(lockInfo.getTxnId())) {

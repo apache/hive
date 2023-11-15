@@ -48,7 +48,8 @@ public interface ParameterizedBatchCommand<T> {
   List<T> getQueryParameters();
 
   /**
-   * The SQL types of the arguments (constants from java.sql.Types). Implementations can return null when not required.
+   * Implementations must return a {@link ParameterizedPreparedStatementSetter} instance which will be 
+   * responsible for setting the parameter values for all the items in the batch 
    */
   ParameterizedPreparedStatementSetter<T> getPreparedStatementSetter();
 

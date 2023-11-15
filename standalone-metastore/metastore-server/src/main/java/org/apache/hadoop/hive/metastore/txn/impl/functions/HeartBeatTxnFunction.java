@@ -31,7 +31,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import java.sql.Types;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 /**
  * Heartbeats on the txn table. This commits, so do not enter it with any state. 
@@ -67,7 +66,7 @@ public class HeartBeatTxnFunction implements TransactionalFunction<Void> {
     }
     
     LOG.debug("Successfully heartbeated for txnId={}", txnId);
-    jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED).createSavepoint();
+    jdbcResource.getTransactionManager().getActiveTransaction().createSavepoint();
     return null;
   }
 

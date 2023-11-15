@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
  */
 @FunctionalInterface
 public interface TransactionalFunction<Result> {
-
+  
   /**
    * Implementations typically should execute transsactional database calls inside.
    * @param jdbcResource A {@link MultiDataSourceJdbcResource} instance responsible for providing all the necessary resources 

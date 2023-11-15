@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.txn.impl.queries.GetHighWaterMarkHandler
 import org.apache.hadoop.hive.metastore.txn.impl.queries.GetOpenTxnTypeAndLockHandler;
 import org.apache.hadoop.hive.metastore.txn.impl.queries.TargetTxnIdListHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
+import org.apache.hadoop.hive.metastore.txn.jdbc.ProgrammaticRollbackException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -73,7 +74,6 @@ import java.util.stream.IntStream;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 public class CommitTxnFunction implements TransactionalFunction<TxnType> {
 
@@ -96,7 +96,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     // Get the current TXN
-    TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
+    TransactionContext context = jdbcResource.getTransactionManager().getActiveTransaction();
     Long commitId = null;
 
     if (rqst.isSetReplLastIdInfo()) {
@@ -112,8 +112,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         // corresponding open txn event.
         LOG.info("Target txn id is missing for source txn id : {} and repl policy {}", sourceTxnId,
             rqst.getReplPolicy());
-        jdbcResource.getTransactionManager().rollback(context);
-        return null;
+        throw new ProgrammaticRollbackException(null);
       }
       assert targetTxnIds.size() == 1;
       txnid = targetTxnIds.get(0);
@@ -179,7 +178,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         Object undoWriteSetForCurrentTxn = context.createSavepoint();
         jdbcResource.getJdbcTemplate().update(
             writeSetInsertSql + (TxnHandlingFeatures.useMinHistoryLevel() ? conflictSQLSuffix :
-            "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"= :txnid AND \"TC_OPERATION_TYPE\" <> :type"),
+            "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"= :txnId AND \"TC_OPERATION_TYPE\" <> :type"),
             new MapSqlParameterSource()
                 .addValue("txnId", txnid)
                 .addValue("type", OperationType.COMPACT.getSqlConst()));
@@ -222,7 +221,6 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
                 isReplayedReplTxn, TxnErrorMsg.ABORT_WRITE_CONFLICT).execute(jdbcResource) != 1) {
               throw new IllegalStateException(msg + " FAILED!");
             }
-            jdbcResource.getTransactionManager().commit(context);
             throw new TxnAbortedException(msg);
           }
         }
@@ -268,7 +266,6 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     }
 
     LOG.debug("Going to commit");
-    jdbcResource.getTransactionManager().commit(context);
 
     if (MetastoreConf.getBoolVar(jdbcResource.getConf(), MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
       Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();

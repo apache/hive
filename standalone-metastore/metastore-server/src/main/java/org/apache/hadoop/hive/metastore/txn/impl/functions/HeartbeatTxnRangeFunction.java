@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 public class HeartbeatTxnRangeFunction implements TransactionalFunction<HeartbeatTxnRangeResponse> {
 
@@ -70,7 +69,7 @@ public class HeartbeatTxnRangeFunction implements TransactionalFunction<Heartbea
     for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
       txnIds.add(txn);
     }
-    TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
+    TransactionContext context = jdbcResource.getTransactionManager().getActiveTransaction();
     Object savePoint = context.createSavepoint();
     TxnUtils.buildQueryWithINClause(jdbcResource.getConf(), queries,
         new StringBuilder("UPDATE \"TXNS\" SET \"TXN_LAST_HEARTBEAT\" = " + getEpochFn(jdbcResource.getDatabaseProduct()) +

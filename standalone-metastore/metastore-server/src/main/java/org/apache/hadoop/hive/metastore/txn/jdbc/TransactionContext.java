@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
+import org.springframework.lang.NonNull;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
@@ -47,18 +48,19 @@ public class TransactionContext implements TransactionStatus, AutoCloseable {
     transactionStatus.flush();
   }
 
+  @NonNull
   @Override
   public Object createSavepoint() throws TransactionException {
     return transactionStatus.createSavepoint();
   }
 
   @Override
-  public void rollbackToSavepoint(Object savepoint) throws TransactionException {
+  public void rollbackToSavepoint(@NonNull Object savepoint) throws TransactionException {
     transactionStatus.rollbackToSavepoint(savepoint);
   }
 
   @Override
-  public void releaseSavepoint(Object savepoint) throws TransactionException {
+  public void releaseSavepoint(@NonNull Object savepoint) throws TransactionException {
     transactionStatus.releaseSavepoint(savepoint);
   }
 

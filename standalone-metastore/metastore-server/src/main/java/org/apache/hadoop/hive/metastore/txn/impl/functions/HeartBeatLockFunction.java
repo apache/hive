@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 /**
  * Heartbeats on the lock table.  This commits, so do not enter it with any state.
@@ -55,7 +54,7 @@ public class HeartBeatLockFunction implements TransactionalFunction<Void> {
     if (rc < 1) {
       throw new NoSuchLockException("No such lock: " + JavaUtils.lockIdToString(extLockId));
     }
-    jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED).createSavepoint();    
+    jdbcResource.getTransactionManager().getActiveTransaction().createSavepoint();    
     return null;
   }
   

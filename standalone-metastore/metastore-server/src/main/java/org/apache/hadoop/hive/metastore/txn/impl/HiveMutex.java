@@ -69,7 +69,7 @@ public class HiveMutex implements TxnStore.MutexAPI {
     TransactionContext context = null;
     try {
       jdbcResource.bindDataSource(POOL_MUTEX);
-      context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
+      context = jdbcResource.getTransactionManager().getNewTransaction(PROPAGATION_REQUIRED);
       
       MapSqlParameterSource paramSource = new MapSqlParameterSource().addValue("key", key);
       String sqlStmt = sqlGenerator.addForUpdateClause("SELECT \"MT_COMMENT\", \"MT_KEY2\" FROM \"AUX_TABLE\" WHERE \"MT_KEY1\" = :key");

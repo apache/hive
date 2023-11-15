@@ -35,8 +35,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
-
 public class EnqueueLockFunction implements TransactionalFunction<Long> {
 
   private static final Logger LOG = LoggerFactory.getLogger(EnqueueLockFunction.class);  
@@ -86,7 +84,7 @@ public class EnqueueLockFunction implements TransactionalFunction<Long> {
     long extLockId = getNextLockIdForUpdate(jdbcResource);
     incrementLockIdAndUpdateHiveLocks(jdbcResource.getJdbcTemplate().getJdbcTemplate(), extLockId, tempExtLockId);
 
-    jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED).createSavepoint();
+    jdbcResource.getTransactionManager().getActiveTransaction().createSavepoint();
 
     return extLockId;
   }

@@ -161,10 +161,6 @@ public class MultiDataSourceJdbcResource {
     return databaseProduct;
   }
 
-  private String getDataSourceName() {
-    return threadLocal.get();
-  }
-
   /**
    * Executes a {@link NamedParameterJdbcTemplate#update(String, org.springframework.jdbc.core.namedparam.SqlParameterSource)}
    * calls using the query string and parameters obtained from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} and
@@ -316,7 +312,11 @@ public class MultiDataSourceJdbcResource {
       return getJdbcTemplate().query(queryStr, queryHandler);
     }
   }
-  
+
+  private String getDataSourceName() {
+    return threadLocal.get();
+  }
+
   private boolean shouldExecute(Object command) {
     return !(command instanceof ConditionalCommand) || ((ConditionalCommand)command).shouldUse(databaseProduct);
   }

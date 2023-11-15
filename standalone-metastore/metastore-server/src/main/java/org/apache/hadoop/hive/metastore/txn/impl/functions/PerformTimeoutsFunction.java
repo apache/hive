@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
 
@@ -105,7 +104,7 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
           return null;
         }
 
-        TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
+        TransactionContext context = jdbcResource.getTransactionManager().getActiveTransaction();
         Object savePoint = context.createSavepoint();
 
         int numTxnsAborted = 0;

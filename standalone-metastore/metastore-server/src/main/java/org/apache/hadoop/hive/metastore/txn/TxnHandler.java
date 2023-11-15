@@ -132,8 +132,8 @@ import org.apache.hadoop.hive.metastore.txn.impl.queries.TxnIdForWriteIdHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.NoPoolConnectionPool;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
-import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryCallProperties;
+import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryException;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -164,7 +164,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
@@ -224,7 +223,6 @@ import static org.springframework.transaction.TransactionDefinition.PROPAGATION_
 abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
-  private static final String MANUAL_RETRY = "ManualRetry";
 
   // Maximum number of open transactions that's allowed
   private static volatile int maxOpenTxns = 0;
@@ -457,7 +455,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      * Longer term we can consider running Active-Passive MS (at least wrt to ACID operations).  This
      * set could support a write-through cache for added performance.
      */
-    TransactionContext context = jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED);
     /*
      * The openTxn and commitTxn must be mutexed, when committing a not read only transaction.
      * This is achieved by requesting a shared table lock here, and an exclusive one at commit.
@@ -475,7 +472,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     List<Long> txnIds = new OpenTxnsFunction(rqst, openTxnTimeOutMillis, transactionalListeners).execute(jdbcResource);
 
     LOG.debug("Going to commit");
-    context.createSavepoint();
+    jdbcResource.getTransactionManager().getActiveTransaction().createSavepoint();
     generateTransactionWatch.stop();
     long elapsedMillis = generateTransactionWatch.getTime(TimeUnit.MILLISECONDS);
     TxnType txnType = rqst.isSetTxn_type() ? rqst.getTxn_type() : TxnType.DEFAULT;
@@ -505,11 +502,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       }
 
-      jdbcResource.getTransactionManager().commit(context);
       /*
        * We cannot throw SQLException directly, as it is not in the throws clause
        */
-      throw new UncategorizedSQLException(null, null, new SQLException("OpenTxnTimeOut exceeded", MANUAL_RETRY));
+      throw new SqlRetryException("OpenTxnTimeOut exceeded");
     }
 
     return new OpenTxnsResponse(txnIds);
@@ -1005,9 +1001,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @VisibleForTesting
   public int numLocksInLockTable() {
-    int count = jdbcResource.getJdbcTemplate().queryForObject("SELECT COUNT(*) FROM \"HIVE_LOCKS\"", new MapSqlParameterSource(), Integer.TYPE);
-    jdbcResource.getTransactionManager().getTransaction(PROPAGATION_REQUIRED).setRollbackOnly();
-    return count;
+    return jdbcResource.getJdbcTemplate().queryForObject("SELECT COUNT(*) FROM \"HIVE_LOCKS\"", new MapSqlParameterSource(), Integer.TYPE);
   }
 
   /**
