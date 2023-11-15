@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.DeleteStatement;
-import org.apache.hadoop.hive.ql.parse.rewrite.Rewriter;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
@@ -119,19 +118,10 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, rewrittenTree);
     sem.analyze(rewrittenTree, context);
 
-    Map<String, TableScanOperator> topOps = sem.getParseContext().getTopOps();
-    if (!topOps.containsKey(table.getTableName())) {
+    SearchArgument sarg = convertFilterExpressionInTS(table, sem);
+    if (sarg == null) {
       return false;
     }
-    ExprNodeGenericFuncDesc hiveFilter = topOps.get(table.getTableName()).getConf().getFilterExpr();
-    if (hiveFilter == null) {
-      return false;
-    }
-    ConvertAstToSearchArg.Result result = ConvertAstToSearchArg.createSearchArgument(ctx.getConf(), hiveFilter);
-    if (result.isPartial()) {
-      return false;
-    }
-    SearchArgument sarg = result.getSearchArgument();
     if (!table.getStorageHandler().canPerformMetadataDelete(table, tableName.getTableMetaRef(), sarg)) {
       return false;
     }
@@ -142,6 +132,22 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
     outputs = sem.getOutputs();
     updateOutputs(table);
     return true;
+  }
+
+  private SearchArgument convertFilterExpressionInTS(Table table, BaseSemanticAnalyzer sem) {
+    Map<String, TableScanOperator> topOps = sem.getParseContext().getTopOps();
+    if (!topOps.containsKey(table.getTableName())) {
+      return null;
+    }
+    ExprNodeGenericFuncDesc hiveFilter = topOps.get(table.getTableName()).getConf().getFilterExpr();
+    if (hiveFilter == null) {
+      return null;
+    }
+    ConvertAstToSearchArg.Result result = ConvertAstToSearchArg.createSearchArgument(ctx.getConf(), hiveFilter);
+    if (result.isPartial()) {
+      return null;
+    }
+    return result.getSearchArgument();
   }
 
   private DDLWork createDDLWorkOfMetadataUpdate(TableName tableName, SearchArgument sarg) throws SemanticException {

@@ -21,7 +21,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.rewrite.Rewriter;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 import org.apache.hadoop.hive.ql.parse.rewrite.UpdateStatement;
 

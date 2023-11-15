@@ -20,14 +20,12 @@ package org.apache.hadoop.hive.ql.parse;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.MergeStatement;
-import org.apache.hadoop.hive.ql.parse.rewrite.Rewriter;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 
 
