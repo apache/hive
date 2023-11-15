@@ -531,7 +531,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
    * QuotedIdentifier (HIVE-6013).  So here we just quote all identifiers.
    * (') around String literals are retained w/o issues
    */
-  private static class IdentifierQuoter {
+  private static final class IdentifierQuoter {
     private final TokenRewriteStream trs;
     private final IdentityHashMap<ASTNode, ASTNode> visitedNodes = new IdentityHashMap<>();
 
