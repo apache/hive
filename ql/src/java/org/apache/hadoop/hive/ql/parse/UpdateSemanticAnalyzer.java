@@ -30,14 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class UpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
-
-  private final RewriterFactory<UpdateStatement> rewriterFactory;
+public class UpdateSemanticAnalyzer extends RewriteSemanticAnalyzer<UpdateStatement> {
 
   public UpdateSemanticAnalyzer(QueryState queryState, RewriterFactory<UpdateStatement> rewriterFactory)
       throws SemanticException {
-    super(queryState);
-    this.rewriterFactory = rewriterFactory;
+    super(queryState, rewriterFactory);
   }
 
   @Override
@@ -70,24 +67,11 @@ public class UpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     // Must be deterministic order set for consistent q-test output across Java versions (HIVE-9239)
     Set<String> setRCols = new LinkedHashSet<>();
     Map<String, ASTNode> setCols = collectSetColumnsAndExpressions(setClause, setRCols, table);
-
     Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(table);
 
-    UpdateStatement updateBlock = new UpdateStatement(
-        table, where, setClause, setCols, colNameToDefaultConstraint);
-
-    Rewriter<UpdateStatement> rewriter =
-        rewriterFactory.createRewriter(table, getFullTableNameForSQL(tableName), null);
-
-    ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, updateBlock);
-
-    Context rewrittenCtx = rr.rewrittenCtx;
-    ASTNode rewrittenTree = rr.rewrittenTree;
-
-    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
+    rewriteAndAnalyze(new UpdateStatement(table, where, setClause, setCols, colNameToDefaultConstraint), null);
 
     updateOutputs(table);
-
     setUpAccessControlInfoForUpdate(table, setCols);
 
     // Add the setRCols to the input list

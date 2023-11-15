@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.rewrite.Rewriter;
+import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,13 +50,18 @@ import java.util.Set;
  * statements (since they are actually inserts) and then doing some patch up to make them work as
  * updates and deletes instead.
  */
-public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
+public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
   protected static final Logger LOG = LoggerFactory.getLogger(RewriteSemanticAnalyzer.class);
 
+  private final RewriterFactory<T> rewriterFactory;
   protected boolean useSuper = false;
+  private ASTNode tableName;
+  private Table targetTable;
 
-  RewriteSemanticAnalyzer(QueryState queryState) throws SemanticException {
+
+  RewriteSemanticAnalyzer(QueryState queryState, RewriterFactory<T> rewriterFactory) throws SemanticException {
     super(queryState);
+    this.rewriterFactory = rewriterFactory;
   }
 
   @Override
@@ -70,8 +77,8 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   protected abstract ASTNode getTargetTableNode(ASTNode tree);
 
   private void analyze(ASTNode tree) throws SemanticException {
-    ASTNode tableName = getTargetTableNode(tree);
-    Table targetTable = getTable(tableName, db, true);
+    tableName = getTargetTableNode(tree);
+    targetTable = getTable(tableName, db, true);
     validateTxnManager(targetTable);
     validateTargetTable(targetTable);
     analyze(tree, targetTable, tableName);
@@ -79,7 +86,19 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
   protected abstract void analyze(ASTNode tree, Table table, ASTNode tableName) throws SemanticException;
 
-  public void analyzeRewrittenTree(ASTNode rewrittenTree, Context rewrittenCtx) throws SemanticException {
+  protected void rewriteAndAnalyze(T statementData, String subQueryAlias) throws SemanticException {
+    Rewriter<T> rewriter =
+        rewriterFactory.createRewriter(targetTable, getFullTableNameForSQL(tableName), subQueryAlias);
+
+    ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, statementData);
+
+    Context rewrittenCtx = rr.rewrittenCtx;
+    ASTNode rewrittenTree = rr.rewrittenTree;
+
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
+  }
+
+  protected void analyzeRewrittenTree(ASTNode rewrittenTree, Context rewrittenCtx) throws SemanticException {
     try {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Rewritten AST {}", rewrittenTree.dump());

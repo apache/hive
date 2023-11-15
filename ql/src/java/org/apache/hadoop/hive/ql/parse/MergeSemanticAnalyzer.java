@@ -44,9 +44,7 @@ import java.util.Set;
  * merge statements. It works by rewriting the updates and deletes into insert statements (since
  * they are actually inserts) and then doing some patch up to make them work as merges instead.
  */
-public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
-
-  private final RewriterFactory<MergeStatement> rewriterFactory;
+public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatement> {
 
   private int numWhenMatchedUpdateClauses;
   private int numWhenMatchedDeleteClauses;
@@ -54,8 +52,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
   MergeSemanticAnalyzer(QueryState queryState, RewriterFactory<MergeStatement> rewriterFactory)
       throws SemanticException {
-    super(queryState);
-    this.rewriterFactory = rewriterFactory;
+    super(queryState, rewriterFactory);
   }
 
   @Override
@@ -196,13 +193,9 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     String subQueryAlias = isAliased(targetNameNode) ? targetAlias : targetTable.getTTable().getTableName();
-    Rewriter<MergeStatement> rewriter = rewriterFactory.createRewriter(
-        targetTable, getFullTableNameForSQL(targetNameNode), subQueryAlias);
-    ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, mergeStatementBuilder.build());
-    Context rewrittenCtx = rr.rewrittenCtx;
-    ASTNode rewrittenTree = rr.rewrittenTree;
 
-    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
+    rewriteAndAnalyze(mergeStatementBuilder.build(), subQueryAlias);
+
     updateOutputs(targetTable);
   }
 

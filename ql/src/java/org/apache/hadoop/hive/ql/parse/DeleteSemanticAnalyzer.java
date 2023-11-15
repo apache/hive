@@ -38,14 +38,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
-
-  private final RewriterFactory<DeleteStatement> rewriterFactory;
+public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatement> {
 
   public DeleteSemanticAnalyzer(QueryState queryState, RewriterFactory<DeleteStatement> rewriterFactory)
       throws SemanticException {
-    super(queryState);
-    this.rewriterFactory = rewriterFactory;
+    super(queryState, rewriterFactory);
   }
 
   @Override
@@ -77,14 +74,7 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       return;
     }
 
-    Rewriter<DeleteStatement> rewriter =
-        rewriterFactory.createRewriter(table, getFullTableNameForSQL(tableName), null);
-    ParseUtils.ReparseResult rr = rewriter.rewrite(ctx, new DeleteStatement(table, where));
-
-    Context rewrittenCtx = rr.rewrittenCtx;
-    ASTNode rewrittenTree = rr.rewrittenTree;
-
-    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
+    rewriteAndAnalyze(new DeleteStatement(table, where), null);
 
     updateOutputs(table);
   }
