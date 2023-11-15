@@ -18,6 +18,7 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField OWNER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerName", org.apache.thrift.protocol.TType.STRING, (short)6);
   private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField CATALOG_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catalogName", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DatabaseStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DatabaseTupleSchemeFactory();
@@ -29,6 +30,7 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   private @org.apache.thrift.annotation.Nullable PrincipalPrivilegeSet privileges; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String ownerName; // optional
   private @org.apache.thrift.annotation.Nullable PrincipalType ownerType; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catalogName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -42,7 +44,8 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
      * 
      * @see PrincipalType
      */
-    OWNER_TYPE((short)7, "ownerType");
+    OWNER_TYPE((short)7, "ownerType"),
+    CATALOG_NAME((short)8, "catalogName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -72,6 +75,8 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
           return OWNER_NAME;
         case 7: // OWNER_TYPE
           return OWNER_TYPE;
+        case 8: // CATALOG_NAME
+          return CATALOG_NAME;
         default:
           return null;
       }
@@ -113,7 +118,7 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -133,6 +138,8 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.OWNER_TYPE, new org.apache.thrift.meta_data.FieldMetaData("ownerType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
+    tmpMap.put(_Fields.CATALOG_NAME, new org.apache.thrift.meta_data.FieldMetaData("catalogName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Database.class, metaDataMap);
   }
@@ -179,6 +186,9 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     if (other.isSetOwnerType()) {
       this.ownerType = other.ownerType;
     }
+    if (other.isSetCatalogName()) {
+      this.catalogName = other.catalogName;
+    }
   }
 
   public Database deepCopy() {
@@ -194,6 +204,7 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     this.privileges = null;
     this.ownerName = null;
     this.ownerType = null;
+    this.catalogName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -383,6 +394,30 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatalogName() {
+    return this.catalogName;
+  }
+
+  public void setCatalogName(@org.apache.thrift.annotation.Nullable java.lang.String catalogName) {
+    this.catalogName = catalogName;
+  }
+
+  public void unsetCatalogName() {
+    this.catalogName = null;
+  }
+
+  /** Returns true if field catalogName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatalogName() {
+    return this.catalogName != null;
+  }
+
+  public void setCatalogNameIsSet(boolean value) {
+    if (!value) {
+      this.catalogName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case NAME:
@@ -441,6 +476,14 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       }
       break;
 
+    case CATALOG_NAME:
+      if (value == null) {
+        unsetCatalogName();
+      } else {
+        setCatalogName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -468,6 +511,9 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     case OWNER_TYPE:
       return getOwnerType();
 
+    case CATALOG_NAME:
+      return getCatalogName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -493,6 +539,8 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       return isSetOwnerName();
     case OWNER_TYPE:
       return isSetOwnerType();
+    case CATALOG_NAME:
+      return isSetCatalogName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -573,6 +621,15 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         return false;
     }
 
+    boolean this_present_catalogName = true && this.isSetCatalogName();
+    boolean that_present_catalogName = true && that.isSetCatalogName();
+    if (this_present_catalogName || that_present_catalogName) {
+      if (!(this_present_catalogName && that_present_catalogName))
+        return false;
+      if (!this.catalogName.equals(that.catalogName))
+        return false;
+    }
+
     return true;
   }
 
@@ -607,6 +664,10 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     hashCode = hashCode * 8191 + ((isSetOwnerType()) ? 131071 : 524287);
     if (isSetOwnerType())
       hashCode = hashCode * 8191 + ownerType.getValue();
+
+    hashCode = hashCode * 8191 + ((isSetCatalogName()) ? 131071 : 524287);
+    if (isSetCatalogName())
+      hashCode = hashCode * 8191 + catalogName.hashCode();
 
     return hashCode;
   }
@@ -685,6 +746,16 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
     }
     if (isSetOwnerType()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ownerType, other.ownerType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCatalogName(), other.isSetCatalogName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatalogName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catalogName, other.catalogName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -768,6 +839,16 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
         sb.append("null");
       } else {
         sb.append(this.ownerType);
+      }
+      first = false;
+    }
+    if (isSetCatalogName()) {
+      if (!first) sb.append(", ");
+      sb.append("catalogName:");
+      if (this.catalogName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catalogName);
       }
       first = false;
     }
@@ -886,6 +967,14 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // CATALOG_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catalogName = iprot.readString();
+              struct.setCatalogNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -948,6 +1037,13 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
           oprot.writeFieldEnd();
         }
       }
+      if (struct.catalogName != null) {
+        if (struct.isSetCatalogName()) {
+          oprot.writeFieldBegin(CATALOG_NAME_FIELD_DESC);
+          oprot.writeString(struct.catalogName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -987,7 +1083,10 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (struct.isSetOwnerType()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetCatalogName()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -1016,12 +1115,15 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (struct.isSetOwnerType()) {
         oprot.writeI32(struct.ownerType.getValue());
       }
+      if (struct.isSetCatalogName()) {
+        oprot.writeString(struct.catalogName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Database struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(7);
+      java.util.BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -1061,6 +1163,10 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
       if (incoming.get(6)) {
         struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
         struct.setOwnerTypeIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.catalogName = iprot.readString();
+        struct.setCatalogNameIsSet(true);
       }
     }
   }

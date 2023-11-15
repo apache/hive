@@ -16,6 +16,7 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
   private static final org.apache.thrift.protocol.TField EXPR_FIELD_DESC = new org.apache.thrift.protocol.TField("expr", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField DEFAULT_PARTITION_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("defaultPartitionName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField MAX_PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("maxParts", org.apache.thrift.protocol.TType.I16, (short)5);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new PartitionsByExprRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new PartitionsByExprRequestTupleSchemeFactory();
@@ -25,6 +26,7 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
   private @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer expr; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String defaultPartitionName; // optional
   private short maxParts; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +34,8 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
     TBL_NAME((short)2, "tblName"),
     EXPR((short)3, "expr"),
     DEFAULT_PARTITION_NAME((short)4, "defaultPartitionName"),
-    MAX_PARTS((short)5, "maxParts");
+    MAX_PARTS((short)5, "maxParts"),
+    CAT_NAME((short)6, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +61,8 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
           return DEFAULT_PARTITION_NAME;
         case 5: // MAX_PARTS
           return MAX_PARTS;
+        case 6: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -101,7 +106,7 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
   // isset id assignments
   private static final int __MAXPARTS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DEFAULT_PARTITION_NAME,_Fields.MAX_PARTS};
+  private static final _Fields optionals[] = {_Fields.DEFAULT_PARTITION_NAME,_Fields.MAX_PARTS,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -115,6 +120,8 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("maxParts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionsByExprRequest.class, metaDataMap);
   }
@@ -153,6 +160,9 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
       this.defaultPartitionName = other.defaultPartitionName;
     }
     this.maxParts = other.maxParts;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public PartitionsByExprRequest deepCopy() {
@@ -167,6 +177,7 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
     this.defaultPartitionName = null;
     this.maxParts = (short)-1;
 
+    this.catName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -295,6 +306,30 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MAXPARTS_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -341,6 +376,14 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -361,6 +404,9 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
 
     case MAX_PARTS:
       return getMaxParts();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new java.lang.IllegalStateException();
@@ -383,6 +429,8 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
       return isSetDefaultPartitionName();
     case MAX_PARTS:
       return isSetMaxParts();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -445,6 +493,15 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -471,6 +528,10 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
     hashCode = hashCode * 8191 + ((isSetMaxParts()) ? 131071 : 524287);
     if (isSetMaxParts())
       hashCode = hashCode * 8191 + maxParts;
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -533,6 +594,16 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -591,6 +662,16 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
       if (!first) sb.append(", ");
       sb.append("maxParts:");
       sb.append(this.maxParts);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -690,6 +771,14 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -730,6 +819,13 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
         oprot.writeI16(struct.maxParts);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -757,12 +853,18 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
       if (struct.isSetMaxParts()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetCatName()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetDefaultPartitionName()) {
         oprot.writeString(struct.defaultPartitionName);
       }
       if (struct.isSetMaxParts()) {
         oprot.writeI16(struct.maxParts);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
@@ -775,7 +877,7 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
       struct.setTblNameIsSet(true);
       struct.expr = iprot.readBinary();
       struct.setExprIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.defaultPartitionName = iprot.readString();
         struct.setDefaultPartitionNameIsSet(true);
@@ -783,6 +885,10 @@ public class PartitionsByExprRequest implements org.apache.thrift.TBase<Partitio
       if (incoming.get(1)) {
         struct.maxParts = iprot.readI16();
         struct.setMaxPartsIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

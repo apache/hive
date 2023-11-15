@@ -26,6 +26,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
   private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
   private static final org.apache.thrift.protocol.TField REWRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("rewriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)15);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)16);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TableStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TableTupleSchemeFactory();
@@ -45,6 +46,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private @org.apache.thrift.annotation.Nullable PrincipalPrivilegeSet privileges; // optional
   private boolean temporary; // optional
   private boolean rewriteEnabled; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     TABLE_TYPE((short)12, "tableType"),
     PRIVILEGES((short)13, "privileges"),
     TEMPORARY((short)14, "temporary"),
-    REWRITE_ENABLED((short)15, "rewriteEnabled");
+    REWRITE_ENABLED((short)15, "rewriteEnabled"),
+    CAT_NAME((short)16, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -108,6 +111,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           return TEMPORARY;
         case 15: // REWRITE_ENABLED
           return REWRITE_ENABLED;
+        case 16: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -155,7 +160,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final int __TEMPORARY_ISSET_ID = 3;
   private static final int __REWRITEENABLED_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -192,6 +197,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.REWRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("rewriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -278,6 +285,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     }
     this.temporary = other.temporary;
     this.rewriteEnabled = other.rewriteEnabled;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public Table deepCopy() {
@@ -306,6 +316,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
 
     setRewriteEnabledIsSet(false);
     this.rewriteEnabled = false;
+    this.catName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -685,6 +696,30 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -807,6 +842,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -858,6 +901,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     case REWRITE_ENABLED:
       return isRewriteEnabled();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -899,6 +945,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       return isSetTemporary();
     case REWRITE_ENABLED:
       return isSetRewriteEnabled();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1051,6 +1099,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -1111,6 +1168,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     hashCode = hashCode * 8191 + ((isSetRewriteEnabled()) ? 131071 : 524287);
     if (isSetRewriteEnabled())
       hashCode = hashCode * 8191 + ((rewriteEnabled) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -1273,6 +1334,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1397,6 +1468,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (!first) sb.append(", ");
       sb.append("rewriteEnabled:");
       sb.append(this.rewriteEnabled);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -1595,6 +1676,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 16: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1694,6 +1783,13 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         oprot.writeBool(struct.rewriteEnabled);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1757,7 +1853,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetRewriteEnabled()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetCatName()) {
+        optionals.set(15);
+      }
+      oprot.writeBitSet(optionals, 16);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -1816,12 +1915,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetRewriteEnabled()) {
         oprot.writeBool(struct.rewriteEnabled);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(15);
+      java.util.BitSet incoming = iprot.readBitSet(16);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -1904,6 +2006,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (incoming.get(14)) {
         struct.rewriteEnabled = iprot.readBool();
         struct.setRewriteEnabledIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

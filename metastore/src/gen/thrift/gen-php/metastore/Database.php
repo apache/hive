@@ -66,6 +66,11 @@ class Database
             'type' => TType::I32,
             'class' => '\metastore\PrincipalType',
         ),
+        8 => array(
+            'var' => 'catalogName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -96,6 +101,10 @@ class Database
      * @var int
      */
     public $ownerType = null;
+    /**
+     * @var string
+     */
+    public $catalogName = null;
 
     public function __construct($vals = null)
     {
@@ -120,6 +129,9 @@ class Database
             }
             if (isset($vals['ownerType'])) {
                 $this->ownerType = $vals['ownerType'];
+            }
+            if (isset($vals['catalogName'])) {
+                $this->catalogName = $vals['catalogName'];
             }
         }
     }
@@ -205,6 +217,13 @@ class Database
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 8:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catalogName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -263,6 +282,11 @@ class Database
         if ($this->ownerType !== null) {
             $xfer += $output->writeFieldBegin('ownerType', TType::I32, 7);
             $xfer += $output->writeI32($this->ownerType);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catalogName !== null) {
+            $xfer += $output->writeFieldBegin('catalogName', TType::STRING, 8);
+            $xfer += $output->writeString($this->catalogName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

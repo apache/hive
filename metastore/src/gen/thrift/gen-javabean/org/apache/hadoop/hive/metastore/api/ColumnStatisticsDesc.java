@@ -16,6 +16,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
   private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField PART_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField LAST_ANALYZED_FIELD_DESC = new org.apache.thrift.protocol.TField("lastAnalyzed", org.apache.thrift.protocol.TType.I64, (short)5);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ColumnStatisticsDescStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ColumnStatisticsDescTupleSchemeFactory();
@@ -25,6 +26,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
   private @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String partName; // optional
   private long lastAnalyzed; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +34,8 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
     DB_NAME((short)2, "dbName"),
     TABLE_NAME((short)3, "tableName"),
     PART_NAME((short)4, "partName"),
-    LAST_ANALYZED((short)5, "lastAnalyzed");
+    LAST_ANALYZED((short)5, "lastAnalyzed"),
+    CAT_NAME((short)6, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +61,8 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
           return PART_NAME;
         case 5: // LAST_ANALYZED
           return LAST_ANALYZED;
+        case 6: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -102,7 +107,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
   private static final int __ISTBLLEVEL_ISSET_ID = 0;
   private static final int __LASTANALYZED_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PART_NAME,_Fields.LAST_ANALYZED};
+  private static final _Fields optionals[] = {_Fields.PART_NAME,_Fields.LAST_ANALYZED,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -116,6 +121,8 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.LAST_ANALYZED, new org.apache.thrift.meta_data.FieldMetaData("lastAnalyzed", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnStatisticsDesc.class, metaDataMap);
   }
@@ -151,6 +158,9 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       this.partName = other.partName;
     }
     this.lastAnalyzed = other.lastAnalyzed;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public ColumnStatisticsDesc deepCopy() {
@@ -166,6 +176,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
     this.partName = null;
     setLastAnalyzedIsSet(false);
     this.lastAnalyzed = 0;
+    this.catName = null;
   }
 
   public boolean isIsTblLevel() {
@@ -284,6 +295,30 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LASTANALYZED_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case IS_TBL_LEVEL:
@@ -326,6 +361,14 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -346,6 +389,9 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
 
     case LAST_ANALYZED:
       return getLastAnalyzed();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new java.lang.IllegalStateException();
@@ -368,6 +414,8 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       return isSetPartName();
     case LAST_ANALYZED:
       return isSetLastAnalyzed();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -430,6 +478,15 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -454,6 +511,10 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
     hashCode = hashCode * 8191 + ((isSetLastAnalyzed()) ? 131071 : 524287);
     if (isSetLastAnalyzed())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(lastAnalyzed);
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -516,6 +577,16 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -570,6 +641,16 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       if (!first) sb.append(", ");
       sb.append("lastAnalyzed:");
       sb.append(this.lastAnalyzed);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -669,6 +750,14 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -707,6 +796,13 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
         oprot.writeI64(struct.lastAnalyzed);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -734,12 +830,18 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       if (struct.isSetLastAnalyzed()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetCatName()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetPartName()) {
         oprot.writeString(struct.partName);
       }
       if (struct.isSetLastAnalyzed()) {
         oprot.writeI64(struct.lastAnalyzed);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
@@ -752,7 +854,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.partName = iprot.readString();
         struct.setPartNameIsSet(true);
@@ -760,6 +862,10 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       if (incoming.get(1)) {
         struct.lastAnalyzed = iprot.readI64();
         struct.setLastAnalyzedIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

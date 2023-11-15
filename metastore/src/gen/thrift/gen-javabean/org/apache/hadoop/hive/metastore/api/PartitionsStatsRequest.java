@@ -15,6 +15,7 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
   private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField COL_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("colNames", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField PART_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("partNames", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new PartitionsStatsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new PartitionsStatsRequestTupleSchemeFactory();
@@ -23,13 +24,15 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
   private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // required
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> colNames; // required
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> partNames; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     DB_NAME((short)1, "dbName"),
     TBL_NAME((short)2, "tblName"),
     COL_NAMES((short)3, "colNames"),
-    PART_NAMES((short)4, "partNames");
+    PART_NAMES((short)4, "partNames"),
+    CAT_NAME((short)5, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -53,6 +56,8 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
           return COL_NAMES;
         case 4: // PART_NAMES
           return PART_NAMES;
+        case 5: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -94,6 +99,7 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -107,6 +113,8 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
     tmpMap.put(_Fields.PART_NAMES, new org.apache.thrift.meta_data.FieldMetaData("partNames", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionsStatsRequest.class, metaDataMap);
   }
@@ -145,6 +153,9 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
       java.util.List<java.lang.String> __this__partNames = new java.util.ArrayList<java.lang.String>(other.partNames);
       this.partNames = __this__partNames;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public PartitionsStatsRequest deepCopy() {
@@ -157,6 +168,7 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
     this.tblName = null;
     this.colNames = null;
     this.partNames = null;
+    this.catName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -287,6 +299,30 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -321,6 +357,14 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -338,6 +382,9 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
 
     case PART_NAMES:
       return getPartNames();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new java.lang.IllegalStateException();
@@ -358,6 +405,8 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
       return isSetColNames();
     case PART_NAMES:
       return isSetPartNames();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -411,6 +460,15 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -433,6 +491,10 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
     hashCode = hashCode * 8191 + ((isSetPartNames()) ? 131071 : 524287);
     if (isSetPartNames())
       hashCode = hashCode * 8191 + partNames.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -481,6 +543,16 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
     }
     if (isSetPartNames()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partNames, other.partNames);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -537,6 +609,16 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
       sb.append(this.partNames);
     }
     first = false;
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -648,6 +730,14 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -695,6 +785,13 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
         }
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -728,6 +825,14 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
           oprot.writeString(_iter405);
         }
       }
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetCatName()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
@@ -759,6 +864,11 @@ public class PartitionsStatsRequest implements org.apache.thrift.TBase<Partition
         }
       }
       struct.setPartNamesIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
     }
   }
 

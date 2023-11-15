@@ -19,6 +19,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
   private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField FUNCTION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("functionType", org.apache.thrift.protocol.TType.I32, (short)7);
   private static final org.apache.thrift.protocol.TField RESOURCE_URIS_FIELD_DESC = new org.apache.thrift.protocol.TField("resourceUris", org.apache.thrift.protocol.TType.LIST, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FunctionStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FunctionTupleSchemeFactory();
@@ -31,6 +32,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
   private int createTime; // required
   private @org.apache.thrift.annotation.Nullable FunctionType functionType; // required
   private @org.apache.thrift.annotation.Nullable java.util.List<ResourceUri> resourceUris; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -49,7 +51,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
      * @see FunctionType
      */
     FUNCTION_TYPE((short)7, "functionType"),
-    RESOURCE_URIS((short)8, "resourceUris");
+    RESOURCE_URIS((short)8, "resourceUris"),
+    CAT_NAME((short)9, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -81,6 +84,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
           return FUNCTION_TYPE;
         case 8: // RESOURCE_URIS
           return RESOURCE_URIS;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -124,6 +129,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
   // isset id assignments
   private static final int __CREATETIME_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -144,6 +150,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     tmpMap.put(_Fields.RESOURCE_URIS, new org.apache.thrift.meta_data.FieldMetaData("resourceUris", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ResourceUri.class))));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Function.class, metaDataMap);
   }
@@ -204,6 +212,9 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       }
       this.resourceUris = __this__resourceUris;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public Function deepCopy() {
@@ -221,6 +232,7 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     this.createTime = 0;
     this.functionType = null;
     this.resourceUris = null;
+    this.catName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -445,6 +457,30 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case FUNCTION_NAME:
@@ -511,6 +547,14 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -541,6 +585,9 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     case RESOURCE_URIS:
       return getResourceUris();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -568,6 +615,8 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       return isSetFunctionType();
     case RESOURCE_URIS:
       return isSetResourceUris();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -657,6 +706,15 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -693,6 +751,10 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
     hashCode = hashCode * 8191 + ((isSetResourceUris()) ? 131071 : 524287);
     if (isSetResourceUris())
       hashCode = hashCode * 8191 + resourceUris.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -785,6 +847,16 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -865,6 +937,16 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       sb.append(this.resourceUris);
     }
     first = false;
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -985,6 +1067,14 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1043,6 +1133,13 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
         }
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1085,7 +1182,10 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
       if (struct.isSetResourceUris()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetCatName()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetFunctionName()) {
         oprot.writeString(struct.functionName);
       }
@@ -1116,12 +1216,15 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
           }
         }
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Function struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(8);
+      java.util.BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.functionName = iprot.readString();
         struct.setFunctionNameIsSet(true);
@@ -1163,6 +1266,10 @@ public class Function implements org.apache.thrift.TBase<Function, Function._Fie
           }
         }
         struct.setResourceUrisIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

@@ -111,6 +111,11 @@ class Table
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        16 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -173,6 +178,10 @@ class Table
      * @var bool
      */
     public $rewriteEnabled = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -221,6 +230,9 @@ class Table
             }
             if (isset($vals['rewriteEnabled'])) {
                 $this->rewriteEnabled = $vals['rewriteEnabled'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -373,6 +385,13 @@ class Table
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 16:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -481,6 +500,11 @@ class Table
         if ($this->rewriteEnabled !== null) {
             $xfer += $output->writeFieldBegin('rewriteEnabled', TType::BOOL, 15);
             $xfer += $output->writeBool($this->rewriteEnabled);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 16);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -543,13 +543,15 @@ class HiveObjectRef
   OBJECTNAME = 3
   PARTVALUES = 4
   COLUMNNAME = 5
+  CATNAME = 6
 
   FIELDS = {
     OBJECTTYPE => {:type => ::Thrift::Types::I32, :name => 'objectType', :enum_class => ::HiveObjectType},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     OBJECTNAME => {:type => ::Thrift::Types::STRING, :name => 'objectName'},
     PARTVALUES => {:type => ::Thrift::Types::LIST, :name => 'partValues', :element => {:type => ::Thrift::Types::STRING}},
-    COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'}
+    COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -880,6 +882,7 @@ class Database
   PRIVILEGES = 5
   OWNERNAME = 6
   OWNERTYPE = 7
+  CATALOGNAME = 8
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -888,7 +891,8 @@ class Database
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},
-    OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType}
+    OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType},
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1015,6 +1019,7 @@ class Table
   PRIVILEGES = 13
   TEMPORARY = 14
   REWRITEENABLED = 15
+  CATNAME = 16
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1031,7 +1036,8 @@ class Table
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true},
-    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true}
+    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1052,6 +1058,7 @@ class Partition
   SD = 6
   PARAMETERS = 7
   PRIVILEGES = 8
+  CATNAME = 9
 
   FIELDS = {
     VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}},
@@ -1061,7 +1068,8 @@ class Partition
     LASTACCESSTIME => {:type => ::Thrift::Types::I32, :name => 'lastAccessTime'},
     SD => {:type => ::Thrift::Types::STRUCT, :name => 'sd', :class => ::StorageDescriptor},
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
-    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true}
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1139,13 +1147,15 @@ class PartitionSpec
   ROOTPATH = 3
   SHAREDSDPARTITIONSPEC = 4
   PARTITIONLIST = 5
+  CATNAME = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     ROOTPATH => {:type => ::Thrift::Types::STRING, :name => 'rootPath'},
     SHAREDSDPARTITIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'sharedSDPartitionSpec', :class => ::PartitionSpecWithSharedSD, :optional => true},
-    PARTITIONLIST => {:type => ::Thrift::Types::STRUCT, :name => 'partitionList', :class => ::PartitionListComposingSpec, :optional => true}
+    PARTITIONLIST => {:type => ::Thrift::Types::STRUCT, :name => 'partitionList', :class => ::PartitionListComposingSpec, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1498,13 +1508,15 @@ class ColumnStatisticsDesc
   TABLENAME = 3
   PARTNAME = 4
   LASTANALYZED = 5
+  CATNAME = 6
 
   FIELDS = {
     ISTBLLEVEL => {:type => ::Thrift::Types::BOOL, :name => 'isTblLevel'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
-    LASTANALYZED => {:type => ::Thrift::Types::I64, :name => 'lastAnalyzed', :optional => true}
+    LASTANALYZED => {:type => ::Thrift::Types::I64, :name => 'lastAnalyzed', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1771,13 +1783,15 @@ class PartitionsByExprRequest
   EXPR = 3
   DEFAULTPARTITIONNAME = 4
   MAXPARTS = 5
+  CATNAME = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     EXPR => {:type => ::Thrift::Types::STRING, :name => 'expr', :binary => true},
     DEFAULTPARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'defaultPartitionName', :optional => true},
-    MAXPARTS => {:type => ::Thrift::Types::I16, :name => 'maxParts', :default => -1, :optional => true}
+    MAXPARTS => {:type => ::Thrift::Types::I16, :name => 'maxParts', :default => -1, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1854,12 +1868,14 @@ class PartitionsStatsRequest
   TBLNAME = 2
   COLNAMES = 3
   PARTNAMES = 4
+  CATNAME = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     COLNAMES => {:type => ::Thrift::Types::LIST, :name => 'colNames', :element => {:type => ::Thrift::Types::STRING}},
-    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}}
+    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1897,13 +1913,15 @@ class AddPartitionsRequest
   PARTS = 3
   IFNOTEXISTS = 4
   NEEDRESULT = 5
+  CATNAME = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     PARTS => {:type => ::Thrift::Types::LIST, :name => 'parts', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
     IFNOTEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifNotExists'},
-    NEEDRESULT => {:type => ::Thrift::Types::BOOL, :name => 'needResult', :default => true, :optional => true}
+    NEEDRESULT => {:type => ::Thrift::Types::BOOL, :name => 'needResult', :default => true, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1992,6 +2010,7 @@ class DropPartitionsRequest
   IGNOREPROTECTION = 6
   ENVIRONMENTCONTEXT = 7
   NEEDRESULT = 8
+  CATNAME = 9
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -2001,7 +2020,8 @@ class DropPartitionsRequest
     IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :default => true, :optional => true},
     IGNOREPROTECTION => {:type => ::Thrift::Types::BOOL, :name => 'ignoreProtection', :optional => true},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true},
-    NEEDRESULT => {:type => ::Thrift::Types::BOOL, :name => 'needResult', :default => true, :optional => true}
+    NEEDRESULT => {:type => ::Thrift::Types::BOOL, :name => 'needResult', :default => true, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2025,6 +2045,7 @@ class PartitionValuesRequest
   PARTITIONORDER = 6
   ASCENDING = 7
   MAXPARTS = 8
+  CATNAME = 9
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -2034,7 +2055,8 @@ class PartitionValuesRequest
     FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter', :optional => true},
     PARTITIONORDER => {:type => ::Thrift::Types::LIST, :name => 'partitionOrder', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}, :optional => true},
     ASCENDING => {:type => ::Thrift::Types::BOOL, :name => 'ascending', :default => true, :optional => true},
-    MAXPARTS => {:type => ::Thrift::Types::I64, :name => 'maxParts', :default => -1, :optional => true}
+    MAXPARTS => {:type => ::Thrift::Types::I64, :name => 'maxParts', :default => -1, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2113,6 +2135,7 @@ class Function
   CREATETIME = 6
   FUNCTIONTYPE = 7
   RESOURCEURIS = 8
+  CATNAME = 9
 
   FIELDS = {
     FUNCTIONNAME => {:type => ::Thrift::Types::STRING, :name => 'functionName'},
@@ -2122,7 +2145,8 @@ class Function
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :enum_class => ::PrincipalType},
     CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
     FUNCTIONTYPE => {:type => ::Thrift::Types::I32, :name => 'functionType', :enum_class => ::FunctionType},
-    RESOURCEURIS => {:type => ::Thrift::Types::LIST, :name => 'resourceUris', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ResourceUri}}
+    RESOURCEURIS => {:type => ::Thrift::Types::LIST, :name => 'resourceUris', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ResourceUri}},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end

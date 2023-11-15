@@ -51,6 +51,11 @@ class HiveObjectRef
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        6 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -73,6 +78,10 @@ class HiveObjectRef
      * @var string
      */
     public $columnName = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
 
     public function __construct($vals = null)
     {
@@ -91,6 +100,9 @@ class HiveObjectRef
             }
             if (isset($vals['columnName'])) {
                 $this->columnName = $vals['columnName'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -158,6 +170,13 @@ class HiveObjectRef
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -202,6 +221,11 @@ class HiveObjectRef
         if ($this->columnName !== null) {
             $xfer += $output->writeFieldBegin('columnName', TType::STRING, 5);
             $xfer += $output->writeString($this->columnName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 6);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

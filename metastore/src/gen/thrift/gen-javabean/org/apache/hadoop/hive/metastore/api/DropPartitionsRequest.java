@@ -19,6 +19,7 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
   private static final org.apache.thrift.protocol.TField IGNORE_PROTECTION_FIELD_DESC = new org.apache.thrift.protocol.TField("ignoreProtection", org.apache.thrift.protocol.TType.BOOL, (short)6);
   private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)7);
   private static final org.apache.thrift.protocol.TField NEED_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("needResult", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DropPartitionsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DropPartitionsRequestTupleSchemeFactory();
@@ -31,6 +32,7 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
   private boolean ignoreProtection; // optional
   private @org.apache.thrift.annotation.Nullable EnvironmentContext environmentContext; // optional
   private boolean needResult; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -41,7 +43,8 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
     IF_EXISTS((short)5, "ifExists"),
     IGNORE_PROTECTION((short)6, "ignoreProtection"),
     ENVIRONMENT_CONTEXT((short)7, "environmentContext"),
-    NEED_RESULT((short)8, "needResult");
+    NEED_RESULT((short)8, "needResult"),
+    CAT_NAME((short)9, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -73,6 +76,8 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
           return ENVIRONMENT_CONTEXT;
         case 8: // NEED_RESULT
           return NEED_RESULT;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -119,7 +124,7 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
   private static final int __IGNOREPROTECTION_ISSET_ID = 2;
   private static final int __NEEDRESULT_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DELETE_DATA,_Fields.IF_EXISTS,_Fields.IGNORE_PROTECTION,_Fields.ENVIRONMENT_CONTEXT,_Fields.NEED_RESULT};
+  private static final _Fields optionals[] = {_Fields.DELETE_DATA,_Fields.IF_EXISTS,_Fields.IGNORE_PROTECTION,_Fields.ENVIRONMENT_CONTEXT,_Fields.NEED_RESULT,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -139,6 +144,8 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     tmpMap.put(_Fields.NEED_RESULT, new org.apache.thrift.meta_data.FieldMetaData("needResult", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DropPartitionsRequest.class, metaDataMap);
   }
@@ -182,6 +189,9 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       this.environmentContext = new EnvironmentContext(other.environmentContext);
     }
     this.needResult = other.needResult;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public DropPartitionsRequest deepCopy() {
@@ -202,6 +212,7 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
     this.environmentContext = null;
     this.needResult = true;
 
+    this.catName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -388,6 +399,30 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __NEEDRESULT_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -454,6 +489,14 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -484,6 +527,9 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
     case NEED_RESULT:
       return isNeedResult();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -511,6 +557,8 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       return isSetEnvironmentContext();
     case NEED_RESULT:
       return isSetNeedResult();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -600,6 +648,15 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -638,6 +695,10 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
     hashCode = hashCode * 8191 + ((isSetNeedResult()) ? 131071 : 524287);
     if (isSetNeedResult())
       hashCode = hashCode * 8191 + ((needResult) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -730,6 +791,16 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -806,6 +877,16 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       if (!first) sb.append(", ");
       sb.append("needResult:");
       sb.append(this.needResult);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -934,6 +1015,14 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -989,6 +1078,13 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
         oprot.writeBool(struct.needResult);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1025,7 +1121,10 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       if (struct.isSetNeedResult()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetDeleteData()) {
         oprot.writeBool(struct.deleteData);
       }
@@ -1041,6 +1140,9 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       if (struct.isSetNeedResult()) {
         oprot.writeBool(struct.needResult);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
@@ -1053,7 +1155,7 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       struct.parts = new RequestPartsSpec();
       struct.parts.read(iprot);
       struct.setPartsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.deleteData = iprot.readBool();
         struct.setDeleteDataIsSet(true);
@@ -1074,6 +1176,10 @@ public class DropPartitionsRequest implements org.apache.thrift.TBase<DropPartit
       if (incoming.get(4)) {
         struct.needResult = iprot.readBool();
         struct.setNeedResultIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

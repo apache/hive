@@ -1500,6 +1500,11 @@ void HiveObjectRef::__set_partValues(const std::vector<std::string> & val) {
 void HiveObjectRef::__set_columnName(const std::string& val) {
   this->columnName = val;
 }
+
+void HiveObjectRef::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const HiveObjectRef& obj)
 {
   obj.printTo(out);
@@ -1582,6 +1587,14 @@ uint32_t HiveObjectRef::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1627,6 +1640,11 @@ uint32_t HiveObjectRef::write(::apache::thrift::protocol::TProtocol* oprot) cons
   xfer += oprot->writeString(this->columnName);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1639,6 +1657,7 @@ void swap(HiveObjectRef &a, HiveObjectRef &b) {
   swap(a.objectName, b.objectName);
   swap(a.partValues, b.partValues);
   swap(a.columnName, b.columnName);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -1648,6 +1667,7 @@ HiveObjectRef::HiveObjectRef(const HiveObjectRef& other23) {
   objectName = other23.objectName;
   partValues = other23.partValues;
   columnName = other23.columnName;
+  catName = other23.catName;
   __isset = other23.__isset;
 }
 HiveObjectRef& HiveObjectRef::operator=(const HiveObjectRef& other24) {
@@ -1656,6 +1676,7 @@ HiveObjectRef& HiveObjectRef::operator=(const HiveObjectRef& other24) {
   objectName = other24.objectName;
   partValues = other24.partValues;
   columnName = other24.columnName;
+  catName = other24.catName;
   __isset = other24.__isset;
   return *this;
 }
@@ -1667,6 +1688,7 @@ void HiveObjectRef::printTo(std::ostream& out) const {
   out << ", " << "objectName=" << to_string(objectName);
   out << ", " << "partValues=" << to_string(partValues);
   out << ", " << "columnName=" << to_string(columnName);
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -3738,6 +3760,11 @@ void Database::__set_ownerType(const PrincipalType::type val) {
   this->ownerType = val;
 __isset.ownerType = true;
 }
+
+void Database::__set_catalogName(const std::string& val) {
+  this->catalogName = val;
+__isset.catalogName = true;
+}
 std::ostream& operator<<(std::ostream& out, const Database& obj)
 {
   obj.printTo(out);
@@ -3839,6 +3866,14 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catalogName);
+          this->__isset.catalogName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -3896,6 +3931,11 @@ uint32_t Database::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI32((int32_t)this->ownerType);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catalogName) {
+    xfer += oprot->writeFieldBegin("catalogName", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->catalogName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -3910,6 +3950,7 @@ void swap(Database &a, Database &b) {
   swap(a.privileges, b.privileges);
   swap(a.ownerName, b.ownerName);
   swap(a.ownerType, b.ownerType);
+  swap(a.catalogName, b.catalogName);
   swap(a.__isset, b.__isset);
 }
 
@@ -3921,6 +3962,7 @@ Database::Database(const Database& other131) {
   privileges = other131.privileges;
   ownerName = other131.ownerName;
   ownerType = other131.ownerType;
+  catalogName = other131.catalogName;
   __isset = other131.__isset;
 }
 Database& Database::operator=(const Database& other132) {
@@ -3931,6 +3973,7 @@ Database& Database::operator=(const Database& other132) {
   privileges = other132.privileges;
   ownerName = other132.ownerName;
   ownerType = other132.ownerType;
+  catalogName = other132.catalogName;
   __isset = other132.__isset;
   return *this;
 }
@@ -3944,6 +3987,7 @@ void Database::printTo(std::ostream& out) const {
   out << ", " << "privileges="; (__isset.privileges ? (out << to_string(privileges)) : (out << "<null>"));
   out << ", " << "ownerName="; (__isset.ownerName ? (out << to_string(ownerName)) : (out << "<null>"));
   out << ", " << "ownerType="; (__isset.ownerType ? (out << to_string(ownerType)) : (out << "<null>"));
+  out << ", " << "catalogName="; (__isset.catalogName ? (out << to_string(catalogName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -4918,6 +4962,11 @@ void Table::__set_rewriteEnabled(const bool val) {
   this->rewriteEnabled = val;
 __isset.rewriteEnabled = true;
 }
+
+void Table::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const Table& obj)
 {
   obj.printTo(out);
@@ -5093,6 +5142,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -5190,6 +5247,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeBool(this->rewriteEnabled);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 16);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5212,6 +5274,7 @@ void swap(Table &a, Table &b) {
   swap(a.privileges, b.privileges);
   swap(a.temporary, b.temporary);
   swap(a.rewriteEnabled, b.rewriteEnabled);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -5231,6 +5294,7 @@ Table::Table(const Table& other221) {
   privileges = other221.privileges;
   temporary = other221.temporary;
   rewriteEnabled = other221.rewriteEnabled;
+  catName = other221.catName;
   __isset = other221.__isset;
 }
 Table& Table::operator=(const Table& other222) {
@@ -5249,6 +5313,7 @@ Table& Table::operator=(const Table& other222) {
   privileges = other222.privileges;
   temporary = other222.temporary;
   rewriteEnabled = other222.rewriteEnabled;
+  catName = other222.catName;
   __isset = other222.__isset;
   return *this;
 }
@@ -5270,6 +5335,7 @@ void Table::printTo(std::ostream& out) const {
   out << ", " << "privileges="; (__isset.privileges ? (out << to_string(privileges)) : (out << "<null>"));
   out << ", " << "temporary="; (__isset.temporary ? (out << to_string(temporary)) : (out << "<null>"));
   out << ", " << "rewriteEnabled="; (__isset.rewriteEnabled ? (out << to_string(rewriteEnabled)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -5309,6 +5375,11 @@ void Partition::__set_parameters(const std::map<std::string, std::string> & val)
 void Partition::__set_privileges(const PrincipalPrivilegeSet& val) {
   this->privileges = val;
 __isset.privileges = true;
+}
+
+void Partition::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
 }
 std::ostream& operator<<(std::ostream& out, const Partition& obj)
 {
@@ -5429,6 +5500,14 @@ uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -5496,6 +5575,11 @@ uint32_t Partition::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += this->privileges.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5511,6 +5595,7 @@ void swap(Partition &a, Partition &b) {
   swap(a.sd, b.sd);
   swap(a.parameters, b.parameters);
   swap(a.privileges, b.privileges);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -5523,6 +5608,7 @@ Partition::Partition(const Partition& other237) {
   sd = other237.sd;
   parameters = other237.parameters;
   privileges = other237.privileges;
+  catName = other237.catName;
   __isset = other237.__isset;
 }
 Partition& Partition::operator=(const Partition& other238) {
@@ -5534,6 +5620,7 @@ Partition& Partition::operator=(const Partition& other238) {
   sd = other238.sd;
   parameters = other238.parameters;
   privileges = other238.privileges;
+  catName = other238.catName;
   __isset = other238.__isset;
   return *this;
 }
@@ -5548,6 +5635,7 @@ void Partition::printTo(std::ostream& out) const {
   out << ", " << "sd=" << to_string(sd);
   out << ", " << "parameters=" << to_string(parameters);
   out << ", " << "privileges="; (__isset.privileges ? (out << to_string(privileges)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -6059,6 +6147,11 @@ void PartitionSpec::__set_partitionList(const PartitionListComposingSpec& val) {
   this->partitionList = val;
 __isset.partitionList = true;
 }
+
+void PartitionSpec::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const PartitionSpec& obj)
 {
   obj.printTo(out);
@@ -6127,6 +6220,14 @@ uint32_t PartitionSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -6166,6 +6267,11 @@ uint32_t PartitionSpec::write(::apache::thrift::protocol::TProtocol* oprot) cons
     xfer += this->partitionList.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -6178,6 +6284,7 @@ void swap(PartitionSpec &a, PartitionSpec &b) {
   swap(a.rootPath, b.rootPath);
   swap(a.sharedSDPartitionSpec, b.sharedSDPartitionSpec);
   swap(a.partitionList, b.partitionList);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -6187,6 +6294,7 @@ PartitionSpec::PartitionSpec(const PartitionSpec& other271) {
   rootPath = other271.rootPath;
   sharedSDPartitionSpec = other271.sharedSDPartitionSpec;
   partitionList = other271.partitionList;
+  catName = other271.catName;
   __isset = other271.__isset;
 }
 PartitionSpec& PartitionSpec::operator=(const PartitionSpec& other272) {
@@ -6195,6 +6303,7 @@ PartitionSpec& PartitionSpec::operator=(const PartitionSpec& other272) {
   rootPath = other272.rootPath;
   sharedSDPartitionSpec = other272.sharedSDPartitionSpec;
   partitionList = other272.partitionList;
+  catName = other272.catName;
   __isset = other272.__isset;
   return *this;
 }
@@ -6206,6 +6315,7 @@ void PartitionSpec::printTo(std::ostream& out) const {
   out << ", " << "rootPath=" << to_string(rootPath);
   out << ", " << "sharedSDPartitionSpec="; (__isset.sharedSDPartitionSpec ? (out << to_string(sharedSDPartitionSpec)) : (out << "<null>"));
   out << ", " << "partitionList="; (__isset.partitionList ? (out << to_string(partitionList)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -8350,6 +8460,11 @@ void ColumnStatisticsDesc::__set_lastAnalyzed(const int64_t val) {
   this->lastAnalyzed = val;
 __isset.lastAnalyzed = true;
 }
+
+void ColumnStatisticsDesc::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const ColumnStatisticsDesc& obj)
 {
   obj.printTo(out);
@@ -8421,6 +8536,14 @@ uint32_t ColumnStatisticsDesc::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8466,6 +8589,11 @@ uint32_t ColumnStatisticsDesc::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeI64(this->lastAnalyzed);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8478,6 +8606,7 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b) {
   swap(a.tableName, b.tableName);
   swap(a.partName, b.partName);
   swap(a.lastAnalyzed, b.lastAnalyzed);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -8487,6 +8616,7 @@ ColumnStatisticsDesc::ColumnStatisticsDesc(const ColumnStatisticsDesc& other305)
   tableName = other305.tableName;
   partName = other305.partName;
   lastAnalyzed = other305.lastAnalyzed;
+  catName = other305.catName;
   __isset = other305.__isset;
 }
 ColumnStatisticsDesc& ColumnStatisticsDesc::operator=(const ColumnStatisticsDesc& other306) {
@@ -8495,6 +8625,7 @@ ColumnStatisticsDesc& ColumnStatisticsDesc::operator=(const ColumnStatisticsDesc
   tableName = other306.tableName;
   partName = other306.partName;
   lastAnalyzed = other306.lastAnalyzed;
+  catName = other306.catName;
   __isset = other306.__isset;
   return *this;
 }
@@ -8506,6 +8637,7 @@ void ColumnStatisticsDesc::printTo(std::ostream& out) const {
   out << ", " << "tableName=" << to_string(tableName);
   out << ", " << "partName="; (__isset.partName ? (out << to_string(partName)) : (out << "<null>"));
   out << ", " << "lastAnalyzed="; (__isset.lastAnalyzed ? (out << to_string(lastAnalyzed)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -10202,6 +10334,11 @@ void PartitionsByExprRequest::__set_maxParts(const int16_t val) {
   this->maxParts = val;
 __isset.maxParts = true;
 }
+
+void PartitionsByExprRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const PartitionsByExprRequest& obj)
 {
   obj.printTo(out);
@@ -10273,6 +10410,14 @@ uint32_t PartitionsByExprRequest::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -10318,6 +10463,11 @@ uint32_t PartitionsByExprRequest::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeI16(this->maxParts);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -10330,6 +10480,7 @@ void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b) {
   swap(a.expr, b.expr);
   swap(a.defaultPartitionName, b.defaultPartitionName);
   swap(a.maxParts, b.maxParts);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -10339,6 +10490,7 @@ PartitionsByExprRequest::PartitionsByExprRequest(const PartitionsByExprRequest& 
   expr = other403.expr;
   defaultPartitionName = other403.defaultPartitionName;
   maxParts = other403.maxParts;
+  catName = other403.catName;
   __isset = other403.__isset;
 }
 PartitionsByExprRequest& PartitionsByExprRequest::operator=(const PartitionsByExprRequest& other404) {
@@ -10347,6 +10499,7 @@ PartitionsByExprRequest& PartitionsByExprRequest::operator=(const PartitionsByEx
   expr = other404.expr;
   defaultPartitionName = other404.defaultPartitionName;
   maxParts = other404.maxParts;
+  catName = other404.catName;
   __isset = other404.__isset;
   return *this;
 }
@@ -10358,6 +10511,7 @@ void PartitionsByExprRequest::printTo(std::ostream& out) const {
   out << ", " << "expr=" << to_string(expr);
   out << ", " << "defaultPartitionName="; (__isset.defaultPartitionName ? (out << to_string(defaultPartitionName)) : (out << "<null>"));
   out << ", " << "maxParts="; (__isset.maxParts ? (out << to_string(maxParts)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -10787,6 +10941,11 @@ void PartitionsStatsRequest::__set_colNames(const std::vector<std::string> & val
 void PartitionsStatsRequest::__set_partNames(const std::vector<std::string> & val) {
   this->partNames = val;
 }
+
+void PartitionsStatsRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const PartitionsStatsRequest& obj)
 {
   obj.printTo(out);
@@ -10875,6 +11034,14 @@ uint32_t PartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* ipr
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -10932,6 +11099,11 @@ uint32_t PartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol* op
   }
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -10943,6 +11115,8 @@ void swap(PartitionsStatsRequest &a, PartitionsStatsRequest &b) {
   swap(a.tblName, b.tblName);
   swap(a.colNames, b.colNames);
   swap(a.partNames, b.partNames);
+  swap(a.catName, b.catName);
+  swap(a.__isset, b.__isset);
 }
 
 PartitionsStatsRequest::PartitionsStatsRequest(const PartitionsStatsRequest& other449) {
@@ -10950,12 +11124,16 @@ PartitionsStatsRequest::PartitionsStatsRequest(const PartitionsStatsRequest& oth
   tblName = other449.tblName;
   colNames = other449.colNames;
   partNames = other449.partNames;
+  catName = other449.catName;
+  __isset = other449.__isset;
 }
 PartitionsStatsRequest& PartitionsStatsRequest::operator=(const PartitionsStatsRequest& other450) {
   dbName = other450.dbName;
   tblName = other450.tblName;
   colNames = other450.colNames;
   partNames = other450.partNames;
+  catName = other450.catName;
+  __isset = other450.__isset;
   return *this;
 }
 void PartitionsStatsRequest::printTo(std::ostream& out) const {
@@ -10965,6 +11143,7 @@ void PartitionsStatsRequest::printTo(std::ostream& out) const {
   out << ", " << "tblName=" << to_string(tblName);
   out << ", " << "colNames=" << to_string(colNames);
   out << ", " << "partNames=" << to_string(partNames);
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11107,6 +11286,11 @@ void AddPartitionsRequest::__set_needResult(const bool val) {
   this->needResult = val;
 __isset.needResult = true;
 }
+
+void AddPartitionsRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const AddPartitionsRequest& obj)
 {
   obj.printTo(out);
@@ -11191,6 +11375,14 @@ uint32_t AddPartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11245,6 +11437,11 @@ uint32_t AddPartitionsRequest::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeBool(this->needResult);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11257,6 +11454,7 @@ void swap(AddPartitionsRequest &a, AddPartitionsRequest &b) {
   swap(a.parts, b.parts);
   swap(a.ifNotExists, b.ifNotExists);
   swap(a.needResult, b.needResult);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -11266,6 +11464,7 @@ AddPartitionsRequest::AddPartitionsRequest(const AddPartitionsRequest& other465)
   parts = other465.parts;
   ifNotExists = other465.ifNotExists;
   needResult = other465.needResult;
+  catName = other465.catName;
   __isset = other465.__isset;
 }
 AddPartitionsRequest& AddPartitionsRequest::operator=(const AddPartitionsRequest& other466) {
@@ -11274,6 +11473,7 @@ AddPartitionsRequest& AddPartitionsRequest::operator=(const AddPartitionsRequest
   parts = other466.parts;
   ifNotExists = other466.ifNotExists;
   needResult = other466.needResult;
+  catName = other466.catName;
   __isset = other466.__isset;
   return *this;
 }
@@ -11285,6 +11485,7 @@ void AddPartitionsRequest::printTo(std::ostream& out) const {
   out << ", " << "parts=" << to_string(parts);
   out << ", " << "ifNotExists=" << to_string(ifNotExists);
   out << ", " << "needResult="; (__isset.needResult ? (out << to_string(needResult)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11716,6 +11917,11 @@ void DropPartitionsRequest::__set_needResult(const bool val) {
   this->needResult = val;
 __isset.needResult = true;
 }
+
+void DropPartitionsRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const DropPartitionsRequest& obj)
 {
   obj.printTo(out);
@@ -11811,6 +12017,14 @@ uint32_t DropPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ipro
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11871,6 +12085,11 @@ uint32_t DropPartitionsRequest::write(::apache::thrift::protocol::TProtocol* opr
     xfer += oprot->writeBool(this->needResult);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11886,6 +12105,7 @@ void swap(DropPartitionsRequest &a, DropPartitionsRequest &b) {
   swap(a.ignoreProtection, b.ignoreProtection);
   swap(a.environmentContext, b.environmentContext);
   swap(a.needResult, b.needResult);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -11898,6 +12118,7 @@ DropPartitionsRequest::DropPartitionsRequest(const DropPartitionsRequest& other4
   ignoreProtection = other491.ignoreProtection;
   environmentContext = other491.environmentContext;
   needResult = other491.needResult;
+  catName = other491.catName;
   __isset = other491.__isset;
 }
 DropPartitionsRequest& DropPartitionsRequest::operator=(const DropPartitionsRequest& other492) {
@@ -11909,6 +12130,7 @@ DropPartitionsRequest& DropPartitionsRequest::operator=(const DropPartitionsRequ
   ignoreProtection = other492.ignoreProtection;
   environmentContext = other492.environmentContext;
   needResult = other492.needResult;
+  catName = other492.catName;
   __isset = other492.__isset;
   return *this;
 }
@@ -11923,6 +12145,7 @@ void DropPartitionsRequest::printTo(std::ostream& out) const {
   out << ", " << "ignoreProtection="; (__isset.ignoreProtection ? (out << to_string(ignoreProtection)) : (out << "<null>"));
   out << ", " << "environmentContext="; (__isset.environmentContext ? (out << to_string(environmentContext)) : (out << "<null>"));
   out << ", " << "needResult="; (__isset.needResult ? (out << to_string(needResult)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -11966,6 +12189,11 @@ __isset.ascending = true;
 void PartitionValuesRequest::__set_maxParts(const int64_t val) {
   this->maxParts = val;
 __isset.maxParts = true;
+}
+
+void PartitionValuesRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
 }
 std::ostream& operator<<(std::ostream& out, const PartitionValuesRequest& obj)
 {
@@ -12086,6 +12314,14 @@ uint32_t PartitionValuesRequest::read(::apache::thrift::protocol::TProtocol* ipr
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -12162,6 +12398,11 @@ uint32_t PartitionValuesRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeI64(this->maxParts);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -12177,6 +12418,7 @@ void swap(PartitionValuesRequest &a, PartitionValuesRequest &b) {
   swap(a.partitionOrder, b.partitionOrder);
   swap(a.ascending, b.ascending);
   swap(a.maxParts, b.maxParts);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -12189,6 +12431,7 @@ PartitionValuesRequest::PartitionValuesRequest(const PartitionValuesRequest& oth
   partitionOrder = other505.partitionOrder;
   ascending = other505.ascending;
   maxParts = other505.maxParts;
+  catName = other505.catName;
   __isset = other505.__isset;
 }
 PartitionValuesRequest& PartitionValuesRequest::operator=(const PartitionValuesRequest& other506) {
@@ -12200,6 +12443,7 @@ PartitionValuesRequest& PartitionValuesRequest::operator=(const PartitionValuesR
   partitionOrder = other506.partitionOrder;
   ascending = other506.ascending;
   maxParts = other506.maxParts;
+  catName = other506.catName;
   __isset = other506.__isset;
   return *this;
 }
@@ -12214,6 +12458,7 @@ void PartitionValuesRequest::printTo(std::ostream& out) const {
   out << ", " << "partitionOrder="; (__isset.partitionOrder ? (out << to_string(partitionOrder)) : (out << "<null>"));
   out << ", " << "ascending="; (__isset.ascending ? (out << to_string(ascending)) : (out << "<null>"));
   out << ", " << "maxParts="; (__isset.maxParts ? (out << to_string(maxParts)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -12591,6 +12836,11 @@ void Function::__set_functionType(const FunctionType::type val) {
 void Function::__set_resourceUris(const std::vector<ResourceUri> & val) {
   this->resourceUris = val;
 }
+
+void Function::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const Function& obj)
 {
   obj.printTo(out);
@@ -12699,6 +12949,14 @@ uint32_t Function::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -12756,6 +13014,11 @@ uint32_t Function::write(::apache::thrift::protocol::TProtocol* oprot) const {
   }
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -12771,6 +13034,7 @@ void swap(Function &a, Function &b) {
   swap(a.createTime, b.createTime);
   swap(a.functionType, b.functionType);
   swap(a.resourceUris, b.resourceUris);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -12783,6 +13047,7 @@ Function::Function(const Function& other534) {
   createTime = other534.createTime;
   functionType = other534.functionType;
   resourceUris = other534.resourceUris;
+  catName = other534.catName;
   __isset = other534.__isset;
 }
 Function& Function::operator=(const Function& other535) {
@@ -12794,6 +13059,7 @@ Function& Function::operator=(const Function& other535) {
   createTime = other535.createTime;
   functionType = other535.functionType;
   resourceUris = other535.resourceUris;
+  catName = other535.catName;
   __isset = other535.__isset;
   return *this;
 }
@@ -12808,6 +13074,7 @@ void Function::printTo(std::ostream& out) const {
   out << ", " << "createTime=" << to_string(createTime);
   out << ", " << "functionType=" << to_string(functionType);
   out << ", " << "resourceUris=" << to_string(resourceUris);
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
