@@ -165,7 +165,7 @@ public class MergeStatement {
     return !onlyHaveWhenNotMatchedClause;
   }
 
-  public static abstract class WhenClause {
+  protected abstract static class WhenClause {
     private final String extraPredicate;
 
     public WhenClause(String extraPredicate) {
