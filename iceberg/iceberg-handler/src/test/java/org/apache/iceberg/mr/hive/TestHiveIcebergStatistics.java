@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.PartitionSpec;
@@ -36,6 +37,8 @@ import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+
+import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandler.STATS;
 
 /**
  * Tests verifying correct statistics generation behaviour on Iceberg tables triggered by: ANALYZE queries, inserts,
@@ -258,6 +261,26 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.executeStatement(insert);
     checkColStat(identifier.name(), "customer_id", true);
     checkColStatMinMaxDistinctValue(identifier.name(), "customer_id", 0, 5, 6, 0);
+  }
+
+  @Test
+  public void testIcebergColStatsPath() throws IOException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    Table table = testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    table.refresh();
+    Path tblColPath = new Path(table.location() + STATS + table.currentSnapshot().snapshotId());
+    // Check that if colPath is created correctly
+    Assert.assertTrue(tblColPath.getFileSystem(shell.getHiveConf()).exists(tblColPath));
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers");
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, result));
   }
 
   private void checkColStat(String tableName, String colName, boolean accurate) {

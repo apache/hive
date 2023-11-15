@@ -210,7 +210,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
-  public static final String STATS = "/stats/";
+  public static final String STATS = "/stats/snap-";
 
   /**
    * Function template for producing a custom sort expression function:
@@ -538,7 +538,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       FileSystem fs = statsPath.getFileSystem(conf);
       return  fs.exists(statsPath);
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOG.warn("Exception when trying to find Iceberg column stats for table:{} , snapshot:{} , " +
           "statsPath: {} , stack trace: {}", table.name(), table.currentSnapshot(), statsPath, e);
     }
@@ -593,7 +593,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private Path getColStatsPath(Table table, long snapshotId) {
-    return new Path(table.location() + STATS + table.name() + snapshotId);
+    return new Path(table.location() + STATS + snapshotId);
   }
 
   private boolean removeColStatsIfExists(Table tbl) throws IOException {
