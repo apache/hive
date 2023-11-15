@@ -188,7 +188,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   /** 
    * Set a variable using a value from the parameter or the stack 
    */
-  public Var setVariable(String name, Var value, boolean addVarToCurrentScope) {
+  public Var setVariable(String name, Var value) {
     if (value == null || value == Var.Empty) {
       if (exec.stack.empty()) {
         return Var.Empty;
@@ -206,23 +206,15 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     else {
       var = new Var(value);
       var.setName(name);
-      if(exec.currentScope != null && addVarToCurrentScope) {
+      if(exec.currentScope != null && !exec.buildSql) {
         exec.currentScope.addVariable(var);
       }
     }    
     return var;
   }
-
-  public Var setVariable(String name, Var value) {
-    return setVariable(name, value, true);
-  }
   
   public Var setVariable(String name) {
     return setVariable(name, Var.Empty);
-  }
-
-  public Var setVariable(String name, boolean addVarToCurrentScope) {
-    return setVariable(name, Var.Empty, addVarToCurrentScope);
   }
 
   public Var setVariable(String name, String value) {
@@ -1637,7 +1629,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   public Integer visitAssignment_stmt_single_item(HplsqlParser.Assignment_stmt_single_itemContext ctx) { 
     String name = ctx.ident().getText();
     visit(ctx.expr());    
-    Var var = setVariable(name, false);
+    Var var = setVariable(name);
     StringBuilder assignments = new StringBuilder();
     String previousAssignment = stackPop().toString();
     if (previousAssignment != null) {
@@ -1647,7 +1639,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     assignments.append(name);
     assignments.append(" = ");
     assignments.append(var.toString());
-    stackPush(assignments);
+    if (exec.buildSql) {
+      stackPush(assignments);
+    }
     if (trace) {
       trace(ctx, "SET " + name + " = " + var.toSqlString());      
     }    
@@ -1667,7 +1661,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       String name = ctx.ident(i).getText();
       if (i < ecnt) {
         visit(ctx.expr(i));
-        Var var = setVariable(name, false);
+        Var var = setVariable(name);
         if (i > 0) {
           identifiers.append(", ");
           expressions.append(", ");
@@ -1681,7 +1675,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     }
     identifiers.append(")");
     expressions.append(")");
-    stackPush(identifiers.toString() + " = " + expressions.toString());
+    if (exec.buildSql) {
+      stackPush(identifiers.toString() + " = " + expressions.toString());
+    }
     return 0; 
   }
   
