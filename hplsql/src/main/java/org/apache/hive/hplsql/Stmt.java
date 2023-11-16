@@ -35,6 +35,7 @@ import org.apache.hive.hplsql.executor.QueryException;
 import org.apache.hive.hplsql.executor.QueryExecutor;
 import org.apache.hive.hplsql.executor.QueryResult;
 import org.apache.hive.hplsql.objects.Table;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * HPL/SQL statements execution
@@ -1161,11 +1162,30 @@ public class Stmt {
    */
   public Integer update(HplsqlParser.Update_stmtContext ctx) {
     trace(ctx, "UPDATE");
+    boolean oldBuildSql = exec.buildSql;
+    String sql = null;
+    try {
+      exec.buildSql = true;
+      sql = generateUpdateQuery(ctx);
+    } finally {
+      exec.buildSql = oldBuildSql;
+    }
+    trace(ctx, sql);
+    QueryResult query = queryExecutor.executeQuery(sql, ctx);
+    if (query.error()) {
+      exec.signal(query);
+      return 1;
+    }
+    exec.setSqlSuccess();
+    query.close();
+    return 0;
+  }
+
+  @NotNull
+  private String generateUpdateQuery(HplsqlParser.Update_stmtContext ctx) {
     HplsqlParser.Update_assignmentContext update_assignmentContext = ctx.update_assignment();
     StringBuilder sql = new StringBuilder(
         exec.getFormattedText(ctx, ctx.start.getStartIndex(), (update_assignmentContext.start.getStartIndex() - 1)));
-    boolean oldBuildSql = exec.buildSql;
-    exec.buildSql = true;
     sql.append(evalPop(update_assignmentContext).toString());
     Token last = update_assignmentContext.getStop();
     HplsqlParser.Where_clauseContext where_clauseContext = ctx.where_clause();
@@ -1178,18 +1198,9 @@ public class Stmt {
       exec.append(sql, exec.getFormattedText(update_upsertContext, update_upsertContext.start.getStartIndex(),
                     update_upsertContext.stop.getStopIndex()), last, update_upsertContext.getStart());
     }
-    exec.buildSql = oldBuildSql;
-    trace(ctx, sql.toString());
-    QueryResult query = queryExecutor.executeQuery(sql.toString(), ctx);
-    if (query.error()) {
-      exec.signal(query);
-      return 1;
-    }
-    exec.setSqlSuccess();
-    query.close();
-    return 0;
+    return sql.toString();
   }
-  
+
   /**
    * DELETE statement
    */
