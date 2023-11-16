@@ -43,7 +43,7 @@ import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.DestClausePrefixSupplier {
+public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.DestClausePrefixSetter {
 
   private final Hive db;
   protected final HiveConf conf;
@@ -81,11 +81,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     //set dest name mapping on new context; 1st child is TOK_FROM
     int insClauseIdx = 1;
     for (MergeStatement.WhenClause whenClause : mergeStatement.getWhenClauses()) {
-      List<Context.DestClausePrefix> prefixes = whenClause.getDestClausePrefix(this);
-      for (Context.DestClausePrefix prefix : prefixes) {
-        rewrittenCtx.addDestNamePrefix(insClauseIdx, prefix);
-        insClauseIdx++;
-      }
+      insClauseIdx += whenClause.addDestNamePrefixOfInsert(this, insClauseIdx, rewrittenCtx);
     }
 
     if (validateCardinalityViolation) {

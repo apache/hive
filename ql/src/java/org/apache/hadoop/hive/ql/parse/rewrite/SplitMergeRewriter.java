@@ -77,7 +77,9 @@ public class SplitMergeRewriter extends MergeRewriter {
   }
 
   @Override
-  public List<Context.DestClausePrefix> getUpdateDestClausePrefixes() {
-    return asList(Context.DestClausePrefix.INSERT, Context.DestClausePrefix.DELETE);
+  public int addDestNamePrefixOfUpdate(int pos, Context context) {
+    context.addDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
+    context.addDeleteOfUpdateDestNamePrefix(pos + 1, Context.DestClausePrefix.DELETE);
+    return 2;
   }
 }

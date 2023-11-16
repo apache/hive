@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.singletonList;
-
 public class MergeStatement {
   protected static final Logger LOG = LoggerFactory.getLogger(MergeStatement.class);
 
@@ -177,7 +175,8 @@ public class MergeStatement {
     }
 
     public abstract void toSql(MergeSqlGenerator sqlGenerator);
-    public abstract List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier);
+    public abstract int addDestNamePrefixOfInsert(
+        DestClausePrefixSetter destClausePrefixSetter, int pos, Context context);
   }
 
   public static class InsertClause extends WhenClause {
@@ -211,8 +210,8 @@ public class MergeStatement {
     }
 
     @Override
-    public List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier) {
-      return supplier.getInsertDestClausePrefixes();
+    public int addDestNamePrefixOfInsert(DestClausePrefixSetter setter, int pos, Context context) {
+      return setter.addDestNamePrefixOfInsert(pos, context);
     }
   }
 
@@ -240,8 +239,8 @@ public class MergeStatement {
     }
 
     @Override
-    public List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier) {
-      return supplier.getUpdateDestClausePrefixes();
+    public int addDestNamePrefixOfInsert(DestClausePrefixSetter setter, int pos, Context context) {
+      return setter.addDestNamePrefixOfUpdate(pos, context);
     }
   }
 
@@ -263,8 +262,8 @@ public class MergeStatement {
     }
 
     @Override
-    public List<Context.DestClausePrefix> getDestClausePrefix(DestClausePrefixSupplier supplier) {
-      return supplier.getDeleteDestClausePrefixes();
+    public int addDestNamePrefixOfInsert(DestClausePrefixSetter setter, int pos, Context context) {
+      return setter.addDestNamePrefixOfDelete(pos, context);
     }
   }
 
@@ -274,18 +273,20 @@ public class MergeStatement {
     void appendWhenMatchedDeleteClause(DeleteClause deleteClause);
   }
 
-  public interface DestClausePrefixSupplier {
-    default List<Context.DestClausePrefix> getInsertDestClausePrefixes()
-    {
-      return singletonList(Context.DestClausePrefix.INSERT);
+  public interface DestClausePrefixSetter {
+    default int addDestNamePrefixOfInsert(int pos, Context context) {
+      context.addDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
+      return 1;
     }
-    default List<Context.DestClausePrefix> getUpdateDestClausePrefixes()
-    {
-      return singletonList(Context.DestClausePrefix.UPDATE);
+
+    default int addDestNamePrefixOfUpdate(int pos, Context context) {
+      context.addDestNamePrefix(pos, Context.DestClausePrefix.UPDATE);
+      return 1;
     }
-    default List<Context.DestClausePrefix> getDeleteDestClausePrefixes()
-    {
-      return singletonList(Context.DestClausePrefix.DELETE);
+
+    default int addDestNamePrefixOfDelete(int pos, Context context) {
+      context.addDestNamePrefix(pos, Context.DestClausePrefix.DELETE);
+      return 1;
     }
   }
 }
