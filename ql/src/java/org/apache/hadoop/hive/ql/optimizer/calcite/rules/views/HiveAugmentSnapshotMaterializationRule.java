@@ -131,6 +131,11 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
     Table table = hiveTable.getHiveTableMD();
 
     SnapshotContext mvMetaTableSnapshot = mvMetaStoredSnapshot.get(table.getFullyQualifiedName());
+    if (table.getStorageHandler() == null) {
+      throw new UnsupportedOperationException(String.format("Table %s does not have Storage handler defined. " +
+          "Mixing native and non-native tables in a materialized view definition is currently not supported!",
+          table.getFullyQualifiedName()));
+    }
     if (Objects.equals(mvMetaTableSnapshot, table.getStorageHandler().getCurrentSnapshotContext(table))) {
       return;
     }
