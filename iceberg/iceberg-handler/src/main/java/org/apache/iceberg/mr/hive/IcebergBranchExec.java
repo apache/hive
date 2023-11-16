@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.util.Optional;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.SnapshotRef;
@@ -55,11 +56,16 @@ public class IcebergBranchExec {
         throw new IllegalArgumentException(String.format("Tag %s does not exist", tagName));
       }
     } else {
-      snapshotId = table.currentSnapshot().snapshotId();
+      snapshotId = Optional.ofNullable(table.currentSnapshot()).map(snapshot -> snapshot.snapshotId()).orElse(null);
     }
-    LOG.info("Creating branch {} on iceberg table {} with snapshotId {}", branchName, table.name(), snapshotId);
     ManageSnapshots manageSnapshots = table.manageSnapshots();
-    manageSnapshots.createBranch(branchName, snapshotId);
+    if (snapshotId != null) {
+      LOG.info("Creating a branch {} on an iceberg table {} with snapshotId {}", branchName, table.name(), snapshotId);
+      manageSnapshots.createBranch(branchName, snapshotId);
+    } else {
+      LOG.info("Creating a branch {} on an empty iceberg table {}", branchName, table.name());
+      manageSnapshots.createBranch(branchName);
+    }
     if (createBranchSpec.getMaxRefAgeMs() != null) {
       manageSnapshots.setMaxRefAgeMs(branchName, createBranchSpec.getMaxRefAgeMs());
     }
