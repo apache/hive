@@ -1,5 +1,4 @@
 set hive.split.update=false;
-set hive.merge.split.update=false;
 
 drop table if exists test_merge_target;
 drop table if exists test_merge_source;

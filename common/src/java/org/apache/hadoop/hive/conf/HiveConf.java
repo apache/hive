@@ -3442,13 +3442,6 @@ public class HiveConf extends Configuration {
     /**
      * @deprecated Use {@link ConfVars#SPLIT_UPDATE} instead.
      */
-    @Deprecated
-    MERGE_SPLIT_UPDATE("hive.merge.split.update", true,
-        "If true, SQL Merge statement will handle WHEN MATCHED UPDATE by splitting it into 2\n" +
-            "branches of a multi-insert, representing delete of existing row and an insert of\n" +
-            "the new version of the row.  Updating bucketing and partitioning columns should\n" +
-            "only be permitted if this is true.\n" +
-            "Deprecated, use hive.split.update instead."),
     OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),

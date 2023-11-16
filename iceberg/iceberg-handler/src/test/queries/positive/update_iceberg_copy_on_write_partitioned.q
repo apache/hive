@@ -1,4 +1,3 @@
-set hive.split.update=false;
 set hive.explain.user=false;
 
 drop table if exists tbl_ice;

@@ -117,7 +117,7 @@ public class TestHiveMetaTool {
       hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
                       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
       hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
-      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE, true);
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.SPLIT_UPDATE, true);
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
       hiveConf.setBoolean("mapred.input.dir.recursive", true);
       TestTxnDbUtil.setConfValues(hiveConf);

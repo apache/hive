@@ -48,9 +48,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestUpdateDeleteSemanticAnalyzer {
+public class TestDMLSemanticAnalyzer {
 
-  static final private Logger LOG = LoggerFactory.getLogger(TestUpdateDeleteSemanticAnalyzer.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(TestDMLSemanticAnalyzer.class.getName());
 
   private QueryState queryState;
   private HiveConf conf;
