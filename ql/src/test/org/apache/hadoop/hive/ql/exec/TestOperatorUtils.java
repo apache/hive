@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TestOperatorUtils {
   @Test
-  void testHasMoreGBYsReturnsTrueWhenLimitIs0() {
+  void testHasMoreGBYsReturnsFalseWhenLimitIs0() {
     // RS-SEL-LIM-FIL
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> filter = OperatorFactory.get(context, FilterDesc.class);
@@ -45,7 +45,7 @@ class TestOperatorUtils {
     Operator<?> rs = OperatorFactory.get(context, ReduceSinkDesc.class);
     select.setParentOperators(singletonList(rs));
 
-    assertTrue(OperatorUtils.hasMoreOperatorsThan(filter, GroupByOperator.class, 0));
+    assertFalse(OperatorUtils.hasMoreOperatorsThan(filter, GroupByOperator.class, 0));
   }
 
   @Test
