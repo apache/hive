@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TestOperatorUtils {
   @Test
   void testHasMoreGBYsReturnsTrueWhenLimitIs0() {
+    // RS-SEL-LIM-FIL
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> filter = OperatorFactory.get(context, FilterDesc.class);
     Operator<?> limit = OperatorFactory.get(context, LimitDesc.class);
@@ -49,6 +50,7 @@ class TestOperatorUtils {
 
   @Test
   void testHasMoreGBYsReturnsFalseWhenNoGBYInBranchAndLimitIsMoreThan0() {
+    // RS-SEL-LIM-FIL
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> filter = OperatorFactory.get(context, FilterDesc.class);
     Operator<?> limit = OperatorFactory.get(context, LimitDesc.class);
@@ -63,6 +65,7 @@ class TestOperatorUtils {
 
   @Test
   void testHasMoreGBYsReturnsFalseWhenNumberOfGBYIsLessThanLimit() {
+    // RS-GBY-SEL-LIM-FIL
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> filter = OperatorFactory.get(context, FilterDesc.class);
     Operator<?> limit = OperatorFactory.get(context, LimitDesc.class);
@@ -79,6 +82,7 @@ class TestOperatorUtils {
 
   @Test
   void testHasMoreGBYsReturnsTrueWhenNumberOfGBYIsEqualsWithLimit() {
+    // RS-GBY-FIL-SEL-GBY
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> gby1 = OperatorFactory.get(context, GroupByDesc.class);
     Operator<?> select = OperatorFactory.get(context, SelectDesc.class);
@@ -95,6 +99,7 @@ class TestOperatorUtils {
 
   @Test
   void testHasMoreGBYsReturnsFalseWhenNumberOfGBYIsEqualsWithLimitButHasAnRSInTheMiddle() {
+    // TS-GBY-RS-SEL-GBY
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> gby1 = OperatorFactory.get(context, GroupByDesc.class);
     Operator<?> select = OperatorFactory.get(context, SelectDesc.class);
@@ -111,19 +116,21 @@ class TestOperatorUtils {
 
   @Test
   void testHasMoreGBYsReturnsTrueWhenBranchHasJoinAndNumberOfGBYIsEqualsWithLimit() {
+    // RS-GBY-FIL--JOIN-GBY
+    //     RS-SEL-/
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> gby1 = OperatorFactory.get(context, GroupByDesc.class);
     Operator<?> join = OperatorFactory.get(context, CommonMergeJoinDesc.class);
     gby1.setParentOperators(singletonList(join));
 
-    // Branch #1 has the second GBY
+    // Join branch #1 has the second GBY
     Operator<?> filter = OperatorFactory.get(context, FilterDesc.class);
     Operator<?> gby2 = OperatorFactory.get(context, GroupByDesc.class);
     filter.setParentOperators(singletonList(gby2));
     Operator<?> rs = OperatorFactory.get(context, ReduceSinkDesc.class);
     gby2.setParentOperators(singletonList(rs));
 
-    // Branch #2
+    // Join branch #2
     Operator<?> select = OperatorFactory.get(context, SelectDesc.class);
     Operator<?> rs2 = OperatorFactory.get(context, ReduceSinkDesc.class);
     select.setParentOperators(singletonList(rs2));
@@ -135,17 +142,19 @@ class TestOperatorUtils {
 
   @Test
   void testHasMoreGBYsReturnsFalseWhenBranchHasJoinAndBothJoinBranchesHasLessGBYThanLimit() {
+    // RS-GBY-SEL--JOIN
+    // RS-GBY-FIL-/
     CompilationOpContext context = new CompilationOpContext();
     Operator<?> join = OperatorFactory.get(context, CommonMergeJoinDesc.class);
 
-    // Branch #1 has the second GBY
+    // Join branch #1
     Operator<?> filter = OperatorFactory.get(context, FilterDesc.class);
     Operator<?> gby1 = OperatorFactory.get(context, GroupByDesc.class);
     filter.setParentOperators(singletonList(gby1));
     Operator<?> rs = OperatorFactory.get(context, ReduceSinkDesc.class);
     gby1.setParentOperators(singletonList(rs));
 
-    // Branch #2
+    // Join branch #2
     Operator<?> select = OperatorFactory.get(context, SelectDesc.class);
     Operator<?> gby2 = OperatorFactory.get(context, GroupByDesc.class);
     select.setParentOperators(singletonList(gby2));
