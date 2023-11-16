@@ -58,9 +58,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * acid export statements. It works by rewriting the acid export into insert statements into a temporary table,
  * and then export it from there.
  */
-public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
+public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> {
   AcidExportSemanticAnalyzer(QueryState queryState) throws SemanticException {
-    super(queryState);
+    super(queryState, null);
   }
 
   @Override
