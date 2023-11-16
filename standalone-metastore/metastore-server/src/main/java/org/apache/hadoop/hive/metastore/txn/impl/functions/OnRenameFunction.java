@@ -21,10 +21,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+
+import java.sql.SQLException;
 
 public class OnRenameFunction implements TransactionalFunction<Void> {
 
+  private static final Logger LOG = LoggerFactory.getLogger(OnRenameFunction.class);
+  
   //language=SQL
   private static final String[] UPDATE_COMMANNDS = new String[]{
       "UPDATE \"TXN_COMPONENTS\" SET " +
@@ -132,9 +139,20 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
         .addValue("newTableName", StringUtils.lowerCase(newTabName))
         .addValue("oldPartName", oldPartName)
         .addValue("newPartName", newPartName);
-    
-    for(String command : UPDATE_COMMANNDS) {
-      jdbcResource.getJdbcTemplate().update(command, paramSource);
+    try {
+      for (String command : UPDATE_COMMANNDS) {
+        jdbcResource.getJdbcTemplate().update(command, paramSource);
+      }
+    } catch (DataAccessException e) {
+      //TODO: this seems to be very hacky, and as a result retry attempts won't happen, because DataAccessExceptions are
+      // caught and either swallowed or wrapped in MetaException. Also, only a single test fails without this block:
+      // org.apache.hadoop.hive.metastore.client.TestDatabases.testAlterDatabaseNotNullableFields
+      // It may worth investigate if this catch block is really needed. 
+      if (e.getMessage() != null && e.getMessage().contains("does not exist")) {
+        LOG.warn("Cannot perform {} since metastore table does not exist", callSig);
+      } else {
+        throw new MetaException("Unable to " + callSig + ":" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      }
     }
     return null;
   }

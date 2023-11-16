@@ -52,12 +52,12 @@ public class GetLatestCommittedCompactionInfoHandler implements QueryHandler<Get
           "SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_TYPE\" FROM \"COMPLETED_COMPACTIONS\" " +
           "   WHERE \"CC_STATE\" = :succeeded " + 
           "UNION ALL " +
-          "SELECT \"CQ_ID\" AS \"CC_ID\", \"CQ_DATABASE\" AS \"CC_DATABASE\" ,\"CQ_TABLE\" AS \"CC_TABLE\", " +
+          "SELECT \"CQ_ID\" AS \"CC_ID\", \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", " +
           "\"CQ_PARTITION\" AS \"CC_PARTITION\", \"CQ_TYPE\" AS \"CC_TYPE\" FROM \"COMPACTION_QUEUE\" " +
           "   WHERE \"CQ_STATE\" = :readyForCleaning) AS compactions " +
         "WHERE " +
             "\"CC_DATABASE\" = :dbName AND \"CC_TABLE\" = :tableName AND " +
-            "(\"CC_PARTITION\" IN (:partitionNames) OR :partitionNames IS NULL) AND " +
+            "(\"CC_PARTITION\" IN (:partitionNames) OR :emptyPartitionNames = TRUE) AND " +
             "(\"CC_ID\" > :id OR :id IS NULL) " +
         "ORDER BY \"CC_ID\" DESC";
   }
@@ -69,6 +69,7 @@ public class GetLatestCommittedCompactionInfoHandler implements QueryHandler<Get
         .addValue("readyForCleaning", CompactionState.READY_FOR_CLEANING.getSqlConst(), Types.CHAR)
         .addValue("dbName", rqst.getDbname())
         .addValue("tableName", rqst.getTablename())
+        .addValue("emptyPartitionNames", CollectionUtils.isEmpty(rqst.getPartitionnames()), Types.BOOLEAN)
         .addValue("partitionNames", CollectionUtils.isEmpty(rqst.getPartitionnames()) ? null : rqst.getPartitionnames(), Types.VARCHAR)
         .addValue("id", rqst.isSetLastCompactionId() ? rqst.getLastCompactionId() : null, Types.BIGINT);
   }

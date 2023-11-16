@@ -138,10 +138,10 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
       if (rqst.isSetPartNames()) {
         for (String partName : rqst.getPartNames()) {
           compactRqst.setPartitionname(partName);
-          new CompactFunction(compactRqst, openTxnTimeOutMillis, mutexAPI);
+          new CompactFunction(compactRqst, openTxnTimeOutMillis, mutexAPI).execute(jdbcResource);
         }
       } else {
-        new CompactFunction(compactRqst, openTxnTimeOutMillis, mutexAPI);
+        new CompactFunction(compactRqst, openTxnTimeOutMillis, mutexAPI).execute(jdbcResource);
       }
     }
     return null;

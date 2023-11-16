@@ -85,7 +85,7 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
       Pair<Long, String> existing = npJdbcTemplate.query(
           "SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE (\"CQ_STATE\" IN(:states) OR" +
               " (\"CQ_STATE\" = :readyForCleaningState AND \"CQ_HIGHEST_WRITE_ID\" = :highestWriteId)) AND" +
-              " \"CQ_DATABASE\"= :dbName AND \"CQ_TABLE\"= :tableName AND (:partition is NULL OR \"CQ_PARTITION\" = :partition)",
+              " \"CQ_DATABASE\"= :dbName AND \"CQ_TABLE\"= :tableName AND ((:partition is NULL AND \"CQ_PARTITION\" IS NULL) OR \"CQ_PARTITION\" = :partition)",
           new MapSqlParameterSource()
               .addValue("states", Arrays.asList(Character.toString(INITIATED_STATE), Character.toString(WORKING_STATE)))
               .addValue("readyForCleaningState", READY_FOR_CLEANING, Types.VARCHAR)

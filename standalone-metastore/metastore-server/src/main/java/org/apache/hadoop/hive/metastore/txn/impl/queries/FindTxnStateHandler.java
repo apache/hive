@@ -53,7 +53,7 @@ public class FindTxnStateHandler implements QueryHandler<TxnStatus> {
 
   @Override
   public TxnStatus extractData(ResultSet rs) throws SQLException, DataAccessException {
-    if (!rs.next()) {
+    if (rs.next()) {
         return TxnStatus.fromString(rs.getString("STATE")); 
     } else {
       return TxnStatus.UNKNOWN;

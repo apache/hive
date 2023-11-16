@@ -318,7 +318,7 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
-  @SqlRetry
+  @SqlRetry(lockInternally = true, retryOnDuplicateKey = true)
   @Transactional(POOL_TX)
   AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException;
@@ -359,7 +359,6 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
-  @Transactional(POOL_TX)
   @RetrySemantics.CannotRetry
   LockResponse lock(LockRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException;

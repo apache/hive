@@ -585,10 +585,6 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
           EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, txnType), jdbcResource.getConnection(), jdbcResource.getSqlGenerator());
 
-      //Please note that TxnHandler and CompactionTxnHandler are using different DataSources (to have different pools).
-      //This call must use the same transaction and connection as TxnHandler.commitTxn(), therefore we are passing the 
-      //datasource wrapper comming from TxnHandler. Without this, the getCompactionByTxnId(long txnId) call would be
-      //executed using a different connection obtained from CompactionTxnHandler's own datasourceWrapper. 
       CompactionInfo compactionInfo = jdbcResource.execute(new GetCompactionInfoHandler(txnid, true));
       if (compactionInfo != null) {
         MetaStoreListenerNotifier

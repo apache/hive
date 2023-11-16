@@ -136,8 +136,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
               + "AND \"TC_WRITEID\" <= :id",
           params.addValue("id", info.highestWriteId));
     } else if (CollectionUtils.isNotEmpty(info.writeIds)) {
-      MapSqlParameterSource parameterSource = new MapSqlParameterSource(params.getValues());
-      parameterSource.addValue("ids", new ArrayList<>(info.writeIds));
+      params.addValue("ids", new ArrayList<>(info.writeIds));
       totalCount = jdbcResource.execute(new InClauseBatchCommand<>(
           "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
               + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :state) "
