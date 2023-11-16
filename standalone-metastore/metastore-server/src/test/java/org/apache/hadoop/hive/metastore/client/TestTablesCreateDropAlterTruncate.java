@@ -1595,7 +1595,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
                .setNumBuckets(4)
                .setRetention(30000)
                .setRewriteEnabled(true)
-               .setType("VIEW")
+               .setType("VIRTUAL_VIEW")
                .setViewExpandedText("viewExplainedText")
                .setViewOriginalText("viewOriginalText")
                .setSerdeLib("serdelib")
