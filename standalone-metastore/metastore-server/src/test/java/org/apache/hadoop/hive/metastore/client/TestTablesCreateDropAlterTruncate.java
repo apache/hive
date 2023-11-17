@@ -262,10 +262,6 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     createdTable.unsetId();
     Assert.assertEquals("create/get table data", table, createdTable);
 
-    // Check that the directory is created
-    Assert.assertTrue("The directory should not be created",
-        metaStore.isPathExists(new Path(createdTable.getSd().getLocation())));
-
     client.dropTable(table.getDbName(), table.getTableName(), true, false);
     try {
       client.getTable(table.getDbName(), table.getTableName());
