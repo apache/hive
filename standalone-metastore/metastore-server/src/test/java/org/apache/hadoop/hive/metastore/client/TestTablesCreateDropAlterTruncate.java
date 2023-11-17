@@ -1572,6 +1572,23 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     client.dropTable("nosuch", testTables[0].getDbName(), testTables[0].getTableName(), true, false);
   }
 
+  @Test(expected = MetaException.class)
+  public void testDropManagedTableWithoutStoragePermission() throws TException, IOException {
+    String dbName = testTables[0].getDbName();
+    String tblName = testTables[0].getTableName();
+    Table table = client.getTable(dbName, tblName);
+    Path tablePath = new Path(table.getSd().getLocation());
+    FileSystem fs = Warehouse.getFs(tablePath, new Configuration());
+    fs.setPermission(tablePath.getParent(), new FsPermission((short) 0555));
+
+    try {
+      client.dropTable(dbName, tblName);
+    } finally {
+      // recover write permission so that file can be cleaned.
+      fs.setPermission(tablePath.getParent(), new FsPermission((short) 0755));
+    }
+  }
+
   @Test
   public void testDropExternalTableWithoutStoragePermission() throws TException, IOException {
     // external table
