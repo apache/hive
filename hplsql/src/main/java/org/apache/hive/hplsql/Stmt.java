@@ -669,7 +669,7 @@ public class Stmt {
   public Integer assignFromSelect(HplsqlParser.Assignment_stmt_select_itemContext ctx) {
     if (exec.buildSql) {
       StringBuilder sb = new StringBuilder();
-      sb.append(exec.getFormattedText(ctx, ctx.start.getStartIndex(), ctx.select_stmt().getStart().getStartIndex()-1));
+      sb.append(Exec.getFormattedText(ctx, ctx.start.getStartIndex(), ctx.select_stmt().getStart().getStartIndex()-1));
       sb.append(evalPop(ctx.select_stmt()).toString());
       sb.append(")");
       exec.stackPush(sb);
@@ -687,27 +687,7 @@ public class Stmt {
     }
     exec.setSqlSuccess();
     try {
-      int cnt = ctx.ident().size();
-      if (query.next()) {
-        for (int i = 0; i < cnt; i++) {
-          Var var = exec.findVariable(ctx.ident(i).getText());
-          if (var != null) {
-            var.setValue(query, i);
-            if (trace) {
-              trace(ctx, "COLUMN: " + query.metadata().columnName(i) + ", " + query.metadata().columnTypeName(i));
-              trace(ctx, "SET " + var.getName() + " = " + var.toString());
-            }
-          }
-          else if(trace) {
-            trace(ctx, "Variable not found: " + ctx.ident(i).getText());
-          }
-        }
-        exec.incRowCount();
-        exec.setSqlSuccess();
-      } else {
-        exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
-        exec.signal(Signal.Type.NOTFOUND);
-      }
+      processQueryResult(ctx, query);
     } catch (QueryException e) {
       exec.signal(query);
       return 1;
@@ -716,7 +696,31 @@ public class Stmt {
     }
     return 0; 
   }
-  
+
+  private void processQueryResult(HplsqlParser.Assignment_stmt_select_itemContext ctx, QueryResult query) {
+    int cnt = ctx.ident().size();
+    if (query.next()) {
+      for (int i = 0; i < cnt; i++) {
+        Var var = exec.findVariable(ctx.ident(i).getText());
+        if (var != null) {
+          var.setValue(query, i);
+          if (trace) {
+            trace(ctx, "COLUMN: " + query.metadata().columnName(i) + ", " + query.metadata().columnTypeName(i));
+            trace(ctx, "SET " + var.getName() + " = " + var.toString());
+          }
+        }
+        else if(trace) {
+          trace(ctx, "Variable not found: " + ctx.ident(i).getText());
+        }
+      }
+      exec.incRowCount();
+      exec.setSqlSuccess();
+    } else {
+      exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
+      exec.signal(Signal.Type.NOTFOUND);
+    }
+  }
+
   /**
    * SQL INSERT statement
    */
@@ -1183,20 +1187,20 @@ public class Stmt {
 
   @NotNull
   private String generateUpdateQuery(HplsqlParser.Update_stmtContext ctx) {
-    HplsqlParser.Update_assignmentContext update_assignmentContext = ctx.update_assignment();
+    HplsqlParser.Update_assignmentContext updateAssignmentContext = ctx.update_assignment();
     StringBuilder sql = new StringBuilder(
-        exec.getFormattedText(ctx, ctx.start.getStartIndex(), (update_assignmentContext.start.getStartIndex() - 1)));
-    sql.append(evalPop(update_assignmentContext).toString());
-    Token last = update_assignmentContext.getStop();
-    HplsqlParser.Where_clauseContext where_clauseContext = ctx.where_clause();
-    if (where_clauseContext != null) {
-      exec.append(sql, evalPop(where_clauseContext).toString(), last, where_clauseContext.getStart());
-      last = where_clauseContext.getStop();
+        Exec.getFormattedText(ctx, ctx.start.getStartIndex(), (updateAssignmentContext.start.getStartIndex() - 1)));
+    sql.append(evalPop(updateAssignmentContext).toString());
+    Token last = updateAssignmentContext.getStop();
+    HplsqlParser.Where_clauseContext whereClauseContext = ctx.where_clause();
+    if (whereClauseContext != null) {
+      exec.append(sql, evalPop(whereClauseContext).toString(), last, whereClauseContext.getStart());
+      last = whereClauseContext.getStop();
     }
-    HplsqlParser.Update_upsertContext update_upsertContext = ctx.update_upsert();
-    if (update_upsertContext != null) {
-      exec.append(sql, exec.getFormattedText(update_upsertContext, update_upsertContext.start.getStartIndex(),
-                    update_upsertContext.stop.getStopIndex()), last, update_upsertContext.getStart());
+    HplsqlParser.Update_upsertContext updateUpsertContext = ctx.update_upsert();
+    if (updateUpsertContext != null) {
+      exec.append(sql, Exec.getFormattedText(updateUpsertContext, updateUpsertContext.start.getStartIndex(),
+                    updateUpsertContext.stop.getStopIndex()), last, updateUpsertContext.getStart());
     }
     return sql.toString();
   }
