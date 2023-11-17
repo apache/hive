@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
@@ -87,7 +88,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
             .setDbName(DEFAULT_DATABASE)
             .setTableName("test_view")
             .addCol("test_col", "int")
-            .setType("VIEW")
+            .setType(TableType.VIRTUAL_VIEW.name())
             .create(client, metaStore.getConf());
 
     testTables[2] =
@@ -102,7 +103,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
             .setDbName(DEFAULT_DATABASE)
             .setTableName("test_table_to_find_2")
             .addCol("test_col", "int")
-            .setType("VIEW")
+            .setType(TableType.VIRTUAL_VIEW.name())
             .create(client, metaStore.getConf());
 
     testTables[4] =
