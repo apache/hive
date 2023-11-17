@@ -231,8 +231,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Current number of open txns
   private static AtomicInteger numOpenTxns;
 
+  private static volatile boolean initialized = false;
   private static DataSource connPool;
   private static DataSource connPoolMutex;
+  protected static DataSource connPoolCompactor;
 
   protected static DatabaseProduct dbProduct;
   protected static SQLGenerator sqlGenerator;
@@ -265,36 +267,45 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void setConf(Configuration conf) {
     this.conf = conf;
 
-    int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
-    synchronized (TxnHandler.class) {
-      try (DataSourceProvider.DataSourceNameConfigurator configurator =
-               new DataSourceProvider.DataSourceNameConfigurator(conf, POOL_TX)) {
-        if (connPool == null) {
-          connPool = setupJdbcConnectionPool(conf, maxPoolSize);
-        }
-        if (connPoolMutex == null) {
-          configurator.resetName(POOL_MUTEX);
-          connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize);
+    if (!initialized) {
+      synchronized (TxnHandler.class) {
+        if (!initialized) {
+          try (DataSourceProvider.DataSourceNameConfigurator configurator =
+                   new DataSourceProvider.DataSourceNameConfigurator(conf, POOL_TX)) {
+            int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
+            if (connPool == null) {
+              connPool = setupJdbcConnectionPool(conf, maxPoolSize);
+            }
+            if (connPoolMutex == null) {
+              configurator.resetName(POOL_MUTEX);
+              connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize);
+            }
+            if (connPoolCompactor == null) {
+              configurator.resetName(POOL_COMPACTOR);
+              connPoolCompactor = setupJdbcConnectionPool(conf, maxPoolSize);
+            }            
+          }
+          if (dbProduct == null) {
+            try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPool)) {
+              determineDatabaseProduct(dbConn);
+            } catch (SQLException e) {
+              LOG.error("Unable to determine database product", e);
+              throw new RuntimeException(e);
+            }
+          }
+          if (sqlGenerator == null) {
+            sqlGenerator = new SQLGenerator(dbProduct, conf);
+          }
+          initialized = true;
         }
       }
-      if (dbProduct == null) {
-        try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPool)) {
-          determineDatabaseProduct(dbConn);
-        } catch (SQLException e) {
-          LOG.error("Unable to determine database product", e);
-          throw new RuntimeException(e);
-        }
-      }
-
-      if (sqlGenerator == null) {
-        sqlGenerator = new SQLGenerator(dbProduct, conf);
-      }      
     }
 
     if (jdbcResource == null) {
       jdbcResource = new MultiDataSourceJdbcResource(dbProduct, conf, sqlGenerator);
       jdbcResource.registerDataSource(POOL_TX, connPool);
       jdbcResource.registerDataSource(POOL_MUTEX, connPoolMutex);
+      jdbcResource.registerDataSource(POOL_COMPACTOR, connPoolCompactor);
     }
     
     mutexAPI = new HiveMutex(sqlGenerator, jdbcResource);

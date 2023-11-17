@@ -17,14 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveCompactionMetricsDataCommand;
 import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveDuplicateCompleteTxnComponentsCommand;
@@ -68,27 +66,9 @@ class CompactionTxnHandler extends TxnHandler {
   
   private static final Logger LOG = LoggerFactory.getLogger(CompactionTxnHandler.class.getName());
 
-  private static boolean initialized = false;
-  
   public CompactionTxnHandler() {
   }
 
-  @Override
-  public void setConf(Configuration conf) {
-    super.setConf(conf);
-    synchronized (CompactionTxnHandler.class) {
-      if (!initialized) {
-        try (DataSourceProvider.DataSourceNameConfigurator ignored =
-                 new DataSourceProvider.DataSourceNameConfigurator(conf, "compactor")) {
-          initialized = true;
-        }
-      }
-    }
-    
-    int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS);
-    jdbcResource.registerDataSource(POOL_COMPACTOR, setupJdbcConnectionPool(conf, maxPoolSize));
-  }
-  
   /**
    * This will look through the completed_txn_components table and look for partitions or tables
    * that may be ready for compaction.  Also, look through txns and txn_components tables for
