@@ -3,7 +3,10 @@ set hive.explain.user=false;
 
 create table iceTbl (id int, name string) Stored by Iceberg;
 
--- creating branch requires table to have current snapshot. here insert some values to generate current snapshot
+-- create a branch on an empty table
+explain alter table iceTbl create branch test_branch_0;
+alter table iceTbl create branch test_branch_0;
+
 insert into iceTbl values(1, 'jack');
 
 -- create s branch test_branch_1 with default values based on the current snapshotId
