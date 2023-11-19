@@ -32,10 +32,10 @@ public final class BinarySortableUtils {
   public static void fillOrderArrays(
           Properties inputProperties,
           boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker) {
-    Objects.requireNonNull(inputProperties, "inputProperties can not be null");
-    Objects.requireNonNull(columnSortOrderIsDesc, "columnSortOrderIsDesc can not be null");
-    Objects.requireNonNull(columnNullMarker, "columnNullMarker can not be null");
-    Objects.requireNonNull(columnNotNullMarker, "columnNotNullMarker can not be null");
+    Objects.requireNonNull(inputProperties, "inputProperties cannot be null");
+    Objects.requireNonNull(columnSortOrderIsDesc, "columnSortOrderIsDesc cannot be null");
+    Objects.requireNonNull(columnNullMarker, "columnNullMarker cannot be null");
+    Objects.requireNonNull(columnNotNullMarker, "columnNotNullMarker cannot be null");
 
     if (columnSortOrderIsDesc.length != columnNullMarker.length ||
             columnSortOrderIsDesc.length != columnNotNullMarker.length) {

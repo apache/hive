@@ -205,7 +205,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
   @Override
   public int compareTo(BytesRefWritable other) {
     if (other == null) {
-      throw new IllegalArgumentException("Argument can not be null.");
+      throw new IllegalArgumentException("Argument cannot be null.");
     }
     if (this == other) {
       return 0;

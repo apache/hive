@@ -55,7 +55,7 @@ public class BytesRefArrayWritable implements Writable,
    */
   public BytesRefArrayWritable(int capacity) {
     if (capacity < 0) {
-      throw new IllegalArgumentException("Capacity can not be negative.");
+      throw new IllegalArgumentException("Capacity cannot be negative.");
     }
     bytesRefWritables = new BytesRefWritable[0];
     ensureCapacity(capacity);
@@ -129,7 +129,7 @@ public class BytesRefArrayWritable implements Writable,
   @Override
   public int compareTo(BytesRefArrayWritable other) {
     if (other == null) {
-      throw new IllegalArgumentException("Argument can not be null.");
+      throw new IllegalArgumentException("Argument cannot be null.");
     }
     if (this == other) {
       return 0;
