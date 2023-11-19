@@ -128,7 +128,7 @@ public final class LazyBinaryUtils {
    * For void, boolean, byte, short, int, long, float and double, there is no
    * offset and the size is fixed. For string, map, list, struct, the first four
    * bytes are used to store the size. So the offset is 4 and the size is
-   * computed by concating the first four bytes together. The first four bytes
+   * computed by concatenating the first four bytes together. The first four bytes
    * are defined with respect to the offset in the bytes arrays.
    * For timestamp, if the first bit is 0, the record length is 4, otherwise
    * a VInt begins at the 5th byte and its length is added to 4.
