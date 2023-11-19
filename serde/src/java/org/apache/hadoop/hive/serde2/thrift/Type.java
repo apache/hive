@@ -355,7 +355,7 @@ public enum Type {
   }
 
   /**
-   * Is the type case sensitive?
+   * Is the type case-sensitive?
    * @return
    */
   public Boolean isCaseSensitive() {
