@@ -29,6 +29,7 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SortOrder;
@@ -93,6 +94,7 @@ public class TestHelper {
     Map<String, String> props = Maps.newHashMap(tblProps);
     props.put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.name());
     props.put(TableProperties.ENGINE_HIVE_ENABLED, "true");
+    props.put(TableProperties.DELETE_MODE, RowLevelOperationMode.MERGE_ON_READ.modeName());
     return props;
   }
 

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
@@ -242,12 +241,17 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testDeleteStatementUnpartitioned() throws TException, InterruptedException {
+    executeDeleteAndValidateDataUnpartitioned(2);
+  }
+
+  private void executeDeleteAndValidateDataUnpartitioned(int formatVersion) throws TException, InterruptedException {
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
 
     // verify delete mode set to merge-on-read
-    Assert.assertEquals(HiveIcebergStorageHandler.MERGE_ON_READ,
+    Assert.assertEquals(formatVersion == 2 ? HiveIcebergStorageHandler.MERGE_ON_READ : null,
         shell.metastore().getTable("default", "customers")
             .getParameters().get(TableProperties.DELETE_MODE));
 
@@ -403,10 +407,21 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testUpdateStatementUnpartitioned() {
+  public void testUpdateStatementUnpartitioned() throws TException, InterruptedException {
+    executeUpdateAndValidateDataUnpartitioned(2);
+  }
+
+  private void executeUpdateAndValidateDataUnpartitioned(int formatVersion) throws TException, InterruptedException {
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
+
+    // verify update mode set to merge-on-read
+    Assert.assertEquals(formatVersion == 2 ? HiveIcebergStorageHandler.MERGE_ON_READ : null,
+        shell.metastore().getTable("default", "customers")
+            .getParameters().get(TableProperties.UPDATE_MODE));
+
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
@@ -587,31 +602,13 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testDeleteStatementFormatV1() {
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2);
-    // insert one more batch so that we have multiple data files within the same partition
-    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
-        TableIdentifier.of("default", "customers"), false));
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Attempt to do update or delete on table", () -> {
-          shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'");
-        });
+  public void testDeleteStatementFormatV1() throws TException, InterruptedException {
+    executeDeleteAndValidateDataUnpartitioned(1);
   }
 
   @Test
-  public void testUpdateStatementFormatV1() {
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2);
-    // insert one more batch so that we have multiple data files within the same partition
-    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
-        TableIdentifier.of("default", "customers"), false));
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Attempt to do update or delete on table", () -> {
-          shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'");
-        });
+  public void testUpdateStatementFormatV1() throws TException, InterruptedException {
+    executeUpdateAndValidateDataUnpartitioned(1);
   }
 
   @Test
