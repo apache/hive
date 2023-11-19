@@ -2508,9 +2508,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               HiveUtils.getTableSnapshotRef(ts.tableHandle.getSnapshotRef()));
         }
         // Disallow update and delete on non-acid tables
-        final boolean isWriteOperation = updating(name) || deleting(name);
+        boolean isWriteOperation = updating(name) || deleting(name);
         boolean isFullAcid = AcidUtils.isFullAcidTable(ts.tableHandle) ||
-            AcidUtils.isNonNativeAcidTable(ts.tableHandle, isWriteOperation);
+            AcidUtils.isNonNativeAcidTable(ts.tableHandle);
         if (isWriteOperation && !isFullAcid) {
           if (!AcidUtils.isInsertOnlyTable(ts.tableHandle)) {
             // Whether we are using an acid compliant transaction manager has already been caught in
@@ -7080,7 +7080,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     } else {
       // Non-native acid tables should handle their own bucketing for updates/deletes
-      if ((updating(dest) || deleting(dest)) && !AcidUtils.isNonNativeAcidTable(dest_tab, true)) {
+      if ((updating(dest) || deleting(dest)) && !AcidUtils.isNonNativeAcidTable(dest_tab)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
         sortCols = getPartitionColsFromBucketColsForUpdateDelete(input, false);
         createSortOrderForUpdateDelete(sortCols, order, nullOrder);
@@ -8087,7 +8087,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ColumnInfo> vecCol = new ArrayList<ColumnInfo>();
     
     if (updating(dest) || deleting(dest) || merging(dest)) {
-      if (AcidUtils.isNonNativeAcidTable(destinationTable, true)) {
+      if (AcidUtils.isNonNativeAcidTable(destinationTable)) {
         destinationTable.getStorageHandler().acidVirtualColumns().stream()
             .map(col -> new ColumnInfo(col.getName(), col.getTypeInfo(), "", true))
             .forEach(vecCol::add);
@@ -8914,7 +8914,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // For Non-Native ACID tables we should convert the new values as well
       rowFieldsOffset = expressions.size();
-      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table, true)
+      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table)
           && rowFields.size() >= rowFieldsOffset + columnNumber) {
         for (int i = 0; i < columnNumber; i++) {
           ExprNodeDesc column = handleConversion(tableFields.get(i), rowFields.get(rowFieldsOffset-columnNumber + i), converted, dest, i);
@@ -11943,7 +11943,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!tab.isNonNative()) {
         vcList.addAll(VirtualColumn.getRegistry(conf));
       }
-      if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab, false)) {
+      if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab)) {
         vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
       }
 

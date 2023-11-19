@@ -42,7 +42,7 @@ public class SqlGeneratorFactory {
   }
 
   public MultiInsertSqlGenerator createSqlGenerator() {
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
     return nonNativeAcid ? new NonNativeAcidMultiInsertSqlGenerator(targetTable, targetTableFullName, conf, subQueryAlias, deletePrefix) :
         new NativeAcidMultiInsertSqlGenerator(targetTable, targetTableFullName, conf, subQueryAlias);
   }

@@ -3378,9 +3378,9 @@ public class AcidUtils {
     }
   }
 
-  public static boolean isNonNativeAcidTable(Table table, boolean isWriteOperation) {
+  public static boolean isNonNativeAcidTable(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table, isWriteOperation) != HiveStorageHandler.AcidSupportType.NONE;
+        table.getStorageHandler().supportsAcidOperations() != HiveStorageHandler.AcidSupportType.NONE;
   }
 
   /**
@@ -3393,7 +3393,7 @@ public class AcidUtils {
     if (isTransactionalTable(table)) {
       return Lists.newArrayList(VirtualColumn.ROWID);
     } else {
-      if (isNonNativeAcidTable(table, false)) {
+      if (isNonNativeAcidTable(table)) {
         return table.getStorageHandler().acidVirtualColumns();
       }
     }
@@ -3402,7 +3402,7 @@ public class AcidUtils {
 
   public static boolean acidTableWithoutTransactions(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table, true) ==
+        table.getStorageHandler().supportsAcidOperations() ==
             HiveStorageHandler.AcidSupportType.WITHOUT_TRANSACTIONS;
   }
 

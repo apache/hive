@@ -62,7 +62,7 @@ public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
     } else if (splitUpdate) {
       return new SplitMergeRewriter(db, conf, sqlGeneratorFactory);
     } else {
-      if (AcidUtils.isNonNativeAcidTable(table, true)) {
+      if (AcidUtils.isNonNativeAcidTable(table)) {
         throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
       }
       return new MergeRewriter(db, conf, sqlGeneratorFactory);
