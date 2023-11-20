@@ -688,16 +688,11 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     // Get the column names of the aggregations for reduce sink
     ArrayList<ExprNodeDesc> rsValueCols = new ArrayList<ExprNodeDesc>();
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
-    ArrayList<ColumnInfo> rsColInfos = new ArrayList<>();
-    for (int colPos = 0; colPos < aggs.size(); colPos++) {
-      TypeInfo typInfo = groupbyColInfos.get(colPos).getType();
-      ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(typInfo, gbOutputNames.get(colPos), "", false);
+    for (int i = 0; i < aggs.size(); i++) {
+      ExprNodeColumnDesc colExpr =
+          new ExprNodeColumnDesc(groupbyColInfos.get(i).getType(), gbOutputNames.get(i), "", false);
       rsValueCols.add(colExpr);
-      columnExprMap.put(Utilities.ReduceField.VALUE + "." + gbOutputNames.get(colPos), colExpr);
-
-      ColumnInfo colInfo =
-          new ColumnInfo(Utilities.ReduceField.VALUE + "." + gbOutputNames.get(colPos), typInfo, "", false);
-      rsColInfos.add(colInfo);
+      columnExprMap.put(gbOutputNames.get(i), colExpr);
     }
 
     // Create the reduce sink operator
@@ -705,7 +700,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
             new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
             -1, 0, 1, Operation.NOT_ACID, NullOrdering.defaultNullOrder(parseContext.getConf()));
     ReduceSinkOperator rsOp = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
-            rsDesc, new RowSchema(rsColInfos), groupByOp);
+            rsDesc, new RowSchema(groupByOp.getSchema()), groupByOp);
     rsOp.setColumnExprMap(columnExprMap);
 
     rsOp.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.QUICKSTART));
@@ -803,11 +798,10 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       TypeInfo typInfo = gbySchema.get(colPos).getType();
       ExprNodeColumnDesc rsValExpr = new ExprNodeColumnDesc(typInfo, gbyColName, "", false);
       rsValueCols.add(rsValExpr);
-      columnExprMap.put(Utilities.ReduceField.VALUE + "." + gbyColName, rsValExpr);
 
-      ColumnInfo colInfo =
-          new ColumnInfo(Utilities.ReduceField.VALUE + "." + gbyColName, typInfo, "", false);
-      rsColInfos.add(colInfo);
+      String rsOutputColName = Utilities.ReduceField.VALUE + "." + gbyColName;
+      columnExprMap.put(rsOutputColName, rsValExpr);
+      rsColInfos.add(new ColumnInfo(rsOutputColName, typInfo, "", false));
     }
 
     // Create the final Reduce Sink Operator

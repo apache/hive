@@ -333,7 +333,7 @@ public class ParallelEdgeFixer extends Transform {
     Set<String> neededColumns = new HashSet<String>();
 
     if (!rs.getSchema().getColumnNames().stream().allMatch(exprMap::containsKey)) {
-      // Cannot invert RS because exprMap does not contain all of the RS's input columns.
+      // Cannot invert RS because exprMap does not contain all of RS's input columns.
       return Optional.empty();
     }
 
