@@ -186,7 +186,17 @@ public class OperatorUtils {
    * @return true if limit is exceeded false otherwise
    * @param <T> type of operator to track
    */
-  public static <T> boolean hasMoreOperatorsThan(Operator<?> start, Class<T> opClazz, int limit) {
+  public static <T> boolean hasMoreOperatorsThan(
+      Operator<?> start, Class<T> opClazz, int limit) {
+    return hasMoreOperatorsThan(start, opClazz, limit, new HashSet<>());
+  }
+
+  private static <T> boolean hasMoreOperatorsThan(
+      Operator<?> start, Class<T> opClazz, int limit, Set<Operator<?>> visited) {
+    if (visited.contains(start)) {
+      return limit <= 0;
+    }
+
     if (limit <= 0) {
       return false;
     }
@@ -201,7 +211,7 @@ public class OperatorUtils {
 
     if (start.getParentOperators() != null) {
       for (Operator<?> parent : start.getParentOperators()) {
-        if (hasMoreOperatorsThan(parent, opClazz, limit)) {
+        if (hasMoreOperatorsThan(parent, opClazz, limit, visited)) {
           return true;
         }
       }
