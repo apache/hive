@@ -43,7 +43,6 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 
-@SuppressWarnings("deprecation")
 public class ColumnTruncateMapper extends MapReduceBase implements
     Mapper<Object, RCFileValueBufferWrapper, Object, Object> {
 
@@ -55,7 +54,6 @@ public class ColumnTruncateMapper extends MapReduceBase implements
   FileSystem fs;
 
   boolean exception = false;
-  boolean autoDelete = false;
   Path outPath;
 
   CompressionCodec codec = null;
@@ -84,7 +82,6 @@ public class ColumnTruncateMapper extends MapReduceBase implements
     updatePaths(tmpPath, taskTmpPath);
     try {
       fs = specPath.getFileSystem(job);
-      autoDelete = fs.deleteOnExit(outPath);
     } catch (IOException e) {
       this.exception = true;
       throw new RuntimeException(e);
@@ -209,9 +206,7 @@ public class ColumnTruncateMapper extends MapReduceBase implements
         throw new IOException("Unable to rename output to " + finalPath);
       }
     } else {
-      if (!autoDelete) {
-        fs.delete(outPath, true);
-      }
+      fs.delete(outPath, true);
     }
   }
 

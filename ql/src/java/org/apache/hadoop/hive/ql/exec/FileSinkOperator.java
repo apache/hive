@@ -346,35 +346,58 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       updateProgress();
     }
 
-    public void abortWritersAndUpdaters(FileSystem fs, boolean abort, boolean delete) throws HiveException {
+    protected void cleanupWritersAndUpdaters(FileSystem fs, boolean abort) throws HiveException {
+      boolean delete = shouldDeleteFilesOnClose();
+      Exception exception = null;
+
       for (int idx = 0; idx < outWriters.length; idx++) {
         if (outWriters[idx] != null) {
           try {
-            LOG.debug("Aborted: closing: " + outWriters[idx].toString());
-            outWriters[idx].close(abort);
+            LOG.debug("Cleaning up writer (abort: {}, delete: {}): {}", abort, delete, outWriters[idx].toString());
+            // under normal circumstances RecordWriters were closed in closeWriters method
+            // it might be confusing to check abort == true and then call the writer.close with the same flag,
+            // however we cannot guarantee that all the RecordWriters are idempotent on the close(abort) call,
+            // so we just prevent calling it twice from here
+            if (abort) {
+              outWriters[idx].close(abort);
+            }
             if (delete) {
               fs.delete(outPaths[idx], true);
             }
             updateProgress();
           } catch (IOException e) {
-            throw new HiveException(e);
+            exception = e;
           }
         }
       }
       for (int idx = 0; idx < updaters.length; idx++) {
         if (updaters[idx] != null) {
           try {
-            LOG.debug("Aborted: closing: " + updaters[idx].toString());
-            updaters[idx].close(abort);
+            LOG.debug("Cleaning up updater (abort: {}, delete: {}): {}", abort, delete, updaters[idx].toString());
+            // under normal circumstances RecordUpdaters were closed in closeWriters method
+            // it might be confusing to check abort == true and then call the updater.close with the same flag,
+            // however we cannot guarantee that all the RecordUpdaters are idempotent on the close(abort) call,
+            // so we just prevent calling it twice from here
+            if (abort) {
+              updaters[idx].close(abort);
+            }
             if (delete) {
-              fs.delete(outPaths[idx], true);
+              fs.delete(outPaths[idx], abort);
             }
             updateProgress();
           } catch (IOException e) {
-            throw new HiveException(e);
+            exception = e;
           }
         }
       }
+      // Made an attempt to close/delete all writers.
+      if (exception != null) {
+        throw new HiveException(exception);
+      }
+    }
+
+    private boolean shouldDeleteFilesOnClose() {
+      return isNativeTable() && !conf.isMmTable() && !conf.isDirectInsert();
     }
 
     public void initializeBucketPaths(int filesIdx, String taskId, boolean isNativeTable,
@@ -542,7 +565,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient int timeOut; // JT timeout in msec.
   private transient long lastProgressReport = System.currentTimeMillis();
 
-  protected transient boolean autoDelete = false;
   protected transient JobConf jc;
   Class<? extends Writable> outputClass;
   String taskId, originalTaskId;
@@ -923,11 +945,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           + fsp.buildTmpPath() + ", task " + taskId + ")");
       }
       LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
-
-      if (isNativeTable() && !conf.isMmTable() && !conf.isDirectInsert()) {
-        // in recent hadoop versions, use deleteOnExit to clean tmp files.
-        autoDelete = fs.deleteOnExit(fsp.outPaths[filesIdx]);
-      }
 
       updateDPCounters(fsp, filesIdx);
 
@@ -1559,14 +1576,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (conf.isGatherStats()) {
         publishStats();
       }
-    } else {
-      // Will come here if an Exception was thrown in map() or reduce().
-      // Hadoop always call close() even if an Exception was thrown in map() or
-      // reduce().
-      for (FSPaths fsp : valToPaths.values()) {
-        fsp.abortWritersAndUpdaters(fs, abort,
-            !autoDelete && isNativeTable() && !conf.isMmTable() && !conf.isDirectInsert());
-      }
+    }
+    for (FSPaths fsp : valToPaths.values()) {
+      fsp.cleanupWritersAndUpdaters(fs, abort);
     }
     fsp = prevFsp = null;
     super.closeOp(abort);

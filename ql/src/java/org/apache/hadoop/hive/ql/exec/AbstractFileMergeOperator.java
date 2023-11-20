@@ -51,7 +51,6 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
 
   protected JobConf jc;
   protected FileSystem fs;
-  private boolean autoDelete;
   private Path outPath; // The output path used by the subclasses.
   private Path finalPath; // Used as a final destination; same as outPath for MM tables.
   private Path dpPath;
@@ -81,7 +80,6 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     super.initializeOp(hconf);
     this.jc = new JobConf(hconf);
     incompatFileSet = new HashSet<Path>();
-    autoDelete = false;
     tmpPathFixed = false;
     tmpPathFixedConcatenate = false;
     dpPath = null;
@@ -99,11 +97,6 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     }
     try {
       fs = specPath.getFileSystem(hconf);
-      if (!isMmTable) {
-        // Do not delete for MM tables. We either want the file if we succeed, or we must
-        // delete is explicitly before proceeding if the merge fails.
-        autoDelete = fs.deleteOnExit(outPath);
-      }
     } catch (IOException e) {
       throw new HiveException("Failed to initialize AbstractFileMergeOperator", e);
     }
@@ -242,7 +235,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   public void closeOp(boolean abort) throws HiveException {
     try {
       if (abort) {
-        if (!autoDelete || isMmTable) {
+        if (isMmTable) {
           fs.delete(outPath, true);
         }
         return;
@@ -310,6 +303,16 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       }
     } catch (IOException e) {
       throw new HiveException("Failed to close AbstractFileMergeOperator", e);
+    } finally {
+      try {
+        // in fact, we don't really need to check !isMmTable here, we can call delete on
+        // outPath anyway, so this condition is only for saving a possible namenode call
+        if (!isMmTable) {
+          fs.delete(outPath, true);
+        }
+      } catch (IOException e) {
+        LOG.warn("Error while deleting outPath", e);
+      }
     }
   }
 
@@ -341,8 +344,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       }
 
     } catch (IOException e) {
-      throw new HiveException("Failed jobCloseOp for AbstractFileMergeOperator",
-          e);
+      throw new HiveException("Failed jobCloseOp for AbstractFileMergeOperator", e);
     }
     super.jobCloseOp(hconf, success);
   }
