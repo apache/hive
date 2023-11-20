@@ -56,7 +56,7 @@ public class SplitMergeRewriter extends MergeRewriter {
 
       sqlGenerator.append("    -- update clause (insert part)\n");
       List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
-      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values, false);
+      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
       sqlGenerator.appendInsertBranch(hintStr, values);
       hintStr = null;
 

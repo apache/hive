@@ -207,7 +207,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
           targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
       valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys());
-      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys, false);
+      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
       hintStr = null;
 
@@ -218,23 +218,25 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     }
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
-                             List<String> values, boolean aliasRhsExpr) {
+                             List<String> values) {
+      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias, 
+          HiveUtils.unparseIdentifier(name, conf));
+      
       for (FieldSchema fieldSchema : targetTable.getCols()) {
-        String value = String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
         if (newValues.containsKey(fieldSchema.getName())) {
           String rhsExp = newValues.get(fieldSchema.getName());
-          if (aliasRhsExpr){
-            rhsExp += String.format(" AS %s", value);
-          }
-          values.add(rhsExp);
+          values.add(getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
         } else {
-          values.add(value);
+          values.add(formatter.apply(fieldSchema.getName()));
         }
       }
-
-      targetTable.getPartCols().forEach(fieldSchema ->
-          values.add(
-              String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
+      
+      targetTable.getPartCols().forEach(fieldSchema -> values.add(
+          formatter.apply(fieldSchema.getName())));
+    }
+    
+    protected String getRhsExpValue(String newValue, String alias) {
+      return newValue;
     }
 
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,

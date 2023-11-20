@@ -180,7 +180,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
       values.addAll(sqlGenerator.getDeleteValues(Context.Operation.MERGE));
-      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values, true);
+      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
       
       sqlGenerator.append(columnRefsFunc.apply(StringUtils.join(values, ",")));
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
@@ -190,17 +190,24 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
           columnRefsFunc);
       sqlGenerator.append("\n");
     }
+    
+    @Override
+    protected String getRhsExpValue(String newValue, String alias) {
+        return String.format("%s AS %s", newValue, alias);
+    }
 
     @Override
     protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       String targetAlias = mergeStatement.getTargetAlias();
       String sourceName = mergeStatement.getSourceName();
+      String onClausePredicate = mergeStatement.getOnClausePredicate();
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       List<String> deleteValues = sqlGenerator.getDeleteValues(Context.Operation.DELETE);
-      
-      if (mergeStatement.getWhenClauses().size() > 1) {
+
+      List<MergeStatement.WhenClause> whenClauses = mergeStatement.getWhenClauses();
+      if (whenClauses.size() > 1 || whenClauses.get(0) instanceof MergeStatement.UpdateClause) {
         sqlGenerator.append("union all\n");
       }
       sqlGenerator.append("    -- delete clause\n").append("SELECT ");
@@ -222,9 +229,11 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
       sqlGenerator.append("\n").indent();
       sqlGenerator.append("NOT(").append(whereClauseStr.replace("=","<=>"));
-      sqlGenerator.append(" OR ");
-      sqlGenerator.append(columnRefsFunc.apply(mergeStatement.getOnClausePredicate()));
-
+      
+      if (isNotBlank(onClausePredicate)) {
+        sqlGenerator.append(" OR ");
+        sqlGenerator.append(columnRefsFunc.apply(mergeStatement.getOnClausePredicate()));
+      }
       sqlGenerator.append(")\n").indent();
       // Add the file path filter that matches the delete condition.
       sqlGenerator.append("AND ").append(filePathCol);

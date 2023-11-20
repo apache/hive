@@ -24,10 +24,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetClausePatcher;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.WhereClausePatcher;
 
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.DELETE_PREFIX;
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.SUB_QUERY_ALIAS;

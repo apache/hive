@@ -34,6 +34,12 @@ import org.junit.Test;
  */
 public class TestHiveIcebergSetCurrentSnapshot extends HiveIcebergStorageHandlerWithEngineBase {
 
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  }
+
   @Test
   public void testSetCurrentSnapshot() throws IOException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "source");
@@ -66,9 +72,6 @@ public class TestHiveIcebergSetCurrentSnapshot extends HiveIcebergStorageHandler
 
   @Test
   public void testSetCurrentSnapshotBySnapshotRef() throws IOException, InterruptedException {
-    // enough to test once
-    Assume.assumeTrue(fileFormat == FileFormat.ORC && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
     TableIdentifier identifier = TableIdentifier.of("default", "source");
     Table table =
         testTables.createTableWithVersions(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,

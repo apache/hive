@@ -119,16 +119,11 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
     String sourceName = getSimpleTableName(source);
     ASTNode onClause = (ASTNode) tree.getChild(2);
     String onClauseAsText = getMatchedText(onClause);
-
-    OnClauseAnalyzer oca = new OnClauseAnalyzer(onClause, targetTable, targetAlias,
-      conf, onClauseAsText);
-    oca.analyze();
     
     MergeStatement.MergeStatementBuilder mergeStatementBuilder = MergeStatement
         .withTarget(targetTable, getFullTableNameForSQL(targetNameNode), targetAlias)
         .sourceName(sourceName)
         .sourceAlias(getSourceAlias(source, sourceName))
-        .onClausePredicate(oca.getPredicate())
         .onClauseAsText(onClauseAsText);
 
     int whenClauseBegins = 3;
@@ -160,8 +155,14 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
       switch (getWhenClauseOperation(whenClause).getType()) {
       case HiveParser.TOK_INSERT:
         numInsertClauses++;
+
+        OnClauseAnalyzer oca = new OnClauseAnalyzer(onClause, targetTable, targetAlias,
+          conf, onClauseAsText);
+        oca.analyze();
+        
         mergeStatementBuilder.addWhenClause(
-            handleInsert(whenClause, oca.getPredicate(), targetTable));
+            handleInsert(whenClause, oca.getPredicate(), targetTable))
+          .onClausePredicate(oca.getPredicate());
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
