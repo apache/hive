@@ -51,29 +51,25 @@ public class YarnQueueHelper {
   private int lastKnownGoodUrl;
   private boolean sslForYarn;
   private boolean isHA;
-  private static String webapp_conf_key = YarnConfiguration.RM_WEBAPP_ADDRESS;
-  private static String webapp_ssl_conf_key = YarnConfiguration.RM_WEBAPP_HTTPS_ADDRESS;
-  private static String yarn_HA_enabled = YarnConfiguration.RM_HA_ENABLED;
-  private static String yarn_HA_rmids = YarnConfiguration.RM_HA_IDS;
 
   public YarnQueueHelper(HiveConf conf) {
     ArrayList<String> nodeList = new ArrayList<>();
     sslForYarn = YarnConfiguration.useHttps(conf);
-    isHA = conf.getBoolean(yarn_HA_enabled, false);
-    LOG.info(String.format("Yarn is using SSL: %s", sslForYarn));
-    LOG.info(String.format("Yarn HA is enabled: %s", isHA));
+    isHA = conf.getBoolean(YarnConfiguration.RM_HA_ENABLED, false);
+    LOG.info("Yarn is using SSL: {}, HA enabled: {}", sslForYarn, isHA);
 
     if (isHA) {
-      String[] rmids = conf.getStrings(yarn_HA_rmids);
+      String[] rmids = conf.getStrings(YarnConfiguration.RM_HA_IDS);
       if (sslForYarn == true) {
         for (String rmid : rmids) {
-          nodeList.addAll(Arrays.asList(conf.getTrimmedStrings(webapp_ssl_conf_key + "."+rmid)));
+          nodeList.addAll(Arrays.asList(conf
+                  .getTrimmedStrings(YarnConfiguration.RM_WEBAPP_HTTPS_ADDRESS + "." + rmid)));
         }
         Preconditions.checkArgument(nodeList.size() > 0,
             "yarn.resourcemanager.ha.rm-ids must be set to enable queue access checks in Yarn HA mode");
       }else{
         for (String rmid : rmids) {
-          nodeList.addAll(Arrays.asList(conf.getTrimmedStrings(webapp_conf_key + "."+rmid)));
+          nodeList.addAll(Arrays.asList(conf.getTrimmedStrings(YarnConfiguration.RM_WEBAPP_ADDRESS + "."+rmid)));
           Preconditions.checkArgument(nodeList.size() > 0,
               "yarn.resourcemanager.ha.rm-ids must be set to enable queue access checks in Yarn HA mode");
         }
@@ -81,11 +77,11 @@ public class YarnQueueHelper {
       rmNodes = nodeList.toArray(new String[nodeList.size()]);
     }else {
       if (sslForYarn == true) {
-        rmNodes = conf.getTrimmedStrings(webapp_ssl_conf_key);
+        rmNodes = conf.getTrimmedStrings(YarnConfiguration.RM_WEBAPP_HTTPS_ADDRESS);
         Preconditions.checkArgument((rmNodes != null && rmNodes.length > 0),
             "yarn.resourcemanager.webapp.https.address must be set to enable queue access checks using TLS");
       } else {
-        rmNodes = conf.getTrimmedStrings(webapp_conf_key);
+        rmNodes = conf.getTrimmedStrings(YarnConfiguration.RM_WEBAPP_ADDRESS);
         Preconditions.checkArgument((rmNodes != null && rmNodes.length > 0),
             "yarn.resourcemanager.webapp.address must be set to enable queue access checks");
       }
