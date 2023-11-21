@@ -640,14 +640,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return returnVal;
   }
 
+  private void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, ASTNode tabColNames,
+                              Map<String, CTEClause> aliasToCTEs) throws SemanticException {
+    doPhase1QBExpr(ast, qbexpr, id, alias, false, tabColNames, aliasToCTEs);
+  }
+
   private void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, ASTNode tabColNames)
       throws SemanticException {
-    doPhase1QBExpr(ast, qbexpr, id, alias, false, tabColNames);
+    doPhase1QBExpr(ast, qbexpr, id, alias, false, tabColNames, aliasToCTEs);
   }
 
   @SuppressWarnings("nls")
   void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView, ASTNode tabColNames)
       throws SemanticException {
+    doPhase1QBExpr(ast, qbexpr, id, alias, insideView, tabColNames, this.aliasToCTEs);
+  }
+
+  @SuppressWarnings("nls")
+  void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView, ASTNode tabColNames,
+                      Map<String, CTEClause> aliasToCTEs) throws SemanticException {
 
     assert (ast.getToken() != null);
     if (ast.getToken().getType() == HiveParser.TOK_QUERY) {
@@ -655,7 +666,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qb.setInsideView(insideView);
       Phase1Ctx ctx_1 = initPhase1Ctx();
       qb.getParseInfo().setColAliases(tabColNames);
-      doPhase1(ast, qb, ctx_1, null);
+      doPhase1(ast, qb, ctx_1, null, aliasToCTEs);
 
       qbexpr.setOpcode(QBExpr.Opcode.NULLOP);
       qbexpr.setQB(qb);
@@ -686,14 +697,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (ast.getChild(0) != null);
       QBExpr qbexpr1 = new QBExpr(alias + SUBQUERY_TAG_1);
       doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id,
-          alias + SUBQUERY_TAG_1, insideView, tabColNames);
+          alias + SUBQUERY_TAG_1, insideView, tabColNames, aliasToCTEs);
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
       assert (ast.getChild(1) != null);
       QBExpr qbexpr2 = new QBExpr(alias + SUBQUERY_TAG_2);
       doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id,
-          alias + SUBQUERY_TAG_2, insideView, tabColNames);
+          alias + SUBQUERY_TAG_2, insideView, tabColNames, aliasToCTEs);
       qbexpr.setQBExpr2(qbexpr2);
     }
   }
@@ -1297,11 +1308,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return alias;
   }
 
+  private void processLateralViewSelect(ASTNode lateralViewSelect) throws SemanticException {
+    ASTNode selExprToken = (ASTNode) lateralViewSelect.getChild(0);
+    if (selExprToken.getToken().getType() != HiveParser.TOK_SELEXPR) {
+      throw new SemanticException(ASTErrorUtils.getMsg(
+          ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), selExprToken));
+    }
+    for (Object o : selExprToken.getChildren()) {
+      ASTNode node = (ASTNode) o;
+      switch (node.getToken().getType()) {
+        case HiveParser.TOK_FUNCTION:
+          break;
+        case HiveParser.Identifier:
+          unparseTranslator.addIdentifierTranslation(node);
+          break;
+        case HiveParser.TOK_TABALIAS:
+          unparseTranslator.addIdentifierTranslation((ASTNode) node.getChild(0));
+          break;
+        default:
+          throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), selExprToken));
+      }
+    }
+  }
+
   /*
    * Phase1: hold onto any CTE definitions in aliasToCTE.
    * CTE definitions are global to the Query.
    */
-  private void processCTE(QB qb, ASTNode ctes) throws SemanticException {
+  private void processCTE(QB qb, ASTNode ctes, Map<String, CTEClause> aliasToCTEs) throws SemanticException {
 
     int numCTEs = ctes.getChildCount();
 
@@ -1310,9 +1345,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode cteQry = (ASTNode) cte.getChild(0);
       String alias = unescapeIdentifier(cte.getChild(1).getText());
       ASTNode withColList = cte.getChildCount() == 3 ? (ASTNode) cte.getChild(2) : null;
-
-      String qName = qb.getId() == null ? "" : qb.getId() + ":";
-      qName += alias.toLowerCase();
+      String qName = getAliasId(alias, qb);
 
       if ( aliasToCTEs.containsKey(qName)) {
         throw new SemanticException(ASTErrorUtils.getMsg(
@@ -1334,7 +1367,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * they appear in when adding them to the <code>aliasToCTEs</code> map.
    *
    */
-  private CTEClause findCTEFromName(QB qb, String cteName) {
+  private CTEClause findCTEFromName(QB qb, String cteName, Map<String, CTEClause> aliasToCTEs) {
     StringBuilder qId = new StringBuilder();
     if (qb.getId() != null) {
       qId.append(qb.getId());
@@ -1367,7 +1400,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void addCTEAsSubQuery(QB qb, String cteName, String cteAlias)
       throws SemanticException {
     cteAlias = cteAlias == null ? cteName : cteAlias;
-    CTEClause cte = findCTEFromName(qb, cteName);
+    CTEClause cte = findCTEFromName(qb, cteName, aliasToCTEs);
     ASTNode cteQryNode = cte.cteNode;
     QBExpr cteQBExpr = new QBExpr(cteAlias);
     doPhase1QBExpr(cteQryNode, cteQBExpr, qb.getId(), cteAlias, cte.withColList);
@@ -1671,10 +1704,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
     }
+    processLateralViewSelect((ASTNode) lateralView.getChild(0));
     alias = alias.toLowerCase();
     qb.getParseInfo().addLateralViewForAlias(alias, lateralView);
     qb.addAlias(alias);
     return alias;
+  }
+
+  @SuppressWarnings({"fallthrough", "nls"})
+  boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1, PlannerContext plannerCtx)
+      throws SemanticException {
+    return doPhase1(ast, qb, ctx_1, plannerCtx, this.aliasToCTEs);
   }
 
   /**
@@ -1694,7 +1734,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   @SuppressWarnings({"fallthrough", "nls"})
-  boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1, PlannerContext plannerCtx)
+  boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1, PlannerContext plannerCtx, Map<String, CTEClause> aliasToCTEs)
       throws SemanticException {
 
     boolean phase1Result = true;
@@ -2018,7 +2058,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.getParseInfo().getDestToLateralView().put(ctx_1.dest, ast);
         break;
       case HiveParser.TOK_CTE:
-        processCTE(qb, ast);
+        processCTE(qb, ast, aliasToCTEs);
         break;
       case HiveParser.QUERY_HINT:
           processQueryHint(ast, qbp, 0);
@@ -2033,7 +2073,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int child_count = ast.getChildCount();
       for (int child_pos = 0; child_pos < child_count && phase1Result; ++child_pos) {
         // Recurse
-        phase1Result = doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1, plannerCtx);
+        phase1Result = doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1, plannerCtx, aliasToCTEs);
       }
     }
     return phase1Result;
@@ -2156,14 +2196,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return targetColNames;
   }
 
-  private void getMaterializationMetadata(QB qb) throws SemanticException {
+  private Map<String, CTEClause> getMaterializationMetadata(QB qb) throws SemanticException {
     if (qb.isCTAS()) {
-      return;
+      return null;
     }
+    Map<String, CTEClause> materializationAliasToCTEs = new HashMap<>(this.aliasToCTEs);
     try {
-      gatherCTEReferences(qb, rootClause);
+      gatherCTEReferences(qb, rootClause, materializationAliasToCTEs);
       int threshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD);
-      for (CTEClause cte : Sets.newHashSet(aliasToCTEs.values())) {
+      for (CTEClause cte : Sets.newHashSet(materializationAliasToCTEs.values())) {
         if (threshold >= 0 && cte.reference >= threshold) {
           cte.materialize = !HiveConf.getBoolVar(conf, ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY)
               || cte.qbExpr.getQB().getParseInfo().isFullyAggregate();
@@ -2176,48 +2217,57 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       throw new SemanticException(e.getMessage(), e);
     }
+    return materializationAliasToCTEs;
   }
 
-  private void gatherCTEReferences(QBExpr qbexpr, CTEClause parent) throws HiveException {
+  private void gatherCTEReferences(QBExpr qbexpr, CTEClause parent,
+                                   Map<String, CTEClause> materializationAliasToCTEs) throws HiveException {
     if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
-      gatherCTEReferences(qbexpr.getQB(), parent);
+      gatherCTEReferences(qbexpr.getQB(), parent, materializationAliasToCTEs);
     } else {
-      gatherCTEReferences(qbexpr.getQBExpr1(), parent);
-      gatherCTEReferences(qbexpr.getQBExpr2(), parent);
+      gatherCTEReferences(qbexpr.getQBExpr1(), parent, materializationAliasToCTEs);
+      gatherCTEReferences(qbexpr.getQBExpr2(), parent, materializationAliasToCTEs);
     }
   }
 
   // TODO: check view references, too
-  private void gatherCTEReferences(QB qb, CTEClause current) throws HiveException {
+  private void gatherCTEReferences(QB qb, CTEClause current,
+                                   Map<String, CTEClause> materializationAliasToCTEs) throws HiveException {
     for (String alias : qb.getTabAliases()) {
       String tabName = qb.getTabNameForAlias(alias);
       String cteName = tabName.toLowerCase();
 
-      CTEClause cte = findCTEFromName(qb, cteName);
+      CTEClause cte = findCTEFromName(qb, cteName, materializationAliasToCTEs);
       if (cte != null) {
-        if (ctesExpanded.contains(cteName)) {
-          throw new SemanticException("Recursive cte " + cteName +
-              " detected (cycle: " + StringUtils.join(ctesExpanded, " -> ") +
-              " -> " + cteName + ").");
-        }
         cte.reference++;
         current.parents.add(cte);
         if (cte.qbExpr != null) {
           continue;
         }
         cte.qbExpr = new QBExpr(cteName);
-        doPhase1QBExpr(cte.cteNode, cte.qbExpr, qb.getId(), cteName, cte.withColList);
-
-        ctesExpanded.add(cteName);
-        gatherCTEReferences(cte.qbExpr, cte);
-        ctesExpanded.remove(ctesExpanded.size() - 1);
+        doPhase1QBExpr(cte.cteNode, cte.qbExpr, qb.getId(), cteName, cte.withColList, materializationAliasToCTEs);
+        gatherCTEReferences(cte.qbExpr, cte, materializationAliasToCTEs);
       }
     }
     for (String alias : qb.getSubqAliases()) {
-      gatherCTEReferences(qb.getSubqForAlias(alias), current);
+      gatherCTEReferences(qb.getSubqForAlias(alias), current, materializationAliasToCTEs);
     }
     for (String alias : qb.getSubqExprAliases()) {
-      gatherCTEReferences(qb.getSubqExprForAlias(alias), current);
+      gatherCTEReferences(qb.getSubqExprForAlias(alias), current, materializationAliasToCTEs);
+    }
+  }
+
+  private void checkRecursiveCTE(CTEClause current, Set<String> path) throws SemanticException {
+
+    for (CTEClause child : current.parents) {
+      if (path.contains(child.alias)) {
+        throw new SemanticException("Recursive cte " + child.alias +
+            " detected (cycle: " + StringUtils.join(path, " -> ") +
+            " -> " + child.alias + ").");
+      }
+      path.add(child.alias);
+      checkRecursiveCTE(child, path);
+      path.remove(child.alias);
     }
   }
 
@@ -2227,10 +2277,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void getMetaData(QB qb, boolean enableMaterialization) throws SemanticException {
     try {
+      Map<String, CTEClause> materializationAliasToCTEs = null;
       if (enableMaterialization) {
-        getMaterializationMetadata(qb);
+        materializationAliasToCTEs = getMaterializationMetadata(qb);
       }
+      checkRecursiveCTE(rootClause, new HashSet<>());
       getMetaData(qb, null);
+      if (materializationAliasToCTEs != null && !materializationAliasToCTEs.isEmpty()) {
+        this.aliasToCTEs.putAll(materializationAliasToCTEs);
+      }
     } catch (HiveException e) {
       if (e instanceof SemanticException) {
         throw (SemanticException)e;
@@ -2287,7 +2342,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Table materializedTab = ctx.getMaterializedTable(cteName);
         if (materializedTab == null) {
           // we first look for this alias from CTE, and then from catalog.
-          CTEClause cte = findCTEFromName(qb, cteName);
+          CTEClause cte = findCTEFromName(qb, cteName, aliasToCTEs);
           if (cte != null) {
             if (!cte.materialize) {
               addCTEAsSubQuery(qb, cteName, alias);
@@ -3649,7 +3704,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * push filters only for this QBJoinTree. Child QBJoinTrees have already been handled.
          */
         pushJoinFilters(qb, joinTree, aliasToOpInfo, false);
-        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo, input);
+
+        /*
+         *  Note that: in case of multi dest queries, with even one containing a notIn operator, the code is not changed yet.
+         *  That needs to be worked on as a separate bug : https://issues.apache.org/jira/browse/HIVE-27844
+         */
+        boolean notInCheckPresent = (subQuery.getNotInCheck() != null && !qb.isMultiDestQuery());
+        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo , input, notInCheckPresent);
+
         searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
       }
     }
@@ -3716,14 +3778,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * for inner joins push a 'is not null predicate' to the join sources for
    * every non nullSafe predicate.
    */
+
   private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
-                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
+                                                        QBJoinTree joinTree, ExprNodeDesc[] joinKeys) throws SemanticException {
+    return genNotNullFilterForJoinSourcePlan(qb, input, joinTree, joinKeys, false);
+  }
+
+  private Operator genNotNullFilterForJoinSourcePlan(QB qb, Operator input,
+                                                     QBJoinTree joinTree, ExprNodeDesc[] joinKeys, boolean OuternotInCheck) throws SemanticException {
+
+    /*
+     * The notInCheck param is used for the purpose of adding an
+     *  (outerQueryTable.outerQueryCol is not null ) predicate to the join,
+     *  since it is not added naturally because of outer join
+     */
 
     if (qb == null || joinTree == null) {
       return input;
     }
 
-    if (!joinTree.getNoOuterJoin()) {
+    if (!joinTree.getNoOuterJoin() && !OuternotInCheck) {
       return input;
     }
 
@@ -3787,6 +3861,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.debug("Created Filter Plan for {} row schema: {}", qb.getId(), inputRR);
     return output;
   }
+
+
 
   Integer genExprNodeDescRegex(String colRegex, String tabAlias, ASTNode sel,
       List<ExprNodeDesc> exprList, Set<ColumnInfo> excludeCols, RowResolver input,
@@ -6042,7 +6118,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (Map.Entry<ASTNode, ExprNodeDesc> entry : nodeOutputs.entrySet()) {
           ASTNode parameter = entry.getKey();
           ExprNodeDesc expression = entry.getValue();
-          if (!(expression instanceof ExprNodeColumnDesc)) {
+          if (!(expression instanceof ExprNodeColumnDesc) && !ExprNodeConstantDesc.isFoldedFromCol(expression)) {
             continue;
           }
           if (ExprNodeDescUtils.indexOf(expression, reduceValues) >= 0) {
@@ -8838,9 +8914,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // For Non-Native ACID tables we should convert the new values as well
       rowFieldsOffset = expressions.size();
-      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table, true)) {
+      if (updating(dest) && AcidUtils.isNonNativeAcidTable(table, true)
+          && rowFields.size() >= rowFieldsOffset + columnNumber) {
         for (int i = 0; i < columnNumber; i++) {
-          ExprNodeDesc column = handleConversion(tableFields.get(i), rowFields.get(rowFieldsOffset + i), converted, dest, i);
+          ExprNodeDesc column = handleConversion(tableFields.get(i), rowFields.get(rowFieldsOffset-columnNumber + i), converted, dest, i);
           expressions.add(column);
         }
       }
@@ -9799,8 +9876,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
                                    Map<String, Operator> map,
                                    Operator joiningOp) throws SemanticException {
+    return genJoinOperator(qb, joinTree, map, joiningOp, false);
+  }
+
+  private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
+                                   Map<String, Operator> map,
+                                   Operator joiningOp, boolean notInCheckPresent) throws SemanticException {
     QBJoinTree leftChild = joinTree.getJoinSrc();
     Operator joinSrcOp = joiningOp instanceof JoinOperator ? joiningOp : null;
+    Operator OuterSrcOp = joiningOp;
 
     if (joinSrcOp == null && leftChild != null) {
       joinSrcOp = genJoinOperator(qb, leftChild, map, null);
@@ -9854,7 +9938,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // generate a ReduceSink operator for the join
       String[] srcs = baseSrc[i] != null ? new String[] {baseSrc[i]} : joinTree.getLeftAliases();
       if (!isCBOExecuted()) {
-        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i]);
+        /*
+         * The condition srcOps[i] == OuterSrcOp is used to make sure that the predicate for notnull check
+         * is added only for the outer query table.outerqueryCol
+         * even after the outer join condition
+         */
+        boolean outerNotInCheck = (notInCheckPresent && (srcOps[i] == OuterSrcOp));
+        srcOps[i] = genNotNullFilterForJoinSourcePlan(qb, srcOps[i], joinTree, joinKeys[i], outerNotInCheck);
       }
       srcOps[i] = genJoinReduceSinkChild(joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
     }
@@ -15872,22 +15962,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     AGGREGATE_INSERT_DELETE_REBUILD,
     JOIN_INSERT_REBUILD,
     JOIN_INSERT_DELETE_REBUILD
-  }
-
-  /**
-   * @return table name in db.table form with proper quoting/escaping to be used in a SQL statement
-   */
-  protected String getFullTableNameForSQL(ASTNode n) throws SemanticException {
-    switch (n.getType()) {
-    case HiveParser.TOK_TABNAME:
-      TableName tableName = getQualifiedTableName(n);
-      return HiveTableName.ofNullable(HiveUtils.unparseIdentifier(tableName.getTable(), this.conf),
-          HiveUtils.unparseIdentifier(tableName.getDb(), this.conf), tableName.getTableMetaRef()).getNotEmptyDbTable();
-    case HiveParser.TOK_TABREF:
-      return getFullTableNameForSQL((ASTNode) n.getChild(0));
-    default:
-      throw raiseWrongType("TOK_TABNAME", n);
-    }
   }
 
   /**

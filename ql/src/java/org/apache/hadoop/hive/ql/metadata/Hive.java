@@ -1528,7 +1528,7 @@ public class Hive {
 
       // TODO: APIs with catalog names
       List<String> partNames = ((null == partSpec)
-        ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
+              ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
       if (snapshot == null) {
         getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames);
       } else {
@@ -4036,6 +4036,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Map<String, String> partSpec, short max) throws HiveException {
     List<String> names = null;
     Table t = getTable(dbName, tblName);
+    if (t.getStorageHandler() != null && t.getStorageHandler().alwaysUnpartitioned()) {
+      return t.getStorageHandler().getPartitionNames(t, partSpec);
+    }
 
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
 
@@ -4129,6 +4132,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
           GetPartitionsPsWithAuthResponse res = getMSC().listPartitionsWithAuthInfoRequest(req);
           tParts = res.getPartitions();
 
+        } catch (NoSuchObjectException nsoe) {
+          return Lists.newArrayList();
         } catch (Exception e) {
           LOG.error("Failed getPartitions", e);
           throw new HiveException(e);
@@ -4486,25 +4491,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
     try {
       Preconditions.checkNotNull(partitions);
-      byte[] exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
-      List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
-              new ArrayList<>();
-      ValidWriteIdList validWriteIdList = null;
+      if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+        partitions.addAll(tbl.getStorageHandler().getPartitionsByExpr(tbl, expr));
+        return false;
+      } else {
+        byte[] exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
+        List<org.apache.hadoop.hive.metastore.api.PartitionSpec> msParts =
+                new ArrayList<>();
+        ValidWriteIdList validWriteIdList = null;
 
-      PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
-              null);
+        PartitionsByExprRequest req = buildPartitionByExprRequest(tbl, exprBytes, defaultPartitionName, conf,
+                null);
 
-      if (AcidUtils.isTransactionalTable(tbl)) {
-        validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
-        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
-        req.setId(tbl.getTTable().getId());
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          validWriteIdList = getValidWriteIdList(tbl.getDbName(), tbl.getTableName());
+          req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+          req.setId(tbl.getTTable().getId());
+        }
+
+        boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
+        partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
+
+        return hasUnknownParts;
       }
-
-      boolean hasUnknownParts = getMSC().listPartitionsSpecByExpr(req, msParts);
-      partitions.addAll(convertFromPartSpec(msParts.iterator(), tbl));
-
-      return hasUnknownParts;
     } finally {
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR, "HS2-cache");
     }
@@ -6768,7 +6778,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void alterTableExecuteOperation(Table table, AlterTableExecuteSpec executeSpec) throws HiveException {
     try {
-      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      HiveStorageHandler storageHandler = Optional.ofNullable(createStorageHandler(table.getTTable())).orElseThrow(() ->
+          new UnsupportedOperationException(String.format("ALTER EXECUTE is not supported for table %s", table.getTableName())));
       storageHandler.executeOperation(table, executeSpec);
     } catch (MetaException e) {
       throw new HiveException(e);

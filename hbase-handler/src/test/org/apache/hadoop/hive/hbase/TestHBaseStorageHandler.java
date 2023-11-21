@@ -61,7 +61,7 @@ public class TestHBaseStorageHandler {
     // written out. At the time this test was written, this was the current
     // behavior, so I left this test as/is. Need to research if a null
     // table can be provided here.
-    Assert.assertEquals("hbase://localhost:2181/null", uri.toString());
+    Assert.assertEquals("hbase://127.0.0.1:2181/null", uri.toString());
   }
 
   @Test

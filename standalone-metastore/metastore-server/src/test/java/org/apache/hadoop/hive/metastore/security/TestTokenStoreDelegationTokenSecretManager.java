@@ -111,7 +111,7 @@ import java.util.concurrent.TimeUnit;
       Thread.sleep(1000);
       SecretManager.InvalidToken ex = Assert.assertThrows(SecretManager.InvalidToken.class,
           () -> mgr.verifyDelegationToken(tokenStr));
-      Assert.assertTrue(ex.getMessage().contains("is expired"));
+      Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("has expired"));
     } finally {
       mgr.stopThreads();
     }

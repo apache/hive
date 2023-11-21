@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * PerfLogger.
@@ -89,12 +90,11 @@ public class PerfLogger {
   public static final String HIVE_GET_NOT_NULL_CONSTRAINT = "getNotNullConstraints";
   public static final String HIVE_GET_TABLE_CONSTRAINTS = "getTableConstraints";
 
-  protected final Map<String, Long> startTimes = new HashMap<String, Long>();
-  protected final Map<String, Long> endTimes = new HashMap<String, Long>();
+  protected final Map<String, Long> startTimes = new ConcurrentHashMap<>();
+  protected final Map<String, Long> endTimes = new ConcurrentHashMap<>();
 
-  static final private Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
-  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
-
+  private static final Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
+  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<>();
 
   private PerfLogger() {
     // Use getPerfLogger to get an instance of PerfLogger
@@ -134,6 +134,7 @@ public class PerfLogger {
     LOG.debug("<PERFLOG method={} from={}>", method, callerName);
     beginMetrics(method);
   }
+
   /**
    * Call this function in correspondence of PerfLogBegin to mark the end of the measurement.
    * @param callerName
@@ -151,18 +152,18 @@ public class PerfLogger {
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long perfLogEnd(String callerName, String method, String additionalInfo) {
-    Long startTime = startTimes.get(method);
+    long startTime = startTimes.getOrDefault(method, -1L);
     long endTime = System.currentTimeMillis();
+    long duration = startTime < 0 ? -1 : endTime - startTime;
     endTimes.put(method, Long.valueOf(endTime));
-    long duration = startTime == null ? -1 : endTime - startTime.longValue();
 
     if (LOG.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
-      if (startTime != null) {
+      if (startTime >= 0) {
         sb.append(" start=").append(startTime);
       }
       sb.append(" end=").append(endTime);
-      if (startTime != null) {
+      if (duration >= 0) {
         sb.append(" duration=").append(duration);
       }
       sb.append(" from=").append(callerName);
@@ -176,22 +177,12 @@ public class PerfLogger {
     return duration;
   }
 
-  public Long getStartTime(String method) {
-    long startTime = 0L;
-
-    if (startTimes.containsKey(method)) {
-      startTime = startTimes.get(method);
-    }
-    return startTime;
+  public long getStartTime(String method) {
+    return startTimes.getOrDefault(method, 0L);
   }
 
-  public Long getEndTime(String method) {
-    long endTime = 0L;
-
-    if (endTimes.containsKey(method)) {
-      endTime = endTimes.get(method);
-    }
-    return endTime;
+  public long getEndTime(String method) {
+    return endTimes.getOrDefault(method, 0L);
   }
 
   public boolean startTimeHasMethod(String method) {
@@ -202,12 +193,13 @@ public class PerfLogger {
     return endTimes.containsKey(method);
   }
 
-  public Long getDuration(String method) {
-    long duration = 0;
-    if (startTimes.containsKey(method) && endTimes.containsKey(method)) {
-      duration = endTimes.get(method) - startTimes.get(method);
+  public long getDuration(String method) {
+    Long startTime = startTimes.get(method);
+    Long endTime = endTimes.get(method);
+    if (startTime != null && endTime != null) {
+      return endTime - startTime;
     }
-    return duration;
+    return 0L;
   }
 
 
@@ -220,13 +212,15 @@ public class PerfLogger {
   }
 
   //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
-  transient Map<String, MetricsScope> openScopes = new HashMap<String, MetricsScope>();
+  private final transient Map<String, MetricsScope> openScopes = new HashMap<>();
 
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
       MetricsScope scope = metrics.createScope(MetricsConstant.API_PREFIX + method);
-      openScopes.put(method, scope);
+      synchronized (openScopes) {
+        openScopes.put(method, scope);
+      }
     }
 
   }
@@ -234,7 +228,10 @@ public class PerfLogger {
   private void endMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      MetricsScope scope = openScopes.remove(method);
+      final MetricsScope scope;
+      synchronized(openScopes) {
+        scope = openScopes.remove(method);
+      }
       if (scope != null) {
         metrics.endScope(scope);
       }
@@ -246,11 +243,13 @@ public class PerfLogger {
    */
   public void cleanupPerfLogMetrics() {
     Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      for (MetricsScope openScope : openScopes.values()) {
-        metrics.endScope(openScope);
+    synchronized(openScopes) {
+      if (metrics != null) {
+        for (MetricsScope openScope : openScopes.values()) {
+          metrics.endScope(openScope);
+        }
       }
+      openScopes.clear();
     }
-    openScopes.clear();
   }
 }

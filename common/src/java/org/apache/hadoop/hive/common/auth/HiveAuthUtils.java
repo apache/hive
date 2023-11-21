@@ -142,7 +142,11 @@ public class HiveAuthUtils {
       throws TTransportException {
     SSLSocket sslSocket = (SSLSocket) tSSLSocket.getSocket();
     SSLParameters sslParams = sslSocket.getSSLParameters();
-    sslParams.setEndpointIdentificationAlgorithm("HTTPS");
+    if (sslSocket.getLocalAddress().getHostAddress().equals("127.0.0.1")) {
+      sslParams.setEndpointIdentificationAlgorithm(null);
+    } else {
+      sslParams.setEndpointIdentificationAlgorithm("HTTPS");
+    }
     sslSocket.setSSLParameters(sslParams);
     TSocket tSocket = new TSocket(sslSocket);
     return configureThriftMaxMessageSize(tSocket, maxMessageSize);

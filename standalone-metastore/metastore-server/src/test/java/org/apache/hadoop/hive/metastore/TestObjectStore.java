@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.HiveObjectPrivilegeBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.HiveObjectRefBuilder;
@@ -96,6 +97,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,6 +117,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -645,7 +648,7 @@ public class TestObjectStore {
     List<Partition> partitions;
     try(AutoCloseable c =deadline()) {
       partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          10, false, true);
+          false, true, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(3, partitions.size());
 
@@ -656,7 +659,8 @@ public class TestObjectStore {
     }
     try (AutoCloseable c = deadline()) {
       // query the partitions with JDO, checking the cache is not causing any problem
-      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(1, partitions.size());
   }
@@ -671,16 +675,17 @@ public class TestObjectStore {
     objectStore2.setConf(conf);
 
     createPartitionedTable(false, false);
+    GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build();
     // query the partitions with JDO in the 1st session
     List<Partition> partitions;
     try (AutoCloseable c = deadline()) {
-      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
     }
     Assert.assertEquals(3, partitions.size());
 
     // query the partitions with JDO in the 2nd session
     try (AutoCloseable c = deadline()) {
-      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
     }
     Assert.assertEquals(3, partitions.size());
 
@@ -693,7 +698,7 @@ public class TestObjectStore {
     // query the partitions with JDO in the 2nd session, checking the cache is not causing any
     // problem
     try (AutoCloseable c = deadline()) {
-      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10, false, true);
+      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
     }
     Assert.assertEquals(1, partitions.size());
   }
@@ -1626,6 +1631,44 @@ public class TestObjectStore {
     }.run(false);
     objectStore.commitTransaction();
     Assert.assertEquals(0, objectStore.getPartitionCount());
+  }
+
+  @Test
+  public void testNoJdoForUnrecoverableException() throws Exception {
+    objectStore.openTransaction();
+    AtomicBoolean runDirectSql = new AtomicBoolean(false);
+    AtomicBoolean runJdo = new AtomicBoolean(false);
+    try {
+      objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
+        @Override
+        protected String describeResult() {
+          return "test not run jdo for unrecoverable exception";
+        }
+
+        @Override
+        protected Object getSqlResult(ObjectStore.GetHelper ctx) throws MetaException {
+          runDirectSql.set(true);
+          SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
+          MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
+          me.initCause(ex);
+          throw me;
+        }
+
+        @Override
+        protected Object getJdoResult(ObjectStore.GetHelper ctx) throws MetaException, NoSuchObjectException {
+          runJdo.set(true);
+          SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
+          MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
+          me.initCause(ex);
+          throw me;
+        }
+      }.run(false);
+    } catch (MetaException ex) {
+      // expected
+    }
+    objectStore.commitTransaction();
+    Assert.assertEquals(true, runDirectSql.get());
+    Assert.assertEquals(false, runJdo.get());
   }
 
   /**

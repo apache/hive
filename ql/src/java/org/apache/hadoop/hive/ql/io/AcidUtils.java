@@ -3383,6 +3383,15 @@ public class AcidUtils {
         table.getStorageHandler().supportsAcidOperations(table, isWriteOperation) != HiveStorageHandler.AcidSupportType.NONE;
   }
 
+  public static boolean isCopyOnWriteMode(Table table, Context.Operation operation) {
+    boolean copyOnWriteMode = false;
+    HiveStorageHandler storageHandler = table.getStorageHandler();
+    if (storageHandler != null) {
+      copyOnWriteMode = storageHandler.shouldOverwrite(table, operation);
+    }
+    return copyOnWriteMode;
+  }
+
   /**
    * Returns the virtual columns needed for update queries. For ACID queries it is a single ROW__ID, for non-native
    * tables the list is provided by the {@link HiveStorageHandler#acidVirtualColumns()}.

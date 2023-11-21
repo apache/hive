@@ -100,6 +100,7 @@ public class HiveConf extends Configuration {
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
   private final Set<String> hiddenSet = new HashSet<String>();
+  private final Set<String> lockedSet = new HashSet<>();
   private final List<String> rscList = new ArrayList<>();
 
   private Pattern modWhiteListPattern = null;
@@ -849,6 +850,10 @@ public class HiveConf extends Configuration {
         "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a nonexistent table/view/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
+
+    HIVE_CONF_LOCKED_LIST("hive.conf.locked.list", "", "Comma separated " +
+            "list of configuration options which are locked and can not be changed at runtime. Warning is logged and the " +
+            "change is ignored when user try to set these configs during runtime"),
 
     HIVE_FILE_MAX_FOOTER("hive.file.max.footer", 100,
         "maximum number of lines for footer user can define for a table file"),
@@ -2622,6 +2627,10 @@ public class HiveConf extends Configuration {
         "If the user has set hive.merge.mapfiles to true and hive.merge.mapredfiles to false, the idea was the\n" +
         "number of reducers are few, so the number of files anyway are small. However, with this optimization,\n" +
         "we are increasing the number of files possibly by a big margin. So, we merge aggressively."),
+    HIVE_TEZ_UNION_FLATTEN_SUBDIRECTORIES("hive.tez.union.flatten.subdirectories", false,
+        "By default, when writing data into a table and UNION ALL is the last step of the query, Hive on Tez will\n" +
+        "create a subdirectory for each branch of the UNION ALL. When this property is enabled,\n" +
+        "the subdirectories are removed, and the files are renamed and moved to the parent directory"),
     HIVEOPTCORRELATION("hive.optimize.correlation", false, "exploit intra-query correlations."),
 
     HIVE_OPTIMIZE_LIMIT_TRANSPOSE("hive.optimize.limittranspose", false,
@@ -2663,6 +2672,8 @@ public class HiveConf extends Configuration {
 
     HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE("hive.optimize.delete.all", false, 
         "Optimize delete the entire data from table, use truncate instead"),
+    HIVE_OPTIMIZE_METADATA_DELETE("hive.optimize.delete.metadata.only", true,
+            "Optimize delete the entire data from table, use truncate instead"),
     HIVE_OPTIMIZE_LIMIT("hive.optimize.limit", true,
         "Optimize limit by pushing through Left Outer Joins and Selects"),
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
@@ -2933,10 +2944,10 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
         "When the number of stats to be updated is huge, this value is used to control the number of \n" +
         " stats to be sent to HMS for update."),
-    HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE("hive.thrift.client.max.message.size", "1gb",
-        new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
-        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
-        "library. The upper limit is 2147483648 bytes (or 2gb)."),
+    HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE("hive.thrift.client.max.message.size", "2147483647b",
+            new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+            "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+                    "library. The upper limit is 2147483647 bytes."),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
@@ -3431,13 +3442,6 @@ public class HiveConf extends Configuration {
     /**
      * @deprecated Use {@link ConfVars#SPLIT_UPDATE} instead.
      */
-    @Deprecated
-    MERGE_SPLIT_UPDATE("hive.merge.split.update", true,
-        "If true, SQL Merge statement will handle WHEN MATCHED UPDATE by splitting it into 2\n" +
-            "branches of a multi-insert, representing delete of existing row and an insert of\n" +
-            "the new version of the row.  Updating bucketing and partitioning columns should\n" +
-            "only be permitted if this is true.\n" +
-            "Deprecated, use hive.split.update instead."),
     OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),
@@ -3856,6 +3860,10 @@ public class HiveConf extends Configuration {
         "is discouraged. It suffers from known bugs that are unlikely to be fixed in subsequent versions of the product." +
         "Furthermore, using SIMPLE formatter may lead to strange behavior, and unexpected results when combined " +
         "with SQL functions/operators that are using the new DATETIME formatter."),
+    HIVE_DATETIME_RESOLVER_STYLE("hive.datetime.formatter.resolver.style", "SMART",
+        new StringSet("SMART", "STRICT", "LENIENT"),
+        "The style used by the hive.datetime.formatter (only applicable to DATETIME) to resolve dates amd times." +
+        "The possible values are STRICT, SMART, and LENIENT and their behavior follows the java.time.format.ResolverStyle API."),
      // HiveServer2 specific configs
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
         "Clear dangling scratch dir periodically in HS2"),
@@ -5601,12 +5609,13 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
         "Enable query reexecutions"),
     HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies",
-        "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo",
+        "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict",
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
             + "  recompile_without_cbo: recompiles query after a CBO failure\n"
-            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned"),
+            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n "
+            + "  write_conflict: retries the query once if the query failed due to write_conflict"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
@@ -6001,6 +6010,9 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + " of parameters that can't be modified at runtime or is prefixed by a restricted variable");
     }
+    if (isLockedConfig(name)) {
+      return;
+    }
     String oldValue = name != null ? get(name) : null;
     if (name == null || value == null || !value.equals(oldValue)) {
       // When either name or value is null, the set method below will fail,
@@ -6011,6 +6023,10 @@ public class HiveConf extends Configuration {
 
   public boolean isHiddenConfig(String name) {
     return Iterables.any(hiddenSet, hiddenVar -> name.startsWith(hiddenVar));
+  }
+
+  public boolean isLockedConfig(String name) {
+    return Iterables.any(lockedSet, lockedVar -> name != null && name.equalsIgnoreCase(lockedVar));
   }
 
   public static boolean isEncodedPar(String name) {
@@ -6418,6 +6434,7 @@ public class HiveConf extends Configuration {
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
     hiddenSet.addAll(other.hiddenSet);
+    lockedSet.addAll(other.lockedSet);
     modWhiteListPattern = other.modWhiteListPattern;
   }
 
@@ -6551,6 +6568,9 @@ public class HiveConf extends Configuration {
     setupRestrictList();
     hiddenSet.clear();
     hiddenSet.addAll(HiveConfUtil.getHiddenSet(this));
+
+    lockedSet.clear();
+    lockedSet.addAll(HiveConfUtil.getLockedSet(this));
   }
 
   /**
@@ -6929,6 +6949,22 @@ public class HiveConf extends Configuration {
     setupRestrictList();
   }
 
+  public void addToLockedSet(String lockedListStr) {
+    String oldList = this.getVar(ConfVars.HIVE_CONF_LOCKED_LIST);
+    if (oldList == null || oldList.isEmpty()) {
+      this.setVar(ConfVars.HIVE_CONF_LOCKED_LIST, lockedListStr);
+    } else {
+      this.setVar(ConfVars.HIVE_CONF_LOCKED_LIST, oldList + "," + lockedListStr);
+    }
+    String modifiedLockedSet = this.getVar(ConfVars.HIVE_CONF_LOCKED_LIST);
+    lockedSet.clear();
+    if (modifiedLockedSet != null) {
+      for (String entry : modifiedLockedSet.split(",")) {
+        lockedSet.add(entry.trim());
+      }
+    }
+  }
+
   /**
    * Set white list of parameters that are allowed to be modified
    *
@@ -6966,6 +7002,7 @@ public class HiveConf extends Configuration {
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
+    restrictList.add(ConfVars.HIVE_CONF_LOCKED_LIST.varname);
   }
 
   /**

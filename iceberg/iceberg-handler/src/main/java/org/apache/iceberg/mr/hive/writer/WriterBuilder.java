@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -123,8 +124,25 @@ public class WriterBuilder {
     HiveIcebergWriter writer;
     switch (operation) {
       case DELETE:
-        writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
+        if (RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(
+            properties.get(TableProperties.DELETE_MODE))) {
+          writer = new HiveIcebergCopyOnWriteRecordWriter(dataSchema, specs, currentSpecId, writerFactory,
+            outputFileFactory, io, targetFileSize);
+        } else {
+          writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
             io, targetFileSize, skipRowData);
+        }
+        break;
+      case UPDATE:
+        if (RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(
+            properties.get(TableProperties.UPDATE_MODE))) {
+          writer = new HiveIcebergCopyOnWriteRecordWriter(dataSchema, specs, currentSpecId, writerFactory,
+            outputFileFactory, io, targetFileSize);
+        } else {
+          // Update and Merge should be splitted to inserts and deletes
+          throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
+            operation.name());
+        }
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
@@ -133,7 +151,7 @@ public class WriterBuilder {
       default:
         // Update and Merge should be splitted to inserts and deletes
         throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
-                operation.name());
+          operation.name());
     }
 
     WriterRegistry.registerWriter(attemptID, tableName, writer);

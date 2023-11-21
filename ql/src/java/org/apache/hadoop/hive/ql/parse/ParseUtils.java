@@ -565,7 +565,9 @@ public final class ParseUtils {
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
     String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     Map<String, String> colTypes = new HashMap<>();
-    for (FieldSchema fs : table.getPartitionKeys()) {
+    List<FieldSchema> partitionKeys = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
+            table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
+    for (FieldSchema fs : partitionKeys) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }
 
@@ -672,4 +674,55 @@ public final class ParseUtils {
     }
     return val;
   }
+
+  public static ReparseResult parseRewrittenQuery(Context ctx, StringBuilder rewrittenQueryStr)
+      throws SemanticException {
+    return parseRewrittenQuery(ctx, rewrittenQueryStr.toString());
+  }
+
+  /**
+   * Parse the newly generated SQL statement to get a new AST.
+   */
+  public static ReparseResult parseRewrittenQuery(Context ctx,
+      String rewrittenQueryStr)
+      throws SemanticException {
+    // Set dynamic partitioning to nonstrict so that queries do not need any partition
+    // references.
+    // TODO: this may be a perf issue as it prevents the optimizer.. or not
+    HiveConf.setVar(ctx.getConf(), HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
+    HiveConf.setBoolVar(ctx.getConf(), HiveConf.ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
+    // Parse the rewritten query string
+    Context rewrittenCtx;
+    rewrittenCtx = new Context(ctx.getConf());
+    rewrittenCtx.setHDFSCleanup(true);
+    // We keep track of all the contexts that are created by this query
+    // so we can clear them when we finish execution
+    ctx.addSubContext(rewrittenCtx);
+    rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
+    rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
+    rewrittenCtx.setStatsSource(ctx.getStatsSource());
+    rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
+    rewrittenCtx.setIsUpdateDeleteMerge(true);
+    rewrittenCtx.setCmd(rewrittenQueryStr);
+
+    ASTNode rewrittenTree;
+    try {
+      LOG.info("Going to reparse <{}> as \n<{}>", ctx.getCmd(), rewrittenQueryStr);
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr, rewrittenCtx);
+    } catch (ParseException e) {
+      throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
+    }
+    return new ReparseResult(rewrittenTree, rewrittenCtx);
+  }
+
+  public static final class ReparseResult {
+    public final ASTNode rewrittenTree;
+    public final Context rewrittenCtx;
+    ReparseResult(ASTNode n, Context c) {
+      rewrittenTree = n;
+      rewrittenCtx = c;
+    }
+  }
+
 }

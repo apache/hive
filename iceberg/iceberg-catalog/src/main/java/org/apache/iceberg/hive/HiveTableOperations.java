@@ -234,6 +234,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
         commitStatus = CommitStatus.SUCCESS;
       } catch (LockException le) {
+        commitStatus = CommitStatus.UNKNOWN;
         throw new CommitStateUnknownException(
                 "Failed to heartbeat for hive lock while " +
                 "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
@@ -552,8 +553,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       return metadata.propertyAsBoolean(TableProperties.ENGINE_HIVE_ENABLED, false);
     }
 
-    return conf.getBoolean(
-        ConfigProperties.ENGINE_HIVE_ENABLED, TableProperties.ENGINE_HIVE_ENABLED_DEFAULT);
+    return conf.getBoolean(ConfigProperties.ENGINE_HIVE_ENABLED, true);
   }
 
   /**

@@ -17,10 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TransformSpec {
 
+  private static final Pattern HAS_WIDTH = Pattern.compile("(\\w+)\\[(\\d+)\\]");
   public enum TransformType {
     IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID
   }
@@ -60,5 +64,13 @@ public class TransformSpec {
 
   public void setTransformParam(Optional<Integer> transformParam) {
     this.transformParam = transformParam;
+  }
+
+  public static TransformType fromString(String transformString) {
+    Matcher widthMatcher = HAS_WIDTH.matcher(transformString);
+    if (widthMatcher.matches()) {
+      transformString = widthMatcher.group(1);
+    }
+    return TransformType.valueOf(transformString.toUpperCase(Locale.ROOT));
   }
 }

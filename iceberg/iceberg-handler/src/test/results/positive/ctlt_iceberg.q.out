@@ -41,10 +41,10 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'created_with_ctlt'='true', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"}]}', 
-  'engine.hive.enabled'='true', 
   'format-version'='2', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
@@ -114,7 +114,7 @@ CREATE EXTERNAL TABLE `emp_iceberg`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
-company)
+`company`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -126,9 +126,10 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
   'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
-  'engine.hive.enabled'='true', 
+  'format-version'='2', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'serialization.format'='1', 
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
@@ -152,7 +153,7 @@ CREATE EXTERNAL TABLE `emp_like1`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
-company)
+`company`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -165,13 +166,17 @@ TBLPROPERTIES (
   'created_with_ctlt'='true', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
   'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
-  'engine.hive.enabled'='true', 
+  'format-version'='2', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: create table emp (id int) partitioned by (company string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -219,7 +224,7 @@ CREATE EXTERNAL TABLE `emp_like2`(
   `id` int, 
   `company` string)
 PARTITIONED BY SPEC ( 
-company)
+`company`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -232,9 +237,10 @@ TBLPROPERTIES (
   'created_with_ctlt'='true', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
   'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
-  'engine.hive.enabled'='true', 
+  'format-version'='2', 
   'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####

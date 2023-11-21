@@ -298,6 +298,10 @@ public final class HiveUtils {
         quotation.getQuotationChar());
   }
 
+  public static String unparseIdentifier(String identifier) {
+    return unparseIdentifier(identifier, Quotation.BACKTICKS);
+  }
+
   public static HiveStorageHandler getStorageHandler(
     Configuration conf, String className) throws HiveException {
 

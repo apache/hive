@@ -33,10 +33,17 @@ public class FilesForCommit implements Serializable {
 
   private final Collection<DataFile> dataFiles;
   private final Collection<DeleteFile> deleteFiles;
+  private Collection<DataFile> referencedDataFiles;
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles) {
+    this(dataFiles, deleteFiles, Collections.emptyList());
+  }
+
+  public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
+                        Collection<DataFile> referencedDataFiles) {
     this.dataFiles = dataFiles;
     this.deleteFiles = deleteFiles;
+    this.referencedDataFiles = referencedDataFiles;
   }
 
   public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles) {
@@ -45,6 +52,10 @@ public class FilesForCommit implements Serializable {
 
   public static FilesForCommit onlyData(Collection<DataFile> dataFiles) {
     return new FilesForCommit(dataFiles, Collections.emptyList());
+  }
+
+  public static FilesForCommit onlyData(Collection<DataFile> dataFiles, Collection<DataFile> referencedDataFiles) {
+    return new FilesForCommit(dataFiles, Collections.emptyList(), referencedDataFiles);
   }
 
   public static FilesForCommit empty() {
@@ -59,12 +70,16 @@ public class FilesForCommit implements Serializable {
     return deleteFiles;
   }
 
+  public Collection<DataFile> referencedDataFiles() {
+    return referencedDataFiles;
+  }
+
   public Collection<? extends ContentFile> allFiles() {
     return Stream.concat(dataFiles.stream(), deleteFiles.stream()).collect(Collectors.toList());
   }
 
   public boolean isEmpty() {
-    return dataFiles.isEmpty() && deleteFiles.isEmpty();
+    return dataFiles.isEmpty() && deleteFiles.isEmpty() && referencedDataFiles.isEmpty();
   }
 
   @Override
@@ -72,6 +87,8 @@ public class FilesForCommit implements Serializable {
     return MoreObjects.toStringHelper(this)
         .add("dataFiles", dataFiles.toString())
         .add("deleteFiles", deleteFiles.toString())
+        .add("referencedDataFiles", referencedDataFiles.toString())
         .toString();
   }
+
 }

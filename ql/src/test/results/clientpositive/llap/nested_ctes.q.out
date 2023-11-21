@@ -1,0 +1,129 @@
+PREHOOK: query: with
+    test1 as (
+        with t1 as (select 1)
+        select 1
+    )
+select * from test1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with
+    test1 as (
+        with t1 as (select 1)
+        select 1
+    )
+select * from test1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: with
+    test2 as (
+        with
+            test2 as (
+                select 1 as a
+            )
+        select 1
+    )
+select * from test2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with
+    test2 as (
+        with
+            test2 as (
+                select 1 as a
+            )
+        select 1
+    )
+select * from test2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: with
+    test3 as (
+        with
+            t1 as (
+                select 1 as a
+            ),
+            t2 as (
+                select 1 as b
+            )
+        select * from t1 join t2 on a=b
+    )
+select * from test3
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with
+    test3 as (
+        with
+            t1 as (
+                select 1 as a
+            ),
+            t2 as (
+                select 1 as b
+            )
+        select * from t1 join t2 on a=b
+    )
+select * from test3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	1
+PREHOOK: query: create table table_1(a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_1
+POSTHOOK: query: create table table_1(a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_1
+PREHOOK: query: with
+    test4 as (
+        with t1 as (select * from table_1)
+        select * from t1
+    )
+select * from test4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_1
+#### A masked pattern was here ####
+POSTHOOK: query: with
+    test4 as (
+        with t1 as (select * from table_1)
+        select * from t1
+    )
+select * from test4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_1
+#### A masked pattern was here ####
+PREHOOK: query: with
+    q1 as (
+        with t3 as (select 1)
+        select * from t3
+    ),
+    q2 as (
+        with t3 as (select * from q1)
+        select * from t3
+    )
+select * from q2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with
+    q1 as (
+        with t3 as (select 1)
+        select * from t3
+    ),
+    q2 as (
+        with t3 as (select * from q1)
+        select * from t3
+    )
+select * from q2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1

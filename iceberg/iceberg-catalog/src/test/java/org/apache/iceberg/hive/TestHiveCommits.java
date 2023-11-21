@@ -32,10 +32,10 @@ import org.apache.iceberg.exceptions.CommitStateUnknownException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
@@ -61,7 +61,7 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     TableMetadata metadataV2 = ops.current();
 
-    Assert.assertEquals(2, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(2);
 
     HiveTableOperations spyOps = spy(ops);
 
@@ -86,7 +86,7 @@ public class TestHiveCommits extends HiveTableBaseTest {
     ops.refresh();
 
     // the commit must succeed
-    Assert.assertEquals(1, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(1);
   }
 
   /**
@@ -108,21 +108,22 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     TableMetadata metadataV2 = ops.current();
 
-    Assert.assertEquals(2, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(2);
 
     HiveTableOperations spyOps = spy(ops);
 
     failCommitAndThrowException(spyOps);
 
-    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+    assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
         .isInstanceOf(CommitStateUnknownException.class)
         .hasMessageStartingWith("Datacenter on fire");
 
     ops.refresh();
-    Assert.assertEquals("Current metadata should not have changed", metadataV2, ops.current());
-    Assert.assertTrue("Current metadata should still exist", metadataFileExists(metadataV2));
-    Assert.assertEquals("New metadata files should still exist, new location not in history but" +
-        " the commit may still succeed", 3, metadataFileCount(ops.current()));
+    assertThat(ops.current()).as("Current metadata should not have changed").isEqualTo(metadataV2);
+    assertThat(metadataFileExists(metadataV2)).as("Current metadata should still exist").isTrue();
+    assertThat(metadataFileCount(ops.current()))
+        .as("New metadata files should still exist, new location not in history but" +
+            " the commit may still succeed").isEqualTo(3);
   }
 
   /**
@@ -143,7 +144,7 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     TableMetadata metadataV2 = ops.current();
 
-    Assert.assertEquals(2, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(2);
 
     HiveTableOperations spyOps = spy(ops);
 
@@ -154,10 +155,13 @@ public class TestHiveCommits extends HiveTableBaseTest {
     spyOps.commit(metadataV2, metadataV1);
 
     ops.refresh();
-    Assert.assertNotEquals("Current metadata should have changed", metadataV2, ops.current());
-    Assert.assertTrue("Current metadata file should still exist", metadataFileExists(ops.current()));
-    Assert.assertEquals("Commit should have been successful and new metadata file should be made",
-        3, metadataFileCount(ops.current()));
+    assertThat(ops.current()).as("Current metadata should have changed").isNotEqualTo(metadataV2);
+    assertThat(metadataFileExists(ops.current()))
+        .as("Current metadata file should still exist")
+        .isTrue();
+    assertThat(metadataFileCount(ops.current()))
+        .as("Commit should have been successful and new metadata file should be made")
+        .isEqualTo(3);
   }
 
   /**
@@ -179,23 +183,26 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     TableMetadata metadataV2 = ops.current();
 
-    Assert.assertEquals(2, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(2);
 
     HiveTableOperations spyOps = spy(ops);
 
     failCommitAndThrowException(spyOps);
     breakFallbackCatalogCommitCheck(spyOps);
 
-    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+    assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
         .isInstanceOf(CommitStateUnknownException.class)
         .hasMessageStartingWith("Datacenter on fire");
 
     ops.refresh();
 
-    Assert.assertEquals("Current metadata should not have changed", metadataV2, ops.current());
-    Assert.assertTrue("Current metadata file should still exist", metadataFileExists(ops.current()));
-    Assert.assertEquals("Client could not determine outcome so new metadata file should also exist",
-        3, metadataFileCount(ops.current()));
+    assertThat(ops.current()).as("Current metadata should not have changed").isEqualTo(metadataV2);
+    assertThat(metadataFileExists(ops.current()))
+        .as("Current metadata file should still exist")
+        .isTrue();
+    assertThat(metadataFileCount(ops.current()))
+        .as("Client could not determine outcome so new metadata file should also exist")
+        .isEqualTo(3);
   }
 
   /**
@@ -217,21 +224,23 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     TableMetadata metadataV2 = ops.current();
 
-    Assert.assertEquals(2, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(2);
 
     HiveTableOperations spyOps = spy(ops);
 
     commitAndThrowException(ops, spyOps);
     breakFallbackCatalogCommitCheck(spyOps);
 
-    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+    assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
         .isInstanceOf(CommitStateUnknownException.class)
         .hasMessageStartingWith("Datacenter on fire");
 
     ops.refresh();
 
-    Assert.assertFalse("Current metadata should have changed", ops.current().equals(metadataV2));
-    Assert.assertTrue("Current metadata file should still exist", metadataFileExists(ops.current()));
+    assertThat(ops.current()).as("Current metadata should have changed").isNotEqualTo(metadataV2);
+    assertThat(metadataFileExists(ops.current()))
+        .as("Current metadata file should still exist")
+        .isTrue();
   }
 
   /**
@@ -267,7 +276,7 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     TableMetadata metadataV2 = ops.current();
 
-    Assert.assertEquals(2, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(2);
 
     HiveTableOperations spyOps = spy(ops);
 
@@ -289,25 +298,29 @@ public class TestHiveCommits extends HiveTableBaseTest {
     spyOps.commit(metadataV2, metadataV1);
 
     ops.refresh();
-    Assert.assertNotEquals("Current metadata should have changed", metadataV2, ops.current());
-    Assert.assertTrue("Current metadata file should still exist", metadataFileExists(ops.current()));
-    Assert.assertEquals("The column addition from the concurrent commit should have been successful",
-        2, ops.current().schema().columns().size());
+    assertThat(ops.current()).as("Current metadata should have changed").isNotEqualTo(metadataV2);
+    assertThat(metadataFileExists(ops.current()))
+        .as("Current metadata file should still exist")
+        .isTrue();
+    assertThat(ops.current().schema().columns())
+        .as("The column addition from the concurrent commit should have been successful")
+        .hasSize(2);
   }
 
   @Test
   public void testInvalidObjectException() {
     TableIdentifier badTi = TableIdentifier.of(DB_NAME, "£tbl");
-    Assert.assertThrows(String.format("Invalid table name for %s.%s", DB_NAME, "`tbl`"),
-        ValidationException.class,
-        () -> catalog.createTable(badTi, schema, PartitionSpec.unpartitioned()));
+    assertThatThrownBy(() -> catalog.createTable(badTi, schema, PartitionSpec.unpartitioned()))
+        .isInstanceOf(ValidationException.class)
+        .hasMessage(String.format("Invalid Hive object for %s.%s", DB_NAME, "£tbl"));
   }
 
   @Test
   public void testAlreadyExistsException() {
-    Assert.assertThrows(String.format("Table already exists: %s.%s", DB_NAME, TABLE_NAME),
-        AlreadyExistsException.class,
-        () -> catalog.createTable(TABLE_IDENTIFIER, schema, PartitionSpec.unpartitioned()));
+    assertThatThrownBy(
+        () -> catalog.createTable(TABLE_IDENTIFIER, schema, PartitionSpec.unpartitioned()))
+        .isInstanceOf(AlreadyExistsException.class)
+        .hasMessage(String.format("Table already exists: %s.%s", DB_NAME, TABLE_NAME));
   }
 
   /** Uses NoLock and pretends we throw an error because of a concurrent commit */
@@ -324,7 +337,7 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     TableMetadata metadataV2 = ops.current();
 
-    Assert.assertEquals(2, ops.current().schema().columns().size());
+    assertThat(ops.current().schema().columns()).hasSize(2);
 
     HiveTableOperations spyOps = spy(ops);
 
@@ -340,14 +353,59 @@ public class TestHiveCommits extends HiveTableBaseTest {
         .persistTable(any(), anyBoolean(), any());
 
     // Should throw a CommitFailedException so the commit could be retried
-    Assertions.assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+    assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
         .isInstanceOf(CommitFailedException.class)
         .hasMessage("The table hivedb.tbl has been modified concurrently");
 
     ops.refresh();
-    Assert.assertEquals("Current metadata should not have changed", metadataV2, ops.current());
-    Assert.assertTrue("Current metadata should still exist", metadataFileExists(metadataV2));
-    Assert.assertEquals("New metadata files should not exist", 2, metadataFileCount(ops.current()));
+    assertThat(ops.current()).as("Current metadata should not have changed").isEqualTo(metadataV2);
+    assertThat(metadataFileExists(metadataV2)).as("Current metadata should still exist").isTrue();
+    assertThat(metadataFileCount(ops.current()))
+        .as("New metadata files should not exist")
+        .isEqualTo(2);
+  }
+
+  @Test
+  public void testLockExceptionUnknownSuccessCommit() throws TException, InterruptedException {
+    Table table = catalog.loadTable(TABLE_IDENTIFIER);
+    HiveTableOperations ops = (HiveTableOperations) ((HasTableOperations) table).operations();
+
+    TableMetadata metadataV1 = ops.current();
+
+    table.updateSchema().addColumn("n", Types.IntegerType.get()).commit();
+
+    ops.refresh();
+
+    TableMetadata metadataV2 = ops.current();
+
+    assertThat(ops.current().schema().columns()).hasSize(2);
+
+    HiveTableOperations spyOps = spy(ops);
+
+    // Simulate a communication error after a successful commit
+    doAnswer(
+        i -> {
+          org.apache.hadoop.hive.metastore.api.Table tbl =
+              i.getArgument(0, org.apache.hadoop.hive.metastore.api.Table.class);
+          String location = i.getArgument(2, String.class);
+          ops.persistTable(tbl, true, location);
+          throw new LockException("Datacenter on fire");
+        })
+        .when(spyOps)
+        .persistTable(any(), anyBoolean(), any());
+
+    assertThatThrownBy(() -> spyOps.commit(metadataV2, metadataV1))
+        .hasMessageContaining("Failed to heartbeat for hive lock while")
+        .isInstanceOf(CommitStateUnknownException.class);
+
+    ops.refresh();
+
+    assertThat(ops.current().location())
+        .as("Current metadata should have changed to metadata V1")
+        .isEqualTo(metadataV1.location());
+    assertThat(metadataFileExists(ops.current()))
+        .as("Current metadata file should still exist")
+        .isTrue();
   }
 
   private void commitAndThrowException(

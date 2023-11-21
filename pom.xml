@@ -63,7 +63,7 @@
   </modules>
   <properties>
     <standalone-metastore.version>4.0.0-beta-2-SNAPSHOT</standalone-metastore.version>
-    <hive.version.shortname>4.0.0</hive.version.shortname>
+    <hive.version.shortname>4.0.0-beta-2</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -99,7 +99,7 @@
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.5.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
-    <maven.cyclonedx.plugin.version>2.7.9</maven.cyclonedx.plugin.version>
+    <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.1.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.1</accumulo.version>
@@ -111,8 +111,8 @@
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>12.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
-    <avro.version>1.11.1</avro.version>
-    <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
+    <avro.version>1.11.3</avro.version>
+    <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
@@ -140,10 +140,10 @@
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
-    <hadoop.version>3.3.1</hadoop.version>
+    <hadoop.version>3.3.6</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
-    <hbase.version>2.0.0-alpha4</hbase.version>
+    <hbase.version>2.5.6-hadoop3</hbase.version>
     <hppc.version>0.7.2</hppc.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.7</disruptor.version>
@@ -158,7 +158,7 @@
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
-    <jetty.version>9.4.40.v20210413</jetty.version>
+    <jetty.version>9.4.45.v20220203</jetty.version>
     <jersey.version>1.19</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
@@ -182,16 +182,16 @@
     <postgres.version>42.5.1</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.8.3</orc.version>
+    <orc.version>1.8.5</orc.version>
     <mockito-core.version>3.4.4</mockito-core.version>
-    <powermock.version>2.0.2</powermock.version>
+    <mockito-inline.version>4.11.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.77.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.5</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.13.0</parquet.version>
+    <parquet.version>1.13.1</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.21.7</protobuf.version>
@@ -202,12 +202,12 @@
     <tez.version>0.10.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
-    <snappy.version>1.1.10.1</snappy.version>
+    <snappy.version>1.1.10.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
-    <xmlsec.version>2.3.0</xmlsec.version>
-    <zookeeper.version>3.7.1</zookeeper.version>
+    <xmlsec.version>2.3.4</xmlsec.version>
+    <zookeeper.version>3.7.2</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>5.2.0</curator.version>
@@ -224,6 +224,7 @@
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
     <aws-java-sdk.version>1.12.132</aws-java-sdk.version>
     <jansi.version>2.4.0</jansi.version>
+    <spring.version>5.2.24.RELEASE</spring.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -1333,6 +1334,16 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-common</artifactId>
         <version>${tez.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jdbc</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.version}</version>
       </dependency>
       <!-- JDBC drivers -->
       <dependency>

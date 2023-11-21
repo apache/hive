@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 import org.apache.hadoop.hive.ql.plan.ExportWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -58,9 +58,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * acid export statements. It works by rewriting the acid export into insert statements into a temporary table,
  * and then export it from there.
  */
-public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
+public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> {
   AcidExportSemanticAnalyzer(QueryState queryState) throws SemanticException {
-    super(queryState);
+    super(queryState, null);
   }
 
   @Override
@@ -174,7 +174,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     //insert into newTableName select * from ts <where partition spec>
     StringBuilder rewrittenQueryStr = generateExportQuery(
             newTable.getPartCols(), tokRefOrNameExportTable, (ASTNode) tokRefOrNameExportTable.parent, newTableName);
-    ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
+    ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     rewrittenCtx.setIsUpdateDeleteMerge(false); //it's set in parseRewrittenQuery()
     ASTNode rewrittenTree = rr.rewrittenTree;

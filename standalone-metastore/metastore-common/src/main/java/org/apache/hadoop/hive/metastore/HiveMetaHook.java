@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -175,6 +176,10 @@ public interface HiveMetaHook {
    * @throws MetaException
    */
   public default void preTruncateTable(Table table, EnvironmentContext context) throws MetaException {
+    preTruncateTable(table, context, null);
+  }
+
+  public default void preTruncateTable(Table table, EnvironmentContext context, List<String> partNames) throws MetaException {
     // Do nothing
   }
 
@@ -191,6 +196,18 @@ public interface HiveMetaHook {
    * @param table
    */
   default void postGetTable(Table table) {
+    // Do nothing
+  }
+
+  /**
+   * Called before dropping the partitions from the table in the metastore during ALTER TABLE DROP PARTITION.
+   * @param table table whose partition needs to be dropped
+   * @param context context of the  operation
+   * @param partExprs List of partition expressions
+   * @throws MetaException
+   */
+  default void preDropPartitions(Table table,
+      EnvironmentContext context, List<Pair<Integer, byte[]>> partExprs) throws MetaException {
     // Do nothing
   }
 }

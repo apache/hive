@@ -240,7 +240,9 @@ public class MetastoreConf {
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.FILE_METADATA_THREADS,
       ConfVars.METASTORE_CLIENT_FILTER_ENABLED,
-      ConfVars.METASTORE_SERVER_FILTER_ENABLED
+      ConfVars.METASTORE_SERVER_FILTER_ENABLED,
+      ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN,
+      ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN
   };
 
   /**
@@ -1127,6 +1129,16 @@ public class MetastoreConf {
                     + "table carries the field schema that is same as that of table schema. For a table with \n"
                     + "wider partitions fetching duplicated field schema in every partition increases memory footprint\n"
                     + "and thrift communication timeout errors. Set this config to 'true' to ignore column schema in partitions."),
+    METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN("metastore.partitions.parameters.exclude.pattern",
+        "hive.metastore.partitions.parameters.exclude.pattern", "",
+        "SQL pattern used to exclude the matched parameters for get-partitions APIs.\n"
+            + "Any key-value pair from parameters whose key matches with the pattern will be excluded from the partitions.\n"
+            + "This property doesn't work for the temporary table."),
+    METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN("metastore.partitions.parameters.include.pattern",
+        "hive.metastore.partitions.parameters.include.pattern", "",
+        "SQL pattern used to select the matched parameters for get-partitions APIs.\n"
+            + "Any key-value pair from parameters whose key matches with the pattern will be included in the partitions.\n"
+            + "This property doesn't work for the temporary table."),
     METASTORE_CLIENT_FILTER_ENABLED("metastore.client.filter.enabled", "hive.metastore.client.filter.enabled", true,
         "Enable filtering the metadata read results at HMS client. Default is true."),
     METASTORE_SERVER_FILTER_ENABLED("metastore.server.filter.enabled", "hive.metastore.server.filter.enabled", false,
@@ -1484,9 +1496,10 @@ public class MetastoreConf {
                 " corresponding service discovery servers e.g. a zookeeper. Otherwise they are " +
                 "used as URIs for remote metastore."),
     THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE("metastore.thrift.client.max.message.size",
-        "hive.thrift.client.max.message.size", "1gb", new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
-        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
-        "library. The upper limit is 2147483648 bytes (or 2gb)."),
+            "hive.thrift.client.max.message.size", "2147483647b",
+            new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+            "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+                    "library. The upper limit is 2147483647 bytes"),
     THRIFT_SERVICE_DISCOVERY_MODE("metastore.service.discovery.mode",
             "hive.metastore.service.discovery.mode",
             "",

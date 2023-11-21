@@ -283,7 +283,8 @@ public class ThriftHttpServlet extends TServlet {
       }
       // Send a 401 to the client
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      if(isAuthTypeEnabled(request, HiveAuthConstants.AuthTypes.KERBEROS)) {
+      if (e instanceof HttpEmptyAuthenticationException &&
+          authType.isEnabled(HiveAuthConstants.AuthTypes.KERBEROS)) {
         response.addHeader(HttpAuthUtils.WWW_AUTHENTICATE, HttpAuthUtils.NEGOTIATE);
       } else {
         try {
