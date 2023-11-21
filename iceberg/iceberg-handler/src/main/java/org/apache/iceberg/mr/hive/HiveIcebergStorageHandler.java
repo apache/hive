@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -441,7 +442,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
     Map<String, String> stats = Maps.newHashMap();
-    if (getStatsSource().equals(Constants.ICEBERG)) {
+    if (getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
         if (summary != null) {
@@ -492,7 +493,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.currentSnapshot() != null && getStatsSource().equals(Constants.ICEBERG);
+    return table.currentSnapshot() != null && getStatsSource().equals(HiveMetaHook.ICEBERG);
   }
 
   @Override
@@ -568,7 +569,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (getStatsSource().equals(Constants.ICEBERG)) {
+    if (getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       Table table = getTable(hmsTable);
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
@@ -585,7 +586,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private String getStatsSource() {
-    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, Constants.ICEBERG).toLowerCase();
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, HiveMetaHook.ICEBERG)
+        .toUpperCase();
   }
 
   private Path getColStatsPath(Table table) {
@@ -1581,9 +1583,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void setTableParametersForCTLT(org.apache.hadoop.hive.ql.metadata.Table tbl, CreateTableLikeDesc desc,
       Map<String, String> origParams) {
     // Preserve the format-version of the iceberg table and filter out rest.
-    String formatVersion = origParams.get(TableProperties.FORMAT_VERSION);
-    if ("2".equals(formatVersion)) {
-      tbl.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+    if (IcebergTableUtil.isV2Table(origParams)) {
+      tbl.getParameters().put(TableProperties.FORMAT_VERSION, "2");
       tbl.getParameters().put(TableProperties.DELETE_MODE, MERGE_ON_READ);
       tbl.getParameters().put(TableProperties.UPDATE_MODE, MERGE_ON_READ);
       tbl.getParameters().put(TableProperties.MERGE_MODE, MERGE_ON_READ);
@@ -1591,12 +1592,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     // check if the table is being created as managed table, in that case we translate it to external
     if (!desc.isExternal()) {
-      tbl.getParameters().put("TRANSLATED_TO_EXTERNAL", "TRUE");
+      tbl.getParameters().put(HiveMetaHook.TRANSLATED_TO_EXTERNAL, "TRUE");
       desc.setIsExternal(true);
     }
 
     // If source is Iceberg table set the schema and the partition spec
-    if ("ICEBERG".equalsIgnoreCase(origParams.get("table_type"))) {
+    if (MetaStoreUtils.isIcebergTable(origParams)) {
       tbl.getParameters()
           .put(InputFormatConfig.TABLE_SCHEMA, origParams.get(InputFormatConfig.TABLE_SCHEMA));
       tbl.getParameters()
