@@ -541,7 +541,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
       Assert.assertTrue(table.isSetOwnerType());
       Assert.assertTrue(table.isSetOwner());
       StorageDescriptor sd = table.getSd();
-      Assert.assertTrue(sd.isSetLocation());
+      if (TableType.VIRTUAL_VIEW.toString().equals(table.getTableType())) {
+        Assert.assertFalse(sd.isSetLocation());
+      } else {
+        Assert.assertTrue(sd.isSetLocation());
+      }
     }
   }
 
