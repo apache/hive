@@ -193,7 +193,7 @@ public class OperatorUtils {
 
   private static <T> boolean hasMoreOperatorsThan(
       Operator<?> start, Class<T> opClazz, int limit, Set<Operator<?>> visited) {
-    if (visited.contains(start)) {
+    if (!visited.add(start)) {
       return limit <= 0;
     }
 
