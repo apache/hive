@@ -33,7 +33,7 @@ public class RemoveTxnsFromMinHistoryLevelCommand extends InClauseBatchCommand<L
   }
 
   @Override
-  public boolean shouldUse(DatabaseProduct databaseProduct) {
+  public boolean shouldBeUsed(DatabaseProduct databaseProduct) {
     return TxnHandlingFeatures.useMinHistoryLevel();
   }
 

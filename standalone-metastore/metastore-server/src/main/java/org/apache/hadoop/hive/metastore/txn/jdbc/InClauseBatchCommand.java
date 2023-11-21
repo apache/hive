@@ -65,7 +65,7 @@ public class InClauseBatchCommand<T> implements ParameterizedQuery {
   }
 
   /**
-   * @return Returns a {@link Comparator<T>} instance which can be used to determine the longest element in the 
+   * @return Returns a {@link Comparator} instance which can be used to determine the longest element in the 
    * list IN clause parameters. This is required to be able to estimate the final legth of the command.
    */
   public Comparator<T> getParameterLengthComparator() {

@@ -34,7 +34,7 @@ public class RemoveWriteIdsFromMinHistoryCommand extends InClauseBatchCommand<Lo
   }
 
   @Override
-  public boolean shouldUse(DatabaseProduct databaseProduct) {
+  public boolean shouldBeUsed(DatabaseProduct databaseProduct) {
     return TxnHandlingFeatures.useMinHistoryWriteId();
   }
 

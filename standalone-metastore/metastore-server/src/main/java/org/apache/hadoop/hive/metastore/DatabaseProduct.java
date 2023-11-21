@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,13 +210,7 @@ public class DatabaseProduct implements Configurable {
    * @return
    */
   public boolean isTableNotExistsError(Throwable ex) {
-    while (ex != null && !(ex instanceof SQLException) ) {
-      ex = ex.getCause();
-    }
-    if (ex == null) {
-      throw new IllegalArgumentException("No SQLException found in the exception chain!");
-    }
-    SQLException e = (SQLException) ex;    
+    SQLException e = TxnUtils.getSqlException(ex);    
     return (isPOSTGRES() && "42P01".equalsIgnoreCase(e.getSQLState()))
         || (isMYSQL() && "42S02".equalsIgnoreCase(e.getSQLState()))
         || (isORACLE() && "42000".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("ORA-00942"))
@@ -566,13 +561,7 @@ public class DatabaseProduct implements Configurable {
   }
 
   public boolean isDuplicateKeyError(Throwable ex) {
-    while (ex != null && !(ex instanceof SQLException) ) {
-      ex = ex.getCause();
-    }
-    if (ex == null) {
-      throw new IllegalArgumentException("No SQLException found in the exception chain!");
-    }
-    SQLException sqlEx = (SQLException)ex; 
+    SQLException sqlEx = TxnUtils.getSqlException(ex); 
     switch (dbType) {
     case DERBY:
     case CUSTOM: // ANSI SQL

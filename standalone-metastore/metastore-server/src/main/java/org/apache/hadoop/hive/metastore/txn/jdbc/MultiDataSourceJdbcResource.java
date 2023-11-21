@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -222,6 +223,18 @@ public class MultiDataSourceJdbcResource {
     }
   }
 
+  /**
+   * Executes the passed {@link InClauseBatchCommand}. It estimates the length of the query and if it exceeds the limit
+   * set in {@link org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars#DIRECT_SQL_MAX_QUERY_LENGTH}, or the 
+   * number of elements in the IN() clause exceeds 
+   * {@link org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars#DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE}, the query 
+   * will be split to multiple queries.
+   * @param command The {@link InClauseBatchCommand} to execute
+   * @return Returns with the number of affected rows in total.
+   * @param <T> The type of the elements in the IN() clause
+   * @throws MetaException If {@link InClauseBatchCommand#getInClauseParameterName()} is blank, or the value of the 
+   * IN() clause parameter in {@link InClauseBatchCommand#getQueryParameters()} is not exist or not an instance of List&lt;T&gt; 
+   */
   public <T> int execute(InClauseBatchCommand<T> command) throws MetaException {
     if (!shouldExecute(command)) {
       return -1;
@@ -229,6 +242,10 @@ public class MultiDataSourceJdbcResource {
     
     List<T> elements;    
     try {
+      if (StringUtils.isBlank(command.getInClauseParameterName())) {
+        throw new MetaException("The IN() clause parameter name (InClauseBatchCommand.getInClauseParameterName() " +
+            "cannot be blank!");
+      }
       try {
         //noinspection unchecked
         elements = (List<T>) command.getQueryParameters().getValue(command.getInClauseParameterName());
@@ -238,7 +255,7 @@ public class MultiDataSourceJdbcResource {
       MapSqlParameterSource params = (MapSqlParameterSource) command.getQueryParameters();
       String query = command.getParameterizedQueryString(databaseProduct);
       if (CollectionUtils.isEmpty(elements)) {
-        throw new IllegalArgumentException("The elements list cannot be empty! An empty IN clause is invalid!");
+        throw new IllegalArgumentException("The elements list cannot be null or empty! An empty IN clause is invalid!");
       }
       if (!Pattern.compile("IN\\s*\\(\\s*:" + command.getInClauseParameterName() + "\\s*\\)", Pattern.CASE_INSENSITIVE).matcher(query).find()) {
         throw new IllegalArgumentException("The query must contain the IN(:" + command.getInClauseParameterName() + ") clause!");
@@ -318,7 +335,7 @@ public class MultiDataSourceJdbcResource {
   }
 
   private boolean shouldExecute(Object command) {
-    return !(command instanceof ConditionalCommand) || ((ConditionalCommand)command).shouldUse(databaseProduct);
+    return !(command instanceof ConditionalCommand) || ((ConditionalCommand)command).shouldBeUsed(databaseProduct);
   }
   
   private void handleError(Object command, Exception e) {

@@ -71,7 +71,7 @@ public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand
   }
 
   @Override
-  public boolean shouldUse(DatabaseProduct databaseProduct) {
+  public boolean shouldBeUsed(DatabaseProduct databaseProduct) {
     return TxnHandlingFeatures.useMinHistoryWriteId();
   }
 

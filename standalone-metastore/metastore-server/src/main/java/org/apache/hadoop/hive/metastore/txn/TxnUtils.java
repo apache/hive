@@ -664,5 +664,22 @@ public class TxnUtils {
     }
   }
 
+  /**
+   * Checks is the passed exception, or any of the root (cause) exceptions are an instance of {@link SQLException}.
+   * Returns with the found {@link SQLException} or throws an {@link IllegalArgumentException} if no {@link SQLException}
+   * found in the chain.
+   * @param ex The exception to check
+   * @return Returns wit the {@link SQLException} found in the exception chain. 
+   * @throws IllegalArgumentException Thrown if there is no {@link SQLException} in the exception chain
+   */
+  public static SQLException getSqlException(Throwable ex) throws IllegalArgumentException {
+    while (ex != null && !(ex instanceof SQLException) ) {
+      ex = ex.getCause();
+    }
+    if (ex == null) {
+      throw new IllegalArgumentException("No SQLException found in the exception chain!");
+    }
+    return (SQLException)ex;
+  }
 
 }

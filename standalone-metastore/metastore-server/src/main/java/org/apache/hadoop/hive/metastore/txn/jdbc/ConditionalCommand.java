@@ -31,7 +31,7 @@ public interface ConditionalCommand {
    * @param databaseProduct
    * @return Returns true if the command can be executed, false otherwise.
    */
-  boolean shouldUse(DatabaseProduct databaseProduct);
+  boolean shouldBeUsed(DatabaseProduct databaseProduct);
 
   /**
    * Called in case of execution error in order to notify this command about the failure
