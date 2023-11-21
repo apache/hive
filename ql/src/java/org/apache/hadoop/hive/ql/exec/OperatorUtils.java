@@ -193,10 +193,10 @@ public class OperatorUtils {
   private static boolean hasMoreOperatorsThan(
       Operator<?> start, Class<?> opClazz, int limit, Set<Operator<?>> visited) {
     if (!visited.add(start)) {
-      return limit <= 0;
+      return limit < 0;
     }
 
-    if (limit <= 0) {
+    if (limit < 0) {
       return false;
     }
 
@@ -215,7 +215,7 @@ public class OperatorUtils {
         }
       }
     }
-    return limit <= 0;
+    return limit < 0;
   }
 
   public static void setChildrenCollector(List<Operator<? extends OperatorDesc>> childOperators, OutputCollector out) {

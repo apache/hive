@@ -60,7 +60,7 @@ class TestOperatorUtils {
     Operator<?> rs = OperatorFactory.get(context, ReduceSinkDesc.class);
     select.setParentOperators(singletonList(rs));
 
-    assertFalse(OperatorUtils.hasMoreOperatorsThan(filter, GroupByOperator.class, 2));
+    assertFalse(OperatorUtils.hasMoreOperatorsThan(filter, GroupByOperator.class, 1));
   }
 
   @Test
@@ -77,7 +77,7 @@ class TestOperatorUtils {
     Operator<?> rs = OperatorFactory.get(context, ReduceSinkDesc.class);
     gby.setParentOperators(singletonList(rs));
 
-    assertFalse(OperatorUtils.hasMoreOperatorsThan(filter, GroupByOperator.class, 2));
+    assertFalse(OperatorUtils.hasMoreOperatorsThan(filter, GroupByOperator.class, 1));
   }
 
   @Test
@@ -94,7 +94,7 @@ class TestOperatorUtils {
     Operator<?> rs = OperatorFactory.get(context, ReduceSinkDesc.class);
     gby2.setParentOperators(singletonList(rs));
 
-    assertTrue(OperatorUtils.hasMoreOperatorsThan(gby1, GroupByOperator.class, 2));
+    assertTrue(OperatorUtils.hasMoreOperatorsThan(gby1, GroupByOperator.class, 1));
   }
 
   @Test
@@ -111,7 +111,7 @@ class TestOperatorUtils {
     Operator<?> ts = OperatorFactory.get(context, TableScanDesc.class);
     gby2.setParentOperators(singletonList(ts));
 
-    assertFalse(OperatorUtils.hasMoreOperatorsThan(gby1, GroupByOperator.class, 2));
+    assertFalse(OperatorUtils.hasMoreOperatorsThan(gby1, GroupByOperator.class, 1));
   }
 
   @Test
@@ -137,7 +137,7 @@ class TestOperatorUtils {
 
     join.setParentOperators(asList(filter, select));
 
-    assertTrue(OperatorUtils.hasMoreOperatorsThan(gby1, GroupByOperator.class, 2));
+    assertTrue(OperatorUtils.hasMoreOperatorsThan(gby1, GroupByOperator.class, 1));
   }
 
   @Test
@@ -163,6 +163,6 @@ class TestOperatorUtils {
 
     join.setParentOperators(asList(filter, select));
 
-    assertFalse(OperatorUtils.hasMoreOperatorsThan(join, GroupByOperator.class, 2));
+    assertFalse(OperatorUtils.hasMoreOperatorsThan(join, GroupByOperator.class, 1));
   }
 }

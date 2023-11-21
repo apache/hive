@@ -764,7 +764,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       if (parentOp.getParentOperators() != null) {
         // Parent operator is RS and hasMoreOperatorsThan traverses until the next RS, so we start from grandparent
         for (Operator<?> grandParent : parentOp.getParentOperators()) {
-          if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 2)) {
+          if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 1)) {
             LOG.info("We cannot convert to SMB join " +
                 "because one of the join branches has more than one Group by operators in the same reducer.");
             return false;
