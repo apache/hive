@@ -184,15 +184,14 @@ public class OperatorUtils {
    * @param opClazz type of operator to track
    * @param limit maximum allowed number of operator in a branch of the tree
    * @return true if limit is exceeded false otherwise
-   * @param <T> type of operator to track
    */
-  public static <T> boolean hasMoreOperatorsThan(
-      Operator<?> start, Class<T> opClazz, int limit) {
+  public static boolean hasMoreOperatorsThan(
+      Operator<?> start, Class<?> opClazz, int limit) {
     return hasMoreOperatorsThan(start, opClazz, limit, new HashSet<>());
   }
 
-  private static <T> boolean hasMoreOperatorsThan(
-      Operator<?> start, Class<T> opClazz, int limit, Set<Operator<?>> visited) {
+  private static boolean hasMoreOperatorsThan(
+      Operator<?> start, Class<?> opClazz, int limit, Set<Operator<?>> visited) {
     if (!visited.add(start)) {
       return limit <= 0;
     }
