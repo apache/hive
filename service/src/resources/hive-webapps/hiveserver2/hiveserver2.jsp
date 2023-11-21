@@ -23,6 +23,7 @@
   import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
   import="org.apache.hive.common.util.HiveVersionInfo"
   import="org.apache.hive.http.HttpServer"
+  import="org.apache.hive.service.ServiceUtils"
   import="org.apache.hive.service.cli.operation.Operation"
   import="org.apache.hive.service.cli.operation.SQLOperation"
   import="org.apache.hadoop.hive.ql.QueryInfo"
@@ -32,7 +33,6 @@
   import="java.util.Collection"
   import="java.util.Date"
   import="java.util.List"
-  import="jodd.net.HtmlEncoder"
 %>
 
 <%
@@ -159,7 +159,7 @@ for (HiveSession hiveSession: hiveSessions) {
     %>
     <tr>
         <td><%= operation.getUserName() %></td>
-        <td><%= HtmlEncoder.text(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
+        <td><%= ServiceUtils.text(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
         <td><%= operation.getExecutionEngine() %>
         <td><%= operation.getState() %></td>
         <td><%= new Date(operation.getBeginTime()) %></td>
@@ -203,7 +203,7 @@ for (HiveSession hiveSession: hiveSessions) {
     %>
     <tr>
         <td><%= operation.getUserName() %></td>
-        <td><%= HtmlEncoder.text(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
+        <td><%= ServiceUtils.text(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
         <td><%= operation.getExecutionEngine() %>
         <td><%= operation.getState() %></td>
         <td><%= operation.getElapsedTime()/1000 %></td>

@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
-import jodd.time.JulianDate;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.JulianDate;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
-import jodd.exception.UncheckedException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
@@ -196,7 +195,7 @@ public class ReplicationMigrationTool implements Tool {
         try {
           executor.getQueue().put(r);
         } catch (InterruptedException e) {
-          throw new UncheckedException(e);
+          throw new RuntimeException(e);
         }
       }
     });
