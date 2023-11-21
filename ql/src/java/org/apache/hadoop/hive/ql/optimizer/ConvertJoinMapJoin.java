@@ -762,6 +762,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       // not process all buffered records.
       // HIVE-27788
       if (parentOp.getParentOperators() != null) {
+        // Parent operator is RS and hasMoreOperatorsThan traverses until the next RS, so we start from grandparent
         for (Operator<?> grandParent : parentOp.getParentOperators()) {
           if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 2)) {
             LOG.info("We cannot convert to SMB join " +
