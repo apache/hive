@@ -1751,7 +1751,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       UnknownDBException {
       EnvironmentContext envCxt = null;
       String addedJars = conf.getVar(ConfVars.HIVEADDEDJARS);
-      if(org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+      if(org.apache.commons.lang3.StringUtils.isNotBlank(addedJars)) {
          Map<String, String> props = new HashMap<String, String>();
          props.put("hive.added.jars.path", addedJars);
          envCxt = new EnvironmentContext(props);

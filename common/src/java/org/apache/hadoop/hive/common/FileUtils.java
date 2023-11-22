@@ -965,7 +965,7 @@ public final class FileUtils {
    */
   public static Set<String> getJarFilesByPath(String pathString, Configuration conf) {
     Set<String> result = new HashSet<String>();
-    if (pathString == null || org.apache.commons.lang.StringUtils.isBlank(pathString)) {
+    if (pathString == null || org.apache.commons.lang3.StringUtils.isBlank(pathString)) {
         return result;
     }
 

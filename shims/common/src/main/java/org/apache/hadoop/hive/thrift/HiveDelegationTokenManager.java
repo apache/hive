@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;

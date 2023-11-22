@@ -45,7 +45,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -776,7 +776,7 @@ public class MetaStoreUtils {
   public static void setSerdeParam(SerDeInfo sdi, Properties schema,
       String param) {
     String val = schema.getProperty(param);
-    if (org.apache.commons.lang.StringUtils.isNotBlank(val)) {
+    if (org.apache.commons.lang3.StringUtils.isNotBlank(val)) {
       sdi.getParameters().put(param, val);
     }
   }

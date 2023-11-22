@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
