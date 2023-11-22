@@ -73,40 +73,4 @@ public class ServiceUtils {
         .getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
   }
 
-  private static final int LEN = 0xA1;
-  private static final char[][] TEXT = new char[LEN][];
-
-  /**
-   * Encodes a string to HTML-safe text. The following characters are replaced:
-   * <ul>
-   * <li><code>&amp;</code> with <code>&amp;amp;</code></li>
-   * <li><code>&lt;</code> with <code>&amp;lt;</code></li>
-   * <li><code>&gt;</code> with <code>&amp;gt;</code></li>
-   * <li><code>\u00A0</code> with <code>&nbsp;</code></li>
-   * </ul>
-   */
-  public static String text(final CharSequence text) {
-    return encode(text, TEXT, LEN);
-  }
-
-  private static String encode(final CharSequence text, final char[][] buff, final int bufflen) {
-    int len;
-    if ((text == null) || ((len = text.length()) == 0)) {
-      return "";
-    }
-
-    StringBuilder buffer = new StringBuilder(len + (len >> 2));
-
-    for (int i = 0; i < len; i++) {
-      char c = text.charAt(i);
-
-      if (c < bufflen) {
-        buffer.append(buff[c]);
-      } else {
-        buffer.append(c);
-      }
-    }
-    return buffer.toString();
-  }
-
 }

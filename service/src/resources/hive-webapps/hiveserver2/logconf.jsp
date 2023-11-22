@@ -23,7 +23,6 @@
          import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
          import="org.apache.hive.common.util.HiveVersionInfo"
          import="org.apache.hive.http.HttpServer"
-         import="org.apache.hive.service.ServiceUtils"
          import="org.apache.hive.service.cli.operation.Operation"
          import="org.apache.hive.service.cli.operation.SQLOperation"
          import="org.apache.hadoop.hive.ql.QueryInfo"
