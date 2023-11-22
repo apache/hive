@@ -254,9 +254,9 @@ public class HiveAlterHandler implements AlterHandler {
       boolean renamedTranslatedToExternalTable = rename && MetaStoreUtils.isTranslatedToExternalTable(oldt)
           && MetaStoreUtils.isTranslatedToExternalTable(newt);
       boolean renamedExternalTable = rename && MetaStoreUtils.isExternalTable(oldt)
-          && !MetaStoreUtils.isPropertyTrue(oldt.getParameters(), "TRANSLATED_TO_EXTERNAL");
+          && !MetaStoreUtils.isPropertyTrue(oldt.getParameters(), HiveMetaHook.TRANSLATED_TO_EXTERNAL);
       boolean isRenameIcebergTable =
-          rename && HiveMetaHook.ICEBERG.equalsIgnoreCase(newt.getParameters().get(HiveMetaHook.TABLE_TYPE));
+          rename && MetaStoreUtils.isIcebergTable(newt.getParameters());
 
       List<ColumnStatistics> columnStatistics = getColumnStats(msdb, oldt);
       columnStatistics = deleteTableColumnStats(msdb, oldt, newt, columnStatistics);
