@@ -773,7 +773,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
             groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
             null, false, 0, false);
     GroupByOperator groupByOpFinal = (GroupByOperator)OperatorFactory.getAndMakeChild(
-            groupByDescFinal, new RowSchema(groupByOp.getSchema()), rsOp);
+            groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
 
     createFinalRsForSemiJoinOp(parseContext, ts, groupByOpFinal, key,
@@ -791,11 +791,11 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
     ArrayList<ColumnInfo> rsColInfos = new ArrayList<>();
     List<ColumnInfo> gbySchema = gb.getSchema().getSignature();
-    for (int colPos = 0; colPos < gbySchema.size(); colPos++) {
-      String gbyColName = gbySchema.get(colPos).getInternalName();
+    for (ColumnInfo gbyColInfo : gb.getSchema().getSignature()) {
+      String gbyColName = gbyColInfo.getInternalName();
       gbOutputNames.add(gbyColName);
 
-      TypeInfo typInfo = gbySchema.get(colPos).getType();
+      TypeInfo typInfo = gbyColInfo.getType();
       ExprNodeColumnDesc rsValExpr = new ExprNodeColumnDesc(typInfo, gbyColName, "", false);
       rsValueCols.add(rsValExpr);
 
