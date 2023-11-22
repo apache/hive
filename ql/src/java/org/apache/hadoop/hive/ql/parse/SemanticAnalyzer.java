@@ -3996,7 +3996,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
               throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "."
                   + tmp[1] + " => " + oColInfo + " due to duplication, see previous warnings",
-                  UnsupportedFeature.Duplicates_in_RR);
+                  UnsupportedFeature.DUPLICATES_IN_RR);
             }
           } else {
             output.put(tmp[0], tmp[1], oColInfo);
@@ -4084,7 +4084,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
             throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "." + tmp[1]
                 + " => " + oColInfo + " due to duplication, see previous warnings",
-                UnsupportedFeature.Duplicates_in_RR);
+                UnsupportedFeature.DUPLICATES_IN_RR);
           }
         } else {
           output.put(tmp[0], tmp[1], oColInfo);
