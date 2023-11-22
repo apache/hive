@@ -527,7 +527,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[1].getTableName());
 
     GetProjectionsSpec projectSpec = (new GetTableProjectionsSpecBuilder()).includeOwner().includeOwnerType().
-            includeSdLocation().build();
+            includeSdLocation().includeTableType().build();
 
     List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
 
