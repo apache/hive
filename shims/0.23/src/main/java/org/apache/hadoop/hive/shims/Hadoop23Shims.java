@@ -108,6 +108,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.test.MiniTezCluster;
 
+import static org.apache.hadoop.hive.shims.Utils.RAW_RESERVED_VIRTUAL_PATH;
 import static org.apache.hadoop.tools.DistCpConstants.CONF_LABEL_DISTCP_JOB_ID;
 
 /**
@@ -1047,7 +1048,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
     // -update and -delete are mandatory options for directory copy to work.
     List<String> params = constructDistCpDefaultParams(conf, dst.getFileSystem(conf),
-            srcPaths.get(0).getFileSystem(conf));
+            srcPaths.get(0).getFileSystem(conf), srcPaths);
     if (!params.contains("-delete")) {
       params.add("-delete");
     }
@@ -1059,7 +1060,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   private List<String> constructDistCpDefaultParams(Configuration conf, FileSystem dstFs,
-                                                    FileSystem sourceFs) throws IOException {
+                                                    FileSystem sourceFs, List<Path> srcPaths) throws IOException {
     List<String> params = new ArrayList<String>();
     boolean needToAddPreserveOption = true;
     for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()){
@@ -1074,8 +1075,15 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     }
     if (needToAddPreserveOption) {
-      params.add((Utils.checkFileSystemXAttrSupport(dstFs)
-              && Utils.checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
+      if (conf.getBoolean("dfs.xattr.supported.only.on.reserved.namespace", false)) {
+        boolean shouldCopyXAttrs =  srcPaths.get(0).toUri().getPath().startsWith(RAW_RESERVED_VIRTUAL_PATH)
+          && Utils.checkFileSystemXAttrSupport(sourceFs, new Path(RAW_RESERVED_VIRTUAL_PATH))
+          && Utils.checkFileSystemXAttrSupport(dstFs, new Path(RAW_RESERVED_VIRTUAL_PATH));
+        params.add(shouldCopyXAttrs ? "-pbx" : "-pb");
+      } else {
+        params.add((Utils.checkFileSystemXAttrSupport(dstFs)
+          && Utils.checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
+      }
     }
     if (!params.contains("-update")) {
       params.add("-update");
@@ -1097,7 +1105,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       Configuration conf, String diff) throws IOException {
     // Get the default distcp params
     List<String> params = constructDistCpDefaultParams(conf, dst.getFileSystem(conf),
-            srcPaths.get(0).getFileSystem(conf));
+            srcPaths.get(0).getFileSystem(conf), srcPaths);
     if (params.contains("-delete")) {
       params.remove("-delete");
     }

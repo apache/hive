@@ -133,6 +133,21 @@ public class TestFileUtils {
     verifyXAttrsPreserved(src, new Path(dst, src.getName()));
   }
 
+  @Test
+  public void testShouldPreserveXAttrs() throws Exception {
+    conf.setBoolean(HiveConf.ConfVars.DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE.varname, true);
+    Path filePath = new Path(basePath, "src.txt");
+    fs.create(filePath).close();
+    Assert.assertFalse(FileUtils.shouldPreserveXAttrs(conf, fs, fs, filePath));
+    Path reservedRawPath = new Path("/.reserved/raw/", "src1.txt");
+    fs.create(reservedRawPath).close();
+    Assert.assertTrue(FileUtils.shouldPreserveXAttrs(conf, fs, fs, reservedRawPath));
+
+    conf.setBoolean(HiveConf.ConfVars.DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE.varname, false);
+    Assert.assertTrue(FileUtils.shouldPreserveXAttrs(conf, fs, fs, filePath));
+    Assert.assertTrue(FileUtils.shouldPreserveXAttrs(conf, fs, fs, reservedRawPath));
+  }
+
   private void verifyXAttrsPreserved(Path src, Path dst) throws Exception {
     FileStatus srcStatus = fs.getFileStatus(src);
     FileStatus dstStatus = fs.getFileStatus(dst);
