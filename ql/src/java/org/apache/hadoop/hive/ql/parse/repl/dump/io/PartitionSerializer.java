@@ -67,10 +67,4 @@ public class PartitionSerializer implements JsonWriter.Serializer {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }
   }
-
-  private boolean isPartitionExternal() {
-    Map<String, String> params = partition.getParameters();
-    return params.containsKey("EXTERNAL")
-        && params.get("EXTERNAL").equalsIgnoreCase("TRUE");
-  }
 }

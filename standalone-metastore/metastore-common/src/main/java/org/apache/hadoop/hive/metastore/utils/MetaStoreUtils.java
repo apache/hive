@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -286,10 +287,14 @@ public class MetaStoreUtils {
     return isExternal(params);
   }
 
+  public static boolean isIcebergTable(Map<String, String> params) {
+    return HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
+  }
+
   public static boolean isTranslatedToExternalTable(Table table) {
     Map<String, String> params = table.getParameters();
-    return params != null && MetaStoreUtils.isPropertyTrue(params, "EXTERNAL")
-        && MetaStoreUtils.isPropertyTrue(params, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
+    return params != null && MetaStoreUtils.isPropertyTrue(params, HiveMetaHook.EXTERNAL)
+        && MetaStoreUtils.isPropertyTrue(params, HiveMetaHook.TRANSLATED_TO_EXTERNAL) && table.getSd() != null
         && table.getSd().isSetLocation();
   }
 

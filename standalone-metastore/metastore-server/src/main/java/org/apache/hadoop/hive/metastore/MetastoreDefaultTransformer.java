@@ -652,9 +652,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
         params.remove(TABLE_IS_TRANSACTIONAL);
         params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
-        params.put("EXTERNAL", "TRUE");
+        params.put(HiveMetaHook.EXTERNAL, "TRUE");
         params.put(EXTERNAL_TABLE_PURGE, "TRUE");
-        params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
+        params.put(HiveMetaHook.TRANSLATED_TO_EXTERNAL, "TRUE");
         newTable.setParameters(params);
         LOG.info("Modified table params are:" + params.toString());
 
@@ -782,8 +782,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   private boolean isTranslatedToExternalTable(Table table) {
     Map<String, String> p = table.getParameters();
-    return p != null && MetaStoreUtils.isPropertyTrue(p, "EXTERNAL")
-        && MetaStoreUtils.isPropertyTrue(p, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
+    return p != null && MetaStoreUtils.isPropertyTrue(p, HiveMetaHook.EXTERNAL)
+        && MetaStoreUtils.isPropertyTrue(p, HiveMetaHook.TRANSLATED_TO_EXTERNAL) && table.getSd() != null
         && table.getSd().isSetLocation();
   }
 
