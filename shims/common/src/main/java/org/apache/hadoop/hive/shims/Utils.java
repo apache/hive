@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 public class Utils {
 
   private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
-
+  public static final String RAW_RESERVED_VIRTUAL_PATH = "/.reserved/raw/";
   private static final boolean IBM_JAVA = System.getProperty("java.vendor")
       .contains("IBM");
 
@@ -165,8 +165,12 @@ public class Utils {
   }
 
   public static boolean checkFileSystemXAttrSupport(FileSystem fs) throws IOException {
+    return checkFileSystemXAttrSupport(fs, new Path(Path.SEPARATOR));
+  }
+
+  public static boolean checkFileSystemXAttrSupport(FileSystem fs, Path path) throws IOException {
     try {
-      fs.getXAttrs(new Path(Path.SEPARATOR));
+      fs.getXAttrs(path);
       return true;
     } catch (UnsupportedOperationException e) {
       LOG.warn("XAttr won't be preserved since it is not supported for file system: " + fs.getUri());
