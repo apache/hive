@@ -278,7 +278,7 @@ public class TypeConverter {
   public static RelDataType convert(UnionTypeInfo unionType, RelDataTypeFactory dtFactory)
     throws CalciteSemanticException{
     // Union type is not supported in Calcite.
-    throw new CalciteSemanticException("Union type is not supported", UnsupportedFeature.Union_type);
+    throw new CalciteSemanticException("Union type is not supported", UnsupportedFeature.UNION_TYPE);
   }
 
   public static TypeInfo convertLiteralType(RexLiteral literal) {
