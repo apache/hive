@@ -69,8 +69,6 @@ import java.util.Set;
  */
 public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentSnapshotMaterializationRule.Config> {
 
-  public static final int NULL_SNAPSHOT_ID = -1;
-
   public static RelOptRule with(Map<String, SnapshotContext> mvMetaStoredSnapshot) {
     return RelRule.Config.EMPTY.as(HiveAugmentSnapshotMaterializationRule.Config.class)
             .withMvMetaStoredSnapshot(mvMetaStoredSnapshot)
@@ -140,8 +138,11 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
       return;
     }
 
-    long snapshotId = mvMetaTableSnapshot != null ? mvMetaTableSnapshot.getSnapshotId() : NULL_SNAPSHOT_ID;
-    table.setVersionIntervalFrom(Long.toString(snapshotId));
+    Long snapshotId = null;
+    if (mvMetaTableSnapshot != null) {
+      snapshotId = mvMetaTableSnapshot.getSnapshotId();
+      table.setVersionIntervalFrom(Long.toString(snapshotId));
+    }
 
     RexBuilder rexBuilder = call.builder().getRexBuilder();
     int snapshotIdIndex = tableScan.getTable().getRowType().getField(
@@ -154,10 +155,7 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
     List<RexNode> conds = new ArrayList<>();
     final RexNode literalHighWatermark = rexBuilder.makeLiteral(
         snapshotId, snapshotIdType(relBuilder.getTypeFactory()), false);
-    conds.add(
-        rexBuilder.makeCall(
-            SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-            ImmutableList.of(snapshotIdInputRef, literalHighWatermark)));
+    conds.add(rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, snapshotIdInputRef, literalHighWatermark));
     relBuilder.filter(conds);
     call.transformTo(relBuilder.build());
   }

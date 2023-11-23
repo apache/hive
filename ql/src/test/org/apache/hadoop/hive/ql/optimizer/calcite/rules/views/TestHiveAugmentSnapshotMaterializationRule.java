@@ -57,7 +57,7 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
 
     assertThat(newRoot, instanceOf(HiveFilter.class));
     HiveFilter filter = (HiveFilter) newRoot;
-    assertThat(filter.getCondition().toString(), is("<=($3, -1)"));
+    assertThat(filter.getCondition().toString(), is("<=($3, null)"));
   }
 
   @Test
