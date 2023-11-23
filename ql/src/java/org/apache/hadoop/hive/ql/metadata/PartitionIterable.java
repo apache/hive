@@ -156,6 +156,9 @@ public class PartitionIterable implements Iterable<Partition> {
    */
   public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
                            int batchSize, boolean getColStats) throws HiveException {
+    if (batchSize < 1) {
+      throw new HiveException("Batch Size for Partition Iterable should be > 0");
+    }
     this.currType = Type.LAZY_FETCH_PARTITIONS;
     this.db = db;
     this.table = table;

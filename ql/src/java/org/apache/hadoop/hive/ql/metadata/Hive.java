@@ -4153,43 +4153,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * Get all the partitions; unlike {@link #getPartitions(Table)}, does not include auth.
-   * @param tbl table for which partitions are needed
-   * @return list of partition objects
-   */
-  public Set<Partition> getAllPartitions(Table tbl) throws HiveException {
-    if (!tbl.isPartitioned()) {
-      return Sets.newHashSet(new Partition(tbl));
-    }
-
-    List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
-    try {
-      tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
-    } catch (Exception e) {
-      LOG.error("Failed getAllPartitionsOf", e);
-      throw new HiveException(e);
-    }
-    Set<Partition> parts = new LinkedHashSet<Partition>(tParts.size());
-    for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-      parts.add(new Partition(tbl, tpart));
-    }
-    return parts;
-  }
-
-  /**
-   * Get all the partitions. Do it in batches if batchSize is more than 0 else get it in one call.
+   * Get all the partitions in batches. Does not include auth information.
    * @param tbl table for which partitions are needed
    * @return list of partition objects
    */
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
-    int batchSize= MetastoreConf.getIntVar(
-            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-    if (batchSize > 0) {
-      return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+    int batchSize= MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
               Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES));
-    } else {
-      return getAllPartitions(tbl);
-    }
   }
 
   public Set<Partition> getAllPartitionsInBatches(Table tbl, int batchSize, int decayingFactor,

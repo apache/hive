@@ -276,12 +276,8 @@ public class HiveMetaStoreChecker {
             .addProjectField("createTime").addProjectField("tableName")
             .addProjectField("values").build());
         request.setCatName(table.getCatName());
-        int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-        if (batchSize > 0) {
-          parts = new PartitionIterable(getMsc(), table, batchSize).withProjectSpec(request);
-        } else {
-          parts = new PartitionIterable(getPartitionsByProjectSpec(msc, request));
-        }
+        parts = new PartitionIterable(getMsc(), table, MetastoreConf.getIntVar(conf,
+                MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX)).withProjectSpec(request);
       }
     } else {
       parts = new PartitionIterable(Collections.emptyList());

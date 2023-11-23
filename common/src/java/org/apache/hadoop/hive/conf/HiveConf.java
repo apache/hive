@@ -1299,9 +1299,10 @@ public class HiveConf extends Configuration {
      */
     @Deprecated
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300,
+         new RangeValidator(1, null),
         "Maximum number of objects (tables/partitions) can be retrieved from metastore in one batch. \n" +
         "The higher the number, the less the number of round trips is needed to the Hive metastore server, \n" +
-        "but it may also cause higher memory requirement at the client side."),
+        "but it may also cause higher memory requirement at the client side. Batch value should be > 0 "),
     /**
      * @deprecated Use MetastoreConf.BATCH_RETRIEVE_OBJECTS_MAX
      */

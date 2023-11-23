@@ -164,6 +164,9 @@ public class PartitionIterable implements Iterable<Partition> {
    * a Hive object and a table object, and a partial partition spec.
    */
   public PartitionIterable(IMetaStoreClient msc, Table table, int batch_size) throws MetastoreException {
+    if (batch_size < 1) {
+      throw new MetastoreException("Batch Size for Partition Iterable should be > 0");
+    }
     this.currType = Type.LAZY_FETCH_PARTITIONS;
     this.msc = msc;
     this.table = table;
