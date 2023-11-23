@@ -23,11 +23,13 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.After;
@@ -255,5 +257,24 @@ public class TestGetPartitionInBatches {
         assert(partitionNames.size() == 30);
         // In case any duplicate/incomplete list is given by hive.getAllPartitionsInBatches, the below assertion will fail
         assert(partNames.size() == 0);
+    }
+
+    @Test
+    public void testBatchingWhenBatchSizeIsZero() throws MetaException {
+        HiveMetaStoreClient spyMSC = spy(msc);
+        hive.setMSC(spyMSC);
+        int batchSize = 0;
+        try {
+            new PartitionIterable(hive, hive.getTable(dbName, tableName), null, batchSize);
+        } catch (HiveException e) {
+            Assert.assertTrue(e.getMessage().contains("Invalid batch size for partition iterable." +
+                    " Please use a batch size greater than 0"));
+        }
+        try {
+            new org.apache.hadoop.hive.metastore.PartitionIterable(msc, table, batchSize);
+        } catch (MetastoreException e) {
+            Assert.assertTrue(e.getMessage().contains("Invalid batch size for partition iterable." +
+                    " Please use a batch size greater than 0"));
+        }
     }
 }

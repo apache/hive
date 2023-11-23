@@ -353,9 +353,10 @@ public class MetastoreConf {
             + "To enable auto create also set hive.metastore.schema.verification=false. Auto creation is not "
             + "recommended for production use cases, run schematool command instead." ),
     BATCH_RETRIEVE_MAX("metastore.batch.retrieve.max", "hive.metastore.batch.retrieve.max", 300,
+            new RangeValidator(1, null),
         "Maximum number of objects (tables/partitions) can be retrieved from metastore in one batch. \n" +
             "The higher the number, the less the number of round trips is needed to the Hive metastore server, \n" +
-            "but it may also cause higher memory requirement at the client side."),
+            "but it may also cause higher memory requirement at the client side. Batch value should be greater than 0"),
     BATCH_RETRIEVE_OBJECTS_MAX("metastore.batch.retrieve.table.partition.max",
         "hive.metastore.batch.retrieve.table.partition.max", 1000,
         "Maximum number of objects that metastore internally retrieves in one batch."),
