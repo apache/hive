@@ -22,10 +22,15 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import org.apache.commons.collections4.IterableUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.data.Record;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -110,5 +115,55 @@ public class TestHiveIcebergExpireSnapshots extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS RETAIN LAST 5");
     table.refresh();
     Assert.assertEquals(5, IterableUtils.size(table.snapshots()));
+  }
+
+  @Test
+  public void testDeleteOrphanFiles() throws IOException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "source");
+    Table table =
+        testTables.createTableWithVersions(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 5);
+    Assert.assertEquals(5, table.history().size());
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier.name());
+    List<Record> originalRecords = HiveIcebergTestUtils.valueForRow(table.schema(), rows);
+    Path orphanDataFile = new Path(table.location(), "data/dataFile");
+    Path orphanMetadataFile = new Path(table.location(), "metadata/metafile");
+    FileSystem fs = orphanDataFile.getFileSystem(shell.getHiveConf());
+    fs.create(orphanDataFile).close();
+    fs.create(orphanMetadataFile).close();
+
+    int numDataFiles = RemoteIterators.toList(fs.listFiles(new Path(table.location(), "data"), true)).size();
+    int numMetadataFiles = RemoteIterators.toList(fs.listFiles(new Path(table.location(), "metadata"), true)).size();
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE DELETE ORPHAN FILES");
+
+    Assert.assertEquals(numDataFiles,
+        RemoteIterators.toList(fs.listFiles(new Path(table.location(), "data"), true)).size());
+
+    Assert.assertEquals(numMetadataFiles,
+        RemoteIterators.toList(fs.listFiles(new Path(table.location(), "metadata"), true)).size());
+
+    Assert.assertTrue(fs.exists(orphanDataFile));
+    Assert.assertTrue(fs.exists(orphanDataFile));
+
+    long time = System.currentTimeMillis() + 1000;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS000000");
+    String timeStamp = simpleDateFormat.format(new Date(time));
+    shell.executeStatement(
+        "ALTER TABLE " + identifier.name() + " EXECUTE DELETE ORPHAN-FILES OLDER THAN ('" + timeStamp + "')");
+
+    Assert.assertEquals(numDataFiles - 1,
+        RemoteIterators.toList(fs.listFiles(new Path(table.location(), "data"), true)).size());
+
+    Assert.assertEquals(numMetadataFiles - 1,
+        RemoteIterators.toList(fs.listFiles(new Path(table.location(), "metadata"), true)).size());
+
+    Assert.assertFalse(fs.exists(orphanDataFile));
+    Assert.assertFalse(fs.exists(orphanDataFile));
+    table.refresh();
+
+    rows = shell.executeStatement("SELECT * FROM " + identifier.name());
+    List<Record> records = HiveIcebergTestUtils.valueForRow(table.schema(), rows);
+    HiveIcebergTestUtils.validateData(originalRecords, records, 0);
   }
 }

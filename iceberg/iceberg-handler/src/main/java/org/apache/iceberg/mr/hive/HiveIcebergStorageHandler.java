@@ -158,6 +158,7 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
+import org.apache.iceberg.actions.DeleteOrphanFiles;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
@@ -849,9 +850,41 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         IcebergTableUtil.performMetadataDelete(icebergTable, deleteMetadataSpec.getBranchName(),
             deleteMetadataSpec.getSarg());
         break;
+      case DELETE_ORPHAN_FILES:
+        int numDeleteThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
+            HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
+        AlterTableExecuteSpec.DeleteOrphanFilesDesc deleteOrphanFilesSpec =
+            (AlterTableExecuteSpec.DeleteOrphanFilesDesc) executeSpec.getOperationParams();
+        deleteOrphanFiles(icebergTable, deleteOrphanFilesSpec.getTimestampMillis(), numDeleteThreads);
+        break;
       default:
         throw new UnsupportedOperationException(
             String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
+    }
+  }
+
+  private void deleteOrphanFiles(Table icebergTable, long timestampMillis, int numThreads) {
+    ExecutorService deleteExecutorService = null;
+    try {
+      if (numThreads > 0) {
+        LOG.info("Executing delete orphan files on iceberg table {} with {} threads", icebergTable.name(), numThreads);
+        deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
+      }
+
+      HiveIcebergDeleteOrphanFiles deleteOrphanFiles = new HiveIcebergDeleteOrphanFiles(conf, icebergTable);
+      deleteOrphanFiles.olderThan(timestampMillis);
+      if (deleteExecutorService != null) {
+        deleteOrphanFiles.olderThan(timestampMillis);
+      }
+      if (deleteExecutorService != null) {
+        deleteOrphanFiles.executeDeleteWith(deleteExecutorService);
+      }
+      DeleteOrphanFiles.Result result = deleteOrphanFiles.execute();
+      LOG.debug("Cleaned files {} for {}", result.orphanFileLocations(), icebergTable);
+    } finally {
+      if (deleteExecutorService != null) {
+        deleteExecutorService.shutdown();
+      }
     }
   }
 
