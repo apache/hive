@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -155,6 +156,11 @@ public class ParallelEdgeFixer extends Transform {
         rs.getChildOperators().clear();
         ts.getParentOperators().remove(rs);
         rs2sj.put((ReduceSinkOperator) rs, sji);
+
+        if (pctx.getRsToRuntimeValuesInfoMap().containsKey(e.getKey())) {
+          RuntimeValuesInfo rvi = pctx.getRsToRuntimeValuesInfoMap().remove(e.getKey());
+          pctx.getRsToRuntimeValuesInfoMap().put((ReduceSinkOperator) rs, rvi);
+        }
       }
       pctx.setRsToSemiJoinBranchInfo(rs2sj);
     }
@@ -325,6 +331,12 @@ public class ParallelEdgeFixer extends Transform {
     Map<String, String> ret = new HashMap<String, String>();
     Map<String, ExprNodeDesc> exprMap = rs.getColumnExprMap();
     Set<String> neededColumns = new HashSet<String>();
+
+    if (!rs.getSchema().getColumnNames().stream().allMatch(exprMap::containsKey)) {
+      // Cannot invert RS because exprMap does not contain all of RS's input columns.
+      return Optional.empty();
+    }
+
     try {
       for (Entry<String, ExprNodeDesc> e : exprMap.entrySet()) {
         String columnName = extractColumnName(e.getValue());
@@ -344,6 +356,6 @@ public class ParallelEdgeFixer extends Transform {
     } catch (SemanticException e) {
       return Optional.empty();
     }
-
   }
 }
+
