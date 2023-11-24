@@ -34,3 +34,9 @@ explain update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice
 
 update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a);
 select * from tbl_ice order by a, b, c;
+
+-- update all rows replaced with IOW
+explain update tbl_ice set b='All';
+
+update tbl_ice set b='All';
+select * from tbl_ice order by a, b, c;

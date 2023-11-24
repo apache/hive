@@ -45,40 +45,51 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
   private final SetClausePatcher setClausePatcher;
 
 
-  public CopyOnWriteUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory,
-                                   COWWithClauseBuilder cowWithClauseBuilder, SetClausePatcher setClausePatcher) {
+  public CopyOnWriteUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     this.conf = conf;
     this.sqlGeneratorFactory = sqlGeneratorFactory;
-    this.cowWithClauseBuilder = cowWithClauseBuilder;
-    this.setClausePatcher = setClausePatcher;
+    this.cowWithClauseBuilder = new COWWithClauseBuilder();
+    this.setClausePatcher = new SetClausePatcher();
   }
 
   @Override
   public ParseUtils.ReparseResult rewrite(Context context, UpdateStatement updateBlock)
       throws SemanticException {
 
-    Tree wherePredicateNode = updateBlock.getWhereTree().getChild(0);
-    String whereClause = context.getTokenRewriteStream().toString(
-        wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
     String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.getName(), conf);
-
     MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    cowWithClauseBuilder.appendWith(sqlGenerator, filePathCol, whereClause);
+    String whereClause = null;
+    int columnOffset = 0;
+    
+    boolean shouldOverwrite = updateBlock.getWhereTree() == null;
+    if (shouldOverwrite) {
+      sqlGenerator.append("insert overwrite table ");
+    } else {
+      Tree wherePredicateNode = updateBlock.getWhereTree().getChild(0);
+      whereClause = context.getTokenRewriteStream().toString(
+          wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
+      
+      cowWithClauseBuilder.appendWith(sqlGenerator, filePathCol, whereClause);
+      sqlGenerator.append("insert into table ");
 
-    sqlGenerator.append("insert into table ");
+      columnOffset = sqlGenerator.getDeleteValues(Context.Operation.UPDATE).size();
+    }
     sqlGenerator.appendTargetTableName();
     sqlGenerator.appendPartitionColsOfTarget();
-
-    int columnOffset = sqlGenerator.getDeleteValues(Context.Operation.UPDATE).size();
+    
     sqlGenerator.append(" select ");
-    sqlGenerator.appendAcidSelectColumns(Context.Operation.UPDATE);
-    sqlGenerator.removeLastChar();
+    if (!shouldOverwrite) {
+      sqlGenerator.appendAcidSelectColumns(Context.Operation.UPDATE);
+      sqlGenerator.removeLastChar();
+    }
 
     Map<Integer, ASTNode> setColExprs = new HashMap<>(updateBlock.getSetCols().size());
     List<FieldSchema> nonPartCols = updateBlock.getTargetTable().getCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
-      sqlGenerator.append(',');
+      if (columnOffset > 0 || i > 0) {
+        sqlGenerator.append(',');
+      }
       String name = nonPartCols.get(i).getName();
       ASTNode setCol = updateBlock.getSetCols().get(name);
       String identifier = HiveUtils.unparseIdentifier(name, this.conf);
@@ -95,7 +106,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
     sqlGenerator.append(" from ");
     sqlGenerator.appendTargetTableName();
 
-    if (updateBlock.getWhereTree() != null) {
+    if (whereClause != null) {
       sqlGenerator.append("\nwhere ");
       sqlGenerator.append(whereClause);
       sqlGenerator.append("\nunion all");
@@ -118,13 +129,19 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 
-    ASTNode rewrittenInsert = (ASTNode) new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(
-            rewrittenTree, HiveParser.TOK_FROM, HiveParser.TOK_SUBQUERY, HiveParser.TOK_UNIONALL).getChild(0).getChild(0)
+    ASTNode rewrittenInsert = (ASTNode) (!shouldOverwrite ? 
+      new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(
+            rewrittenTree, HiveParser.TOK_FROM, HiveParser.TOK_SUBQUERY, HiveParser.TOK_UNIONALL)
+            .getChild(0).getChild(0) : rewrittenTree)
         .getChild(1);
 
-    rewrittenCtx.setOperation(Context.Operation.UPDATE);
-    rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
-
+    if (shouldOverwrite) {
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);
+    } else {
+      rewrittenCtx.setOperation(Context.Operation.UPDATE);
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
+    }
+    
     setClausePatcher.patchProjectionForUpdate(rewrittenInsert, setColExprs);
 
     // Note: this will overwrite this.ctx with rewrittenCtx

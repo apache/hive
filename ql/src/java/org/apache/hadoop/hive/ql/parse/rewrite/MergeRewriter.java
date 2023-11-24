@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -47,7 +48,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
   private final Hive db;
   protected final HiveConf conf;
-  private final SqlGeneratorFactory sqlGeneratorFactory;
+  protected final SqlGeneratorFactory sqlGeneratorFactory;
 
   public MergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     this.db = db;
@@ -161,7 +162,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
   protected static class MergeWhenClauseSqlGenerator implements MergeStatement.MergeSqlGenerator {
 
-    private final HiveConf conf;
+    protected final HiveConf conf;
     protected final MultiInsertSqlGenerator sqlGenerator;
     protected final MergeStatement mergeStatement;
     protected String hintStr;
@@ -218,30 +219,43 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
                              List<String> values) {
+      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias, 
+          HiveUtils.unparseIdentifier(name, conf));
+      
       for (FieldSchema fieldSchema : targetTable.getCols()) {
         if (newValues.containsKey(fieldSchema.getName())) {
-          values.add(newValues.get(fieldSchema.getName()));
+          String rhsExp = newValues.get(fieldSchema.getName());
+          values.add(getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
         } else {
-          values.add(
-              String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf)));
+          values.add(formatter.apply(fieldSchema.getName()));
         }
       }
-
-      targetTable.getPartCols().forEach(fieldSchema ->
-          values.add(
-              String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
+      
+      targetTable.getPartCols().forEach(fieldSchema -> values.add(
+          formatter.apply(fieldSchema.getName())));
+    }
+    
+    protected String getRhsExpValue(String newValue, String alias) {
+      return newValue;
     }
 
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator) {
-      sqlGenerator.indent().append("WHERE ").append(onClauseAsString);
+      addWhereClauseOfUpdate(onClauseAsString, extraPredicate, deleteExtraPredicate, sqlGenerator, UnaryOperator.identity());
+    }
+    
+    protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
+                                          MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
+      StringBuilder whereClause = new StringBuilder(onClauseAsString);
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        sqlGenerator.append(" AND ").append(extraPredicate);
+        whereClause.append(" AND ").append(extraPredicate);
       }
       if (deleteExtraPredicate != null) {
-        sqlGenerator.append(" AND NOT(").append(deleteExtraPredicate).append(")");
+        whereClause.append(" AND NOT(").append(deleteExtraPredicate).append(")");
       }
+      sqlGenerator.indent().append("WHERE ");
+      sqlGenerator.append(columnRefsFunc.apply(whereClause.toString()));
     }
 
     @Override

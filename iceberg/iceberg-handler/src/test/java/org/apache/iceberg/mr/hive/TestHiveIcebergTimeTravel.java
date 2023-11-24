@@ -21,10 +21,12 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnapshot;
@@ -33,6 +35,12 @@ import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnap
  * Tests covering the time travel feature, aka reading from a table as of a certain snapshot.
  */
 public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  }
 
   @Test
   public void testSelectAsOfTimestamp() throws IOException, InterruptedException {

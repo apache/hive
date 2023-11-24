@@ -22,14 +22,23 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnapshot;
 
 public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  }
+
   @Test
   public void testCreateTagWithDefaultConfig() throws InterruptedException, IOException {
     Table table =

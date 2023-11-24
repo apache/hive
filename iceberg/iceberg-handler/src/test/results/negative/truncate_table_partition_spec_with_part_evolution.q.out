@@ -1,8 +1,8 @@
-PREHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc
+PREHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_truncate_part_evolution
-POSTHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc
+POSTHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_truncate_part_evolution
@@ -29,4 +29,4 @@ POSTHOOK: query: alter table test_truncate_part_evolution set tblproperties('ext
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@test_truncate_part_evolution
 POSTHOOK: Output: default@test_truncate_part_evolution
-FAILED: UnsupportedOperationException Hive doesn't support copy-on-write mode as write.merge.mode. Please set 'write.merge.mode'='merge-on-read' on test_truncate_part_evolution before running ACID operations on it.
+FAILED: SemanticException Truncate conversion to delete is not possible since its not an Iceberg V2 table. Consider converting the table to Iceberg's V2 format specification.

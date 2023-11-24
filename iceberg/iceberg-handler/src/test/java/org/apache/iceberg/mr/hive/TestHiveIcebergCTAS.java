@@ -50,10 +50,14 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
  */
 public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase {
 
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG &&
+        isVectorized && formatVersion == 1);
+  }
+
   @Test
   public void testCTASFromHiveTable() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
@@ -71,8 +75,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASPartitionedFromHiveTable() throws TException, InterruptedException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
@@ -104,8 +106,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASTblPropsAndLocationClause() throws Exception {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
@@ -133,8 +133,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASPartitionedBySpec() throws TException, InterruptedException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "year_field", Types.DateType.get()),
@@ -187,8 +185,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASFailureRollback() throws IOException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     // force an execution error by passing in a committer class that Tez won't be able to load
     shell.setHiveSessionValue("hive.tez.mapreduce.output.committer.class", "org.apache.NotExistingClass");
 
@@ -209,8 +205,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASFollowedByTruncate() throws IOException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
@@ -230,7 +224,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASUnsupportedTypeWithoutAutoConversion() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
     Map<String, Type> notSupportedTypes = ImmutableMap.of(
         "TINYINT", Types.IntegerType.get(),
         "SMALLINT", Types.IntegerType.get(),
@@ -256,7 +249,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASUnsupportedTypeWithAutoConversion() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
     Map<String, Type> notSupportedTypes = ImmutableMap.of(
         "TINYINT", Types.IntegerType.get(),
         "SMALLINT", Types.IntegerType.get(),
@@ -284,7 +276,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASForAllColumnTypes() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
     shell.setHiveSessionValue(InputFormatConfig.SCHEMA_AUTO_CONVERSION, "true");
     String sourceCreate = "CREATE EXTERNAL TABLE source (" +
         "timestamp_col_1 TIMESTAMP, " +

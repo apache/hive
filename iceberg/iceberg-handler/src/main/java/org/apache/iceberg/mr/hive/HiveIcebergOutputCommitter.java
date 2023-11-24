@@ -487,6 +487,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
+      write.validateNoConflictingData();
       write.commit();
       return;
     }
