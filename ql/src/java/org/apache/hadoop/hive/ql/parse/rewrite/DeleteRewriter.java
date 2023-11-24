@@ -30,9 +30,9 @@ public class DeleteRewriter implements Rewriter<DeleteStatement> {
   protected final SqlGeneratorFactory sqlGeneratorFactory;
   private final WhereClausePatcher whereClausePatcher;
 
-  public DeleteRewriter(SqlGeneratorFactory sqlGeneratorFactory, WhereClausePatcher whereClausePatcher) {
+  public DeleteRewriter(SqlGeneratorFactory sqlGeneratorFactory) {
     this.sqlGeneratorFactory = sqlGeneratorFactory;
-    this.whereClausePatcher = whereClausePatcher;
+    this.whereClausePatcher = new WhereClausePatcher();
   }
 
   @Override

@@ -24,10 +24,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetClausePatcher;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.WhereClausePatcher;
 
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.DELETE_PREFIX;
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.SUB_QUERY_ALIAS;
@@ -52,15 +49,14 @@ public class UpdateRewriterFactory implements RewriterFactory<UpdateStatement> {
         table, targetTableFullName, conf, splitUpdate && !copyOnWriteMode ? SUB_QUERY_ALIAS : null, DELETE_PREFIX);
 
     if (copyOnWriteMode) {
-      return new CopyOnWriteUpdateRewriter(
-          conf, sqlGeneratorFactory, new COWWithClauseBuilder(), new SetClausePatcher());
+      return new CopyOnWriteUpdateRewriter(conf, sqlGeneratorFactory);
     } else if (splitUpdate) {
-      return new SplitUpdateRewriter(conf, sqlGeneratorFactory, new SetClausePatcher());
+      return new SplitUpdateRewriter(conf, sqlGeneratorFactory);
     } else {
-      if (AcidUtils.isNonNativeAcidTable(table, true)) {
+      if (AcidUtils.isNonNativeAcidTable(table)) {
         throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
       }
-      return new UpdateRewriter(conf, sqlGeneratorFactory, new WhereClausePatcher(), new SetClausePatcher());
+      return new UpdateRewriter(conf, sqlGeneratorFactory);
     }
   }
 }

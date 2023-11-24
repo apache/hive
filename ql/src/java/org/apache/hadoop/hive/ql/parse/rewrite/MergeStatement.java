@@ -42,6 +42,7 @@ public class MergeStatement {
     private final String targetAlias;
     private String sourceName;
     private String sourceAlias;
+    private String onClausePredicate;
     private String onClauseAsText;
     private String hintStr;
     private final List<WhenClause> whenClauses;
@@ -61,6 +62,10 @@ public class MergeStatement {
       this.sourceAlias = sourceAlias;
       return this;
     }
+    public MergeStatementBuilder onClausePredicate(String onClausePredicate) {
+      this.onClausePredicate = onClausePredicate;
+      return this;
+    }
     public MergeStatementBuilder onClauseAsText(String onClauseAsText) {
       this.onClauseAsText = onClauseAsText;
       return this;
@@ -76,7 +81,8 @@ public class MergeStatement {
     }
 
     public MergeStatement build() {
-      return new MergeStatement(targetTable, targetName, targetAlias, sourceName, sourceAlias, onClauseAsText, hintStr,
+      return new MergeStatement(targetTable, targetName, targetAlias, sourceName, sourceAlias,
+          onClausePredicate, onClauseAsText, hintStr,
           Collections.unmodifiableList(whenClauses));
     }
   }
@@ -86,17 +92,19 @@ public class MergeStatement {
   private final String targetAlias;
   private final String sourceName;
   private final String sourceAlias;
+  private final String onClausePredicate;
   private final String onClauseAsText;
   private final String hintStr;
   private final List<WhenClause> whenClauses;
 
   private MergeStatement(Table targetTable, String targetName, String targetAlias, String sourceName, String sourceAlias,
-                         String onClauseAsText, String hintStr, List<WhenClause> whenClauses) {
+                         String onClausePredicate, String onClauseAsText, String hintStr, List<WhenClause> whenClauses) {
     this.targetTable = targetTable;
     this.targetName = targetName;
     this.targetAlias = targetAlias;
     this.sourceName = sourceName;
     this.sourceAlias = sourceAlias;
+    this.onClausePredicate = onClausePredicate;
     this.onClauseAsText = onClauseAsText;
     this.hintStr = hintStr;
     this.whenClauses = whenClauses;
@@ -122,6 +130,10 @@ public class MergeStatement {
     return sourceAlias;
   }
 
+  public String getOnClausePredicate() {
+    return onClausePredicate;
+  }
+  
   public String getOnClauseAsText() {
     return onClauseAsText;
   }

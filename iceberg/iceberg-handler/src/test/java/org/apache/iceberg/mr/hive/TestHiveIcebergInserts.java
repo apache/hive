@@ -69,7 +69,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         .build();
 
     testTables.createTable(shell, identifier.name(), schema, order, PartitionSpec.unpartitioned(), fileFormat,
-        ImmutableList.of(), 1, ImmutableMap.of());
+        ImmutableList.of(), formatVersion, ImmutableMap.of());
     shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES (4, 'a'), (1, 'a'), (3, 'a'), (2, 'a'), " +
             "(null, 'a'), (3, 'b'), (3, null)", identifier.name()));
 
@@ -91,7 +91,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         .build();
 
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, order,
-        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), 1, ImmutableMap.of());
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion, ImmutableMap.of());
 
     StringBuilder insertQuery = new StringBuilder().append(String.format("INSERT INTO %s VALUES ", identifier.name()));
     HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2.forEach(record -> insertQuery.append("(")
@@ -125,8 +125,8 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     PartitionSpec partitionSpec = PartitionSpec.builderFor(schema)
         .bucket("b", 2)
         .build();
-    testTables.createTable(shell, identifier.name(), schema, order, partitionSpec, fileFormat, ImmutableList.of(), 1,
-        ImmutableMap.of());
+    testTables.createTable(shell, identifier.name(), schema, order, partitionSpec, fileFormat, ImmutableList.of(),
+        formatVersion, ImmutableMap.of());
     shell.executeStatement(String.format("INSERT INTO %s VALUES (1, 'EUR', 10), (5, 'HUF', 30), (2, 'EUR', 10), " +
         "(8, 'PLN', 20), (6, 'USD', null)", identifier.name()));
     List<Object[]> result = shell.executeStatement(String.format("SELECT * FROM %s", identifier.name()));

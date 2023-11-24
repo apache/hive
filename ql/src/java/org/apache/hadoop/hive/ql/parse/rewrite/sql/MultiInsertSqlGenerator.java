@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Deque;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -36,8 +38,11 @@ public abstract class MultiInsertSqlGenerator {
   protected final String targetTableFullName;
   protected final HiveConf conf;
   protected final String subQueryAlias;
-  protected final StringBuilder queryStr;
-
+  protected StringBuilder queryStr;
+  private Deque<StringBuilder> stack = new ArrayDeque<>();
+  
+  private int nextCteExprPos = 0;
+  
   protected MultiInsertSqlGenerator(
       Table targetTable, String targetTableFullName, HiveConf conf, String subQueryAlias) {
     this.targetTable = targetTable;
@@ -58,6 +63,10 @@ public abstract class MultiInsertSqlGenerator {
   public abstract void appendAcidSelectColumns(Context.Operation operation);
 
   public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation) {
+    appendAcidSelectColumnsForDeletedRecords(operation, true);
+  }
+  
+  public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation, boolean skipPrefix) {
     throw new UnsupportedOperationException();
   }
 
@@ -136,7 +145,7 @@ public abstract class MultiInsertSqlGenerator {
   public String toString() {
     return queryStr.toString();
   }
-
+  
   public void removeLastChar() {
     queryStr.setLength(queryStr.length() - 1);
   }
@@ -146,18 +155,22 @@ public abstract class MultiInsertSqlGenerator {
       return;
     }
     queryStr.append(',');
-    appendCols(targetTable.getPartCols(), alias);
+    appendCols(targetTable.getPartCols(), alias, null);
   }
 
+  public void appendAllColsOfTargetTable(String prefix) {
+    appendCols(targetTable.getAllCols(), null, prefix);
+  }
+  
   public void appendAllColsOfTargetTable() {
     appendCols(targetTable.getAllCols());
   }
 
   public void appendCols(List<FieldSchema> columns) {
-    appendCols(columns, null);
+    appendCols(columns, null, null);
   }
 
-  public void appendCols(List<FieldSchema> columns, String alias) {
+  public void appendCols(List<FieldSchema> columns, String alias, String prefix) {
     if (columns == null) {
       return;
     }
@@ -179,6 +192,12 @@ public abstract class MultiInsertSqlGenerator {
         queryStr.append(quotedAlias).append('.');
       }
       queryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
+      
+      if (isNotBlank(prefix)) {
+        queryStr.append(" AS ");
+        String prefixedIdentifier = HiveUtils.unparseIdentifier(prefix + fschema.getName(), this.conf);
+        queryStr.append(prefixedIdentifier);
+      }
     }
   }
 
@@ -199,6 +218,18 @@ public abstract class MultiInsertSqlGenerator {
 
   public MultiInsertSqlGenerator appendSubQueryAlias() {
     queryStr.append(subQueryAlias);
+    return this;
+  }
+
+  public MultiInsertSqlGenerator newCteExpr(){
+    stack.push(queryStr);
+    queryStr = new StringBuilder(nextCteExprPos > 0 ? ",\n" : "WITH ");
+    return this;
+  }
+  
+  public MultiInsertSqlGenerator addCteExpr(){
+    queryStr = stack.pop().insert(nextCteExprPos, queryStr);
+    nextCteExprPos = queryStr.length();
     return this;
   }
 }

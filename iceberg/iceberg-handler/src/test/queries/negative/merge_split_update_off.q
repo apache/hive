@@ -2,7 +2,7 @@ set hive.split.update=false;
 
 drop table if exists test_merge_target;
 drop table if exists test_merge_source;
-create external table test_merge_target (a int, b string, c int) stored by iceberg stored as orc;
+create external table test_merge_target (a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2');
 create external table test_merge_source (a int, b string, c int) stored by iceberg stored as orc;
 
 explain

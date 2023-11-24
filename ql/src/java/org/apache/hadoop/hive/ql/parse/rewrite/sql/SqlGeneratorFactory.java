@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class SqlGeneratorFactory {
   public static final String DELETE_PREFIX = "__d__";
+  public static final String TARGET_PREFIX = "t__";
   public static final String SUB_QUERY_ALIAS = "s";
 
   private final Table targetTable;
@@ -41,7 +42,7 @@ public class SqlGeneratorFactory {
   }
 
   public MultiInsertSqlGenerator createSqlGenerator() {
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
     return nonNativeAcid ? new NonNativeAcidMultiInsertSqlGenerator(targetTable, targetTableFullName, conf, subQueryAlias, deletePrefix) :
         new NativeAcidMultiInsertSqlGenerator(targetTable, targetTableFullName, conf, subQueryAlias);
   }

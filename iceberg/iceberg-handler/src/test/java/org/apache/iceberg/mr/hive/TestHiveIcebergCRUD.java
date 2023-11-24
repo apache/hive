@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
@@ -53,17 +52,21 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
 /**
- * Tests Format V2 specific features, such as reading/writing V2 tables, using delete files, etc.
+ * Tests Format specific features, such as reading/writing tables, using delete files, etc.
  */
-public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
+public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+  }
 
   @Test
   public void testReadAndWriteFormatV2UnpartitionedWithEqDelete() throws IOException {
-    Assume.assumeFalse("Reading V2 tables with delete files are only supported currently in " +
-        "non-vectorized mode and only Parquet/Avro", isVectorized || fileFormat == FileFormat.ORC);
+    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
+        "non-vectorized mode", !isVectorized && formatVersion == 2);
 
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
 
     // delete one of the rows
     List<Record> toDelete = TestHelper.RecordsBuilder
@@ -82,13 +85,13 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_EqDelete_AllColumnsSupplied() throws IOException {
-    Assume.assumeFalse("Reading V2 tables with delete files are only supported currently in " +
-        "non-vectorized mode and only Parquet/Avro", isVectorized || fileFormat == FileFormat.ORC);
+    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
+        "non-vectorized mode", !isVectorized && formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
 
     // add one more row to the same partition
     shell.executeStatement("insert into customers values (1, 'Bob', 'Hoover')");
@@ -109,13 +112,13 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_EqDelete_OnlyEqColumnsSupplied() throws IOException {
-    Assume.assumeFalse("Reading V2 tables with delete files are only supported currently in " +
-        "non-vectorized mode and only Parquet/Avro", isVectorized || fileFormat == FileFormat.ORC);
+    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
+        "non-vectorized mode", !isVectorized && formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
 
     // add one more row to the same partition
     shell.executeStatement("insert into customers values (1, 'Bob', 'Hoover')");
@@ -137,11 +140,10 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testReadAndWriteFormatV2Unpartitioned_PosDelete() throws IOException {
-    Assume.assumeFalse("Reading V2 tables with delete files are only supported currently in " +
-        "non-vectorized mode and only Parquet/Avro", isVectorized || fileFormat == FileFormat.ORC);
+    Assume.assumeTrue(formatVersion == 2);
 
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
 
     // delete one of the rows
     DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedDataFiles(tbl.io()).spliterator(), false)
@@ -164,13 +166,12 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_PosDelete_RowNotSupplied() throws IOException {
-    Assume.assumeFalse("Reading V2 tables with delete files are only supported currently in " +
-        "non-vectorized mode and only Parquet/Avro", isVectorized || fileFormat == FileFormat.ORC);
+    Assume.assumeTrue(formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
 
     // add some more data to the same partition
     shell.executeStatement("insert into customers values (0, 'Laura', 'Yellow'), (0, 'John', 'Green'), " +
@@ -202,13 +203,12 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_PosDelete_RowSupplied() throws IOException {
-    Assume.assumeFalse("Reading V2 tables with delete files are only supported currently in " +
-        "non-vectorized mode and only Parquet/Avro", isVectorized || fileFormat == FileFormat.ORC);
+    Assume.assumeTrue(formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
 
     // add some more data to the same partition
     shell.executeStatement("insert into customers values (0, 'Laura', 'Yellow'), (0, 'John', 'Green'), " +
@@ -244,12 +244,15 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   public void testDeleteStatementUnpartitioned() throws TException, InterruptedException {
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
 
     // verify delete mode set to merge-on-read
-    Assert.assertEquals(HiveIcebergStorageHandler.MERGE_ON_READ,
-        shell.metastore().getTable("default", "customers")
-            .getParameters().get(TableProperties.DELETE_MODE));
+    if (formatVersion == 2) {
+      Assert.assertEquals(HiveIcebergStorageHandler.MERGE_ON_READ,
+          shell.metastore().getTable("default", "customers")
+          .getParameters().get(TableProperties.DELETE_MODE));
+    }
 
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
@@ -278,7 +281,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, formatVersion);
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
@@ -306,9 +309,9 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     // create a couple of tables, with an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, formatVersion);
     testTables.createTable(shell, "other", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, formatVersion);
 
     shell.executeStatement("DELETE FROM customers WHERE customer_id in (select t1.customer_id from customers t1 join " +
         "other t2 on t1.customer_id = t2.customer_id) or " +
@@ -334,7 +337,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, formatVersion);
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
@@ -373,6 +376,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testDeleteForSupportedTypes() throws IOException {
+    Assume.assumeTrue(formatVersion == 2);
+
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
 
@@ -395,7 +400,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       Schema schema = new Schema(required(1, columnName, type));
       List<Record> records = TestHelper.generateRandomRecords(schema, 1, 0L);
       Table table = testTables.createTable(shell, tableName, schema, PartitionSpec.unpartitioned(), fileFormat, records,
-          2);
+          formatVersion);
 
       shell.executeStatement("DELETE FROM " + tableName);
       HiveIcebergTestUtils.validateData(table, ImmutableList.of(), 0);
@@ -403,10 +408,19 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testUpdateStatementUnpartitioned() {
+  public void testUpdateStatementUnpartitioned() throws TException, InterruptedException {
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
+
+    // verify update mode set to merge-on-read
+    if (formatVersion == 2) {
+      Assert.assertEquals(HiveIcebergStorageHandler.MERGE_ON_READ,
+          shell.metastore().getTable("default", "customers")
+          .getParameters().get(TableProperties.UPDATE_MODE));
+    }
+
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
@@ -441,7 +455,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, formatVersion);
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
@@ -476,9 +490,9 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     // create a couple of tables, with an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, formatVersion);
     testTables.createTable(shell, "other", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, formatVersion);
 
     shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id in " +
         "(select t1.customer_id from customers t1 join other t2 on t1.customer_id = t2.customer_id) or " +
@@ -509,7 +523,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, formatVersion);
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
@@ -556,6 +570,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testUpdateForSupportedTypes() throws IOException {
+    Assume.assumeTrue(formatVersion == 2);
+
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
 
@@ -578,7 +594,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       Schema schema = new Schema(required(1, columnName, type));
       List<Record> originalRecords = TestHelper.generateRandomRecords(schema, 1, 0L);
       Table table = testTables.createTable(shell, tableName, schema, PartitionSpec.unpartitioned(), fileFormat,
-          originalRecords, 2);
+          originalRecords, formatVersion);
 
       List<Record> newRecords = TestHelper.generateRandomRecords(schema, 1, 3L);
       shell.executeStatement(testTables.getUpdateQuery(tableName, newRecords.get(0)));
@@ -587,91 +603,33 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testDeleteStatementFormatV1() {
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2);
-    // insert one more batch so that we have multiple data files within the same partition
-    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
-        TableIdentifier.of("default", "customers"), false));
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Attempt to do update or delete on table", () -> {
-          shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'");
-        });
-  }
-
-  @Test
-  public void testUpdateStatementFormatV1() {
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2);
-    // insert one more batch so that we have multiple data files within the same partition
-    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
-        TableIdentifier.of("default", "customers"), false));
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Attempt to do update or delete on table", () -> {
-          shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'");
-        });
-  }
-
-  @Test
-  public void testDMLFailsForCopyOnMergeDeleteMode() {
-    // No need to check this for each file format
-    Assume.assumeTrue(fileFormat == FileFormat.ORC && testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
-
-    // simulate copy-on-write setting on the table (i.e. set by Spark or anything else)
-    shell.executeStatement("ALTER TABLE customers SET TBLPROPERTIES ('write.delete.mode'='copy-on-write')");
-
-    // attempt a delete
-    try {
-      shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'");
-    } catch (Throwable e) {
-      while (e.getCause() != null) {
-        e = e.getCause();
-      }
-      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write mode"));
-    }
-
-    // attempt an update
-    try {
-      shell.executeStatement("UPDATE customers set customer_id=3 where first_name='Joanna'");
-    } catch (Throwable e) {
-      while (e.getCause() != null) {
-        e = e.getCause();
-      }
-      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write mode"));
-    }
-
-    // Try read queries, they shouldn't fail
-    shell.executeStatement("select * from customers where first_name='Joanna'");
-    shell.executeStatement("select * from customers limit 1");
-    shell.executeStatement("select count(*) from customers");
-  }
-
-  @Test
   public void testConcurrent2Deletes() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
     String sql = "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'";
 
-    Tasks.range(2)
-        .executeWith(Executors.newFixedThreadPool(2))
-        .run(i -> {
-          init(shell, testTables, temp, executionEngine);
-          HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-          HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
-          HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-              RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
-          shell.executeStatement(sql);
-          shell.closeSession();
-        });
+    try {
+      Tasks.range(2)
+          .executeWith(Executors.newFixedThreadPool(2))
+          .run(i -> {
+            init(shell, testTables, temp, executionEngine);
+            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
+                RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
+            shell.executeStatement(sql);
+            shell.closeSession();
+          });
+    } catch (Throwable ex) {
+      Assert.assertEquals(1, (int) formatVersion);
+      Throwable cause = Throwables.getRootCause(ex);
+      Assert.assertTrue(cause instanceof ValidationException);
+      Assert.assertTrue(cause.getMessage().startsWith("Found conflicting files"));
+    }
     List<Object[]> res = shell.executeStatement("SELECT * FROM customers");
     Assert.assertEquals(4, res.size());
   }
@@ -682,7 +640,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
     String sql = "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'";
     try {
       Tasks.range(2)
@@ -708,10 +667,11 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   @Test
   public void testConcurrentUpdateAndDelete() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
 
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
     String[] sql = new String[]{
         "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'",
         "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'"
@@ -748,7 +708,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1);
     testTables.createTable(shell, "target", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        formatVersion);
 
     String sql = "MERGE INTO target t USING source s on t.customer_id = s.customer_id WHEN Not MATCHED THEN " +
         "INSERT values (s.customer_id, s.first_name, s.last_name)";

@@ -21,9 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
-import org.apache.hadoop.hive.ql.parse.rewrite.sql.WhereClausePatcher;
 
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.DELETE_PREFIX;
 
@@ -45,9 +43,9 @@ public class DeleteRewriterFactory implements RewriterFactory<DeleteStatement> {
         table, targetTableFullName, conf, null, DELETE_PREFIX);
 
     if (copyOnWriteMode) {
-      return new CopyOnWriteDeleteRewriter(conf, sqlGeneratorFactory, new COWWithClauseBuilder());
+      return new CopyOnWriteDeleteRewriter(conf, sqlGeneratorFactory);
     } else {
-      return new DeleteRewriter(sqlGeneratorFactory, new WhereClausePatcher());
+      return new DeleteRewriter(sqlGeneratorFactory);
     }
   }
 }

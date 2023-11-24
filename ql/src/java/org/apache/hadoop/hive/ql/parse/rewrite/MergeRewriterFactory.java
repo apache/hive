@@ -17,15 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
+
+import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TARGET_PREFIX;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
   private final Hive db;
@@ -40,25 +44,28 @@ public class MergeRewriterFactory implements RewriterFactory<MergeStatement> {
     this.conf = conf;
   }
 
-  @Override
   public Rewriter<MergeStatement> createRewriter(Table table, String targetTableFullName, String subQueryAlias)
       throws SemanticException {
     boolean splitUpdate = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE);
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table, true);
-    if (nonNativeAcid && !splitUpdate) {
-      throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
+    boolean copyOnWriteMode = false;
+    HiveStorageHandler storageHandler = table.getStorageHandler();
+    if (storageHandler != null) {
+      copyOnWriteMode = storageHandler.shouldOverwrite(table, Context.Operation.MERGE);
     }
-
+    
     SqlGeneratorFactory sqlGeneratorFactory = new SqlGeneratorFactory(
-        table,
-        targetTableFullName,
-        conf,
-        subQueryAlias,
-        StringUtils.EMPTY);
+        table, targetTableFullName, conf, !copyOnWriteMode ? subQueryAlias : null, 
+        copyOnWriteMode ? TARGET_PREFIX : EMPTY);
 
-    if (splitUpdate) {
+    if (copyOnWriteMode) {
+      return new CopyOnWriteMergeRewriter(db, conf, sqlGeneratorFactory);
+    } else if (splitUpdate) {
       return new SplitMergeRewriter(db, conf, sqlGeneratorFactory);
+    } else {
+      if (AcidUtils.isNonNativeAcidTable(table)) {
+        throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
+      }
+      return new MergeRewriter(db, conf, sqlGeneratorFactory);
     }
-    return new MergeRewriter(db, conf, sqlGeneratorFactory);
   }
 }

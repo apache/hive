@@ -43,10 +43,10 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
   protected final SqlGeneratorFactory sqlGeneratorFactory;
   private final SetClausePatcher setClausePatcher;
 
-  public SplitUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory, SetClausePatcher setClausePatcher) {
+  public SplitUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     this.conf = conf;
     this.sqlGeneratorFactory = sqlGeneratorFactory;
-    this.setClausePatcher = setClausePatcher;
+    this.setClausePatcher = new SetClausePatcher();
   }
 
   @Override

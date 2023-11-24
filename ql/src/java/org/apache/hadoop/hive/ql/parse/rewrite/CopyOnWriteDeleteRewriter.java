@@ -34,11 +34,10 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
   protected final SqlGeneratorFactory sqlGeneratorFactory;
   private final COWWithClauseBuilder cowWithClauseBuilder;
 
-  public CopyOnWriteDeleteRewriter(
-      HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory, COWWithClauseBuilder cowWithClauseBuilder) {
+  public CopyOnWriteDeleteRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     this.sqlGeneratorFactory = sqlGeneratorFactory;
     this.conf = conf;
-    this.cowWithClauseBuilder = cowWithClauseBuilder;
+    this.cowWithClauseBuilder = new COWWithClauseBuilder();
   }
 
   @Override

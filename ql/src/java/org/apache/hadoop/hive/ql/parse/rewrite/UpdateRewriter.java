@@ -42,12 +42,11 @@ public class UpdateRewriter implements Rewriter<UpdateStatement> {
   private final WhereClausePatcher whereClausePatcher;
   private final SetClausePatcher setClausePatcher;
 
-  public UpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory,
-                        WhereClausePatcher whereClausePatcher, SetClausePatcher setClausePatcher) {
+  public UpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     this.conf = conf;
     this.sqlGeneratorFactory = sqlGeneratorFactory;
-    this.whereClausePatcher = whereClausePatcher;
-    this.setClausePatcher = setClausePatcher;
+    this.whereClausePatcher = new WhereClausePatcher();
+    this.setClausePatcher = new SetClausePatcher();
   }
 
   @Override
