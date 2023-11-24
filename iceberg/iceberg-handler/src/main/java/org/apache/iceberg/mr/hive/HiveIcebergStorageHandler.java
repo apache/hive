@@ -874,9 +874,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       HiveIcebergDeleteOrphanFiles deleteOrphanFiles = new HiveIcebergDeleteOrphanFiles(conf, icebergTable);
       deleteOrphanFiles.olderThan(timestampMillis);
       if (deleteExecutorService != null) {
-        deleteOrphanFiles.olderThan(timestampMillis);
-      }
-      if (deleteExecutorService != null) {
         deleteOrphanFiles.executeDeleteWith(deleteExecutorService);
       }
       DeleteOrphanFiles.Result result = deleteOrphanFiles.execute();

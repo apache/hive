@@ -135,7 +135,7 @@ public class TestHiveIcebergExpireSnapshots extends HiveIcebergStorageHandlerWit
 
     int numDataFiles = RemoteIterators.toList(fs.listFiles(new Path(table.location(), "data"), true)).size();
     int numMetadataFiles = RemoteIterators.toList(fs.listFiles(new Path(table.location(), "metadata"), true)).size();
-    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE DELETE ORPHAN FILES");
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE DELETE ORPHAN-FILES");
 
     Assert.assertEquals(numDataFiles,
         RemoteIterators.toList(fs.listFiles(new Path(table.location(), "data"), true)).size());
