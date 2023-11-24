@@ -68,6 +68,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   @Override
   public void Authenticate(String user, String password) throws AuthenticationException {
     DirSearch search = null;
+    user = user.replace("_", ".");
     try {
       search = createDirSearch(user, password);
       applyFilter(search, user);

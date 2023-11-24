@@ -217,6 +217,9 @@ public class Utils {
     }
 
     public Map<String, String> getSessionVars() {
+      if (sessionVars.containsKey(JdbcConnectionParams.AUTH_USER)) {
+	      sessionVars.put(JdbcConnectionParams.AUTH_USER, sessionVars.get(JdbcConnectionParams.AUTH_USER).replace(".","_"));
+      }
       return sessionVars;
     }
 
@@ -446,7 +449,7 @@ public class Utils {
     if (!connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_USER)) {
       if (info.containsKey(JdbcConnectionParams.AUTH_USER)) {
         connParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER,
-            info.getProperty(JdbcConnectionParams.AUTH_USER));
+            info.getProperty(JdbcConnectionParams.AUTH_USER).replace(".","_"));
       }
       if (info.containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
         connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD,
