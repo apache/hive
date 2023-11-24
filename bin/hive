@@ -14,7 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+export HADOOP_USER_NAME=$(whoami)
 cygwin=false
 case "`uname`" in
    CYGWIN*) cygwin=true;;
@@ -29,7 +29,6 @@ SERVICE=""
 HELP=""
 SKIP_HBASECP=false
 SKIP_HADOOPVERSION=false
-
 SERVICE_ARGS=()
 while [ $# -gt 0 ]; do
   case "$1" in
