@@ -778,8 +778,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (jobContextList.isEmpty()) {
       return;
     }
-
-    HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
+    HiveIcebergOutputCommitter committer = getOutputCommitter();
     try {
       committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
@@ -799,6 +798,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  public HiveIcebergOutputCommitter getOutputCommitter() {
+    return new HiveIcebergOutputCommitter();
+  }
   @Override
   public boolean isAllowedAlterOperation(AlterTableType opType) {
     return HiveIcebergMetaHook.SUPPORTED_ALTER_OPS.contains(opType);
