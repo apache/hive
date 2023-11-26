@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.actions;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class HiveIcebergDeleteOrphanFiles implements DeleteOrphanFiles {
   public static final String METADATA_FOLDER_NAME = "metadata";
   public static final String DATA_FOLDER_NAME = "data";
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergDeleteOrphanFiles.class);
-  private String tableLocation = null;
+  private String tableLocation;
   private long olderThanTimestamp = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3);
   private Consumer<String> deleteFunc;
   private ExecutorService deleteExecutorService = MoreExecutors.newDirectExecutorService();
@@ -107,7 +107,7 @@ public class HiveIcebergDeleteOrphanFiles implements DeleteOrphanFiles {
     result.addDeletedFiles(cleanContentFiles(olderThanTimestamp));
     result.addDeletedFiles(cleanMetadata(olderThanTimestamp));
 
-    LOG.debug("Deleting {} files while cleaning orphan files for {}", result.deletedFiles, table.name());
+    LOG.debug("Deleting {} files while cleaning orphan files for {}", result.deletedFiles.size(), table.name());
     Tasks.foreach(result.deletedFiles).executeWith(deleteExecutorService).retry(3)
         .stopRetryOn(FileNotFoundException.class).suppressFailureWhenFinished().onFailure((file, thrown) ->
           LOG.warn("Delete failed for file: {}", file, thrown)).run(deleteFunc::accept);
@@ -116,7 +116,7 @@ public class HiveIcebergDeleteOrphanFiles implements DeleteOrphanFiles {
 
   private Set<String> cleanContentFiles(long lastTime) {
     Set<String> validFiles = Sets.union(getAllContentFilePath(), getAllStatisticsFilePath(table));
-    LOG.debug("Valid content file for {} are {}", table.name(), validFiles);
+    LOG.debug("Valid content file for {} are {}", table.name(), validFiles.size());
     try {
       Path dataPath = new Path(tableLocation, DATA_FOLDER_NAME);
       return getFilesToBeDeleted(lastTime, validFiles, dataPath);
@@ -188,22 +188,22 @@ public class HiveIcebergDeleteOrphanFiles implements DeleteOrphanFiles {
         table.name() + "#" + ALL_ENTRIES.name(), ALL_ENTRIES);
   }
 
-  private static Set<String> getValidMetadataFiles(Table internalTable) {
+  private static Set<String> getValidMetadataFiles(Table icebergTable) {
     Set<String> validFiles = Sets.newHashSet();
-    Iterable<Snapshot> snapshots = internalTable.snapshots();
+    Iterable<Snapshot> snapshots = icebergTable.snapshots();
     for (Snapshot snapshot : snapshots) {
       String manifestListLocation = snapshot.manifestListLocation();
       validFiles.add(getUriPath(manifestListLocation));
 
-      List<ManifestFile> manifestFiles = snapshot.allManifests(internalTable.io());
+      List<ManifestFile> manifestFiles = snapshot.allManifests(icebergTable.io());
       for (ManifestFile manifestFile : manifestFiles) {
         validFiles.add(getUriPath(manifestFile.path()));
       }
     }
     Stream.of(
-            ReachableFileUtil.metadataFileLocations(internalTable, false).stream(),
-            ReachableFileUtil.statisticsFilesLocations(internalTable).stream(),
-            Stream.of(ReachableFileUtil.versionHintLocation(internalTable)))
+            ReachableFileUtil.metadataFileLocations(icebergTable, false).stream(),
+            ReachableFileUtil.statisticsFilesLocations(icebergTable).stream(),
+            Stream.of(ReachableFileUtil.versionHintLocation(icebergTable)))
         .reduce(Stream::concat)
         .orElse(Stream.empty())
         .map(HiveIcebergDeleteOrphanFiles::getUriPath)
@@ -218,7 +218,7 @@ public class HiveIcebergDeleteOrphanFiles implements DeleteOrphanFiles {
 
   static class HiveIcebergDeleteOrphanFilesResult implements Result {
 
-    private Set<String> deletedFiles = Sets.newHashSet();
+    private final Set<String> deletedFiles = Sets.newHashSet();
 
     @Override
     public Iterable<String> orphanFileLocations() {
