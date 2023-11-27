@@ -84,7 +84,7 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
           " OR (\"cq\".\"CQ_PARTITION\" IS NULL AND \"res1\".\"TC_PARTITION\" IS NULL))" +
           " AND \"cq\".\"CQ_HIGHEST_WRITEID\" > \"res1\".\"MAX_ABORTED_WRITE_ID\"" +
           " AND \"cq\".\"CQ_STATE\" " +
-          " IN (\"i\", \"w\", \"r\")";
+          " IN (\"i\", \"w\", \"r\"))";
 
   private final long abortedTimeThreshold;
   private final int abortedThreshold;
