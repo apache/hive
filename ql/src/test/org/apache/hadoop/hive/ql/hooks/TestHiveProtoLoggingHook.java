@@ -86,6 +86,7 @@ public class TestHiveProtoLoggingHook {
     tmpFolder = folder.newFolder().getAbsolutePath();
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
     QueryState state = new QueryState.Builder().withHiveConf(conf).build();
+    state.setCommandType(HiveOperation.QUERY);
     @SuppressWarnings("serial")
     QueryPlan queryPlan = new QueryPlan(HiveOperation.QUERY) {};
     queryPlan.setQueryId("test_queryId");
@@ -246,6 +247,7 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals("test_op_id", event.getOperationId());
 
     assertOtherInfo(event, OtherInfoType.STATUS, Boolean.TRUE.toString());
+    assertOtherInfo(event, OtherInfoType.QUERY_TYPE, HiveOperation.QUERY.toString());
     String val = findOtherInfo(event, OtherInfoType.PERF);
     Map<String, Long> map = new ObjectMapper().readValue(val,
         new TypeReference<Map<String, Long>>() {});
