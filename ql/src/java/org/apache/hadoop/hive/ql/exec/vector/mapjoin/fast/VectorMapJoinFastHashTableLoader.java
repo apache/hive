@@ -120,7 +120,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
             adjustedValue, initialValue);
       }
 
-      this.numLoadThreads = initialValue;
+      this.numLoadThreads = adjustedValue;
     }
     this.totalEntries = new LongAccumulator(Long::sum, 0L);
     this.loadExecService = Executors.newFixedThreadPool(numLoadThreads,

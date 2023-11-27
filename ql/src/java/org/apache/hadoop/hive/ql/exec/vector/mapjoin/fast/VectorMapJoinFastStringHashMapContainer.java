@@ -75,8 +75,6 @@ public class VectorMapJoinFastStringHashMapContainer extends VectorMapJoinFastHa
         VectorMapJoinFastStringHashMap[] hashMaps, int numThreads) {
       super(matchTracker);
 
-      assert matchTracker.getIsPartitioned();
-
       hashMapIterators = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator[numThreads];
       for (int i = 0; i < numThreads; ++i) {
         hashMapIterators[i] = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator(
@@ -204,8 +202,6 @@ public class VectorMapJoinFastStringHashMapContainer extends VectorMapJoinFastHa
   @Override
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
-    assert matchTracker == null || matchTracker.getIsPartitioned();
-
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
     int partition = (int) ((numThreads - 1) & hashCode);
     MatchTracker childMatchTracker = matchTracker != null ? matchTracker.getPartition(partition) : null;

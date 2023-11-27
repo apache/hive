@@ -110,8 +110,6 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
         VectorMapJoinFastLongHashMap[] vectorMapJoinFastLongHashMaps, int numThreads) {
       super(matchTracker);
 
-      assert matchTracker.getIsPartitioned();
-
       hashMapIterators = new VectorMapJoinFastLongHashMap.NonMatchedLongHashMapIterator[numThreads];
       for (int i = 0; i < numThreads; ++i) {
         hashMapIterators[i] = new VectorMapJoinFastLongHashMap.NonMatchedLongHashMapIterator(
@@ -188,8 +186,6 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
 
   public JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult,
       MatchTracker matchTracker) {
-    assert matchTracker == null || matchTracker.getIsPartitioned();
-
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int partition = (int) ((numThreads - 1) & hashCode);
     MatchTracker childMatchTracker = matchTracker != null ? matchTracker.getPartition(partition) : null;
