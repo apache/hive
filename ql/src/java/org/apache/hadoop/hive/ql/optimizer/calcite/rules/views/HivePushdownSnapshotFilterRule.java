@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -124,8 +125,7 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
       }
 
       RelOptHiveTable hiveTable = (RelOptHiveTable) relOptTable;
-      String snapshotIdText = snapshotId != null ? Long.toString(snapshotId) : null;
-      hiveTable.getHiveTableMD().setVersionIntervalFrom(snapshotIdText);
+      hiveTable.getHiveTableMD().setVersionIntervalFrom(Objects.toString(snapshotId, null));
       return true;
     }
 

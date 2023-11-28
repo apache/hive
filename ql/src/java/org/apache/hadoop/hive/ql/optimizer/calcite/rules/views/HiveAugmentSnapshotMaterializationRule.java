@@ -138,11 +138,8 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
       return;
     }
 
-    Long snapshotId = null;
-    if (mvMetaTableSnapshot != null) {
-      snapshotId = mvMetaTableSnapshot.getSnapshotId();
-      table.setVersionIntervalFrom(Long.toString(snapshotId));
-    }
+    Long snapshotId = mvMetaTableSnapshot != null ? mvMetaTableSnapshot.getSnapshotId() : null;
+    table.setVersionIntervalFrom(Objects.toString(snapshotId, null));
 
     RexBuilder rexBuilder = call.builder().getRexBuilder();
     int snapshotIdIndex = tableScan.getTable().getRowType().getField(
