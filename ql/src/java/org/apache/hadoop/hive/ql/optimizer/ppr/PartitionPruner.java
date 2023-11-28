@@ -380,7 +380,8 @@ public class PartitionPruner extends Transform {
    * @param referred partition columns referred by expr
    * @return partition pruning expression that only contains partition columns from the list.
    */
-  static private ExprNodeDesc removeNonPartCols(ExprNodeDesc expr, List<String> partCols,
+  @VisibleForTesting
+  static ExprNodeDesc removeNonPartCols(ExprNodeDesc expr, List<String> partCols,
       Set<String> referred) {
     if (expr instanceof ExprNodeFieldDesc) {
       // Column is not a partition column for the table,
@@ -523,7 +524,7 @@ public class PartitionPruner extends Transform {
     return hasUnknownPartitions;
   }
 
-  private static List<String> extractPartColNames(Table tab) {
+  static List<String> extractPartColNames(Table tab) {
     List<FieldSchema> pCols = tab.getPartCols();
     List<String> partCols = new ArrayList<String>(pCols.size());
     for (FieldSchema pCol : pCols) {

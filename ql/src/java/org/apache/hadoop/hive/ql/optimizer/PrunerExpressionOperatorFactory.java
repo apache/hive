@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -49,59 +50,38 @@ public abstract class PrunerExpressionOperatorFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-
-      ExprNodeDesc newfd = null;
       ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) nd;
-
-      boolean unknown = false;
-
-      if (FunctionRegistry.isOpAndOrNot(fd)) {
-        // do nothing because "And" and "Or" and "Not" supports null value
-        // evaluation
-        // NOTE: In the future all UDFs that treats null value as UNKNOWN (both
-        // in parameters and return
-        // values) should derive from a common base class UDFNullAsUnknown, so
-        // instead of listing the classes
-        // here we would test whether a class is derived from that base class.
-        // If All childs are null, set unknown to true
-        boolean isAllNull = true;
-        for (Object child : nodeOutputs) {
-          ExprNodeDesc child_nd = (ExprNodeDesc) child;
-          if (!(child_nd instanceof ExprNodeConstantDesc
-              && ((ExprNodeConstantDesc) child_nd).getValue() == null)) {
-            isAllNull = false;
-          }
-        }
-        unknown = isAllNull;
-      } else if (!FunctionRegistry.isConsistentWithinQuery(fd.getGenericUDF())) {
-        // If it's a non-deterministic UDF, set unknown to true
-        unknown = true;
-      } else {
-        // If any child is null, set unknown to true
-        for (Object child : nodeOutputs) {
-          ExprNodeDesc child_nd = (ExprNodeDesc) child;
-          if (child_nd instanceof ExprNodeConstantDesc
-              && ((ExprNodeConstantDesc) child_nd).getValue() == null) {
-            unknown = true;
-          }
-        }
+      if (!FunctionRegistry.isConsistentWithinQuery(fd.getGenericUDF())) {
+        return null;
       }
 
-      if (unknown) {
-        newfd = new ExprNodeConstantDesc(fd.getTypeInfo(), null);
-      } else {
-        // Create the list of children
-        ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
-        for (Object child : nodeOutputs) {
+      boolean argsPruned = false;
+      List<ExprNodeDesc> children = new ArrayList<>(nodeOutputs.length);
+      for (Object child : nodeOutputs) {
+        if (child != null) {
           children.add((ExprNodeDesc) child);
+        } else {
+          argsPruned = true;
         }
-        // Create a copy of the function descriptor
-        newfd = new ExprNodeGenericFuncDesc(fd.getTypeInfo(), fd.getGenericUDF(), children);
       }
 
-      return newfd;
+      if (!FunctionRegistry.isOpAnd(fd)) {
+        if (argsPruned) {
+          return null;
+        } else {
+          return nd;
+        }
+      } else {
+        if (children.isEmpty()) {
+          return null;
+        } else if (children.size() == 1) {
+          return children.get(0);
+        } else {
+          // Create a copy of the function descriptor
+          return new ExprNodeGenericFuncDesc(fd.getTypeInfo(), fd.getGenericUDF(), children);
+        }
+      }
     }
-
   }
 
   /**

@@ -464,8 +464,7 @@ public class RelOptHiveTable implements RelOptTable {
 
   public void computePartitionList(HiveConf conf, RexNode pruneNode, Set<Integer> partOrVirtualCols) {
     try {
-      if (!hiveTblMetadata.isPartitioned() || pruneNode == null
-          || InputFinder.bits(pruneNode).length() == 0) {
+      if (!isPartitionColumnPredicate(pruneNode)) {
         // there is no predicate on partitioning column, we need all partitions
         // in this case.
         partitionList = PartitionPruner.prune(hiveTblMetadata, null, conf, getName(),
@@ -482,6 +481,25 @@ public class RelOptHiveTable implements RelOptTable {
     } catch (HiveException he) {
       throw new RuntimeException(he);
     }
+  }
+
+  private boolean isPartitionColumnPredicate(RexNode pruneNode) {
+    if (pruneNode == null || !hiveTblMetadata.isPartitioned()) {
+      return false;
+    }
+
+    ImmutableBitSet inputIndexes = InputFinder.bits(pruneNode);
+    if (inputIndexes.isEmpty()) {
+      return false;
+    }
+
+    for (int i : inputIndexes) {
+      if (!hivePartitionColsMap.containsKey(i)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private void updateColStats(Set<Integer> projIndxLst, boolean allowMissingStats) {

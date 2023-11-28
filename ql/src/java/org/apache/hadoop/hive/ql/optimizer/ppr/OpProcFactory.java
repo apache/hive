@@ -27,6 +27,11 @@ import org.apache.hadoop.hive.ql.optimizer.PrunerOperatorFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
+import java.util.HashSet;
+import java.util.List;
+
+import static org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner.extractPartColNames;
+
 /**
  * Operator factory for partition pruning processing of operator graph We find
  * all the filter operators that appear just beneath the table scan operators.
@@ -60,11 +65,13 @@ public final class OpProcFactory extends PrunerOperatorFactory {
 
       // Generate the partition pruning predicate
       ExprNodeDesc ppr_pred = ExprProcFactory.genPruner(alias, predicate);
+      List<String> partColNames = extractPartColNames(top.getConf().getTableMetadata());
 
-      // Add the pruning predicate to the table scan operator
-      addPruningPred(owc.getOpToPartPruner(), top, ppr_pred);
+      if (!ExprProcFactory.hasNonPartitionColumns(ppr_pred, new HashSet<>(partColNames))) {
+        // Add the pruning predicate to the table scan operator
+        addPruningPred(owc.getOpToPartPruner(), top, ppr_pred);
+      }
     }
-
   }
 
   public static SemanticNodeProcessor getFilterProc() {

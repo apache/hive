@@ -18,16 +18,22 @@
 
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.PrunerExpressionOperatorFactory;
 import org.apache.hadoop.hive.ql.optimizer.PrunerUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
@@ -57,15 +63,12 @@ public final class ExprProcFactory extends PrunerExpressionOperatorFactory {
 
     @Override
     protected ExprNodeDesc processColumnDesc(NodeProcessorCtx procCtx, ExprNodeColumnDesc cd) {
-      ExprNodeDesc newcd;
       ExprProcCtx epc = (ExprProcCtx) procCtx;
       if (cd.getTabAlias().equalsIgnoreCase(epc.getTabAlias())
           && cd.getIsPartitionColOrVirtualCol()) {
-        newcd = cd.clone();
-      } else {
-        newcd = new ExprNodeConstantDesc(cd.getTypeInfo(), null);
+        return cd.clone();
       }
-      return newcd;
+      return null;
     }
   }
 
@@ -102,4 +105,41 @@ public final class ExprProcFactory extends PrunerExpressionOperatorFactory {
     return (ExprNodeDesc) outputMap.get(pred);
   }
 
+  public static boolean hasNonPartitionColumns(ExprNodeDesc predicate, Set<String> partitionColumnNames)
+      throws SemanticException {
+    SemanticGraphWalker egw = new DefaultGraphWalker(new PartitionColumnRefDispatcher(partitionColumnNames));
+
+    HashMap<Node, Object> outputMap = new HashMap<>();
+    egw.startWalking(Collections.singletonList(predicate), outputMap);
+    return (boolean) outputMap.get(predicate);
+  }
+
+  private static class PartitionColumnRefDispatcher implements SemanticDispatcher {
+
+    private final Set<String> partitionColumnNames;
+
+    private PartitionColumnRefDispatcher(Set<String> partitionColumnNames) {
+      this.partitionColumnNames = partitionColumnNames;
+    }
+
+    @Override
+    public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) throws SemanticException {
+      if (nd instanceof ExprNodeColumnDesc) {
+        ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) nd;
+        return !partitionColumnNames.contains(exprNodeColumnDesc.getColumn());
+      }
+
+      if (nodeOutputs == null) {
+        return false;
+      }
+
+      for (Object o : nodeOutputs) {
+        if (Boolean.TRUE.equals(o)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+  }
 }
