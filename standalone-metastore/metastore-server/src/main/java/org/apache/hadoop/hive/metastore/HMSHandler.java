@@ -5183,8 +5183,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       mustPurge = isMustPurge(envContext, tbl);
       tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
       writeId = getWriteId(envContext);
-
-      int minCount = 0;
+      
+      boolean hasMissingParts = false;
       RequestPartsSpec spec = request.getParts();
       List<String> partNames = null;
       
@@ -5192,7 +5192,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // Dropping by expressions.
         parts = new ArrayList<>(spec.getExprs().size());
         for (DropPartitionsExpr expr : spec.getExprs()) {
-          ++minCount; // At least one partition per expression, if not ifExists
           List<Partition> result = new ArrayList<>();
           boolean hasUnknown = ms.getPartitionsByExpr(catName, dbName, tblName, result,
               new GetPartitionsArgs.GetPartitionsArgsBuilder()
@@ -5213,20 +5212,27 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               }
             }
           }
+          if (result.isEmpty()) {
+            hasMissingParts = true;
+            if (!ifExists) {
+              // fail-fast for missing partition expr
+              break;
+            }
+          }
           parts.addAll(result);
         }
       } else if (spec.isSetNames()) {
         partNames = spec.getNames();
-        minCount = partNames.size();
         parts = ms.getPartitionsByNames(catName, dbName, tblName,
             new GetPartitionsArgs.GetPartitionsArgsBuilder()
                 .partNames(partNames).skipColumnSchemaForPartition(request.isSkipColumnSchemaForPartition())
                 .build());
+        hasMissingParts = (parts.size() != partNames.size());
       } else {
         throw new MetaException("Partition spec is not set");
       }
 
-      if ((parts.size() < minCount) && !ifExists) {
+      if (hasMissingParts && !ifExists) {
         throw new NoSuchObjectException("Some partitions to drop are missing");
       }
 
