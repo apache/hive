@@ -647,11 +647,10 @@ public class Hive {
   /**
    * Drop a database.
    * @param name
-   * @throws NoSuchObjectException
    * @throws HiveException
    * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
    */
-  public void dropDatabase(String name) throws HiveException, NoSuchObjectException {
+  public void dropDatabase(String name) throws HiveException {
     dropDatabase(name, true, false, false);
   }
 
@@ -661,10 +660,9 @@ public class Hive {
    * @param deleteData
    * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
    * @throws HiveException
-   * @throws NoSuchObjectException
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
-      throws HiveException, NoSuchObjectException {
+      throws HiveException {
     dropDatabase(name, deleteData, ignoreUnknownDb, false);
   }
 
@@ -676,15 +674,13 @@ public class Hive {
    * @param cascade         if true, delete all tables on the DB if exists. Otherwise, the query
    *                        will fail if table still exists.
    * @throws HiveException
-   * @throws NoSuchObjectException
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
-      throws HiveException, NoSuchObjectException {
+      throws HiveException {
     dropDatabase(new DropDatabaseDesc(name, ignoreUnknownDb, cascade, deleteData));
   }
 
-  public void dropDatabase(DropDatabaseDesc desc) 
-      throws HiveException, NoSuchObjectException {
+  public void dropDatabase(DropDatabaseDesc desc) throws HiveException {
     boolean isSoftDelete = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
     
     long txnId = Optional.ofNullable(SessionState.get())
@@ -703,7 +699,9 @@ public class Hive {
     try {
       getMSC().dropDatabase(req);
     } catch (NoSuchObjectException e) {
-      throw e;
+      if (!desc.getIfExists()) {
+        throw new HiveException(e, ErrorMsg.DATABASE_NOT_EXISTS, req.getName());
+      }
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -974,11 +972,10 @@ public class Hive {
   /**
    * Drop a dataconnector.
    * @param name
-   * @throws NoSuchObjectException
    * @throws HiveException
    * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDataConnector(java.lang.String, boolean, boolean)
    */
-  public void dropDataConnector(String name, boolean ifNotExists) throws HiveException, NoSuchObjectException {
+  public void dropDataConnector(String name, boolean ifNotExists) throws HiveException {
     dropDataConnector(name, ifNotExists, true);
   }
 
@@ -987,12 +984,15 @@ public class Hive {
    * @param name
    * @param checkReferences drop only if there are no dbs referencing this connector
    * @throws HiveException
-   * @throws NoSuchObjectException
    */
   public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
-      throws HiveException, NoSuchObjectException {
+      throws HiveException {
     try {
       getMSC().dropDataConnector(name, ifNotExists, checkReferences);
+    } catch (NoSuchObjectException e) {
+      if (!ifNotExists) {
+        throw new HiveException(e, ErrorMsg.DATACONNECTOR_NOT_EXISTS, name);
+      }
     } catch (Exception e) {
       throw new HiveException(e);
     }

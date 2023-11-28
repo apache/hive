@@ -39,28 +39,24 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
 
   @Override
   public int execute() throws HiveException {
-    try {
-      String dbName = desc.getDatabaseName();
-      ReplicationSpec replicationSpec = desc.getReplicationSpec();
-      if (replicationSpec.isInReplicationScope()) {
-        Database database = context.getDb().getDatabase(dbName);
-        if (database == null || !replicationSpec.allowEventReplacementInto(database.getParameters())) {
-          return 0;
-        }
+    String dbName = desc.getDatabaseName();
+    ReplicationSpec replicationSpec = desc.getReplicationSpec();
+    if (replicationSpec.isInReplicationScope()) {
+      Database database = context.getDb().getDatabase(dbName);
+      if (database == null || !replicationSpec.allowEventReplacementInto(database.getParameters())) {
+        return 0;
       }
-      context.getDb().dropDatabase(desc);
+    }
+    context.getDb().dropDatabase(desc);
 
-      if (LlapHiveUtils.isLlapMode(context.getConf())) {
-        ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
-        llapEvictRequestBuilder.addDb(dbName);
-        ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
-      }
-      // Unregister the functions as well
-      if (desc.isCasdade()) {
-        FunctionRegistry.unregisterPermanentFunctions(dbName);
-      }
-    } catch (NoSuchObjectException ex) {
-      throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, desc.getDatabaseName());
+    if (LlapHiveUtils.isLlapMode(context.getConf())) {
+      ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
+      llapEvictRequestBuilder.addDb(dbName);
+      ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
+    }
+    // Unregister the functions as well
+    if (desc.isCasdade()) {
+      FunctionRegistry.unregisterPermanentFunctions(dbName);
     }
 
     return 0;

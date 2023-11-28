@@ -34,12 +34,7 @@ public class DropDataConnectorOperation extends DDLOperation<DropDataConnectorDe
 
   @Override
   public int execute() throws HiveException {
-    try {
-      context.getDb().dropDataConnector(desc.getConnectorName(), desc.getIfExists());
-    } catch (NoSuchObjectException ex) {
-      throw new HiveException(ex, ErrorMsg.DATACONNECTOR_NOT_EXISTS, desc.getConnectorName());
-    }
-
+    context.getDb().dropDataConnector(desc.getConnectorName(), desc.getIfExists());
     return 0;
   }
 }

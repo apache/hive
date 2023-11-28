@@ -60,7 +60,7 @@ public class HcatTestUtils {
    * Removes all databases and tables from the metastore
    */
   public static void cleanupHMS(Hive hive, Warehouse wh, FsPermission defaultPerm)
-    throws HiveException, MetaException, NoSuchObjectException {
+    throws HiveException, MetaException {
     for (String dbName : hive.getAllDatabases()) {
       if (dbName.equals("default")) {
         continue;
