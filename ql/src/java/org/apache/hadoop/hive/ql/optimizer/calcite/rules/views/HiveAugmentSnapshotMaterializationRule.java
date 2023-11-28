@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
@@ -39,12 +38,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import static java.util.Collections.singletonList;
 
 /**
  * This rule will rewrite the materialized view with information about
@@ -149,11 +148,11 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
 
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(tableScan);
-    List<RexNode> conds = new ArrayList<>();
-    final RexNode literalHighWatermark = rexBuilder.makeLiteral(
+    final RexNode literalSnapshotId = rexBuilder.makeLiteral(
         snapshotId, snapshotIdType(relBuilder.getTypeFactory()), false);
-    conds.add(rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, snapshotIdInputRef, literalHighWatermark));
-    relBuilder.filter(conds);
+    final RexNode predicateWithSnapShotId = rexBuilder.makeCall(
+        SqlStdOperatorTable.LESS_THAN_OR_EQUAL, snapshotIdInputRef, literalSnapshotId);
+    relBuilder.filter(singletonList(predicateWithSnapShotId));
     call.transformTo(relBuilder.build());
   }
 }
