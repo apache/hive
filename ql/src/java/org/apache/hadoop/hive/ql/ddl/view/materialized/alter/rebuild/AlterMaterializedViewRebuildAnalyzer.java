@@ -301,7 +301,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       // If we succeed, we modify the plan and afterwards the AST.
       // MV should be an acid table.
       boolean acidView = AcidUtils.isFullAcidTable(mvTable.getTTable())
-              || AcidUtils.isNonNativeAcidTable(mvTable, true);
+              || AcidUtils.isNonNativeAcidTable(mvTable);
       MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor(acidView);
       visitor.go(basePlan);
       if (visitor.isRewritingAllowed()) {
@@ -491,7 +491,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   private MaterializedViewASTBuilder getMaterializedViewASTBuilder() {
     if (AcidUtils.isFullAcidTable(mvTable.getTTable())) {
       return new NativeAcidMaterializedViewASTBuilder();
-    } else if (AcidUtils.isNonNativeAcidTable(mvTable, true)) {
+    } else if (AcidUtils.isNonNativeAcidTable(mvTable)) {
       return new NonNativeAcidMaterializedViewASTBuilder(mvTable);
     } else {
       throw new UnsupportedOperationException("Incremental rebuild is supported only for fully ACID materialized " +

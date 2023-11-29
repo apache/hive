@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -110,14 +111,14 @@ public class IcebergAcidUtil {
   public static PositionDelete<Record> getPositionDelete(Record rec, Record rowData) {
     PositionDelete<Record> positionDelete = PositionDelete.create();
     String filePath = rec.get(SERDE_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
-    long filePosition = rec.get(SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
+    Long filePosition = rec.get(SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
 
     int dataOffset = SERDE_META_COLS.size(); // position in the rec where the actual row data begins
     for (int i = dataOffset; i < rec.size(); ++i) {
       rowData.set(i - dataOffset, rec.get(i));
     }
 
-    positionDelete.set(filePath, filePosition, rowData);
+    positionDelete.set(filePath, ObjectUtils.defaultIfNull(filePosition, 0L), rowData);
     return positionDelete;
   }
 

@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -146,7 +147,6 @@ import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.PartitionsTable;
-import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -158,6 +158,7 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
+import org.apache.iceberg.actions.DeleteOrphanFiles;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
@@ -171,6 +172,7 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
 import org.apache.iceberg.puffin.Blob;
 import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
@@ -210,7 +212,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
-  public static final String STATS = "/stats/";
+  public static final String STATS = "/stats/snap-";
 
   /**
    * Function template for producing a custom sort expression function:
@@ -441,7 +443,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
     Map<String, String> stats = Maps.newHashMap();
-    if (getStatsSource().equals(Constants.ICEBERG)) {
+    if (getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
         if (summary != null) {
@@ -492,7 +494,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.currentSnapshot() != null && getStatsSource().equals(Constants.ICEBERG);
+    return table.currentSnapshot() != null && getStatsSource().equals(HiveMetaHook.ICEBERG);
   }
 
   @Override
@@ -538,7 +540,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       FileSystem fs = statsPath.getFileSystem(conf);
       return  fs.exists(statsPath);
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOG.warn("Exception when trying to find Iceberg column stats for table:{} , snapshot:{} , " +
           "statsPath: {} , stack trace: {}", table.name(), table.currentSnapshot(), statsPath, e);
     }
@@ -568,7 +570,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (getStatsSource().equals(Constants.ICEBERG)) {
+    if (getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       Table table = getTable(hmsTable);
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
@@ -585,7 +587,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private String getStatsSource() {
-    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, Constants.ICEBERG).toLowerCase();
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, HiveMetaHook.ICEBERG)
+        .toUpperCase();
   }
 
   private Path getColStatsPath(Table table) {
@@ -593,7 +596,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private Path getColStatsPath(Table table, long snapshotId) {
-    return new Path(table.location() + STATS + table.name() + snapshotId);
+    return new Path(table.location() + STATS + snapshotId);
   }
 
   private boolean removeColStatsIfExists(Table tbl) throws IOException {
@@ -670,7 +673,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       throws SemanticException {
     // delete records are already clustered by partition spec id and the hash of the partition struct
     // there is no need to do any additional sorting based on partition columns
-    if (writeOperation == Operation.DELETE) {
+    if (writeOperation == Operation.DELETE && !shouldOverwrite(hmsTable, writeOperation)) {
       return null;
     }
 
@@ -848,9 +851,38 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         IcebergTableUtil.performMetadataDelete(icebergTable, deleteMetadataSpec.getBranchName(),
             deleteMetadataSpec.getSarg());
         break;
+      case DELETE_ORPHAN_FILES:
+        int numDeleteThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
+            HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
+        AlterTableExecuteSpec.DeleteOrphanFilesDesc deleteOrphanFilesSpec =
+            (AlterTableExecuteSpec.DeleteOrphanFilesDesc) executeSpec.getOperationParams();
+        deleteOrphanFiles(icebergTable, deleteOrphanFilesSpec.getTimestampMillis(), numDeleteThreads);
+        break;
       default:
         throw new UnsupportedOperationException(
             String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
+    }
+  }
+
+  private void deleteOrphanFiles(Table icebergTable, long timestampMillis, int numThreads) {
+    ExecutorService deleteExecutorService = null;
+    try {
+      if (numThreads > 0) {
+        LOG.info("Executing delete orphan files on iceberg table {} with {} threads", icebergTable.name(), numThreads);
+        deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
+      }
+
+      HiveIcebergDeleteOrphanFiles deleteOrphanFiles = new HiveIcebergDeleteOrphanFiles(conf, icebergTable);
+      deleteOrphanFiles.olderThan(timestampMillis);
+      if (deleteExecutorService != null) {
+        deleteOrphanFiles.executeDeleteWith(deleteExecutorService);
+      }
+      DeleteOrphanFiles.Result result = deleteOrphanFiles.execute();
+      LOG.debug("Cleaned files {} for {}", result.orphanFileLocations(), icebergTable);
+    } finally {
+      if (deleteExecutorService != null) {
+        deleteExecutorService.shutdown();
+      }
     }
   }
 
@@ -943,9 +975,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       AlterTableSnapshotRefSpec alterTableSnapshotRefSpec) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() ->
-        new UnsupportedOperationException(String.format("Cannot alter %s on iceberg table %s.%s which has no snapshot",
-            alterTableSnapshotRefSpec.getOperationType().getName(), hmsTable.getDbName(), hmsTable.getTableName())));
 
     switch (alterTableSnapshotRefSpec.getOperationType()) {
       case CREATE_BRANCH:
@@ -954,6 +983,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         IcebergBranchExec.createBranch(icebergTable, createBranchSpec);
         break;
       case CREATE_TAG:
+        Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() -> new UnsupportedOperationException(
+            String.format("Cannot alter %s on iceberg table %s.%s which has no snapshot",
+                alterTableSnapshotRefSpec.getOperationType().getName(), hmsTable.getDbName(),
+                hmsTable.getTableName())));
         AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec =
             (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
         IcebergTagExec.createTag(icebergTable, createTagSpec);
@@ -1061,35 +1094,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table,
-      boolean isWriteOperation) {
-    if (IcebergTableUtil.isV2Table(table.getParameters())) {
-      if (isWriteOperation) {
-        checkDMLOperationMode(table);
-      }
-      return AcidSupportType.WITHOUT_TRANSACTIONS;
-    }
-
-    return AcidSupportType.NONE;
-  }
-
-  // TODO: remove the checks as copy-on-write mode implementation for these DML ops get added
-  private static void checkDMLOperationMode(org.apache.hadoop.hive.ql.metadata.Table table) {
-    Map<String, String> opTypes = ImmutableMap.of(
-        TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT);
-
-    for (Map.Entry<String, String> opType : opTypes.entrySet()) {
-      String mode = table.getParameters().get(opType.getKey());
-      RowLevelOperationMode rowLevelOperationMode = RowLevelOperationMode.fromName(
-          mode != null ? mode : opType.getValue()
-      );
-      if (RowLevelOperationMode.COPY_ON_WRITE.equals(rowLevelOperationMode)) {
-        throw new UnsupportedOperationException(
-            String.format("Hive doesn't support copy-on-write mode as %s. Please set '%s'='merge-on-read' on %s " +
-                "before running ACID operations on it.", opType.getKey(), opType.getKey(), table.getTableName())
-        );
-      }
-    }
+  public AcidSupportType supportsAcidOperations() {
+    return AcidSupportType.WITHOUT_TRANSACTIONS;
   }
 
   @Override
@@ -1580,9 +1586,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void setTableParametersForCTLT(org.apache.hadoop.hive.ql.metadata.Table tbl, CreateTableLikeDesc desc,
       Map<String, String> origParams) {
     // Preserve the format-version of the iceberg table and filter out rest.
-    String formatVersion = origParams.get(TableProperties.FORMAT_VERSION);
-    if ("2".equals(formatVersion)) {
-      tbl.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+    if (IcebergTableUtil.isV2Table(origParams)) {
+      tbl.getParameters().put(TableProperties.FORMAT_VERSION, "2");
       tbl.getParameters().put(TableProperties.DELETE_MODE, MERGE_ON_READ);
       tbl.getParameters().put(TableProperties.UPDATE_MODE, MERGE_ON_READ);
       tbl.getParameters().put(TableProperties.MERGE_MODE, MERGE_ON_READ);
@@ -1590,12 +1595,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     // check if the table is being created as managed table, in that case we translate it to external
     if (!desc.isExternal()) {
-      tbl.getParameters().put("TRANSLATED_TO_EXTERNAL", "TRUE");
+      tbl.getParameters().put(HiveMetaHook.TRANSLATED_TO_EXTERNAL, "TRUE");
       desc.setIsExternal(true);
     }
 
     // If source is Iceberg table set the schema and the partition spec
-    if ("ICEBERG".equalsIgnoreCase(origParams.get("table_type"))) {
+    if (MetaStoreUtils.isIcebergTable(origParams)) {
       tbl.getParameters()
           .put(InputFormatConfig.TABLE_SCHEMA, origParams.get(InputFormatConfig.TABLE_SCHEMA));
       tbl.getParameters()
@@ -1621,21 +1626,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, Context.Operation operation) {
-    String mode = null;
-    // As of now only update & delete modes are supported, for all others return false
-    if (IcebergTableUtil.isV2Table(mTable.getParameters())) {
-      switch (operation) {
-        case DELETE:
-          mode = mTable.getTTable().getParameters().getOrDefault(TableProperties.DELETE_MODE,
-              TableProperties.DELETE_MODE_DEFAULT);
-          break;
-        case UPDATE:
-          mode = mTable.getTTable().getParameters().getOrDefault(TableProperties.UPDATE_MODE,
-            TableProperties.UPDATE_MODE_DEFAULT);
-          break;
-      }
-    }
-    return COPY_ON_WRITE.equalsIgnoreCase(mode);
+    return IcebergTableUtil.isCopyOnWriteMode(operation, mTable.getParameters()::getOrDefault);
   }
 
   @Override

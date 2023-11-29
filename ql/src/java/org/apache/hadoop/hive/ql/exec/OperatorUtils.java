@@ -176,6 +176,47 @@ public class OperatorUtils {
     return found;
   }
 
+  /**
+   * Check whether there are more operators in the specified operator tree branch than the given limit
+   * until a ReduceSinkOperator is reached.
+   * The method traverses the parent operators of the specified root operator in dept first manner.
+   * @param start root of the operator tree to check
+   * @param opClazz type of operator to track
+   * @param limit maximum allowed number of operator in a branch of the tree
+   * @return true if limit is exceeded false otherwise
+   */
+  public static boolean hasMoreOperatorsThan(
+      Operator<?> start, Class<?> opClazz, int limit) {
+    return hasMoreOperatorsThan(start, opClazz, limit, new HashSet<>());
+  }
+
+  private static boolean hasMoreOperatorsThan(
+      Operator<?> start, Class<?> opClazz, int limit, Set<Operator<?>> visited) {
+    if (!visited.add(start)) {
+      return limit < 0;
+    }
+
+    if (limit < 0) {
+      return false;
+    }
+
+    if (start instanceof ReduceSinkOperator) {
+      return false;
+    }
+
+    if (opClazz.isInstance(start)) {
+      limit--;
+    }
+
+    if (start.getParentOperators() != null) {
+      for (Operator<?> parent : start.getParentOperators()) {
+        if (hasMoreOperatorsThan(parent, opClazz, limit, visited)) {
+          return true;
+        }
+      }
+    }
+    return limit < 0;
+  }
 
   public static void setChildrenCollector(List<Operator<? extends OperatorDesc>> childOperators, OutputCollector out) {
     if (childOperators == null) {

@@ -1,4 +1,3 @@
-set hive.split.update=false;
 set hive.explain.user=false;
 
 drop table if exists tbl_ice;
@@ -34,4 +33,10 @@ insert into tbl_standard_other values (10, 'ten'), (444, 'tutu');
 explain update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a);
 
 update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a);
+select * from tbl_ice order by a, b, c;
+
+-- update all rows replaced with IOW
+explain update tbl_ice set b='All';
+
+update tbl_ice set b='All';
 select * from tbl_ice order by a, b, c;

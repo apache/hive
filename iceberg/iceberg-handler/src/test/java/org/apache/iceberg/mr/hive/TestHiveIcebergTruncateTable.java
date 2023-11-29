@@ -155,8 +155,7 @@ public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithE
   }
 
   @Test
-  public void testTruncateTableWithPartitionSpecOnPartitionedTable() throws IOException, TException,
-      InterruptedException {
+  public void testTruncateTableWithPartitionSpecOnPartitionedTable() {
     // Create an Iceberg table with some record and try to run a truncate table command with partition
     // spec. The command should fail as the table is unpartitioned in Hive. Then check if the
     // initial data and the table statistics are not changed.

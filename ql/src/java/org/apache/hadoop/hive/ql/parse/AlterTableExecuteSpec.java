@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
 import java.util.Arrays;
@@ -40,7 +42,8 @@ public class AlterTableExecuteSpec<T> {
     SET_CURRENT_SNAPSHOT,
     FAST_FORWARD,
     CHERRY_PICK,
-    DELETE_METADATA;
+    DELETE_METADATA,
+    DELETE_ORPHAN_FILES;
   }
 
   private final ExecuteOperationType operationType;
@@ -268,6 +271,30 @@ public class AlterTableExecuteSpec<T> {
 
     public SearchArgument getSarg() {
       return sarg;
+    }
+  }
+
+  /**
+   * Value object class, that stores the delete orphan files operation specific parameters.
+   * <ul>
+   *   <li>timestampMillis: the time before which files should be considered to be deleted</li>
+   * </ul>
+   */
+  public static class DeleteOrphanFilesDesc {
+    private final long timestampMillis;
+
+    public DeleteOrphanFilesDesc(long timestampMillis) {
+      Preconditions.checkArgument(timestampMillis >= 0, "TimeStamp Millis shouldn't be negative");
+      this.timestampMillis = timestampMillis;
+    }
+
+    public long getTimestampMillis() {
+      return timestampMillis;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("timestampMillis", timestampMillis).toString();
     }
   }
 }

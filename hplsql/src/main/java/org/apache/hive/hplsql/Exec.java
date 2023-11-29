@@ -206,7 +206,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     else {
       var = new Var(value);
       var.setName(name);
-      if(exec.currentScope != null) {
+      if(exec.currentScope != null && !exec.buildSql) {
         exec.currentScope.addVariable(var);
       }
     }    
@@ -216,7 +216,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   public Var setVariable(String name) {
     return setVariable(name, Var.Empty);
   }
-  
+
   public Var setVariable(String name, String value) {
     return setVariable(name, new Var(value));
   }
@@ -1630,6 +1630,18 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     String name = ctx.ident().getText();
     visit(ctx.expr());    
     Var var = setVariable(name);
+    StringBuilder assignments = new StringBuilder();
+    String previousAssignment = stackPop().toString();
+    if (previousAssignment != null) {
+      assignments.append(previousAssignment);
+      assignments.append(", ");
+    }
+    assignments.append(name);
+    assignments.append(" = ");
+    assignments.append(var.toString());
+    if (exec.buildSql) {
+      stackPush(assignments);
+    }
     if (trace) {
       trace(ctx, "SET " + name + " = " + var.toSqlString());      
     }    
@@ -1642,17 +1654,30 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   @Override 
   public Integer visitAssignment_stmt_multiple_item(HplsqlParser.Assignment_stmt_multiple_itemContext ctx) { 
     int cnt = ctx.ident().size();
-    int ecnt = ctx.expr().size();    
+    int ecnt = ctx.expr().size();
+    StringBuilder identifiers = new StringBuilder("(");
+    StringBuilder expressions = new StringBuilder("(");
     for (int i = 0; i < cnt; i++) {
       String name = ctx.ident(i).getText();
       if (i < ecnt) {
         visit(ctx.expr(i));
-        Var var = setVariable(name);        
+        Var var = setVariable(name);
+        if (i > 0) {
+          identifiers.append(", ");
+          expressions.append(", ");
+        }
+        identifiers.append(name);
+        expressions.append(var.toString());
         if (trace) {
           trace(ctx, "SET " + name + " = " + var.toString());      
         } 
       }      
-    }    
+    }
+    identifiers.append(")");
+    expressions.append(")");
+    if (exec.buildSql) {
+      stackPush(identifiers.toString() + " = " + expressions.toString());
+    }
     return 0; 
   }
   
@@ -2775,9 +2800,16 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   /**
    * Get formatted text between 2 tokens
    */
-  public static String getFormattedText(ParserRuleContext ctx) {
+  public static String getFormattedText(ParserRuleContext ctx, int startIndex, int endIndex) {
     return ctx.start.getInputStream().getText(
-      new org.antlr.v4.runtime.misc.Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));                
+        new org.antlr.v4.runtime.misc.Interval(startIndex, endIndex));
+  }
+
+  /**
+   * Get formatted text between 2 tokens
+   */
+  public static String getFormattedText(ParserRuleContext ctx) {
+    return getFormattedText(ctx, ctx.start.getStartIndex(), ctx.stop.getStopIndex());
   }
   
   /**
