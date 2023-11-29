@@ -308,7 +308,7 @@ time docker rm -f dev_$dbType || true
 set -e
 dev-support/nightly
 '''
-            buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
+            buildHive("install -Dtest=noMatches -Pdist -Piceberg -pl packaging -am")
         }
         stage('Verify') {
             sh '''#!/bin/bash
