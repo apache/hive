@@ -129,7 +129,7 @@ public class TestHiveIcebergExpireSnapshots extends HiveIcebergStorageHandlerWit
     table.refresh();
     Assert.assertEquals(10, IterableUtils.size(table.snapshots()));
 
-    // Change max snapshot age to expire to 1 ms & min snapshots to keep as 4 & re-execute
+    // Change max snapshot age to expire to 1 ms & min snapshots to keep as 3 & re-execute
     shell.executeStatement(
         "ALTER TABLE " + identifier.name() + " SET TBLPROPERTIES('" + MAX_SNAPSHOT_AGE_MS + "'='1'" + ",'" +
             MIN_SNAPSHOTS_TO_KEEP + "'='3')");
