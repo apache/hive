@@ -5852,7 +5852,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                     new AbortTxnEvent(txnEntry.getKey(), TxnType.findByValue(txnEntry.getValue()), null, dbsUpdated),
                     jdbcResource.getConnection(), sqlGenerator);
               }
-              jdbcResource.getTransactionManager().commit(context);
               LOG.debug("Added Notifications for the transactions that are aborted due to timeout: {}", batchToAbort);
             }
           } else {
