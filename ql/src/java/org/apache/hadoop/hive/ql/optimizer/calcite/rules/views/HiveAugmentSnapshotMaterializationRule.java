@@ -148,10 +148,10 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
 
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(tableScan);
-    final RexNode literalSnapshotId = rexBuilder.makeLiteral(
+    final RexNode snapshotIdLiteral = rexBuilder.makeLiteral(
         snapshotId, snapshotIdType(relBuilder.getTypeFactory()), false);
     final RexNode predicateWithSnapShotId = rexBuilder.makeCall(
-        SqlStdOperatorTable.LESS_THAN_OR_EQUAL, snapshotIdInputRef, literalSnapshotId);
+        SqlStdOperatorTable.LESS_THAN_OR_EQUAL, snapshotIdInputRef, snapshotIdLiteral);
     relBuilder.filter(singletonList(predicateWithSnapShotId));
     call.transformTo(relBuilder.build());
   }
