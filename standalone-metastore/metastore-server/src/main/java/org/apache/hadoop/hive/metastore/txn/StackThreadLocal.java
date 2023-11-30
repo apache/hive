@@ -17,27 +17,33 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import java.util.Stack;
+
 public class StackThreadLocal<T> {
 
-  private final ThreadLocal<ContextNode<T>> threadLocal = new ThreadLocal<>();
+  private final ThreadLocal<Stack<T>> threadLocal = new ThreadLocal<>();
 
   public void set(T value) {
-    threadLocal.set(new ContextNode<>(threadLocal.get(), value));
+    Stack<T> stack = threadLocal.get();
+    if (stack == null) {
+      stack = new Stack<>();
+    }
+    stack.push(value);
+    threadLocal.set(stack);
   }
 
   public void unset() {
-    ContextNode<T> node = threadLocal.get();
-    if (node != null && node.getParent() != null) {
-      threadLocal.set(node.getParent());
-    } else {
+    Stack<T> stack = threadLocal.get();
+    stack.pop();
+    if (stack.empty()) {
       threadLocal.remove();
     }
   }
   
   public T get() {
-    ContextNode<T> node = threadLocal.get();
-    if (node != null) {
-      return node.getValue();
+    Stack<T> stack = threadLocal.get();
+    if (stack != null) {
+      return stack.peek();
     } else {
       throw new IllegalStateException("There is no context to return!");
     }
@@ -45,11 +51,6 @@ public class StackThreadLocal<T> {
   
   public boolean isSet() {
     return threadLocal.get() != null;
-  }
-  
-  public boolean isTopLevel() {
-    ContextNode<T> node = threadLocal.get();
-    return node != null && node.getParent() == null;
-  }
+  }  
 
 }

@@ -669,7 +669,7 @@ public class TxnUtils {
    * Returns with the found {@link SQLException} or throws an {@link IllegalArgumentException} if no {@link SQLException}
    * found in the chain.
    * @param ex The exception to check
-   * @return Returns wit the {@link SQLException} found in the exception chain. 
+   * @return Returns with the {@link SQLException} found in the exception chain. 
    * @throws IllegalArgumentException Thrown if there is no {@link SQLException} in the exception chain
    */
   public static SQLException getSqlException(Throwable ex) throws IllegalArgumentException {

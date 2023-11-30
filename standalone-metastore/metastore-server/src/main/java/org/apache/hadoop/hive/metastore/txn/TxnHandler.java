@@ -245,7 +245,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
             if (connPoolCompactor == null) {
               configurator.resetName(POOL_COMPACTOR);
-              connPoolCompactor = setupJdbcConnectionPool(conf, maxPoolSize);
+              connPoolCompactor = setupJdbcConnectionPool(conf,
+                  MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS));
             }            
           }
           if (dbProduct == null) {
