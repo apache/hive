@@ -74,10 +74,11 @@ public class VectorMapJoinFastStringHashMapContainer extends VectorMapJoinFastHa
     NonMatchedBytesHashMapIterator(MatchTracker matchTracker,
         VectorMapJoinFastStringHashMap[] hashMaps, int numThreads) {
       super(matchTracker);
-      hashMapIterators = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator[4];
+
+      hashMapIterators = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator[numThreads];
       for (int i = 0; i < numThreads; ++i) {
-        hashMapIterators[i] = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator(matchTracker,
-            hashMaps[i]);
+        hashMapIterators[i] = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator(
+            matchTracker.getPartition(i), hashMaps[i]);
       }
       index = 0;
       this.numThreads = numThreads;
@@ -172,11 +173,13 @@ public class VectorMapJoinFastStringHashMapContainer extends VectorMapJoinFastHa
 
   @Override
   public MatchTracker createMatchTracker() {
-    int count = 0;
-    for (int i = 0; i < numThreads; ++i) {
-      count += vectorMapJoinFastStringHashMaps[i].logicalHashBucketCount;
+    MatchTracker parentMatchTracker = MatchTracker.createPartitioned(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      int childSize = vectorMapJoinFastStringHashMaps[i].logicalHashBucketCount;
+      parentMatchTracker.addPartition(i, childSize);
     }
-    return MatchTracker.create(count);
+
+    return parentMatchTracker;
   }
 
   @Override
@@ -200,8 +203,11 @@ public class VectorMapJoinFastStringHashMapContainer extends VectorMapJoinFastHa
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    return vectorMapJoinFastStringHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(keyBytes, keyStart, keyLength, hashMapResult,
-        matchTracker);
+    int partition = (int) ((numThreads - 1) & hashCode);
+    MatchTracker childMatchTracker = matchTracker != null ? matchTracker.getPartition(partition) : null;
+
+    return vectorMapJoinFastStringHashMaps[partition].lookup(keyBytes, keyStart, keyLength, hashMapResult,
+        childMatchTracker);
   }
 
   @Override
