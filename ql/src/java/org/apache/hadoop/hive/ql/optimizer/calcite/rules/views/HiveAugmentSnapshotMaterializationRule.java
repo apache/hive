@@ -17,13 +17,14 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -37,11 +38,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+
+import static java.util.Collections.singletonList;
 
 /**
  * This rule will rewrite the materialized view with information about
@@ -90,12 +92,13 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
 
   private static RelDataType snapshotIdType = null;
 
-  private static RelDataType snapshotIdType(RelBuilder relBuilder) {
+  @VisibleForTesting
+  static RelDataType snapshotIdType(RelDataTypeFactory typeFactory) {
     if (snapshotIdType == null) {
       try {
-        snapshotIdType = relBuilder.getTypeFactory().createSqlType(
+        snapshotIdType = typeFactory.createSqlType(
             TypeConverter.convert(VirtualColumn.SNAPSHOT_ID.getTypeInfo(),
-                relBuilder.getTypeFactory()).getSqlTypeName());
+                typeFactory).getSqlTypeName());
       } catch (CalciteSemanticException e) {
         throw new RuntimeException(e);
       }
@@ -125,11 +128,17 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
     Table table = hiveTable.getHiveTableMD();
 
     SnapshotContext mvMetaTableSnapshot = mvMetaStoredSnapshot.get(table.getFullyQualifiedName());
-    if (mvMetaTableSnapshot.equals(table.getStorageHandler().getCurrentSnapshotContext(table))) {
+    if (table.getStorageHandler() == null) {
+      throw new UnsupportedOperationException(String.format("Table %s does not have Storage handler defined. " +
+          "Mixing native and non-native tables in a materialized view definition is currently not supported!",
+          table.getFullyQualifiedName()));
+    }
+    if (Objects.equals(mvMetaTableSnapshot, table.getStorageHandler().getCurrentSnapshotContext(table))) {
       return;
     }
 
-    table.setVersionIntervalFrom(Long.toString(mvMetaTableSnapshot.getSnapshotId()));
+    Long snapshotId = mvMetaTableSnapshot != null ? mvMetaTableSnapshot.getSnapshotId() : null;
+    table.setVersionIntervalFrom(Objects.toString(snapshotId, null));
 
     RexBuilder rexBuilder = call.builder().getRexBuilder();
     int snapshotIdIndex = tableScan.getTable().getRowType().getField(
@@ -139,14 +148,11 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
 
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(tableScan);
-    List<RexNode> conds = new ArrayList<>();
-    final RexNode literalHighWatermark = rexBuilder.makeLiteral(
-        mvMetaTableSnapshot.getSnapshotId(), snapshotIdType(relBuilder), false);
-    conds.add(
-        rexBuilder.makeCall(
-            SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-            ImmutableList.of(snapshotIdInputRef, literalHighWatermark)));
-    relBuilder.filter(conds);
+    final RexNode snapshotIdLiteral = rexBuilder.makeLiteral(
+        snapshotId, snapshotIdType(relBuilder.getTypeFactory()), false);
+    final RexNode predicateWithSnapShotId = rexBuilder.makeCall(
+        SqlStdOperatorTable.LESS_THAN_OR_EQUAL, snapshotIdInputRef, snapshotIdLiteral);
+    relBuilder.filter(singletonList(predicateWithSnapShotId));
     call.transformTo(relBuilder.build());
   }
 }
