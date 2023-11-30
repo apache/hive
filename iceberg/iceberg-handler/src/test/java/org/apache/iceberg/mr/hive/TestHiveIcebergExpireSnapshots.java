@@ -36,6 +36,7 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.iceberg.TableProperties.MAX_SNAPSHOT_AGE_MS;
+import static org.apache.iceberg.TableProperties.MIN_SNAPSHOTS_TO_KEEP;
 
 /**
  * Tests covering the rollback feature
@@ -115,6 +116,34 @@ public class TestHiveIcebergExpireSnapshots extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS RETAIN LAST 5");
     table.refresh();
     Assert.assertEquals(5, IterableUtils.size(table.snapshots()));
+  }
+
+  @Test
+  public void testExpireSnapshotsWithDefaultParams() throws IOException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "source");
+    Table table = testTables.createTableWithVersions(shell, identifier.name(),
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 10);
+    // No snapshot should expire, since the max snapshot age to expire is by default 5 days
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS RETAIN LAST 5");
+    table.refresh();
+    Assert.assertEquals(10, IterableUtils.size(table.snapshots()));
+
+    // Change max snapshot age to expire to 1 ms & min snapshots to keep as 3 & re-execute
+    shell.executeStatement(
+        "ALTER TABLE " + identifier.name() + " SET TBLPROPERTIES('" + MAX_SNAPSHOT_AGE_MS + "'='1'" + ",'" +
+            MIN_SNAPSHOTS_TO_KEEP + "'='3')");
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS");
+    table.refresh();
+    Assert.assertEquals(3, IterableUtils.size(table.snapshots()));
+
+    // Change the min snapshot to keep as 2
+    shell.executeStatement(
+        "ALTER TABLE " + identifier.name() + " SET TBLPROPERTIES('" + MIN_SNAPSHOTS_TO_KEEP + "'='2')");
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS");
+    table.refresh();
+    Assert.assertEquals(2, IterableUtils.size(table.snapshots()));
+
   }
 
   @Test
