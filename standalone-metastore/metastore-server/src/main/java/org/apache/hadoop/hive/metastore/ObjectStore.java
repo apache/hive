@@ -2303,6 +2303,8 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     String tableType = mtbl.getTableType();
+    String viewOriginalText = null;
+    String viewExpandedText = null;
     if (tableType == null) {
       // for backwards compatibility with old metastore persistence
       if (mtbl.getViewOriginalText() != null) {
@@ -2312,14 +2314,19 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         tableType = TableType.MANAGED_TABLE.toString();
       }
+    } else {
+      if (tableType.equals(TableType.VIRTUAL_VIEW.toString()) || tableType.equals(TableType.MATERIALIZED_VIEW.toString())) {
+        viewOriginalText = mtbl.getViewOriginalText();
+        viewExpandedText = mtbl.getViewExpandedText();
+      }
     }
     Map<String, String> parameters = convertMap(mtbl.getParameters());
     boolean isAcidTable = TxnUtils.isAcidTable(parameters);
     final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase() != null ? mtbl.getDatabase().getName() : null,
         mtbl.getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl.getRetention(),
         convertToStorageDescriptor(mtbl.getSd(), false, isAcidTable),
-        convertToFieldSchemas(mtbl.getPartitionKeys()), parameters, mtbl.getViewOriginalText(),
-        mtbl.getViewExpandedText(), tableType);
+        convertToFieldSchemas(mtbl.getPartitionKeys()), parameters, viewOriginalText,
+        viewExpandedText, tableType);
 
     if (Strings.isNullOrEmpty(mtbl.getOwnerType())) {
       // Before the ownerType exists in an old Hive schema, USER was the default type for owner.
