@@ -58,6 +58,8 @@ import org.apache.hadoop.util.ReflectionUtils;
  * This class represents a warehouse where data of Hive tables is stored
  */
 public class Warehouse {
+  public static final String DEFAULT_CATALOG_NAME = "hive";
+
   private Path whRoot;
   private final Configuration conf;
   private final String whRootString;

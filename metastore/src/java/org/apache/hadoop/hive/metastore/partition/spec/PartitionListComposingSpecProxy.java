@@ -40,6 +40,11 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
   }
 
   @Override
+  public String getCatName() {
+    return partitionSpec.getCatName();
+  }
+
+  @Override
   public String getDbName() {
     return partitionSpec.getDbName();
   }
@@ -62,6 +67,14 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
   @Override
   public int size() {
     return partitionSpec.getPartitionList().getPartitionsSize();
+  }
+
+  @Override
+  public void setCatName(String catName) {
+    partitionSpec.setCatName(catName);
+    for (Partition partition : partitionSpec.getPartitionList().getPartitions()) {
+      partition.setCatName(catName);
+    }
   }
 
   @Override
@@ -115,6 +128,11 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
     @Override
     public Partition getCurrent() {
       return partitionList.get(index);
+    }
+
+    @Override
+    public String getCatName() {
+      return partitionSpecProxy.getCatName();
     }
 
     @Override

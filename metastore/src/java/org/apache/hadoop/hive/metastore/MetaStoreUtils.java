@@ -97,6 +97,28 @@ public class MetaStoreUtils {
 
   protected static final Logger LOG = LoggerFactory.getLogger("hive.log");
 
+  // The following two are public for any external users who wish to use them.
+  /**
+   * This character is used to mark a database name as having a catalog name prepended.  This
+   * marker should be placed first in the String to make it easy to determine that this has both
+   * a catalog and a database name.  @ is chosen as it is not used in regular expressions.  This
+   * is only intended for use when making old Thrift calls that do not support catalog names.
+   */
+  public static final char CATALOG_DB_THRIFT_NAME_MARKER = '@';
+
+  /**
+   * This String is used to seaprate the catalog name from the database name.  This should only
+   * be used in Strings that are prepended with {@link #CATALOG_DB_THRIFT_NAME_MARKER}.  # is
+   * chosen because it is not used in regular expressions.  this is only intended for use when
+   * making old Thrift calls that do not support catalog names.
+   */
+  public static final String CATALOG_DB_SEPARATOR = "#";
+
+  /**
+   * Mark a database as being empty (as distinct from null).
+   */
+  public static final String DB_EMPTY_MARKER = "!";
+
   public static final String DEFAULT_DATABASE_NAME = "default";
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
   public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
@@ -1977,4 +1999,51 @@ public class MetaStoreUtils {
     }
     csNew.setStatsObj(list);
   }
+
+  /**
+   * Prepend the default catalog onto the database name if property "metastore.catalog.default" is configured,
+   * otherwise return the database name.
+   * @param dbName database name
+   * @param conf configuration object, used to determine default catalog
+   * @return a database name with or without the catalog name prepended.
+   */
+  public static String prependCatalogToDbName(String dbName, HiveConf conf) {
+    StringBuilder buf = new StringBuilder();
+
+    if(isCatalogEnabled(conf)) {
+      buf.append(CATALOG_DB_THRIFT_NAME_MARKER)
+              .append(getDefaultCatalog(conf))
+              .append(CATALOG_DB_SEPARATOR);
+    }
+
+    if (dbName != null) {
+      if (dbName.isEmpty()) buf.append(DB_EMPTY_MARKER);
+      else buf.append(dbName);
+    }
+    return buf.toString();
+  }
+
+  public static Boolean isCatalogEnabled(HiveConf conf) {
+    if (conf == null) {
+      return false;
+    }
+
+    String catName = conf.get(CATALOG_DEFAULT);
+    if (catName == null || "".equals(catName)) return false;
+    return true;
+  }
+
+  public static String getDefaultCatalog(HiveConf conf) {
+    if (conf == null) {
+      LOG.warn("Configuration is null, so going with default catalog.");
+      return Warehouse.DEFAULT_CATALOG_NAME;
+    }
+
+    String catName = conf.get(CATALOG_DEFAULT);
+    if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
+    return catName;
+  }
+
+  //"The default catalog to use when a catalog is not specified. Default is 'hive' (the default catalog).
+  public static final String CATALOG_DEFAULT = "metastore.catalog.default";
 }
