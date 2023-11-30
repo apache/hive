@@ -97,4 +97,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
+  public static final java.lang.String DEFAULT_TABLE_LOCATION = "defaultLocation";
+
 }

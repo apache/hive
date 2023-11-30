@@ -48,6 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -211,6 +212,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
   public static final String STATS = "/stats/snap-";
+
+  public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
 
   /**
    * Function template for producing a custom sort expression function:
@@ -518,11 +521,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         writer.finish();
         return true;
       } catch (IOException e) {
-        LOG.warn("Unable to write stats to puffin file", e.getMessage());
+        LOG.warn("Unable to write stats to puffin file {}", e.getMessage());
         return false;
       }
     } catch (InvalidObjectException | IOException e) {
-      LOG.warn("Unable to invalidate or merge stats: ", e.getMessage());
+      LOG.warn("Unable to invalidate or merge stats: {}", e.getMessage());
       return false;
     }
   }
@@ -1011,19 +1014,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Optional<String> metadataLocation =
         SessionStateUtil.getProperty(conf, BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
     if (metadataLocation.isPresent()) {
-      authURI.append(encodeString(metadataLocation.get()));
+      authURI.append(getPathForAuth(metadataLocation.get()));
     } else {
       Optional<String> locationProperty =
           SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
       if (locationProperty.isPresent()) {
         // this property is set during the create operation before the hive table was created
         // we are returning a dummy iceberg metadata file
-        authURI.append(encodeString(URI.create(locationProperty.get()).getPath()))
+        authURI.append(getPathForAuth(locationProperty.get()))
             .append(encodeString("/metadata/dummy.metadata.json"));
       } else {
         Table table = IcebergTableUtil.getTable(conf, hmsTable);
-        authURI.append(
-            encodeString(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()));
+        authURI.append(getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+            hmsTable.getSd().getLocation()));
       }
     }
     LOG.debug("Iceberg storage handler authorization URI {}", authURI);
@@ -1038,6 +1041,39 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(rawString);
   }
 
+  String getPathForAuth(String locationProperty) {
+    return getPathForAuth(locationProperty,
+        SessionStateUtil.getProperty(conf, hive_metastoreConstants.DEFAULT_TABLE_LOCATION).orElse(null));
+  }
+
+  String getPathForAuth(String locationProperty, String defaultTableLocation) {
+    boolean maskDefaultLocation = conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname,
+        HiveConf.ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION.defaultBoolVal);
+    String location = URI.create(locationProperty).getPath();
+    if (!maskDefaultLocation || defaultTableLocation == null ||
+        !arePathsInSameFs(locationProperty, defaultTableLocation)) {
+      return encodeString(location);
+    }
+    try {
+      Path locationPath = new Path(location);
+      Path defaultLocationPath = locationPath.toUri().getScheme() != null ?
+          FileUtils.makeQualified(new Path(defaultTableLocation), conf) :
+          Path.getPathWithoutSchemeAndAuthority(new Path(defaultTableLocation));
+      return encodeString(location.replaceFirst(defaultLocationPath.toString(), TABLE_DEFAULT_LOCATION));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private boolean arePathsInSameFs(String locationProperty, String defaultTableLocation) {
+    try {
+      return FileUtils.equalsFileSystem(new Path(locationProperty).getFileSystem(conf),
+          new Path(defaultTableLocation).getFileSystem(conf));
+    } catch (IOException e) {
+      LOG.debug("Unable to get FileSystem for path {} and {}", locationProperty, defaultTableLocation);
+      return false;
+    }
+  }
 
   @Override
   public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
