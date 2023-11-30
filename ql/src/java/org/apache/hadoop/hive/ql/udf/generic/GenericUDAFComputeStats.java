@@ -371,8 +371,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
         List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-        foi.add(getValueObjectInspector(inputOI.getTypeInfo()));
-        foi.add(getValueObjectInspector(inputOI.getTypeInfo()));
+        foi.add(inputOI != null ? getValueObjectInspector(inputOI.getTypeInfo()) : getValueObjectInspector());
+        foi.add(inputOI != null ? getValueObjectInspector(inputOI.getTypeInfo()) : getValueObjectInspector());
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
 
