@@ -95,6 +95,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION;
 import static org.apache.iceberg.TableProperties.GC_ENABLED;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.junit.runners.Parameterized.Parameter;
@@ -1484,31 +1485,59 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testAuthzURI() throws TException, InterruptedException, URISyntaxException {
+  public void testAuthzURIMasked() throws TException, URISyntaxException, InterruptedException {
+    testAuthzURI(true);
+  }
+
+  @Test
+  public void testAuthzURIUnmasked() throws TException, URISyntaxException, InterruptedException {
+    testAuthzURI(false);
+  }
+
+  public void testAuthzURI(boolean masked) throws TException, InterruptedException, URISyntaxException {
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
 
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+
+    String metadataLocation =
+        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+            hmsTable.getSd().getLocation());
+
+    if (masked) {
+      Assert.assertTrue(metadataLocation.startsWith(HiveIcebergStorageHandler.TABLE_DEFAULT_LOCATION));
+    }
 
     Assert.assertEquals("iceberg://" +
             HiveIcebergStorageHandler.encodeString(target.namespace().toString()) + "/" +
             HiveIcebergStorageHandler.encodeString(target.name()) + "?snapshot=" +
             HiveIcebergStorageHandler.encodeString(
-            URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()),
+            URI.create(metadataLocation).getPath()),
         uriForAuth.toString());
 
     Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
-        URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath(),
+        URI.create(metadataLocation).getPath(),
         HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
 
   }
 
   @Test
-  public void testAuthzURIWithAuthEnabledWithMetadataLocation() throws HiveException {
+  public void testAuthzURIWithAuthEnabledWithMetadataLocationMasked() throws HiveException {
+    testAuthzURIWithAuthEnabledWithMetadataLocation(true);
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledWithMetadataLocationUnmasked() throws HiveException {
+    testAuthzURIWithAuthEnabledWithMetadataLocation(false);
+  }
+
+  public void testAuthzURIWithAuthEnabledWithMetadataLocation(boolean masked) throws HiveException {
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
         "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
@@ -1540,7 +1569,21 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizer() throws HiveException {
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizerMasked()
+      throws HiveException, TException, InterruptedException {
+    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    testAuthzURIWithAuthEnabledAndMockCommandAuthorizer(true);
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizerUnmasked()
+      throws HiveException, TException, InterruptedException {
+    testAuthzURIWithAuthEnabledAndMockCommandAuthorizer(false);
+  }
+
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizer(boolean masked)
+      throws HiveException, TException, InterruptedException {
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
         "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
@@ -1554,8 +1597,18 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Optional<HivePrivilegeObject> hivePrivObject = outputHObjsCaptor.getValue().stream()
         .filter(hpo -> hpo.getType().equals(HivePrivilegeObject.HivePrivilegeObjectType.STORAGEHANDLER_URI)).findAny();
     if (hivePrivObject.isPresent()) {
+      org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
+      HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+      storageHandler.setConf(shell.getHiveConf());
+      String metadataLocation = HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(
+          storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+              hmsTable.getSd().getLocation()));
+
+      if (masked) {
+        Assert.assertTrue(metadataLocation.startsWith(HiveIcebergStorageHandler.TABLE_DEFAULT_LOCATION));
+      }
       Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
-              new Path(((BaseTable) table).operations().current().metadataFileLocation()).getParent().toUri()
+              new Path(metadataLocation).getParent().toUri()
                   .getPath() +
               "/dummy.metadata.json",
           HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(hivePrivObject.get().getObjectName()));
@@ -1565,7 +1618,18 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testAuthzURIWithAuthEnabled() throws TException, InterruptedException, URISyntaxException {
+  public void testAuthzURIWithAuthEnabledMasked() throws TException, URISyntaxException, InterruptedException {
+    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    testAuthzURIWithAuthEnabled(true);
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledUnmasked() throws TException, URISyntaxException, InterruptedException {
+    testAuthzURIWithAuthEnabled(false);
+  }
+
+  public void testAuthzURIWithAuthEnabled(boolean masked) throws TException, InterruptedException, URISyntaxException {
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1575,9 +1639,15 @@ public class TestHiveIcebergStorageHandlerNoScan {
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+    String metadataLocation =
+        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+            hmsTable.getSd().getLocation());
+
+    if (masked) {
+      Assert.assertTrue(metadataLocation.startsWith(HiveIcebergStorageHandler.TABLE_DEFAULT_LOCATION));
+    }
     Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
-        URI.create(((BaseTable) table).operations().current()
-        .metadataFileLocation()).getPath(),
+        URI.create(metadataLocation).getPath(),
         HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
   }
 
