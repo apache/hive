@@ -113,8 +113,10 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -3994,6 +3996,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tableName,
       List<Pair<Integer, byte[]>> partitionExpressions,
       PartitionDropOptions dropOptions) throws HiveException {
+    RequestPartsSpec rps = new RequestPartsSpec();
+    List<DropPartitionsExpr> exprs = new ArrayList<>(partitionExpressions.size());
+    for (Pair<Integer, byte[]> partExpr : partitionExpressions) {
+      DropPartitionsExpr dpe = new DropPartitionsExpr();
+      dpe.setExpr(partExpr.getRight());
+      dpe.setPartArchiveLevel(partExpr.getLeft());
+      exprs.add(dpe);
+    }
+    rps.setExprs(exprs);
+    return dropPartitions(dbName, tableName, rps, dropOptions);
+  }
+
+  public List<Partition> dropPartitionsByNames(String dbName, String tableName,
+      List<String> partitionNames, PartitionDropOptions dropOptions) throws HiveException {
+    RequestPartsSpec partsSpec = new RequestPartsSpec();
+    partsSpec.setNames(partitionNames);
+    return dropPartitions(dbName, tableName, partsSpec, dropOptions);
+  }
+
+  public List<Partition> dropPartitions(String dbName, String tableName,
+      RequestPartsSpec partsSpec, PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table table = getTable(dbName, tableName);
       if (!dropOptions.deleteData) {
@@ -4002,11 +4025,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
           dropOptions.setWriteId(snapshot.getWriteId());
         }
         long txnId = Optional.ofNullable(SessionState.get())
-          .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
+            .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
         dropOptions.setTxnId(txnId);
       }
-      List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(dbName, tableName,
-          partitionExpressions, dropOptions);
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(
+          getDefaultCatalog(conf), dbName, tableName, partsSpec, dropOptions);
       return convertFromMetastore(table, partitions);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);

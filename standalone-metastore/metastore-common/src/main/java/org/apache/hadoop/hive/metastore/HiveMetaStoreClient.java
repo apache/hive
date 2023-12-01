@@ -1933,16 +1933,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                         PartitionDropOptions options) throws TException {
     RequestPartsSpec rps = new RequestPartsSpec();
     List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
-    Table table = getTable(catName, dbName, tblName);
-    HiveMetaHook hook = getHook(table);
-    EnvironmentContext context = new EnvironmentContext();
-    if (hook != null) {
-      hook.preDropPartitions(table, context, partExprs);
-    }
-    if (context.getProperties() != null &&
-        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
-      return Lists.newArrayList();
-    }
     for (Pair<Integer, byte[]> partExpr : partExprs) {
       DropPartitionsExpr dpe = new DropPartitionsExpr();
       dpe.setExpr(partExpr.getRight());
@@ -1950,7 +1940,25 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       exprs.add(dpe);
     }
     rps.setExprs(exprs);
-    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
+    return dropPartitions(catName, dbName, tblName, rps, options);
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+                                        RequestPartsSpec partsSpec, PartitionDropOptions options)
+      throws TException {
+    EnvironmentContext context = new EnvironmentContext();
+    Table table = getTable(catName, dbName, tblName);
+    HiveMetaHook hook = getHook(table);
+    if (hook != null) {
+      hook.preDropPartitions(table, context, partsSpec);
+    }
+    if (context.getProperties() != null &&
+        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
+      return Lists.newArrayList();
+    }
+
+    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, partsSpec);
     req.setCatName(catName);
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
@@ -1973,6 +1981,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
 
     return client.drop_partitions_req(req).getPartitions();
+  }
+
+  @Override
+  public List<Partition> dropPartitionsByNames(String dbName, String tblName,
+      List<String> partitionNames, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException {
+    return dropPartitionsByNames(getDefaultCatalog(conf), dbName, tblName, partitionNames, options);
+  }
+
+  @Override
+  public List<Partition> dropPartitionsByNames(String catName, String dbName, String tblName,
+      List<String> partitionNames, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException {
+    RequestPartsSpec rps = new RequestPartsSpec();
+    rps.setNames(partitionNames);
+    return dropPartitions(catName, dbName, tblName, rps, options);
   }
 
   @Override

@@ -2175,6 +2175,53 @@ public interface IMetaStoreClient extends AutoCloseable {
       throws NoSuchObjectException, MetaException, TException;
 
   /**
+   * Generalization of dropPartitions(),
+   * @param catName catalog name
+   * @param dbName Name of the database
+   * @param tblName Name of the table
+   * @param partsSpec request partition specification
+   * @param options Boolean options for dropping partitions
+   * @return List of Partitions dropped
+   * @throws NoSuchObjectException No partition matches the expression(s), and ifExists was false.
+   * @throws MetaException error access the RDBMS or storage.
+   * @throws TException On failure
+   */
+  List<Partition> dropPartitions(String catName, String dbName, String tblName,
+                                 RequestPartsSpec partsSpec, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Generalization of dropPartitionsByNames(),
+   * @param dbName Name of the database
+   * @param tblName Name of the table
+   * @param partitionNames List of partition names
+   * @param options Boolean options for dropping partitions
+   * @return List of Partitions dropped
+   * @throws NoSuchObjectException No partition matches the partition name(s), and ifExists was false.
+   * @throws MetaException error access the RDBMS or storage.
+   * @throws TException On failure
+   */
+  List<Partition> dropPartitionsByNames(String dbName, String tblName,
+                                        List<String> partitionNames, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Generalization of dropPartitionsByNames(),
+   * @param catName catalog name
+   * @param dbName Name of the database
+   * @param tblName Name of the table
+   * @param partitionNames List of partition names
+   * @param options Boolean options for dropping partitions
+   * @return List of Partitions dropped
+   * @throws NoSuchObjectException No partition matches the partition name(s), and ifExists was false.
+   * @throws MetaException error access the RDBMS or storage.
+   * @throws TException On failure
+   */
+  List<Partition> dropPartitionsByNames(String catName, String dbName, String tblName,
+                                        List<String> partitionNames, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException;
+
+  /**
    * Drop a partition.
    * @param db_name database name.
    * @param tbl_name table name.
