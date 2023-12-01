@@ -33,6 +33,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -218,12 +220,21 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       scan = applyConfig(conf, createTableScan(table, conf));
     }
 
+    boolean dataFilesWithinTableLocationOnly =
+        conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
+            HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
+    Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
+
+
     try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
       tasksIterable.forEach(task -> {
         if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
             model == InputFormatConfig.InMemoryDataModel.PIG)) {
           // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
           checkResiduals(task);
+        }
+        if (dataFilesWithinTableLocationOnly) {
+          validateFilesWithinTableDirectory(task, tableLocation);
         }
         splits.add(new IcebergSplit(conf, task));
       });
@@ -239,6 +250,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     return splits;
+  }
+
+  private static void validateFilesWithinTableDirectory(CombinedScanTask split, Path tableLocation) {
+    for (FileScanTask fileScanTask : split.files()) {
+      if (!FileUtils.isPathWithinSubtree(new Path(fileScanTask.file().path().toString()), tableLocation)) {
+        throw new IllegalArgumentException("The table contains paths which are outside the table location");
+      }
+    }
   }
 
   private static void checkResiduals(CombinedScanTask task) {
