@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 4.0.0-beta-1 to 4.0.0-beta-2';
+SELECT 'Upgrading MetaStore schema from 4.0.0-beta-1 to 4.1.0';
 
 -- HIVE-24815: Remove "IDXS" Table from Metastore Schema
 DROP TABLE IF EXISTS "INDEX_PARAMS";
@@ -10,5 +10,5 @@ ALTER TABLE ONLY "PARTITIONS" ADD CONSTRAINT "UNIQUEPARTITION" UNIQUE ("TBL_ID",
 DROP INDEX "PARTITIONS_N49";
 
 -- These lines need to be last. Insert any changes above.
-UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0-beta-2', "VERSION_COMMENT"='Hive release version 4.0.0-beta-2' where "VER_ID"=1;
-SELECT 'Finished upgrading MetaStore schema from 4.0.0-beta-1 to 4.0.0-beta-2';
+UPDATE "VERSION" SET "SCHEMA_VERSION"='4.1.0', "VERSION_COMMENT"='Hive release version 4.1.0' where "VER_ID"=1;
+SELECT 'Finished upgrading MetaStore schema from 4.0.0-beta-1 to 4.1.0';
