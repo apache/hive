@@ -185,7 +185,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	55                  
 	rawDataSize         	605                 
-	totalSize           	660                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -986,7 +986,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	57                  
 	rawDataSize         	1316                
-	totalSize           	1373                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1392,7 +1392,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	58                  
 	rawDataSize         	1342                
-	totalSize           	1400                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

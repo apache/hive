@@ -56,7 +56,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hive.storage.jdbc.JdbcStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
