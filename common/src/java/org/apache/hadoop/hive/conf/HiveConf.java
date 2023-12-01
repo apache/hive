@@ -2226,6 +2226,10 @@ public class HiveConf extends Configuration {
     HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
         "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
             " defult DirectExecutorService"),
+
+    HIVE_ICEBERG_MASK_DEFAULT_LOCATION("hive.iceberg.mask.default.location", false,
+        "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
+
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
