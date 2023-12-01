@@ -683,7 +683,6 @@ public final class ParseUtils {
     return val;
   }
 
-<<<<<<< HEAD
   public static ReparseResult parseRewrittenQuery(Context ctx, StringBuilder rewrittenQueryStr)
       throws SemanticException {
     return parseRewrittenQuery(ctx, rewrittenQueryStr.toString());
