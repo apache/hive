@@ -1,5 +1,3 @@
--- Mask the totalSize value as it can have slight variability, causing test flakiness
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 set metastore.metadata.transformer.class=org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer;
 
 create database if not exists tmp;

@@ -1,4 +1,3 @@
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 SET hive.support.concurrency=true;
 SET hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 

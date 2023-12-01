@@ -290,7 +290,7 @@ Table Parameters:
 	numRows             	2                   
 	rawDataSize         	232                 
 	rewriting.time.window	5min                
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -529,7 +529,7 @@ Table Parameters:
 	numRows             	2                   
 	rawDataSize         	232                 
 	rewriting.time.window	5min                
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -873,7 +873,7 @@ Table Parameters:
 	numRows             	3                   
 	rawDataSize         	348                 
 	rewriting.time.window	5min                
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

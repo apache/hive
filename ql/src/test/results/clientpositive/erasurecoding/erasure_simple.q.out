@@ -123,7 +123,7 @@ numFiles	1
 numFilesErasureCoded	1
 numRows	500
 rawDataSize	5312
-totalSize	5812
+totalSize	#Masked#
 #### A masked pattern was here ####
 ECHO unset the default policy on erasure_coding1
 Unset EC policy

@@ -2281,7 +2281,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2000                
 	rawDataSize         	21248               
-	totalSize           	23248               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

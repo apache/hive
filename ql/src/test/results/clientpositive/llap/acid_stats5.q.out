@@ -93,7 +93,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	2                   
 	rawDataSize         	10                  
-	totalSize           	18                  
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -303,7 +303,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	15                  
-	totalSize           	18                  
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -451,7 +451,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	15                  
-	totalSize           	18                  
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -549,7 +549,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -716,7 +716,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -864,7 +864,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
