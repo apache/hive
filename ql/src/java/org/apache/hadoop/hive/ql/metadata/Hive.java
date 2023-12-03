@@ -5542,6 +5542,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new HiveException("Getting globStatus " + srcf.toString(), e);
       }
 
+      // For insert/load overwrite cases, where external.table.purge is disabled for the table, there may be stale
+      // partitions present in the table location after Alter table drop partition operation. In such cases, oldPath will be
+      // null, since those partitions will not be present in metastore. Added below check to clean up those stale partitions.
+      if (oldPath == null && isInsertOverwrite) {
+        deleteOldPathForReplace(destf, destf, conf, purge, deletePathFilter, isNeedRecycle);
+      }
+
       // the extra check is required to make ALTER TABLE ... CONCATENATE work
       if (oldPath != null && (srcs != null || isInsertOverwrite)) {
         deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isNeedRecycle);
