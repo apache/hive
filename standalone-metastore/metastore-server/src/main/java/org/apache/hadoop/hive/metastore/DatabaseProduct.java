@@ -679,24 +679,6 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
-  public String createUpdatePreparedStmt(String tableName, List<String> columnNames,
-      List<String> conditionKeys) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("update " + tableName + " set ");
-    sb.append(columnNames.stream().map(col -> col + "=?").collect(Collectors.joining(",")));
-    sb.append(" where " + conditionKeys.stream().map(cond -> cond + "=?").collect(Collectors.joining(" and ")));
-    return sb.toString();
-  }
-
-  public String createInsertPreparedStmt(String tableName, List<String> columnNames) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("insert into " + tableName + "(");
-    sb.append(columnNames.stream().collect(Collectors.joining(",")));
-    String placeholder = columnNames.stream().map(col -> "?").collect(Collectors.joining(","));
-    sb.append(") values (" + placeholder + ")");
-    return sb.toString();
-  }
-
   public String addEscapeCharacters(String s) {
     if (isMYSQL()) {
       return s.replaceAll("\\\\", "\\\\\\\\");

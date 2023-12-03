@@ -80,19 +80,21 @@ import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSq
  * the underlying database. It should use ANSI SQL and be compatible with common databases
  * such as MySQL (note that MySQL doesn't use full ANSI mode by default), Postgres, etc.
  *
- * This class separates out the statistics update part from MetaStoreDirectSql class.
+ * This class separates out the update part from MetaStoreDirectSql class.
  */
-class DirectSqlUpdate {
-  private static final Logger LOG = LoggerFactory.getLogger(DirectSqlUpdate.class.getName());
-  PersistenceManager pm;
-  Configuration conf;
-  DatabaseProduct dbType;
-  int maxBatchSize;
-  SQLGenerator sqlGenerator;
+class DirectSqlUpdatePart {
+  private static final Logger LOG = LoggerFactory.getLogger(DirectSqlUpdatePart.class.getName());
+
+  private final PersistenceManager pm;
+  private final Configuration conf;
+  private final DatabaseProduct dbType;
+  private final int maxBatchSize;
+  private final SQLGenerator sqlGenerator;
+
   private static final ReentrantLock derbyLock = new ReentrantLock(true);
-  
-  public DirectSqlUpdate(PersistenceManager pm, Configuration conf,
-                                          DatabaseProduct dbType, int batchSize) {
+
+  public DirectSqlUpdatePart(PersistenceManager pm, Configuration conf,
+                             DatabaseProduct dbType, int batchSize) {
     this.pm = pm;
     this.conf = conf;
     this.dbType = dbType;
@@ -362,9 +364,6 @@ class DirectSqlUpdate {
           throws SQLException, MetaException {
     Map<String, Map<String, String>> result = new HashMap<>();
     boolean areTxnStatsSupported = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
-    PreparedStatement statementInsert = null;
-    PreparedStatement statementDelete = null;
-    PreparedStatement statementUpdate = null;
     String insert = "INSERT INTO \"PARTITION_PARAMS\" (\"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\") "
             + "VALUES( ? , 'COLUMN_STATS_ACCURATE'  , ? )";
     String delete = "DELETE from \"PARTITION_PARAMS\" "
@@ -384,10 +383,9 @@ class DirectSqlUpdate {
     // get the old parameters from PARTITION_PARAMS table.
     Map<Long, String> partIdToParaMap = getParamValues(dbConn, partIdList);
 
-    try {
-      statementInsert = dbConn.prepareStatement(insert);
-      statementDelete = dbConn.prepareStatement(delete);
-      statementUpdate = dbConn.prepareStatement(update);
+    try (PreparedStatement statementInsert = dbConn.prepareStatement(insert);
+         PreparedStatement statementDelete = dbConn.prepareStatement(delete);
+         PreparedStatement statementUpdate = dbConn.prepareStatement(update)) {
       for (Map.Entry entry : partitionInfoMap.entrySet()) {
         PartitionInfo partitionInfo = (PartitionInfo) entry.getKey();
         ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
@@ -472,83 +470,9 @@ class DirectSqlUpdate {
         updateWriteIdForPartitions(dbConn, writeId, partIdList);
       }
       return result;
-    } finally {
-      closeStmt(statementInsert);
-      closeStmt(statementUpdate);
-      closeStmt(statementDelete);
     }
   }
 
-  private static class PartitionInfo {
-    long partitionId;
-    long writeId;
-    String partitionName;
-    public PartitionInfo(long partitionId, long writeId, String partitionName) {
-      this.partitionId = partitionId;
-      this.writeId = writeId;
-      this.partitionName = partitionName;
-    }
-
-    @Override
-    public int hashCode() {
-      return (int)partitionId;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-      if (this == o) {
-        return true;
-      }
-      if (o == null) {
-        return false;
-      }
-      if (!(o instanceof PartitionInfo)) {
-        return false;
-      }
-      PartitionInfo other = (PartitionInfo)o;
-      if (this.partitionId != other.partitionId) {
-        return false;
-      }
-      return true;
-    }
-  }
-
-  private static class PartColNameInfo {
-    long partitionId;
-    String colName;
-    public PartColNameInfo(long partitionId, String colName) {
-      this.partitionId = partitionId;
-      this.colName = colName;
-    }
-
-    @Override
-    public int hashCode() {
-      return (int)partitionId;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-      if (this == o) {
-        return true;
-      }
-      if (o == null) {
-        return false;
-      }
-      if (!(o instanceof PartColNameInfo)) {
-        return false;
-      }
-      PartColNameInfo other = (PartColNameInfo)o;
-      if (this.partitionId != other.partitionId) {
-        return false;
-      }
-      if (this.colName.equalsIgnoreCase(other.colName)) {
-        return true;
-      }
-      return false;
-    }
-  }
 
   private Map<PartitionInfo, ColumnStatistics> getPartitionInfo(Connection dbConn, long tblId,
                                                                  Map<String, ColumnStatistics> partColStatsMap)
@@ -792,7 +716,7 @@ class DirectSqlUpdate {
                                        List<Partition> newParts) throws MetaException {
     List<String> columns = Arrays.asList("\"CREATE_TIME\"", "\"LAST_ACCESS_TIME\"", "\"WRITE_ID\"");
     List<String> conditionKeys = Arrays.asList("\"PART_ID\"");
-    String stmt = dbType.createUpdatePreparedStmt("\"PARTITIONS\"", columns, conditionKeys);
+    String stmt = TxnUtils.createUpdatePreparedStmt("\"PARTITIONS\"", columns, conditionKeys);
     int maxRows = dbType.getMaxRows(maxBatchSize, 4);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, newParts, new Batchable<Partition, Void>() {
       @Override
@@ -916,7 +840,7 @@ class DirectSqlUpdate {
                             List<Pair<Long, Pair<String, String>>> updateIdAndParams) throws MetaException {
     List<String> columns = Arrays.asList("\"PARAM_VALUE\"");
     List<String> conditionKeys = Arrays.asList(idColumn, "\"PARAM_KEY\"");
-    String stmt = dbType.createUpdatePreparedStmt(paramTable, columns, conditionKeys);
+    String stmt = TxnUtils.createUpdatePreparedStmt(paramTable, columns, conditionKeys);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, updateIdAndParams,
         new Batchable<Pair<Long, Pair<String, String>>, Object>() {
@@ -938,7 +862,7 @@ class DirectSqlUpdate {
   private void insertParams(String paramTable, String idColumn,
                             List<Pair<Long, Pair<String, String>>> addIdAndParams) throws MetaException {
     List<String> columns = Arrays.asList(idColumn, "\"PARAM_KEY\"", "\"PARAM_VALUE\"");
-    String query = dbType.createInsertPreparedStmt(paramTable, columns);
+    String query = TxnUtils.createInsertPreparedStmt(paramTable, columns);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, addIdAndParams,
         new Batchable<Pair<Long, Pair<String, String>>, Void>() {
@@ -1046,7 +970,7 @@ class DirectSqlUpdate {
     List<String> columns = Arrays.asList("\"CD_ID\"", "\"INPUT_FORMAT\"", "\"IS_COMPRESSED\"",
         "\"IS_STOREDASSUBDIRECTORIES\"", "\"LOCATION\"", "\"NUM_BUCKETS\"", "\"OUTPUT_FORMAT\"");
     List<String> conditionKeys = Arrays.asList("\"SD_ID\"");
-    String stmt = dbType.createUpdatePreparedStmt("\"SDS\"", columns, conditionKeys);
+    String stmt = TxnUtils.createUpdatePreparedStmt("\"SDS\"", columns, conditionKeys);
     int maxRows = dbType.getMaxRows(maxBatchSize, 8);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, ids,
         new Batchable<Long, Void>() {
@@ -1083,7 +1007,7 @@ class DirectSqlUpdate {
       }
     });
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"INTEGER_IDX\"", "\"BUCKET_COL_NAME\"");
-    String stmt = dbType.createInsertPreparedStmt("\"BUCKETING_COLS\"", columns);
+    String stmt = TxnUtils.createInsertPreparedStmt("\"BUCKETING_COLS\"", columns);
     List<Long> idWithBucketCols = filterIdsByNonNullValue(sdIds, sdIdToBucketCols);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithBucketCols, new Batchable<Long, Object>() {
@@ -1117,7 +1041,7 @@ class DirectSqlUpdate {
     });
 
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"INTEGER_IDX\"", "\"COLUMN_NAME\"", "\"ORDER\"");
-    String stmt = dbType.createInsertPreparedStmt("\"SORT_COLS\"", columns);
+    String stmt = TxnUtils.createInsertPreparedStmt("\"SORT_COLS\"", columns);
     List<Long> idWithSortCols = filterIdsByNonNullValue(sdIds, sdIdToSortCols);
     int maxRows = dbType.getMaxRows(maxBatchSize, 4);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSortCols, new Batchable<Long, Object>() {
@@ -1229,7 +1153,7 @@ class DirectSqlUpdate {
   private void insertSkewedColNamesInBatch(Map<Long, List<String>> sdIdToSkewedColNames,
                                            List<Long> sdIds) throws MetaException {
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"INTEGER_IDX\"", "\"SKEWED_COL_NAME\"");
-    String stmt = dbType.createInsertPreparedStmt("\"SKEWED_COL_NAMES\"", columns);
+    String stmt = TxnUtils.createInsertPreparedStmt("\"SKEWED_COL_NAMES\"", columns);
     List<Long> idWithSkewedCols = filterIdsByNonNullValue(sdIds, sdIdToSkewedColNames);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSkewedCols, new Batchable<Long, Object>() {
@@ -1252,7 +1176,7 @@ class DirectSqlUpdate {
 
   private void insertStringListInBatch(List<Long> stringListIds) throws MetaException {
     List<String> columns = Arrays.asList("\"STRING_LIST_ID\"");
-    String insertQuery = dbType.createInsertPreparedStmt("\"SKEWED_STRING_LIST\"", columns);
+    String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_STRING_LIST\"", columns);
     int maxRows = dbType.getMaxRows(maxBatchSize, 1);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, stringListIds,
         new Batchable<Long, Void>() {
@@ -1272,7 +1196,7 @@ class DirectSqlUpdate {
   private void insertStringListValuesInBatch(Map<Long, List<String>> stringListIdToValues,
                                              List<Long> stringListIds) throws MetaException {
     List<String> columns = Arrays.asList("\"STRING_LIST_ID\"", "\"INTEGER_IDX\"", "\"STRING_LIST_VALUE\"");
-    String insertQuery = dbType.createInsertPreparedStmt("\"SKEWED_STRING_LIST_VALUES\"", columns);
+    String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_STRING_LIST_VALUES\"", columns);
     List<Long> idWithStringList = filterIdsByNonNullValue(stringListIds, stringListIdToValues);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithStringList,
@@ -1298,7 +1222,7 @@ class DirectSqlUpdate {
   private void insertSkewedValuesInBatch(Map<Long, List<Long>> sdIdToStringListId,
                                         List<Long> sdIds) throws MetaException {
     List<String> columns = Arrays.asList("\"SD_ID_OID\"", "\"INTEGER_IDX\"", "\"STRING_LIST_ID_EID\"");
-    String insertQuery = dbType.createInsertPreparedStmt("\"SKEWED_VALUES\"", columns);
+    String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_VALUES\"", columns);
     List<Long> idWithSkewedValues = filterIdsByNonNullValue(sdIds, sdIdToStringListId);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSkewedValues,
@@ -1324,7 +1248,7 @@ class DirectSqlUpdate {
   private void insertSkewColValueLocInBatch(Map<Long, List<Pair<Long, String>>> sdIdToColValueLoc,
                                             List<Long> sdIds) throws MetaException {
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"STRING_LIST_ID_KID\"", "\"LOCATION\"");
-    String insertQuery = dbType.createInsertPreparedStmt("\"SKEWED_COL_VALUE_LOC_MAP\"", columns);
+    String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_COL_VALUE_LOC_MAP\"", columns);
     List<Long> idWithColValueLoc = filterIdsByNonNullValue(sdIds, sdIdToColValueLoc);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithColValueLoc,
@@ -1415,7 +1339,7 @@ class DirectSqlUpdate {
 
   private void insertCDInBatch(List<Long> ids, Map<Long, List<FieldSchema>> idToCols)
       throws MetaException {
-    String insertCds = dbType.createInsertPreparedStmt("\"CDS\"", Arrays.asList("\"CD_ID\""));
+    String insertCds = TxnUtils.createInsertPreparedStmt("\"CDS\"", Arrays.asList("\"CD_ID\""));
     int maxRows = dbType.getMaxRows(maxBatchSize, 1);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, ids,
         new Batchable<Long, Void>() {
@@ -1432,7 +1356,7 @@ class DirectSqlUpdate {
 
     List<String> columns = Arrays.asList("\"CD_ID\"",
         "\"COMMENT\"", "\"COLUMN_NAME\"", "\"TYPE_NAME\"", "\"INTEGER_IDX\"");
-    String insertColumns = dbType.createInsertPreparedStmt("\"COLUMNS_V2\"", columns);
+    String insertColumns = TxnUtils.createInsertPreparedStmt("\"COLUMNS_V2\"", columns);
     int maxRowsForCDs = dbType.getMaxRows(maxBatchSize, 5);
     updateWithStatement(statement -> Batchable.runBatched(maxRowsForCDs, ids,
         new Batchable<Long, Void>() {
@@ -1463,8 +1387,8 @@ class DirectSqlUpdate {
     List<String> parentColumns = Arrays.asList("\"PARENT_CD_ID\"", "\"PARENT_INTEGER_IDX\"");
     List<String> childColumns = Arrays.asList("\"CHILD_CD_ID\"", "\"CHILD_INTEGER_IDX\"");
 
-    String updateParent = dbType.createUpdatePreparedStmt(tableName, parentColumns, parentColumns);
-    String updateChild = dbType.createUpdatePreparedStmt(tableName, childColumns, childColumns);
+    String updateParent = TxnUtils.createUpdatePreparedStmt(tableName, parentColumns, parentColumns);
+    String updateChild = TxnUtils.createUpdatePreparedStmt(tableName, childColumns, childColumns);
     for (String updateStmt : new String[]{updateParent, updateChild}) {
       int maxRows = dbType.getMaxRows(maxBatchSize, 4);
       updateWithStatement(statement -> Batchable.runBatched(maxRows, oldCdIds,
@@ -1519,7 +1443,7 @@ class DirectSqlUpdate {
     // Followed the jdo implement to update only NAME and SLIB of SERDES.
     List<String> columns = Arrays.asList("\"NAME\"", "\"SLIB\"");
     List<String> condKeys = Arrays.asList("\"SERDE_ID\"");
-    String updateStmt = dbType.createUpdatePreparedStmt("\"SERDES\"", columns, condKeys);
+    String updateStmt = TxnUtils.createUpdatePreparedStmt("\"SERDES\"", columns, condKeys);
     List<Long> idWithSerde = filterIdsByNonNullValue(ids, idToSerde);
     int maxRows = dbType.getMaxRows(maxBatchSize, 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSerde,
@@ -1537,5 +1461,76 @@ class DirectSqlUpdate {
             return null;
           }
     }), updateStmt);
+  }
+
+  private static final class PartitionInfo {
+    long partitionId;
+    long writeId;
+    String partitionName;
+    public PartitionInfo(long partitionId, long writeId, String partitionName) {
+      this.partitionId = partitionId;
+      this.writeId = writeId;
+      this.partitionName = partitionName;
+    }
+
+    @Override
+    public int hashCode() {
+      return (int)partitionId;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+      if (this == o) {
+        return true;
+      }
+      if (o == null) {
+        return false;
+      }
+      if (!(o instanceof PartitionInfo)) {
+        return false;
+      }
+      PartitionInfo other = (PartitionInfo)o;
+      if (this.partitionId != other.partitionId) {
+        return false;
+      }
+      return true;
+    }
+  }
+
+  private static final class PartColNameInfo {
+    long partitionId;
+    String colName;
+    public PartColNameInfo(long partitionId, String colName) {
+      this.partitionId = partitionId;
+      this.colName = colName;
+    }
+
+    @Override
+    public int hashCode() {
+      return (int)partitionId;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+      if (this == o) {
+        return true;
+      }
+      if (o == null) {
+        return false;
+      }
+      if (!(o instanceof PartColNameInfo)) {
+        return false;
+      }
+      PartColNameInfo other = (PartColNameInfo)o;
+      if (this.partitionId != other.partitionId) {
+        return false;
+      }
+      if (this.colName.equalsIgnoreCase(other.colName)) {
+        return true;
+      }
+      return false;
+    }
   }
 }

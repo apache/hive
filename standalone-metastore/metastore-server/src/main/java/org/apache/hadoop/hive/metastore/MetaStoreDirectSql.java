@@ -95,7 +95,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
-import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MPartition;
@@ -154,7 +153,7 @@ class MetaStoreDirectSql {
   private final int batchSize;
   private final boolean convertMapNullsToEmptyStrings;
   private final String defaultPartName;
-  private final boolean areTxnStatsEnabled;
+  private final boolean isTxnStatsEnabled;
 
   /**
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
@@ -163,7 +162,7 @@ class MetaStoreDirectSql {
   private final boolean isAggregateStatsCacheEnabled;
   private final ImmutableMap<String, String> fieldnameToTableName;
   private AggregateStatsCache aggrStatsCache;
-  private DirectSqlUpdate directSqlUpdate;
+  private DirectSqlUpdatePart directSqlUpdatePart;
   private DirectSqlInsertPart directSqlInsertPart;
 
   /**
@@ -206,8 +205,8 @@ class MetaStoreDirectSql {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
-    this.areTxnStatsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
-    this.directSqlUpdate = new DirectSqlUpdate(pm, conf, dbType, batchSize);
+    this.isTxnStatsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
+    this.directSqlUpdatePart = new DirectSqlUpdatePart(pm, conf, dbType, batchSize);
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
 
@@ -579,7 +578,7 @@ class MetaStoreDirectSql {
       // If transactional, add/update the MUPdaterTransaction
       // for the current updater query.
       if (isTxn) {
-        if (!areTxnStatsEnabled) {
+        if (!isTxnStatsEnabled) {
           StatsSetupConst.setBasicStatsState(newPart.getParameters(), StatsSetupConst.FALSE);
         } else if (queryWriteIdList != null && newPart.getWriteId() > 0) {
           // Check concurrent INSERT case and set false to the flag.
@@ -598,7 +597,7 @@ class MetaStoreDirectSql {
       }
     }
 
-    directSqlUpdate.alterPartitions(partValuesToId, partIdToSdId, newParts);
+    directSqlUpdatePart.alterPartitions(partValuesToId, partIdToSdId, newParts);
     return newParts;
   }
 
@@ -997,9 +996,7 @@ class MetaStoreDirectSql {
 
     // We have to be mindful of order during filtering if we are not returning all partitions.
     String orderForFilter = (max != null) ? " order by " + MetastoreConf.getVar(conf, ConfVars.PARTITION_ORDER_EXPR) : "";
-    String columns = partColumns.stream()
-        .map(col -> PARTITIONS + "." + col)
-        .collect(Collectors.joining(","));
+    String columns = partColumns.stream().map(col -> PARTITIONS + "." + col).collect(Collectors.joining(","));
 
     String queryText =
         "select " + columns + " from " + PARTITIONS + ""
@@ -3140,8 +3137,8 @@ class MetaStoreDirectSql {
       ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
       numStats += colStats.getStatsObjSize();
     }
-    long csId = directSqlUpdate.getNextCSIdForMPartitionColumnStatistics(numStats);
-    return directSqlUpdate.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
+    long csId = directSqlUpdatePart.getNextCSIdForMPartitionColumnStatistics(numStats);
+    return directSqlUpdatePart.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
   }
 
   public List<Function> getFunctions(String catName) throws MetaException {
