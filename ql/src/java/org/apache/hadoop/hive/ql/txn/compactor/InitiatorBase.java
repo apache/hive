@@ -54,55 +54,48 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InitiatorBase extends MetaStoreCompactorThread {
 
   static final private String COMPACTOR_THRESHOLD_PREFIX = "compactorthreshold.";
-
-  private Map<CompactionResponse, String> initiateCompactionForMultiplePartitions(Table table,
-      Map<String, Partition> partitions, CompactionRequest request) {
-    Map<CompactionResponse, String> compactionResponses = new HashMap<>();
-    partitions.entrySet().parallelStream().forEach(entry -> {
-      try {
-        StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(table, entry.getValue());
-        String runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
-        CompactionInfo ci =
-            new CompactionInfo(table.getDbName(), table.getTableName(), entry.getKey(), request.getType());
-        ci.initiatorId = request.getInitiatorId();
-        ci.orderByClause = request.getOrderByClause();
-        ci.initiatorVersion = request.getInitiatorVersion();
-        if (request.getNumberOfBuckets() > 0) {
-          ci.numberOfBuckets = request.getNumberOfBuckets();
-        }
-        ci.poolName = request.getPoolName();
-        LOG.info(
-            "Checking to see if we should compact partition " + entry.getKey() + " of table " + table.getDbName() + "."
-                + table.getTableName());
-        CompactionResponse compactionResponse = scheduleCompactionIfRequired(ci, table, entry.getValue(), runAs, false);
-        if(compactionResponse != null){
-          compactionResponses.put(compactionResponse, entry.getKey());
-        }
-      } catch (IOException | InterruptedException | MetaException e) {
-        LOG.error(
-            "Error occurred while Checking if we should compact partition " + entry.getKey() + " of table " + table.getDbName() + "."
-                + table.getTableName() + " Exception: " + e.getMessage());
-        throw new RuntimeException(e);
-      }
-    });
-    return compactionResponses;
-  }
-
-  public Map<CompactionResponse, String> initiateCompactionForTable(CompactionRequest request, Table table, Map<String, Partition> partitions) throws Exception {
+  
+  public void initialize() throws Exception {
+    super.init(new AtomicBoolean());
     ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+  }
 
-    if (request.getPartitionname()!= null || partitions.isEmpty()) {
-      Map<CompactionResponse, String> responses = new HashMap<>();
-      responses.put(txnHandler.compact(request), request.getPartitionname());
-      return responses;
-    } else {
-      return initiateCompactionForMultiplePartitions(table, partitions, request);
+  public CompactionResponse initiateCompactionForPartition(Table table, Partition partition,
+      CompactionRequest compactionRequest) {
+    CompactionResponse compactionResponse = null;
+    CompactionInfo compactionInfo =
+        new CompactionInfo(table.getDbName(), table.getTableName(), compactionRequest.getPartitionname(),
+            compactionRequest.getType());
+    compactionInfo.initiatorId = compactionRequest.getInitiatorId();
+    compactionInfo.orderByClause = compactionRequest.getOrderByClause();
+    compactionInfo.initiatorVersion = compactionRequest.getInitiatorVersion();
+    if (compactionRequest.getNumberOfBuckets() > 0) {
+      compactionInfo.numberOfBuckets = compactionRequest.getNumberOfBuckets();
     }
+    compactionInfo.poolName = compactionRequest.getPoolName();
+    try {
+      StorageDescriptor sd = resolveStorageDescriptor(table, partition);
+      String runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
+      LOG.info(
+          "Checking to see if we should compact partition " + compactionInfo.partName + " of table " + table.getDbName()
+              + "." + table.getTableName());
+      compactionResponse = scheduleCompactionIfRequired(compactionInfo, table, partition, runAs, false);
+    } catch (IOException | InterruptedException | MetaException e) {
+      LOG.error("Error occurred while Checking if we should compact partition " + compactionInfo.partName + " of table "
+          + table.getDbName() + "." + table.getTableName() + " Exception: " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+    return compactionResponse;
+  }
+
+  public CompactionResponse initiateCompactionForTable(CompactionRequest request) throws MetaException {
+    return txnHandler.compact(request);
   }
 
   @Override protected boolean isCacheEnabled() {
