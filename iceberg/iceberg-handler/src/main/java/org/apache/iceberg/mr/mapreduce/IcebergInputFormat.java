@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
@@ -234,7 +235,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           checkResiduals(task);
         }
         if (dataFilesWithinTableLocationOnly) {
-          validateFilesWithinTableDirectory(task, tableLocation);
+          validateFileLocations(task, tableLocation);
         }
         splits.add(new IcebergSplit(conf, task));
       });
@@ -252,10 +253,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     return splits;
   }
 
-  private static void validateFilesWithinTableDirectory(CombinedScanTask split, Path tableLocation) {
+  private static void validateFileLocations(CombinedScanTask split, Path tableLocation) {
     for (FileScanTask fileScanTask : split.files()) {
       if (!FileUtils.isPathWithinSubtree(new Path(fileScanTask.file().path().toString()), tableLocation)) {
-        throw new IllegalArgumentException("The table contains paths which are outside the table location");
+        throw new AuthorizationException("The table contains paths which are outside the table location");
       }
     }
   }
