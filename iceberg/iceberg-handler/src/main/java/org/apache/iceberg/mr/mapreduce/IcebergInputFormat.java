@@ -221,7 +221,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       scan = applyConfig(conf, createTableScan(table, conf));
     }
 
-    boolean dataFilesWithinTableLocationOnly =
+    boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
             HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
     Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
@@ -234,7 +234,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
           checkResiduals(task);
         }
-        if (dataFilesWithinTableLocationOnly) {
+        if (allowDataFilesWithinTableLocationOnly) {
           validateFileLocations(task, tableLocation);
         }
         splits.add(new IcebergSplit(conf, task));

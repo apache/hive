@@ -279,12 +279,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
     fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
 
-    boolean allowDataInTableLocationOnly =
+    boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
             HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
 
     map.put(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
-        String.valueOf(allowDataInTableLocationOnly));
+        String.valueOf(allowDataFilesWithinTableLocationOnly));
   }
 
   @Override
