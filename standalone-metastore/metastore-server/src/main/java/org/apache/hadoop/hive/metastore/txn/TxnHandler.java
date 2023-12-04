@@ -45,7 +45,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
@@ -5814,12 +5813,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute query <{}>", s);
         List<Map<Long, TxnType>> timedOutTxns = jdbcResource.getJdbcTemplate().query(s, rs -> {
           List<Map<Long, TxnType>> txnbatch = new ArrayList<>();
-          Map<Long, TxnType> currentBatch = new LinkedHashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+          Map<Long, TxnType> currentBatch = new HashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
           while (rs.next()) {
             currentBatch.put(rs.getLong(1),TxnType.findByValue(rs.getInt(2)));
             if (currentBatch.size() == TIMED_OUT_TXN_ABORT_BATCH_SIZE) {
               txnbatch.add(currentBatch);
-              currentBatch = new LinkedHashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+              currentBatch = new HashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
             }
           }
           if (currentBatch.size() > 0) {
