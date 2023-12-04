@@ -23,11 +23,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-
-import java.util.LinkedHashMap;
 
 /**
  * GenericUDFMap.
@@ -36,11 +33,7 @@ import java.util.LinkedHashMap;
 @Description(name = "toMap", value = "_FUNC_(x) - converts it's parameter to _FUNC_"
     + "Currently only null literal is supported.")
 public class GenericUDFToMap extends GenericUDF implements SettableUDF {
-  private transient Converter[] converters;
   private MapTypeInfo typeInfo;
-
-  // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
-  LinkedHashMap<Object, Object> ret = new LinkedHashMap<>();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
