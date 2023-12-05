@@ -225,7 +225,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         LOG.warn("The returned compaction request ({}) belong to a different pool. Although the worker is assigned to the {} pool," +
             " it will process the request.", ci, getPoolName());
       }
-      checkInterrupt();
+      CompactorUtil.checkInterrupt(CLASS_NAME);
 
       if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" +
@@ -263,9 +263,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         }
       }
 
-      checkInterrupt();
+      CompactorUtil.checkInterrupt(CLASS_NAME);
 
-      compactionExecutor = CompactionExecutorFactory.getInstance(table, this, compactionTxn, 
+      compactionExecutor = CompactionExecutorFactory.getInstance(conf, msc, compactorFactory, table, compactionTxn, 
           collectGenericStats, collectMrStats);
 
       try {
@@ -275,7 +275,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             ". Marking failed to avoid repeated failures", e);
         markFailed(ci, e.getMessage());
 
-        if (runJobAsSelf(ci.runAs)) {
+        if (CompactorUtil.runJobAsSelf(ci.runAs)) {
           compactionExecutor.cleanupResultDirs();
         } else {
           LOG.info("Cleaning as user " + ci.runAs);
@@ -312,7 +312,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     if (Optional.ofNullable(compactionExecutor).map(CompactionExecutor::isComputeStats).orElse(false)) {
-      statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : table.getOwner(),
+      statsUpdater.gatherStats(ci, conf, CompactorUtil.runJobAsSelf(ci.runAs) ? ci.runAs : table.getOwner(),
           CompactorUtil.getCompactorJobQueueName(conf, ci, table), msc);
     }
 

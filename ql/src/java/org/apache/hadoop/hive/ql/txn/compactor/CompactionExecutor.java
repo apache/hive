@@ -34,7 +34,6 @@ public abstract class CompactionExecutor {
   static final private String CLASS_NAME = CompactionExecutor.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   
-  protected final Worker worker;
   protected final IMetaStoreClient msc;
   protected final HiveConf conf;
   protected final CompactorFactory compactorFactory;
@@ -42,11 +41,11 @@ public abstract class CompactionExecutor {
   protected final boolean collectMrStats;
   protected boolean computeStats = false;
   
-  public CompactionExecutor(Worker worker, boolean collectGenericStats, boolean collectMrStats) {
-    this.worker = worker;
-    this.conf = worker.conf;
-    this.msc = worker.msc;
-    this.compactorFactory = worker.compactorFactory;
+  public CompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
+      boolean collectGenericStats, boolean collectMrStats) {
+    this.conf = conf;
+    this.msc = msc;
+    this.compactorFactory = compactorFactory;
     this.collectGenericStats = collectGenericStats;
     this.collectMrStats = collectMrStats;
   }

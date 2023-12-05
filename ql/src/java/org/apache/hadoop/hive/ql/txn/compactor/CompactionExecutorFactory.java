@@ -17,21 +17,24 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 public class CompactionExecutorFactory {
   
-  public static CompactionExecutor getInstance(Table table, Worker worker, Worker.CompactionTxn compactionTxn, 
-                                        boolean collectGenericStats, boolean collectMrStats) {
+  public static CompactionExecutor getInstance(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
+      Table table, Worker.CompactionTxn compactionTxn, boolean collectGenericStats, boolean collectMrStats) {
 
     CompactionExecutor compactionExecutor;
     
     if (MetaStoreUtils.isIcebergTable(table.getParameters())) {
-      compactionExecutor = new IcebergCompactionExecutor(worker, collectGenericStats, collectMrStats);
+      compactionExecutor = new IcebergCompactionExecutor(conf, msc, compactorFactory, collectGenericStats, collectMrStats);
     }
     else {
-      compactionExecutor = new ACIDCompactionExecutor(worker, compactionTxn, collectGenericStats, collectMrStats);
+      compactionExecutor = new AcidCompactionExecutor(conf, msc, compactorFactory, compactionTxn, collectGenericStats, 
+          collectMrStats);
     }
     
     return compactionExecutor;

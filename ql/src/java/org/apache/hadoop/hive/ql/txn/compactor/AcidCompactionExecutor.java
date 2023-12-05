@@ -22,6 +22,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -45,8 +47,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ACIDCompactionExecutor extends CompactionExecutor {
-  static final private String CLASS_NAME = ACIDCompactionExecutor.class.getName();
+public class AcidCompactionExecutor extends CompactionExecutor {
+  static final private String CLASS_NAME = AcidCompactionExecutor.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   
   final private Worker.CompactionTxn compactionTxn;
@@ -55,9 +57,9 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
   private AcidDirectory dir;
   private CompactionInfo ci;
 
-  public ACIDCompactionExecutor(Worker worker, Worker.CompactionTxn compactionTxn, 
-                                boolean collectGenericStats, boolean collectMrStats) {
-    super(worker, collectGenericStats, collectMrStats);
+  public AcidCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
+                                Worker.CompactionTxn compactionTxn, boolean collectGenericStats, boolean collectMrStats) {
+    super(conf, msc, compactorFactory, collectGenericStats, collectMrStats);
     this.compactionTxn = compactionTxn;
   }
   
@@ -66,7 +68,7 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
    */
   private AcidDirectory getAcidStateForWorker(CompactionInfo ci, StorageDescriptor sd,
                                               ValidCompactorWriteIdList tblValidWriteIds) throws IOException, InterruptedException {
-    if (worker.runJobAsSelf(ci.runAs)) {
+    if (CompactorUtil.runJobAsSelf(ci.runAs)) {
       return AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
           tblValidWriteIds, Ref.from(false), true);
     }
@@ -116,7 +118,8 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
     // Find the partition we will be working with, if there is one.
     Partition p;
     try {
-      p = worker.resolvePartition(ci);
+      p = CompactorUtil.resolvePartition(conf, msc, ci.dbname, ci.tableName, ci.partName, 
+          CompactorUtil.METADATA_FETCH_MODE.REMOTE);
       if (p == null && ci.partName != null) {
         ci.errorMessage = "Unable to find partition " + ci.getFullPartitionName() + ", assuming it was dropped and moving on.";
         LOG.warn(ci.errorMessage + " Compaction info: {}", ci);
@@ -130,10 +133,10 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
       return false;
     }
 
-    worker.checkInterrupt();
+    CompactorUtil.checkInterrupt(CLASS_NAME);
 
     // Find the appropriate storage descriptor
-    sd =  worker.resolveStorageDescriptor(table, p);
+    sd =  CompactorUtil.resolveStorageDescriptor(table, p);
 
     if (isTableSorted(sd, ci)) {
       return false;  
@@ -143,7 +146,7 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
       ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
     }
 
-    worker.checkInterrupt();
+    CompactorUtil.checkInterrupt(CLASS_NAME);
 
     /**
      * we cannot have Worker use HiveTxnManager (which is on ThreadLocal) since
@@ -165,7 +168,7 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
     //it until after any data written by it are physically removed
     msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), compactionTxn.getTxnId());
 
-    worker.checkInterrupt();
+    CompactorUtil.checkInterrupt(CLASS_NAME);
 
     // Don't start compaction or cleaning if not necessary
     if (isDynPartAbort(table, ci)) {
@@ -186,7 +189,7 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
       compactionTxn.wasSuccessful();
       return false;
     }
-    if (!ci.isMajorCompaction() && !worker.isMinorCompactionSupported(table.getParameters(), dir)) {
+    if (!ci.isMajorCompaction() && !CompactorUtil.isMinorCompactionSupported(conf, table.getParameters(), dir)) {
       ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
           "(non-acid) data in them.";
       LOG.error(ci.errorMessage + " Compaction info: {}", ci);
@@ -197,7 +200,7 @@ public class ACIDCompactionExecutor extends CompactionExecutor {
       }
       return false;
     }
-    worker.checkInterrupt();
+    CompactorUtil.checkInterrupt(CLASS_NAME);
 
     try {
       failCompactionIfSetForTest();

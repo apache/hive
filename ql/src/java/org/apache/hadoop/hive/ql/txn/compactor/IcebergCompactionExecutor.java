@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
@@ -33,14 +35,15 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final long DEFAULT_TXN_ID = 0;
 
-  public IcebergCompactionExecutor(Worker worker, boolean collectGenericStats, boolean collectMrStats) {
-    super(worker, collectGenericStats, collectMrStats);
+  public IcebergCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
+      boolean collectGenericStats, boolean collectMrStats) {
+    super(conf, msc, compactorFactory, collectGenericStats, collectMrStats);
   }
 
   public Boolean compact(Table table, CompactionInfo ci) throws InterruptedException, TException, IOException, HiveException {
 
     // Find the appropriate storage descriptor
-    final StorageDescriptor sd =  worker.resolveStorageDescriptor(table);
+    final StorageDescriptor sd =  CompactorUtil.resolveStorageDescriptor(table);
 
     if (isTableSorted(sd, ci)) {
       return false;
@@ -50,7 +53,7 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
       ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
     }
 
-    worker.checkInterrupt();
+    CompactorUtil.checkInterrupt(CLASS_NAME);
     
     msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), DEFAULT_TXN_ID);
 
@@ -70,7 +73,7 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
       }
       return false;
     }
-    worker.checkInterrupt();
+    CompactorUtil.checkInterrupt(CLASS_NAME);
 
     try {
       failCompactionIfSetForTest();
