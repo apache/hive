@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.MapUtils;
@@ -48,6 +47,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -75,7 +75,6 @@ import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -119,7 +118,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -214,25 +212,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public static final String MERGE_ON_READ = "merge-on-read";
   public static final String STATS = "/stats/snap-";
 
-  /**
-   * Function template for producing a custom sort expression function:
-   * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
-   * the sort expression, e.g. iceberg_bucket(_col2, 5)
-   */
-  private static final transient BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
-      BUCKET_SORT_EXPR =
-          (idx, bucket) -> cols -> {
-            try {
-              ExprNodeDesc icebergBucketSourceCol = cols.get(idx);
-              return ExprNodeGenericFuncDesc.newInstance(new GenericUDFIcebergBucket(), "iceberg_bucket",
-                  Lists.newArrayList(
-                      icebergBucketSourceCol,
-                      new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, bucket)
-                  ));
-            } catch (UDFArgumentException e) {
-              throw new RuntimeException(e);
-            }
-          };
+  public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
 
   private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID,
       VirtualColumn.PARTITION_HASH, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
@@ -275,6 +255,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     overlayTableProperties(conf, tableDesc, map);
     // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
     fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
+
+    boolean allowDataFilesWithinTableLocationOnly =
+        conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
+            HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
+
+    map.put(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
+        String.valueOf(allowDataFilesWithinTableLocationOnly));
   }
 
   @Override
@@ -520,11 +507,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         writer.finish();
         return true;
       } catch (IOException e) {
-        LOG.warn("Unable to write stats to puffin file", e.getMessage());
+        LOG.warn("Unable to write stats to puffin file {}", e.getMessage());
         return false;
       }
     } catch (InvalidObjectException | IOException e) {
-      LOG.warn("Unable to invalidate or merge stats: ", e.getMessage());
+      LOG.warn("Unable to invalidate or merge stats: {}", e.getMessage());
       return false;
     }
   }
@@ -728,14 +715,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     int offset = (shouldOverwrite(hmsTable, writeOperation) ?
         ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA : acidSelectColumns(hmsTable, writeOperation)).size();
 
-    for (TransformSpec spec : transformSpecs) {
-      int order = fieldOrderMap.get(spec.getColumnName());
-      if (TransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
-        customSortExprs.add(BUCKET_SORT_EXPR.apply(order + offset, spec.getTransformParam().get()));
-      } else {
-        customSortExprs.add(cols -> cols.get(order + offset).clone());
-      }
-    }
+    customSortExprs.addAll(transformSpecs.stream().map(spec ->
+        IcebergTransformSortFunctionUtil.getCustomSortExprs(spec, fieldOrderMap.get(spec.getColumnName()) + offset)
+    ).collect(Collectors.toList()));
   }
 
   @Override
@@ -894,7 +876,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
         deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
       }
-      if (expireSnapshotsSpec.isExpireByTimestampRange()) {
+      if (expireSnapshotsSpec == null) {
+        expireSnapshotWithDefaultParams(icebergTable, deleteExecutorService);
+      } else if (expireSnapshotsSpec.isExpireByTimestampRange()) {
         expireSnapshotByTimestampRange(icebergTable, expireSnapshotsSpec.getFromTimestampMillis(),
             expireSnapshotsSpec.getTimestampMillis(), deleteExecutorService);
       } else if (expireSnapshotsSpec.isExpireByIds()) {
@@ -909,6 +893,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         deleteExecutorService.shutdown();
       }
     }
+  }
+
+  private void expireSnapshotWithDefaultParams(Table icebergTable, ExecutorService deleteExecutorService) {
+    ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
+    if (deleteExecutorService != null) {
+      expireSnapshots.executeDeleteWith(deleteExecutorService);
+    }
+    expireSnapshots.commit();
   }
 
   private void expireSnapshotRetainLast(Table icebergTable, int numRetainLast, ExecutorService deleteExecutorService) {
@@ -1043,19 +1035,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Optional<String> metadataLocation =
         SessionStateUtil.getProperty(conf, BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
     if (metadataLocation.isPresent()) {
-      authURI.append(encodeString(metadataLocation.get()));
+      authURI.append(getPathForAuth(metadataLocation.get()));
     } else {
       Optional<String> locationProperty =
           SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
       if (locationProperty.isPresent()) {
         // this property is set during the create operation before the hive table was created
         // we are returning a dummy iceberg metadata file
-        authURI.append(encodeString(URI.create(locationProperty.get()).getPath()))
+        authURI.append(getPathForAuth(locationProperty.get()))
             .append(encodeString("/metadata/dummy.metadata.json"));
       } else {
         Table table = IcebergTableUtil.getTable(conf, hmsTable);
-        authURI.append(
-            encodeString(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()));
+        authURI.append(getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+            hmsTable.getSd().getLocation()));
       }
     }
     LOG.debug("Iceberg storage handler authorization URI {}", authURI);
@@ -1070,6 +1062,39 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(rawString);
   }
 
+  String getPathForAuth(String locationProperty) {
+    return getPathForAuth(locationProperty,
+        SessionStateUtil.getProperty(conf, hive_metastoreConstants.DEFAULT_TABLE_LOCATION).orElse(null));
+  }
+
+  String getPathForAuth(String locationProperty, String defaultTableLocation) {
+    boolean maskDefaultLocation = conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname,
+        HiveConf.ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION.defaultBoolVal);
+    String location = URI.create(locationProperty).getPath();
+    if (!maskDefaultLocation || defaultTableLocation == null ||
+        !arePathsInSameFs(locationProperty, defaultTableLocation)) {
+      return encodeString(location);
+    }
+    try {
+      Path locationPath = new Path(location);
+      Path defaultLocationPath = locationPath.toUri().getScheme() != null ?
+          FileUtils.makeQualified(new Path(defaultTableLocation), conf) :
+          Path.getPathWithoutSchemeAndAuthority(new Path(defaultTableLocation));
+      return encodeString(location.replaceFirst(defaultLocationPath.toString(), TABLE_DEFAULT_LOCATION));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private boolean arePathsInSameFs(String locationProperty, String defaultTableLocation) {
+    try {
+      return FileUtils.equalsFileSystem(new Path(locationProperty).getFileSystem(conf),
+          new Path(defaultTableLocation).getFileSystem(conf));
+    } catch (IOException e) {
+      LOG.debug("Unable to get FileSystem for path {} and {}", locationProperty, defaultTableLocation);
+      return false;
+    }
+  }
 
   @Override
   public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {

@@ -141,7 +141,10 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
   private static AlterTableExecuteDesc getExpireSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
       List<Node> children) throws SemanticException {
     AlterTableExecuteSpec<ExpireSnapshotsSpec> spec;
-
+    if (children.size() == 1) {
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, null);
+      return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+    }
     ZoneId timeZone = SessionState.get() == null ?
         new HiveConf().getLocalTimeZone() :
         SessionState.get().getConf().getLocalTimeZone();
