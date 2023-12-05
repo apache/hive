@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.MapUtils;
@@ -76,7 +75,6 @@ import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -120,7 +118,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -216,26 +213,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public static final String STATS = "/stats/snap-";
 
   public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
-
-  /**
-   * Function template for producing a custom sort expression function:
-   * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
-   * the sort expression, e.g. iceberg_bucket(_col2, 5)
-   */
-  private static final transient BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
-      BUCKET_SORT_EXPR =
-          (idx, bucket) -> cols -> {
-            try {
-              ExprNodeDesc icebergBucketSourceCol = cols.get(idx);
-              return ExprNodeGenericFuncDesc.newInstance(new GenericUDFIcebergBucket(), "iceberg_bucket",
-                  Lists.newArrayList(
-                      icebergBucketSourceCol,
-                      new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, bucket)
-                  ));
-            } catch (UDFArgumentException e) {
-              throw new RuntimeException(e);
-            }
-          };
 
   private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID,
       VirtualColumn.PARTITION_HASH, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
@@ -738,14 +715,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     int offset = (shouldOverwrite(hmsTable, writeOperation) ?
         ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA : acidSelectColumns(hmsTable, writeOperation)).size();
 
-    for (TransformSpec spec : transformSpecs) {
-      int order = fieldOrderMap.get(spec.getColumnName());
-      if (TransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
-        customSortExprs.add(BUCKET_SORT_EXPR.apply(order + offset, spec.getTransformParam().get()));
-      } else {
-        customSortExprs.add(cols -> cols.get(order + offset).clone());
-      }
-    }
+    customSortExprs.addAll(transformSpecs.stream().map(spec ->
+        IcebergTransformSortFunctionUtil.getCustomSortExprs(spec, fieldOrderMap.get(spec.getColumnName()) + offset)
+    ).collect(Collectors.toList()));
   }
 
   @Override

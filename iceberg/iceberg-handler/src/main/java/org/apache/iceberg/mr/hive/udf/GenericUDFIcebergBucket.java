@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.udf;
 
 import java.nio.ByteBuffer;
 import java.util.function.Function;
