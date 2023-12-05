@@ -18,18 +18,21 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -81,8 +84,10 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
     // Propagated column is already in the TS move it to the end
     RexNode propagatedColumn = projects.remove(column.getIndex());
     projects.add(propagatedColumn);
-    String propagatedColumnName = projectNames.remove(column.getIndex());
-    projectNames.add(propagatedColumnName);
+    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.NOT, propagatedColumn));
+    projectNames.remove(column.getIndex());
+    projectNames.add("_deleted");
+    projectNames.add("_inserted");
 
     // Note: as a nature of Calcite if row schema of TS and the new Project would be exactly the same no
     // Project is created.
@@ -102,18 +107,82 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
   public RelNode visit(HiveProject project) {
     RelNode newProject = visitChild(project, 0, project.getInput());
     RelNode projectInput = newProject.getInput(0);
-    int rowIsDeletedIndex = projectInput.getRowType().getFieldCount() - 1;
+
     List<RexNode> newProjects = new ArrayList<>(project.getRowType().getFieldCount() + 1);
     newProjects.addAll(project.getProjects());
-
-    RexNode rowIsDeleted = relBuilder.getRexBuilder().makeInputRef(
-            projectInput.getRowType().getFieldList().get(rowIsDeletedIndex).getType(), rowIsDeletedIndex);
-    newProjects.add(rowIsDeleted);
+    newProjects.add(createInputRef(projectInput, 2));
+    newProjects.add(createInputRef(projectInput, 1));
 
     return relBuilder
             .push(projectInput)
             .project(newProjects)
             .build();
+  }
+
+  protected RexNode createInputRef(RelNode relNode, int negativeOffset) {
+    int index = relNode.getRowType().getFieldCount() - negativeOffset;
+    return relBuilder.getRexBuilder().makeInputRef(
+        relNode.getRowType().getFieldList().get(index).getType(), index);
+  }
+
+  @Override
+  public RelNode visit(HiveFilter filter) {
+    RelNode filterInput = filter.getInput();
+    HiveFilter newFilter = (HiveFilter) visitChild(filter, 0, filterInput);
+
+    if (!(filterInput instanceof HiveJoin)) {
+      return newFilter;
+    }
+
+    RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RelNode projectTopOnJoin = newFilter.getInput(0);
+    RexNode anyDeleted = createInputRef(projectTopOnJoin, 2);
+    RexNode anyInserted = createInputRef(projectTopOnJoin, 1);
+
+    RexNode additionalFilter = createFilterCondition(rexBuilder, newFilter.getCondition(), anyDeleted, anyInserted);
+
+    RexNode newFilterCondition = rexBuilder.makeCall(
+        SqlStdOperatorTable.AND, newFilter.getCondition(), additionalFilter);
+
+    return relBuilder
+        .push(projectTopOnJoin)
+        .filter(newFilterCondition)
+        .build();
+  }
+
+  /*
+   * Generate a filter condition to filter out rows which has a matching join key and
+   * it is a result of an inserted row and a deleted row
+   *
+   * Example:
+   * left.key, right.key, left.writeId > x, right.writeId > y, left.deleted, right.deleted
+   *    1         1             true            true           false         true
+   *    2         2             true            true           true          false
+   */
+  protected RexNode createFilterCondition(
+      RexBuilder rexBuilder, RexNode filterCondition, RexNode anyDeleted, RexNode anyInserted) {
+    RexCall topNode = (RexCall) filterCondition;
+    // Searching for predicate OR($7, $2)
+    //          HiveJoin(condition=[AND(=($0, $4), OR($7, $2))], joinType=[inner])
+    //            HiveProject(..., $f2=[<(1, $6.writeid)])
+    //              ...
+    //            HiveProject(..., $f3=[<(1, $6.writeid)])
+    //              ...
+    // Where $7 and $2 references the predicates with writeId in join inputs
+    // If there is no Join condition on the view definition query the topNode is the one we need
+    // or the last conjunct otherwise
+    RexCall writeIdDisjunction;
+    if (topNode.isA(SqlKind.OR)) {
+      writeIdDisjunction = topNode;
+    } else {
+      writeIdDisjunction = (RexCall) topNode.operands.get(topNode.operands.size() - 1);
+    }
+
+    List<RexNode> conjunctOperands = new ArrayList<>(writeIdDisjunction.operands.size() + 1);
+    conjunctOperands.addAll(writeIdDisjunction.operands);
+    conjunctOperands.add(anyDeleted);
+    conjunctOperands.add(anyInserted);
+    return rexBuilder.makeCall(SqlStdOperatorTable.NOT, RexUtil.composeConjunction(rexBuilder,  conjunctOperands));
   }
 
   /**
@@ -127,50 +196,55 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
     RelNode tmpJoin = visitChild(join, 0, join.getInput(0));
     RelNode leftInput = tmpJoin.getInput(0);
     RelDataType leftRowType = tmpJoin.getInput(0).getRowType();
-    int leftRowIsDeletedIndex = leftRowType.getFieldCount() - 1;
     // Propagate rowISDeleted to right input
     tmpJoin = visitChild(join, 1, join.getInput(1));
     RelNode rightInput = tmpJoin.getInput(1);
     RelDataType rightRowType = rightInput.getRowType();
-    int rightRowIsDeletedIndex = rightRowType.getFieldCount() - 1;
+    int rightAnyDeletedIndex = rightRowType.getFieldCount() - 2;
+    int rightAnyInsertedIndex = rightRowType.getFieldCount() - 1;
 
     // Create input ref to rowIsDeleted columns in left and right inputs
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
-    RexNode leftRowIsDeleted = rexBuilder.makeInputRef(
-            leftRowType.getFieldList().get(leftRowIsDeletedIndex).getType(), leftRowIsDeletedIndex);
-    RexNode rightRowIsDeleted = rexBuilder.makeInputRef(
-            rightRowType.getFieldList().get(rightRowIsDeletedIndex).getType(),
-            leftRowType.getFieldCount() + rightRowIsDeletedIndex);
+    RexNode leftAnyDeleted = createInputRef(leftInput, 2);
+    RexNode leftAnyInserted = createInputRef(leftInput, 1);
+    RexNode rightAnyDeleted = rexBuilder.makeInputRef(
+            rightRowType.getFieldList().get(rightAnyDeletedIndex).getType(),
+            leftRowType.getFieldCount() + rightAnyDeletedIndex);
+    RexNode rightAnyInserted = rexBuilder.makeInputRef(
+            rightRowType.getFieldList().get(rightAnyInsertedIndex).getType(),
+            leftRowType.getFieldCount() + rightAnyInsertedIndex);
 
     RexNode newJoinCondition;
     int newLeftFieldCount;
-    if (join.getInput(0).getRowType().getField(VirtualColumn.ROWISDELETED.getName(), false, false) == null) {
-      // Shift column references refers columns coming from right input by one in join condition since the new left input
-      // has a new column
-      newJoinCondition = new InputRefShifter(leftRowType.getFieldCount() - 1, relBuilder)
-          .apply(join.getCondition());
-
+    int shift;
+    if (leftRowType.getField("_any_inserted", false, false) == null) {
+      shift = 1;
       newLeftFieldCount = leftRowType.getFieldCount() - 1;
     } else {
-      newJoinCondition = join.getCondition();
-      newLeftFieldCount = leftRowType.getFieldCount();
+      shift = 2;
+      newLeftFieldCount = leftRowType.getFieldCount() - 2;
     }
+    // Shift column references refers columns coming from right input in join condition since the new left input
+    // has a new columns
+    newJoinCondition = new InputRefShifter(newLeftFieldCount, relBuilder).apply(join.getCondition());
 
     // Collect projected columns: all columns from both inputs
     List<RexNode> projects = new ArrayList<>(newLeftFieldCount + rightRowType.getFieldCount() + 1);
     List<String> projectNames = new ArrayList<>(newLeftFieldCount + rightRowType.getFieldCount() + 1);
     populateProjects(rexBuilder, leftRowType, 0, newLeftFieldCount, projects, projectNames);
-    populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), rightRowType.getFieldCount(), projects, projectNames);
+    populateProjects(rexBuilder, rightRowType, leftRowType.getFieldCount(), rightRowType.getFieldCount() - 1, projects, projectNames);
 
     // Add rowIsDeleted column to project
-    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftRowIsDeleted, rightRowIsDeleted));
-    projectNames.add(VirtualColumn.ROWISDELETED.getName());
+    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftAnyDeleted, rightAnyDeleted));
+    projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftAnyInserted, rightAnyInserted));
+    projectNames.add("_any_deleted");
+    projectNames.add("_any_inserted");
 
     return relBuilder
             .push(leftInput)
             .push(rightInput)
             .join(join.getJoinType(), newJoinCondition)
-            .project(projects)
+            .project(projects, projectNames)
             .build();
   }
 

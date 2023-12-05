@@ -16,6 +16,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
+import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Aggregate;
@@ -25,11 +27,24 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ControlFlowException;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -50,15 +65,21 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
 
 
   private boolean containsAggregate;
-  private boolean fullAcidView;
+  private final boolean fullAcidView;
   private boolean rewritingAllowed;
   private int countIndex;
+  private final Set<TableName> baseTables;
+  private final RelOptCluster optCluster;
+  private final VirtualColumnLineageHandler virtualColumnLineageHandler;
 
-  public MaterializedViewRewritingRelVisitor(boolean fullAcidView) {
+  public MaterializedViewRewritingRelVisitor(boolean fullAcidView, RelOptCluster optCluster, Set<TableName> baseTables) {
+    this.optCluster = optCluster;
     this.containsAggregate = false;
     this.fullAcidView = fullAcidView;
     this.rewritingAllowed = false;
     this.countIndex = -1;
+    this.baseTables = new HashSet<>(baseTables);
+    this.virtualColumnLineageHandler = new VirtualColumnLineageHandler(optCluster.getMetadataQuery());
   }
 
   @Override
@@ -88,6 +109,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       throw new ReturnedValue(false);
     }
     // First branch should have the query (with write ID filter conditions)
+    RelNode queryBranch = union.getInput(0);
     new RelVisitor() {
       @Override
       public void visit(RelNode node, int ordinal, RelNode parent) {
@@ -112,7 +134,21 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
           throw new ReturnedValue(false);
         }
       }
-    }.go(union.getInput(0));
+    }.go(queryBranch);
+
+    for (int i = 0; i < queryBranch.getRowType().getFieldList().size(); ++i) {
+      RelDataTypeField relDataTypeField = queryBranch.getRowType().getFieldList().get(i);
+      RexNode rexNode = optCluster.getRexBuilder().makeInputRef(relDataTypeField.getType(), i);
+      RelOptTable relOptTable = virtualColumnLineageHandler.getVirtualColumnLineage(
+          queryBranch, rexNode, VirtualColumn.ROWID);
+      if (!(relOptTable instanceof RelOptHiveTable)) {
+        continue;
+      }
+
+      RelOptHiveTable relOptHiveTable = (RelOptHiveTable) relOptTable;
+      baseTables.remove(relOptHiveTable.getHiveTableMD().getFullTableName());
+    }
+
     // Second branch should only have the MV
     new RelVisitor() {
       @Override
@@ -167,6 +203,10 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     return countIndex;
   }
 
+  public boolean isAllRowIdsProjected() {
+    return baseTables.isEmpty();
+  }
+
   /**
    * Exception used to interrupt a visitor walk.
    */
@@ -177,5 +217,4 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       this.value = value;
     }
   }
-
 }

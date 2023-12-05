@@ -114,9 +114,9 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
 
     // Propagate rowIsDeleted column
     aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
-    aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate(aggInput);
+    aggInput = new HiveRowIsDeletedPropagator2(relBuilder).propagate(aggInput);
 
-    int rowIsDeletedIdx = aggInput.getRowType().getFieldCount() - 1;
+    int rowIsDeletedIdx = aggInput.getRowType().getFieldCount() - 2;
     RexNode rowIsDeletedNode = rexBuilder.makeInputRef(
             aggInput.getRowType().getFieldList().get(rowIsDeletedIdx).getType(), rowIsDeletedIdx);
 
@@ -130,7 +130,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
     List<RelBuilder.AggCall> newAggregateCalls = new ArrayList<>(aggregate.getAggCallList().size());
     for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
       AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
-      if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().size() == 0) {
+      if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().isEmpty()) {
         countIdx = i + aggregate.getGroupCount();
       }
 

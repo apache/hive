@@ -39,7 +39,7 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
 
   @Test
   public void testWhenSnapshotAndTableAreEmptyNoFilterAdded() {
-    RelNode tableScan = createTS();
+    RelNode tableScan = createT2IcebergTS();
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(Collections.emptyMap());
 
     RelNode newRoot = HiveMaterializedViewUtils.applyRule(tableScan, rule);
@@ -50,7 +50,7 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
   @Test
   public void testWhenNoSnapshotButTableHasNewDataAFilterWithDefaultSnapshotIDAdded() {
     doReturn(new SnapshotContext(42)).when(table2storageHandler).getCurrentSnapshotContext(table2);
-    RelNode tableScan = createTS();
+    RelNode tableScan = createT2IcebergTS();
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(Collections.emptyMap());
 
     RelNode newRoot = HiveMaterializedViewUtils.applyRule(tableScan, rule);
@@ -63,7 +63,7 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
   @Test
   public void testWhenMVAndTableCurrentSnapshotAreTheSameNoFilterAdded() {
     doReturn(new SnapshotContext(42)).when(table2storageHandler).getCurrentSnapshotContext(table2);
-    RelNode tableScan = createTS();
+    RelNode tableScan = createT2IcebergTS();
     Map<String, SnapshotContext> mvSnapshot = new HashMap<>();
     mvSnapshot.put(table2.getFullyQualifiedName(), new SnapshotContext(42));
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(mvSnapshot);
@@ -76,7 +76,7 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
   @Test
   public void testWhenMVSnapshotIsDifferentThanTableCurrentSnapshotHasNewDataAFilterWithMVSnapshotIdAdded() {
     doReturn(new SnapshotContext(10)).when(table2storageHandler).getCurrentSnapshotContext(table2);
-    RelNode tableScan = createTS();
+    RelNode tableScan = createT2IcebergTS();
     Map<String, SnapshotContext> mvSnapshot = new HashMap<>();
     mvSnapshot.put(table2.getFullyQualifiedName(), new SnapshotContext(42));
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(mvSnapshot);

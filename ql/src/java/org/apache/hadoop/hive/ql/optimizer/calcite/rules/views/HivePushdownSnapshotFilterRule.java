@@ -23,14 +23,11 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -39,7 +36,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Calcite rule to push down predicates contains {@link VirtualColumn#SNAPSHOT_ID} reference to TableScan.
@@ -87,13 +83,13 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
   static class SnapshotIdShuttle extends RexShuttle {
 
     private final RexBuilder rexBuilder;
-    private final RelMetadataQuery metadataQuery;
     private final RelNode startNode;
+    private final VirtualColumnLineageHandler virtualColumnLineageHandler;
 
     public SnapshotIdShuttle(RexBuilder rexBuilder, RelMetadataQuery metadataQuery, RelNode startNode) {
       this.rexBuilder = rexBuilder;
-      this.metadataQuery = metadataQuery;
       this.startNode = startNode;
+      virtualColumnLineageHandler = new VirtualColumnLineageHandler(metadataQuery);
     }
 
     @Override
@@ -119,7 +115,8 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
 
       Long snapshotId = literal.getValueAs(Long.class);
 
-      RelOptTable relOptTable = getRelOptTableOf(op2);
+      RelOptTable relOptTable = virtualColumnLineageHandler.getVirtualColumnLineage(
+          startNode, op2, VirtualColumn.SNAPSHOT_ID);
       if (relOptTable == null) {
         return false;
       }
@@ -127,33 +124,6 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
       RelOptHiveTable hiveTable = (RelOptHiveTable) relOptTable;
       hiveTable.getHiveTableMD().setVersionIntervalFrom(Objects.toString(snapshotId, null));
       return true;
-    }
-
-    private RelOptTable getRelOptTableOf(RexNode rexNode) {
-      if (!(rexNode instanceof RexInputRef)) {
-        return null;
-      }
-
-      RexInputRef rexInputRef = (RexInputRef) rexNode;
-      Set<RexNode> rexNodeSet = metadataQuery.getExpressionLineage(startNode, rexInputRef);
-      if (rexNodeSet == null || rexNodeSet.size() != 1) {
-        return null;
-      }
-
-      RexNode resultRexNode = rexNodeSet.iterator().next();
-      if (!(resultRexNode instanceof RexTableInputRef)) {
-        return null;
-      }
-      RexTableInputRef tableInputRef = (RexTableInputRef) resultRexNode;
-
-      RelOptTable relOptTable = tableInputRef.getTableRef().getTable();
-      RelDataTypeField snapshotIdField = relOptTable.getRowType().getField(
-              VirtualColumn.SNAPSHOT_ID.getName(), false, false);
-      if (snapshotIdField == null) {
-        return null;
-      }
-
-      return snapshotIdField.getIndex() == tableInputRef.getIndex() ? relOptTable : null;
     }
   }
 }
