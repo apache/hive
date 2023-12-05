@@ -264,7 +264,7 @@ public class MultiDataSourceJdbcResource {
       int maxQueryLength = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH) * 1024;
       int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
       // The length of a single element is the string length of the longest element + 2 characters (comma, space) 
-      int elementLength = elements.isEmpty() ? 0 : elements
+      int elementLength = elements.isEmpty() ? 1 : elements
           .stream()
           .max(command.getParameterLengthComparator())
           .orElseThrow(IllegalStateException::new).toString().length() + 2;

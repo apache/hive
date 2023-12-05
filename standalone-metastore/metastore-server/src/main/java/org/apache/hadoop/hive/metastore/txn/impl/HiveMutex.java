@@ -112,6 +112,7 @@ public class HiveMutex implements TxnStore.MutexAPI {
       //OK, so now we have a lock
       return new LockHandleImpl(jdbcResource, context, key, lastUpdateTime, derbySemaphore);
     } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
       if (context != null) {
         jdbcResource.getTransactionManager().rollback(context);
       }
