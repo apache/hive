@@ -122,6 +122,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -976,7 +977,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @VisibleForTesting
   public int numLocksInLockTable() {
-    return jdbcResource.getJdbcTemplate().queryForObject("SELECT COUNT(*) FROM \"HIVE_LOCKS\"", new MapSqlParameterSource(), Integer.TYPE);
+    return Objects.requireNonNull(
+        jdbcResource.getJdbcTemplate().queryForObject("SELECT COUNT(*) FROM \"HIVE_LOCKS\"", new MapSqlParameterSource(), Integer.TYPE),
+        "This never should be null, it's just to suppress warnings");
   }
 
   /**

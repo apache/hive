@@ -156,9 +156,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
           "   \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
           " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + tempCommitId + ", \"TC_OPERATION_TYPE\" ";
 
-      boolean isUpdateOrDelete = jdbcResource.getJdbcTemplate().query(
+      boolean isUpdateOrDelete = Boolean.TRUE.equals(jdbcResource.getJdbcTemplate().query(
           jdbcResource.getSqlGenerator().addLimitClause(1, "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix),
-          ResultSet::next);
+          ResultSet::next));
       
       if (isUpdateOrDelete) {
         isUpdateDelete = 'Y';

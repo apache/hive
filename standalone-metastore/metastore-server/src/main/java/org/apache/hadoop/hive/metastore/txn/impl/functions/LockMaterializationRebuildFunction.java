@@ -70,7 +70,7 @@ public class LockMaterializationRebuildFunction implements TransactionalFunction
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query {}", selectQ);
       }
-      boolean found = jdbcResource.getJdbcTemplate().query(selectQ, params, ResultSet::next);
+      boolean found = Boolean.TRUE.equals(jdbcResource.getJdbcTemplate().query(selectQ, params, ResultSet::next));
       
       if(found) {
         LOG.info("Ignoring request to rebuild {}/{} since it is already being rebuilt", dbName, tableName);

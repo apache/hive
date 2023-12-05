@@ -34,6 +34,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -84,7 +85,7 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
         s = jdbcResource.getSqlGenerator().addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
 
         LOG.debug("Going to execute query <{}>", s);
-        List<List<Long>> timedOutTxns = jdbcResource.getJdbcTemplate().query(s, rs -> {
+        List<List<Long>> timedOutTxns = Objects.requireNonNull(jdbcResource.getJdbcTemplate().query(s, rs -> {
           List<List<Long>> txnbatch = new ArrayList<>();
           List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
           while (rs.next()) {
@@ -94,13 +95,12 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
               currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
             }
           }
-          if (currentBatch.size() > 0) {
+          if (!currentBatch.isEmpty()) {
             txnbatch.add(currentBatch);
           }
           return txnbatch;
-        });
-        //noinspection DataFlowIssue
-        if (timedOutTxns.size() == 0) {
+        }), "This never should be null, it's just to suppress warnings");
+        if (timedOutTxns.isEmpty()) {
           return null;
         }
 

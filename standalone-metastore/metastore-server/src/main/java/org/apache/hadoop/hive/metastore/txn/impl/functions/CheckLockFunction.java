@@ -44,6 +44,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -71,6 +72,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
     this.isExclusiveCTAS = isExclusiveCTAS;
   }
 
+  @SuppressWarnings("squid:S2583")
   @Override
   public LockResponse execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException, NoSuchTxnException, TxnAbortedException, NoSuchLockException {
     LockResponse response = new LockResponse();
@@ -216,7 +218,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
     }
     String query = String.join(" UNION ALL ", subQuery);
 
-    Boolean success = jdbcResource.getJdbcTemplate().query(query, new MapSqlParameterSource(), (ResultSet rs) -> {
+    Boolean success = Objects.requireNonNull(jdbcResource.getJdbcTemplate().query(query, new MapSqlParameterSource(), (ResultSet rs) -> {
       if (rs.next()) {
         try {
           // We acquire all locks for a given query atomically; if 1 blocks, all remain in Waiting state.
@@ -263,7 +265,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
         }
       }
       return true;
-    });
+    }), "This never should be null, it's just to suppress warnings");
 
     if (!success) {
       return response;
@@ -312,7 +314,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
       Set<String> notFoundIds = locksBeingChecked.stream()
           .map(lockInfo -> Long.toString(lockInfo.getIntLockId()))
           .collect(Collectors.toSet());
-      List<String> foundIds = jdbcResource.getJdbcTemplate().query(
+      List<String> foundIds = Objects.requireNonNull(jdbcResource.getJdbcTemplate().query(
           "SELECT \"HL_LOCK_INT_ID\" FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = :extLockId",
           new MapSqlParameterSource().addValue("extLockId", extLockId), rs -> {
             List<String> ids = new ArrayList<>();
@@ -320,7 +322,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
               ids.add(rs.getString("HL_LOCK_INT_ID"));
             }
             return ids;
-          });
+          }), "This never should be null, it's just to suppress warnings");
       
       foundIds.forEach(notFoundIds::remove);
       String errorMsg = String.format("No such lock(s): (%s: %s) %s",

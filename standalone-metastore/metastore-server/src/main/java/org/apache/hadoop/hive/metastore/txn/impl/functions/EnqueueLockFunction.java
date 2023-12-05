@@ -35,6 +35,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
+import java.util.Objects;
+
 public class EnqueueLockFunction implements TransactionalFunction<Long> {
 
   private static final Logger LOG = LoggerFactory.getLogger(EnqueueLockFunction.class);  
@@ -94,7 +96,9 @@ public class EnqueueLockFunction implements TransactionalFunction<Long> {
     LOG.debug("Going to execute query <{}>", s);
     
     try {
-      return jdbcResource.getJdbcTemplate().queryForObject(s, new MapSqlParameterSource(), Long.class);
+      return Objects.requireNonNull(
+          jdbcResource.getJdbcTemplate().queryForObject(s, new MapSqlParameterSource(), Long.class),
+          "This never should be null, it's just to suppress warnings");
     } catch (EmptyResultDataAccessException e) {
       LOG.error("Failure to get next lock ID for update! SELECT query returned empty ResultSet.");
       throw new MetaException("Transaction tables not properly " +

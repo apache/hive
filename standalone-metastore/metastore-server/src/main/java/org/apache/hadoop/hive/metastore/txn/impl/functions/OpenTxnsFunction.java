@@ -81,112 +81,102 @@ public class OpenTxnsFunction implements TransactionalFunction<List<Long>> {
     TxnType txnType = rqst.isSetTxn_type() ? rqst.getTxn_type() : TxnType.DEFAULT;
     boolean isReplayedReplTxn = txnType == TxnType.REPL_CREATED;
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && txnType == TxnType.DEFAULT;
-    try {
-      if (isReplayedReplTxn) {
-        assert rqst.isSetReplPolicy();
-        List<Long> targetTxnIdList = jdbcResource.execute(new TargetTxnIdListHandler(rqst.getReplPolicy(), rqst.getReplSrcTxnIds()));
+    if (isReplayedReplTxn) {
+      assert rqst.isSetReplPolicy();
+      List<Long> targetTxnIdList = jdbcResource.execute(new TargetTxnIdListHandler(rqst.getReplPolicy(), rqst.getReplSrcTxnIds()));
 
-        if (!targetTxnIdList.isEmpty()) {
-          if (targetTxnIdList.size() != rqst.getReplSrcTxnIds().size()) {
-            LOG.warn("target txn id number {} is not matching with source txn id number {}",
-                targetTxnIdList, rqst.getReplSrcTxnIds());
-          }
-          LOG.info("Target transactions {} are present for repl policy : {} and Source transaction id : {}",
-              targetTxnIdList, rqst.getReplPolicy(), rqst.getReplSrcTxnIds().toString());
-          return targetTxnIdList;
+      if (!targetTxnIdList.isEmpty()) {
+        if (targetTxnIdList.size() != rqst.getReplSrcTxnIds().size()) {
+          LOG.warn("target txn id number {} is not matching with source txn id number {}",
+              targetTxnIdList, rqst.getReplSrcTxnIds());
         }
+        LOG.info("Target transactions {} are present for repl policy : {} and Source transaction id : {}",
+            targetTxnIdList, rqst.getReplPolicy(), rqst.getReplSrcTxnIds().toString());
+        return targetTxnIdList;
       }
+    }
 
-      long minOpenTxnId = 0;
-      if (TxnHandlingFeatures.useMinHistoryLevel()) {
-        minOpenTxnId = new MinOpenTxnIdWaterMarkFunction(openTxnTimeOutMillis).execute(jdbcResource);
-      }
+    long minOpenTxnId = 0;
+    if (TxnHandlingFeatures.useMinHistoryLevel()) {
+      minOpenTxnId = new MinOpenTxnIdWaterMarkFunction(openTxnTimeOutMillis).execute(jdbcResource);
+    }
 
-      List<Long> txnIds = new ArrayList<>(numTxns);
-      /*
-       * The getGeneratedKeys are not supported in every dbms, after executing a multi line insert.
-       * But it is supported in every used dbms for single line insert, even if the metadata says otherwise.
-       * If the getGeneratedKeys are not supported first we insert a random batchId in the TXN_META_INFO field,
-       * then the keys are selected beck with that batchid.
-       */
-      boolean genKeySupport = dbProduct.supportsGetGeneratedKeys();
-      genKeySupport = genKeySupport || (numTxns == 1);
+    List<Long> txnIds = new ArrayList<>(numTxns);
+    /*
+     * The getGeneratedKeys are not supported in every dbms, after executing a multi line insert.
+     * But it is supported in every used dbms for single line insert, even if the metadata says otherwise.
+     * If the getGeneratedKeys are not supported first we insert a random batchId in the TXN_META_INFO field,
+     * then the keys are selected beck with that batchid.
+     */
+    boolean genKeySupport = dbProduct.supportsGetGeneratedKeys();
+    genKeySupport = genKeySupport || (numTxns == 1);
 
-      String insertQuery = String.format(TXNS_INSERT_QRY, getEpochFn(dbProduct), getEpochFn(dbProduct));
-      LOG.debug("Going to execute insert <{}>", insertQuery);
+    String insertQuery = String.format(TXNS_INSERT_QRY, getEpochFn(dbProduct), getEpochFn(dbProduct));
+    LOG.debug("Going to execute insert <{}>", insertQuery);
 
-      Connection dbConn = jdbcResource.getConnection();
-      NamedParameterJdbcTemplate namedParameterJdbcTemplate = jdbcResource.getJdbcTemplate();
-      int maxBatchSize = MetastoreConf.getIntVar(jdbcResource.getConf(), MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE); 
-      try (PreparedStatement ps = dbConn.prepareStatement(insertQuery, new String[] {"TXN_ID"})) {
-        String state = genKeySupport ? TxnStatus.OPEN.getSqlConst() : TXN_TMP_STATE;
-        if (numTxns == 1) {
+    Connection dbConn = jdbcResource.getConnection();
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate = jdbcResource.getJdbcTemplate();
+    int maxBatchSize = MetastoreConf.getIntVar(jdbcResource.getConf(), MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
+    try (PreparedStatement ps = dbConn.prepareStatement(insertQuery, new String[]{ "TXN_ID" })) {
+      String state = genKeySupport ? TxnStatus.OPEN.getSqlConst() : TXN_TMP_STATE;
+      if (numTxns == 1) {
+        ps.setString(1, state);
+        ps.setString(2, rqst.getUser());
+        ps.setString(3, rqst.getHostname());
+        ps.setInt(4, txnType.getValue());
+        txnIds.addAll(executeTxnInsertBatchAndExtractGeneratedKeys(namedParameterJdbcTemplate, true, ps, false));
+      } else {
+        for (int i = 0; i < numTxns; ++i) {
           ps.setString(1, state);
           ps.setString(2, rqst.getUser());
           ps.setString(3, rqst.getHostname());
           ps.setInt(4, txnType.getValue());
-          txnIds.addAll(executeTxnInsertBatchAndExtractGeneratedKeys(namedParameterJdbcTemplate, true, ps, false));
-        } else {
-          for (int i = 0; i < numTxns; ++i) {
-            ps.setString(1, state);
-            ps.setString(2, rqst.getUser());
-            ps.setString(3, rqst.getHostname());
-            ps.setInt(4, txnType.getValue());
-            ps.addBatch();
+          ps.addBatch();
 
-            if ((i + 1) % maxBatchSize == 0) {
-              txnIds.addAll(executeTxnInsertBatchAndExtractGeneratedKeys(namedParameterJdbcTemplate, genKeySupport, ps, true));
-            }
-          }
-          if (numTxns % maxBatchSize != 0) {
+          if ((i + 1) % maxBatchSize == 0) {
             txnIds.addAll(executeTxnInsertBatchAndExtractGeneratedKeys(namedParameterJdbcTemplate, genKeySupport, ps, true));
+          }
+        }
+        if (numTxns % maxBatchSize != 0) {
+          txnIds.addAll(executeTxnInsertBatchAndExtractGeneratedKeys(namedParameterJdbcTemplate, genKeySupport, ps, true));
+        }
+      }
+    } catch (SQLException e) {
+      throw new UncategorizedSQLException(null, null, e);
+    }
+
+    assert txnIds.size() == numTxns;
+
+    addTxnToMinHistoryLevel(jdbcResource.getJdbcTemplate().getJdbcTemplate(), maxBatchSize, txnIds, minOpenTxnId);
+
+    if (isReplayedReplTxn) {
+      List<String> rowsRepl = new ArrayList<>(numTxns);
+      List<String> params = Collections.singletonList(rqst.getReplPolicy());
+      List<List<String>> paramsList = new ArrayList<>(numTxns);
+      for (int i = 0; i < numTxns; i++) {
+        rowsRepl.add("?," + rqst.getReplSrcTxnIds().get(i) + "," + txnIds.get(i));
+        paramsList.add(params);
+      }
+
+      try {
+        insertPreparedStmts = jdbcResource.getSqlGenerator().createInsertValuesPreparedStmt(dbConn,
+            "\"REPL_TXN_MAP\" (\"RTM_REPL_POLICY\", \"RTM_SRC_TXN_ID\", \"RTM_TARGET_TXN_ID\")", rowsRepl,
+            paramsList);
+        for (PreparedStatement pst : insertPreparedStmts) {
+          try (PreparedStatement ppst = pst) {
+            ppst.execute();
           }
         }
       } catch (SQLException e) {
         throw new UncategorizedSQLException(null, null, e);
       }
+    }
 
-      assert txnIds.size() == numTxns;
-
-      addTxnToMinHistoryLevel(jdbcResource.getJdbcTemplate().getJdbcTemplate(), maxBatchSize, txnIds, minOpenTxnId);
-
-      if (isReplayedReplTxn) {
-        List<String> rowsRepl = new ArrayList<>(numTxns);
-        List<String> params = Collections.singletonList(rqst.getReplPolicy());
-        List<List<String>> paramsList = new ArrayList<>(numTxns);
-        for (int i = 0; i < numTxns; i++) {
-          rowsRepl.add("?," + rqst.getReplSrcTxnIds().get(i) + "," + txnIds.get(i));
-          paramsList.add(params);
-        }
-
-        try {
-          insertPreparedStmts = jdbcResource.getSqlGenerator().createInsertValuesPreparedStmt(dbConn,
-              "\"REPL_TXN_MAP\" (\"RTM_REPL_POLICY\", \"RTM_SRC_TXN_ID\", \"RTM_TARGET_TXN_ID\")", rowsRepl,
-              paramsList);
-          for (PreparedStatement pst : insertPreparedStmts) {
-            pst.execute();
-          }
-        } catch (SQLException e) {
-          throw new UncategorizedSQLException(null, null, e);
-        }
-      }
-
-      if (transactionalListeners != null && !isHiveReplTxn) {
-        MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-            EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, txnType), dbConn, jdbcResource.getSqlGenerator());
-      }
-      return txnIds;
-    } finally {
-      if (insertPreparedStmts != null) {
-        for (PreparedStatement pst : insertPreparedStmts) {
-          try {
-            pst.close();
-          } catch (SQLException e) {
-            throw new UncategorizedSQLException(null, null, e);
-          }
-        }
-      }
-    }  
+    if (transactionalListeners != null && !isHiveReplTxn) {
+      MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+          EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, txnType), dbConn, jdbcResource.getSqlGenerator());
+    }
+    return txnIds;
   }
 
   /**

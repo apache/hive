@@ -47,6 +47,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
   private static final EnumSet<HiveObjectType> HIVE_OBJECT_TYPES = 
       EnumSet.of(HiveObjectType.DATABASE, HiveObjectType.TABLE, HiveObjectType.PARTITION);
 
+  @SuppressWarnings("squid:3599")
   //language=SQL
   private static final Map<BiFunction<HiveObjectType, Boolean, Boolean>, String> DELETE_COMMANDS =
       new LinkedHashMap<BiFunction<HiveObjectType, Boolean, Boolean>, String>() {{

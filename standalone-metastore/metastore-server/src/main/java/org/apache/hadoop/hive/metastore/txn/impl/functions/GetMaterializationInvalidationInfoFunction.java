@@ -166,29 +166,15 @@ public class GetMaterializationInvalidationInfoFunction implements Transactional
   }
 
   private boolean executeBoolean(MultiDataSourceJdbcResource jdbcResource, String queryText, List<String> params, String errorMessage) throws MetaException {
-    PreparedStatement pst = null;
-    ResultSet rs = null;
-    try {
+    try (PreparedStatement pst = jdbcResource.getSqlGenerator().prepareStmtWithParameters(jdbcResource.getConnection(), queryText, params)) {
       LOG.debug("Going to execute query <{}>", queryText);
-      pst = jdbcResource.getSqlGenerator().prepareStmtWithParameters(jdbcResource.getConnection(), queryText, params);
       pst.setMaxRows(1);
-      rs = pst.executeQuery();
-
-      return rs.next();
+      try (ResultSet rs = pst.executeQuery()) {
+        return rs.next();
+      }
     } catch (SQLException ex) {
       LOG.warn(errorMessage, ex);
       throw new MetaException(errorMessage + " " + StringUtils.stringifyException(ex));
-    } finally {
-      try {
-        if (rs != null) {
-          rs.close();
-        }
-        if (pst != null) {
-          pst.close();
-        }
-      } catch (SQLException e) {
-        throw new UncategorizedSQLException(null, null, e);
-      }
     }
   }
 

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.entities;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -113,6 +114,16 @@ public class LockInfo {
     LockInfo o = (LockInfo)other;
     // Lock ids are unique across the system.
     return extLockId == o.extLockId && intLockId == o.intLockId;
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder()
+        .append(intLockId)
+        .append(extLockId)
+        .append(txnId)
+        .append(db)
+        .build();
   }
 
   @Override

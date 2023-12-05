@@ -36,6 +36,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,13 +68,13 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
     NamedParameterJdbcTemplate npjdbcTemplate = jdbcResource.getJdbcTemplate();
     // Check if this txn state is already replicated for this given table. If yes, then it is
     // idempotent case and just return.
-    boolean found = npjdbcTemplate.query(
+    boolean found = Boolean.TRUE.equals(npjdbcTemplate.query(
         "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName", 
         new MapSqlParameterSource()
             .addValue("dbName", dbName)
-            .addValue("tableName", tblName), 
-        rs -> { return rs.next(); }
-    );
+            .addValue("tableName", tblName),
+        ResultSet::next
+    ));
 
     if (found) {
       LOG.info("Idempotent flow: WriteId state <{}> is already applied for the table: {}.{}",

@@ -44,12 +44,12 @@ public class EnsureValidTxnFunction implements TransactionalFunction<Void> {
 
     if (status == null) {
       // todo: add LIMIT 1 instead of count - should be more efficient
-      boolean alreadyCommitted = jdbcResource.getJdbcTemplate().query("SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_TXNID\" = :txnId",
+      boolean alreadyCommitted = Boolean.TRUE.equals(jdbcResource.getJdbcTemplate().query("SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_TXNID\" = :txnId",
           paramSource, rs -> {
             // todo: strictly speaking you can commit an empty txn, thus 2nd conjunct is wrong but
             // only possible for for multi-stmt txns
             return rs.next() && rs.getInt(1) > 0;
-          });
+          }));
 
       if (alreadyCommitted) {
         // makes the message more informative - helps to find bugs in client code

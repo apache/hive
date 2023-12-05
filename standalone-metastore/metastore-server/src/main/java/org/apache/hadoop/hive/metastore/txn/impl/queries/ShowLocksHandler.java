@@ -143,11 +143,7 @@ public class ShowLocksHandler implements QueryHandler<ShowLocksResponse> {
   }
 
   private static class LockInfoComparator implements Comparator<LockInfo>, Serializable {
-    private LockTypeComparator lockTypeComparator = new LockTypeComparator();
-
-    public boolean equals(Object other) {
-      return this == other;
-    }
+    private final LockTypeComparator lockTypeComparator = new LockTypeComparator();
 
     public int compare(LockInfo info1, LockInfo info2) {
       // We sort by state (acquired vs waiting) and then by LockType, then by id

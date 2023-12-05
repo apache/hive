@@ -116,6 +116,7 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
     this.newPartName = newPartName;
   }
 
+  @SuppressWarnings("squid:S2259")
   @Override
   public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     String callSig = "onRename(" +

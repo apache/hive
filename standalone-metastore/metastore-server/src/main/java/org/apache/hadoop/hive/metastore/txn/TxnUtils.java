@@ -636,6 +636,7 @@ public class TxnUtils {
     return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
   }
 
+  @SuppressWarnings("squid:S2245")
   public static long generateTemporaryId() {
     return -1 * ThreadLocalRandom.current().nextLong();
   }
