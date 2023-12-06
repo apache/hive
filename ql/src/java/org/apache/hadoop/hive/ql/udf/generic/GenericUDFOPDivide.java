@@ -115,9 +115,7 @@ public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    boolean allowLoss = SessionState.get() == null || SessionState.get().getConf() == null ?
-            new HiveConf().getBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS) :
-            SessionState.get().getConf().getBoolVar(HiveConf.ConfVars.HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS);
+    boolean allowLoss = HiveConf.getBoolVar(SessionState.getSessionConf(), HiveConf.ConfVars. HIVE_SQL_DECIMAL_OPERATIONS_ALLOW_PRECISION_LOSS);
     if (allowLoss) {
       // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
       // e1 / e2
