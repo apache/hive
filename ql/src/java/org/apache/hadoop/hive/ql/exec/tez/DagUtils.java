@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -686,7 +687,9 @@ public class DagUtils {
         cpuCores = MRJobConfig.DEFAULT_MAP_CPU_VCORES;
       }
     }
-    return Resource.newInstance(memorySizeMb, cpuCores);
+    Resource resource = Resource.newInstance(memorySizeMb, cpuCores);
+    LOG.debug("Tez container resource: {}", resource);
+    return resource;
   }
 
   /*
@@ -716,19 +719,18 @@ public class DagUtils {
     }
     logLevel = sb.toString();
 
+    String finalOpts = null;
     if (HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_CONTAINER_SIZE) > 0) {
-      if (javaOpts != null) {
-        return javaOpts + " " + logLevel;
-      } else  {
-        return logLevel;
-      }
+      finalOpts = Strings.nullToEmpty(javaOpts) + " " + logLevel;
     } else {
       if (javaOpts != null && !javaOpts.isEmpty()) {
         LOG.warn(HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS + " will be ignored because "
                  + HiveConf.ConfVars.HIVE_TEZ_CONTAINER_SIZE + " is not set!");
       }
-      return logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
+      finalOpts = logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
     }
+    LOG.debug("Tez container final opts: {}", finalOpts);
+    return finalOpts;
   }
 
   private Vertex createVertexFromMergeWork(JobConf conf, MergeJoinWork mergeJoinWork,
