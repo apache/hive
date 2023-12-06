@@ -106,6 +106,9 @@ public class GenericUDFTrunc extends GenericUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    for (int i = 0; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
+    }
     if (arguments.length == 2) {
       inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
       inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
