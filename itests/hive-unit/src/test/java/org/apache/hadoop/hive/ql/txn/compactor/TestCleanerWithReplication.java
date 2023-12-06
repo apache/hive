@@ -52,9 +52,9 @@ public class TestCleanerWithReplication extends CompactorTest {
   public void setup() throws Exception {
     HiveConf conf = new HiveConf();
     conf.set("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-    conf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
+    conf.setBoolVar(HiveConf.ConfVars.REPL_CM_ENABLED, true);
     setup(conf);
-    cmRootDirectory = new Path(conf.get(HiveConf.ConfVars.REPLCMDIR.varname));
+    cmRootDirectory = new Path(conf.get(HiveConf.ConfVars.REPL_CM_DIR.varname));
     if (!fs.exists(cmRootDirectory)) {
       fs.mkdirs(cmRootDirectory);
     }

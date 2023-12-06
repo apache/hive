@@ -62,7 +62,7 @@ public final class PartitionUtils {
   public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) throws SemanticException {
     Set<String> reservedPartitionValues = new HashSet<>();
     // Partition can't have this name
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
+    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
     // Partition value can't end in this suffix
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));

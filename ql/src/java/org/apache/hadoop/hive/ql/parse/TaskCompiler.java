@@ -261,7 +261,7 @@ public abstract class TaskCompiler {
       // For the FetchTask, the limit optimization requires we fetch all the rows
       // in memory and count how many rows we get. It's not practical if the
       // limit factor is too big
-      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
+      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_LIMIT_OPT_MAX_FETCH);
       if (globalLimitCtx.isEnable() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
             + ". Doesn't qualify limit optimization.");
@@ -764,12 +764,12 @@ public abstract class TaskCompiler {
   protected void runDynPartitionSortOptimizations(ParseContext parseContext, HiveConf hConf) throws SemanticException {
     // run Sorted dynamic partition optimization
 
-    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
-        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
-        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING) &&
+        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE).equals("nonstrict") &&
+        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVE_OPT_LIST_BUCKETING)) {
       new SortedDynPartitionOptimizer().transform(parseContext);
 
-      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
+      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION)) {
         // Dynamic sort partition adds an extra RS therefore need to de-dup
         new ReduceSinkDeDuplication().transform(parseContext);
         // there is an issue with dedup logic wherein SELECT is created with wrong columns

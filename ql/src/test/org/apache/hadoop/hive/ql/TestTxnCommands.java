@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
-import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -123,7 +122,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    HiveConf.setVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    HiveConf.setVar(hiveConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
@@ -163,9 +162,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<String> rs = runStatementOnDriver("select a from " + Table.ACIDTBL + " where b = 2");
     Assert.assertEquals(1, rs.size());
     Assert.assertEquals("1", rs.get(0));
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, true);
     runStatementOnDriver("insert overwrite table " + Table.ACIDTBL + " values(3,2)");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, false);
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(5,6)");
     rs = runStatementOnDriver("select a from " + Table.ACIDTBL + " order by a");
     Assert.assertEquals(2, rs.size());
@@ -1463,9 +1462,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     // todo: try using set VerifyNumReducersHook.num.reducers=10;
     d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
-    hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 1);
+    hc.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 1);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
-    hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 1);
+    hc.setIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS, 1);
     hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
     d = new Driver(hc);
     d.setMaxRows(10000);
@@ -1483,9 +1482,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //see bucket_num_reducers.q bucket_num_reducers2.q
     d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
-    hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
+    hc.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 2);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
-    hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
+    hc.setIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS, 2);
     d = new Driver(hc);
     d.setMaxRows(10000);
     runStatementOnDriver("create table fourbuckets (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -2589,15 +2588,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into table fetch_task_table values (1,2), (3,4), (5,6)");
     List expectedRes = runStatementOnDriver("select * from fetch_task_table");
 
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEFETCHTASKCACHING, true);
-    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CACHING, true);
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     d.run("select * from fetch_task_table");
     Assert.assertFalse(d.getFetchTask().isCachingEnabled());
     d.getFetchTask().fetch(actualRes);
     Assert.assertEquals(actualRes, expectedRes);
     actualRes.clear();
 
-    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "more");
     d.run("select * from fetch_task_table");
     Assert.assertTrue(d.getFetchTask().isCachingEnabled());
     d.getFetchTask().fetch(actualRes);

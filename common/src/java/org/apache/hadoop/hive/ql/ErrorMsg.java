@@ -421,7 +421,7 @@ public enum ErrorMsg {
   REPLACE_UNSUPPORTED_TYPE_CONVERSION(10314, "Replacing columns with unsupported type conversion (from {0} to {1}) for column {2}. SerDe may be incompatible", true),
   HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY(10315,
       "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
-      "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
+      "HIVE_MULTI_GROUPBY_SINGLE_REDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),

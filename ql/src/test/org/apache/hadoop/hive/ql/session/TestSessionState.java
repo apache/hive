@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -205,7 +204,7 @@ public class TestSessionState {
   @Test
   public void testReloadAuxJars2() {
     HiveConf conf = new HiveConf();
-    HiveConf.setVar(conf, ConfVars.HIVERELOADABLEJARS, hiveReloadPath);
+    HiveConf.setVar(conf, ConfVars.HIVE_RELOADABLE_JARS, hiveReloadPath);
     SessionState ss = new SessionState(conf);
     SessionState.start(ss);
 
@@ -275,7 +274,7 @@ public class TestSessionState {
   @Test
   public void testReloadExistingAuxJars2() {
     HiveConf conf = new HiveConf();
-    HiveConf.setVar(conf, ConfVars.HIVERELOADABLEJARS, hiveReloadPath);
+    HiveConf.setVar(conf, ConfVars.HIVE_RELOADABLE_JARS, hiveReloadPath);
 
     SessionState ss = new SessionState(conf);
     SessionState.start(ss);

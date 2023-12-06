@@ -63,7 +63,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 /**
@@ -247,7 +246,7 @@ import java.util.function.Predicate;
   }
 
   private String getQueryId() {
-    return HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVEQUERYID);
+    return HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_QUERY_ID);
   }
 
   @Override public void commitInsertTable(Table table, boolean overwrite) throws MetaException {

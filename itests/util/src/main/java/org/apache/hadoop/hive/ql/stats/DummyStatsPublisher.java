@@ -37,7 +37,7 @@ public class DummyStatsPublisher implements StatsPublisher {
   // denotes the method which needs to throw an error.
   @Override
   public boolean init(StatsCollectionContext context) {
-    errorMethod = HiveConf.getVar(context.getHiveConf(), HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
+    errorMethod = HiveConf.getVar(context.getHiveConf(), HiveConf.ConfVars.HIVE_TEST_MODE_DUMMY_STAT_PUB);
     if (errorMethod.equalsIgnoreCase("init")) {
       return false;
     }
@@ -47,7 +47,7 @@ public class DummyStatsPublisher implements StatsPublisher {
 
   @Override
   public boolean connect(StatsCollectionContext context) {
-    errorMethod = HiveConf.getVar(context.getHiveConf(), HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
+    errorMethod = HiveConf.getVar(context.getHiveConf(), HiveConf.ConfVars.HIVE_TEST_MODE_DUMMY_STAT_PUB);
     if (errorMethod.equalsIgnoreCase("connect")) {
       return false;
     }

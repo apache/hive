@@ -275,7 +275,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return getJSONPlan(
             out, tasks, fetchTask, jsonOutput, isExtended,
             appendTaskType, cboInfo, cboPlan, optimizedSQL,
-            conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+            conf.getVar(ConfVars.HIVE_STAGE_ID_REARRANGE));
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,

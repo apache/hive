@@ -280,14 +280,14 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
 
     if (HCatConstants.HCAT_IS_DYNAMIC_MAX_PTN_CHECK_ENABLED) {
       maxDynamicPartitions = hConf.getIntVar(
-        HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS);
+        HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS);
     }
 
     return maxDynamicPartitions;
   }
 
   private static boolean getHarRequested(HiveConf hConf) {
-    return hConf.getBoolVar(HiveConf.ConfVars.HIVEARCHIVEENABLED);
+    return hConf.getBoolVar(HiveConf.ConfVars.HIVE_ARCHIVE_ENABLED);
   }
 
 }

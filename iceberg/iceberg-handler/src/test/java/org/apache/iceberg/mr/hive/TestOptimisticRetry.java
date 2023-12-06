@@ -55,7 +55,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
           .run(i -> {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
                 RETRY_STRATEGIES);
             shell.executeStatement(sql);
@@ -89,7 +89,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
           .run(i -> {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
                 RETRY_STRATEGIES);
             shell.executeStatement(sql[i]);
@@ -126,7 +126,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
           .run(i -> {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
                 RETRY_STRATEGIES);
             shell.executeStatement(sql);

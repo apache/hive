@@ -70,7 +70,6 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricColle
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
-import org.apache.hadoop.hive.ql.parse.repl.load.metric.PreOptimizedBootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
@@ -480,7 +479,7 @@ public class ReplUtils {
   }
 
   public static Path getEncodedDumpRootPath(HiveConf conf, String dbname) throws UnsupportedEncodingException {
-    return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+    return new Path(conf.getVar(HiveConf.ConfVars.REPL_DIR),
       Base64.getEncoder().encodeToString(dbname
         .getBytes(StandardCharsets.UTF_8.name())));
   }

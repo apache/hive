@@ -65,13 +65,13 @@ public class TestSetProcessor {
   public void testHiddenConfig() throws Exception {
     runSetProcessor("");
     String output = baos.toString();
-    Assert.assertFalse(output.contains(HiveConf.ConfVars.METASTOREPWD.varname + "="));
+    Assert.assertFalse(output.contains(HiveConf.ConfVars.METASTORE_PWD.varname + "="));
     Assert.assertFalse(output.contains(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname + "="));
   }
 
   @Test
   public void testHiddenConfigSetVarName() throws CommandProcessorException {
-    runSetProcessor(HiveConf.ConfVars.METASTOREPWD.varname);
+    runSetProcessor(HiveConf.ConfVars.METASTORE_PWD.varname);
     String output = baos.toString();
     Assert.assertTrue(output.contains("hidden"));
   }

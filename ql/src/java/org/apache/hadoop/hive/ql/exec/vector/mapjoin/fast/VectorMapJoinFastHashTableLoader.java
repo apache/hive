@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.tez.common.counters.TezCounter;
 import org.slf4j.Logger;
@@ -90,7 +89,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
     this.htLoadCounter = this.tezContext.getTezProcessorContext().getCounters().findCounter(
-        HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP), hconf.get(Operator.CONTEXT_NAME_KEY, ""));
+        HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_COUNTER_GROUP), hconf.get(Operator.CONTEXT_NAME_KEY, ""));
   }
 
   @Override
@@ -100,7 +99,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.hconf = hconf;
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
-    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
     String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
@@ -111,7 +110,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
       // Avoid many small HTs that will rehash multiple times causing GCs
       this.numLoadThreads = 1;
     } else {
-      int initialValue = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINPARALELHASHTABLETHREADS);
+      int initialValue = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_PARALEL_HASHTABLE_THREADS);
       Preconditions.checkArgument(initialValue > 0, "The number of HT-loading-threads should be positive.");
 
       int adjustedValue = Integer.highestOneBit(initialValue);

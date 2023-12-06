@@ -372,7 +372,7 @@ public class GenTezWork implements SemanticNodeProcessor {
     if (context.leafOperatorToFollowingWork.containsKey(operator)) {
 
       BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
-      long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+      long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
 
       LOG.debug("Second pass. Leaf operator: "+operator
         +" has common downstream work: "+followingWork);

@@ -26,12 +26,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -404,8 +402,8 @@ public class Context {
     // all external file systems
     nonLocalScratchPath = new Path(SessionState.getHDFSSessionPath(conf), executionId);
     localScratchDir = new Path(SessionState.getLocalSessionPath(conf), executionId).toUri().getPath();
-    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
-    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR);
+    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION);
+    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGING_DIR);
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();

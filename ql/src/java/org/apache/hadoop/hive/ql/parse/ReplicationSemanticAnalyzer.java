@@ -56,7 +56,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Objects;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_QUERY_ID;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -450,7 +450,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       for (Map.Entry<String, String> config : replConfigs.entrySet()) {
         String key = config.getKey();
         // don't set the query id in the config
-        if (key.equalsIgnoreCase(HIVEQUERYID.varname)) {
+        if (key.equalsIgnoreCase(HIVE_QUERY_ID.varname)) {
           String queryTag = config.getValue();
           if (!StringUtils.isEmpty(queryTag)) {
             QueryState.setApplicationTag(conf, queryTag);

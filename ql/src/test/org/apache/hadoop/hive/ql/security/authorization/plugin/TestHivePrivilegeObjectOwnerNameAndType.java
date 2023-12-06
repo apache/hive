@@ -77,8 +77,8 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
-    conf.setVar(ConfVars.HIVEMAPREDMODE, "nonstrict");
-    conf.setVar(ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    conf.setVar(ConfVars.HIVE_MAPRED_MODE, "nonstrict");
+    conf.setVar(ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
 
     TestTxnDbUtil.prepDb(conf);
     SessionState.start(conf);

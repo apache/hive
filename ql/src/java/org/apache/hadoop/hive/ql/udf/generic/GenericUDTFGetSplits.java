@@ -238,7 +238,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
     }
     ApplicationId extClientAppId = coordinator.createExtClientAppId();
-    String externalDagName = SessionState.get().getConf().getVar(ConfVars.HIVEQUERYNAME);
+    String externalDagName = SessionState.get().getConf().getVar(ConfVars.HIVE_QUERY_NAME);
 
     StringBuilder sb = new StringBuilder();
     sb.append("Generated appID ").append(extClientAppId.toString()).append(" for LLAP splits");
@@ -271,8 +271,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       throws HiveException {
 
     HiveConf conf = new HiveConf(SessionState.get().getConf());
-    HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    HiveConf.setVar(conf, ConfVars.HIVEQUERYRESULTFILEFORMAT, PlanUtils.LLAP_OUTPUT_FORMAT_KEY);
+    HiveConf.setVar(conf, ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    HiveConf.setVar(conf, ConfVars.HIVE_QUERY_RESULT_FILEFORMAT, PlanUtils.LLAP_OUTPUT_FORMAT_KEY);
 
     String originalMode = HiveConf.getVar(conf,
         ConfVars.HIVE_EXECUTION_MODE);
@@ -451,7 +451,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       // Update the queryId to use the generated extClientAppId. See comment below about
       // why this is done.
-      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, extClientAppId.toString());
+      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVE_QUERY_ID, extClientAppId.toString());
       Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, work,
           DagUtils.createTezLrMap(appJarLr, null));
       String vertexName = wx.getName();

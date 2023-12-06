@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArg
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import org.junit.Assert;
@@ -140,7 +139,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     } finally {
       InjectableBehaviourObjectStore.resetAlterTableModifier();
     }
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
     if(nonRecoverablePath != null){
       baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);

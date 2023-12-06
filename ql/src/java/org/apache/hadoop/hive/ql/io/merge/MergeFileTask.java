@@ -118,7 +118,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
 
       String jobName = null;
       if (noName && this.getQueryPlan() != null) {
-        int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+        int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
         jobName = Utilities.abbreviate(this.getQueryPlan().getQueryStr(),
             maxlen - 6);
       }
@@ -137,9 +137,9 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       Utilities.setMapWork(job, work, ctx.getMRTmpPath(), true);
 
       // remove pwd from conf file so that job tracker doesn't show this logs
-      String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTOREPWD);
+      String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTORE_PWD);
       if (pwd != null) {
-        HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
+        HiveConf.setVar(job, HiveConf.ConfVars.METASTORE_PWD, "HIVE");
       }
 
       // submit the job

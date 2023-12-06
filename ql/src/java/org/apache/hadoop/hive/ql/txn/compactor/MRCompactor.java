@@ -425,7 +425,7 @@ public class MRCompactor implements Compactor {
     }
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, colNames.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, colTypes.toString());
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
   }
 
   public JobConf getMrJob() {

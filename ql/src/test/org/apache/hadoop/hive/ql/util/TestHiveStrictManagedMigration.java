@@ -84,7 +84,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
       "--oldWarehouseRoot", oldWarehouse};
     HiveConf newConf = new HiveConf(hiveConf);
     File newWarehouseDir = new File(getTestDataDir(), "newWarehouse");
-    newConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, newWarehouseDir.getAbsolutePath());
+    newConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, newWarehouseDir.getAbsolutePath());
     newConf.set("strict.managed.tables.migration.owner", System.getProperty("user.name"));
     runMigrationTool(newConf, args);
 
@@ -124,7 +124,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
     HiveConf newConf = new HiveConf(hiveConf);
     File newManagedWarehouseDir = new File(getTestDataDir(), "newManaged");
     File newExtWarehouseDir = new File(getTestDataDir(), "newExternal");
-    newConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, newManagedWarehouseDir.getAbsolutePath());
+    newConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, newManagedWarehouseDir.getAbsolutePath());
     newConf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, newExtWarehouseDir.getAbsolutePath());
     runMigrationTool(newConf, args);
     Assert.assertTrue(newExtWarehouseDir.exists());

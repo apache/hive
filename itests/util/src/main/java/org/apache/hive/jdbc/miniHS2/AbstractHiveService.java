@@ -90,13 +90,13 @@ public abstract class AbstractHiveService {
    * @return
    */
   public Path getWareHouseDir() {
-    return new Path(hiveConf.getVar(ConfVars.METASTOREWAREHOUSE));
+    return new Path(hiveConf.getVar(ConfVars.METASTORE_WAREHOUSE));
   }
 
   public void setWareHouseDir(String wareHouseURI) {
     verifyNotStarted();
-    System.setProperty(ConfVars.METASTOREWAREHOUSE.varname, wareHouseURI);
-    hiveConf.setVar(ConfVars.METASTOREWAREHOUSE, wareHouseURI);
+    System.setProperty(ConfVars.METASTORE_WAREHOUSE.varname, wareHouseURI);
+    hiveConf.setVar(ConfVars.METASTORE_WAREHOUSE, wareHouseURI);
   }
 
   /**

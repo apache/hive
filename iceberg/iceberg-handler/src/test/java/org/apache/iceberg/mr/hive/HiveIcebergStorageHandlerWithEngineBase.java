@@ -186,9 +186,9 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
     // we turn it off explicitly to achieve better coverage.
     if (isVectorized) {
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     } else {
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "more");
     }
   }
 

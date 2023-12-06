@@ -2939,12 +2939,12 @@ public final class Utilities {
 
   private static void validateDynPartitionCount(Configuration conf, Collection<Path> partitions) throws HiveException {
     int partsToLoad = partitions.size();
-    int maxPartition = HiveConf.getIntVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS);
+    int maxPartition = HiveConf.getIntVar(conf, HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS);
     if (partsToLoad > maxPartition) {
       throw new HiveException("Number of dynamic partitions created is " + partsToLoad
           + ", which is more than "
           + maxPartition
-          +". To solve this try to set " + HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS.varname
+          +". To solve this try to set " + HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS.varname
           + " to at least " + partsToLoad + '.');
     }
   }
@@ -3356,8 +3356,8 @@ public final class Utilities {
    */
   public static int estimateNumberOfReducers(HiveConf conf, ContentSummary inputSummary,
                                              MapWork work, boolean finalMapRed) throws IOException {
-    long bytesPerReducer = conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
-    int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+    long bytesPerReducer = conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
+    int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
 
     double samplePercentage = getHighestSamplePercentage(work);
     long totalInputFileSize = getTotalInputFileSize(inputSummary, work, samplePercentage);
@@ -3809,7 +3809,7 @@ public final class Utilities {
    */
   public static void setInputAttributes(Configuration conf, MapWork mWork) {
     HiveConf.ConfVars var = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
-      HiveConf.ConfVars.HIVETEZINPUTFORMAT : HiveConf.ConfVars.HIVEINPUTFORMAT;
+      HiveConf.ConfVars.HIVE_TEZ_INPUT_FORMAT : HiveConf.ConfVars.HIVE_INPUT_FORMAT;
     if (mWork.getInputformat() != null) {
       HiveConf.setVar(conf, var, mWork.getInputformat());
     }

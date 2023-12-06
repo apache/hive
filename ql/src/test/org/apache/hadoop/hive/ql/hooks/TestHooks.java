@@ -55,7 +55,7 @@ public class TestHooks {
     HiveConf conf = new HiveConf(TestHooks.class);
     String str;
 
-    HiveConf.setVar(conf, HiveConf.ConfVars.QUERYREDACTORHOOKS, SimpleQueryRedactor.class.getName());
+    HiveConf.setVar(conf, HiveConf.ConfVars.QUERY_REDACTOR_HOOKS, SimpleQueryRedactor.class.getName());
 
     str = HookUtils.redactLogString(null, null);
     assertEquals(str, null);
@@ -70,7 +70,7 @@ public class TestHooks {
   @Test
   public void testQueryRedactor() throws Exception {
     HiveConf conf = new HiveConf(TestHooks.class);
-    HiveConf.setVar(conf, HiveConf.ConfVars.QUERYREDACTORHOOKS,
+    HiveConf.setVar(conf, HiveConf.ConfVars.QUERY_REDACTOR_HOOKS,
       SimpleQueryRedactor.class.getName());
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

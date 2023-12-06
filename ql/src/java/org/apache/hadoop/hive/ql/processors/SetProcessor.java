@@ -234,7 +234,7 @@ public class SetProcessor implements CommandProcessor {
         return ss.getHiveVariables();
       }
     }).substitute(conf, varValue);
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CONF_VALIDATION)) {
       HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
       if (confVars != null) {
         if (!confVars.isType(value)) {

@@ -260,7 +260,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   @Test
   public void testListPartitionNames() throws Exception {
     Table t = createTable4PartColsParts(getClient()).table;
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     List<List<String>> testValues = Lists.newArrayList(
         Lists.newArrayList("1999", defaultPartitionName, "02"),
         Lists.newArrayList(defaultPartitionName, "02", "10"),

@@ -134,9 +134,9 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     List<Task<?>> resTsks = new ArrayList<Task<?>>();
     // check if a map-reduce job is needed to merge the files
     // If the current size is smaller than the target, merge
-    long trgtSize = conf.getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESSIZE);
+    long trgtSize = conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_SIZE);
     long avgConditionSize = conf
-        .getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESAVGSIZE);
+        .getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE);
     trgtSize = Math.max(trgtSize, avgConditionSize);
 
     Task<?> mvTask = ctx.getListTasks().get(0);

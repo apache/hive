@@ -671,8 +671,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
-        hiveConf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
-        hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+        hiveConf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME),
+        hiveConf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
     List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = Lists.newLinkedList();
     dpCtx.setCustomSortExpressions(customSortExprs);
 

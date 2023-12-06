@@ -148,7 +148,7 @@ public class ColStatsProcessor implements IStatsProcessor {
             Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
                 .getPrimitiveJavaObject(values.get(i));
             partVals.add(partVal == null ? // could be null for default partition
-              this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
+              this.conf.getVar(ConfVars.DEFAULT_PARTITION_NAME) : partVal.toString());
           }
           partName = Warehouse.makePartName(partColSchema, partVals);
         }

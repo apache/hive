@@ -27,7 +27,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.util.Shell;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,13 +39,13 @@ public class TestHS2ClearDanglingScratchDir {
     conf.set(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK.toString(), "true");
     conf.set(HiveConf.ConfVars.HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR.toString(), "true");
 
-    Path scratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    Path scratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
     m_dfs.getFileSystem().mkdirs(scratchDir);
     m_dfs.getFileSystem().setPermission(scratchDir, new FsPermission("777"));
 
     // Fake two live session
     SessionState.start(conf);
-    conf.setVar(HiveConf.ConfVars.HIVESESSIONID, UUID.randomUUID().toString());
+    conf.setVar(HiveConf.ConfVars.HIVE_SESSION_ID, UUID.randomUUID().toString());
     SessionState.start(conf);
 
     // Fake dead session

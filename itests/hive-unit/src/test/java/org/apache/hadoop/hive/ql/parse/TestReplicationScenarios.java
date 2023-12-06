@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
@@ -203,16 +202,16 @@ public class TestReplicationScenarios {
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
-    hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
+    hconf.setBoolVar(HiveConf.ConfVars.REPL_CM_ENABLED, true);
     hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
-    hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
+    hconf.setVar(HiveConf.ConfVars.REPL_CM_DIR, TEST_PATH + "/cmroot/");
     proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
     hconf.set(proxySettingName, "*");
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
-    hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
+    hconf.setVar(HiveConf.ConfVars.REPL_DIR,TEST_PATH + "/hrepl/");
     hconf.set(MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName(), "3");
-    hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hconf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hconf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
@@ -221,13 +220,13 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
         "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     hconf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, "/tmp/warehouse/external");
-    hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
+    hconf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
     hconf.setBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET, false);
     hconf.setBoolVar(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS, false);
-    System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
-    System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, " ");
 
     additionalProperties.forEach((key, value) -> {
       hconf.set(key, value);
@@ -247,7 +246,7 @@ public class TestReplicationScenarios {
 
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
-    hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
+    hconfMirrorServer.set(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
     MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
@@ -4050,7 +4049,7 @@ public class TestReplicationScenarios {
         @Override
         public boolean accept(Path path)
         {
-          return path.getName().startsWith(HiveConf.getVar(hconf, HiveConf.ConfVars.STAGINGDIR));
+          return path.getName().startsWith(HiveConf.getVar(hconf, HiveConf.ConfVars.STAGING_DIR));
         }
       };
       FileStatus[] statuses = fs.listStatus(path, filter);
@@ -4230,7 +4229,7 @@ public class TestReplicationScenarios {
     run("INSERT INTO " + dbName + ".normal values (1)", driver);
     run("DROP TABLE " + dbName + ".normal", driver);
 
-    String cmDir = hconf.getVar(HiveConf.ConfVars.REPLCMDIR);
+    String cmDir = hconf.getVar(HiveConf.ConfVars.REPL_CM_DIR);
     Path path = new Path(cmDir);
     FileSystem fs = path.getFileSystem(hconf);
     ContentSummary cs = fs.getContentSummary(path);
@@ -4285,7 +4284,7 @@ public class TestReplicationScenarios {
 
     run("DROP TABLE " + dbName + ".normal", driver);
 
-    String cmDir = hconf.getVar(HiveConf.ConfVars.REPLCMDIR);
+    String cmDir = hconf.getVar(HiveConf.ConfVars.REPL_CM_DIR);
     Path path = new Path(cmDir);
     FileSystem fs = path.getFileSystem(hconf);
     ContentSummary cs = fs.getContentSummary(path);
@@ -4370,7 +4369,7 @@ public class TestReplicationScenarios {
     StringAppender appender = null;
     LoggerConfig loggerConfig = null;
     try {
-      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "true");
+      driverMirror.getConf().set(HiveConf.ConfVars.EXEC_PARALLEL.varname, "true");
       logger = LogManager.getLogger("hive.ql.metadata.Hive");
       oldLevel = logger.getLevel();
       ctx = (LoggerContext) LogManager.getContext(false);
@@ -4403,7 +4402,7 @@ public class TestReplicationScenarios {
       assertEquals(count, 2);
       appender.reset();
     } finally {
-      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "false");
+      driverMirror.getConf().set(HiveConf.ConfVars.EXEC_PARALLEL.varname, "false");
       loggerConfig.setLevel(oldLevel);
       ctx.updateLoggers();
       appender.removeFromLogger(logger.getName());
@@ -4414,7 +4413,7 @@ public class TestReplicationScenarios {
   public void testRecycleFileNonReplDatabase() throws IOException {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
 
-    String cmDir = hconf.getVar(HiveConf.ConfVars.REPLCMDIR);
+    String cmDir = hconf.getVar(HiveConf.ConfVars.REPL_CM_DIR);
     Path path = new Path(cmDir);
     FileSystem fs = path.getFileSystem(hconf);
     ContentSummary cs = fs.getContentSummary(path);
