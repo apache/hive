@@ -24,8 +24,7 @@ subqueries, common table expressions, and more.  Hive's SQL can also be
 extended with user code via user defined functions (UDFs), user defined
 aggregates (UDAFs), and user defined table functions (UDTFs).
 
-Hive users have a choice of 2 runtimes when executing SQL queries.
-Users can choose between Apache Hadoop MapReduce or Apache Tez
+Hive users can choose between Apache Hadoop MapReduce or Apache Tez
 frameworks as their execution backend. MapReduce is a
 mature framework that is proven at large scales. However, MapReduce
 is a purely batch framework, and queries using it may experience
