@@ -5799,7 +5799,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       //timely way.
       timeOutLocks();
       while (true) {
-        String s = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
+        String s = " \"TXN_ID\", \"TXN_TYPE\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
             " AND (" +
             "\"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue() +
             " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + timeout +
@@ -5811,14 +5811,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
 
         LOG.debug("Going to execute query <{}>", s);
-        List<List<Long>> timedOutTxns = jdbcResource.getJdbcTemplate().query(s, rs -> {
-          List<List<Long>> txnbatch = new ArrayList<>();
-          List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+        List<Map<Long, TxnType>> timedOutTxns = jdbcResource.getJdbcTemplate().query(s, rs -> {
+          List<Map<Long, TxnType>> txnbatch = new ArrayList<>();
+          Map<Long, TxnType> currentBatch = new HashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
           while (rs.next()) {
-            currentBatch.add(rs.getLong(1));
+            currentBatch.put(rs.getLong(1),TxnType.findByValue(rs.getInt(2)));
             if (currentBatch.size() == TIMED_OUT_TXN_ABORT_BATCH_SIZE) {
               txnbatch.add(currentBatch);
-              currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+              currentBatch = new HashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
             }
           }
           if (currentBatch.size() > 0) {
@@ -5835,12 +5835,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         Object savePoint = context.getTransactionStatus().createSavepoint();
 
         int numTxnsAborted = 0;
-        for (List<Long> batchToAbort : timedOutTxns) {
+        for (Map<Long, TxnType> batchToAbort : timedOutTxns) {
           context.getTransactionStatus().releaseSavepoint(savePoint);
           savePoint = context.getTransactionStatus().createSavepoint();
-          if (abortTxns(jdbcResource.getConnection(), batchToAbort, true, false, false, TxnErrorMsg.ABORT_TIMEOUT) == batchToAbort.size()) {
+          if (abortTxns(jdbcResource.getConnection(), new ArrayList<>(batchToAbort.keySet()), true, false, false, TxnErrorMsg.ABORT_TIMEOUT) == batchToAbort.size()) {
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
+            LOG.info("Aborted the following transactions due to timeout: {}", batchToAbort);
+            if (transactionalListeners != null) {
+              for (Map.Entry<Long, TxnType> txnEntry : batchToAbort.entrySet()) {
+                List<String> dbsUpdated = getTxnDbsUpdated(txnEntry.getKey(), jdbcResource.getConnection());
+                MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+                    EventMessage.EventType.ABORT_TXN,
+                    new AbortTxnEvent(txnEntry.getKey(), txnEntry.getValue(), null, dbsUpdated),
+                    jdbcResource.getConnection(), sqlGenerator);
+              }
+              LOG.debug("Added Notifications for the transactions that are aborted due to timeout: {}", batchToAbort);
+            }
           } else {
             //could not abort all txns in this batch - this may happen because in parallel with this
             //operation there was activity on one of the txns in this batch (commit/abort/heartbeat)
