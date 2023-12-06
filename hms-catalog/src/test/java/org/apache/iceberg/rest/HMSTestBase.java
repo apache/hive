@@ -29,6 +29,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -39,6 +40,9 @@ import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.catalog.Catalog;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;
@@ -117,11 +121,12 @@ public abstract class HMSTestBase {
   protected static final Logger LOG = LoggerFactory.getLogger(HMSTestBase.class.getName());
   static Random RND = new Random(20230922);
   protected String NS = "hms" + RND.nextInt(100);
-  //protected PropertyClient client;
+
   protected int port = -1;
   protected int catalogPort = -1;
   protected final String catalogPath = "hmscatalog";
-
+  protected Server catalogServer = null;
+  // for direct calls
   protected HMSCatalog catalog;
   protected HiveMetaStoreClient metastoreClient;
 
@@ -163,9 +168,17 @@ public abstract class HMSTestBase {
     metastoreClient = createClient(conf, port);
     Assert.assertNotNull("Unable to connect to the MetaStore server", metastoreClient);
 
-    catalog = new HMSCatalog(conf);
-    catalog.initialize("hive", Collections.emptyMap());
-    catalogPort = createCatalogServer(conf, catalog);
+    Server iceServer = HiveMetaStore.getIcebergServer();
+    Catalog ice = HMSCatalogServer.getLastCatalog();
+    if (iceServer != null) {
+      catalog = (HMSCatalog) HMSCatalogServer.getLastCatalog();;
+      catalogPort = iceServer.getURI().getPort();
+    }
+    if (catalog == null ){
+      catalog = new HMSCatalog(conf);
+      catalog.initialize("hive", Collections.emptyMap());
+      catalogPort = createCatalogServer(conf, catalog);
+    }
 
     Warehouse wh = new Warehouse(conf);
     String location0 = wh.getDefaultDatabasePath("hivedb2023", false).toString();
@@ -233,10 +246,6 @@ public abstract class HMSTestBase {
     return signedJWT.serialize();
   }
 
-  protected static final String CLI = "hmscli";
-  Server servletServer = null;
-  int sport = -1;
-
   /**
    * Creates and starts the catalog server.
    * @param conf
@@ -244,14 +253,13 @@ public abstract class HMSTestBase {
    * @throws Exception
    */
   protected int createCatalogServer(Configuration conf, HMSCatalog catalog) throws Exception {
-    if (servletServer == null) {
-      servletServer = HMSCatalogServer.startCatalogServer(conf, catalog);
-      if (servletServer == null || !servletServer.isStarted()) {
+    if (catalogServer == null) {
+      catalogServer = HMSCatalogServer.startServer(conf, catalog);
+      if (catalogServer == null || !catalogServer.isStarted()) {
         Assert.fail("http server did not start");
       }
-      sport = servletServer.getURI().getPort();
     }
-    return sport;
+    return catalogServer.getURI().getPort();
   }
 
   /**
@@ -260,10 +268,10 @@ public abstract class HMSTestBase {
    * @throws Exception
    */
   protected void stopCatalogServer(int port) throws Exception {
-    if (servletServer != null) {
-      servletServer.stop();
-      servletServer = null;
-      sport = -1;
+    if (catalogServer != null) {
+      catalogServer.stop();
+      catalogServer = null;
+      catalogPort = -1;
     }
   }
 

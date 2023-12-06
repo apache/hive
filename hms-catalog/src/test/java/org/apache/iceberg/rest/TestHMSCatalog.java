@@ -43,14 +43,12 @@ import org.apache.iceberg.transforms.Transforms;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.JsonUtil;
 import org.apache.thrift.TException;
-import org.checkerframework.checker.units.qual.N;
 import org.junit.jupiter.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -180,15 +178,22 @@ public class TestHMSCatalog extends HMSTestBase {
       List<TableIdentifier> tis = catalog.listTables(Namespace.of(DB_NAME));
       Assert.assertFalse(tis.isEmpty());
 
-
-      URL url = new URL("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
+      // list namespaces
+      URL url = new URL("http://localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
       String jwt = generateJWT();
       // succeed
       Object response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
 
-      url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables");
+      // list tables in hivedb
+      url = new URL("http://localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables");
       //String jwt = generateJWT();
+      // succeed
+      response = clientCall(jwt, url, "GET", null);
+      Assert.assertNotNull(response);
+
+      // load table
+      url = new URL("http://localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables/" + "tbl");
       // succeed
       response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
@@ -198,7 +203,16 @@ public class TestHMSCatalog extends HMSTestBase {
   }
 
   @Test
-  public void testReplaceTxnBuilder() throws Exception {
+  public void testReplaceTxnBuilder1() throws Exception {
+    runReplaceTxnBuilder(1);
+  }
+
+  @Test
+  public void testReplaceTxnBuilder2() throws Exception {
+    runReplaceTxnBuilder(2);
+  }
+
+  private void runReplaceTxnBuilder(int formatVersion) throws Exception {
     Schema schema = getTestSchema();
     PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
@@ -209,6 +223,7 @@ public class TestHMSCatalog extends HMSTestBase {
           .withPartitionSpec(spec)
           .withLocation(location)
           .withProperty("key1", "value1")
+          .withProperty(TableProperties.FORMAT_VERSION, String.valueOf(formatVersion))
           .createOrReplaceTransaction();
       createTxn.commitTransaction();
 
@@ -216,15 +231,14 @@ public class TestHMSCatalog extends HMSTestBase {
       Table table0 = table;
       Assert.assertEquals(1, table.spec().fields().size());
       PartitionSpec spec0 = table.spec();
-//      PartitionSpec v0Expected = PartitionSpec.builderFor(table.schema())
-//          .alwaysNull("data", "data_bucket")
-//          .withSpecId(1)
-//          .build();
-//         Assert.assertNotEquals("Table should have a spec with one void field",
-//      v0Expected, spec0);
+      PartitionSpec v0Expected = PartitionSpec.builderFor(table.schema())
+          .alwaysNull("data", "data_bucket")
+          .withSpecId(1)
+          .build();
+         Assert.assertNotEquals("Table should have a spec with one void field",
+      v0Expected, spec0);
 
       String newLocation = temp.newFolder("tbl-2").toString();
-
       Transaction replaceTxn = catalog.buildTable(tableIdent, schema)
           .withProperty("key2", "value2")
           .withLocation(newLocation)
@@ -235,12 +249,18 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertEquals(newLocation, table.location());
       PartitionSpec spec1 = table.spec();
       Assert.assertNull(table.currentSnapshot());
-      PartitionSpec v1Expected = PartitionSpec.builderFor(table.schema())
-          .alwaysNull("data", "data_bucket")
-          .withSpecId(1)
-          .build();
-      Assert.assertEquals("Table should have a spec with one void field",
-      v1Expected, spec1);
+      if (formatVersion == 1) {
+        PartitionSpec v1Expected =
+            PartitionSpec.builderFor(table.schema())
+                .alwaysNull("data", "data_bucket")
+                .withSpecId(1)
+                .build();
+        assertThat(table.spec())
+            .as("Table should have a spec with one void field")
+            .isEqualTo(v1Expected);
+      } else {
+        assertThat(table.spec().isUnpartitioned()).as("Table spec must be unpartitioned").isTrue();
+      }
 
       Assert.assertEquals("value1", table.properties().get("key1"));
       Assert.assertEquals("value2", table.properties().get("key2"));

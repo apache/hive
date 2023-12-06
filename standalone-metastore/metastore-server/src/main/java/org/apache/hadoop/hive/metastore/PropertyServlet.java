@@ -68,12 +68,20 @@ public class PropertyServlet extends HttpServlet {
   /** The security. */
   private final SecureServletCaller security;
 
-  PropertyServlet(Configuration configuration) {
+  static boolean isAuthJwt(Configuration configuration) {
     String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
-    boolean jwt = auth != null && "jwt".equals(auth.toLowerCase());
-    this.security = new ServletSecurity(configuration, jwt);
+    return "jwt".equalsIgnoreCase(auth);
+  }
+
+  PropertyServlet(Configuration configuration) {
+    this(configuration, new ServletSecurity(configuration, isAuthJwt(configuration)));
+  }
+
+  PropertyServlet(Configuration configuration, SecureServletCaller security) {
+    this.security = security;
     this.configuration = configuration;
   }
+
   private String strError(String msg, Object...args) {
     return String.format(PTYERROR + msg, args);
   }

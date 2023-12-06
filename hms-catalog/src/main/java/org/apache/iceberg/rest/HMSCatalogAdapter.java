@@ -68,6 +68,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Original @ https://github.com/apache/iceberg/blob/main/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java
+ */
+
 /** Adaptor class to translate REST requests into {@link Catalog} API calls. */
 public class HMSCatalogAdapter implements RESTClient {
   private static final Splitter SLASH = Splitter.on('/');

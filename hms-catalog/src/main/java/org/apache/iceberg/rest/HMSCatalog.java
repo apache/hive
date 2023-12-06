@@ -99,20 +99,6 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
     } else {
       this.configuration = configuration;
     }
-    /*
-    hmsHandler = new HMSHandler("JSON server", configuration);
-    try {
-      hmsHandler = HMSHandlerProxyFactory.getProxy(configuration, hmsHandler, true);
-    } catch (MetaException e) {
-      throw new RuntimeException(e);
-    }
-    try {
-      rawStore = hmsHandler.getMS();
-    } catch (MetaException e) {
-      throw new RuntimeException(e);
-    }
-
-     */
   }
 
   private IHMSHandler getHandler() throws MetaException {
@@ -262,9 +248,7 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
       validateTableIsIceberg(table, fullTableName(name, from));
       table.setDbName(toDatabase);
       table.setTableName(to.name());
-
-            store.alterTable(catalog, fromDatabase, fromName, table, null);
-
+      store.alterTable(catalog, fromDatabase, fromName, table, null);
       LOG.info("Renamed table from {}, to {}", from, to);
     } catch (InvalidObjectException e) {
       throw new NoSuchTableException("Table does not exist: %s", from);

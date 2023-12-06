@@ -21,7 +21,9 @@ package org.apache.iceberg.rest;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.SecureServletCaller;
+import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.iceberg.rest.HMSCatalogAdapter.HTTPMethod;
@@ -46,6 +48,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Original @ https://github.com/apache/iceberg/blob/main/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java
+ */
 
 /**
  * The RESTCatalogServlet provides a servlet implementation used in combination with a
@@ -71,6 +76,19 @@ public class HMSCatalogServlet extends HttpServlet {
   public void init() throws ServletException {
     super.init();
     security.init();
+  }
+  @Override
+  protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    String method = req.getMethod();
+    if (!"PATCH".equals(method)) {
+      super.service(req, resp);
+    } else {
+      this.doPatch(req, resp);
+    }
+  }
+
+  protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    security.execute(request, response, this::execute);
   }
 
   @Override
