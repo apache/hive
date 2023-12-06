@@ -71,6 +71,9 @@ public class GenericUDFTumbledWindow extends GenericUDF {
    */
   @Override public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     checkArgsSize(arguments, 2, 3);
+    for (int i = 0; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
+    }
     //arg 1 has to be of timestamp type
     //arg 2 has to be an interval
     //arg 3 has to be absent or timestamp type
