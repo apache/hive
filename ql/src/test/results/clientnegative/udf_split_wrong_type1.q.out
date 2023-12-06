@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:13 Argument type mismatch ''1,2,3'': split only takes primitive types as 1st argument, got LIST
