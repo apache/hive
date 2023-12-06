@@ -1064,7 +1064,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   String getPathForAuth(String locationProperty) {
     return getPathForAuth(locationProperty,
-        SessionStateUtil.getProperty(conf, hive_metastoreConstants.DEFAULT_TABLE_LOCATION).orElse(null));
+        SessionStateUtil.getProperty(conf, SessionStateUtil.DEFAULT_TABLE_LOCATION).orElse(null));
   }
 
   String getPathForAuth(String locationProperty, String defaultTableLocation) {

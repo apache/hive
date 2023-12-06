@@ -25,7 +25,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONV
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DEFAULT_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
@@ -13803,7 +13802,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isIcebergTable(retValue)) {
-      SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.DEFAULT_TABLE_LOCATION,
+      SessionStateUtil.addResourceOrThrow(conf, SessionStateUtil.DEFAULT_TABLE_LOCATION,
           getDefaultLocation(qualifiedTabName[0], qualifiedTabName[1], true));
     }
     return retValue;
