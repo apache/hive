@@ -153,6 +153,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   static final String NO_FILTER_STRING = "";
   static final int UNLIMITED_MAX_PARTITIONS = -1;
 
+  static final int LOG_SAMPLE_PARTITIONS_MAX_SIZE = 4;
+
+  static final int LOG_SAMPLE_PARTITIONS_HALF_SIZE = 2;
+
+  static final String LOG_SAMPLE_PARTITIONS_SEPARATOR = ",";
+
   private Warehouse wh; // hdfs warehouse
   private static Striped<Lock> tablelocks;
 
@@ -817,13 +823,59 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void startPartitionFunction(String function, String cat, String db, String tbl,
                                       List<String> partVals) {
     startFunction(function, " : tbl=" +
-        TableName.getQualified(cat, db, tbl) + "[" + join(partVals, ",") + "]");
+        TableName.getQualified(cat, db, tbl) + samplePartitionValues(partVals));
   }
 
   private void startPartitionFunction(String function, String catName, String db, String tbl,
                                       Map<String, String> partName) {
     startFunction(function, " : tbl=" +
         TableName.getQualified(catName, db, tbl) + " partition=" + partName);
+  }
+
+  private void startPartitionFunction(String function, String catName, String db, String tbl, int maxParts) {
+    startFunction(function, " : tbl=" + TableName.getQualified(catName, db, tbl) + ": Max partitions =" + maxParts);
+  }
+
+  private void startPartitionFunction(String function, String catName, String db, String tbl, int maxParts,
+                                      List<String> partVals) {
+    startFunction(function, " : tbl=" + TableName.getQualified(catName, db, tbl) + ": Max partitions =" + maxParts
+            + samplePartitionValues(partVals));
+  }
+
+  private void startPartitionFunction(String function, String catName, String db, String tbl, int maxParts,
+                                      String filter) {
+    startFunction(function,
+            " : tbl=" + TableName.getQualified(catName, db, tbl) + ": Filter=" + filter + ": Max partitions ="
+                    + maxParts);
+  }
+
+  private void startPartitionFunction(String function, String catName, String db, String tbl, int maxParts,
+                                      String expression, String defaultPartitionName) {
+    startFunction(function, " : tbl=" + TableName.getQualified(catName, db, tbl) + ": Expression=" + expression
+            + ": Default partition name=" + defaultPartitionName + ": Max partitions=" + maxParts);
+  }
+
+  private String getGroupsCountAndUsername(final String user_name, final List<String> group_names) {
+    return ". Number of groups= " + (group_names == null ? 0 : group_names.size()) + ", user name= " + user_name;
+  }
+
+  private String samplePartitionValues(List<String> partVals) {
+    if (CollectionUtils.isEmpty(partVals)) {
+      return ": Partitions = []";
+    }
+    StringBuilder sb = new StringBuilder(": Number of Partitions = " + partVals.size());
+    sb.append(": Partitions = [");
+    if (partVals.size() > LOG_SAMPLE_PARTITIONS_MAX_SIZE) {
+      // extracting starting 2 values, and ending 2 values
+      sb.append(join(partVals.subList(0, LOG_SAMPLE_PARTITIONS_HALF_SIZE), LOG_SAMPLE_PARTITIONS_SEPARATOR));
+      sb.append(" .... ");
+      sb.append(join(partVals.subList(partVals.size() - LOG_SAMPLE_PARTITIONS_HALF_SIZE, partVals.size()),
+              LOG_SAMPLE_PARTITIONS_SEPARATOR));
+    } else {
+      sb.append(join(partVals, LOG_SAMPLE_PARTITIONS_SEPARATOR));
+    }
+    sb.append("]");
+    return sb.toString();
   }
 
   private void endFunction(String function, boolean successful, Exception e) {
@@ -5458,8 +5510,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                            final String user_name, final List<String> group_names)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    startPartitionFunction("get_partition_with_auth", parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tbl_name, part_vals);
+    startFunction("get_partition_with_auth",
+        " : tbl=" + TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
+            + samplePartitionValues(part_vals) + getGroupsCountAndUsername(user_name,group_names));
     fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     Partition ret = null;
     Exception ex = null;
@@ -5597,7 +5650,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String dbName = parsedDbName[DB_NAME];
     String tableName = tbl_name.toLowerCase();
 
-    startTableFunction("get_partitions_pspec", catName, dbName, tableName);
+    startPartitionFunction("get_partitions_pspec", catName, dbName, tableName, max_parts);
 
     List<PartitionSpec> partitionSpecs = null;
     try {
@@ -5683,7 +5736,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<String> get_partition_names(final String db_name, final String tbl_name,
                                           final short max_parts) throws NoSuchObjectException, MetaException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    startTableFunction("get_partition_names", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
+    startPartitionFunction("get_partition_names", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, max_parts);
     fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<String> ret = null;
     Exception ex = null;
@@ -5708,7 +5761,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
     String dbName = request.getDbName();
     String tblName = request.getTblName();
-
+    long maxParts = request.getMaxParts();
+    String filter = request.isSetFilter() ? request.getFilter() : "";
+    startPartitionFunction("get_partition_values", catName, dbName, tblName, (int) maxParts, filter);
     try {
       authorizeTableForPartitionMetadata(catName, dbName, tblName);
 
@@ -6567,8 +6622,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                            final String tbl_name, final List<String> part_vals,
                                            final short max_parts) throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    startPartitionFunction("get_partitions_ps", parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-        tbl_name, part_vals);
+    startPartitionFunction("get_partitions_ps", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, max_parts,
+        part_vals);
 
     List<Partition> ret = null;
     Exception ex = null;
@@ -6660,8 +6715,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                              final String tbl_name, final List<String> part_vals, final short max_parts)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    startPartitionFunction("get_partitions_names_ps", parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tbl_name, part_vals);
+    startPartitionFunction("get_partitions_names_ps", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name,
+        max_parts, part_vals);
     fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<String> ret = null;
     Exception ex = null;
@@ -6852,8 +6907,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String catName = request.isSetCatName() ? request.getCatName().toLowerCase() : getDefaultCatalog(conf);
     String dbName = request.getDbName().toLowerCase();
     String tblName = request.getTblName().toLowerCase();
-    startFunction("get_partitions_statistics_req", ": table=" +
-        TableName.getQualified(catName, dbName, tblName));
+    startPartitionFunction("get_partitions_statistics_req", catName, dbName, tblName, request.getPartNames());
 
     PartitionsStatsResult result = null;
     List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
@@ -7269,8 +7323,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
 
     String[] parsedDbName = parseDbName(dbName, conf);
-    startTableFunction("get_partitions_by_filter_pspec", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
-
+    startPartitionFunction("get_partitions_by_filter_pspec", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName,
+            maxParts, filter);
     List<PartitionSpec> partitionSpecs = null;
     try {
       Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
@@ -7335,7 +7389,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       PartitionsByExprRequest req) throws TException {
     String dbName = req.getDbName(), tblName = req.getTblName();
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-    startTableFunction("get_partitions_by_expr", catName, dbName, tblName);
+    String expr = req.isSetExpr() ? Arrays.toString((req.getExpr())) : "";
+    String defaultPartitionName = req.isSetDefaultPartitionName() ? req.getDefaultPartitionName() : "";
+    int maxParts = req.getMaxParts();
+    startPartitionFunction("get_partitions_by_expr", catName, dbName, tblName, maxParts, expr, defaultPartitionName);
     fireReadTablePreEvent(catName, dbName, tblName);
     PartitionsByExprResult ret = null;
     Exception ex = null;
@@ -7368,8 +7425,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (parsedDbName[DB_NAME] == null || tblName == null) {
       throw new MetaException("The DB and table name cannot be null.");
     }
-    startTableFunction("get_num_partitions_by_filter", parsedDbName[CAT_NAME],
-        parsedDbName[DB_NAME], tblName);
+    startFunction("get_num_partitions_by_filter",
+        " : tbl=" + TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName) + " Filter="
+            + filter);
 
     int ret = -1;
     Exception ex = null;
