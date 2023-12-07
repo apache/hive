@@ -1,0 +1,28 @@
+PREHOOK: query: CREATE TABLE person (fname string, birthDate date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@person
+POSTHOOK: query: CREATE TABLE person (fname string, birthDate date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@person
+PREHOOK: query: INSERT INTO person VALUES ('Victor', '2023-11-27'), ('Alexandre', '2023-11-28')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@person
+POSTHOOK: query: INSERT INTO person VALUES ('Victor', '2023-11-27'), ('Alexandre', '2023-11-28')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@person
+POSTHOOK: Lineage: person.birthdate SCRIPT []
+POSTHOOK: Lineage: person.fname SCRIPT []
+PREHOOK: query: SELECT * FROM person p1 INNER JOIN person p2 ON p1.birthDate=p2.birthDate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@person
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM person p1 INNER JOIN person p2 ON p1.birthDate=p2.birthDate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@person
+#### A masked pattern was here ####
+Victor	2023-11-27	Victor	2023-11-27
+Alexandre	2023-11-28	Alexandre	2023-11-28
