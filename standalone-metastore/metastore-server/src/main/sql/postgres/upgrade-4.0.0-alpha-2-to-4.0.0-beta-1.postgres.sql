@@ -33,10 +33,11 @@ ALTER TABLE "METASTORE_DB_PROPERTIES" ADD "PROPERTYCONTENT" bytea;
 UPDATE "SDS"
     SET "INPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduInputFormat', "OUTPUT_FORMAT" = 'org.apache.hadoop.hive.kudu.KuduOutputFormat'
     WHERE "SD_ID" IN (
-        SELECT "SD_ID" FROM "TBLS"
+        SELECT "TBLS"."SD_ID"
+            FROM "TBLS"
             INNER JOIN "TABLE_PARAMS" ON "TBLS"."TBL_ID" = "TABLE_PARAMS"."TBL_ID"
-                WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%'
-        );
+            WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%'
+    );
 
 UPDATE "SERDES"
     SET "SLIB" = 'org.apache.hadoop.hive.kudu.KuduSerDe'
