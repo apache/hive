@@ -84,6 +84,7 @@ if [ "$LLAP_DAEMON_PID_DIR" = "" ]; then
 fi
 
 # some variables
+export LLAP_LOG4J2_PROPERTIES_FILE_NAME='llap-daemon-log4j2.properties'
 LLAP_DAEMON_LOG_BASE=llap-daemon-$USER-$HOSTNAME
 export LLAP_DAEMON_LOG_FILE=$LLAP_DAEMON_LOG_BASE.log
 logLog=$LLAP_DAEMON_LOG_DIR/$LLAP_DAEMON_LOG_BASE.log

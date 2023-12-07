@@ -96,7 +96,7 @@ if [ "$LLAP_DAEMON_LOGFILE" = "" ]; then
   LLAP_DAEMON_LOG_FILE='llapdaemon.log'
 fi
 
-if [ "LLAP_LOG4J2_PROPERTIES_FILE_NAME" = "" ]; then
+if [ ! -n "${LLAP_LOG4J2_PROPERTIES_FILE_NAME}" ]; then
   LLAP_LOG4J2_PROPERTIES_FILE_NAME='llap-daemon-log4j2.properties'
 fi
 
