@@ -72,7 +72,11 @@ public class JSONAlterPartitionsMessage extends AlterPartitionsMessage {
       this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
       Iterator<Partition> iterator = partitionsAfter.iterator();
       while (iterator.hasNext()) {
-        Partition partitionObj = iterator.next();
+        Partition partitionObj = new Partition(iterator.next());
+        // remove stats from the partition to reduce the message size
+        if (partitionObj.isSetParameters()) {
+          partitionObj.getParameters().clear();
+        }
         partitions.add(MessageBuilder.getPartitionKeyValues(tableObj, partitionObj));
         partitionListJson.add(MessageBuilder.createPartitionObjJson(partitionObj));
       }
