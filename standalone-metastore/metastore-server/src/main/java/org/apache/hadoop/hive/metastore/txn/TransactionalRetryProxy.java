@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
-import org.apache.hadoop.hive.metastore.txn.jdbc.ProgrammaticRollbackException;
+import org.apache.hadoop.hive.metastore.txn.jdbc.RollbackException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryCallProperties;
@@ -59,11 +59,11 @@ public class TransactionalRetryProxy<T> implements InvocationHandler {
   /**
    * Gets the proxy interface for the given {@link TxnStore}.
    *
-   * @param interfaceObject The real object to proxy.
    * @param sqlRetryHandler Responsible to re-execute the methods in case of failure.
+   * @param interfaceObject The real object to proxy.
    * @return Returns the proxy object capable of retrying the failed calls automatically and transparently.
    */
-  public static <T> T getProxy(T interfaceObject, SqlRetryHandler sqlRetryHandler, MultiDataSourceJdbcResource jdbcResourceHandler) {
+  public static <T> T getProxy(SqlRetryHandler sqlRetryHandler, MultiDataSourceJdbcResource jdbcResourceHandler, T interfaceObject) {
     TransactionalRetryProxy<T> handler = new TransactionalRetryProxy<>(interfaceObject, sqlRetryHandler, jdbcResourceHandler);
     //noinspection unchecked
     return (T) Proxy.newProxyInstance(
@@ -119,7 +119,7 @@ public class TransactionalRetryProxy<T> implements InvocationHandler {
             jdbcResource.getTransactionManager().commit(context);
           }
           return result;
-        } catch (ProgrammaticRollbackException e) {
+        } catch (RollbackException e) {
           if (context != null && !context.isCompleted()) {
             jdbcResource.getTransactionManager().rollback(context);
           }          

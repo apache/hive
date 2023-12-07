@@ -22,26 +22,30 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.InsertCompactionInfoCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveCompactionMetricsDataCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.RemoveDuplicateCompleteTxnComponentsCommand;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.CleanTxnToWriteIdTableFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.FindPotentialCompactionsFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.GenerateCompactionQueueIdFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.MarkCleanedFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.MinOpenTxnIdWaterMarkFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.NextCompactionFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.PurgeCompactionHistoryFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.TopCompactionMetricsDataPerTypeFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.UpdateCompactionMetricsDataFunction;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.CheckFailedCompactionsHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.CompactionMetricsDataHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.FindColumnsWithStatsHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.GetCompactionInfoHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.OpenTxnTimeoutLowBoundaryTxnIdHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.ReadyToCleanAbortHandler;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.ReadyToCleanHandler;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionState;
+import org.apache.hadoop.hive.metastore.txn.entities.OperationType;
+import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
+import org.apache.hadoop.hive.metastore.txn.commands.InsertCompactionInfoCommand;
+import org.apache.hadoop.hive.metastore.txn.commands.RemoveCompactionMetricsDataCommand;
+import org.apache.hadoop.hive.metastore.txn.commands.RemoveDuplicateCompleteTxnComponentsCommand;
+import org.apache.hadoop.hive.metastore.txn.functions.CleanTxnToWriteIdTableFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.FindPotentialCompactionsFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.GenerateCompactionQueueIdFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.MarkCleanedFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.MinOpenTxnIdWaterMarkFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.NextCompactionFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.PurgeCompactionHistoryFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.TopCompactionMetricsDataPerTypeFunction;
+import org.apache.hadoop.hive.metastore.txn.functions.UpdateCompactionMetricsDataFunction;
+import org.apache.hadoop.hive.metastore.txn.queries.CheckFailedCompactionsHandler;
+import org.apache.hadoop.hive.metastore.txn.queries.CompactionMetricsDataHandler;
+import org.apache.hadoop.hive.metastore.txn.queries.FindColumnsWithStatsHandler;
+import org.apache.hadoop.hive.metastore.txn.queries.GetCompactionInfoHandler;
+import org.apache.hadoop.hive.metastore.txn.queries.OpenTxnTimeoutLowBoundaryTxnIdHandler;
+import org.apache.hadoop.hive.metastore.txn.queries.ReadyToCleanAbortHandler;
+import org.apache.hadoop.hive.metastore.txn.queries.ReadyToCleanHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
 import org.slf4j.Logger;
@@ -119,7 +123,7 @@ class CompactionTxnHandler extends TxnHandler {
     if (rqst == null) {
       throw new MetaException("FindNextCompactRequest is null");
     }
-    long poolTimeout = MetastoreConf.getTimeVar(conf, ConfVars.COMPACTOR_WORKER_POOL_TIMEOUT, TimeUnit.MILLISECONDS);
+    long poolTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_POOL_TIMEOUT, TimeUnit.MILLISECONDS);
     return new NextCompactionFunction(rqst, getDbTime(), poolTimeout).execute(jdbcResource);
   }
 
@@ -503,7 +507,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.Idempotent
   public long findMinOpenTxnIdForCleaner() throws MetaException {
-    if (TxnHandlingFeatures.useMinHistoryWriteId()) {
+    if (ConfVars.useMinHistoryWriteId()) {
       return Long.MAX_VALUE;
     }
     return new MinOpenTxnIdWaterMarkFunction(openTxnTimeOutMillis).execute(jdbcResource);      
@@ -518,7 +522,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.Idempotent
   @Deprecated
   public long findMinTxnIdSeenOpen() {
-    if (!TxnHandlingFeatures.useMinHistoryLevel() || TxnHandlingFeatures.useMinHistoryWriteId()) {
+    if (!ConfVars.useMinHistoryLevel() || ConfVars.useMinHistoryWriteId()) {
       return Long.MAX_VALUE;
     }
     try {
@@ -527,7 +531,7 @@ class CompactionTxnHandler extends TxnHandler {
       return minId == null ? Long.MAX_VALUE : minId;
     } catch (DataAccessException e) {
       if (dbProduct.isTableNotExistsError(e)) {
-        TxnHandlingFeatures.setUseMinHistoryLevel(false);
+        ConfVars.setUseMinHistoryLevel(false);
         return Long.MAX_VALUE;
       }
       LOG.error("Unable to execute findMinTxnIdSeenOpen", e);

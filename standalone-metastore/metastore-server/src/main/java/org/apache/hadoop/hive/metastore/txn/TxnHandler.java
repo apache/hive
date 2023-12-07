@@ -77,7 +77,6 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
@@ -87,11 +86,13 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionState;
 import org.apache.hadoop.hive.metastore.txn.entities.LockInfo;
-import org.apache.hadoop.hive.metastore.txn.impl.HiveMutex;
-import org.apache.hadoop.hive.metastore.txn.impl.commands.*;
-import org.apache.hadoop.hive.metastore.txn.impl.functions.*;
-import org.apache.hadoop.hive.metastore.txn.impl.queries.*;
+import org.apache.hadoop.hive.metastore.txn.entities.MetricsInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
+import org.apache.hadoop.hive.metastore.txn.commands.*;
+import org.apache.hadoop.hive.metastore.txn.functions.*;
+import org.apache.hadoop.hive.metastore.txn.queries.*;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.NoPoolConnectionPool;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
@@ -184,9 +185,35 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 @SuppressWarnings("SqlSourceToSinkFlow")
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
+public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
+
+  
+  public static class TxnHandlingFeatures {    
+
+    // Whether to use min_history_level table or not.
+    // At startup we read it from the config, but set it to false if min_history_level does nto exists.
+    private boolean useMinHistoryLevel;
+    private boolean useMinHistoryWriteId;
+
+    public boolean useMinHistoryLevel() {
+      return useMinHistoryLevel;
+    }
+
+    public void setUseMinHistoryLevel(boolean useMinHistoryLevel) {
+      this.useMinHistoryLevel = useMinHistoryLevel;
+    }
+
+    public boolean useMinHistoryWriteId() {
+      return useMinHistoryWriteId;
+    }
+
+    public void setUseMinHistoryWriteId(boolean useMinHistoryWriteId) {
+      this.useMinHistoryWriteId = useMinHistoryWriteId;
+    }
+  }
   
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
+  public static final TxnHandlingFeatures ConfVars = new TxnHandlingFeatures();
 
   // Maximum number of open transactions that's allowed
   private static volatile int maxOpenTxns = 0;
@@ -215,7 +242,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private long replicationTxnTimeout;
 
   private MutexAPI mutexAPI;
-  private TxnLockHandler txnLockHandler;
+  private TxnLockManager txnLockManager;
   private SqlRetryHandler sqlRetryHandler;
   protected MultiDataSourceJdbcResource jdbcResource;
 
@@ -236,7 +263,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (!initialized) {
           try (DataSourceProvider.DataSourceNameConfigurator configurator =
                    new DataSourceProvider.DataSourceNameConfigurator(conf, POOL_TX)) {
-            int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
+            int maxPoolSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
             if (connPool == null) {
               connPool = setupJdbcConnectionPool(conf, maxPoolSize);
             }
@@ -247,8 +274,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (connPoolCompactor == null) {
               configurator.resetName(POOL_COMPACTOR);
               connPoolCompactor = setupJdbcConnectionPool(conf,
-                  MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS));
-            }            
+                  MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS));
+            }
           }
           if (dbProduct == null) {
             try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPool)) {
@@ -272,24 +299,24 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       jdbcResource.registerDataSource(POOL_MUTEX, connPoolMutex);
       jdbcResource.registerDataSource(POOL_COMPACTOR, connPoolCompactor);
     }
-    
-    mutexAPI = new HiveMutex(sqlGenerator, jdbcResource);
+
+    mutexAPI = new TxnStoreMutex(sqlGenerator, jdbcResource);
 
     numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
-    timeout = MetastoreConf.getTimeVar(conf, ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    replicationTxnTimeout = MetastoreConf.getTimeVar(conf, ConfVars.REPL_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
-    openTxnTimeOutMillis = MetastoreConf.getTimeVar(conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    
+    timeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    replicationTxnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    maxOpenTxns = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.MAX_OPEN_TXNS);
+    openTxnTimeOutMillis = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
+
     try {
-      TxnHandlingFeatures.setUseMinHistoryWriteId(checkIfTableIsUsable("MIN_HISTORY_WRITE_ID", 
-              MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID))
-      );      
+      ConfVars.setUseMinHistoryWriteId(checkIfTableIsUsable("MIN_HISTORY_WRITE_ID",
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID))
+      );
       // override the config if table does not exist anymore
       // this helps to roll out his feature when multiple HMS is accessing the same backend DB
-      TxnHandlingFeatures.setUseMinHistoryLevel(checkIfTableIsUsable("MIN_HISTORY_LEVEL",
-          MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_LEVEL)));
+      ConfVars.setUseMinHistoryLevel(checkIfTableIsUsable("MIN_HISTORY_LEVEL",
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL)));
     } catch (MetaException e) {
       String msg = "Error during TxnHandler startup, " + e.getMessage();
       LOG.error(msg);
@@ -298,16 +325,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     try {
       transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(
-              TransactionalMetaStoreEventListener.class,
-                      conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
-    } catch(MetaException e) {
+          TransactionalMetaStoreEventListener.class,
+          conf, MetastoreConf.getVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
+    } catch (MetaException e) {
       String msg = "Unable to get transaction listeners, " + e.getMessage();
       LOG.error(msg);
       throw new RuntimeException(e);
     }
 
     sqlRetryHandler = new SqlRetryHandler(conf, jdbcResource.getDatabaseProduct());
-    txnLockHandler = TransactionalRetryProxy.getProxy(new TxnLockHandlerImpl(jdbcResource), sqlRetryHandler, jdbcResource);
+    txnLockManager = TransactionalRetryProxy.getProxy(sqlRetryHandler, jdbcResource, new DefaultTxnLockManager(jdbcResource));
   }
 
   /**
@@ -322,13 +349,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     jdbcResource.bindDataSource(POOL_TX);
     try {
-      jdbcResource.getJdbcTemplate().query("SELECT 1 FROM \"" + tableName + "\"", new MapSqlParameterSource(),
-          rs -> {
-            if (rs.next()) {
-              return rs.getInt(1);
-            }
-            return -1;
-          }); 
+      jdbcResource.getJdbcTemplate().query("SELECT 1 FROM \"" + tableName + "\"", 
+          new MapSqlParameterSource(), ResultSet::next); 
     } catch (DataAccessException e) {
       LOG.debug("Catching sql exception in " + tableName + " check", e);
       if (e.getCause() instanceof SQLException) {
@@ -365,19 +387,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(true, openTxnTimeOutMillis)).toOpenTxnsInfoResponse();
+    return jdbcResource.execute(new GetOpenTxnsListHandler(true, openTxnTimeOutMillis))
+        .toOpenTxnsInfoResponse();
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis)).toOpenTxnsResponse(Collections.singletonList(TxnType.READ_ONLY));
+    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis))
+        .toOpenTxnsResponse(Collections.singletonList(TxnType.READ_ONLY));
   }
 
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis)).toOpenTxnsResponse(excludeTxnTypes);
+    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis))
+        .toOpenTxnsResponse(excludeTxnTypes);
   }
 
   /**
@@ -783,7 +808,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.CannotRetry
   public LockResponse lock(LockRequest rqst) throws NoSuchTxnException, TxnAbortedException, MetaException {
     try {
-      return txnLockHandler.checkLock(txnLockHandler.enqueueLock(rqst), rqst.getTxnid(), rqst.isZeroWaitReadEnabled(),
+      return txnLockManager.checkLock(txnLockManager.enqueueLock(rqst), rqst.getTxnid(), rqst.isZeroWaitReadEnabled(),
           rqst.isExclusiveCTAS());
     } catch (NoSuchLockException e) {
       // This should never happen, as we just added the lock id
@@ -823,11 +848,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     LockInfo lockInfo = lockInfos.get(0);
     if (lockInfo.getTxnId() > 0) {
-      new HeartBeatTxnFunction(lockInfo.getTxnId()).execute(jdbcResource);
+      new HeartbeatTxnFunction(lockInfo.getTxnId()).execute(jdbcResource);
     } else {
       new HeartBeatLockFunction(rqst.getLockid()).execute(jdbcResource);
     }
-    return txnLockHandler.checkLock(extLockId, lockInfo.getTxnId(), false, false);
+    return txnLockManager.checkLock(extLockId, lockInfo.getTxnId(), false, false);
   }
 
   /**
@@ -839,12 +864,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.Idempotent
   public void unlock(UnlockRequest rqst) throws TxnOpenException, MetaException {
-    txnLockHandler.unlock(rqst);
+    txnLockManager.unlock(rqst);
   }
 
   @RetrySemantics.ReadOnly
   public ShowLocksResponse showLocks(ShowLocksRequest rqst) throws MetaException {
-    return txnLockHandler.showLocks(rqst);
+    return txnLockManager.showLocks(rqst);
   }
 
   /**
@@ -855,7 +880,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.SafeToRetry
   public void heartbeat(HeartbeatRequest ids)
     throws NoSuchTxnException,  NoSuchLockException, TxnAbortedException, MetaException {
-    new HeartBeatTxnFunction(ids.getTxnid()).execute(jdbcResource);
+    new HeartbeatTxnFunction(ids.getTxnid()).execute(jdbcResource);
     new HeartBeatLockFunction(ids.getLockid()).execute(jdbcResource);
   }
   
@@ -903,7 +928,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   public MetricsInfo getMetricsInfo() throws MetaException {
-    int threshold = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD);
+    int threshold = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD);
     MetricsInfo metrics = jdbcResource.execute(MetricsInfoHandler.INSTANCE);
     Set<String> resourceNames = jdbcResource.execute(new TablesWithAbortedTxnsHandler(threshold));
     metrics.setTablesWithXAbortedTxnsCount(resourceNames.size());
@@ -1071,7 +1096,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new RuntimeException(e);
       }
     } else {
-      String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
+      String connectionPooler = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
       if ("none".equals(connectionPooler)) {
         LOG.info("Choosing not to pool JDBC connections");
         return new NoPoolConnectionPool(conf, dbProduct);

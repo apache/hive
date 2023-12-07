@@ -17,31 +17,32 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class StackThreadLocal<T> {
 
-  private final ThreadLocal<Stack<T>> threadLocal = new ThreadLocal<>();
+  private final ThreadLocal<Deque<T>> threadLocal = new ThreadLocal<>();
 
   public void set(T value) {
-    Stack<T> stack = threadLocal.get();
+    Deque<T> stack = threadLocal.get();
     if (stack == null) {
-      stack = new Stack<>();
+      stack = new ArrayDeque<>();
     }
     stack.push(value);
     threadLocal.set(stack);
   }
 
   public void unset() {
-    Stack<T> stack = threadLocal.get();
+    Deque<T> stack = threadLocal.get();
     stack.pop();
-    if (stack.empty()) {
+    if (stack.isEmpty()) {
       threadLocal.remove();
     }
   }
   
   public T get() {
-    Stack<T> stack = threadLocal.get();
+    Deque<T> stack = threadLocal.get();
     if (stack != null) {
       return stack.peek();
     } else {

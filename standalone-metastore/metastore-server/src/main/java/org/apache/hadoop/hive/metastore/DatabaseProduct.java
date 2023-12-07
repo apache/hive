@@ -206,11 +206,11 @@ public class DatabaseProduct implements Configurable {
 
   /**
    * Is the given exception a table not found exception
-   * @param ex Exception
+   * @param t Exception
    * @return
    */
-  public boolean isTableNotExistsError(Throwable ex) {
-    SQLException e = TxnUtils.getSqlException(ex);    
+  public boolean isTableNotExistsError(Throwable t) {
+    SQLException e = TxnUtils.getSqlException(t);    
     return (isPOSTGRES() && "42P01".equalsIgnoreCase(e.getSQLState()))
         || (isMYSQL() && "42S02".equalsIgnoreCase(e.getSQLState()))
         || (isORACLE() && "42000".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("ORA-00942"))
@@ -560,8 +560,8 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
-  public boolean isDuplicateKeyError(Throwable ex) {
-    SQLException sqlEx = TxnUtils.getSqlException(ex); 
+  public boolean isDuplicateKeyError(Throwable t) {
+    SQLException sqlEx = TxnUtils.getSqlException(t); 
     switch (dbType) {
     case DERBY:
     case CUSTOM: // ANSI SQL

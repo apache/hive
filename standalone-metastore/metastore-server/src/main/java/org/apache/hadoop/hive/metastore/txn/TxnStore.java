@@ -73,6 +73,9 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData;
+import org.apache.hadoop.hive.metastore.txn.entities.MetricsInfo;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
 import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryException;
@@ -930,7 +933,7 @@ public interface TxnStore extends Configurable {
   @SqlRetry
   @Transactional(POOL_COMPACTOR)
   CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
-      CompactionMetricsData.MetricType type) throws MetaException;
+                                                 CompactionMetricsData.MetricType type) throws MetaException;
 
   /**
    * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
