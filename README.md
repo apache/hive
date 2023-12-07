@@ -25,8 +25,9 @@ extended with user code via user defined functions (UDFs), user defined
 aggregates (UDAFs), and user defined table functions (UDTFs).
 
 Hive users can choose between Apache Hadoop MapReduce or Apache Tez
-frameworks as their execution backend. MapReduce is a
-mature framework that is proven at large scales. However, MapReduce
+frameworks as their execution backend. Note that MapReduce framework
+has been deprecated since Hive 2, and Apache Tez is recommended. MapReduce
+is a mature framework that is proven at large scales. However, MapReduce
 is a purely batch framework, and queries using it may experience
 higher latencies (tens of seconds), even over small datasets. Apache
 Tez is designed for interactive query, and has substantially reduced
