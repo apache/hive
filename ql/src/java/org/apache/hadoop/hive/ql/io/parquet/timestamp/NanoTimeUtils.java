@@ -66,7 +66,7 @@ public class NanoTimeUtils {
        JulianDate jDateTime;
        jDateTime = JulianDate.of(year,
        calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
-        calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0, 0);
+       calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0, 0);
      int days = jDateTime.getJulianDayNumber();
 
      long hour = calendar.get(Calendar.HOUR_OF_DAY);
