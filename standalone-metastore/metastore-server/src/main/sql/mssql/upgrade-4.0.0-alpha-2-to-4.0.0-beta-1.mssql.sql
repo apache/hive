@@ -45,7 +45,8 @@ UPDATE "SERDES"
         SELECT "SDS"."SERDE_ID"
             FROM "TBLS"
             INNER JOIN "SDS" ON "TBLS"."SD_ID" = "SDS"."SD_ID"
-            WHERE "TBLS"."TBL_ID" IN (SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_VALUE" LIKE '%KuduStorageHandler%')
+            INNER JOIN "TABLE_PARAMS" ON "TBLS"."TBL_ID" = "TABLE_PARAMS"."TBL_ID"
+            WHERE "TABLE_PARAMS"."PARAM_VALUE" LIKE '%KuduStorageHandler%'
     );
 
 -- These lines need to be last.  Insert any changes above.
