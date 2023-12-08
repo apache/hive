@@ -208,7 +208,7 @@ public class ASTConverter {
         .node();
   }
 
-  public static ASTNode convertType(RelDataType fieldType) {
+  static ASTNode convertType(RelDataType fieldType) {
     if (fieldType.getSqlTypeName() == SqlTypeName.NULL) {
       return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
     }
