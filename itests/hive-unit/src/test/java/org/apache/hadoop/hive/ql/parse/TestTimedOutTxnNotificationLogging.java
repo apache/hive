@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
@@ -38,11 +39,8 @@ import org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.thrift.TException;
 import org.junit.After;
@@ -93,7 +91,6 @@ public class TestTimedOutTxnNotificationLogging {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE, "/tmp");
     MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_TIMEOUT, 1000, TimeUnit.MILLISECONDS);
-    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, 1, TimeUnit.SECONDS);
     HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         SQLStdHiveAuthorizerFactory.class.getName());
     MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS,
@@ -194,6 +191,9 @@ public class TestTimedOutTxnNotificationLogging {
   }
 
   private void runTxnHouseKeeperService() {
+    ObjectStore objectStore = new ObjectStore();
+    objectStore.setConf(hiveConf);
+    objectStore.cleanNotificationEvents(0);
     MetastoreTaskThread acidTxnCleanerService = new AcidTxnCleanerService();
     acidTxnCleanerService.setConf(hiveConf);
     acidTxnCleanerService.run(); //this will remove empty aborted txns
