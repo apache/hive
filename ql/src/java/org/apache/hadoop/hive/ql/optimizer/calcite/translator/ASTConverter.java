@@ -201,15 +201,11 @@ public class ASTConverter {
       return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
     }
 
-    return createCastNull(fieldType);
-  }
-
-  private static ASTNode createCastNull(RelDataType fieldType) {
     ASTNode astNode = convertType(fieldType);
     return ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
-            .add(astNode)
-            .add(HiveParser.TOK_NULL, "TOK_NULL")
-            .node();
+        .add(astNode)
+        .add(HiveParser.TOK_NULL, "TOK_NULL")
+        .node();
   }
 
   public static ASTNode convertType(RelDataType fieldType) {
