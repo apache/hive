@@ -43,16 +43,7 @@ public class GenericUDFToArray extends GenericUDF implements SettableUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("toArray(");
-    for (int i = 0; i < children.length; ++i) {
-      if (i != 0) {
-        sb.append(",");
-      }
-      sb.append(children[i]);
-    }
-    sb.append(")");
-    return sb.toString();
+    return String.format("toArray(%s)", String.join(",", children));
   }
 
   @Override

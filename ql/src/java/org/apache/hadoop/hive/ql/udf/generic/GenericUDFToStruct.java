@@ -43,17 +43,7 @@ public class GenericUDFToStruct extends GenericUDF implements SettableUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("toStruct(");
-    for (int i = 0; i < children.length; ++i) {
-      if (i != 0) {
-        sb.append(",");
-      }
-      sb.append(children[i]);
-    }
-    sb.append(")");
-    return sb.toString();
-  }
+    return String.format("toStruct(%s)", String.join(",", children));  }
 
   @Override
   public void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException {
