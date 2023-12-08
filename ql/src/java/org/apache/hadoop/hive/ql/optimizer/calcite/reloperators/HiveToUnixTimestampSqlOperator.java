@@ -27,15 +27,13 @@ import org.apache.calcite.sql.type.ReturnTypes;
 /**
  * Sql UNIX_TIMESTAMP calcite operator.
  */
-public class HiveToUnixTimestampSqlOperator {
+public final class HiveToUnixTimestampSqlOperator {
   public static final SqlFunction INSTANCE =
       new SqlFunction("UNIX_TIMESTAMP", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT, null,
           OperandTypes.or(OperandTypes.NILADIC,
               OperandTypes.or(OperandTypes.STRING, OperandTypes.TIMESTAMP, OperandTypes.DATE),
-              OperandTypes.STRING_STRING), SqlFunctionCategory.NUMERIC) {
-        @Override
-        public boolean isDynamicFunction() {
-          return true;
-        }
-      };
+              OperandTypes.STRING_STRING), SqlFunctionCategory.NUMERIC);
+
+  private HiveToUnixTimestampSqlOperator() {
+  }
 }
