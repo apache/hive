@@ -1278,7 +1278,10 @@ public class MetastoreConf {
             + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
     NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED("metastore.alterPartitions.notification.v2.enabled",
         "hive.metastore.alterPartitions.notification.v2.enabled", true,
-        "This property enables sending a single notification event on alter partitions"),
+        "Should send a single notification event on alter partitions. " +
+            "This property is for ensuring backward compatibility when it sets to false, " +
+            "HMS will send an old ALTER_PARTITION event per partition, so downstream consumers can " +
+            "still process the ALTER_PARTITION event without making changes."),
     ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
         "hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
         "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +

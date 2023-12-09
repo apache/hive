@@ -911,9 +911,9 @@ public class HiveAlterHandler implements AlterHandler {
       msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, writeId, writeIdList);
 
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-        boolean shouldSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
+        boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
             MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-        if (shouldSingleEvent) {
+        if (shouldSendSingleEvent) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
               new AlterPartitionsEvent(oldParts, new_parts, tbl, false, true, handler), environmentContext);
         } else {
