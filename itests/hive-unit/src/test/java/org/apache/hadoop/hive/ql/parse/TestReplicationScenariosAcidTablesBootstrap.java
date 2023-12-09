@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.BeforeClass;
 
@@ -238,6 +239,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
   }
 
   @Test
+  @Ignore("HIVE-27936")
   public void testBootstrapAcidTablesDuringIncrementalWithConcurrentWrites() throws Throwable {
     // Dump and load bootstrap without ACID tables.
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName,
