@@ -2,7 +2,7 @@
 
 set hive.strict.checks.cartesian.product= false;
 
-DROP TABLE APP.SIMPLE_DERBY_TABLE1;
+DROP TABLE APP.SIMPLE_DERBY_TESTTABLE1;
 CREATE TABLE simple_hive_table1 (ikey INT, bkey BIGINT, fkey FLOAT, dkey DOUBLE );
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
@@ -13,19 +13,19 @@ FROM src
 SELECT
 
 dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
+'CREATE TABLE SIMPLE_DERBY_TESTTABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
 
 limit 1;
 
@@ -65,7 +65,7 @@ TBLPROPERTIES (
                 "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.table" = "SIMPLE_DERBY_TESTTABLE1",
                 "hive.sql.dbcp.maxActive" = "1"
 );
 

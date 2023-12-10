@@ -1,6 +1,6 @@
-PREHOOK: query: DROP TABLE APP.SIMPLE_DERBY_TABLE1
+PREHOOK: query: DROP TABLE APP.SIMPLE_DERBY_TESTTABLE1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE APP.SIMPLE_DERBY_TABLE1
+POSTHOOK: query: DROP TABLE APP.SIMPLE_DERBY_TESTTABLE1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE simple_hive_table1 (ikey INT, bkey BIGINT, fkey FLOAT, dkey DOUBLE )
 PREHOOK: type: CREATETABLE
@@ -21,19 +21,19 @@ PREHOOK: query: FROM src
 SELECT
 
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
+'CREATE TABLE SIMPLE_DERBY_TESTTABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
 
 limit 1
 PREHOOK: type: QUERY
@@ -44,19 +44,19 @@ POSTHOOK: query: FROM src
 SELECT
 
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
+'CREATE TABLE SIMPLE_DERBY_TESTTABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
 
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
+'INSERT INTO SIMPLE_DERBY_TESTTABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
 
 limit 1
 POSTHOOK: type: QUERY
@@ -124,7 +124,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.table" = "SIMPLE_DERBY_TESTTABLE1",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
@@ -144,7 +144,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.table" = "SIMPLE_DERBY_TESTTABLE1",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
@@ -323,7 +323,7 @@ STAGE PLANS:
           alias: ext_simple_derby_table1
           properties:
             hive.sql.query SELECT "bkey"
-FROM "SIMPLE_DERBY_TABLE1"
+FROM "SIMPLE_DERBY_TESTTABLE1"
 WHERE 100 < "ikey"
             hive.sql.query.fieldNames bkey
             hive.sql.query.fieldTypes bigint
@@ -401,7 +401,7 @@ STAGE PLANS:
           properties:
             hive.sql.query SELECT "t0"."fkey", "t2"."dkey"
 FROM (SELECT "ikey", "fkey"
-FROM "SIMPLE_DERBY_TABLE1"
+FROM "SIMPLE_DERBY_TESTTABLE1"
 WHERE "ikey" IS NOT NULL) AS "t0"
 INNER JOIN (SELECT "ikey", "dkey"
 FROM "SIMPLE_DERBY_TABLE2"
