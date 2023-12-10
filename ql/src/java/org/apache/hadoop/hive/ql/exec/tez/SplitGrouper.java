@@ -71,7 +71,7 @@ public class SplitGrouper {
 
   // TODO This needs to be looked at. Map of Map to Map... Made concurrent for now since split generation
   // can happen in parallel.
-  private static final Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cache =
+  private final Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cache =
       new ConcurrentHashMap<>();
 
   private final TezMapredSplitsGrouper tezGrouper = new TezMapredSplitsGrouper();
