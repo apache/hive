@@ -35,9 +35,9 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final long DEFAULT_TXN_ID = 0;
 
-  public IcebergCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
-      boolean collectGenericStats, boolean collectMrStats) {
-    super(conf, msc, compactorFactory, collectGenericStats, collectMrStats);
+  public IcebergCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
+      boolean collectGenericStats) {
+    super(conf, msc, compactorFactory, collectGenericStats);
   }
 
   public Boolean compact(Table table, CompactionInfo ci) throws InterruptedException, TException, IOException, HiveException {
@@ -79,7 +79,7 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
       failCompactionIfSetForTest();
       
       CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
-      computeStats = (compactorPipeline.isMRCompaction() && collectMrStats) || collectGenericStats;
+      computeStats = collectGenericStats;
 
       LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
               ci.id + " with compute stats set to " + computeStats);
@@ -100,7 +100,7 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
   }
 
   @Override
-  public void cleanupResultDirs() {
+  public void cleanupResultDirs(CompactionInfo ci) {
     
   }
 }

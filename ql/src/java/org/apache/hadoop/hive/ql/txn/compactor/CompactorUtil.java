@@ -21,7 +21,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -266,5 +271,28 @@ public class CompactorUtil {
     //Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them.
     return AcidUtils.isInsertOnlyTable(tblproperties) || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
         || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
+  }
+
+  protected static LockRequest createLockRequest(HiveConf conf, CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
+    String agentInfo = Thread.currentThread().getName();
+    LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
+    requestBuilder.setUser(ci.runAs);
+    requestBuilder.setTransactionId(txnId);
+
+    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
+        .setLock(lockType)
+        .setOperationType(opType)
+        .setDbName(ci.dbname)
+        .setTableName(ci.tableName)
+        .setIsTransactional(true);
+
+    if (ci.partName != null) {
+      lockCompBuilder.setPartitionName(ci.partName);
+    }
+    requestBuilder.addLockComponent(lockCompBuilder.build());
+
+    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+        !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+    return requestBuilder.build();
   }
 }

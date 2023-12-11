@@ -23,21 +23,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
-import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -45,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.io.IOException;
@@ -70,7 +59,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static private long SLEEP_TIME;
 
   private String workerName;
-  protected final CompactorFactory compactorFactory;
+  private final CompactorFactory compactorFactory;
+  private String workerMetric;
+  private CompactionInfo ci;
+  private Table table;
+  private CompactionExecutor compactionExecutor;
 
   public Worker() {
     compactorFactory = CompactorFactory.getInstance();
@@ -184,12 +177,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
     PerfLogger perfLogger = SessionState.getPerfLogger(false);
-    String workerMetric = null;
-
-    CompactionInfo ci = null;
-    Table table = null;
     boolean compactionResult = false;
-    CompactionExecutor compactionExecutor = null;
 
     // If an exception is thrown in the try-with-resources block below, msc is closed and nulled, so a new instance
     // is need to be obtained here.
@@ -202,7 +190,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
 
-    try (CompactionTxn compactionTxn = new CompactionTxn()) {
+    try {
 
       FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
       findNextCompactRequest.setWorkerId(workerName);
@@ -249,24 +237,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
-      if (ci.isRebalanceCompaction() && table.getSd().getNumBuckets() > 0) {
-        LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
-        ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
-        msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
-        return false;
-      }
-
-      if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
-        if (LOG.isWarnEnabled()) {
-          LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
-              "Since the compaction request is {}, it will be ignored.", ci.type);
-        }
-      }
-
       CompactorUtil.checkInterrupt(CLASS_NAME);
-
-      compactionExecutor = CompactionExecutorFactory.getInstance(conf, msc, compactorFactory, table, compactionTxn, 
-          collectGenericStats, collectMrStats);
+      compactionExecutor = CompactionExecutorFactory.createExecutor(conf, msc, compactorFactory, table, collectGenericStats, collectMrStats);
 
       try {
         compactionResult = compactionExecutor.compact(table, ci);
@@ -276,15 +248,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         markFailed(ci, e.getMessage());
 
         if (CompactorUtil.runJobAsSelf(ci.runAs)) {
-          compactionExecutor.cleanupResultDirs();
+          compactionExecutor.cleanupResultDirs(ci);
         } else {
           LOG.info("Cleaning as user " + ci.runAs);
           UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
               UserGroupInformation.getLoginUser());
 
-          CompactionExecutor finalCompactionExecutor = compactionExecutor;
           ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-            finalCompactionExecutor.cleanupResultDirs();
+            compactionExecutor.cleanupResultDirs(ci);
             return null;
           });
           try {
@@ -344,96 +315,4 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     name.append(getId());
     return name.toString();
   }
-
-  /**
-   * Keep track of the compaction's transaction and its operations.
-   */
-  class CompactionTxn implements AutoCloseable {
-    private long txnId = 0;
-    private long lockId = 0;
-
-    private TxnStatus status = TxnStatus.UNKNOWN;
-    private boolean successfulCompaction = false;
-
-    /**
-     * Try to open a new txn.
-     * @throws TException
-     */
-    void open(CompactionInfo ci) throws TException {
-      this.txnId = msc.openTxn(ci.runAs, ci.type == CompactionType.REBALANCE ? TxnType.REBALANCE_COMPACTION : TxnType.COMPACTION);
-      status = TxnStatus.OPEN;
-
-      LockRequest lockRequest;
-      if (CompactionType.REBALANCE.equals(ci.type)) {
-        lockRequest = createLockRequest(ci, txnId, LockType.EXCL_WRITE, DataOperationType.UPDATE);
-      } else {
-        lockRequest = createLockRequest(ci, txnId, LockType.SHARED_READ, DataOperationType.SELECT);
-      }
-      LockResponse res = msc.lock(lockRequest);
-      if (res.getState() != LockState.ACQUIRED) {
-        throw new TException("Unable to acquire lock(s) on {" + ci.getFullPartitionName()
-            + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
-      }
-      lockId = res.getLockid();
-      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, TxnUtils.getFullTableName(ci.dbname, ci.tableName));
-    }
-
-    /**
-     * Mark compaction as successful. This means the txn will be committed; otherwise it will be aborted.
-     */
-    void wasSuccessful() {
-      this.successfulCompaction = true;
-    }
-
-    /**
-     * Commit or abort txn.
-     * @throws Exception
-     */
-    @Override public void close() throws Exception {
-      if (status == TxnStatus.UNKNOWN) {
-        return;
-      }
-      try {
-        //the transaction is about to close, we can stop heartbeating regardless of it's state
-        CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
-      } finally {
-        if (successfulCompaction) {
-          commit();
-        } else {
-          abort();
-        }
-      }
-    }
-
-    long getTxnId() {
-      return txnId;
-    }
-
-    @Override public String toString() {
-      return "txnId=" + txnId + ", lockId=" + lockId + " (TxnStatus: " + status + ")";
-    }
-
-    /**
-     * Commit the txn if open.
-     */
-    private void commit() throws TException {
-      if (status == TxnStatus.OPEN) {
-        msc.commitTxn(txnId);
-        status = TxnStatus.COMMITTED;
-      }
-    }
-
-    /**
-     * Abort the txn if open.
-     */
-    private void abort() throws TException {
-      if (status == TxnStatus.OPEN) {
-        AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
-        abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_COMPACTION_TXN.getErrorCode());
-        msc.rollbackTxn(abortTxnRequest);
-        status = TxnStatus.ABORTED;
-      }
-    }
-  }
-
 }

@@ -23,12 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.LockComponentBuilder;
-import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -136,29 +131,6 @@ public abstract class CompactorThread extends Thread implements Configurable {
   @VisibleForTesting
   protected String getRuntimeVersion() {
     return this.getClass().getPackage().getImplementationVersion();
-  }
-
-  protected LockRequest createLockRequest(CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
-    String agentInfo = Thread.currentThread().getName();
-    LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
-    requestBuilder.setUser(ci.runAs);
-    requestBuilder.setTransactionId(txnId);
-
-    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-      .setLock(lockType)
-      .setOperationType(opType)
-      .setDbName(ci.dbname)
-      .setTableName(ci.tableName)
-      .setIsTransactional(true);
-
-    if (ci.partName != null) {
-      lockCompBuilder.setPartitionName(ci.partName);
-    }
-    requestBuilder.addLockComponent(lockCompBuilder.build());
-
-    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
-      !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
-    return requestBuilder.build();
   }
 
   protected void doPostLoopActions(long elapsedTime) throws InterruptedException {

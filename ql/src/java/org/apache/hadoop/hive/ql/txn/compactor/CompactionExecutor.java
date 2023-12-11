@@ -38,20 +38,18 @@ public abstract class CompactionExecutor {
   protected final HiveConf conf;
   protected final CompactorFactory compactorFactory;
   protected final boolean collectGenericStats;
-  protected final boolean collectMrStats;
   protected boolean computeStats = false;
   
   public CompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
-      boolean collectGenericStats, boolean collectMrStats) {
+      boolean collectGenericStats) {
     this.conf = conf;
     this.msc = msc;
     this.compactorFactory = compactorFactory;
     this.collectGenericStats = collectGenericStats;
-    this.collectMrStats = collectMrStats;
   }
   
   abstract Boolean compact(Table table, CompactionInfo ci) throws InterruptedException, TException, IOException, HiveException;
-  abstract public void cleanupResultDirs();
+  abstract public void cleanupResultDirs(CompactionInfo ci);
 
   public boolean isComputeStats() {
     return computeStats;

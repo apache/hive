@@ -24,19 +24,19 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 public class CompactionExecutorFactory {
   
-  public static CompactionExecutor getInstance(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
-      Table table, Worker.CompactionTxn compactionTxn, boolean collectGenericStats, boolean collectMrStats) {
+  public static CompactionExecutor createExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
+      Table table, boolean collectGenericStats, boolean collectMrStats) {
 
     CompactionExecutor compactionExecutor;
-    
+
     if (MetaStoreUtils.isIcebergTable(table.getParameters())) {
-      compactionExecutor = new IcebergCompactionExecutor(conf, msc, compactorFactory, collectGenericStats, collectMrStats);
+      compactionExecutor = new IcebergCompactionExecutor(conf, msc, compactorFactory, collectGenericStats);
     }
     else {
-      compactionExecutor = new AcidCompactionExecutor(conf, msc, compactorFactory, compactionTxn, collectGenericStats, 
+      compactionExecutor = new AcidCompactionExecutor(conf, msc, compactorFactory, collectGenericStats, 
           collectMrStats);
     }
-    
+
     return compactionExecutor;
   }
 }

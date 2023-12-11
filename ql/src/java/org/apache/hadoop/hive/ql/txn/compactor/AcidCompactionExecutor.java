@@ -24,12 +24,21 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
+import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
@@ -51,16 +60,17 @@ public class AcidCompactionExecutor extends CompactionExecutor {
   static final private String CLASS_NAME = AcidCompactionExecutor.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   
-  final private Worker.CompactionTxn compactionTxn;
+  private final CompactionTxn compactionTxn;
+  private final boolean collectMrStats;
   private StorageDescriptor sd;
   private ValidCompactorWriteIdList tblValidWriteIds;
   private AcidDirectory dir;
-  private CompactionInfo ci;
 
   public AcidCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
-                                Worker.CompactionTxn compactionTxn, boolean collectGenericStats, boolean collectMrStats) {
-    super(conf, msc, compactorFactory, collectGenericStats, collectMrStats);
-    this.compactionTxn = compactionTxn;
+      boolean collectGenericStats, boolean collectMrStats) {
+    super(conf, msc, compactorFactory, collectGenericStats);
+    this.compactionTxn = new CompactionTxn();
+    this.collectMrStats = collectMrStats;
   }
   
   /**
@@ -88,7 +98,7 @@ public class AcidCompactionExecutor extends CompactionExecutor {
     }
   }
 
-  public void cleanupResultDirs() {
+  public void cleanupResultDirs(CompactionInfo ci) {
     // result directory for compactor to write new files
     Path resultDir = QueryCompactor.Util.getCompactionResultDir(sd, tblValidWriteIds, conf,
         ci.type == CompactionType.MAJOR, false, false, dir);
@@ -112,7 +122,20 @@ public class AcidCompactionExecutor extends CompactionExecutor {
   
   public Boolean compact(Table table, CompactionInfo ci) throws InterruptedException, TException, IOException, HiveException {
 
-    this.ci = ci;
+    if (ci.isRebalanceCompaction() && table.getSd().getNumBuckets() > 0) {
+      LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
+      ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
+      msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+      return false;
+    }
+
+    if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
+            "Since the compaction request is {}, it will be ignored.", ci.type);
+      }
+    }
+
     String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());
 
     // Find the partition we will be working with, if there is one.
@@ -293,5 +316,96 @@ public class AcidCompactionExecutor extends CompactionExecutor {
           sd.getLocation());
     }
     return needsJustCleaning;
+  }
+
+  /**
+   * Keep track of the compaction's transaction and its operations.
+   */
+  class CompactionTxn implements AutoCloseable {
+    private long txnId = 0;
+    private long lockId = 0;
+
+    private TxnStatus status = TxnStatus.UNKNOWN;
+    private boolean successfulCompaction = false;
+
+    /**
+     * Try to open a new txn.
+     * @throws TException
+     */
+    void open(CompactionInfo ci) throws TException {
+      this.txnId = msc.openTxn(ci.runAs, ci.type == CompactionType.REBALANCE ? TxnType.REBALANCE_COMPACTION : TxnType.COMPACTION);
+      status = TxnStatus.OPEN;
+
+      LockRequest lockRequest;
+      if (CompactionType.REBALANCE.equals(ci.type)) {
+        lockRequest = CompactorUtil.createLockRequest(conf, ci, txnId, LockType.EXCL_WRITE, DataOperationType.UPDATE);
+      } else {
+        lockRequest = CompactorUtil.createLockRequest(conf, ci, txnId, LockType.SHARED_READ, DataOperationType.SELECT);
+      }
+      LockResponse res = msc.lock(lockRequest);
+      if (res.getState() != LockState.ACQUIRED) {
+        throw new TException("Unable to acquire lock(s) on {" + ci.getFullPartitionName()
+            + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
+      }
+      lockId = res.getLockid();
+      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, TxnUtils.getFullTableName(ci.dbname, ci.tableName));
+    }
+
+    /**
+     * Mark compaction as successful. This means the txn will be committed; otherwise it will be aborted.
+     */
+    void wasSuccessful() {
+      this.successfulCompaction = true;
+    }
+
+    /**
+     * Commit or abort txn.
+     * @throws Exception
+     */
+    @Override public void close() throws Exception {
+      if (status == TxnStatus.UNKNOWN) {
+        return;
+      }
+      try {
+        //the transaction is about to close, we can stop heartbeating regardless of it's state
+        CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
+      } finally {
+        if (successfulCompaction) {
+          commit();
+        } else {
+          abort();
+        }
+      }
+    }
+
+    long getTxnId() {
+      return txnId;
+    }
+
+    @Override public String toString() {
+      return "txnId=" + txnId + ", lockId=" + lockId + " (TxnStatus: " + status + ")";
+    }
+
+    /**
+     * Commit the txn if open.
+     */
+    private void commit() throws TException {
+      if (status == TxnStatus.OPEN) {
+        msc.commitTxn(txnId);
+        status = TxnStatus.COMMITTED;
+      }
+    }
+
+    /**
+     * Abort the txn if open.
+     */
+    private void abort() throws TException {
+      if (status == TxnStatus.OPEN) {
+        AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
+        abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_COMPACTION_TXN.getErrorCode());
+        msc.rollbackTxn(abortTxnRequest);
+        status = TxnStatus.ABORTED;
+      }
+    }
   }
 }
