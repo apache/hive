@@ -4905,7 +4905,8 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("catName", catName);
     }
 
-    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, table != null ? table.getPartitionKeys() : null);
+    tree.accept(new ExpressionTree.JDOFilterGenerator(getConf(),
+        table != null ? table.getPartitionKeys() : null, queryBuilder, params));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
@@ -4925,7 +4926,7 @@ public class ObjectStore implements RawStore, Configurable {
     params.put("t1", tblName);
     params.put("t2", dbName);
     params.put("t3", catName);
-    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, partitionKeys);
+    tree.accept(new ExpressionTree.JDOFilterGenerator(getConf(), partitionKeys, queryBuilder, params));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());

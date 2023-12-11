@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -231,25 +229,27 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   }
 
   @Override
-  public Date visitDateLiteral(PartitionFilterParser.DateLiteralContext ctx) {
+  public String visitDateLiteral(PartitionFilterParser.DateLiteralContext ctx) {
     PartitionFilterParser.DateContext date = ctx.date();
     String dateValue = unquoteString(date.value.getText());
     try {
-      return MetaStoreUtils.convertStringToDate(dateValue);
+      MetaStoreUtils.convertStringToDate(dateValue);
     } catch (DateTimeParseException e) {
       throw new ParseCancellationException(e.getMessage());
     }
+    return dateValue;
   }
 
   @Override
-  public Timestamp visitTimestampLiteral(PartitionFilterParser.TimestampLiteralContext ctx) {
+  public String visitTimestampLiteral(PartitionFilterParser.TimestampLiteralContext ctx) {
     PartitionFilterParser.TimestampContext timestamp = ctx.timestamp();
     String timestampValue = unquoteString(timestamp.value.getText());
     try {
-      return MetaStoreUtils.convertStringToTimestamp(timestampValue);
+      MetaStoreUtils.convertStringToTimestamp(timestampValue);
     } catch (DateTimeParseException e) {
       throw new ParseCancellationException(e.getMessage());
     }
+    return timestampValue;
   }
 
   @Override

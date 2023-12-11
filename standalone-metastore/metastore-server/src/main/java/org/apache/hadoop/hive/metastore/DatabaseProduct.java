@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLTransactionRollbackException;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -263,7 +265,9 @@ public class DatabaseProduct implements Configurable {
 
   protected String toTimestamp(String tableValue) {
     if (isORACLE()) {
-      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH:mm:ss')";
+      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH24:mi:ss')";
+    } else if (isSQLSERVER()) {
+      return "CONVERT(DATETIME, " + tableValue + ")";
     } else {
       return "cast(" + tableValue + " as TIMESTAMP)";
     }
@@ -746,6 +750,22 @@ public class DatabaseProduct implements Configurable {
       return val ? "Y" : "N";
     }
     return val;
+  }
+
+  public Object convertDateValue(Object dateValue) {
+    assert dateValue instanceof String;
+    Date date = MetaStoreUtils.convertStringToDate((String)dateValue);
+    Object result = MetaStoreUtils.convertDateToString(date);
+    return result;
+  }
+
+  public Object convertTimestampValue(Object timestampValue) {
+    assert timestampValue instanceof String;
+    MetaStoreUtils.convertStringToTimestamp((String)timestampValue);
+    // The timestampValue looks valid now, for Postgres/SQLServer/Oracle, return timestampValue as it is,
+    // otherwise we may run into different results on SQL and JDO, check the partition_timestamp3.q
+    // for such case.
+    return timestampValue;
   }
 
   // This class implements the Configurable interface for the benefit
