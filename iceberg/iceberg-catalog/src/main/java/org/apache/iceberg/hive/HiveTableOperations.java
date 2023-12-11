@@ -85,7 +85,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   private static final String NO_LOCK_EXPECTED_VALUE = "expected_parameter_value";
   private static final long HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT = 32672;
 
-  private static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  private static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
 
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION = ImmutableBiMap.of(
       // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things but with different names
@@ -392,8 +392,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     if (hiveEngineEnabled) {
       String storageHandler = parameters.get(hive_metastoreConstants.META_TABLE_STORAGE);
       // Check if META_TABLE_STORAGE is not present or does not contain ICEBERG_STORAGE_HANDLER
-      if (storageHandler == null || !storageHandler.contains(ICEBERG_STORAGE_HANDLER)) {
-        parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, ICEBERG_STORAGE_HANDLER);
+      if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
+        parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
       }
     } else {
       parameters.remove(hive_metastoreConstants.META_TABLE_STORAGE);
@@ -594,6 +594,21 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
     } else {
       return new NoLock();
+    }
+  }
+
+  /**
+   * Checks if the storage_handler property is already set to HIVE_ICEBERG_STORAGE_HANDLER.
+   * @param storageHandler Storage Handler class
+   * @return true if the storage_handler property is set to HIVE_ICEBERG_STORAGE_HANDLER
+   */
+  private static boolean isHiveIcebergStorageHandler(String storageHandler) {
+    try {
+      Class<?> storageHandlerClass = Class.forName(storageHandler);
+      Class<?> icebergStorageHandlerClass = Class.forName(HIVE_ICEBERG_STORAGE_HANDLER);
+      return icebergStorageHandlerClass.isAssignableFrom(storageHandlerClass);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Error checking storage handler class", e);
     }
   }
 }
