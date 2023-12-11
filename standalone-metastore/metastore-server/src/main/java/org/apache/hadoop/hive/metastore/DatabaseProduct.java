@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLTransactionRollbackException;
@@ -35,6 +36,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,6 +264,8 @@ public class DatabaseProduct implements Configurable {
   protected String toTimestamp(String tableValue) {
     if (isORACLE()) {
       return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH:mm:ss')";
+    } else if (isMYSQL()) {
+      return "TIMESTAMP(" + tableValue + ")";
     } else {
       return "cast(" + tableValue + " as TIMESTAMP)";
     }
@@ -743,6 +747,26 @@ public class DatabaseProduct implements Configurable {
       return val ? "Y" : "N";
     }
     return val;
+  }
+
+  public Object convertDateValue(Object dateValue) {
+    assert dateValue instanceof String;
+    if (isPOSTGRES()) {
+      return "date '" + dateValue + "'";
+    } else {
+      Date date = MetaStoreUtils.convertStringToDate((String)dateValue);
+      return MetaStoreUtils.convertDateToString(date);
+    }
+  }
+
+  public Object convertTimestampValue(Object timestampValue) {
+    assert timestampValue instanceof String;
+    if (isPOSTGRES()) {
+      return "timestamp '" + timestampValue + "'";
+    } else {
+      Timestamp timestamp = MetaStoreUtils.convertStringToTimestamp((String)timestampValue);
+      return MetaStoreUtils.convertTimestampToString(timestamp);
+    }
   }
 
   // This class implements the Configurable interface for the benefit

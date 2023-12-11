@@ -32,10 +32,8 @@ import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1323,7 +1321,7 @@ class MetaStoreDirectSql {
     @Override
     public void visit(LeafNode node) throws MetaException {
       int partColCount = partitionKeys.size();
-      int partColIndex = node.getPartColIndexForFilter(partitionKeys, filterBuffer);
+      int partColIndex = LeafNode.getPartColIndexForFilter(node.keyName, partitionKeys, filterBuffer);
       if (filterBuffer.hasError()) {
         return;
       }
@@ -1341,29 +1339,10 @@ class MetaStoreDirectSql {
         return;
       }
 
-      // if Filter.g does date parsing for quoted strings, we'd need to verify there's no
-      // type mismatch when string col is filtered by a string that looks like date.
-      if (colType == FilterType.Date && valType == FilterType.String) {
-        // Filter.g cannot parse a quoted date; try to parse date here too.
-        try {
-          nodeValue = MetaStoreUtils.convertStringToDate((String)nodeValue);
-          valType = FilterType.Date;
-        } catch (Exception pe) { // do nothing, handled below - types will mismatch
-        }
-      }
-
-      if (colType == FilterType.Timestamp && valType == FilterType.String) {
-        nodeValue = MetaStoreUtils.convertStringToTimestamp((String)nodeValue);
-        valType = FilterType.Timestamp;
-      }
-
-      // We format it so we are sure we are getting the right value
-      if (valType == FilterType.Date) {
-        // Format
-        nodeValue = MetaStoreUtils.convertDateToString((Date)nodeValue);
-      } else if (valType == FilterType.Timestamp) {
-        //format
-        nodeValue = MetaStoreUtils.convertTimestampToString((Timestamp) nodeValue);
+      if (colType == FilterType.Date) {
+        nodeValue = dbType.convertDateValue(nodeValue);
+      } else if (colType == FilterType.Timestamp) {
+        nodeValue = dbType.convertTimestampValue(nodeValue);
       }
 
       boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
