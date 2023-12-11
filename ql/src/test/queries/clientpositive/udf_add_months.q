@@ -40,3 +40,15 @@ add_months(cast('2016-01-29 10:30:00' as timestamp), 1),
 add_months(cast('2016-02-29 10:30:00' as timestamp), -1),
 add_months(cast('2016-02-29 10:30:12' as timestamp), 2, 'YYYY-MM-dd HH:mm:ss'),
 add_months(cast(null as timestamp), 1);
+
+select
+add_months('2014-01-14 10:30:00', 1.0),
+add_months('2014-01-31 10:30:00', cast(1.1 as decimal(5,0))),
+add_months('2014-02-28 10:30:00', -1.0),
+add_months('2014-02-28 16:30:00', 2.0),
+add_months('2014-04-30 10:30:00', cast(-2 as decimal(5,0))),
+add_months('2015-02-28 10:30:00', 12.0),
+add_months('2016-02-29 10:30:00', -12.0),
+add_months('2016-01-29 10:30:00', 1.0),
+add_months('2016-02-29 10:30:12', -12.0, 'YYYY-MM-dd HH:mm:ss'),
+add_months('2016-02-29 10:30:00', -1.0);

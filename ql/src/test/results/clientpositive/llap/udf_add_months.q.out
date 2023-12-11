@@ -133,3 +133,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-02-14	2014-02-28	2014-01-31	2014-04-30	2014-02-28	2016-02-29	2015-02-28	2016-02-29	2016-01-31	2016-04-30 10:30:12	NULL
+PREHOOK: query: select
+add_months('2014-01-14 10:30:00', 1.0),
+add_months('2014-01-31 10:30:00', cast(1.1 as decimal(5,0))),
+add_months('2014-02-28 10:30:00', -1.0),
+add_months('2014-02-28 16:30:00', 2.0),
+add_months('2014-04-30 10:30:00', cast(-2 as decimal(5,0))),
+add_months('2015-02-28 10:30:00', 12.0),
+add_months('2016-02-29 10:30:00', -12.0),
+add_months('2016-01-29 10:30:00', 1.0),
+add_months('2016-02-29 10:30:12', -12.0, 'YYYY-MM-dd HH:mm:ss'),
+add_months('2016-02-29 10:30:00', -1.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+add_months('2014-01-14 10:30:00', 1.0),
+add_months('2014-01-31 10:30:00', cast(1.1 as decimal(5,0))),
+add_months('2014-02-28 10:30:00', -1.0),
+add_months('2014-02-28 16:30:00', 2.0),
+add_months('2014-04-30 10:30:00', cast(-2 as decimal(5,0))),
+add_months('2015-02-28 10:30:00', 12.0),
+add_months('2016-02-29 10:30:00', -12.0),
+add_months('2016-01-29 10:30:00', 1.0),
+add_months('2016-02-29 10:30:12', -12.0, 'YYYY-MM-dd HH:mm:ss'),
+add_months('2016-02-29 10:30:00', -1.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2014-02-14	2014-02-28	2014-01-31	2014-04-30	2014-02-28	2016-02-29	2015-02-28	2016-02-29	2015-02-28 10:30:12	2016-01-31

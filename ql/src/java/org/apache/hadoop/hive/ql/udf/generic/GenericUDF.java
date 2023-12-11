@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -351,8 +352,12 @@ public abstract class GenericUDF implements Closeable {
     case INT:
     case VOID:
       break;
+    case DECIMAL:
+      if (inOi.scale() == 0) {
+        break;
+      }
     default:
-      throw new UDFArgumentTypeException(i, getFuncName() + " only takes INT/SHORT/BYTE types as "
+      throw new UDFArgumentTypeException(i, getFuncName() + " only takes INT/SHORT/BYTE/DECIMAL(X,0) types as "
           + getArgOrder(i) + " argument, got " + inputType);
     }
 
@@ -607,6 +612,8 @@ public abstract class GenericUDF implements Closeable {
       v = ((ShortWritable) constValue).get();
     } else if (constValue instanceof ByteWritable) {
       v = ((ByteWritable) constValue).get();
+    } else if (constValue instanceof HiveDecimalWritable) {
+      v = ((HiveDecimalWritable) constValue).intValue();
     } else {
       throw new UDFArgumentTypeException(i, getFuncName() + " only takes INT/SHORT/BYTE types as "
           + getArgOrder(i) + " argument, got " + constValue.getClass());
