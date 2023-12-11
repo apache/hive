@@ -18,8 +18,12 @@
 package org.apache.hadoop.hive.metastore.txn.functions;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
@@ -28,12 +32,15 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
+import org.apache.hadoop.hive.metastore.txn.queries.GetTxnDbsUpdatedHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -51,10 +58,12 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
 
   private final long timeout;
   private final long replicationTxnTimeout;
+  private final List<TransactionalMetaStoreEventListener> transactionalListeners;  
 
-  public PerformTimeoutsFunction(long timeout, long replicationTxnTimeout) {
+  public PerformTimeoutsFunction(long timeout, long replicationTxnTimeout, List<TransactionalMetaStoreEventListener> transactionalListeners) {
     this.timeout = timeout;
     this.replicationTxnTimeout = replicationTxnTimeout;
+    this.transactionalListeners = transactionalListeners;
   }
 
   @Override
@@ -73,7 +82,7 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
       //timely way.
       timeOutLocks(jdbcResource, dbProduct);
       while (true) {
-        String s = " \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
+        String s = " \"TXN_ID\", \"TXN_TYPE\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
             " AND (" +
             "\"TXN_TYPE\" != " + TxnType.REPL_CREATED.getValue() +
             " AND \"TXN_LAST_HEARTBEAT\" <  " + getEpochFn(dbProduct) + "-" + timeout +
@@ -85,14 +94,14 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
         s = jdbcResource.getSqlGenerator().addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
 
         LOG.debug("Going to execute query <{}>", s);
-        List<List<Long>> timedOutTxns = Objects.requireNonNull(jdbcResource.getJdbcTemplate().query(s, rs -> {
-          List<List<Long>> txnbatch = new ArrayList<>();
-          List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+        List<Map<Long, TxnType>> timedOutTxns = Objects.requireNonNull(jdbcResource.getJdbcTemplate().query(s, rs -> {
+          List<Map<Long, TxnType>> txnbatch = new ArrayList<>();
+          Map<Long, TxnType> currentBatch = new HashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
           while (rs.next()) {
-            currentBatch.add(rs.getLong(1));
+            currentBatch.put(rs.getLong(1),TxnType.findByValue(rs.getInt(2)));
             if (currentBatch.size() == TIMED_OUT_TXN_ABORT_BATCH_SIZE) {
               txnbatch.add(currentBatch);
-              currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+              currentBatch = new HashMap<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
             }
           }
           if (!currentBatch.isEmpty()) {
@@ -108,14 +117,26 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
         Object savePoint = context.createSavepoint();
 
         int numTxnsAborted = 0;
-        for (List<Long> batchToAbort : timedOutTxns) {
+        for (Map<Long, TxnType> batchToAbort : timedOutTxns) {
           context.releaseSavepoint(savePoint);
           savePoint = context.createSavepoint();
-          int abortedTxns = new AbortTxnsFunction(batchToAbort, true, false, false, 
+          int abortedTxns = new AbortTxnsFunction(new ArrayList<>(batchToAbort.keySet()), true, false, false, 
               TxnErrorMsg.ABORT_TIMEOUT).execute(jdbcResource);
+          
           if (abortedTxns == batchToAbort.size()) {
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
+            LOG.info("Aborted the following transactions due to timeout: {}", batchToAbort);
+            if (transactionalListeners != null) {
+              for (Map.Entry<Long, TxnType> txnEntry : batchToAbort.entrySet()) {
+                List<String> dbsUpdated = jdbcResource.execute(new GetTxnDbsUpdatedHandler(txnEntry.getKey()));
+                MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+                    EventMessage.EventType.ABORT_TXN,
+                    new AbortTxnEvent(txnEntry.getKey(), txnEntry.getValue(), null, dbsUpdated),
+                    jdbcResource.getConnection(), jdbcResource.getSqlGenerator());
+              }
+              LOG.debug("Added Notifications for the transactions that are aborted due to timeout: {}", batchToAbort);
+            }
           } else {
             //could not abort all txns in this batch - this may happen because in parallel with this
             //operation there was activity on one of the txns in this batch (commit/abort/heartbeat)

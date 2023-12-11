@@ -1068,7 +1068,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.Idempotent
   public void performTimeOuts() {
-    new PerformTimeoutsFunction(timeout, replicationTxnTimeout).execute(jdbcResource);
+    new PerformTimeoutsFunction(timeout, replicationTxnTimeout, transactionalListeners).execute(jdbcResource);
   }
 
   @Override
