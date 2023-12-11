@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.metastore.txn.queries.OpenTxnTimeoutLowBoundaryTxn
 import org.apache.hadoop.hive.metastore.txn.queries.ReadyToCleanAbortHandler;
 import org.apache.hadoop.hive.metastore.txn.queries.ReadyToCleanHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
+import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;

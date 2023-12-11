@@ -1031,7 +1031,7 @@ public class TestTxnHandler {
     res = txnHandler.checkLock(new CheckLockRequest(lockid));
     assertTrue(res.getState() == LockState.ACQUIRED);
     txnHandler.unlock(new UnlockRequest(lockid));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
   }
 
   @Test
@@ -1086,7 +1086,7 @@ public class TestTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
   }
 
   @Test
@@ -1102,7 +1102,7 @@ public class TestTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
   }
 
   @Test

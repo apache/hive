@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
+import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryHandler;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;

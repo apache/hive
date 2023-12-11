@@ -77,9 +77,9 @@ import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData;
 import org.apache.hadoop.hive.metastore.txn.entities.MetricsInfo;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryException;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler;
+import org.apache.hadoop.hive.metastore.txn.retry.SqlRetry;
+import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryException;
+import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryHandler;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
@@ -242,7 +242,7 @@ public interface TxnStore extends Configurable {
    */
   @SqlRetry(lockInternally = true)
   @Transactional(value = POOL_TX, noRollbackFor = TxnAbortedException.class)
-  @RetrySemantics.Idempotent
+  @RetrySemantics.Idempotent("No-op if already committed")
   void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException,  MetaException;
 
@@ -253,7 +253,7 @@ public interface TxnStore extends Configurable {
    */
   @SqlRetry(lockInternally = true)
   @Transactional(POOL_TX)
-  @RetrySemantics.Idempotent
+  @RetrySemantics.Idempotent("No-op if already replicated the writeid state")
   void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
 
   @Transactional(POOL_TX)
@@ -804,7 +804,7 @@ public interface TxnStore extends Configurable {
 
   @VisibleForTesting
   @Transactional(POOL_TX)
-  int numLocksInLockTable() throws SQLException, MetaException;
+  int getNumLocks() throws SQLException, MetaException;
 
   @VisibleForTesting
   long setTimeout(long milliseconds);

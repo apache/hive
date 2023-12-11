@@ -15,22 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.txn.retryhandling;
+package org.apache.hadoop.hive.metastore.txn.retry;
 
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.thrift.TException;
 import org.springframework.dao.DataAccessException;
 
 import java.sql.SQLException;
 
-import static org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetryHandler.MANUAL_RETRY;
-
 /**
- * This exception can be used to trigger a manual retry in {@link SqlRetryHandler}. Since it is extending
- * {@link RuntimeException} there is no need to mark it in the throws section of the methods.
+ * Functional Interface responsible for wrapping any SQL related function.
+ * Either an {@link SQLException} or {@link DataAccessException} can be thrown from it (which will be retried), or a
+ * {@link MetaException} indicating that the error is not SQL related and should not be retried.
+ * @param <T> Return type
  */
-public class SqlRetryException extends DataAccessException {
-
-  public SqlRetryException(String message) {
-    super(message, new SQLException(message, MANUAL_RETRY));
-  }
-
+@FunctionalInterface
+public interface SqlRetryFunction<T> {
+  
+  T execute() throws SQLException, DataAccessException, TException;
+  
 }

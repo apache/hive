@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.txn.retryhandling;
+package org.apache.hadoop.hive.metastore.txn.retry;
 
 /**
  * Contains all the properties which can alter the behavior of a retry-call in 

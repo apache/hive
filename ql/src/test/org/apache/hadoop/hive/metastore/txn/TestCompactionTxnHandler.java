@@ -754,7 +754,7 @@ public class TestCompactionTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
 
     Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(2, potentials.size());
@@ -1015,7 +1015,7 @@ public class TestCompactionTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertSame(res.getState(), LockState.ACQUIRED);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
 
     Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(1, potentials.size());

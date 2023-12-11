@@ -15,23 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.txn.retryhandling;
+package org.apache.hadoop.hive.metastore.txn.retry;
 
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.thrift.TException;
-import org.springframework.dao.DataAccessException;
-
-import java.sql.SQLException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Functional Interface responsible for wrapping any SQL related function.
- * Either an {@link SQLException} or {@link DataAccessException} can be thrown from it (which will be retried), or a
- * {@link MetaException} indicating that the error is not SQL related and should not be retried.
- * @param <T> Return type
+ * Can be put on methods to tell {@link SqlRetryHandler} that the method
+ * must be re-executed in case of SQL related error.
  */
-@FunctionalInterface
-public interface SqlRetryFunction<T> {
-  
-  T execute() throws SQLException, DataAccessException, TException;
-  
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface SqlRetry {
+
+  /**
+   * @return True if the internal (DERBY) lock is necessary. False by default.
+   */
+  boolean lockInternally() default false;
+
+  /**
+   * @return True if the method execution should be retried in case of duplicate key error. False by default.
+   */
+  boolean retryOnDuplicateKey() default false;
+
 }

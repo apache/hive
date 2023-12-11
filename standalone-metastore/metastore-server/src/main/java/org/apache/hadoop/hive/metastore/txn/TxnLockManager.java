@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.txn.retryhandling.SqlRetry;
+import org.apache.hadoop.hive.metastore.txn.retry.SqlRetry;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.POOL_TX;
