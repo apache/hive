@@ -230,7 +230,7 @@ public class TestGenericUDFAddMonths {
       assertTrue("add_months exception expected", false);
     } catch (UDFArgumentTypeException e) {
       assertEquals("add_months test",
-          "add_months only takes INT/SHORT/BYTE types as 2nd argument, got LONG", e.getMessage());
+          "add_months only takes INT/SHORT/BYTE/DECIMAL(X,0) types as 2nd argument, got LONG", e.getMessage());
     }
   }
 
