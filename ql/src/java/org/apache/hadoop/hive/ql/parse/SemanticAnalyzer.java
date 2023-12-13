@@ -8640,7 +8640,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 new DummyPartition(dest_tab, dest_tab.getDbName()
                         + "@" + dest_tab.getTableName() + "@" + ppath,
                         partSpec);
-        output = new WriteEntity(p, getWriteType(dest), false);
+        WriteEntity.WriteType writeType;
+        if (ltd.isInsertOverwrite()) {
+          writeType = WriteEntity.WriteType.INSERT_OVERWRITE;
+        } else {
+          writeType = getWriteType(dest);
+        }
+        output = new WriteEntity(p, writeType, false);
         output.setDynamicPartitionWrite(true);
         outputs.add(output);
       }
