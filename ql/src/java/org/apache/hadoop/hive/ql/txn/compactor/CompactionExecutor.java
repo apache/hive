@@ -22,12 +22,10 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 
 public abstract class CompactionExecutor {
 
@@ -48,7 +46,7 @@ public abstract class CompactionExecutor {
     this.collectGenericStats = collectGenericStats;
   }
   
-  abstract Boolean compact(Table table, CompactionInfo ci) throws InterruptedException, TException, IOException, HiveException;
+  abstract Boolean compact(Table table, CompactionInfo ci) throws Exception;
   abstract public void cleanupResultDirs(CompactionInfo ci);
 
   public boolean isComputeStats() {

@@ -23,12 +23,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class IcebergCompactionExecutor extends CompactionExecutor {
   static final private String CLASS_NAME = IcebergCompactionExecutor.class.getName();
@@ -40,7 +36,7 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
     super(conf, msc, compactorFactory, collectGenericStats);
   }
 
-  public Boolean compact(Table table, CompactionInfo ci) throws InterruptedException, TException, IOException, HiveException {
+  public Boolean compact(Table table, CompactionInfo ci) throws Exception {
 
     // Find the appropriate storage descriptor
     final StorageDescriptor sd =  CompactorUtil.resolveStorageDescriptor(table);

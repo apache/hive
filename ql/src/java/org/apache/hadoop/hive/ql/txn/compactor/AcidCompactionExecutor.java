@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
@@ -60,7 +59,6 @@ public class AcidCompactionExecutor extends CompactionExecutor {
   static final private String CLASS_NAME = AcidCompactionExecutor.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   
-  private final CompactionTxn compactionTxn;
   private final boolean collectMrStats;
   private StorageDescriptor sd;
   private ValidCompactorWriteIdList tblValidWriteIds;
@@ -69,7 +67,6 @@ public class AcidCompactionExecutor extends CompactionExecutor {
   public AcidCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
       boolean collectGenericStats, boolean collectMrStats) {
     super(conf, msc, compactorFactory, collectGenericStats);
-    this.compactionTxn = new CompactionTxn();
     this.collectMrStats = collectMrStats;
   }
   
@@ -120,113 +117,115 @@ public class AcidCompactionExecutor extends CompactionExecutor {
     }
   }
   
-  public Boolean compact(Table table, CompactionInfo ci) throws InterruptedException, TException, IOException, HiveException {
+  public Boolean compact(Table table, CompactionInfo ci) throws Exception {
 
-    if (ci.isRebalanceCompaction() && table.getSd().getNumBuckets() > 0) {
-      LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
-      ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
-      msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
-      return false;
-    }
+    try (CompactionTxn compactionTxn = new CompactionTxn()) {
 
-    if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
-      if (LOG.isWarnEnabled()) {
-        LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
-            "Since the compaction request is {}, it will be ignored.", ci.type);
-      }
-    }
-
-    String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());
-
-    // Find the partition we will be working with, if there is one.
-    Partition p;
-    try {
-      p = CompactorUtil.resolvePartition(conf, msc, ci.dbname, ci.tableName, ci.partName, 
-          CompactorUtil.METADATA_FETCH_MODE.REMOTE);
-      if (p == null && ci.partName != null) {
-        ci.errorMessage = "Unable to find partition " + ci.getFullPartitionName() + ", assuming it was dropped and moving on.";
-        LOG.warn(ci.errorMessage + " Compaction info: {}", ci);
+      if (ci.isRebalanceCompaction() && table.getSd().getNumBuckets() > 0) {
+        LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
+        ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
         msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
         return false;
       }
-    } catch (Exception e) {
-      LOG.error("Unexpected error during resolving partition.", e);
-      ci.errorMessage = e.getMessage();
-      msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-      return false;
-    }
 
-    CompactorUtil.checkInterrupt(CLASS_NAME);
-
-    // Find the appropriate storage descriptor
-    sd =  CompactorUtil.resolveStorageDescriptor(table, p);
-
-    if (isTableSorted(sd, ci)) {
-      return false;  
-    }
-
-    if (ci.runAs == null) {
-      ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
-    }
-
-    CompactorUtil.checkInterrupt(CLASS_NAME);
-
-    /**
-     * we cannot have Worker use HiveTxnManager (which is on ThreadLocal) since
-     * then the Driver would already have the an open txn but then this txn would have
-     * multiple statements in it (for query based compactor) which is not supported (and since
-     * this case some of the statements are DDL, even in the future will not be allowed in a
-     * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
-    compactionTxn.open(ci);
-
-    ValidTxnList validTxnList = msc.getValidTxns(compactionTxn.getTxnId());
-    //with this ValidWriteIdList is capped at whatever HWM validTxnList has
-    tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(msc.getValidWriteIds(
-            Collections.singletonList(fullTableName), validTxnList.writeToString()).get(0));
-    LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
-    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
-
-    ci.highestWriteId = tblValidWriteIds.getHighWatermark();
-    //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about
-    //it until after any data written by it are physically removed
-    msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), compactionTxn.getTxnId());
-
-    CompactorUtil.checkInterrupt(CLASS_NAME);
-
-    // Don't start compaction or cleaning if not necessary
-    if (isDynPartAbort(table, ci)) {
-      msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-      compactionTxn.wasSuccessful();
-      return false;
-    }
-    dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
-    if (!isEnoughToCompact(ci, dir, sd)) {
-      if (needsCleaning(dir, sd)) {
-        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-      } else {
-        // do nothing
-        ci.errorMessage = "None of the compaction thresholds met, compaction request is refused!";
-        LOG.debug(ci.errorMessage + " Compaction info: {}", ci);
-        msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+      if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
+        if (LOG.isWarnEnabled()) {
+          LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
+              "Since the compaction request is {}, it will be ignored.", ci.type);
+        }
       }
-      compactionTxn.wasSuccessful();
-      return false;
-    }
-    if (!ci.isMajorCompaction() && !CompactorUtil.isMinorCompactionSupported(conf, table.getParameters(), dir)) {
-      ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
-          "(non-acid) data in them.";
-      LOG.error(ci.errorMessage + " Compaction info: {}", ci);
+
+      String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());
+
+      // Find the partition we will be working with, if there is one.
+      Partition p;
       try {
-        msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
-      } catch (Throwable tr) {
-        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, tr);
+        p = CompactorUtil.resolvePartition(conf, msc, ci.dbname, ci.tableName, ci.partName,
+            CompactorUtil.METADATA_FETCH_MODE.REMOTE);
+        if (p == null && ci.partName != null) {
+          ci.errorMessage = "Unable to find partition " + ci.getFullPartitionName() + ", assuming it was dropped and moving on.";
+          LOG.warn(ci.errorMessage + " Compaction info: {}", ci);
+          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+          return false;
+        }
+      } catch (Exception e) {
+        LOG.error("Unexpected error during resolving partition.", e);
+        ci.errorMessage = e.getMessage();
+        msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
+        return false;
       }
-      return false;
-    }
-    CompactorUtil.checkInterrupt(CLASS_NAME);
 
-    try {
-      failCompactionIfSetForTest();
+      CompactorUtil.checkInterrupt(CLASS_NAME);
+
+      // Find the appropriate storage descriptor
+      sd =  CompactorUtil.resolveStorageDescriptor(table, p);
+
+      if (isTableSorted(sd, ci)) {
+        return false;
+      }
+
+      if (ci.runAs == null) {
+        ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
+      }
+
+      CompactorUtil.checkInterrupt(CLASS_NAME);
+
+      /**
+       * we cannot have Worker use HiveTxnManager (which is on ThreadLocal) since
+       * then the Driver would already have the an open txn but then this txn would have
+       * multiple statements in it (for query based compactor) which is not supported (and since
+       * this case some of the statements are DDL, even in the future will not be allowed in a
+       * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
+      compactionTxn.open(ci);
+
+      ValidTxnList validTxnList = msc.getValidTxns(compactionTxn.getTxnId());
+      //with this ValidWriteIdList is capped at whatever HWM validTxnList has
+      tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(msc.getValidWriteIds(
+          Collections.singletonList(fullTableName), validTxnList.writeToString()).get(0));
+      LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
+      conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+
+      ci.highestWriteId = tblValidWriteIds.getHighWatermark();
+      //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about
+      //it until after any data written by it are physically removed
+      msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), compactionTxn.getTxnId());
+
+      CompactorUtil.checkInterrupt(CLASS_NAME);
+
+      // Don't start compaction or cleaning if not necessary
+      if (isDynPartAbort(table, ci)) {
+        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        compactionTxn.wasSuccessful();
+        return false;
+      }
+      dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
+      if (!isEnoughToCompact(ci, dir, sd)) {
+        if (needsCleaning(dir, sd)) {
+          msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        } else {
+          // do nothing
+          ci.errorMessage = "None of the compaction thresholds met, compaction request is refused!";
+          LOG.debug(ci.errorMessage + " Compaction info: {}", ci);
+          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+        }
+        compactionTxn.wasSuccessful();
+        return false;
+      }
+      if (!ci.isMajorCompaction() && !CompactorUtil.isMinorCompactionSupported(conf, table.getParameters(), dir)) {
+        ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
+            "(non-acid) data in them.";
+        LOG.error(ci.errorMessage + " Compaction info: {}", ci);
+        try {
+          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+        } catch (Throwable tr) {
+          LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, tr);
+        }
+        return false;
+      }
+      CompactorUtil.checkInterrupt(CLASS_NAME);
+
+      try {
+        failCompactionIfSetForTest();
 
       /*
       First try to run compaction via HiveQL queries.
@@ -234,28 +233,32 @@ public class AcidCompactionExecutor extends CompactionExecutor {
       todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
       task (currently we're using Tez split grouping).
       */
-      CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
-      computeStats = (compactorPipeline.isMRCompaction() && collectMrStats) || collectGenericStats;
+        CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
+        computeStats = (compactorPipeline.isMRCompaction() && collectMrStats) || collectGenericStats;
 
-      LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
-              ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
+        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
+            ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
 
-      CompactorContext compactorContext = new CompactorContext(conf, table, p, sd, tblValidWriteIds, ci, dir);
-      compactorPipeline.execute(compactorContext);
+        CompactorContext compactorContext = new CompactorContext(conf, table, p, sd, tblValidWriteIds, ci, dir);
+        compactorPipeline.execute(compactorContext);
 
-      LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
-          + compactionTxn + ", marking as compacted.");
-      msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-      compactionTxn.wasSuccessful();
+        LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
+            + compactionTxn + ", marking as compacted.");
+        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        compactionTxn.wasSuccessful();
 
-      AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
-          dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
-    } catch (Throwable e) {
-      computeStats = false;
+        AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
+            dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
+      } catch (Throwable e) {
+        computeStats = false;
+        throw e;
+      }
+
+      return true;
+    } catch (Exception e) {
+      LOG.error("Caught exception in " + CLASS_NAME + " while trying to compact " + ci, e);
       throw e;
     }
-
-    return true;
   }
 
   /**
