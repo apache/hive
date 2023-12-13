@@ -17,7 +17,6 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Aggregate;
@@ -34,15 +33,20 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ControlFlowException;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,7 +74,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
   private int countIndex;
   private final Set<TableName> baseTables;
   private final RelOptCluster optCluster;
-  private final VirtualColumnLineageHandler virtualColumnLineageHandler;
+  private final RelMetadataQuery metadataQuery;
 
   public MaterializedViewRewritingRelVisitor(boolean fullAcidView, RelOptCluster optCluster, Set<TableName> baseTables) {
     this.optCluster = optCluster;
@@ -79,7 +83,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     this.rewritingAllowed = false;
     this.countIndex = -1;
     this.baseTables = new HashSet<>(baseTables);
-    this.virtualColumnLineageHandler = new VirtualColumnLineageHandler(optCluster.getMetadataQuery());
+    this.metadataQuery = optCluster.getMetadataQuery();
   }
 
   @Override
@@ -136,17 +140,45 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       }
     }.go(queryBranch);
 
+    Map<RelOptHiveTable, ImmutableBitSet.Builder> projectedColumnMap = new HashMap<>();
     for (int i = 0; i < queryBranch.getRowType().getFieldList().size(); ++i) {
       RelDataTypeField relDataTypeField = queryBranch.getRowType().getFieldList().get(i);
       RexNode rexNode = optCluster.getRexBuilder().makeInputRef(relDataTypeField.getType(), i);
-      RelOptTable relOptTable = virtualColumnLineageHandler.getVirtualColumnLineage(
-          queryBranch, rexNode, VirtualColumn.ROWID);
-      if (!(relOptTable instanceof RelOptHiveTable)) {
+      RexTableInputRef rexTableInputRef = getColumnLineage(queryBranch, rexNode);
+      RelOptHiveTable relOptHiveTable = (RelOptHiveTable) rexTableInputRef.getTableRef().getTable();
+      projectedColumnMap.putIfAbsent(relOptHiveTable, ImmutableBitSet.builder());
+      ImmutableBitSet.Builder projectedColumns = projectedColumnMap.get(relOptHiveTable);
+      projectedColumns.set(rexTableInputRef.getIndex());
+    }
+
+    for (Map.Entry<RelOptHiveTable, ImmutableBitSet.Builder> entry : projectedColumnMap.entrySet()) {
+      ImmutableBitSet projectedColPos = entry.getValue().build();
+
+      PrimaryKeyInfo primaryKeyInfo = entry.getKey().getHiveTableMD().getPrimaryKeyInfo();
+      ImmutableBitSet pkColPos = ImmutableBitSet.of(
+          primaryKeyInfo.getColNames().values().stream()
+              .map(name -> entry.getKey().getRowType().getFieldNames().indexOf(name))
+              .collect(Collectors.toList()));
+
+      if (!pkColPos.isEmpty() && projectedColPos.contains(pkColPos)) {
+        baseTables.remove(entry.getKey().getHiveTableMD().getFullTableName());
         continue;
       }
 
-      RelOptHiveTable relOptHiveTable = (RelOptHiveTable) relOptTable;
-      baseTables.remove(relOptHiveTable.getHiveTableMD().getFullTableName());
+      Collection<List<UniqueConstraint.UniqueConstraintCol>> uniqueConstraints =
+          entry.getKey().getHiveTableMD().getUniqueKeyInfo().getUniqueConstraints().values();
+
+      for (List<UniqueConstraint.UniqueConstraintCol> uniqueConstraintCols : uniqueConstraints) {
+        ImmutableBitSet uniqueColPos = ImmutableBitSet.of(
+            uniqueConstraintCols.stream()
+                .map(uniqueConstraintCol -> uniqueConstraintCol.position - 1)
+                .collect(Collectors.toList()));
+
+        if (!uniqueColPos.isEmpty() && projectedColPos.contains(uniqueColPos)) {
+          baseTables.remove(entry.getKey().getHiveTableMD().getFullTableName());
+          break;
+        }
+      }
     }
 
     // Second branch should only have the MV
@@ -203,7 +235,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     return countIndex;
   }
 
-  public boolean isAllRowIdsProjected() {
+  public boolean isAllBasedTablesHasProjectedUniqueKeyColumn() {
     return baseTables.isEmpty();
   }
 
@@ -216,5 +248,23 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     public ReturnedValue(boolean value) {
       this.value = value;
     }
+  }
+
+  public RexTableInputRef getColumnLineage(RelNode startNode, RexNode rexNode) {
+    if (!(rexNode instanceof RexInputRef)) {
+      return null;
+    }
+
+    RexInputRef rexInputRef = (RexInputRef) rexNode;
+    Set<RexNode> rexNodeSet = metadataQuery.getExpressionLineage(startNode, rexInputRef);
+    if (rexNodeSet == null || rexNodeSet.size() != 1) {
+      return null;
+    }
+
+    RexNode resultRexNode = rexNodeSet.iterator().next();
+    if (!(resultRexNode instanceof RexTableInputRef)) {
+      return null;
+    }
+    return (RexTableInputRef) resultRexNode;
   }
 }
