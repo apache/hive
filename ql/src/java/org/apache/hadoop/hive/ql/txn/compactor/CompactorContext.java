@@ -48,7 +48,7 @@ public class CompactorContext {
     this.dir = dir;
   }
 
-  CompactorContext(HiveConf conf, Table table, StorageDescriptor sd, CompactionInfo ci) {
+  public CompactorContext(HiveConf conf, Table table, StorageDescriptor sd, CompactionInfo ci) {
     this(conf, table, null, sd, null, ci, null);
   }
 

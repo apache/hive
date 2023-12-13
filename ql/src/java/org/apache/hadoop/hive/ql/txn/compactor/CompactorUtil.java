@@ -129,7 +129,7 @@ public class CompactorUtil {
     return (p == null) ? t.getSd() : p.getSd();
   }
 
-  protected static StorageDescriptor resolveStorageDescriptor(Table t) {
+  public static StorageDescriptor resolveStorageDescriptor(Table t) {
     return resolveStorageDescriptor(t, null);
   }
 
@@ -250,7 +250,7 @@ public class CompactorUtil {
     REMOTE
   }
 
-  protected static void checkInterrupt(String callerClassName) throws InterruptedException {
+  public static void checkInterrupt(String callerClassName) throws InterruptedException {
     if (Thread.interrupted()) {
       throw new InterruptedException(callerClassName + " execution is interrupted.");
     }

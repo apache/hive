@@ -21,16 +21,31 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class CompactionExecutorFactory {
+
+  private static final String ICEBERG_COMPACTION_EXECUTOR_CLASS = "org.apache.iceberg.mr.hive.compaction.IcebergCompactionExecutor";
   
   public static CompactionExecutor createExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
-      Table table, boolean collectGenericStats, boolean collectMrStats) {
+      Table table, boolean collectGenericStats, boolean collectMrStats) throws HiveException {
 
     CompactionExecutor compactionExecutor;
 
     if (MetaStoreUtils.isIcebergTable(table.getParameters())) {
-      compactionExecutor = new IcebergCompactionExecutor(conf, msc, compactorFactory, collectGenericStats);
+
+      try {
+        Class<? extends CompactionExecutor> icebergCompactionExecutor = (Class<? extends CompactionExecutor>)
+            Class.forName(ICEBERG_COMPACTION_EXECUTOR_CLASS, true,
+                Utilities.getSessionSpecifiedClassLoader());
+
+        compactionExecutor = icebergCompactionExecutor.newInstance();
+        compactionExecutor.init(conf, msc, compactorFactory, collectGenericStats);
+      }
+      catch (Exception e) {
+        throw new HiveException("Failed instantiating and calling Iceberg compaction executor", e);
+      }
     }
     else {
       compactionExecutor = new AcidCompactionExecutor(conf, msc, compactorFactory, collectGenericStats, 

@@ -15,25 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+package org.apache.iceberg.mr.hive.compaction;
+
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactionExecutor;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IcebergCompactionExecutor extends CompactionExecutor {
-  static final private String CLASS_NAME = IcebergCompactionExecutor.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private static final String CLASS_NAME = IcebergCompactionExecutor.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final long DEFAULT_TXN_ID = 0;
 
-  public IcebergCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
-      boolean collectGenericStats) {
-    super(conf, msc, compactorFactory, collectGenericStats);
+  public IcebergCompactionExecutor() {
   }
 
   public Boolean compact(Table table, CompactionInfo ci) throws Exception {
@@ -50,7 +51,7 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
     }
 
     CompactorUtil.checkInterrupt(CLASS_NAME);
-    
+
     msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), DEFAULT_TXN_ID);
 
     // Don't start compaction or cleaning if not necessary
@@ -73,7 +74,7 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
 
     try {
       failCompactionIfSetForTest();
-      
+
       CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
       computeStats = collectGenericStats;
 
@@ -83,10 +84,10 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
       CompactorContext compactorContext = new CompactorContext(conf, table, sd, ci);
       compactorPipeline.execute(compactorContext);
 
-      LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() 
-          + ", marking as compacted.");
+      LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() +
+          ", marking as compacted.");
       msc.markCleaned(CompactionInfo.compactionInfoToStruct(ci));
-      
+
     } catch (Throwable e) {
       computeStats = false;
       throw e;
@@ -97,6 +98,6 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
 
   @Override
   public void cleanupResultDirs(CompactionInfo ci) {
-    
+
   }
 }

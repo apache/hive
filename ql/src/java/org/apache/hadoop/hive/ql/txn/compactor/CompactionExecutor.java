@@ -32,21 +32,29 @@ public abstract class CompactionExecutor {
   static final private String CLASS_NAME = CompactionExecutor.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   
-  protected final IMetaStoreClient msc;
-  protected final HiveConf conf;
-  protected final CompactorFactory compactorFactory;
-  protected final boolean collectGenericStats;
+  protected IMetaStoreClient msc;
+  protected HiveConf conf;
+  protected CompactorFactory compactorFactory;
+  protected boolean collectGenericStats;
   protected boolean computeStats = false;
-  
+
   public CompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
+      boolean collectGenericStats) {
+    init(conf, msc, compactorFactory, collectGenericStats);
+  }
+
+  public CompactionExecutor() {
+  }
+
+  public void init(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
       boolean collectGenericStats) {
     this.conf = conf;
     this.msc = msc;
     this.compactorFactory = compactorFactory;
     this.collectGenericStats = collectGenericStats;
   }
-  
-  abstract Boolean compact(Table table, CompactionInfo ci) throws Exception;
+
+  public abstract Boolean compact(Table table, CompactionInfo ci) throws Exception;
   abstract public void cleanupResultDirs(CompactionInfo ci);
 
   public boolean isComputeStats() {
