@@ -145,6 +145,10 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       RelDataTypeField relDataTypeField = queryBranch.getRowType().getFieldList().get(i);
       RexNode rexNode = optCluster.getRexBuilder().makeInputRef(relDataTypeField.getType(), i);
       RexTableInputRef rexTableInputRef = getColumnLineage(queryBranch, rexNode);
+      if (rexTableInputRef == null) {
+        continue;
+      }
+
       RelOptHiveTable relOptHiveTable = (RelOptHiveTable) rexTableInputRef.getTableRef().getTable();
       projectedColumnMap.putIfAbsent(relOptHiveTable, ImmutableBitSet.builder());
       ImmutableBitSet.Builder projectedColumns = projectedColumnMap.get(relOptHiveTable);
@@ -265,6 +269,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     if (!(resultRexNode instanceof RexTableInputRef)) {
       return null;
     }
+
     return (RexTableInputRef) resultRexNode;
   }
 }
