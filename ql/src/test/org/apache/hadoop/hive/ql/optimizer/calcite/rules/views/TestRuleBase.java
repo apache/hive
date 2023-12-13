@@ -50,6 +50,7 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 
 public class TestRuleBase {
   protected static final RexBuilder REX_BUILDER = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
@@ -140,20 +141,17 @@ public class TestRuleBase {
 
   @Before
   public void setup() {
-    doReturn(t1NativeType).when(t1NativeMock).getRowType();
-    doReturn(t1Native).when(t1NativeMock).getHiveTableMD();
-    t1Native.setStorageHandler(t1NativeStorageHandler);
+    lenient().doReturn(t1NativeType).when(t1NativeMock).getRowType();
+    lenient().doReturn(t1Native).when(t1NativeMock).getHiveTableMD();
 
-    doReturn(t2NativeType).when(t2NativeMock).getRowType();
-    doReturn(t2Native).when(t2NativeMock).getHiveTableMD();
-    t2Native.setStorageHandler(t2NativeStorageHandler);
+    lenient().doReturn(t2NativeType).when(t2NativeMock).getRowType();
+    lenient().doReturn(t2Native).when(t2NativeMock).getHiveTableMD();
 
-    doReturn(t3NativeType).when(t3NativeMock).getRowType();
-    doReturn(t3Native).when(t3NativeMock).getHiveTableMD();
-    t3Native.setStorageHandler(t3NativeStorageHandler);
+    lenient().doReturn(t3NativeType).when(t3NativeMock).getRowType();
+    lenient().doReturn(t3Native).when(t3NativeMock).getHiveTableMD();
 
-    doReturn(table2Type).when(table2Mock).getRowType();
-    doReturn(table2).when(table2Mock).getHiveTableMD();
+    lenient().doReturn(table2Type).when(table2Mock).getRowType();
+    lenient().doReturn(table2).when(table2Mock).getHiveTableMD();
     table2.setStorageHandler(table2storageHandler);
   }
 

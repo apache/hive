@@ -54,7 +54,7 @@ public class TestHiveAugmentMaterializationRule extends TestRuleBase {
 
     assertThat(newRoot, instanceOf(HiveFilter.class));
     HiveFilter filter = (HiveFilter) newRoot;
-    assertThat(filter.getCondition().toString(), is("<=($3, null)"));
+    assertThat(filter.getCondition().toString(), is("AND(<=($3.writeId, 5), <>($3.writeId, 4), <>($3.writeId, 6))"));
   }
 
 }
