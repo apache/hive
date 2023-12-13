@@ -31,7 +31,6 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 
 import java.util.ArrayList;
@@ -46,12 +45,12 @@ import java.util.List;
  * Since CBO plan does not contain the INSERT branches we focus on the SELECT part of the plan in this rule.
  * See also {@link CalcitePlanner}
  *
- * FROM (select mv.ROW__ID, mv.a, mv.b from mv) mv
+ * FROM (select mv.ROW__ID, mv.a, mv.b, true as flag from mv) mv
  * RIGHT OUTER JOIN (SELECT _source_.ROW__IS_DELETED,_source_.a, _source_.b FROM _source_) source
  * ON (mv.a &lt;=&gt; source.a AND mv.b &lt;=&gt; source.b)
  * INSERT INTO TABLE mv_delete_delta
  *   SELECT mv.ROW__ID
- *   WHERE source.ROW__IS__DELETED
+ *   WHERE source.ROW__IS__DELETED AND flag
  * INSERT INTO TABLE mv
  *   SELECT source.a, source.b
  *   WHERE NOT source.ROW__IS__DELETED
@@ -81,7 +80,7 @@ public class HiveJoinInsertDeleteIncrementalRewritingRule extends RelOptRule {
     // expressions for project operator
     List<RexNode> projExprs = new ArrayList<>();
     List<RexNode> joinConjs = new ArrayList<>();
-    for (int leftPos = 0; leftPos < joinLeftInput.getRowType().getFieldCount() - 1; leftPos++) {
+    for (int leftPos = 0; leftPos < joinLeftInput.getRowType().getFieldCount(); leftPos++) {
       RexNode leftRef = rexBuilder.makeInputRef(
               joinLeftInput.getRowType().getFieldList().get(leftPos).getType(), leftPos);
       RexNode rightRef = rexBuilder.makeInputRef(
@@ -94,12 +93,6 @@ public class HiveJoinInsertDeleteIncrementalRewritingRule extends RelOptRule {
     }
 
     RexNode joinCond = RexUtil.composeConjunction(rexBuilder, joinConjs);
-
-    int rowIsDeletedIdx = joinRightInput.getRowType().getFieldCount() - 1;
-    RexNode rowIsDeleted = rexBuilder.makeInputRef(
-            joinRightInput.getRowType().getFieldList().get(rowIsDeletedIdx).getType(),
-            joinLeftInput.getRowType().getFieldCount() + rowIsDeletedIdx);
-    projExprs.add(rowIsDeleted);
 
     // 3) Build plan
     RelNode newNode = call.builder()
@@ -152,6 +145,7 @@ public class HiveJoinInsertDeleteIncrementalRewritingRule extends RelOptRule {
     }
 
     private RelNode createFilter(HiveJoin join) {
+      RexBuilder rexBuilder = relBuilder.getRexBuilder();
       // This should be a Scan on the MV
       RelNode leftInput = join.getLeft();
 
@@ -161,34 +155,56 @@ public class HiveJoinInsertDeleteIncrementalRewritingRule extends RelOptRule {
       RelNode tmpJoin = visitChild(join, 1, rightInput);
       RelNode newRightInput = tmpJoin.getInput(1);
 
+      List<RexNode> leftProjects = new ArrayList<>(leftInput.getRowType().getFieldCount() + 1);
+      List<String> leftProjectNames = new ArrayList<>(leftInput.getRowType().getFieldCount() + 1);
+      for (int i = 0; i < leftInput.getRowType().getFieldCount(); ++i) {
+        RelDataTypeField relDataTypeField = leftInput.getRowType().getFieldList().get(i);
+        leftProjects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), i));
+        leftProjectNames.add(relDataTypeField.getName());
+      }
+      List<RexNode> projects = new ArrayList<>(leftProjects.size() + newRightInput.getRowType().getFieldCount());
+      projects.addAll(leftProjects);
+      List<String> projectNames = new ArrayList<>(leftProjects.size() + newRightInput.getRowType().getFieldCount());
+      projectNames.addAll(leftProjectNames);
+
+      leftProjects.add(rexBuilder.makeLiteral(true));
+      leftProjectNames.add("flag");
+
+      leftInput = relBuilder
+          .push(leftInput)
+          .project(leftProjects, leftProjectNames)
+          .build();
+
+      // Create input ref to flag. It is used in filter condition later.
+      int flagIndex = leftProjects.size() - 1;
+      RexNode flagNode = rexBuilder.makeInputRef(
+          leftInput.getRowType().getFieldList().get(flagIndex).getType(), flagIndex);
+
       // Create input ref to rowIsDeleteColumn. It is used in filter condition later.
       RelDataType newRowType = newRightInput.getRowType();
       int rowIsDeletedIdx = newRowType.getFieldCount() - 1;
-      RexBuilder rexBuilder = relBuilder.getRexBuilder();
       RexNode rowIsDeleted = rexBuilder.makeInputRef(
-              newRowType.getFieldList().get(rowIsDeletedIdx).getType(),
-              leftInput.getRowType().getFieldCount() + rowIsDeletedIdx);
+          newRowType.getFieldList().get(rowIsDeletedIdx).getType(),
+          leftInput.getRowType().getFieldCount() + rowIsDeletedIdx);
 
-      List<RexNode> projects = new ArrayList<>(newRowType.getFieldCount());
-      List<String> projectNames = new ArrayList<>(newRowType.getFieldCount());
-      for (int i = 0; i < leftInput.getRowType().getFieldCount(); ++i) {
-        RelDataTypeField relDataTypeField = leftInput.getRowType().getFieldList().get(i);
-        projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), i));
-        projectNames.add(relDataTypeField.getName());
-      }
+      RexNode deleteBranchFilter = rexBuilder.makeCall(SqlStdOperatorTable.AND, flagNode, rowIsDeleted);
+      RexNode insertBranchFilter = rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted);
+
       for (int i = 0; i < newRowType.getFieldCount() - 1; ++i) {
         RelDataTypeField relDataTypeField = newRowType.getFieldList().get(i);
         projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), leftInput.getRowType().getFieldCount() + i));
         projectNames.add(relDataTypeField.getName());
       }
 
+      RexNode newJoinCondition = new InputRefShifter(leftInput.getRowType().getFieldCount() - 1, relBuilder)
+          .apply(join.getCondition());
+
       // Create new Top Right Join and a Filter. The filter condition is used in CalcitePlanner.fixUpASTJoinIncrementalRebuild().
       return relBuilder
               .push(leftInput)
               .push(newRightInput)
-              .join(join.getJoinType(), join.getCondition())
-              .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR,
-                      rowIsDeleted, rexBuilder.makeCall(SqlStdOperatorTable.NOT, rowIsDeleted)))
+              .join(join.getJoinType(), newJoinCondition)
+              .filter(rexBuilder.makeCall(SqlStdOperatorTable.OR, deleteBranchFilter, insertBranchFilter))
               .project(projects, projectNames)
               .build();
     }

@@ -808,19 +808,20 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     // We bypass the OR clause and select the first disjunct
     int indexDelete;
     int indexInsert;
-    if (whereClauseInInsert.getChild(0).getChild(0).getType() == HiveParser.DOT) {
+    if (whereClauseInInsert.getChild(0).getChild(0).getType() == HiveParser.KW_AND) {
       indexDelete = 0;
       indexInsert = 1;
-    } else if (whereClauseInInsert.getChild(0).getChild(1).getType() == HiveParser.DOT) {
+    } else if (whereClauseInInsert.getChild(0).getChild(1).getType() == HiveParser.KW_AND) {
       indexDelete = 1;
       indexInsert = 0;
     } else {
       throw new SemanticException("Unexpected condition in incremental rewriting");
     }
+    ASTNode deletePredicate =
+        (ASTNode) ParseDriver.adaptor.dupTree(whereClauseInInsert.getChild(0).getChild(indexDelete));
     ASTNode newCondInInsert = (ASTNode) whereClauseInInsert.getChild(0).getChild(indexInsert);
     ParseDriver.adaptor.setChild(whereClauseInInsert, 0, newCondInInsert);
 
-    ASTNode deletePredicate = (ASTNode) whereClauseInInsert.getChild(0).getChild(indexDelete);
     addDeleteBranch(insertNode, subqueryNodeInputROJ, deletePredicate, astBuilder);
 
     // 3) Add sort node to delete branch
