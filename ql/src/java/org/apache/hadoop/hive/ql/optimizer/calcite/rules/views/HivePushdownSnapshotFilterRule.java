@@ -92,8 +92,8 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
 
     public SnapshotIdShuttle(RexBuilder rexBuilder, RelMetadataQuery metadataQuery, RelNode startNode) {
       this.rexBuilder = rexBuilder;
-      this.startNode = startNode;
       this.metadataQuery = metadataQuery;
+      this.startNode = startNode;
     }
 
     @Override
@@ -148,7 +148,7 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
 
       RelOptTable relOptTable = tableInputRef.getTableRef().getTable();
       RelDataTypeField snapshotIdField = relOptTable.getRowType().getField(
-          VirtualColumn.SNAPSHOT_ID.getName(), false, false);
+              VirtualColumn.SNAPSHOT_ID.getName(), false, false);
       if (snapshotIdField == null) {
         return null;
       }
