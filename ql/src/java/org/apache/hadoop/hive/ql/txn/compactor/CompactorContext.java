@@ -38,7 +38,7 @@ public class CompactorContext {
   private final CompactionInfo compactionInfo;
   private final AcidDirectory dir;
 
-  CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
+  public CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
     this.conf = conf;
     this.table = table;
     this.partition = p;

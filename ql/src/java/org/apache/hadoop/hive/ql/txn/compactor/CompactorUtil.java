@@ -267,13 +267,13 @@ public class CompactorUtil {
    * @param dir The {@link AcidDirectory} instance pointing to the table's folder on the filesystem.
    * @return Returns true if minor compaction is supported based on the given parameters, false otherwise.
    */
-  protected static boolean isMinorCompactionSupported(HiveConf conf, Map<String, String> tblproperties, AcidDirectory dir) {
+  public static boolean isMinorCompactionSupported(HiveConf conf, Map<String, String> tblproperties, AcidDirectory dir) {
     //Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them.
     return AcidUtils.isInsertOnlyTable(tblproperties) || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
         || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
   }
 
-  protected static LockRequest createLockRequest(HiveConf conf, CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
+  public static LockRequest createLockRequest(HiveConf conf, CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
     String agentInfo = Thread.currentThread().getName();
     LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
     requestBuilder.setUser(ci.runAs);

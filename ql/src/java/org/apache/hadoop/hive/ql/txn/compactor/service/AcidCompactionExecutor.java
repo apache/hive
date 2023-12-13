@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.txn.compactor;
+package org.apache.hadoop.hive.ql.txn.compactor.service;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -43,6 +43,12 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactionHeartbeatService;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
+import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;

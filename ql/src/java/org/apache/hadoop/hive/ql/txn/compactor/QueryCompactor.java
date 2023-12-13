@@ -175,7 +175,7 @@ public abstract class QueryCompactor implements Compactor {
   /**
    * Collection of some helper functions.
    */
-  static class Util {
+  public static class Util {
 
     /**
      * Get the path of the base, delta, or delete delta directory that will be the final
@@ -191,8 +191,8 @@ public abstract class QueryCompactor implements Compactor {
      *
      * @return Path of new base/delta/delete delta directory
      */
-    static Path getCompactionResultDir(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf,
-        boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
+    public static Path getCompactionResultDir(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf,
+                                              boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
       long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
       long compactorTxnId = Compactor.getCompactorTxnId(conf);
