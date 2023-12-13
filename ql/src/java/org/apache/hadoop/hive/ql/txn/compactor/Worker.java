@@ -60,10 +60,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   private String workerName;
   private final CompactorFactory compactorFactory;
-  private String workerMetric;
-  private CompactionInfo ci;
-  private Table table;
-  private CompactionExecutor compactionExecutor;
 
   public Worker() {
     compactorFactory = CompactorFactory.getInstance();
@@ -177,6 +173,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
     PerfLogger perfLogger = SessionState.getPerfLogger(false);
+    String workerMetric = null;
+    CompactionInfo ci = null;
+    Table table = null;
+    CompactionExecutor compactionExecutor = null;
     boolean compactionResult = false;
 
     // If an exception is thrown in the try-with-resources block below, msc is closed and nulled, so a new instance
@@ -254,8 +254,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
               UserGroupInformation.getLoginUser());
 
+          CompactionExecutor finalCompactionExecutor = compactionExecutor;
+          CompactionInfo finalCi = ci;
           ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-            compactionExecutor.cleanupResultDirs(ci);
+            finalCompactionExecutor.cleanupResultDirs(finalCi);
             return null;
           });
           try {
