@@ -28,7 +28,7 @@ public class InputRefShifter extends RexShuttle {
   private final int shift;
   private final RelBuilder relBuilder;
 
-  public InputRefShifter(int startIndex, int shift, RelBuilder relBuilder) {
+  InputRefShifter(int startIndex, int shift, RelBuilder relBuilder) {
     this.startIndex = startIndex;
     this.shift = shift;
     this.relBuilder = relBuilder;

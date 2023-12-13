@@ -37,7 +37,7 @@ import static org.mockito.Mockito.doReturn;
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveAugmentMaterializationRule extends TestRuleBase {
   @Test
-  public void test() {
+  public void testFilterIsCreatedInTopOfTSWhenTableHasChangesSinceSavedSnapshot() {
     RelNode tableScan = createTS(t1NativeMock, "t1");
 
     ValidTxnWriteIdList current = new ValidTxnWriteIdList(10L);
