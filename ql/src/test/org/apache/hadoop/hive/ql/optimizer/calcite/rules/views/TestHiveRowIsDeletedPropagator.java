@@ -31,8 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.*;
-
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveRowIsDeletedPropagator extends TestRuleBase {
   @Test
@@ -75,7 +73,7 @@ public class TestHiveRowIsDeletedPropagator extends TestRuleBase {
 
     System.out.println(RelOptUtil.toString(root));
 
-    HiveRowIsDeletedPropagator2 propagator = new HiveRowIsDeletedPropagator2(relBuilder);
+    HiveRowIsDeletedPropagator propagator = new HiveRowIsDeletedPropagator(relBuilder);
     RelNode newRoot = propagator.propagate(root);
 
     System.out.println(RelOptUtil.toString(newRoot));

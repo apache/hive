@@ -25,10 +25,12 @@ import org.apache.calcite.tools.RelBuilder;
 
 public class InputRefShifter extends RexShuttle {
   private final int startIndex;
+  private final int shift;
   private final RelBuilder relBuilder;
 
-  InputRefShifter(int startIndex, RelBuilder relBuilder) {
+  public InputRefShifter(int startIndex, int shift, RelBuilder relBuilder) {
     this.startIndex = startIndex;
+    this.shift = shift;
     this.relBuilder = relBuilder;
   }
 
@@ -42,7 +44,7 @@ public class InputRefShifter extends RexShuttle {
   public RexNode visitInputRef(RexInputRef inputRef) {
     if (inputRef.getIndex() >= startIndex) {
       RexBuilder rexBuilder = relBuilder.getRexBuilder();
-      return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + 1);
+      return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + shift);
     }
     return inputRef;
   }
