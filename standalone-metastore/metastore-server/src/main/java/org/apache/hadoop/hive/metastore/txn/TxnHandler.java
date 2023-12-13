@@ -90,9 +90,9 @@ import org.apache.hadoop.hive.metastore.txn.entities.CompactionState;
 import org.apache.hadoop.hive.metastore.txn.entities.LockInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.MetricsInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
-import org.apache.hadoop.hive.metastore.txn.commands.*;
-import org.apache.hadoop.hive.metastore.txn.functions.*;
-import org.apache.hadoop.hive.metastore.txn.queries.*;
+import org.apache.hadoop.hive.metastore.txn.jdbc.commands.*;
+import org.apache.hadoop.hive.metastore.txn.jdbc.functions.*;
+import org.apache.hadoop.hive.metastore.txn.jdbc.queries.*;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.NoPoolConnectionPool;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
@@ -189,7 +189,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   
-  public static class ConfVars {    
+  public final static class ConfVars {
+    
+    private ConfVars() {}
 
     // Whether to use min_history_level table or not.
     // At startup we read it from the config, but set it to false if min_history_level does nto exists.
@@ -298,6 +300,14 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (sqlGenerator == null) {
             sqlGenerator = new SQLGenerator(dbProduct, conf);
           }
+
+          try {
+            TxnHandler.ConfVars.init(this::checkIfTableIsUsable, conf);
+          } catch (Exception e) {
+            String msg = "Error during TxnHandler initialization, " + e.getMessage();
+            LOG.error(msg);
+            throw e;
+          }          
           initialized = true;
         }
       }
@@ -318,14 +328,6 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     replicationTxnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     maxOpenTxns = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.MAX_OPEN_TXNS);
     openTxnTimeOutMillis = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
-
-    try {
-      TxnHandler.ConfVars.init(this::checkIfTableIsUsable, conf);
-    } catch (Exception e) {
-      String msg = "Error during TxnHandler startup, " + e.getMessage();
-      LOG.error(msg);
-      throw e;
-    }
 
     try {
       transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(
@@ -459,17 +461,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       LOG.error("OpenTxnTimeOut exceeded commit duration {}, deleting transactionIds: {}", elapsedMillis, txnIds);
 
       if (!txnIds.isEmpty()) {
-        try {
-          sqlRetryHandler.executeWithRetry(new SqlRetryCallProperties().withCallerId("deleteInvalidOpenTransactions"),
-              () -> {
-                jdbcResource.execute(new DeleteInvalidOpenTxnsCommand(txnIds));
-                LOG.info("Removed transactions: ({}) from TXNS", txnIds);
-                jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(txnIds));
-                return null;
-              });
-        } catch (TException e) {
-          throw new MetaException(e.getMessage());
-        }
+        deleteInvalidOpenTransactions(txnIds);
       }
 
       /*
@@ -572,7 +564,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * In order to prevent lost updates, we need to determine if any 2 transactions overlap.  Each txn
    * is viewed as an interval [M,N]. M is the txnid and N is taken from the same NEXT_TXN_ID sequence
    * so that we can compare commit time of txn T with start time of txn S.  This sequence can be thought of
-   * as a logical time counter. If S.commitTime < T.startTime, T and S do NOT overlap.
+   * as a logical time counter. If S.commitTime &lt; T.startTime, T and S do NOT overlap.
    * <p>
    * Motivating example:
    * Suppose we have multi-statement transactions T and S both of which are attempting x = x + 1
@@ -748,9 +740,9 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @Override
   public LockResponse lock(LockRequest rqst) throws NoSuchTxnException, TxnAbortedException, MetaException {
+    long lockId = txnLockManager.enqueueLock(rqst);
     try {
-      return txnLockManager.checkLock(txnLockManager.enqueueLock(rqst), rqst.getTxnid(), rqst.isZeroWaitReadEnabled(),
-          rqst.isExclusiveCTAS());
+      return txnLockManager.checkLock(lockId, rqst.getTxnid(), rqst.isZeroWaitReadEnabled(), rqst.isExclusiveCTAS());
     } catch (NoSuchLockException e) {
       // This should never happen, as we just added the lock id
       throw new MetaException("Couldn't find a lock we just created! " + e.getMessage());      
@@ -768,12 +760,12 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * The clients that operate in blocking mode, can't heartbeat a lock until the lock is acquired.
    * We should make CheckLockRequest include timestamp or last request to skip unnecessary heartbeats. Thrift change.
    * <p>
-   * {@link #checkLock(java.sql.Connection, long, long, boolean, boolean)}  must run at SERIALIZABLE
+   * {@link #checkLock(CheckLockRequest)}  must run at SERIALIZABLE
    * (make sure some lock we are checking against doesn't move from W to A in another txn)
    * but this method can heartbeat in separate txn at READ_COMMITTED.
    * <p>
    * Retry-by-caller note:
-   * Retryable because {@link #checkLock(Connection, long, long, boolean, boolean)} is
+   * Retryable because {@link #checkLock(CheckLockRequest)} is
    */
   @Override
   public LockResponse checkLock(CheckLockRequest rqst)
@@ -790,7 +782,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (lockInfo.getTxnId() > 0) {
       new HeartbeatTxnFunction(lockInfo.getTxnId()).execute(jdbcResource);
     } else {
-      new HeartBeatLockFunction(rqst.getLockid()).execute(jdbcResource);
+      new HeartbeatLockFunction(rqst.getLockid()).execute(jdbcResource);
     }
     return txnLockManager.checkLock(extLockId, lockInfo.getTxnId(), false, false);
   }
@@ -820,7 +812,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void heartbeat(HeartbeatRequest ids)
       throws NoSuchTxnException,  NoSuchLockException, TxnAbortedException, MetaException {
     new HeartbeatTxnFunction(ids.getTxnid()).execute(jdbcResource);
-    new HeartBeatLockFunction(ids.getLockid()).execute(jdbcResource);
+    new HeartbeatLockFunction(ids.getLockid()).execute(jdbcResource);
   }
   
   @Override
@@ -925,8 +917,9 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throws MetaException {
     new OnRenameFunction(oldCatName, oldDbName, oldTabName, oldPartName, newCatName, newDbName, newTabName, newPartName).execute(jdbcResource);
   }
+  
   /**
-   * For testing only, do not use.
+   * TODO: remove in future, for testing only, do not use.
    */
   @VisibleForTesting
   @Override
@@ -937,8 +930,9 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * For testing only, do not use.
+   * TODO: remove in future, for testing only, do not use.
    */
+  @VisibleForTesting
   @Override
   public long setTimeout(long milliseconds) {
     long previous_timeout = timeout;
@@ -1032,6 +1026,20 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static void shouldNeverHappen(long txnid) {
     throw new RuntimeException("This should never happen: " + JavaUtils.txnIdToString(txnid));
+  }  
+  
+  private void deleteInvalidOpenTransactions(List<Long> txnIds) throws MetaException {
+    try {
+      sqlRetryHandler.executeWithRetry(new SqlRetryCallProperties().withCallerId("deleteInvalidOpenTransactions"),
+          () -> {
+            jdbcResource.execute(new DeleteInvalidOpenTxnsCommand(txnIds));
+            LOG.info("Removed transactions: ({}) from TXNS", txnIds);
+            jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(txnIds));
+            return null;
+          });
+    } catch (TException e) {
+      throw new MetaException(e.getMessage());
+    }    
   }
 
   /**

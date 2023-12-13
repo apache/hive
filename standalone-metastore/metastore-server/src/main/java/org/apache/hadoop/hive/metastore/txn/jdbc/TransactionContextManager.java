@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
-import org.apache.hadoop.hive.metastore.txn.StackThreadLocal;
+import org.apache.hadoop.hive.metastore.utils.StackThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;

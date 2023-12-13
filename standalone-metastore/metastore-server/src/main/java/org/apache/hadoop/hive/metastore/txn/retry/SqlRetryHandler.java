@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.MetaWrapperException;
-import org.apache.hadoop.hive.metastore.txn.StackThreadLocal;
+import org.apache.hadoop.hive.metastore.utils.StackThreadLocal;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,6 +176,7 @@ public class SqlRetryHandler {
         try {
           Thread.sleep(waitInterval);
         } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
           // NOP
         }
         return true;
@@ -226,7 +227,7 @@ public class SqlRetryHandler {
       try {
         Thread.sleep(retryInterval);
       } catch (InterruptedException ex) {
-        //
+        Thread.currentThread().interrupt();
       }
       return true;
     } else {
