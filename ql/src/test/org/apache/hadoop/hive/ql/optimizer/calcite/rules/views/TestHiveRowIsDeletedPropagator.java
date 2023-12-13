@@ -31,10 +31,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveRowIsDeletedPropagator extends TestRuleBase {
   @Test
-  public void test() {
+  public void testJoining3TablesAndAllChanged() {
     RelNode ts1 = createTS(t1NativeMock, "t1");
     RelNode ts2 = createTS(t2NativeMock, "t2");
     RelNode ts3 = createTS(t3NativeMock, "t3");
@@ -71,13 +74,33 @@ public class TestHiveRowIsDeletedPropagator extends TestRuleBase {
         .filter(writeIdFilter)
         .build();
 
-    System.out.println(RelOptUtil.toString(root));
+//    System.out.println(RelOptUtil.toString(root));
 
     HiveRowIsDeletedPropagator propagator = new HiveRowIsDeletedPropagator(relBuilder);
     RelNode newRoot = propagator.propagate(root);
 
-    System.out.println(RelOptUtil.toString(newRoot));
+    String dump = RelOptUtil.toString(newRoot);
+    assertThat(dump, is(EXPECTED_testJoining3TablesAndAllChanged));
+//    System.out.println();
   }
+
+  private static final String EXPECTED_testJoining3TablesAndAllChanged =
+      "HiveFilter(condition=[OR(<(1, $3.writeId), <(1, $8.writeId), <(1, $13.writeId))])\n" +
+      "  HiveFilter(condition=[OR(NOT($15), NOT($16))])\n" +
+      "    HiveProject(a=[$0], b=[$1], c=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], d=[$5], e=[$6], f=[$7], ROW__ID0=[$8], ROW__IS__DELETED0=[$9], g=[$12], h=[$13], i=[$14], ROW__ID1=[$15], ROW__IS__DELETED1=[$16], _any_deleted=[OR($10, $17)], _any_inserted=[OR($11, $18)])\n" +
+      "      HiveJoin(condition=[=($12, $5)], joinType=[inner], algorithm=[none], cost=[not available])\n" +
+      "        HiveFilter(condition=[OR(NOT($10), NOT($11))])\n" +
+      "          HiveProject(a=[$0], b=[$1], c=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], d=[$7], e=[$8], f=[$9], ROW__ID0=[$10], ROW__IS__DELETED0=[$11], _any_deleted=[OR($5, $12)], _any_inserted=[OR($6, $13)])\n" +
+      "            HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])\n" +
+      "              HiveFilter(condition=[IS NOT NULL($0)])\n" +
+      "                HiveProject(a=[$0], b=[$1], c=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], _deleted=[AND($4, <(1, $3.writeId))], _inserted=[AND(<(1, $3.writeId), NOT($4))])\n" +
+      "                  HiveTableScan(table=[[]], table:alias=[t1])\n" +
+      "              HiveFilter(condition=[IS NOT NULL($0)])\n" +
+      "                HiveProject(d=[$0], e=[$1], f=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], _deleted=[AND($4, <(1, $3.writeId))], _inserted=[AND(<(1, $3.writeId), NOT($4))])\n" +
+      "                  HiveTableScan(table=[[]], table:alias=[t2])\n" +
+      "        HiveFilter(condition=[IS NOT NULL($0)])\n" +
+      "          HiveProject(g=[$0], h=[$1], i=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], _deleted=[AND($4, <(1, $3.writeId))], _inserted=[AND(<(1, $3.writeId), NOT($4))])\n" +
+      "            HiveTableScan(table=[[]], table:alias=[t3])\n";
 
   private RexNode rowIdFieldAccess(RelNode tableScan, int posInTarget) {
     int rowIDPos = tableScan.getTable().getRowType().getField(
