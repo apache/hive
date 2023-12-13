@@ -2014,4 +2014,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
   }
+
+  @Override
+  public boolean requiresLocation() {
+    return true;
+  }
 }

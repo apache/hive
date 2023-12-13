@@ -740,4 +740,8 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions by expression " +
             "for a table.");
   }
+
+  default boolean requiresLocation() {
+    return false;
+  }
 }
