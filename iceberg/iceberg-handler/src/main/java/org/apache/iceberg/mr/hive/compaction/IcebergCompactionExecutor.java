@@ -18,10 +18,8 @@
 
 package org.apache.iceberg.mr.hive.compaction;
 
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
@@ -32,33 +30,11 @@ import org.slf4j.LoggerFactory;
 public class IcebergCompactionExecutor extends CompactionExecutor {
   private static final String CLASS_NAME = IcebergCompactionExecutor.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  private static final long DEFAULT_TXN_ID = 0;
 
   public IcebergCompactionExecutor() {
   }
 
   public Boolean compact(Table table, CompactionInfo ci) throws Exception {
-
-    // Find the appropriate storage descriptor
-    final StorageDescriptor sd =  CompactorUtil.resolveStorageDescriptor(table);
-
-    if (isTableSorted(sd, ci)) {
-      return false;
-    }
-
-    if (ci.runAs == null) {
-      ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
-    }
-
-    CompactorUtil.checkInterrupt(CLASS_NAME);
-
-    msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), DEFAULT_TXN_ID);
-
-    // Don't start compaction or cleaning if not necessary
-    if (isDynPartAbort(table, ci)) {
-      msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-      return false;
-    }
 
     if (!ci.isMajorCompaction()) {
       ci.errorMessage = "Presently Iceberg tables support only Major compaction";
@@ -73,15 +49,13 @@ public class IcebergCompactionExecutor extends CompactionExecutor {
     CompactorUtil.checkInterrupt(CLASS_NAME);
 
     try {
-      failCompactionIfSetForTest();
-
       CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
       computeStats = collectGenericStats;
 
       LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
               ci.id + " with compute stats set to " + computeStats);
 
-      CompactorContext compactorContext = new CompactorContext(conf, table, sd, ci);
+      CompactorContext compactorContext = new CompactorContext(conf, table, ci);
       compactorPipeline.execute(compactorContext);
 
       LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() +
