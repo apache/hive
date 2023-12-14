@@ -34,6 +34,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
+import org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild.AlterMaterializedViewRebuildAnalyzer;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -53,9 +54,14 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 
 /**
- * {@link HiveRelShuttle} to propagate rowIsDeleted column to all HiveRelNodes' rowType in the plan.
- * General rule: we expect that the rowIsDeleted column is the last column in the input rowType of the current
+ * {@link ReflectiveVisitor} to propagate row is deleted or inserted columns to all HiveRelNodes' rowType in the plan.
+ * General rule: we expect that these columns are the last columns in the input rowType of the current
  * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode}.
+ *
+ * This class is part of incremental rebuild of materialized view plan generation.<br/>
+ * @see AlterMaterializedViewRebuildAnalyzer
+ * @see HiveJoinInsertDeleteIncrementalRewritingRule
+ * @see HiveAggregateInsertDeleteIncrementalRewritingRule
  */
 public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
 
@@ -106,6 +112,11 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
   // Add a project on top of the TS.
   // Project two boolean columns: one for indicating the row is deleted another
   // for newly inserted.
+  // A row is considered to be
+  //  - deleted when the ROW_IS_DELETED virtual column is true and the writeId of the record is higher than the
+  //    saved in materialized view snapshot metadata
+  //  - newly inserted when the ROW_IS_DELETED virtual column is false and the writeId of the record is higher than the
+  //    saved in materialized view snapshot metadata
   public RelNode visit(HiveTableScan scan, Context context) {
     RelDataType tableRowType = scan.getTable().getRowType();
     RelDataTypeField rowIdField = getVirtualColumnField(tableRowType, VirtualColumn.ROWID, scan);
