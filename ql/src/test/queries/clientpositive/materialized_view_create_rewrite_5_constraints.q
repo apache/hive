@@ -6,7 +6,6 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 create table cmv_basetable_n6 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
-
 alter table cmv_basetable_n6 add constraint u1 UNIQUE (a) disable novalidate rely;
 
 insert into cmv_basetable_n6 values
@@ -14,7 +13,6 @@ insert into cmv_basetable_n6 values
 (2, 'charlie', 20.30, 2);
 
 create table cmv_basetable_2_n3 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
-
 alter table cmv_basetable_2_n3 add constraint pk1 primary key (c) disable novalidate rely;
 
 insert into cmv_basetable_2_n3 values

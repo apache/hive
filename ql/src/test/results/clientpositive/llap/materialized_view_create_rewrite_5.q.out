@@ -541,6 +541,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                   alias: cmv_basetable_n6
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
@@ -576,6 +577,8 @@ STAGE PLANS:
 =======
 >>>>>>> 84a337df6a (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
                   alias: cmv_basetable_n6
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -647,6 +650,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                   0 _col0 (type: int)
@@ -723,6 +727,8 @@ STAGE PLANS:
 =======
 =======
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2
@@ -754,6 +760,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -809,6 +816,8 @@ STAGE PLANS:
 >>>>>>> 84a337df6a (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> a7da5a602f (rebase)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
                         Statistics: Num rows: 1 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary)
         Reducer 3 
@@ -830,6 +839,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -872,6 +882,8 @@ STAGE PLANS:
 >>>>>>> 84a337df6a (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> a7da5a602f (rebase)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
 
   Stage: Stage-2
     Dependency Collection
@@ -1016,6 +1028,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                   alias: cmv_basetable_n6
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1051,6 +1064,8 @@ STAGE PLANS:
 =======
 >>>>>>> 84a337df6a (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
                   alias: cmv_basetable_n6
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1107,6 +1122,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                   0 _col0 (type: int)
@@ -1183,6 +1199,8 @@ STAGE PLANS:
 =======
 =======
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2
@@ -1214,6 +1232,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1269,11 +1288,14 @@ STAGE PLANS:
 >>>>>>> 84a337df6a (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> a7da5a602f (rebase)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
                         Statistics: Num rows: 1 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1310,6 +1332,8 @@ STAGE PLANS:
 >>>>>>> 84a337df6a (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> a7da5a602f (rebase)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
@@ -1326,6 +1350,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1368,6 +1393,8 @@ STAGE PLANS:
 >>>>>>> 84a337df6a (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> 759c82fa21 (HIVE-27446: Exception when rebuild materialized view incrementally in presence of delete operations)
 >>>>>>> a7da5a602f (rebase)
+=======
+>>>>>>> bf2c287e61 (update q.outs)
 
   Stage: Stage-2
     Dependency Collection
