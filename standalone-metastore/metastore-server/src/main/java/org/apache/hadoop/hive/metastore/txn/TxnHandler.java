@@ -300,6 +300,8 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (sqlGenerator == null) {
             sqlGenerator = new SQLGenerator(dbProduct, conf);
           }
+          
+          initJdbcResource();
 
           try {
             TxnHandler.ConfVars.init(this::checkIfTableIsUsable, conf);
@@ -313,12 +315,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
 
-    if (jdbcResource == null) {
-      jdbcResource = new MultiDataSourceJdbcResource(dbProduct, conf, sqlGenerator);
-      jdbcResource.registerDataSource(POOL_TX, connPool);
-      jdbcResource.registerDataSource(POOL_MUTEX, connPoolMutex);
-      jdbcResource.registerDataSource(POOL_COMPACTOR, connPoolCompactor);
-    }
+    initJdbcResource();
 
     mutexAPI = new TxnStoreMutex(sqlGenerator, jdbcResource);
 
@@ -342,7 +339,6 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     sqlRetryHandler = new SqlRetryHandler(conf, jdbcResource.getDatabaseProduct());
     txnLockManager = TransactionalRetryProxy.getProxy(sqlRetryHandler, jdbcResource, new DefaultTxnLockManager(jdbcResource));
   }
-
  
   @Override
   public SqlRetryHandler getRetryHandler() {
@@ -1080,6 +1076,15 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       String msg = "Unable to get database product name";
       LOG.error(msg, e);
       throw new IllegalStateException(msg, e);
+    }
+  }
+  
+  private void initJdbcResource() {
+    if (jdbcResource == null) {
+      jdbcResource = new MultiDataSourceJdbcResource(dbProduct, conf, sqlGenerator);
+      jdbcResource.registerDataSource(POOL_TX, connPool);
+      jdbcResource.registerDataSource(POOL_MUTEX, connPoolMutex);
+      jdbcResource.registerDataSource(POOL_COMPACTOR, connPoolCompactor);
     }
   }
 
