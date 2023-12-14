@@ -32,6 +32,9 @@ services:
         - '9083:9083'
     volumes:
         - warehouse:/opt/hive/data/warehouse
+        - type: bind
+          source: ${MAVEN_LOCAL_REPOSITORY}/org/postgresql/postgresql/42.5.1/postgresql-42.5.1.jar
+          target: /opt/hive/lib/postgres.jar
 
   hiveserver2:
     image: apache/hive:${HIVE_VERSION}
