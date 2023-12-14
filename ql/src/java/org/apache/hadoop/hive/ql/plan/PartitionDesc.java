@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
@@ -322,7 +323,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     Properties properties1 = getProperties();
     Properties properties2 = other.getProperties();
     cond = (properties1 == null && properties2 == null) ||
-        (properties1 != null && properties1.equals(properties2));
+        (properties1 != null && Maps.difference(properties1,properties2).areEqual());
     if (!cond) {
       return false;
     }
