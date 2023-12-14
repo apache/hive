@@ -7953,7 +7953,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               HiveStorageHandler storageHandler =
                   HiveUtils.getStorageHandler(SessionState.getSessionConf(), tblDesc.getStorageHandler());
               if (storageHandler.requiresLocation()) {
-                tblDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix).toString());
+                tblDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, false).toString());
               }
             } catch (Exception ex) {
               LOG.warn("Error while creating HiveStorageHandler instance: {}", tblDesc.getStorageHandler(), ex);
