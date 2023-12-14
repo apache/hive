@@ -1,5 +1,4 @@
 --! qt:dataset:src
-set user.name=user1;
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
 
 FROM src
