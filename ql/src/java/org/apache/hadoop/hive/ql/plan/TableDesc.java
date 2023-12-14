@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Maps;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -248,7 +250,7 @@ public class TableDesc implements Serializable, Cloneable {
     ret = ret && (outputFileFormatClass == null ? target.outputFileFormatClass == null :
       outputFileFormatClass.equals(target.outputFileFormatClass));
     ret = ret && (properties == null ? target.properties == null :
-      properties.equals(target.properties));
+      Maps.difference(properties,target.properties).areEqual());
     ret = ret && (jobProperties == null ? target.jobProperties == null :
       jobProperties.equals(target.jobProperties));
     return ret;
