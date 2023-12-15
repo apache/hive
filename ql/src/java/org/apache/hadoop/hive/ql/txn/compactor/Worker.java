@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionExecutor;
+import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionService;
 import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionExecutorFactory;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -178,7 +178,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     String workerMetric = null;
     CompactionInfo ci = null;
     Table table = null;
-    CompactionExecutor compactionExecutor = null;
+    CompactionService compactionService = null;
     boolean compactionResult = false;
 
     // If an exception is thrown in the try-with-resources block below, msc is closed and nulled, so a new instance
@@ -240,26 +240,26 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
 
       CompactorUtil.checkInterrupt(CLASS_NAME);
-      compactionExecutor = CompactionExecutorFactory.createExecutor(conf, msc, compactorFactory, table, collectGenericStats, collectMrStats);
+      compactionService = CompactionExecutorFactory.createExecutor(conf, msc, compactorFactory, table, collectGenericStats, collectMrStats);
 
       try {
-        compactionResult = compactionExecutor.compact(table, ci);
+        compactionResult = compactionService.compact(table, ci);
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
         markFailed(ci, e.getMessage());
 
         if (CompactorUtil.runJobAsSelf(ci.runAs)) {
-          compactionExecutor.cleanupResultDirs(ci);
+          compactionService.cleanupResultDirs(ci);
         } else {
           LOG.info("Cleaning as user " + ci.runAs);
           UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
               UserGroupInformation.getLoginUser());
 
-          CompactionExecutor finalCompactionExecutor = compactionExecutor;
+          CompactionService finalCompactionService = compactionService;
           CompactionInfo finalCi = ci;
           ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-            finalCompactionExecutor.cleanupResultDirs(finalCi);
+            finalCompactionService.cleanupResultDirs(finalCi);
             return null;
           });
           try {
@@ -286,7 +286,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
 
-    if (Optional.ofNullable(compactionExecutor).map(CompactionExecutor::isComputeStats).orElse(false)) {
+    if (Optional.ofNullable(compactionService).map(CompactionService::isComputeStats).orElse(false)) {
       statsUpdater.gatherStats(ci, conf, CompactorUtil.runJobAsSelf(ci.runAs) ? ci.runAs : table.getOwner(),
           CompactorUtil.getCompactorJobQueueName(conf, ci, table), msc);
     }

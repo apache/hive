@@ -27,32 +27,32 @@ import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
 
 public class CompactionExecutorFactory {
 
-  private static final String ICEBERG_COMPACTION_EXECUTOR_CLASS = "org.apache.iceberg.mr.hive.compaction.IcebergCompactionExecutor";
+  private static final String ICEBERG_COMPACTION_SERVICE_CLASS = "org.apache.iceberg.mr.hive.compaction.IcebergCompactionService";
   
-  public static CompactionExecutor createExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
+  public static CompactionService createExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
       Table table, boolean collectGenericStats, boolean collectMrStats) throws HiveException {
 
-    CompactionExecutor compactionExecutor;
+    CompactionService compactionService;
 
     if (MetaStoreUtils.isIcebergTable(table.getParameters())) {
 
       try {
-        Class<? extends CompactionExecutor> icebergCompactionExecutor = (Class<? extends CompactionExecutor>)
-            Class.forName(ICEBERG_COMPACTION_EXECUTOR_CLASS, true,
+        Class<? extends CompactionService> icebergCompactionService = (Class<? extends CompactionService>)
+            Class.forName(ICEBERG_COMPACTION_SERVICE_CLASS, true,
                 Utilities.getSessionSpecifiedClassLoader());
 
-        compactionExecutor = icebergCompactionExecutor.newInstance();
-        compactionExecutor.init(conf, msc, compactorFactory, collectGenericStats);
+        compactionService = icebergCompactionService.newInstance();
+        compactionService.init(conf, msc, compactorFactory, collectGenericStats);
       }
       catch (Exception e) {
         throw new HiveException("Failed instantiating and calling Iceberg compaction executor", e);
       }
     }
     else {
-      compactionExecutor = new AcidCompactionExecutor(conf, msc, compactorFactory, collectGenericStats, 
+      compactionService = new AcidCompactionService(conf, msc, compactorFactory, collectGenericStats, 
           collectMrStats);
     }
 
-    return compactionExecutor;
+    return compactionService;
   }
 }

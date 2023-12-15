@@ -23,15 +23,15 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
-import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionExecutor;
+import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IcebergCompactionExecutor extends CompactionExecutor {
-  private static final String CLASS_NAME = IcebergCompactionExecutor.class.getName();
+public class IcebergCompactionService extends CompactionService {
+  private static final String CLASS_NAME = IcebergCompactionService.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  public IcebergCompactionExecutor() {
+  public IcebergCompactionService() {
   }
 
   public Boolean compact(Table table, CompactionInfo ci) throws Exception {

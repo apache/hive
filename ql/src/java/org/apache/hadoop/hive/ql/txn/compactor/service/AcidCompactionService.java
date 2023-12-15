@@ -61,8 +61,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class AcidCompactionExecutor extends CompactionExecutor {
-  static final private String CLASS_NAME = AcidCompactionExecutor.class.getName();
+public class AcidCompactionService extends CompactionService {
+  static final private String CLASS_NAME = AcidCompactionService.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   
   private final boolean collectMrStats;
@@ -70,7 +70,7 @@ public class AcidCompactionExecutor extends CompactionExecutor {
   private ValidCompactorWriteIdList tblValidWriteIds;
   private AcidDirectory dir;
 
-  public AcidCompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
+  public AcidCompactionService(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
       boolean collectGenericStats, boolean collectMrStats) {
     super(conf, msc, compactorFactory, collectGenericStats);
     this.collectMrStats = collectMrStats;

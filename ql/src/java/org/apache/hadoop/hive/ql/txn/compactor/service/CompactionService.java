@@ -28,9 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public abstract class CompactionExecutor {
+public abstract class CompactionService {
 
-  static final private String CLASS_NAME = CompactionExecutor.class.getName();
+  static final private String CLASS_NAME = CompactionService.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   
   protected IMetaStoreClient msc;
@@ -39,12 +39,12 @@ public abstract class CompactionExecutor {
   protected boolean collectGenericStats;
   protected boolean computeStats = false;
 
-  public CompactionExecutor(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory, 
+  public CompactionService(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
       boolean collectGenericStats) {
     init(conf, msc, compactorFactory, collectGenericStats);
   }
 
-  public CompactionExecutor() {
+  public CompactionService() {
   }
 
   public void init(HiveConf conf, IMetaStoreClient msc, CompactorFactory compactorFactory,
