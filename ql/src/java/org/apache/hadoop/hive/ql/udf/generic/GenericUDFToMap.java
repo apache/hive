@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * GenericUDFMap.
@@ -37,7 +38,7 @@ public class GenericUDFToMap extends GenericUDF implements SettableUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    return typeInfo.createObjectInspector();
+    return TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
   }
 
   @Override

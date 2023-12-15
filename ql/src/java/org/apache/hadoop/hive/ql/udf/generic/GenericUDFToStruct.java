@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 @Description(name = "toStruct", value = "_FUNC_(x) - converts it's parameter to _FUNC_"
     + "Currently only null literal is supported.")
@@ -33,7 +34,7 @@ public class GenericUDFToStruct extends GenericUDF implements SettableUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    return typeInfo.createObjectInspector();
+    return TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
   }
 
   @Override

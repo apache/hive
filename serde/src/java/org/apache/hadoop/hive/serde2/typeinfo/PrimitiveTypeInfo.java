@@ -23,10 +23,8 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
@@ -111,11 +109,6 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
     int result = 1;
     result = prime * result + ((typeName == null) ? 0 : typeName.hashCode());
     return result;
-  }
-
-  @Override
-  public ObjectInspector createObjectInspector() {
-    return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(this);
   }
 
   @Override
