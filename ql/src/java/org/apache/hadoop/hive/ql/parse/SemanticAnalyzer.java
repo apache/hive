@@ -30,6 +30,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DEFAULT_TABLE_TYPE;
 import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.TEXT;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
@@ -41,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -181,6 +183,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.AutomaticRewritingValidationResult;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -189,6 +192,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -456,7 +460,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       HiveParser.TOK_DISTRIBUTEBY, HiveParser.TOK_SORTBY);
 
   private String invalidResultCacheReason;
-  private String invalidAutomaticRewritingMaterializationReason;
+  private AutomaticRewritingValidationResult automaticRewritingValidationResult;
 
   private final NullOrdering defaultNullOrder;
 
@@ -14670,11 +14674,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           throw new SemanticException(msg);
         }
-        if (!isValidAutomaticRewritingMaterialization()) {
-          String errorMessage = "Only query text based automatic rewriting is available for materialized view. " +
-                  getInvalidAutomaticRewritingMaterializationReason();
-          console.printError(errorMessage);
-          LOG.warn(errorMessage);
+        String validationWarningMessage = automaticRewritingValidationResult.generateErrorMessage();
+        if (isNotBlank(validationWarningMessage)) {
+          console.printWarn(validationWarningMessage);
         }
       }
     } catch (HiveException e) {
@@ -15931,18 +15933,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     public String colTypes;
   }
 
-  public String getInvalidAutomaticRewritingMaterializationReason() {
-    return invalidAutomaticRewritingMaterializationReason;
+  public AutomaticRewritingValidationResult getAutomaticRewritingValidationResult() {
+    return automaticRewritingValidationResult;
   }
 
-  public void setInvalidAutomaticRewritingMaterializationReason(
-      String invalidAutomaticRewritingMaterializationReason) {
-    this.invalidAutomaticRewritingMaterializationReason =
-        invalidAutomaticRewritingMaterializationReason;
-  }
-
-  public boolean isValidAutomaticRewritingMaterialization() {
-    return (invalidAutomaticRewritingMaterializationReason == null);
+  public void setAutomaticRewritingValidationResult(
+      AutomaticRewritingValidationResult automaticRewritingValidationResult) {
+    this.automaticRewritingValidationResult =
+        automaticRewritingValidationResult;
   }
 
   public String getInvalidResultCacheReason() {

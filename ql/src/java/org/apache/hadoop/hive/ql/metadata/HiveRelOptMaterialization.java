@@ -37,27 +37,6 @@ import static org.apache.commons.collections.CollectionUtils.intersection;
  */
 public class HiveRelOptMaterialization extends RelOptMaterialization {
 
-  /**
-   * Enumeration of Materialized view query rewrite algorithms.
-   */
-  public enum RewriteAlgorithm {
-    /**
-     * Query sql text is compared to stored materialized view definition sql texts.
-     */
-    TEXT,
-    /**
-     * Use rewriting algorithm provided by Calcite.
-     */
-    CALCITE;
-
-    public static final EnumSet<RewriteAlgorithm> ALL = EnumSet.allOf(RewriteAlgorithm.class);
-
-    public static final Predicate<EnumSet<RewriteAlgorithm>> ANY =
-            rewriteAlgorithms -> true;
-    public static final Predicate<EnumSet<RewriteAlgorithm>> NON_CALCITE =
-            rewriteAlgorithms -> !rewriteAlgorithms.contains(HiveRelOptMaterialization.RewriteAlgorithm.CALCITE);
-  }
-
   public enum IncrementalRebuildMode {
     AVAILABLE,
     INSERT_ONLY,

@@ -16,46 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.metadata;
 
-import org.apache.calcite.rel.RelNode;
-import org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm;
+import org.apache.calcite.plan.RelOptMaterialization;
 
 import java.util.EnumSet;
 
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.TEXT;
+
 /**
- * Wrapper of Calcite plan.
+ * Hive extension of {@link RelOptMaterialization}.
  */
-public class CBOPlan {
-  private final ASTNode ast;
-  private final RelNode plan;
+public class AutomaticRewritingValidationResult {
   private final EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms;
+  private final String errorMessage;
 
-  public CBOPlan(ASTNode ast, RelNode plan, EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms) {
-    this.ast = ast;
-    this.plan = plan;
+  public AutomaticRewritingValidationResult(
+      EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms, String errorMessage) {
     this.supportedRewriteAlgorithms = supportedRewriteAlgorithms;
+    this.errorMessage = errorMessage;
   }
 
-  public ASTNode getAst() {
-    return ast;
-  }
-
-  /**
-   * Root node of plan.
-   * @return Root {@link RelNode}
-   */
-  public RelNode getPlan() {
-    return plan;
-  }
-
-  /**
-   * Returns an error message if this plan can not be a definition of a Materialized view which is an input of
-   * Calcite based materialized view query rewrite.
-   * Null or empty string otherwise.
-   * @return String contains error message or null.
-   */
   public EnumSet<RewriteAlgorithm> getSupportedRewriteAlgorithms() {
     return supportedRewriteAlgorithms;
+  }
+
+  public String generateErrorMessage() {
+    if (supportedRewriteAlgorithms.isEmpty()) {
+      return "Cannot enable automatic rewriting for materialized view. " + errorMessage;
+    } else if (supportedRewriteAlgorithms.size() == 1 && supportedRewriteAlgorithms.contains(TEXT)) {
+      return "Only query text based automatic rewriting is available for materialized view. " + errorMessage;
+    }
+    return errorMessage;
   }
 }
