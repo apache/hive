@@ -226,7 +226,7 @@ class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
   /**
    * Tracks number of of errors in input and throws a Runtime exception
    * if the rate of errors crosses a limit.
-   * <br/>
+   * <br>
    * The intention is to skip over very rare file corruption or incorrect
    * input, but catch programmer errors (incorrect format, or incorrect
    * deserializers etc).

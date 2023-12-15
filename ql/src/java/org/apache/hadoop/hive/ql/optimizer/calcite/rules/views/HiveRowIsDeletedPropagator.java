@@ -58,7 +58,8 @@ import static java.util.Arrays.asList;
  * General rule: we expect that these columns are the last columns in the input rowType of the current
  * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode}.
  *
- * This class is part of incremental rebuild of materialized view plan generation.<br/>
+ * This class is part of incremental rebuild of materialized view plan generation.
+ * <br>
  * @see AlterMaterializedViewRebuildAnalyzer
  * @see HiveJoinInsertDeleteIncrementalRewritingRule
  * @see HiveAggregateInsertDeleteIncrementalRewritingRule

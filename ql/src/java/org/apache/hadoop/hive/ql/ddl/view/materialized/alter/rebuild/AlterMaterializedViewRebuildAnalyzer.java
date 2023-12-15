@@ -91,12 +91,12 @@ import static java.util.Collections.singletonList;
  * Semantic analyzer for alter materialized view rebuild commands.
  * This subclass of {@link SemanticAnalyzer} generates a plan which is derived from the materialized view definition
  * query plan.
- * <br/>
+ * <br>
  * Steps:
  * <ul>
  *    <li>Take the Calcite plan of the materialized view definition query.</li>
  *    <li>Using the snapshot data in materialized view metadata insert A {@link HiveFilter} operator on top of each
- *    {@link HiveTableScan} operator. The condition has a predicate like ROW_ID.writeid <= high_watermark
+ *    {@link HiveTableScan} operator. The condition has a predicate like ROW_ID.writeid &lt;= high_watermark
  *    This step is done by {@link HiveAugmentMaterializationRule} or {@link HiveAugmentSnapshotMaterializationRule}.
  *    The resulting plan should produce the current result of the materialized view, the one which was created at last
  *    rebuild.</li>

@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  * This rule will perform a rewriting to prepare the plan for incremental
  * view maintenance in case there exist aggregation operator, so we can
  * avoid the INSERT OVERWRITE and use a MERGE statement instead.
- * <br/>
+ * <br>
  * <pre>
  * In particular, the INSERT OVERWRITE maintenance will look like this
  * (in SQL):
