@@ -82,13 +82,12 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   private List<String> getCreateQueries(String tmpTableName, Table table,
       StorageDescriptor storageDescriptor, String baseLocation) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
+        new CompactionQueryBuilderForInsertOnly(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.CREATE,
-            true,
             tmpTableName)
-            .setSourceTab(table)
             .setStorageDescriptor(storageDescriptor)
+            .setSourceTab(table)
             .setLocation(baseLocation)
             .build()
     );
@@ -96,10 +95,9 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
+        new CompactionQueryBuilderForInsertOnly(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.INSERT,
-            true,
             tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
@@ -109,10 +107,9 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
+        new CompactionQueryBuilderForInsertOnly(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.DROP,
-            true,
             tmpTableName).build());
   }
 }
