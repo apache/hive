@@ -28,12 +28,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Preconditions;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
@@ -248,6 +250,21 @@ public class Context {
     @Override
     public String toString() {
       return prefix;
+    }
+  }
+  public enum RewritePolicy {
+
+    DEFAULT,
+    ALL_PARTITIONS;
+
+    public static RewritePolicy fromString(String rewritePolicy) {
+      Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");
+
+      try {
+        return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException var2) {
+        throw new IllegalArgumentException(String.format("Invalid rewrite policy: %s", rewritePolicy), var2);
+      }
     }
   }
   private String getMatchedText(ASTNode n) {
