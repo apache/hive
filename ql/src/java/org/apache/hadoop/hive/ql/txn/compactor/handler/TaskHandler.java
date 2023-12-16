@@ -45,8 +45,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -88,27 +86,7 @@ public abstract class TaskHandler {
   }
 
   protected Partition resolvePartition(String dbName, String tableName, String partName) throws MetaException {
-    if (partName != null) {
-      List<Partition> parts;
-      try {
-        parts = CompactorUtil.getPartitionsByNames(conf, dbName, tableName, partName);
-        if (parts == null || parts.isEmpty()) {
-          // The partition got dropped before we went looking for it.
-          return null;
-        }
-      } catch (Exception e) {
-        LOG.error("Unable to find partition: {}.{}.{}", dbName, tableName, partName, e);
-        throw e;
-      }
-      if (parts.size() != 1) {
-        LOG.error("{}.{}.{} does not refer to a single partition. {}", dbName, tableName, partName,
-                Arrays.toString(parts.toArray()));
-        throw new MetaException(String.join("Too many partitions for : ", dbName, tableName, partName));
-      }
-      return parts.get(0);
-    } else {
-      return null;
-    }
+    return CompactorUtil.resolvePartition(conf, null, dbName, tableName, partName, CompactorUtil.METADATA_FETCH_MODE.LOCAL);
   }
 
   protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo info, ValidTxnList validTxnList)

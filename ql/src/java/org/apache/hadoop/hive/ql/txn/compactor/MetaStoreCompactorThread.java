@@ -88,6 +88,11 @@ public abstract class MetaStoreCompactorThread extends CompactorThread implement
     return CompactorUtil.getPartitionsByNames(conf, ci.dbname, ci.tableName, ci.partName);
   }
 
+  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
+    return CompactorUtil.resolvePartition(conf, null, ci.dbname, ci.tableName, ci.partName, 
+        CompactorUtil.METADATA_FETCH_MODE.LOCAL);
+  }
+
   protected abstract boolean isCacheEnabled();
 
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {
