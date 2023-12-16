@@ -1,0 +1,1 @@
+FAILED: SemanticException Unrecognized storage handler in STORED BY clause: ORC. Supported types = ICEBERG or FQCN of a storage handler
