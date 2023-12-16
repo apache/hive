@@ -60,6 +60,7 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.OverwriteFiles;
 import org.apache.iceberg.ReplacePartitions;
+import org.apache.iceberg.RewriteFiles;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
@@ -549,16 +550,27 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (!results.dataFiles().isEmpty()) {
       Transaction transaction = table.newTransaction();
       if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
-        DeleteFiles delete = transaction.newDelete();
-        delete.deleteFromRowFilter(Expressions.alwaysTrue());
-        delete.commit();
+
+        List<DataFile> existingDataFiles = Lists.newArrayList();
+        List<DeleteFile> existingDeleteFiles = Lists.newArrayList();
+        IcebergTableUtil.getFiles(table, existingDataFiles, existingDeleteFiles);
+
+        RewriteFiles rewriteFiles = transaction.newRewrite();
+        rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
+
+        existingDataFiles.stream().forEach(rewriteFiles::deleteFile);
+        existingDeleteFiles.stream().forEach(rewriteFiles::deleteFile);
+        results.dataFiles().stream().forEach(rewriteFiles::addFile);
+
+        rewriteFiles.commit();
+      } else {
+        ReplacePartitions overwrite = transaction.newReplacePartitions();
+        results.dataFiles().forEach(overwrite::addFile);
+        if (StringUtils.isNotEmpty(branchName)) {
+          overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
+        }
+        overwrite.commit();
       }
-      ReplacePartitions overwrite = transaction.newReplacePartitions();
-      results.dataFiles().forEach(overwrite::addFile);
-      if (StringUtils.isNotEmpty(branchName)) {
-        overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
-      }
-      overwrite.commit();
       transaction.commitTransaction();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +37,10 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionSpec;
@@ -50,8 +54,10 @@ import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -327,5 +333,26 @@ public class IcebergTableUtil {
       }
     }
     return data;
+  }
+
+  public static void getFiles(Table table, List<DataFile> dataFiles, List<DeleteFile> deleteFiles) {
+    CloseableIterable<FileScanTask> fileScanTasks = table.newScan().planFiles();
+    Set<String> dataFilesPath = Sets.newHashSet();
+    Set<String> deleteFilesPath = Sets.newHashSet();
+
+    for (FileScanTask fileScanTask : fileScanTasks) {
+      // filter repeated data files
+      if (!dataFilesPath.contains(fileScanTask.file().path().toString())) {
+        dataFiles.add(fileScanTask.file());
+        dataFilesPath.add(fileScanTask.file().path().toString());
+      }
+      for (DeleteFile delete : fileScanTask.deletes()) {
+        // filter repeated delete files
+        if (!deleteFilesPath.contains(delete.path().toString())) {
+          deleteFiles.add(delete);
+          deleteFilesPath.add(delete.path().toString());
+        }
+      }
+    }
   }
 }
