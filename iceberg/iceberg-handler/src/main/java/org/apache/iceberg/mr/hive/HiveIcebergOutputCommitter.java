@@ -487,10 +487,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param table      The table we are changing
    * @param startTime  The start time of the commit - used only for logging
    * @param results    The object containing the new files we would like to add to the table
-   * @param conflictDetectionFilter Filter expression for conflict detection filter
+   * @param filterExpr Filter expression for conflict detection filter
    */
   private void commitWrite(Table table, String branchName, Long snapshotId, long startTime,
-      FilesForCommit results, Operation operation, Expression conflictDetectionFilter) {
+      FilesForCommit results, Operation operation, Expression filterExpr) {
 
     if (!results.replacedDataFiles().isEmpty()) {
       OverwriteFiles write = table.newOverwrite();
@@ -527,7 +527,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
-      write.conflictDetectionFilter(conflictDetectionFilter);
+      write.conflictDetectionFilter(filterExpr);
 
       if (!results.dataFiles().isEmpty()) {
         write.validateDeletedFiles();

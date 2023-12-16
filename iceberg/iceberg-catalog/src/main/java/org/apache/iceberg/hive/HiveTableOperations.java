@@ -391,7 +391,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     // If needed set the 'storage_handler' property to enable query from Hive
     if (hiveEngineEnabled) {
       String storageHandler = parameters.get(hive_metastoreConstants.META_TABLE_STORAGE);
-      // Check if META_TABLE_STORAGE is not present or does not contain ICEBERG_STORAGE_HANDLER
+      // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
       if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
         parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
       }
