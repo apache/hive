@@ -40,7 +40,7 @@ import static org.apache.hive.common.util.HiveStringUtils.SHUTDOWN_HOOK_PRIORITY
 /**
  * Singleton service responsible for heartbeating the compaction transactions.
  */
-class CompactionHeartbeatService {
+public class CompactionHeartbeatService {
 
 
   private static final Logger LOG = LoggerFactory.getLogger(CompactionHeartbeatService.class);
@@ -53,7 +53,7 @@ class CompactionHeartbeatService {
    * @return Returns the singleton {@link CompactionHeartbeatService}
    * @throws IllegalStateException Thrown when the service has already been destroyed.
    */
-  static CompactionHeartbeatService getInstance(HiveConf conf) {
+  public static CompactionHeartbeatService getInstance(HiveConf conf) {
     if (instance == null) {
       synchronized (CompactionHeartbeatService.class) {
         if (instance == null) {
@@ -82,7 +82,7 @@ class CompactionHeartbeatService {
    * @param tableName Required for logging only
    * @throws IllegalStateException Thrown when the heartbeat for the given txn has already been started.
    */
-  void startHeartbeat(long txnId, long lockId, String tableName) {
+  public void startHeartbeat(long txnId, long lockId, String tableName) {
     if (shuttingDown) {
       throw new IllegalStateException("Service is shutting down, starting new heartbeats is not possible!");
     }
@@ -101,7 +101,7 @@ class CompactionHeartbeatService {
    * @throws IllegalStateException Thrown when there is no {@link CompactionHeartbeater} task associated with the
    * given txnId.
    */
-  void stopHeartbeat(long txnId) throws InterruptedException {
+  public void stopHeartbeat(long txnId) throws InterruptedException {
     LOG.info("Stopping heartbeat task for TXN {}", txnId);
     CompactionHeartbeater heartbeater = tasks.get(txnId);
     if (heartbeater == null) {

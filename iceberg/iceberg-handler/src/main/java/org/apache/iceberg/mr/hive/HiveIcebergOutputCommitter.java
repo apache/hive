@@ -42,7 +42,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
@@ -62,6 +64,7 @@ import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
@@ -453,7 +456,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation);
       }
     } else {
-      commitOverwrite(table, branchName, startTime, filesForCommit);
+
+      RewritePolicy rewritePolicy = RewritePolicy.fromString(outputTable.jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
+          .orElse(RewritePolicy.DEFAULT.name()));
+
+      commitOverwrite(table, branchName, startTime, filesForCommit, rewritePolicy);
     }
   }
 
@@ -532,16 +541,25 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param table The table we are changing
    * @param startTime The start time of the commit - used only for logging
    * @param results The object containing the new files
+   * @param rewritePolicy The rewrite policy to use for the insert overwrite commit
    */
-  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results) {
+  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results,
+      RewritePolicy rewritePolicy) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
-      ReplacePartitions overwrite = table.newReplacePartitions();
+      Transaction transaction = table.newTransaction();
+      if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
+        DeleteFiles delete = transaction.newDelete();
+        delete.deleteFromRowFilter(Expressions.alwaysTrue());
+        delete.commit();
+      }
+      ReplacePartitions overwrite = transaction.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
       if (StringUtils.isNotEmpty(branchName)) {
         overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
       overwrite.commit();
+      transaction.commitTransaction();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());
     } else if (table.spec().isUnpartitioned()) {
