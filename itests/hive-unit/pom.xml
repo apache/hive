@@ -26,7 +26,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <testcontainers.version>1.15.2</testcontainers.version>
-    <htmlunit.version>2.67.0</htmlunit.version>
+    <htmlunit.version>2.70.0</htmlunit.version>
   </properties>
   <dependencies>
     <!-- intra-project -->
