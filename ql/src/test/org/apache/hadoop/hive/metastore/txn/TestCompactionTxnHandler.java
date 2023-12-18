@@ -1107,7 +1107,6 @@ public class TestCompactionTxnHandler {
     
     private long dbTime = System.currentTimeMillis();
 
-    @Override
     protected long getDbTime(Connection conn) {
       return dbTime;
     }
