@@ -32,8 +32,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
-import org.apache.hadoop.hive.metastore.txn.MetricsInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData;
+import org.apache.hadoop.hive.metastore.txn.entities.MetricsInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.thrift.TException;
@@ -78,9 +78,9 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.OLDEST_O
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.OLDEST_OPEN_REPL_TXN_ID;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.TABLES_WITH_X_ABORTED_TXNS;
-import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_DELTAS;
-import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS;
-import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_SMALL_DELTAS;
+import static org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData.MetricType.NUM_DELTAS;
+import static org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS;
+import static org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData.MetricType.NUM_SMALL_DELTAS;
 
 /**
  * Collect and publish ACID and compaction related metrics.
