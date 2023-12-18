@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm;
 
-import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Wrapper of Calcite plan.
@@ -29,9 +29,9 @@ import java.util.EnumSet;
 public class CBOPlan {
   private final ASTNode ast;
   private final RelNode plan;
-  private final EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms;
+  private final Set<RewriteAlgorithm> supportedRewriteAlgorithms;
 
-  public CBOPlan(ASTNode ast, RelNode plan, EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms) {
+  public CBOPlan(ASTNode ast, RelNode plan, Set<RewriteAlgorithm> supportedRewriteAlgorithms) {
     this.ast = ast;
     this.plan = plan;
     this.supportedRewriteAlgorithms = supportedRewriteAlgorithms;
@@ -55,7 +55,7 @@ public class CBOPlan {
    * Null or empty string otherwise.
    * @return String contains error message or null.
    */
-  public EnumSet<RewriteAlgorithm> getSupportedRewriteAlgorithms() {
+  public Set<RewriteAlgorithm> getSupportedRewriteAlgorithms() {
     return supportedRewriteAlgorithms;
   }
 }

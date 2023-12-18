@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -141,7 +140,7 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
   public static RelNode getMaterializedViewByAST(
           ASTNode expandedAST,
           RelOptCluster optCluster,
-          Predicate<EnumSet<RewriteAlgorithm>> filter,
+          Predicate<Set<RewriteAlgorithm>> filter,
           Hive db,
           Set<TableName> tablesUsedByOriginalPlan,
           HiveTxnManager txnManager) {

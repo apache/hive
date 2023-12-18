@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -36,8 +37,8 @@ public enum RewriteAlgorithm {
 
   public static final EnumSet<RewriteAlgorithm> ALL = EnumSet.allOf(RewriteAlgorithm.class);
 
-  public static final Predicate<EnumSet<RewriteAlgorithm>> ANY =
+  public static final Predicate<Set<RewriteAlgorithm>> ANY =
       rewriteAlgorithms -> true;
-  public static final Predicate<EnumSet<RewriteAlgorithm>> NON_CALCITE =
+  public static final Predicate<Set<RewriteAlgorithm>> NON_CALCITE =
       rewriteAlgorithms -> !rewriteAlgorithms.contains(CALCITE);
 }

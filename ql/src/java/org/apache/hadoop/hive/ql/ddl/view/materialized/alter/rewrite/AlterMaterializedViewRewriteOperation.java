@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.AutomaticRewritingValidationResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
-
-import java.util.EnumSet;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.ql.processors.CompileProcessor.console;
