@@ -286,7 +286,7 @@ public class Main {
 
     if (conf.getBoolean(AppConfig.USE_SSL, false)) {
       LOG.info("Using SSL for templeton.");
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(conf.get(AppConfig.KEY_STORE_PATH, DEFAULT_KEY_STORE_PATH));
       sslContextFactory.setKeyStorePassword(conf.get(AppConfig.KEY_STORE_PASSWORD, DEFAULT_KEY_STORE_PASSWORD));
       Set<String> excludedSSLProtocols = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings()
