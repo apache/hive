@@ -1351,6 +1351,10 @@ public class MetastoreConf {
       "Time after which replication transactions are declared aborted if the client has not sent a " +
               "heartbeat. If this is a target cluster, value must be greater than" +
               "hive.repl.event.db.listener.timetolive on the source cluster (!), ideally by 1 day."),
+    /**
+     * @deprecated "This config value is no longer used"
+     */
+    @Deprecated
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"

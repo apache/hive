@@ -954,10 +954,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void setMetaStoreSchemaVersion(String version, String comment) throws MetaException {
-  }
-
-  @Override
   public List<List<ColumnStatistics>> getPartitionColumnStatistics(String catName, String dbName,
       String tblName, List<String> colNames, List<String> partNames)
       throws MetaException, NoSuchObjectException {

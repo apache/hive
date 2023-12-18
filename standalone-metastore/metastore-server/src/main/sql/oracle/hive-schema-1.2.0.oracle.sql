@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gangam:1 labels:1.2.0 dbms:oracle
+--comment: Init MetaStore to 1.2.0
+
 -- Table SEQUENCE_TABLE is an internal table required by DataNucleus.
 -- NOTE: Some versions of SchemaTool do not automatically generate this table.
 -- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
-import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 
 /**
@@ -97,9 +96,7 @@ public class Derby extends DatabaseRule {
   }
 
   @Override
-  public void before() throws Exception {
-    MetastoreSchemaTool.setHomeDirForTesting();
-  }
+  public void before() throws Exception {}
 
   @Override
   public void after() {
@@ -115,7 +112,7 @@ public class Derby extends DatabaseRule {
   }
 
   @Override
-  public int createUser() {
-    return 0; // no-op
+  public void createUser() {
+    // no-op
   }
 }

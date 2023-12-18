@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gates:2 labels:2.0.0 dbms:derby
+--comment: Upgrade MetaStore schema from 1.2.0 to 2.0.0
+
 -- Upgrade MetaStore schema from 1.2.0 to 2.0.0
 --RUN '021-HIVE-11970.derby.sql';
 ALTER TABLE "COLUMNS_V2" ALTER "COLUMN_NAME" SET DATA TYPE VARCHAR(1000);

@@ -50,7 +50,9 @@ import org.apache.hive.common.util.HiveVersionInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.sql.Connection;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -716,15 +718,24 @@ public class TestCompactionTxnHandler {
 
   @Test
   public void testRevokeTimedOutWorkers() throws Exception {
+    // Use TestTxnHandler so the DBTime can be recorded to avoid flakyness caused by DB/network slowness.
+    txnHandler = new TestTxnHandler();
+    txnHandler.setConf(conf);
+    
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
     txnHandler.compact(rqst);
     rqst = new CompactionRequest("foo", "baz", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
     assertNotNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred-193892", WORKER_VERSION)));
-    Thread.sleep(200);
+    Thread.sleep(100);
+    //fix the time getDBTime will return. This will ensure that only the first compaction will be revoked regardless of
+    // any slowness in the test run
+    long afterFirst = System.currentTimeMillis();
+    ((TestTxnHandler)txnHandler).setDbTime(afterFirst);
+    Thread.sleep(100);
     assertNotNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred-193892", WORKER_VERSION)));
-    txnHandler.revokeTimedoutWorkers(100);
+    txnHandler.revokeTimedoutWorkers(System.currentTimeMillis() - afterFirst);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -1090,6 +1101,21 @@ public class TestCompactionTxnHandler {
     rqst.setTxnIds(Collections.singletonList(txnid));
     AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     return writeIds.getTxnToWriteIds().get(0).getWriteId();
+  }
+  
+  class TestTxnHandler extends CompactionTxnHandler {
+    
+    private long dbTime = System.currentTimeMillis();
+
+    @Override
+    protected long getDbTime(Connection conn) {
+      return dbTime;
+    }
+    
+    void setDbTime(long dbTime) {
+      this.dbTime = dbTime;
+    }
+    
   }
 
   private void createAReadyToCleanCompaction(String dbName, String tableName, String partitionName, CompactionType compactionType) throws MetaException {

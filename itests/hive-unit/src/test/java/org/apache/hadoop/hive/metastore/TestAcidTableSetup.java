@@ -54,11 +54,11 @@ public class TestAcidTableSetup {
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
+    TestTxnDbUtil.prepDb(conf);
 
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
         DefaultPartitionExpressionProxy.class, PartitionExpressionProxy.class);
     client = new HiveMetaStoreClient(conf);
-    TestTxnDbUtil.prepDb(conf);
   }
 
   @Test

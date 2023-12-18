@@ -152,6 +152,10 @@ information_schema	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_u
 information_schema	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -738,7 +742,6 @@ part_col_stats	cs_id
 part_col_stats	db_name
 part_col_stats	double_high_value
 part_col_stats	double_low_value
-part_col_stats	engine
 part_col_stats	last_analyzed
 part_col_stats	long_high_value
 part_col_stats	long_low_value
@@ -828,8 +831,6 @@ scheduled_executions	start_time
 scheduled_executions	start_time_since_epoch
 scheduled_executions	state
 scheduled_executions	state
-scheduled_queries	active_execution_id
-scheduled_queries	active_execution_id
 scheduled_queries	cluster_namespace
 scheduled_queries	cluster_namespace
 scheduled_queries	enabled
@@ -910,7 +911,6 @@ tab_col_stats	cs_id
 tab_col_stats	db_name
 tab_col_stats	double_high_value
 tab_col_stats	double_low_value
-tab_col_stats	engine
 tab_col_stats	last_analyzed
 tab_col_stats	long_high_value
 tab_col_stats	long_low_value
@@ -1031,7 +1031,10 @@ txns	txn_state
 txns	txn_type
 txns	txn_user
 version	schema_version
+version	schema_version
 version	ver_id
+version	ver_id
+version	version_comment
 version	version_comment
 views	check_option
 views	is_insertable_into
@@ -1081,7 +1084,7 @@ a	decimal(10,2)	0
 acquired_at	string	9
 acquired_at	string	9
 action_expression	string	4
-active_execution_id	bigint	8
+add_time	int	1
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -1313,7 +1316,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-79
+80
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1409,9 +1412,9 @@ POSTHOOK: Input: sys@table_params
 #### A masked pattern was here ####
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","ns":"true","rp_name":"true","trigger_expression":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"active_execution_id":"true","cluster_namespace":"true","enabled":"true","next_execution":"true","query":"true","schedule":"true","schedule_name":"true","scheduled_query_id":"true","user":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","ns":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","part_col_priv":"true","part_column_grant_id":"true","part_id":"true","principal_name":"true","principal_type":"true"}}
 PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbls
@@ -1516,9 +1519,9 @@ POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","ns":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"active_execution_id":"true","cluster_namespace":"true","enabled":"true","next_execution":"true","query":"true","schedule":"true","schedule_name":"true","scheduled_query_id":"true","user":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","ns":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"authorizer":"true","column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","part_col_priv":"true","part_column_grant_id":"true","part_id":"true","principal_name":"true","principal_type":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -1554,7 +1557,6 @@ max_col_len         	bigint              	from deserializer
 num_trues           	bigint              	from deserializer   
 num_falses          	bigint              	from deserializer   
 last_analyzed       	bigint              	from deserializer   
-engine              	string              	from deserializer   
 PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tab_col_stats
@@ -1695,6 +1697,7 @@ default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	table_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	tables	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	transactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	version	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	views	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	bucketing_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	cds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1847,6 +1850,7 @@ information_schema	schemata
 information_schema	table_privileges
 information_schema	tables
 information_schema	transactions
+information_schema	version
 information_schema	views
 sys	compactions
 sys	locks

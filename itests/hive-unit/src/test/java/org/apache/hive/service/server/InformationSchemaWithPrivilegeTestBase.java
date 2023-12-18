@@ -18,20 +18,11 @@
 
 package org.apache.hive.service.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
-import org.apache.hive.testutils.MiniZooKeeperCluster;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.SchemaToolTestUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessController;
@@ -50,15 +41,22 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLs;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLsImpl;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.DummyHiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessControllerWrapper;
-import org.apache.hive.beeline.BeeLine;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
+import org.apache.hive.testutils.MiniZooKeeperCluster;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Test restricted information schema with privilege synchronization
@@ -185,7 +183,6 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
   private static MiniHS2 miniHS2 = null;
   private static MiniZooKeeperCluster zkCluster = null;
   private static Map<String, String> confOverlay;
-  private static String hiveSchemaVer;
 
 
   public static void setupInternal(boolean zookeeperSSLEnabled) throws Exception {
@@ -210,7 +207,6 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, TestHiveAuthorizerFactory.class.getName());
     confOverlay.put(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
     confOverlay.put(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname, Integer.toString(zkPort));
-    confOverlay.put(MetastoreConf.ConfVars.AUTO_CREATE_ALL.getVarname(), "true");
     confOverlay.put(ConfVars.HIVE_AUTHENTICATOR_MANAGER.varname, FakeGroupAuthenticator.class.getName());
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "true");
     confOverlay.put(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER.varname, "true");
@@ -234,15 +230,17 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
           KEY_STORE_TRUST_STORE_TYPE);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE.varname, "true");
     }
-    miniHS2.start(confOverlay);
 
-    hiveSchemaVer = MetaStoreSchemaInfoFactory.get(miniHS2.getServerConf()).getHiveSchemaVersion();
+    TestTxnDbUtil.prepDb(miniHS2.getHiveConf());
+
+    miniHS2.start(confOverlay);
   }
 
   @AfterClass
-  public static void tearDown() throws IOException {
+  public static void tearDown() throws Exception {
     if (miniHS2 != null) {
       miniHS2.stop();
+      TestTxnDbUtil.cleanDb(miniHS2.getHiveConf());
     }
     if (zkCluster != null) {
       zkCluster.shutdown();
@@ -286,21 +284,10 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     serviceClient.executeStatement(sessHandle, "SHOW GRANT USER hive_test_user ON ALL", confOverlay);
     serviceClient.closeSession(sessHandle);
 
-    List<String> baseArgs = new ArrayList<String>();
-    baseArgs.add("-d");
-    baseArgs.add(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
-    baseArgs.add("-u");
-    baseArgs.add(miniHS2.getBaseJdbcURL());
-    baseArgs.add("-n");
-    baseArgs.add("hive_test_user");
-
-    List<String> args = new ArrayList<String>(baseArgs);
-    args.add("-f");
-    args.add("../../metastore/scripts/upgrade/hive/hive-schema-" + hiveSchemaVer + ".hive.sql");
-    BeeLine beeLine = new BeeLine();
-    int result = beeLine.begin(args.toArray(new String[] {}), null);
-    beeLine.close();
-    Assert.assertEquals(result, 0);
+    SchemaToolTestUtil.executeCommand(
+        miniHS2.getHiveConf(),
+        new String[] { "-initSchema", "-dbType", "hive", "-metaDbType", "derby", "-userName", "hive_test_user"}
+    );
 
     boolean containsDb1 = false;
     boolean containsDb2 = false;

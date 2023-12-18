@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gates:6 labels:3.0.0 dbms:oracle
+--comment: Upgrade MetaStore schema from 2.3.0 to 3.0.0
+
 SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
 
 -- HIVE-21336 safeguards from failures from indices being too long

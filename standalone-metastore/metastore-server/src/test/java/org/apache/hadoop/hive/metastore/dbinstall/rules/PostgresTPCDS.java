@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
-import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
+import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.SchemaInfo;
+import org.apache.hadoop.hive.metastore.utils.SchemaToolTestUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,18 +52,11 @@ public class PostgresTPCDS extends Postgres {
   @Override
   public void install() {
     // Upgrade the metastore to latest by running explicitly a script.
-    String hiveSchemaVer = MetaStoreSchemaInfoFactory.get(new Configuration()).getHiveSchemaVersion();
+    String hiveSchemaVer = SchemaInfo.getRequiredHmsSchemaVersion();
     try (InputStream script = PostgresTPCDS.class.getClassLoader()
         .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-" + hiveSchemaVer + ".postgres.sql")) {
-      new MetastoreSchemaTool().runScript(
-          buildArray(
-              "-upgradeSchema",
-              "-dbType", getDbType(),
-              "-userName", getHiveUser(),
-              "-passWord", getHivePassword(),
-              "-url", getJdbcUrl(),
-              "-driver", getJdbcDriver()),
-          script);
+      SchemaToolTestUtil.runScript(new HiveSchemaHelper.MetaStoreConnectionInfo(
+          getHiveUser(), getHivePassword(), getJdbcUrl(), getJdbcDriver(), true, getDbType()),script);
     } catch (IOException exception) {
       throw new UncheckedIOException(exception);
     }

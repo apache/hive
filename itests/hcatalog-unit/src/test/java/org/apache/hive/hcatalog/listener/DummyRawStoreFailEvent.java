@@ -949,12 +949,6 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void setMetaStoreSchemaVersion(String schemaVersion, String comment) throws MetaException {
-    objectStore.setMetaStoreSchemaVersion(schemaVersion, comment);
-
-  }
-
-  @Override
   public List<List<ColumnStatistics>> getPartitionColumnStatistics(String catName, String dbName,
                                                              String tblName, List<String> colNames,
                                                              List<String> partNames)

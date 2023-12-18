@@ -228,11 +228,11 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.parent.basedir}/metastore/scripts/upgrade</directory>
+      <directory>${project.parent.basedir}/metastore/scripts/upgrade/hive</directory>
       <includes>
         <include>**/*</include>
       </includes>
-      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
+      <outputDirectory>scripts/metastore/upgrade/hive</outputDirectory>
     </fileSet>
 
     <fileSet>

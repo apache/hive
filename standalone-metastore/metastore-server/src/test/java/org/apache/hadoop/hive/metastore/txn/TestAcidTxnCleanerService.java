@@ -55,11 +55,12 @@ public class TestAcidTxnCleanerService {
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
+    TestTxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
     underTest = new AcidTxnCleanerService();
     underTest.setConf(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.setOpenTxnTimeOutMillis(100);
-    TestTxnDbUtil.prepDb(conf);
   }
 
   @After

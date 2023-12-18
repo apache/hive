@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gangam:1 labels:1.2.0 dbms:postgresql
+--comment: Init MetaStore to 1.2.0
+
 --
 -- PostgreSQL database dump
 --

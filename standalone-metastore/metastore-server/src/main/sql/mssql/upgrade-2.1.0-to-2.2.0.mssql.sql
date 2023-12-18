@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gates:4 labels:2.2.0 dbms:mssql
+--comment: Upgrade MetaStore schema from 2.1.0 to 2.2.0
+
 SELECT 'Upgrading MetaStore schema from 2.1.0 to 2.2.0' AS MESSAGE;
 
 -- We can not change the datatype of a column with default value. Hence we first drop the default constraint

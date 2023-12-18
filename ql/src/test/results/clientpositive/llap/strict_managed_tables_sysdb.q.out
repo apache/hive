@@ -196,6 +196,10 @@ information_schema	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_u
 information_schema	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -631,6 +635,7 @@ PREHOOK: Output: information_schema@schemata
 PREHOOK: Output: information_schema@table_privileges
 PREHOOK: Output: information_schema@tables
 PREHOOK: Output: information_schema@transactions
+PREHOOK: Output: information_schema@version
 PREHOOK: Output: information_schema@views
 POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 POSTHOOK: type: DROPDATABASE
@@ -646,4 +651,5 @@ POSTHOOK: Output: information_schema@schemata
 POSTHOOK: Output: information_schema@table_privileges
 POSTHOOK: Output: information_schema@tables
 POSTHOOK: Output: information_schema@transactions
+POSTHOOK: Output: information_schema@version
 POSTHOOK: Output: information_schema@views

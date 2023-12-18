@@ -1,3 +1,8 @@
+-- liquibase formatted sql
+
+-- changeset Gangam:1 labels:1.2.0 dbms:mysql
+-- comment: Init MetaStore to 1.2.0
+
 -- MySQL dump 10.13  Distrib 5.5.25, for osx10.6 (i386)
 --
 -- Host: localhost    Database: test
@@ -14,22 +19,6 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `BUCKETING_COLS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `BUCKETING_COLS` (
-  `SD_ID` bigint(20) NOT NULL,
-  `BUCKET_COL_NAME` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `INTEGER_IDX` int(11) NOT NULL,
-  PRIMARY KEY (`SD_ID`,`INTEGER_IDX`),
-  KEY `BUCKETING_COLS_N49` (`SD_ID`),
-  CONSTRAINT `BUCKETING_COLS_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `CDS`
@@ -62,22 +51,6 @@ CREATE TABLE IF NOT EXISTS `COLUMNS_V2` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `DATABASE_PARAMS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
-  `DB_ID` bigint(20) NOT NULL,
-  `PARAM_KEY` varchar(180) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`DB_ID`,`PARAM_KEY`),
-  KEY `DATABASE_PARAMS_N49` (`DB_ID`),
-  CONSTRAINT `DATABASE_PARAMS_FK1` FOREIGN KEY (`DB_ID`) REFERENCES `DBS` (`DB_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `DBS`
 --
 
@@ -92,6 +65,22 @@ CREATE TABLE IF NOT EXISTS `DBS` (
   `OWNER_TYPE` varchar(10) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   PRIMARY KEY (`DB_ID`),
   UNIQUE KEY `UNIQUE_DATABASE` (`NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `DATABASE_PARAMS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
+                                                 `DB_ID` bigint(20) NOT NULL,
+                                                 `PARAM_KEY` varchar(180) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+                                                 `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                 PRIMARY KEY (`DB_ID`,`PARAM_KEY`),
+                                                 KEY `DATABASE_PARAMS_N49` (`DB_ID`),
+                                                 CONSTRAINT `DATABASE_PARAMS_FK1` FOREIGN KEY (`DB_ID`) REFERENCES `DBS` (`DB_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -139,49 +128,6 @@ CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `IDXS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `IDXS` (
-  `INDEX_ID` bigint(20) NOT NULL,
-  `CREATE_TIME` int(11) NOT NULL,
-  `DEFERRED_REBUILD` bit(1) NOT NULL,
-  `INDEX_HANDLER_CLASS` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `INDEX_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `INDEX_TBL_ID` bigint(20) DEFAULT NULL,
-  `LAST_ACCESS_TIME` int(11) NOT NULL,
-  `ORIG_TBL_ID` bigint(20) DEFAULT NULL,
-  `SD_ID` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`INDEX_ID`),
-  UNIQUE KEY `UNIQUEINDEX` (`INDEX_NAME`,`ORIG_TBL_ID`),
-  KEY `IDXS_N51` (`SD_ID`),
-  KEY `IDXS_N50` (`INDEX_TBL_ID`),
-  KEY `IDXS_N49` (`ORIG_TBL_ID`),
-  CONSTRAINT `IDXS_FK1` FOREIGN KEY (`ORIG_TBL_ID`) REFERENCES `TBLS` (`TBL_ID`),
-  CONSTRAINT `IDXS_FK2` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`),
-  CONSTRAINT `IDXS_FK3` FOREIGN KEY (`INDEX_TBL_ID`) REFERENCES `TBLS` (`TBL_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `INDEX_PARAMS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
-  `INDEX_ID` bigint(20) NOT NULL,
-  `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`),
-  KEY `INDEX_PARAMS_N49` (`INDEX_ID`),
-  CONSTRAINT `INDEX_PARAMS_FK1` FOREIGN KEY (`INDEX_ID`) REFERENCES `IDXS` (`INDEX_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `NUCLEUS_TABLES`
 --
 
@@ -195,146 +141,6 @@ CREATE TABLE IF NOT EXISTS `NUCLEUS_TABLES` (
   `VERSION` varchar(20) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `INTERFACE_NAME` varchar(255) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   PRIMARY KEY (`CLASS_NAME`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `PARTITIONS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `PARTITIONS` (
-  `PART_ID` bigint(20) NOT NULL,
-  `CREATE_TIME` int(11) NOT NULL,
-  `LAST_ACCESS_TIME` int(11) NOT NULL,
-  `PART_NAME` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `SD_ID` bigint(20) DEFAULT NULL,
-  `TBL_ID` bigint(20) DEFAULT NULL,
-  `LINK_TARGET_ID` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`PART_ID`),
-  UNIQUE KEY `UNIQUEPARTITION` (`PART_NAME`,`TBL_ID`),
-  KEY `PARTITIONS_N49` (`TBL_ID`),
-  KEY `PARTITIONS_N50` (`SD_ID`),
-  KEY `PARTITIONS_N51` (`LINK_TARGET_ID`),
-  CONSTRAINT `PARTITIONS_FK1` FOREIGN KEY (`TBL_ID`) REFERENCES `TBLS` (`TBL_ID`),
-  CONSTRAINT `PARTITIONS_FK2` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`),
-  CONSTRAINT `PARTITIONS_FK3` FOREIGN KEY (`LINK_TARGET_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `PARTITION_EVENTS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `PARTITION_EVENTS` (
-  `PART_NAME_ID` bigint(20) NOT NULL,
-  `DB_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `EVENT_TIME` bigint(20) NOT NULL,
-  `EVENT_TYPE` int(11) NOT NULL,
-  `PARTITION_NAME` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `TBL_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`PART_NAME_ID`),
-  KEY `PARTITIONEVENTINDEX` (`PARTITION_NAME`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `PARTITION_KEYS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
-  `TBL_ID` bigint(20) NOT NULL,
-  `PKEY_COMMENT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `PKEY_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `PKEY_TYPE` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `INTEGER_IDX` int(11) NOT NULL,
-  PRIMARY KEY (`TBL_ID`,`PKEY_NAME`),
-  KEY `PARTITION_KEYS_N49` (`TBL_ID`),
-  CONSTRAINT `PARTITION_KEYS_FK1` FOREIGN KEY (`TBL_ID`) REFERENCES `TBLS` (`TBL_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `PARTITION_KEY_VALS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
-  `PART_ID` bigint(20) NOT NULL,
-  `PART_KEY_VAL` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `INTEGER_IDX` int(11) NOT NULL,
-  PRIMARY KEY (`PART_ID`,`INTEGER_IDX`),
-  KEY `PARTITION_KEY_VALS_N49` (`PART_ID`),
-  CONSTRAINT `PARTITION_KEY_VALS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `PARTITION_PARAMS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `PARTITION_PARAMS` (
-  `PART_ID` bigint(20) NOT NULL,
-  `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`PART_ID`,`PARAM_KEY`),
-  KEY `PARTITION_PARAMS_N49` (`PART_ID`),
-  CONSTRAINT `PARTITION_PARAMS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `PART_COL_PRIVS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
-  `PART_COLUMN_GRANT_ID` bigint(20) NOT NULL,
-  `COLUMN_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `CREATE_TIME` int(11) NOT NULL,
-  `GRANT_OPTION` smallint(6) NOT NULL,
-  `GRANTOR` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `GRANTOR_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `PART_ID` bigint(20) DEFAULT NULL,
-  `PRINCIPAL_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `PRINCIPAL_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `PART_COL_PRIV` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`PART_COLUMN_GRANT_ID`),
-  KEY `PART_COL_PRIVS_N49` (`PART_ID`),
-  KEY `PARTITIONCOLUMNPRIVILEGEINDEX` (`PART_ID`,`COLUMN_NAME`,`PRINCIPAL_NAME`,`PRINCIPAL_TYPE`,`PART_COL_PRIV`,`GRANTOR`,`GRANTOR_TYPE`),
-  CONSTRAINT `PART_COL_PRIVS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `PART_PRIVS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
-  `PART_GRANT_ID` bigint(20) NOT NULL,
-  `CREATE_TIME` int(11) NOT NULL,
-  `GRANT_OPTION` smallint(6) NOT NULL,
-  `GRANTOR` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `GRANTOR_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `PART_ID` bigint(20) DEFAULT NULL,
-  `PRINCIPAL_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `PRINCIPAL_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `PART_PRIV` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`PART_GRANT_ID`),
-  KEY `PARTPRIVILEGEINDEX` (`PART_ID`,`PRINCIPAL_NAME`,`PRINCIPAL_TYPE`,`PART_PRIV`,`GRANTOR`,`GRANTOR_TYPE`),
-  KEY `PART_PRIVS_N49` (`PART_ID`),
-  CONSTRAINT `PART_PRIVS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -373,46 +179,6 @@ CREATE TABLE IF NOT EXISTS `ROLE_MAP` (
   UNIQUE KEY `USERROLEMAPINDEX` (`PRINCIPAL_NAME`,`ROLE_ID`,`GRANTOR`,`GRANTOR_TYPE`),
   KEY `ROLE_MAP_N49` (`ROLE_ID`),
   CONSTRAINT `ROLE_MAP_FK1` FOREIGN KEY (`ROLE_ID`) REFERENCES `ROLES` (`ROLE_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `SDS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `SDS` (
-  `SD_ID` bigint(20) NOT NULL,
-  `CD_ID` bigint(20) DEFAULT NULL,
-  `INPUT_FORMAT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `IS_COMPRESSED` bit(1) NOT NULL,
-  `IS_STOREDASSUBDIRECTORIES` bit(1) NOT NULL,
-  `LOCATION` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `NUM_BUCKETS` int(11) NOT NULL,
-  `OUTPUT_FORMAT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `SERDE_ID` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`SD_ID`),
-  KEY `SDS_N49` (`SERDE_ID`),
-  KEY `SDS_N50` (`CD_ID`),
-  CONSTRAINT `SDS_FK1` FOREIGN KEY (`SERDE_ID`) REFERENCES `SERDES` (`SERDE_ID`),
-  CONSTRAINT `SDS_FK2` FOREIGN KEY (`CD_ID`) REFERENCES `CDS` (`CD_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `SD_PARAMS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `SD_PARAMS` (
-  `SD_ID` bigint(20) NOT NULL,
-  `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`SD_ID`,`PARAM_KEY`),
-  KEY `SD_PARAMS_N49` (`SD_ID`),
-  CONSTRAINT `SD_PARAMS_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -460,6 +226,63 @@ CREATE TABLE IF NOT EXISTS `SERDE_PARAMS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `SDS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `SDS` (
+                                     `SD_ID` bigint(20) NOT NULL,
+                                     `CD_ID` bigint(20) DEFAULT NULL,
+                                     `INPUT_FORMAT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                     `IS_COMPRESSED` bit(1) NOT NULL,
+                                     `IS_STOREDASSUBDIRECTORIES` bit(1) NOT NULL,
+                                     `LOCATION` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                     `NUM_BUCKETS` int(11) NOT NULL,
+                                     `OUTPUT_FORMAT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                     `SERDE_ID` bigint(20) DEFAULT NULL,
+                                     PRIMARY KEY (`SD_ID`),
+                                     KEY `SDS_N49` (`SERDE_ID`),
+                                     KEY `SDS_N50` (`CD_ID`),
+                                     CONSTRAINT `SDS_FK1` FOREIGN KEY (`SERDE_ID`) REFERENCES `SERDES` (`SERDE_ID`),
+                                     CONSTRAINT `SDS_FK2` FOREIGN KEY (`CD_ID`) REFERENCES `CDS` (`CD_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SD_PARAMS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `SD_PARAMS` (
+                                           `SD_ID` bigint(20) NOT NULL,
+                                           `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+                                           `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                           PRIMARY KEY (`SD_ID`,`PARAM_KEY`),
+                                           KEY `SD_PARAMS_N49` (`SD_ID`),
+                                           CONSTRAINT `SD_PARAMS_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `BUCKETING_COLS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `BUCKETING_COLS` (
+                                                `SD_ID` bigint(20) NOT NULL,
+                                                `BUCKET_COL_NAME` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                `INTEGER_IDX` int(11) NOT NULL,
+                                                PRIMARY KEY (`SD_ID`,`INTEGER_IDX`),
+                                                KEY `BUCKETING_COLS_N49` (`SD_ID`),
+                                                CONSTRAINT `BUCKETING_COLS_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+--
 -- Table structure for table `SKEWED_COL_NAMES`
 --
 
@@ -472,6 +295,18 @@ CREATE TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
   PRIMARY KEY (`SD_ID`,`INTEGER_IDX`),
   KEY `SKEWED_COL_NAMES_N49` (`SD_ID`),
   CONSTRAINT `SKEWED_COL_NAMES_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SKEWED_STRING_LIST`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
+                                                    `STRING_LIST_ID` bigint(20) NOT NULL,
+                                                    PRIMARY KEY (`STRING_LIST_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -493,17 +328,6 @@ CREATE TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `SKEWED_STRING_LIST`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
-  `STRING_LIST_ID` bigint(20) NOT NULL,
-  PRIMARY KEY (`STRING_LIST_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `SKEWED_STRING_LIST_VALUES`
@@ -557,22 +381,6 @@ CREATE TABLE IF NOT EXISTS `SORT_COLS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `TABLE_PARAMS`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
-  `TBL_ID` bigint(20) NOT NULL,
-  `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`TBL_ID`,`PARAM_KEY`),
-  KEY `TABLE_PARAMS_N49` (`TBL_ID`),
-  CONSTRAINT `TABLE_PARAMS_FK1` FOREIGN KEY (`TBL_ID`) REFERENCES `TBLS` (`TBL_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `TBLS`
 --
 
@@ -599,6 +407,205 @@ CREATE TABLE IF NOT EXISTS `TBLS` (
   CONSTRAINT `TBLS_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`),
   CONSTRAINT `TBLS_FK2` FOREIGN KEY (`DB_ID`) REFERENCES `DBS` (`DB_ID`),
   CONSTRAINT `TBLS_FK3` FOREIGN KEY (`LINK_TARGET_ID`) REFERENCES `TBLS` (`TBL_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `TABLE_PARAMS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
+                                              `TBL_ID` bigint(20) NOT NULL,
+                                              `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+                                              `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                              PRIMARY KEY (`TBL_ID`,`PARAM_KEY`),
+                                              KEY `TABLE_PARAMS_N49` (`TBL_ID`),
+                                              CONSTRAINT `TABLE_PARAMS_FK1` FOREIGN KEY (`TBL_ID`) REFERENCES `TBLS` (`TBL_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `IDXS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `IDXS` (
+                                      `INDEX_ID` bigint(20) NOT NULL,
+                                      `CREATE_TIME` int(11) NOT NULL,
+                                      `DEFERRED_REBUILD` bit(1) NOT NULL,
+                                      `INDEX_HANDLER_CLASS` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                      `INDEX_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                      `INDEX_TBL_ID` bigint(20) DEFAULT NULL,
+                                      `LAST_ACCESS_TIME` int(11) NOT NULL,
+                                      `ORIG_TBL_ID` bigint(20) DEFAULT NULL,
+                                      `SD_ID` bigint(20) DEFAULT NULL,
+                                      PRIMARY KEY (`INDEX_ID`),
+                                      UNIQUE KEY `UNIQUEINDEX` (`INDEX_NAME`,`ORIG_TBL_ID`),
+                                      KEY `IDXS_N51` (`SD_ID`),
+                                      KEY `IDXS_N50` (`INDEX_TBL_ID`),
+                                      KEY `IDXS_N49` (`ORIG_TBL_ID`),
+                                      CONSTRAINT `IDXS_FK1` FOREIGN KEY (`ORIG_TBL_ID`) REFERENCES `TBLS` (`TBL_ID`),
+                                      CONSTRAINT `IDXS_FK2` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`),
+                                      CONSTRAINT `IDXS_FK3` FOREIGN KEY (`INDEX_TBL_ID`) REFERENCES `TBLS` (`TBL_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `INDEX_PARAMS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
+                                              `INDEX_ID` bigint(20) NOT NULL,
+                                              `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+                                              `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                              PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`),
+                                              KEY `INDEX_PARAMS_N49` (`INDEX_ID`),
+                                              CONSTRAINT `INDEX_PARAMS_FK1` FOREIGN KEY (`INDEX_ID`) REFERENCES `IDXS` (`INDEX_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PARTITIONS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `PARTITIONS` (
+                                            `PART_ID` bigint(20) NOT NULL,
+                                            `CREATE_TIME` int(11) NOT NULL,
+                                            `LAST_ACCESS_TIME` int(11) NOT NULL,
+                                            `PART_NAME` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                            `SD_ID` bigint(20) DEFAULT NULL,
+                                            `TBL_ID` bigint(20) DEFAULT NULL,
+                                            `LINK_TARGET_ID` bigint(20) DEFAULT NULL,
+                                            PRIMARY KEY (`PART_ID`),
+                                            UNIQUE KEY `UNIQUEPARTITION` (`PART_NAME`,`TBL_ID`),
+                                            KEY `PARTITIONS_N49` (`TBL_ID`),
+                                            KEY `PARTITIONS_N50` (`SD_ID`),
+                                            KEY `PARTITIONS_N51` (`LINK_TARGET_ID`),
+                                            CONSTRAINT `PARTITIONS_FK1` FOREIGN KEY (`TBL_ID`) REFERENCES `TBLS` (`TBL_ID`),
+                                            CONSTRAINT `PARTITIONS_FK2` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`),
+                                            CONSTRAINT `PARTITIONS_FK3` FOREIGN KEY (`LINK_TARGET_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PARTITION_EVENTS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `PARTITION_EVENTS` (
+                                                  `PART_NAME_ID` bigint(20) NOT NULL,
+                                                  `DB_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                  `EVENT_TIME` bigint(20) NOT NULL,
+                                                  `EVENT_TYPE` int(11) NOT NULL,
+                                                  `PARTITION_NAME` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                  `TBL_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                  PRIMARY KEY (`PART_NAME_ID`),
+                                                  KEY `PARTITIONEVENTINDEX` (`PARTITION_NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PARTITION_KEYS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
+                                                `TBL_ID` bigint(20) NOT NULL,
+                                                `PKEY_COMMENT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                `PKEY_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+                                                `PKEY_TYPE` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+                                                `INTEGER_IDX` int(11) NOT NULL,
+                                                PRIMARY KEY (`TBL_ID`,`PKEY_NAME`),
+                                                KEY `PARTITION_KEYS_N49` (`TBL_ID`),
+                                                CONSTRAINT `PARTITION_KEYS_FK1` FOREIGN KEY (`TBL_ID`) REFERENCES `TBLS` (`TBL_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PARTITION_KEY_VALS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
+                                                    `PART_ID` bigint(20) NOT NULL,
+                                                    `PART_KEY_VAL` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                    `INTEGER_IDX` int(11) NOT NULL,
+                                                    PRIMARY KEY (`PART_ID`,`INTEGER_IDX`),
+                                                    KEY `PARTITION_KEY_VALS_N49` (`PART_ID`),
+                                                    CONSTRAINT `PARTITION_KEY_VALS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PARTITION_PARAMS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `PARTITION_PARAMS` (
+                                                  `PART_ID` bigint(20) NOT NULL,
+                                                  `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+                                                  `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                  PRIMARY KEY (`PART_ID`,`PARAM_KEY`),
+                                                  KEY `PARTITION_PARAMS_N49` (`PART_ID`),
+                                                  CONSTRAINT `PARTITION_PARAMS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PART_COL_PRIVS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
+                                                `PART_COLUMN_GRANT_ID` bigint(20) NOT NULL,
+                                                `COLUMN_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                `CREATE_TIME` int(11) NOT NULL,
+                                                `GRANT_OPTION` smallint(6) NOT NULL,
+                                                `GRANTOR` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                `GRANTOR_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                `PART_ID` bigint(20) DEFAULT NULL,
+                                                `PRINCIPAL_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                `PRINCIPAL_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                `PART_COL_PRIV` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                                PRIMARY KEY (`PART_COLUMN_GRANT_ID`),
+                                                KEY `PART_COL_PRIVS_N49` (`PART_ID`),
+                                                KEY `PARTITIONCOLUMNPRIVILEGEINDEX` (`PART_ID`,`COLUMN_NAME`,`PRINCIPAL_NAME`,`PRINCIPAL_TYPE`,`PART_COL_PRIV`,`GRANTOR`,`GRANTOR_TYPE`),
+                                                CONSTRAINT `PART_COL_PRIVS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PART_PRIVS`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
+                                            `PART_GRANT_ID` bigint(20) NOT NULL,
+                                            `CREATE_TIME` int(11) NOT NULL,
+                                            `GRANT_OPTION` smallint(6) NOT NULL,
+                                            `GRANTOR` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                            `GRANTOR_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                            `PART_ID` bigint(20) DEFAULT NULL,
+                                            `PRINCIPAL_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                            `PRINCIPAL_TYPE` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                            `PART_PRIV` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+                                            PRIMARY KEY (`PART_GRANT_ID`),
+                                            KEY `PARTPRIVILEGEINDEX` (`PART_ID`,`PRINCIPAL_NAME`,`PRINCIPAL_TYPE`,`PART_PRIV`,`GRANTOR`,`GRANTOR_TYPE`),
+                                            KEY `PART_PRIVS_N49` (`PART_ID`),
+                                            CONSTRAINT `PART_PRIVS_FK1` FOREIGN KEY (`PART_ID`) REFERENCES `PARTITIONS` (`PART_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

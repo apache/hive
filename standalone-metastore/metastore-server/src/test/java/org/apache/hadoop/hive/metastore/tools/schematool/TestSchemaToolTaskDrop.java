@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.tools.schematool.hms.EmbeddedTaskProvider;
+import org.apache.hadoop.hive.metastore.tools.schematool.task.SchemaToolTask;
+import org.apache.hadoop.hive.metastore.tools.schematool.task.TaskContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +45,7 @@ import static org.mockito.Mockito.when;
  */
 public class TestSchemaToolTaskDrop {
 
-  private SchemaToolTaskDrop uut;
+  private SchemaToolTask uut;
 
   private Statement stmtMock;
 
@@ -50,8 +53,7 @@ public class TestSchemaToolTaskDrop {
 
   @Before
   public void setUp() throws Exception {
-    uut = new SchemaToolTaskDrop();
-    uut.schemaTool = mock(MetastoreSchemaTool.class);
+    uut = new EmbeddedTaskProvider().getTask("dropAllDatabases");
   }
 
   @After
@@ -64,7 +66,7 @@ public class TestSchemaToolTaskDrop {
     System.setIn(in);
   }
 
-  private void setUpTwoDatabases() throws Exception {
+  private TaskContext setUpTaskContext(SchemaToolCommandLine cl) throws Exception {
     Connection connMock = mock(Connection.class);
     stmtMock = mock(Statement.class);
 
@@ -81,15 +83,19 @@ public class TestSchemaToolTaskDrop {
     when(stmtMock.executeQuery(anyString())).thenReturn(databasesResult, tablesResult);
     when(connMock.createStatement()).thenReturn(stmtMock);
 
-    when(uut.schemaTool.getConnectionToMetastore(anyBoolean())).thenReturn(connMock);
+    TaskContext context = Mockito.mock(TaskContext.class);
+
+    when(context.getCommandLine()).thenReturn(cl);
+    when(context.getConnectionToMetastore(anyBoolean())).thenReturn(connMock);
+    return context;
   }
 
   @Test
   public void testExecutePromptYes() throws Exception {
-    setUpTwoDatabases();
+    TaskContext context = setUpTaskContext(new SchemaToolCommandLine(new String[] {"-dropAllDatabases", "-dbType", "hive"}, null));
     mockPromptWith("y");
 
-    uut.execute();
+    uut.executeChain(context);
 
     Mockito.verify(stmtMock).execute("DROP DATABASE `mydb` CASCADE");
     Mockito.verify(stmtMock).execute(String.format("DROP TABLE `%s`.`table1`", Warehouse.DEFAULT_DATABASE_NAME));
@@ -99,30 +105,30 @@ public class TestSchemaToolTaskDrop {
 
   @Test
   public void testExecutePromptNo() throws Exception {
-    setUpTwoDatabases();
+    TaskContext context = setUpTaskContext(new SchemaToolCommandLine(new String[] {"-dropAllDatabases", "-dbType", "hive"}, null));
     mockPromptWith("n");
 
-    uut.execute();
+    uut.executeChain(context);
 
     Mockito.verify(stmtMock, times(0)).execute(anyString());
   }
 
   @Test
   public void testExecuteDryRun() throws Exception {
-    setUpTwoDatabases();
-    when(uut.schemaTool.isDryRun()).thenReturn(true);
+    TaskContext context = setUpTaskContext(new SchemaToolCommandLine(
+        new String[] {"-dropAllDatabases", "-dbType", "hive", "-yes", "-dryRun"}, null));
 
-    uut.execute();
+    uut.executeChain(context);
 
     Mockito.verify(stmtMock, times(0)).execute(anyString());
   }
 
   @Test
   public void testExecuteWithYes() throws Exception {
-    setUpTwoDatabases();
-    uut.yes = true;
+    TaskContext context = setUpTaskContext(new SchemaToolCommandLine(
+        new String[] {"-dropAllDatabases", "-dbType", "hive", "-yes"}, null));
 
-    uut.execute();
+    uut.executeChain(context);
 
     Mockito.verify(stmtMock, times(3)).execute(anyString());
   }

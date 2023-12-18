@@ -2508,10 +2508,6 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getMetaStoreSchemaVersion();
   }
 
-  @Override public void setMetaStoreSchemaVersion(String version, String comment) throws MetaException {
-    rawStore.setMetaStoreSchemaVersion(version, comment);
-  }
-
   @Override public List<HiveObjectPrivilege> listPrincipalDBGrantsAll(String principalName,
       PrincipalType principalType) {
     return rawStore.listPrincipalDBGrantsAll(principalName, principalType);

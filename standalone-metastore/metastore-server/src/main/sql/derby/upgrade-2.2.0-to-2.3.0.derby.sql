@@ -1,4 +1,8 @@
--- Upgrade MetaStore schema from 2.2.0 to 2.3.0
+--liquibase formatted sql
+
+--changeset Gates:5 labels:2.3.0 dbms:derby
+--comment: Upgrade MetaStore schema from 2.2.0 to 2.3.0
+
 --RUN '040-HIVE-16399.derby.sql';
 CREATE INDEX TC_TXNID_INDEX ON TXN_COMPONENTS (TC_TXNID);
 

@@ -60,7 +60,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -241,7 +240,6 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MType;
-import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.model.MWMMapping;
 import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
 import org.apache.hadoop.hive.metastore.model.MWMPool;
@@ -255,6 +253,8 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.tools.schematool.liquibase.LiquibaseSchemaInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -263,7 +263,6 @@ import org.apache.thrift.TException;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOTransaction;
-import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11166,50 +11165,25 @@ public class ObjectStore implements RawStore, Configurable {
     checkSchema();
   }
 
-  public static void setSchemaVerified(boolean val) {
-    isSchemaVerified.set(val);
-  }
-
   private synchronized void checkSchema() throws MetaException {
     // recheck if it got verified by another thread while we were waiting
     if (isSchemaVerified.get()) {
       return;
     }
+    if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEMA_VERIFICATION)) {
+      LOG.warn("Schema verification is turned off, skipping.");
+      return;
+    }
 
-    boolean strictValidation = MetastoreConf.getBoolVar(getConf(), ConfVars.SCHEMA_VERIFICATION);
-    // read the schema version stored in metastore db
-    String dbSchemaVer = getMetaStoreSchemaVersion();
     // version of schema for this version of hive
-    IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(getConf());
-    String hiveSchemaVer = metastoreSchemaInfo.getHiveSchemaVersion();
+    String minimumRequiredVersion = SchemaInfo.getRequiredHmsSchemaVersion();
+    String dbVersion = getMetaStoreSchemaVersion();
 
-    if (dbSchemaVer == null) {
-      if (strictValidation) {
-        throw new MetaException("Version information not found in metastore.");
-      } else {
-        LOG.warn("Version information not found in metastore. {} is not " +
-          "enabled so recording the schema version {}", ConfVars.SCHEMA_VERIFICATION,
-            hiveSchemaVer);
-        setMetaStoreSchemaVersion(hiveSchemaVer,
-          "Set by MetaStore " + USER + "@" + HOSTNAME);
-      }
+    if (SchemaInfo.isVersionCompatible(minimumRequiredVersion, dbVersion)) {
+      LOG.debug("Found expected HMS version of {}", dbVersion);
     } else {
-      if (metastoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
-        LOG.debug("Found expected HMS version of {}", dbSchemaVer);
-      } else {
-        // metastore schema version is different than Hive distribution needs
-        if (strictValidation) {
-          throw new MetaException("Hive Schema version " + hiveSchemaVer +
-              " does not match metastore's schema version " + dbSchemaVer +
-              " Metastore is not upgraded or corrupt");
-        } else {
-          LOG.error("Version information found in metastore differs {} " +
-              "from expected schema version {}. Schema verification is disabled {}",
-              dbSchemaVer, hiveSchemaVer, ConfVars.SCHEMA_VERIFICATION);
-          setMetaStoreSchemaVersion(hiveSchemaVer,
-            "Set by MetaStore " + USER + "@" + HOSTNAME);
-        }
-      }
+      throw new MetaException("The HMS schema version (" + dbVersion +
+          ") is not compatible with the minimum required version (" + minimumRequiredVersion + ")");
     }
     isSchemaVerified.set(true);
   }
@@ -11217,83 +11191,15 @@ public class ObjectStore implements RawStore, Configurable {
   // load the schema version stored in metastore db
   @Override
   public String getMetaStoreSchemaVersion() throws MetaException {
-
-    MVersionTable mSchemaVer;
     try {
-      mSchemaVer = getMSchemaVersion();
-    } catch (NoSuchObjectException e) {
-      return null;
-    }
-    return mSchemaVer.getSchemaVersion();
-  }
-
-  private MVersionTable getMSchemaVersion() throws NoSuchObjectException, MetaException {
-    boolean committed = false;
-    Query query = null;
-    List<MVersionTable> mVerTables = new ArrayList<>();
-    try {
-      openTransaction();
-      query = pm.newQuery(MVersionTable.class);
-      try {
-        mVerTables = (List<MVersionTable>) query.execute();
-        pm.retrieveAll(mVerTables);
-      } catch (JDODataStoreException e) {
-        if (e.getCause() instanceof MissingTableException) {
-          throw new MetaException("Version table not found. " + "The metastore is not upgraded to "
-              + MetaStoreSchemaInfoFactory.get(getConf()).getHiveSchemaVersion());
-        } else {
-          throw e;
-        }
-      }
-      committed = commitTransaction();
-      if (mVerTables.isEmpty()) {
-        throw new NoSuchObjectException("No matching version found");
-      }
-      if (mVerTables.size() > 1) {
-        String msg = "Metastore contains multiple versions (" + mVerTables.size() + ") ";
-        for (MVersionTable version : mVerTables) {
-          msg +=
-              "[ version = " + version.getSchemaVersion() + ", comment = "
-                  + version.getVersionComment() + " ] ";
-        }
-        throw new MetaException(msg.trim());
-      }
-      return mVerTables.get(0);
-    } finally {
-      rollbackAndCleanup(committed, query);
-    }
-  }
-
-  @Override
-  public void setMetaStoreSchemaVersion(String schemaVersion, String comment) throws MetaException {
-    MVersionTable mSchemaVer;
-    boolean commited = false;
-    boolean recordVersion =
-      MetastoreConf.getBoolVar(getConf(), ConfVars.SCHEMA_VERIFICATION_RECORD_VERSION);
-    if (!recordVersion) {
-      LOG.warn("setMetaStoreSchemaVersion called but recording version is disabled: " +
-        "version = {}, comment = {}", schemaVersion, comment);
-      return;
-    }
-    LOG.warn("Setting metastore schema version in db to {}", schemaVersion);
-
-    try {
-      mSchemaVer = getMSchemaVersion();
-    } catch (NoSuchObjectException e) {
-      // if the version doesn't exist, then create it
-      mSchemaVer = new MVersionTable();
-    }
-
-    mSchemaVer.setSchemaVersion(schemaVersion);
-    mSchemaVer.setVersionComment(comment);
-    try {
-      openTransaction();
-      pm.makePersistent(mSchemaVer);
-      commited = commitTransaction();
-    } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      // read the schema version stored in metastore db
+      LiquibaseSchemaInfo schemaInfo = new LiquibaseSchemaInfo(null,
+          HiveSchemaHelper.getConnectionInfoFromConfiguration(conf), conf, null, null);
+      return schemaInfo.getSchemaVersion();
+    } catch (HiveMetaException e) {
+      throw new MetaException("Failed to read the metastore version from the Database: " + e.getMessage());
+    } catch (IOException e) {
+      throw new MetaException("Failed to read the HMS connection password from the configuration" + e.getMessage());
     }
   }
 

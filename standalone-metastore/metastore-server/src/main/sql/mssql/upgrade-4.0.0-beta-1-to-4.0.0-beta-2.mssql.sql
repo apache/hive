@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Stamatis:12 labels:4.0.0-beta-2 dbms:mssql
+--comment: Upgrade MetaStore schema from 4.0.0-beta-1 to 4.0.0-beta-2
+
 SELECT 'Upgrading MetaStore schema from  4.0.0-beta-1 to 4.0.0-beta-2' AS MESSAGE;
 
 -- HIVE-24815: Remove "IDXS" Table from Metastore Schema
