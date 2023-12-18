@@ -41,12 +41,7 @@ public class AutomaticRewritingValidationResult {
     return supportedRewriteAlgorithms;
   }
 
-  public String generateErrorMessage() {
-    if (supportedRewriteAlgorithms.isEmpty()) {
-      return "Cannot enable automatic rewriting for materialized view. " + errorMessage;
-    } else if (supportedRewriteAlgorithms.size() == 1 && supportedRewriteAlgorithms.contains(TEXT)) {
-      return "Only query text based automatic rewriting is available for materialized view. " + errorMessage;
-    }
+  public String getErrorMessage() {
     return errorMessage;
   }
 }

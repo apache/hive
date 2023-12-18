@@ -53,8 +53,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
 
@@ -67,7 +65,9 @@ import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.TEXT;
  * - References to non-deterministic functions.
  */
 public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
-  static final Logger LOG = LoggerFactory.getLogger(HiveRelOptMaterializationValidator.class);
+  public static final String UNSUPPORTED_BY_CALCITE_FORMAT =
+      "Only query text based automatic rewriting is available for materialized view. " +
+          "Statement has unsupported %s: %s.";
 
   protected String resultCacheInvalidReason;
   protected AutomaticRewritingValidationResult automaticRewritingValidationResult;
@@ -119,7 +119,7 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
   @Override
   public RelNode visit(HiveJoin join) {
     if (join.getJoinType() != JoinRelType.INNER) {
-      setAutomaticRewritingValidationResult(join.getJoinType() + " join type is not supported by rewriting algorithm.");
+      unsupportedByCalciteRewrite("join type", join.getJoinType().toString());
     }
     checkExpr(join.getCondition());
     return super.visit(join);
@@ -158,7 +158,7 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   @Override
   public RelNode visit(TableFunctionScan scan) {
-    unsupportedByCalciteRewrite("Statement has unsupported expression: window function.");
+    unsupportedByCalciteRewrite("expression", "window function");
     checkExpr(scan.getCall());
     return super.visit(scan);
   }
@@ -237,13 +237,13 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveUnion union) {
-    unsupportedByCalciteRewrite("Statement has unsupported operator: union.");
+    unsupportedByCalciteRewrite("operator", "union");
     return visitChildren(union);
   }
 
   @Override
   public RelNode visit(HiveSortLimit sort) {
-    unsupportedByCalciteRewrite("Statement has unsupported clause: order by.");
+    unsupportedByCalciteRewrite("clause","order by");
     checkExpr(sort.getFetchExpr());
     checkExpr(sort.getOffsetExpr());
     return visitChildren(sort);
@@ -251,20 +251,20 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveSortExchange sort) {
-    unsupportedByCalciteRewrite("Statement has unsupported clause: sort by.");
+    unsupportedByCalciteRewrite("clause", "sort by");
     return visitChildren(sort);
   }
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveSemiJoin semiJoin) {
-    unsupportedByCalciteRewrite("Statement has unsupported join type: semi join.");
+    unsupportedByCalciteRewrite("join type", "semi join");
     checkExpr(semiJoin.getCondition());
     checkExpr(semiJoin.getJoinFilter());
     return visitChildren(semiJoin);
   }
 
   private RelNode visit(HiveAntiJoin antiJoin) {
-    unsupportedByCalciteRewrite("Statement has unsupported join type: anti join.");
+    unsupportedByCalciteRewrite("join type", "anti join");
     checkExpr(antiJoin.getCondition());
     checkExpr(antiJoin.getJoinFilter());
     return visitChildren(antiJoin);
@@ -272,20 +272,20 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveExcept except) {
-    unsupportedByCalciteRewrite("Statement has unsupported operator: except.");
+    unsupportedByCalciteRewrite("operator", "except");
     return visitChildren(except);
   }
 
   // Note: Not currently part of the HiveRelNode interface
   private RelNode visit(HiveIntersect intersect) {
-    unsupportedByCalciteRewrite("Statement has unsupported operator: intersect.");
+    unsupportedByCalciteRewrite("operator", "intersect");
     return visitChildren(intersect);
   }
 
   private void fail(String reason) {
     setResultCacheInvalidReason(reason);
     this.automaticRewritingValidationResult = new AutomaticRewritingValidationResult(
-        EnumSet.noneOf(RewriteAlgorithm.class), reason);
+        EnumSet.noneOf(RewriteAlgorithm.class), "Cannot enable automatic rewriting for materialized view. " + reason);
     throw Util.FoundOne.NULL;
   }
 
@@ -294,7 +294,8 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
         " encountered in the query plan");
     this.automaticRewritingValidationResult =
         new AutomaticRewritingValidationResult(EnumSet.noneOf(RewriteAlgorithm.class),
-            String.format("Unsupported RelNode type %s encountered in the query plan", node.getRelTypeName()));
+            String.format("Cannot enable automatic rewriting for materialized view. " +
+                "Unsupported RelNode type %s encountered in the query plan", node.getRelTypeName()));
     throw Util.FoundOne.NULL;
   }
 
@@ -321,15 +322,9 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
     return automaticRewritingValidationResult;
   }
 
-  public void setAutomaticRewritingValidationResult(String automaticRewritingValidationResult) {
+  public void unsupportedByCalciteRewrite(String sqlPartType, String sqlPart) {
     if (isValidForAutomaticRewriting()) {
-      this.automaticRewritingValidationResult = new AutomaticRewritingValidationResult(
-          EnumSet.noneOf(RewriteAlgorithm.class), automaticRewritingValidationResult);
-    }
-  }
-
-  public void unsupportedByCalciteRewrite(String errorMessage) {
-    if (isValidForAutomaticRewriting()) {
+      String errorMessage = String.format(UNSUPPORTED_BY_CALCITE_FORMAT, sqlPartType, sqlPart);
       this.automaticRewritingValidationResult =
           new AutomaticRewritingValidationResult(EnumSet.of(TEXT), errorMessage);
     }

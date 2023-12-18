@@ -72,7 +72,7 @@ public class AlterMaterializedViewRewriteOperation extends DDLOperation<AlterMat
           throw new HiveException(msg);
         }
         AutomaticRewritingValidationResult validationResult = planner.getAutomaticRewritingValidationResult();
-        String validationErrorMessage = validationResult.generateErrorMessage();
+        String validationErrorMessage = validationResult.getErrorMessage();
         if (validationResult.getSupportedRewriteAlgorithms().isEmpty()) {
           throw new HiveException(validationErrorMessage);
         } else if (isNotBlank(validationErrorMessage)) {
