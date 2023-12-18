@@ -2016,7 +2016,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean requiresLocation() {
+  public boolean requiresLocationAtCreateTable() {
     return true;
   }
 }
