@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -70,7 +70,7 @@ public final class CompactorFactory {
    * @param compactionInfo provides insight about the type of compaction, must be not null.
    * @return {@link QueryCompactor} or null.
    */
-  public CompactorPipeline getCompactorPipeline(Table table, HiveConf configuration, CompactionInfo compactionInfo,IMetaStoreClient msc)
+  public CompactorPipeline getCompactorPipeline(Table table, HiveConf configuration, CompactionInfo compactionInfo, IMetaStoreClient msc)
       throws HiveException {
     if (AcidUtils.isFullAcidTable(table.getParameters())) {
       if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) ||
