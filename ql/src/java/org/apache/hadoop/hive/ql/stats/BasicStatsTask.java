@@ -309,7 +309,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         TransactionalStatsProcessor transactionalStatsProcessor = new TransactionalStatsProcessor(db, p);
         transactionalStatsProcessor.process(statsAggregator);
 
-        console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+        if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
+          console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+        } else {
+          LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+        }
 
         // The table object is assigned to the latest table object.
         // So that it can be used by ColStatsProcessor.
@@ -372,7 +376,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             continue;
           }
           updates.add((Partition) res);
-          console.printInfo("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+          if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
+            console.printInfo("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+          } else {
+            LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+          }
         }
 
         if (!updates.isEmpty()) {
