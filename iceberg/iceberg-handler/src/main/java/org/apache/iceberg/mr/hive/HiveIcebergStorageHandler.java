@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -1648,6 +1649,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public void setTableLocationForCTAS(CreateTableDesc desc, String location) {
+    desc.setLocation(location);
+  }
+
+  @Override
   public Map<String, String> getNativeProperties(org.apache.hadoop.hive.ql.metadata.Table table) {
     Table origTable = IcebergTableUtil.getTable(conf, table.getTTable());
     Map<String, String> props = Maps.newHashMap();
@@ -2013,10 +2019,5 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
-  }
-
-  @Override
-  public boolean requiresLocationAtCreateTable() {
-    return true;
   }
 }

@@ -30,7 +30,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
 import java.util.List;
-@Ignore("Flaky due to HIVE-24816")
 @RunWith(Parameterized.class)
 public class TestMiniDruidCliDriver
 {

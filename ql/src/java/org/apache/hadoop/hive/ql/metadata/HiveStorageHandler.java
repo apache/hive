@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -375,6 +376,13 @@ public interface HiveStorageHandler extends Configurable {
    */
   default void setTableParametersForCTLT(org.apache.hadoop.hive.ql.metadata.Table tbl, CreateTableLikeDesc desc,
       Map<String, String> origParams) {
+  }
+
+  /**
+   * Sets tables physical location at create table as select.
+   * Some storage handlers requires specifying the location of tables others generates it internally.
+   */
+  default void setTableLocationForCTAS(CreateTableDesc desc, String location) {
   }
 
   /**
@@ -738,14 +746,5 @@ public interface HiveStorageHandler extends Configurable {
           throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions by expression " +
             "for a table.");
-  }
-
-  /**
-   * Whether the new tables physical location should be provided at create table.
-   * Some storage handlers requires specifying the location of tables others generates it internally.
-   * @return true when location has to be provided by the compiler false otherwise.
-   */
-  default boolean requiresLocationAtCreateTable() {
-    return false;
   }
 }

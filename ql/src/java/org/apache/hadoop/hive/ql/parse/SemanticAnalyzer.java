@@ -7948,10 +7948,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             tableDescriptor = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
           }
         } else {
-          if (tblDesc.isCTAS() &&
-              tblDesc.getStorageHandler() != null &&
-              tblDesc.toTable(conf).getStorageHandler().requiresLocationAtCreateTable()) {
-            tblDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, false).toString());
+          if (tblDesc.isCTAS() && tblDesc.getStorageHandler() != null) {
+            tblDesc.toTable(conf).getStorageHandler().setTableLocationForCTAS(
+                tblDesc, getCtasOrCMVLocation(tblDesc, viewDesc, false).toString());
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
         }
