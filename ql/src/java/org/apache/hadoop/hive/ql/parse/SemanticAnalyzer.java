@@ -7948,16 +7948,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             tableDescriptor = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
           }
         } else {
-          if (tblDesc.isCTAS() && tblDesc.getStorageHandler() != null) {
-            try {
-              HiveStorageHandler storageHandler =
-                  HiveUtils.getStorageHandler(SessionState.getSessionConf(), tblDesc.getStorageHandler());
-              if (storageHandler.requiresLocationAtCreateTable()) {
-                tblDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, false).toString());
-              }
-            } catch (Exception ex) {
-              LOG.warn("Error while creating HiveStorageHandler instance: {}", tblDesc.getStorageHandler(), ex);
-            }
+          if (tblDesc.isCTAS() &&
+              tblDesc.getStorageHandler() != null &&
+              tblDesc.toTable(conf).getStorageHandler().requiresLocationAtCreateTable()) {
+            tblDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, false).toString());
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
         }
