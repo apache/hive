@@ -33,7 +33,7 @@ services:
     volumes:
         - warehouse:/opt/hive/data/warehouse
         - type: bind
-          source: ${MAVEN_LOCAL_REPOSITORY}/org/postgresql/postgresql/42.5.1/postgresql-42.5.1.jar
+          source: ${POSTGRES_LOCAL_PATH}
           target: /opt/hive/lib/postgres.jar
 
   hiveserver2:
