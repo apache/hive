@@ -139,6 +139,9 @@ public class TypeCheckProcFactory<T> {
         serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_DECIMAL,
         serdeConstants.DECIMAL_TYPE_NAME);
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_MAP, "toMap");
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_LIST, "toArray");
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_STRUCT, "toStruct");
 
     WINDOWING_TOKENS = new HashSet<Integer>();
     WINDOWING_TOKENS.add(HiveParser.KW_OVER);
@@ -1134,6 +1137,10 @@ public class TypeCheckProcFactory<T> {
           return timestampLocalTZTypeInfo;
         case HiveParser.TOK_DECIMAL:
           return ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+        case HiveParser.TOK_MAP:
+        case HiveParser.TOK_LIST:
+        case HiveParser.TOK_STRUCT:
+          return ParseUtils.getComplexTypeTypeInfo(funcNameNode);
         default:
           return null;
       }
@@ -1409,7 +1416,9 @@ public class TypeCheckProcFactory<T> {
       // Return nulls for conversion operators
       if (CONVERSION_FUNCTION_TEXT_MAP.keySet().contains(expr.getType())
           || expr.getToken().getType() == HiveParser.CharSetName
-          || expr.getToken().getType() == HiveParser.CharSetLiteral) {
+          || expr.getToken().getType() == HiveParser.CharSetLiteral
+          || expr.getType() == HiveParser.TOK_TABCOL
+          || expr.getType() == HiveParser.TOK_TABCOLLIST) {
         return null;
       }
 

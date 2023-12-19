@@ -134,8 +134,8 @@ public abstract class TxnCommandsBaseForTests {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
       
     TestTxnDbUtil.setConfValues(hiveConf);
-    txnHandler = TxnUtils.getTxnStore(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
