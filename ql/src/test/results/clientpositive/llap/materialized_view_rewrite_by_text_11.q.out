@@ -35,7 +35,7 @@ PREHOOK: query: alter materialized view cmv_mat_view enable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
-Only query text based automatic rewriting is available for materialized view. Only query text based automatic rewriting is available for materialized view. Statement has unsupported join type: LEFT.
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported join type: LEFT.
 POSTHOOK: query: alter materialized view cmv_mat_view enable rewrite
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 POSTHOOK: Input: default@cmv_mat_view
