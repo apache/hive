@@ -46,6 +46,7 @@ import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -1119,7 +1120,7 @@ public class HiveConnection implements java.sql.Connection {
     // switch the database
     LOG.debug("Default database: {}", connParams.getDbName());
     openConf.put("use:database", connParams.getDbName());
-    
+
     if (wmPool != null) {
       openConf.put("set:hivevar:wmpool", wmPool);
     }
@@ -1387,7 +1388,8 @@ public class HiveConnection implements java.sql.Connection {
 
   // use socketTimeout from jdbc connection url. Thrift timeout needs to be in millis
   private void setupLoginTimeout() {
-    String socketTimeoutStr = sessConfMap.getOrDefault(JdbcConnectionParams.SOCKET_TIMEOUT, "0");
+    String defaultLoginTimeout = String.valueOf(DriverManager.getLoginTimeout());
+    String socketTimeoutStr = sessConfMap.getOrDefault(JdbcConnectionParams.SOCKET_TIMEOUT, defaultLoginTimeout);
     long timeOut = 0;
     try {
       timeOut = Long.parseLong(socketTimeoutStr);
