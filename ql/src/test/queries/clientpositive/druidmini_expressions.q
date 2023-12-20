@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-23984
 --! qt:dataset:druid_table_alltypesorc
 SET hive.ctas.external.tables=true;
 
