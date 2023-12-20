@@ -1801,7 +1801,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
 
   private int functionCall(ParserRuleContext ctx, HplsqlParser.IdentContext ident, HplsqlParser.Expr_func_paramsContext params) {
     String name = ident.getText();
-    if (exec.buildSql) {
+    if (exec.buildSql && !builtinFunctions.exists(name)) {
       exec.execSql(name, params);
     } else {
       name = name.toUpperCase();
