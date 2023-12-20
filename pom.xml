@@ -100,7 +100,7 @@
     <maven.shade.plugin.version>3.5.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
-    <maven.license.plugin.version>2.1.0</maven.license.plugin.version>
+    <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.1</accumulo.version>
     <ant.version>1.10.13</ant.version>
