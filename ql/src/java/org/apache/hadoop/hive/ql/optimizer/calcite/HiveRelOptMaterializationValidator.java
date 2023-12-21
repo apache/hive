@@ -65,7 +65,7 @@ import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.TEXT;
  * - References to non-deterministic functions.
  */
 public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
-  public static final String UNSUPPORTED_BY_CALCITE_FORMAT =
+  private static final String UNSUPPORTED_BY_CALCITE_FORMAT =
       "Only query text based automatic rewriting is available for materialized view. " +
           "Statement has unsupported %s: %s.";
 

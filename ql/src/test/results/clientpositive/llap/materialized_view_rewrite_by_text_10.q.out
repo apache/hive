@@ -14,7 +14,6 @@ PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v_emp
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
 POSTHOOK: query: CREATE MATERIALIZED VIEW v_emp AS SELECT * FROM EMPS WHERE BIRTH_EPOCH_SECS <= UNIX_TIMESTAMP()
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps
