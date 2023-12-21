@@ -14671,9 +14671,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           throw new SemanticException(msg);
         }
-        String validationWarningMessage = automaticRewritingValidationResult.getErrorMessage();
-        if (isNotBlank(validationWarningMessage)) {
-          console.printError(validationWarningMessage);
+        String errorMessage = automaticRewritingValidationResult.getErrorMessage();
+        if (isNotBlank(errorMessage)) {
+          console.printError(errorMessage);
         }
       }
     } catch (HiveException e) {
