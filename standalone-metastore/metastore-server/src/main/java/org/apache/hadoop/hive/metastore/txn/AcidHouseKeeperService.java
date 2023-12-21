@@ -38,16 +38,22 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
 
   private Configuration conf;
-  private boolean isCompactorEnabled;
   private TxnStore txnHandler;
+  private String serviceName;
+
+  public void setServiceName(String serviceName) {
+    this.serviceName = serviceName;
+  }
+
+  public TxnStore getTxnHandler() {
+    return txnHandler;
+  }
 
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
-    isCompactorEnabled =
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON) || MetastoreConf.getBoolVar(conf,
-            MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
     txnHandler = TxnUtils.getTxnStore(conf);
+    this.serviceName = this.getClass().getSimpleName();
   }
 
   @Override
@@ -65,10 +71,10 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
       handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name());
-      LOG.info("Starting to run AcidHouseKeeperService.");
+      LOG.info("Starting to run {}", serviceName);
       long start = System.currentTimeMillis();
       cleanTheHouse();
-      LOG.debug("Total time AcidHouseKeeperService took: {} seconds.", elapsedSince(start));
+      LOG.debug("Total time {} took: {} seconds.", serviceName, elapsedSince(start));
     } catch (Throwable t) {
       LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
     } finally {
@@ -78,17 +84,13 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
     }
   }
 
-  private void cleanTheHouse() {
+  void cleanTheHouse() {
     performTask(txnHandler::performTimeOuts, "Cleaning timed out txns and locks");
     performTask(txnHandler::performWriteSetGC, "Cleaning obsolete write set entries");
     performTask(txnHandler::cleanTxnToWriteIdTable, "Cleaning obsolete TXN_TO_WRITE_ID entries");
-    if (isCompactorEnabled) {
-      performTask(txnHandler::removeDuplicateCompletedTxnComponents, "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries");
-      performTask(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
-    }
   }
 
-  private void performTask(FailableRunnable<MetaException> task, String description) {
+  void performTask(FailableRunnable<MetaException> task, String description) {
     long start = System.currentTimeMillis();
     Functions.run(task);
     LOG.debug("{} took {} seconds.", description, elapsedSince(start));

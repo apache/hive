@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.conf;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.txn.AcidCompactionHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.StringContains;
@@ -502,6 +503,8 @@ public class TestMetastoreConf {
         MetastoreDelegationTokenManager.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_HOUSE_KEEPER_SERVICE_CLASS,
         AcidHouseKeeperService.class.getName());
+    Assert.assertEquals(MetastoreConf.ACID_COMPACTION_HOUSE_KEEPER_SERVICE_CLASS,
+        AcidCompactionHouseKeeperService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_TXN_CLEANER_SERVICE_CLASS,
         AcidTxnCleanerService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,
