@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.ThreadPool;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.AcidCompactionHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 
 import java.util.ArrayList;
@@ -61,6 +62,11 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     Collection<String> taskNames =
         MetastoreConf.getStringCollection(configuration, MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY);
     for (String taskName : taskNames) {
+      if (AcidCompactionHouseKeeperService.class.getName().equals(taskName) &&
+          (!(MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)
+              || MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)))) {
+        continue;
+      }
       MetastoreTaskThread task =
           JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
       remoteOnlyTasks.add(task);
