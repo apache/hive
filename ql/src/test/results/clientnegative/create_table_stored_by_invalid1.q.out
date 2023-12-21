@@ -1,1 +1,1 @@
-FAILED: SemanticException Unrecognized storage handler in STORED BY clause: DEFAULT. Supported types = ICEBERG or FQCN of a storage handler
+FAILED: SemanticException The storage handler specified in the STORED BY clause is not recognized: DEFAULT. Please use one of the supported types, which are ICEBERG, or provide the Fully Qualified Class Name (FQCN) of a valid storage handler.
