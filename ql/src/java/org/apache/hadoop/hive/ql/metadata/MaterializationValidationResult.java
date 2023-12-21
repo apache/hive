@@ -18,19 +18,14 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import org.apache.calcite.plan.RelOptMaterialization;
-
 import java.util.EnumSet;
 import java.util.Set;
 
-/**
- * Hive extension of {@link RelOptMaterialization}.
- */
-public class AutomaticRewritingValidationResult {
+public class MaterializationValidationResult {
   private final EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms;
   private final String errorMessage;
 
-  public AutomaticRewritingValidationResult(
+  public MaterializationValidationResult(
       EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms, String errorMessage) {
     this.supportedRewriteAlgorithms = supportedRewriteAlgorithms;
     this.errorMessage = errorMessage;

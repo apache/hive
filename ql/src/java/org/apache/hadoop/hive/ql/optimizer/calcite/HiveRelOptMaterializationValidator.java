@@ -38,7 +38,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.ql.metadata.AutomaticRewritingValidationResult;
+import org.apache.hadoop.hive.ql.metadata.MaterializationValidationResult;
 import org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -70,11 +70,11 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
           "Statement has unsupported %s: %s.";
 
   protected String resultCacheInvalidReason;
-  protected AutomaticRewritingValidationResult automaticRewritingValidationResult;
+  protected MaterializationValidationResult materializationValidationResult;
 
   public void validate(RelNode relNode) {
     try {
-      automaticRewritingValidationResult = new AutomaticRewritingValidationResult(RewriteAlgorithm.ALL, "");
+      materializationValidationResult = new MaterializationValidationResult(RewriteAlgorithm.ALL, "");
       relNode.accept(this);
     } catch (Util.FoundOne e) {
       // Can ignore - the check failed.
@@ -284,7 +284,7 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
 
   private void fail(String reason) {
     setResultCacheInvalidReason(reason);
-    this.automaticRewritingValidationResult = new AutomaticRewritingValidationResult(
+    this.materializationValidationResult = new MaterializationValidationResult(
         EnumSet.noneOf(RewriteAlgorithm.class), "Cannot enable automatic rewriting for materialized view. " + reason);
     throw Util.FoundOne.NULL;
   }
@@ -292,8 +292,8 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
   private RelNode fail(RelNode node) {
     setResultCacheInvalidReason("Unsupported RelNode type " + node.getRelTypeName() +
         " encountered in the query plan");
-    this.automaticRewritingValidationResult =
-        new AutomaticRewritingValidationResult(EnumSet.noneOf(RewriteAlgorithm.class),
+    this.materializationValidationResult =
+        new MaterializationValidationResult(EnumSet.noneOf(RewriteAlgorithm.class),
             String.format("Cannot enable automatic rewriting for materialized view. " +
                 "Unsupported RelNode type %s encountered in the query plan", node.getRelTypeName()));
     throw Util.FoundOne.NULL;
@@ -318,19 +318,19 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
     return resultCacheInvalidReason == null;
   }
 
-  public AutomaticRewritingValidationResult getAutomaticRewritingValidationResult() {
-    return automaticRewritingValidationResult;
+  public MaterializationValidationResult getAutomaticRewritingValidationResult() {
+    return materializationValidationResult;
   }
 
   public void unsupportedByCalciteRewrite(String sqlPartType, String sqlPart) {
     if (isValidForAutomaticRewriting()) {
       String errorMessage = String.format(UNSUPPORTED_BY_CALCITE_FORMAT, sqlPartType, sqlPart);
-      this.automaticRewritingValidationResult =
-          new AutomaticRewritingValidationResult(EnumSet.of(TEXT), errorMessage);
+      this.materializationValidationResult =
+          new MaterializationValidationResult(EnumSet.of(TEXT), errorMessage);
     }
   }
 
   public boolean isValidForAutomaticRewriting() {
-    return RewriteAlgorithm.ALL.equals(automaticRewritingValidationResult.getSupportedRewriteAlgorithms());
+    return RewriteAlgorithm.ALL.equals(materializationValidationResult.getSupportedRewriteAlgorithms());
   }
 }

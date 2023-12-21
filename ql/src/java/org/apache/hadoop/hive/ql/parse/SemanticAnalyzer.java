@@ -181,7 +181,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.metadata.AutomaticRewritingValidationResult;
+import org.apache.hadoop.hive.ql.metadata.MaterializationValidationResult;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -457,7 +457,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       HiveParser.TOK_DISTRIBUTEBY, HiveParser.TOK_SORTBY);
 
   private String invalidResultCacheReason;
-  private AutomaticRewritingValidationResult automaticRewritingValidationResult;
+  private MaterializationValidationResult materializationValidationResult;
 
   private final NullOrdering defaultNullOrder;
 
@@ -14671,10 +14671,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           throw new SemanticException(msg);
         }
-        if (automaticRewritingValidationResult.getSupportedRewriteAlgorithms().isEmpty()) {
+        if (materializationValidationResult.getSupportedRewriteAlgorithms().isEmpty()) {
           createVwDesc.setRewriteEnabled(false);
         }
-        String errorMessage = automaticRewritingValidationResult.getErrorMessage();
+        String errorMessage = materializationValidationResult.getErrorMessage();
         if (isNotBlank(errorMessage)) {
           console.printError(errorMessage);
         }
@@ -15933,14 +15933,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     public String colTypes;
   }
 
-  public AutomaticRewritingValidationResult getAutomaticRewritingValidationResult() {
-    return automaticRewritingValidationResult;
+  public MaterializationValidationResult getAutomaticRewritingValidationResult() {
+    return materializationValidationResult;
   }
 
   public void setAutomaticRewritingValidationResult(
-      AutomaticRewritingValidationResult automaticRewritingValidationResult) {
-    this.automaticRewritingValidationResult =
-        automaticRewritingValidationResult;
+      MaterializationValidationResult materializationValidationResult) {
+    this.materializationValidationResult =
+        materializationValidationResult;
   }
 
   public String getInvalidResultCacheReason() {

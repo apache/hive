@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.metadata.AutomaticRewritingValidationResult;
+import org.apache.hadoop.hive.ql.metadata.MaterializationValidationResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -68,7 +68,7 @@ public class AlterMaterializedViewRewriteOperation extends DDLOperation<AlterMat
           }
           throw new HiveException(msg);
         }
-        AutomaticRewritingValidationResult validationResult = planner.getAutomaticRewritingValidationResult();
+        MaterializationValidationResult validationResult = planner.getAutomaticRewritingValidationResult();
         String validationErrorMessage = validationResult.getErrorMessage();
         if (validationResult.getSupportedRewriteAlgorithms().isEmpty()) {
           throw new HiveException(validationErrorMessage);
