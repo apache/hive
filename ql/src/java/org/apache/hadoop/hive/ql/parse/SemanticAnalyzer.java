@@ -14671,6 +14671,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           throw new SemanticException(msg);
         }
+        if (automaticRewritingValidationResult.getSupportedRewriteAlgorithms().isEmpty()) {
+          createVwDesc.setRewriteEnabled(false);
+        }
         String errorMessage = automaticRewritingValidationResult.getErrorMessage();
         if (isNotBlank(errorMessage)) {
           console.printError(errorMessage);
