@@ -54,7 +54,7 @@ public class StorageFormat {
     ICEBERG("'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'",
         "org.apache.iceberg.mr.hive.HiveIcebergInputFormat", "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
 
-    private static final List<StorageHandlerTypes> SUPPORTED_BY_STORED_BY = Arrays
+    private static final List<StorageHandlerTypes> NON_DEFAULT_TYPES = Arrays
         .stream(values())
         .filter(type -> type != StorageHandlerTypes.DEFAULT)
         .collect(Collectors.toList());
@@ -168,11 +168,15 @@ public class StorageFormat {
   private String processStorageHandler(ASTNode node) throws SemanticException {
     if (node.getType() == HiveParser.StringLiteral) {
       // e.g. STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'
-      return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(node.getText()));
+      try {
+        return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(node.getText()));
+      } catch (SemanticException e) {
+        throw createUnsupportedStorageHandlerTypeError(node, e);
+      }
     }
     if (node.getType() == HiveParser.Identifier) {
       // e.g. STORED BY ICEBERG
-      for (StorageHandlerTypes type : StorageHandlerTypes.SUPPORTED_BY_STORED_BY) {
+      for (StorageHandlerTypes type : StorageHandlerTypes.NON_DEFAULT_TYPES) {
         if (type.name().equalsIgnoreCase(node.getText())) {
           inputFormat = type.inputFormat();
           outputFormat = type.outputFormat();
@@ -182,15 +186,20 @@ public class StorageFormat {
         }
       }
     }
+    throw createUnsupportedStorageHandlerTypeError(node, null);
+  }
+
+  private static SemanticException createUnsupportedStorageHandlerTypeError(ASTNode node, Throwable cause) {
     final String supportedTypes = StorageHandlerTypes
-        .SUPPORTED_BY_STORED_BY
+        .NON_DEFAULT_TYPES
         .stream()
         .map(Enum::toString)
         .collect(Collectors.joining(", "));
-    throw  new SemanticException(String.format(
-        "Unrecognized storage handler in STORED BY clause: %s. Supported types = %s or FQCN of a storage handler",
+    return new SemanticException(String.format(
+        "The storage handler specified in the STORED BY clause is not recognized: %s. Please use one of the supported "
+            + "types, which are %s, or provide the Fully Qualified Class Name (FQCN) of a valid storage handler.",
         node.getText(), supportedTypes
-    ));
+    ), cause);
   }
 
   public void processStorageFormat(String name) throws SemanticException {
