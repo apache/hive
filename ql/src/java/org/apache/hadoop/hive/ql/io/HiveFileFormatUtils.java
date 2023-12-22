@@ -381,7 +381,7 @@ public final class HiveFileFormatUtils {
 
       Map<Path, T> newPathToPartitionInfo = null;
       if (cacheMap != null) {
-        newPathToPartitionInfo = cacheMap.get(pathToPartitionInfo);
+        throw new UnsupportedOperationException("DEAD CODE");
       }
 
       if (newPathToPartitionInfo == null) { // still null
