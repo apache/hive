@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
@@ -38,11 +39,8 @@ import org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.thrift.TException;
 import org.junit.After;
@@ -51,17 +49,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static junit.framework.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class TestTimedOutTxnNotificationLogging {
 
   private HiveConf hiveConf;
+
+  private ObjectStore objectStore;
+
+  private MetastoreTaskThread acidTxnCleanerService;
+
+  private MetastoreTaskThread acidHouseKeeperService;
 
   private static IMetaStoreClient hive;
 
@@ -86,14 +89,19 @@ public class TestTimedOutTxnNotificationLogging {
     TestTxnDbUtil.prepDb(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     hive = new HiveMetaStoreClient(hiveConf);
+    objectStore = new ObjectStore();
+    objectStore.setConf(hiveConf);
+    acidTxnCleanerService = new AcidTxnCleanerService();
+    acidTxnCleanerService.setConf(hiveConf);
+    acidHouseKeeperService = new AcidHouseKeeperService();
+    acidHouseKeeperService.setConf(hiveConf);
   }
 
   private void setConf() {
     hiveConf = new HiveConf();
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE, "/tmp");
-    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_TIMEOUT, 1000, TimeUnit.MILLISECONDS);
-    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, 1, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_TIMEOUT, 1, TimeUnit.SECONDS);
     HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         SQLStdHiveAuthorizerFactory.class.getName());
     MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS,
@@ -118,20 +126,20 @@ public class TestTimedOutTxnNotificationLogging {
   public void testTxnNotificationLogging() throws Exception {
     try {
       List<Long> txnIds = openTxns(numberOfTxns, txnType);
-      assertEquals(txnIds.size(), getNumberOfTxns(txnIds, TxnState.OPEN));
-      assertEquals(expectedNotifications, getNumNotifications(txnIds, MessageBuilder.OPEN_TXN_EVENT));
+      assertEquals(txnIds.size(), getNumberOfTxnsWithTxnState(txnIds, TxnState.OPEN));
+      assertEquals(expectedNotifications, getNumberOfNotificationsWithEventType(txnIds, MessageBuilder.OPEN_TXN_EVENT));
       Thread.sleep(1000);
-      runHouseKeeperService();
+      acidHouseKeeperService.run(); //this will abort timed-out txns
       if (txnType != TxnType.REPL_CREATED) {
-        assertEquals(txnIds.size(), getNumberOfTxns(txnIds, TxnState.ABORTED));
-        assertEquals(expectedNotifications, getNumNotifications(txnIds, MessageBuilder.ABORT_TXN_EVENT));
+        assertEquals(txnIds.size(), getNumberOfTxnsWithTxnState(txnIds, TxnState.ABORTED));
+        assertEquals(expectedNotifications, getNumberOfNotificationsWithEventType(txnIds, MessageBuilder.ABORT_TXN_EVENT));
       }
     } finally {
-      runTxnHouseKeeperService();
+      runCleanerServices();
     }
   }
 
-  private int getNumNotifications(List<Long> txnIds, String eventType) throws IOException, TException {
+  private int getNumberOfNotificationsWithEventType(List<Long> txnIds, String eventType) throws TException {
     int numNotifications = 0;
     IMetaStoreClient.NotificationFilter evFilter = new AndFilter(new ReplEventFilter(new ReplScope()),
         new CatalogFilter(MetaStoreUtils.getDefaultCatalog(hiveConf)), new EventBoundaryFilter(0, 100));
@@ -140,7 +148,7 @@ public class TestTimedOutTxnNotificationLogging {
       return numNotifications;
     }
     Iterator<NotificationEvent> eventIterator = rsp.getEvents().iterator();
-    MessageDeserializer deserializer = null;
+    MessageDeserializer deserializer;
     while (eventIterator.hasNext()) {
       NotificationEvent ev = eventIterator.next();
       if (eventType.equals(ev.getEventType())) {
@@ -168,7 +176,7 @@ public class TestTimedOutTxnNotificationLogging {
     for (; txnCounter > 0; txnCounter--) {
       if (txnType == TxnType.REPL_CREATED) {
         Long srcTxn = (long) (11 + txnCounter);
-        List<Long> srcTxns = Arrays.asList(new Long[] { srcTxn });
+        List<Long> srcTxns = Collections.singletonList(srcTxn);
         txnIds.addAll(hive.replOpenTxn("testPolicy", srcTxns, "hive", txnType));
       } else {
         txnIds.add(hive.openTxn("hive", txnType));
@@ -177,7 +185,7 @@ public class TestTimedOutTxnNotificationLogging {
     return txnIds;
   }
 
-  private int getNumberOfTxns(List<Long> txnIds, TxnState txnState) throws TException {
+  private int getNumberOfTxnsWithTxnState(List<Long> txnIds, TxnState txnState) throws TException {
     AtomicInteger numTxns = new AtomicInteger();
     hive.showTxns().getOpen_txns().forEach(txnInfo -> {
       if (txnInfo.getState() == txnState && txnIds.contains(txnInfo.getId())) {
@@ -187,15 +195,8 @@ public class TestTimedOutTxnNotificationLogging {
     return numTxns.get();
   }
 
-  private void runHouseKeeperService() {
-    MetastoreTaskThread acidHouseKeeperService = new AcidHouseKeeperService();
-    acidHouseKeeperService.setConf(hiveConf);
-    acidHouseKeeperService.run(); //this will abort timedout txns
-  }
-
-  private void runTxnHouseKeeperService() {
-    MetastoreTaskThread acidTxnCleanerService = new AcidTxnCleanerService();
-    acidTxnCleanerService.setConf(hiveConf);
+  private void runCleanerServices() {
+    objectStore.cleanNotificationEvents(0);
     acidTxnCleanerService.run(); //this will remove empty aborted txns
   }
 }
