@@ -3890,22 +3890,27 @@ public class ObjectStore implements RawStore, Configurable {
       String userName = args.getUserName();
       List<String> groupNames = args.getGroupNames();
       List<String> part_vals = args.getPart_vals();
+      List<String> partNames = args.getPartNames();
+      boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
       boolean getauth = null != userName && null != groupNames &&
           "TRUE".equalsIgnoreCase(
               mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
-
-      if (canTryDirectSQL(part_vals)) {
+      // When partNames is given, sending to JDO directly.
+      if (canTryDirectSQL(part_vals) && partNames == null) {
         LOG.info(
             "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
             db_name, tbl_name, part_vals);
         partitions = getPartitions(catName, db_name, tbl_name, args);
       } else {
-        Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
-            part_vals, max_parts, null);
-        boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
-        for (Object o : parts) {
-          Partition part = convertToPart(catName, db_name, tbl_name, (MPartition) o, isAcidTable, args);
-          partitions.add(part);
+        if (partNames != null) {
+          partitions.addAll(getPartitionsViaOrmFilter(catName, db_name, tbl_name, isAcidTable, args));
+        } else {
+          Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
+                  part_vals, max_parts, null);
+          for (Object o : parts) {
+            Partition part = convertToPart(catName, db_name, tbl_name, (MPartition) o, isAcidTable, args);
+            partitions.add(part);
+          }
         }
       }
       if (getauth) {
