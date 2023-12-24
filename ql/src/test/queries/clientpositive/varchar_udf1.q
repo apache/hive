@@ -1,4 +1,5 @@
 --! qt:dataset:src
+--! qt:dataset:temp_udf
 drop table varchar_udf_1;
 
 create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20));

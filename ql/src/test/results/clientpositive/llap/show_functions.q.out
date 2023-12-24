@@ -83,7 +83,6 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
@@ -533,7 +532,6 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
@@ -713,7 +711,6 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
