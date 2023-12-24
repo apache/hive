@@ -563,7 +563,6 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
-    system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
     system.registerGenericUDAF("compute_bit_vector_hll", new GenericUDAFComputeBitVectorHLL());
     system.registerGenericUDAF("compute_bit_vector_fm", new GenericUDAFComputeBitVectorFMSketch());
