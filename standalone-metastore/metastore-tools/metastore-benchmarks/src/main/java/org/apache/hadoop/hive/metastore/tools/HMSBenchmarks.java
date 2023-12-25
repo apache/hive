@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
@@ -332,6 +333,35 @@ final class HMSBenchmarks {
           () -> throwingSupplierWrapper(() ->
               client.dropPartitions(dbName, tableName, null)),
           null
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
+  static DescriptiveStatistics benchmarkAlterPartitions(@NotNull MicroBenchmark bench,
+                                                        @NotNull BenchData data,
+                                                        int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+    try {
+      return bench.measure(
+          () -> addManyPartitionsNoException(client, dbName, tableName, null,
+              Collections.singletonList("d"), count),
+          () -> throwingSupplierWrapper(() -> {
+            List<Partition> newPartitions = client.getPartitions(dbName, tableName);
+            newPartitions.forEach(p -> {
+              p.getParameters().put("new_param", "param_val");
+              p.getSd().setCols(Arrays.asList(new FieldSchema("new_col", "string", null)));
+            });
+            client.alterPartitions(dbName, tableName, newPartitions);
+            return null;
+          }),
+          () -> throwingSupplierWrapper(() ->
+              client.dropPartitions(dbName, tableName, null))
       );
     } finally {
       throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));

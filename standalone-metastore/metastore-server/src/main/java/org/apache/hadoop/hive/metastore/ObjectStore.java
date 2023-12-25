@@ -4399,7 +4399,7 @@ public class ObjectStore implements RawStore, Configurable {
     protected abstract String describeResult();
     protected abstract T getSqlResult(GetHelper<T> ctx) throws MetaException;
     protected abstract T getJdoResult(
-        GetHelper<T> ctx) throws MetaException, NoSuchObjectException;
+        GetHelper<T> ctx) throws MetaException, NoSuchObjectException, InvalidObjectException;
 
     public T run(boolean initTable) throws MetaException, NoSuchObjectException {
       try {
@@ -5261,91 +5261,114 @@ public class ObjectStore implements RawStore, Configurable {
                               List<List<String>> part_vals, List<Partition> newParts,
                               long writeId, String queryWriteIdList)
                                   throws InvalidObjectException, MetaException {
-    boolean success = false;
-    Exception e = null;
     List<Partition> results = new ArrayList<>(newParts.size());
     if (newParts.isEmpty()) {
       return results;
     }
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    boolean success = false;
     try {
       openTransaction();
 
-      MTable table = this.getMTable(catName, dbName, tblName);
-      if (table == null) {
-        throw new NoSuchObjectException(
-            TableName.getQualified(catName, dbName, tblName) + " table not found");
+      MTable table = ensureGetMTable(catName, dbName, tblName);
+      // Validate new parts: StorageDescriptor and SerDeInfo must be set in Partition.
+      if (!TableType.VIRTUAL_VIEW.name().equals(table.getTableType())) {
+        for (Partition newPart : newParts) {
+          if (!newPart.isSetSd() || !newPart.getSd().isSetSerdeInfo()) {
+            throw new InvalidObjectException("Partition does not set storageDescriptor or serdeInfo.");
+          }
+        }
       }
+      if (writeId > 0) {
+        newParts.forEach(newPart -> newPart.setWriteId(writeId));
+      }
+
+      List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
-        partNames.add(
-            Warehouse.makePartName(convertToFieldSchemas(table.getPartitionKeys()), partVal)
-        );
+        partNames.add(Warehouse.makePartName(partCols, partVal));
       }
 
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tblName = normalizeIdentifier(tblName);
-      List<MPartition> mPartitionList;
-
-      try (Query query = pm.newQuery(MPartition.class,
-              "table.tableName == t1 && table.database.name == t2 && t3.contains(partitionName) " +
-                      " && table.database.catalogName == t4")) {
-        query.declareParameters("java.lang.String t1, java.lang.String t2, java.util.Collection t3, "
-                + "java.lang.String t4");
-        mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
-        pm.retrieveAll(mPartitionList);
-
-        if (mPartitionList.size() > newParts.size()) {
-          throw new MetaException("Expecting only one partition but more than one partitions are found.");
+      results = new GetListHelper<Partition>(catName, dbName, tblName, true, true) {
+        @Override
+        protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx)
+            throws MetaException {
+          return directSql.alterPartitions(table, partNames, newParts, queryWriteIdList);
         }
 
-        Map<List<String>, MPartition> mPartsMap = new HashMap();
-        for (MPartition mPartition : mPartitionList) {
-          mPartsMap.put(mPartition.getValues(), mPartition);
+        @Override
+        protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
+            throws MetaException, InvalidObjectException {
+          return alterPartitionsViaJdo(table, partNames, newParts, queryWriteIdList);
         }
+      }.run(false);
 
-        Set<MColumnDescriptor> oldCds = new HashSet<>();
-        Ref<MColumnDescriptor> oldCdRef = new Ref<>();
-        for (Partition tmpPart : newParts) {
-          if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
-            throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
-          }
-
-          if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
-            throw new MetaException("Invalid table   name : " + tmpPart.getDbName());
-          }
-
-          if (writeId > 0) {
-            tmpPart.setWriteId(writeId);
-          }
-          oldCdRef.t = null;
-          Partition result = alterPartitionNoTxn(catName, dbName, tblName, mPartsMap.get(tmpPart.getValues()),
-                  tmpPart, queryWriteIdList, oldCdRef, table);
-          results.add(result);
-          if (oldCdRef.t != null) {
-            oldCds.add(oldCdRef.t);
-          }
-        }
-        for (MColumnDescriptor oldCd : oldCds) {
-          removeUnusedColumnDescriptor(oldCd);
-        }
-      }
       // commit the changes
       success = commitTransaction();
     } catch (Exception exception) {
-      e = exception;
-      LOG.error("Alter failed", e);
+      LOG.error("Alter failed", exception);
+      throw new MetaException(exception.getMessage());
     } finally {
       if (!success) {
         rollbackTransaction();
-        MetaException metaException = new MetaException(
-            "The transaction for alter partition did not commit successfully.");
-        if (e != null) {
-          metaException.initCause(e);
-        }
-        throw metaException;
       }
     }
+    return results;
+  }
+
+  private List<Partition> alterPartitionsViaJdo(MTable table, List<String> partNames,
+                                                List<Partition> newParts, String queryWriteIdList)
+      throws MetaException, InvalidObjectException {
+    String catName = table.getDatabase().getCatalogName();
+    String dbName = table.getDatabase().getName();
+    String tblName = table.getTableName();
+    List<Partition> results = new ArrayList<>(newParts.size());
+    List<MPartition> mPartitionList;
+
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class,
+        "table.tableName == t1 && table.database.name == t2 && t3.contains(partitionName) " +
+            " && table.database.catalogName == t4"))) {
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.util.Collection t3, "
+          + "java.lang.String t4");
+      mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
+      pm.retrieveAll(mPartitionList);
+
+      if (mPartitionList.size() > newParts.size()) {
+        throw new MetaException("Expecting only one partition but more than one partitions are found.");
+      }
+
+      Map<List<String>, MPartition> mPartsMap = new HashMap();
+      for (MPartition mPartition : mPartitionList) {
+        mPartsMap.put(mPartition.getValues(), mPartition);
+      }
+
+      Set<MColumnDescriptor> oldCds = new HashSet<>();
+      Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+      for (Partition tmpPart : newParts) {
+        if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
+          throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
+        }
+
+        if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
+          throw new MetaException("Invalid table   name : " + tmpPart.getDbName());
+        }
+
+        oldCdRef.t = null;
+        Partition result = alterPartitionNoTxn(catName, dbName, tblName,
+            mPartsMap.get(tmpPart.getValues()), tmpPart, queryWriteIdList, oldCdRef, table);
+        results.add(result);
+        if (oldCdRef.t != null) {
+          oldCds.add(oldCdRef.t);
+        }
+      }
+      for (MColumnDescriptor oldCd : oldCds) {
+        removeUnusedColumnDescriptor(oldCd);
+      }
+    }
+
     return results;
   }
 
