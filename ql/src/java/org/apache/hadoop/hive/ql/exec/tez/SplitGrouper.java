@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
@@ -72,7 +71,7 @@ public class SplitGrouper {
   // TODO This needs to be looked at. Map of Map to Map... Made concurrent for now since split generation
   // can happen in parallel.
   private final Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cache =
-      new ConcurrentHashMap<>();
+      new HashMap<>();
 
   private final TezMapredSplitsGrouper tezGrouper = new TezMapredSplitsGrouper();
 
