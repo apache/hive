@@ -3143,6 +3143,9 @@ class MetaStoreDirectSql {
 
   public List<Function> getFunctions(String catName) throws MetaException {
     List<Long> funcIds = getFunctionIds(catName);
+    if (funcIds.isEmpty()) {
+      return Collections.emptyList(); // no functions, bail early.
+    }
     // Get full objects. For Oracle/etc. do it in batches.
     return Batchable.runBatched(batchSize, funcIds, new Batchable<Long, Function>() {
       @Override
