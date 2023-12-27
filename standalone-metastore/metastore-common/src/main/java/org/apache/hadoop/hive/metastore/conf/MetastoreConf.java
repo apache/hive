@@ -101,10 +101,10 @@ public class MetastoreConf {
       "org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService";
   @VisibleForTesting
   static final String ACID_TXN_CLEANER_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService";
+      "org.apache.hadoop.hive.metastore.txn.service.AcidTxnCleanerService";
   @VisibleForTesting
   static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService";
+      "org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService";
 
   public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
           "metastore.authentication.ldap.userMembershipKey";
