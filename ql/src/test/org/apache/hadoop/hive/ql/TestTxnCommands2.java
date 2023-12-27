@@ -63,8 +63,8 @@ import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.AcidCompactionHouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
@@ -75,7 +75,7 @@ import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionContext;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.schq.MockScheduledQueryService;
@@ -1245,10 +1245,12 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.ACID_HOUSEKEEPER_SERVICE_INTERVAL, 10,
         TimeUnit.MILLISECONDS);
-    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.ACID_COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL, 10,
+    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL, 10,
         TimeUnit.MILLISECONDS);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
-    MetastoreTaskThread compactionHouseKeeper = new AcidCompactionHouseKeeperService();
+    MetastoreTaskThread compactionHouseKeeper = new CompactionHouseKeeperService();
     houseKeeper.setConf(hiveConf);
     compactionHouseKeeper.setConf(hiveConf);
     houseKeeper.run();
@@ -3353,8 +3355,10 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     runCleaner(hiveConf);
 
     // Run AcidHouseKeeperService to cleanup the COMPLETED_TXN_COMPONENTS.
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
-    MetastoreTaskThread compactionHouseKeeper = new AcidCompactionHouseKeeperService();
+    MetastoreTaskThread compactionHouseKeeper = new CompactionHouseKeeperService();
     houseKeeper.setConf(hiveConf);
     compactionHouseKeeper.setConf(hiveConf);
     houseKeeper.run();

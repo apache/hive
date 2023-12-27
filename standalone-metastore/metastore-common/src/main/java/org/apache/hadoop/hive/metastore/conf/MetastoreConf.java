@@ -97,7 +97,7 @@ public class MetastoreConf {
   static final String ACID_HOUSE_KEEPER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService";
   @VisibleForTesting
-  static final String ACID_COMPACTION_HOUSE_KEEPER_SERVICE_CLASS =
+  static final String COMPACTION_HOUSE_KEEPER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.AcidCompactionHouseKeeperService";
   @VisibleForTesting
   static final String ACID_TXN_CLEANER_SERVICE_CLASS =
@@ -296,8 +296,8 @@ public class MetastoreConf {
     ACID_HOUSEKEEPER_SERVICE_INTERVAL("metastore.acid.housekeeper.interval",
         "hive.metastore.acid.housekeeper.interval", 60, TimeUnit.SECONDS,
         "Time interval describing how often the acid housekeeper runs."),
-    ACID_COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL("metastore.acid.compaction.housekeeper.interval",
-        "hive.metastore.acid.compaction.housekeeper.interval", 300, TimeUnit.SECONDS,
+    COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL("metastore.compaction.housekeeper.interval",
+        "hive.metastore.compaction.housekeeper.interval", 300, TimeUnit.SECONDS,
         "Time interval describing how often the acid compaction housekeeper runs."),
     ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
         "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
@@ -1474,7 +1474,7 @@ public class MetastoreConf {
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
     TASK_THREADS_REMOTE_ONLY("metastore.task.threads.remote", "metastore.task.threads.remote",
         ACID_HOUSE_KEEPER_SERVICE_CLASS + "," +
-            ACID_COMPACTION_HOUSE_KEEPER_SERVICE_CLASS + "," +
+            COMPACTION_HOUSE_KEEPER_SERVICE_CLASS + "," +
             ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
             MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +

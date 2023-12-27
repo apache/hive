@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.txn;
+package org.apache.hadoop.hive.metastore.txn.service;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -26,24 +26,29 @@ import java.util.concurrent.TimeUnit;
  * Performs background tasks for Transaction management in Hive.
  * Runs inside Hive Metastore Service.
  */
-public class AcidCompactionHouseKeeperService extends AcidHouseKeeperService {
+public class CompactionHouseKeeperService extends AcidHouseKeeperService {
 
+  private boolean isCompactorEnabled;
   @Override
   public void setConf(Configuration configuration) {
     super.setConf(configuration);
     setServiceName(this.getClass().getSimpleName());
+    isCompactorEnabled = MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)
+        || MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
   }
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(getConf(), MetastoreConf.ConfVars.ACID_COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL,
+    return MetastoreConf.getTimeVar(getConf(), MetastoreConf.ConfVars.COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL,
         unit);
   }
 
   @Override
   void cleanTheHouse() {
+    if (isCompactorEnabled) {
       performTask(getTxnHandler()::removeDuplicateCompletedTxnComponents,
           "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries");
       performTask(getTxnHandler()::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
+    }
   }
 }
