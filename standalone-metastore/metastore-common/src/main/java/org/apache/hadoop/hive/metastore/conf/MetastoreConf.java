@@ -95,10 +95,10 @@ public class MetastoreConf {
       "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
   @VisibleForTesting
   static final String ACID_HOUSE_KEEPER_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService";
+      "org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService";
   @VisibleForTesting
   static final String COMPACTION_HOUSE_KEEPER_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidCompactionHouseKeeperService";
+      "org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService";
   @VisibleForTesting
   static final String ACID_TXN_CLEANER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService";
