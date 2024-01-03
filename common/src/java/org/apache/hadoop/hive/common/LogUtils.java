@@ -117,11 +117,11 @@ public class LogUtils {
         // property specified file found in local file system
         // use the specified file
         if (confVarName == HiveConf.ConfVars.HIVE_EXEC_LOG4J_FILE) {
-          String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+          String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
           if(queryId == null || (queryId = queryId.trim()).isEmpty()) {
             queryId = "unknown-" + System.currentTimeMillis();
           }
-          System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
+          System.setProperty(HiveConf.ConfVars.HIVE_QUERY_ID.toString(), queryId);
         }
         final boolean async = checkAndSetAsyncLogging(conf);
         // required for MDC based routing appender so that child threads can inherit the MDC context
@@ -157,8 +157,8 @@ public class LogUtils {
         if (hive_l4j == null) {
           hive_l4j = LogUtils.class.getClassLoader().getResource(HIVE_L4J);
         }
-        System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(),
-          HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
+        System.setProperty(HiveConf.ConfVars.HIVE_QUERY_ID.toString(),
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID));
         break;
       case HIVE_LOG4J_FILE:
         hive_l4j = LogUtils.class.getClassLoader().getResource(HIVE_L4J);
@@ -216,8 +216,8 @@ public class LogUtils {
    */
   public static void registerLoggingContext(Configuration conf) {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
-      MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
-      MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
+      MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SESSION_ID));
+      MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID));
       MDC.put(OPERATIONLOG_LEVEL_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
       MDC.put(OPERATIONLOG_LOCATION_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION));
       l4j.info("Thread context registration is done.");

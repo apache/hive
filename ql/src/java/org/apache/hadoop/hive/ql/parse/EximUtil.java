@@ -259,8 +259,8 @@ public class EximUtil {
    */
   public static URI getValidatedURI(HiveConf conf, String dcPath) throws SemanticException {
     try {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
-          || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE)
+          || conf.getBoolVar(HiveConf.ConfVars.HIVE_EXIM_TEST_MODE);
       URI uri = new Path(dcPath).toUri();
       FileSystem fs = FileSystem.get(uri, conf);
       // Get scheme from FileSystem
@@ -316,8 +316,8 @@ public class EximUtil {
   public static String relativeToAbsolutePath(HiveConf conf, String location)
       throws SemanticException {
     try {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
-        || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);;
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE)
+        || conf.getBoolVar(HiveConf.ConfVars.HIVE_EXIM_TEST_MODE);;
       if (testMode) {
         URI uri = new Path(location).toUri();
         FileSystem fs = FileSystem.get(uri, conf);

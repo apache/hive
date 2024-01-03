@@ -127,8 +127,8 @@ public class TestOrcSplitElimination {
         100000, CompressionKind.NONE, 10000, 10000);
     writeData(writer);
     writer.close();
-    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1000);
-    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 5000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE, 5000);
     InputFormat<?, ?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
 
@@ -197,8 +197,8 @@ public class TestOrcSplitElimination {
         100000, CompressionKind.NONE, 10000, 10000);
     writeData(writer);
     writer.close();
-    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1000);
-    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 150000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE, 150000);
     InputFormat<?, ?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
 
@@ -278,8 +278,8 @@ public class TestOrcSplitElimination {
         100000, CompressionKind.NONE, 10000, 10000);
     writeData(writer);
     writer.close();
-    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1000);
-    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, 150000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, 1000);
+    HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE, 150000);
     InputFormat<?, ?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
 
@@ -696,10 +696,10 @@ public class TestOrcSplitElimination {
   private void setupExternalCacheConfig(boolean isPpd, String paths) {
     FileInputFormat.setInputPaths(conf, paths);
     conf.set(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "ETL");
-    conf.setLong(HiveConf.ConfVars.MAPREDMINSPLITSIZE.varname, 1000);
-    conf.setLong(HiveConf.ConfVars.MAPREDMAXSPLITSIZE.varname, 5000);
+    conf.setLong(HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE.varname, 1000);
+    conf.setLong(HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE.varname, 5000);
     conf.setBoolean(ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD.varname, isPpd);
-    conf.setBoolean(ConfVars.HIVEOPTINDEXFILTER.varname, isPpd);
+    conf.setBoolean(ConfVars.HIVE_OPT_INDEX_FILTER.varname, isPpd);
   }
 
   private ObjectInspector createIO() {

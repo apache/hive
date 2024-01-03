@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -520,7 +519,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
 
   protected String getQueryId() {
     try {
-      return Hive.get().getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      return Hive.get().getConf().get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     } catch (HiveException e) {
       LOG.error("Error getting query id. Query level and Global HMS caching will be disabled", e);
       return null;

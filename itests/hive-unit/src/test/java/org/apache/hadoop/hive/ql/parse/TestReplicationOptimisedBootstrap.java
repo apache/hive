@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
@@ -54,7 +53,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,11 +66,6 @@ import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_FAILOVER_ENDPOINT;
-import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_FAILBACK_COUNT;
-import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_FAILOVER_COUNT;
-import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_LAST_FAILBACK_ENDTIME;
-import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_LAST_FAILBACK_STARTTIME;
-import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_METRICS_LAST_FAILOVER_TYPE;
 import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
@@ -137,7 +130,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @Test
   public void testBuildTableDiffGeneration() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
     // Create two external & two managed tables and do a bootstrap dump & load.
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -202,7 +195,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     // Do a reverse dump
     tuple = replica.dump(replicatedDbName, withClause);
@@ -263,7 +256,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     // In case of control failover both A & B will be in sync, so the table diff should be created empty, without any
     // error.
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle(A->B)
     primary.dump(primaryDbName, withClause);
@@ -293,7 +286,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "rev");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     // Do a reverse dump
     tuple = replica.dump(replicatedDbName, withClause);
@@ -317,7 +310,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @Test
   public void testFirstIncrementalMandatory() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
     // Create one external and one managed tables and do a bootstrap dump.
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -343,7 +336,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     // Do a dump on cluster B, it should throw an exception, since the first incremental isn't done yet.
     try {
@@ -355,13 +348,13 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
 
     // Do a incremental cycle and check we don't get this exception.
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
     primary.dump(primaryDbName, withClause);
     replica.load(replicatedDbName, primaryDbName, withClause);
 
     // Retrigger reverse dump, this time it should be successful and event ack should get created.
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     tuple = replica.dump(replicatedDbName, withClause);
 
@@ -373,7 +366,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @Test
   public void testFailureCasesInTableDiffGeneration() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle(A->B)
     primary.dump(primaryDbName, withClause);
@@ -418,7 +411,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "reverse");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     // Trigger dump on target cluster.
 
@@ -505,7 +498,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @Test
   public void testReverseReplicationFailureWhenSourceDbIsDropped() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle.
     primary.dump(primaryDbName, withClause);
@@ -542,7 +535,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     // Do a reverse dump, this should create event_ack file
     tuple = replica.dump(replicatedDbName, withClause);
@@ -800,7 +793,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @Test
   public void testOverwriteDuringBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle.
     primary.dump(primaryDbName, withClause);
@@ -862,7 +855,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     // Do a reverse dump
     tuple = replica.dump(replicatedDbName, withClause);
@@ -928,7 +921,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @Test
   public void testTblMetricRegisterDuringSecondCycleOfOptimizedBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(false);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create table t1_managed (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
@@ -968,7 +961,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(false);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
 
     // Do a reverse dump
@@ -1004,7 +997,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @Test
   public void testTblMetricRegisterDuringSecondLoadCycleOfOptimizedBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(false);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create table t1_managed (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
@@ -1044,7 +1037,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(false);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
 
     // Do a reverse dump
@@ -1085,7 +1078,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   @NotNull
   private List<String> setUpFirstIterForOptimisedBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle.
     primary.dump(primaryDbName, withClause);
@@ -1210,7 +1203,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Path newReplDir = new Path(replica.repldDir + "1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     // Do a reverse dump
     tuple = replica.dump(replicatedDbName, withClause);

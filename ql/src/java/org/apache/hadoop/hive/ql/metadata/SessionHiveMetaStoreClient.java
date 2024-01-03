@@ -1446,7 +1446,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     List<Partition> result = new ArrayList<>();
     for (Pair<Integer, byte[]> pair : partExprs) {
       byte[] expr = pair.getRight();
-      String filter = generateJDOFilter(table, expr, conf.get(HiveConf.ConfVars.DEFAULTPARTITIONNAME.varname));
+      String filter = generateJDOFilter(table, expr, conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
       List<Partition> partitions = tt.listPartitionsByFilter(filter);
       for (Partition p : partitions) {
         Partition droppedPartition = tt.dropPartition(p.getValues());

@@ -716,7 +716,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
               + "exceeds configured max allowable partitions["
               + maxDynamicPartitions
               + "], increase parameter ["
-              + HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS.varname
+              + HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS.varname
               + "] if needed.");
         }
 

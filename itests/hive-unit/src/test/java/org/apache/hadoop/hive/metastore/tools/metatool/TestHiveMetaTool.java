@@ -61,8 +61,7 @@ import org.apache.thrift.TException;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-import com.google.gson.JsonParser;
-import org.json.JSONObject;
+
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
@@ -110,10 +109,10 @@ public class TestHiveMetaTool {
               + File.separator + "mapred" + File.separator + "staging");
       hiveConf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
               + File.separator + "mapred" + File.separator + "temp");
-      hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-      hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-      hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());
-      hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+      hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+      hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
+      hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getWarehouseDir());
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
       hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
                       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
       hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);

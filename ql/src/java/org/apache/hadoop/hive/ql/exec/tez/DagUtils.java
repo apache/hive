@@ -372,28 +372,28 @@ public class DagUtils {
     }
 
     if (mapWork.getMaxSplitSize() != null) {
-      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE,
+      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE,
           mapWork.getMaxSplitSize().longValue());
     }
 
     if (mapWork.getMinSplitSize() != null) {
-      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE,
+      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE,
           mapWork.getMinSplitSize().longValue());
     }
 
     if (mapWork.getMinSplitSizePerNode() != null) {
-      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERNODE,
+      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE_PER_NODE,
           mapWork.getMinSplitSizePerNode().longValue());
     }
 
     if (mapWork.getMinSplitSizePerRack() != null) {
-      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERRACK,
+      HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE_PER_RACK,
           mapWork.getMinSplitSizePerRack().longValue());
     }
 
     Utilities.setInputAttributes(conf, mapWork);
 
-    String inpFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZINPUTFORMAT);
+    String inpFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FORMAT);
 
     if (mapWork.isUseBucketizedHiveInputFormat()) {
       inpFormat = BucketizedHiveInputFormat.class.getName();
@@ -665,10 +665,10 @@ public class DagUtils {
    * container size isn't set.
    */
   public static Resource getContainerResource(Configuration conf) {
-    int memorySizeMb = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE);
+    int memorySizeMb = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_CONTAINER_SIZE);
     if (memorySizeMb <= 0) {
       LOG.warn("No Tez container size specified by {}. Falling back to MapReduce container MB {}",
-          HiveConf.ConfVars.HIVETEZCONTAINERSIZE,  MRJobConfig.MAP_MEMORY_MB);
+          HiveConf.ConfVars.HIVE_TEZ_CONTAINER_SIZE,  MRJobConfig.MAP_MEMORY_MB);
       memorySizeMb = conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
       // When config is explicitly set to "-1" defaultValue does not work!
       if (memorySizeMb <= 0) {
@@ -676,10 +676,10 @@ public class DagUtils {
         memorySizeMb = MRJobConfig.DEFAULT_MAP_MEMORY_MB;
       }
     }
-    int cpuCores = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES);
+    int cpuCores = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_CPU_VCORES);
     if (cpuCores <= 0) {
       LOG.warn("No Tez VCore size specified by {}. Falling back to MapReduce container VCores {}",
-          HiveConf.ConfVars.HIVETEZCPUVCORES,  MRJobConfig.MAP_CPU_VCORES);
+          HiveConf.ConfVars.HIVE_TEZ_CPU_VCORES,  MRJobConfig.MAP_CPU_VCORES);
       cpuCores = conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
       if (cpuCores <= 0) {
         LOG.warn("Falling back to default container VCores {}", MRJobConfig.DEFAULT_MAP_CPU_VCORES);
@@ -705,9 +705,9 @@ public class DagUtils {
    * are set
    */
   private static String getContainerJavaOpts(Configuration conf) {
-    String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZJAVAOPTS);
+    String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS);
 
-    String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZLOGLEVEL);
+    String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_LOG_LEVEL);
     List<String> logProps = Lists.newArrayList();
     TezUtils.addLog4jSystemProperties(logLevel, logProps);
     StringBuilder sb = new StringBuilder();
@@ -716,7 +716,7 @@ public class DagUtils {
     }
     logLevel = sb.toString();
 
-    if (HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0) {
+    if (HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_CONTAINER_SIZE) > 0) {
       if (javaOpts != null) {
         return javaOpts + " " + logLevel;
       } else  {
@@ -724,8 +724,8 @@ public class DagUtils {
       }
     } else {
       if (javaOpts != null && !javaOpts.isEmpty()) {
-        LOG.warn(HiveConf.ConfVars.HIVETEZJAVAOPTS + " will be ignored because "
-                 + HiveConf.ConfVars.HIVETEZCONTAINERSIZE + " is not set!");
+        LOG.warn(HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS + " will be ignored because "
+                 + HiveConf.ConfVars.HIVE_TEZ_CONTAINER_SIZE + " is not set!");
       }
       return logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
     }
@@ -1100,7 +1100,7 @@ public class DagUtils {
       String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEADDFILESUSEHDFSLOCATION)) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ADD_FILES_USE_HDFS_LOCATION)) {
       // reference HDFS based resource directly, to use distribute cache efficiently.
       addHdfsResource(conf, tmpResources, LocalResourceType.FILE, getHdfsTempFilesFromConf(conf));
       // local resources are session based.
@@ -1146,7 +1146,7 @@ public class DagUtils {
   private static String[] getLocalTempFilesFromConf(Configuration conf) {
     String addedFiles = Utilities.getLocalResourceFiles(conf, SessionState.ResourceType.FILE);
     String addedJars = Utilities.getLocalResourceFiles(conf, SessionState.ResourceType.JAR);
-    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUX_JARS);
     String reloadableAuxJars = SessionState.get() == null ? null : SessionState.get().getReloadableAuxJars();
     String allFiles =
         HiveStringUtils.joinIgnoringEmpty(new String[]{auxJars, reloadableAuxJars, addedJars, addedFiles}, ',');
@@ -1159,13 +1159,13 @@ public class DagUtils {
     }
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     if (StringUtils.isNotBlank(addedFiles)) {
-      HiveConf.setVar(conf, ConfVars.HIVEADDEDFILES, addedFiles);
+      HiveConf.setVar(conf, ConfVars.HIVE_ADDED_FILES, addedFiles);
     }
     String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
     if (StringUtils.isNotBlank(addedJars)) {
-      HiveConf.setVar(conf, ConfVars.HIVEADDEDJARS, addedJars);
+      HiveConf.setVar(conf, ConfVars.HIVE_ADDED_JARS, addedJars);
     }
-    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUX_JARS);
     String reloadableAuxJars = SessionState.get() == null ? null : SessionState.get().getReloadableAuxJars();
 
     // need to localize the additional jars and files
@@ -1178,7 +1178,7 @@ public class DagUtils {
   private static String[] getTempArchivesFromConf(Configuration conf) {
     String addedArchives = Utilities.getResourceFiles(conf, SessionState.ResourceType.ARCHIVE);
     if (StringUtils.isNotBlank(addedArchives)) {
-      HiveConf.setVar(conf, ConfVars.HIVEADDEDARCHIVES, addedArchives);
+      HiveConf.setVar(conf, ConfVars.HIVE_ADDED_ARCHIVES, addedArchives);
       return addedArchives.split(",");
     }
     return new String[0];
@@ -1272,7 +1272,7 @@ public class DagUtils {
       }
     } catch (Exception ignored) {}
     //Fall back to hive config, if the uri could not get, or it does not point to a .jar file
-    String jar = configuration.get(ConfVars.HIVEJAR.varname);
+    String jar = configuration.get(ConfVars.HIVE_JAR.varname);
     if (!StringUtils.isBlank(jar)) {
       return jar;
     }
@@ -1466,7 +1466,7 @@ public class DagUtils {
     conf.set(MRJobConfig.OUTPUT_KEY_CLASS, HiveKey.class.getName());
     conf.set(MRJobConfig.OUTPUT_VALUE_CLASS, BytesWritable.class.getName());
 
-    conf.set("mapred.partitioner.class", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEPARTITIONER));
+    conf.set("mapred.partitioner.class", HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_PARTITIONER));
     conf.set("tez.runtime.partitioner.class", MRPartitioner.class.getName());
 
     // Removing job credential entry/ cannot be set on the tasks
@@ -1699,7 +1699,7 @@ public class DagUtils {
   }
 
   public static String getUserSpecifiedDagName(Configuration conf) {
-    String name = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYNAME);
+    String name = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_NAME);
     return (name != null) ? name : conf.get("mapred.job.name");
   }
 
@@ -1712,7 +1712,7 @@ public class DagUtils {
    * TODO This method is temporary. Ideally Hive should only need to pass to Tez the amount of memory
    *      it requires to do the map join, and Tez should take care of figuring out how much to allocate
    * Adjust the percentage of memory to be reserved for the processor from Tez
-   * based on the actual requested memory by the Map Join, i.e. HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD
+   * based on the actual requested memory by the Map Join, i.e. HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD
    * @return the adjusted percentage
    */
   static double adjustMemoryReserveFraction(long memoryRequested, HiveConf conf) {

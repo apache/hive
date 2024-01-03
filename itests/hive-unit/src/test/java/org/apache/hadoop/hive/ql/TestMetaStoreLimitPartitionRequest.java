@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -72,7 +71,7 @@ public class TestMetaStoreLimitPartitionRequest {
     conf.setIntVar(HiveConf.ConfVars.METASTORE_LIMIT_PARTITION_REQUEST, PARTITION_REQUEST_LIMIT);
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_INTEGER_JDO_PUSHDOWN, true);
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL, true);
-    conf.setBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING, true);
+    conf.setBoolVar(HiveConf.ConfVars.DYNAMIC_PARTITIONING, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
 
     miniHS2 = new MiniHS2.Builder().withConf(conf).build();

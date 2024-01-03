@@ -206,7 +206,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     numRowsHashTbl = 0;
 
     heartbeatInterval = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVESENDHEARTBEAT);
+        HiveConf.ConfVars.HIVE_SEND_HEARTBEAT);
     countAfterReport = 0;
     ObjectInspector rowInspector = inputObjInspectors[0];
 
@@ -367,7 +367,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       keyPositionsSize = new ArrayList<Integer>();
       aggrPositions = new List[aggregations.length];
       groupbyMapAggrInterval = HiveConf.getIntVar(hconf,
-          HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
+          HiveConf.ConfVars.HIVE_GROUPBY_MAP_INTERVAL);
 
       // compare every groupbyMapAggrInterval rows
       numRowsCompareHashAggr = groupbyMapAggrInterval;

@@ -69,7 +69,7 @@ public class TestMapRedTask {
 
     QueryState queryState = new QueryState.Builder().build();
     HiveConf conf= queryState.getConf();
-    conf.setBoolVar(HiveConf.ConfVars.SUBMITVIACHILD, true);
+    conf.setBoolVar(HiveConf.ConfVars.SUBMIT_VIA_CHILD, true);
 
     MapredWork mrWork = new MapredWork();
     mrWork.setMapWork(Mockito.mock(MapWork.class));

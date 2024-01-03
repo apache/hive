@@ -59,10 +59,10 @@ public class TestMRCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver("analyze table " + dbName + "." + tableName + " compute statistics for columns", driver);
     executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(2)", driver);
 
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     // Run major compaction and cleaner
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, false);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(1);
@@ -76,10 +76,10 @@ public class TestMRCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver("alter table " + dbName + "." + tableName + " set tblproperties('compactor.mapred.job.queue.name'='" +
         CUSTOM_COMPACTION_QUEUE + "')", driver);
 
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     // Run major compaction and cleaner
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, false);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(2);
@@ -90,10 +90,10 @@ public class TestMRCompactorOnTez extends CompactorOnTezTest {
     assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getLowValue());
 
     executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(4)", driver);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, false,
         Collections.singletonMap("compactor.mapred.job.queue.name", CUSTOM_COMPACTION_QUEUE));
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(3);

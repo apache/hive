@@ -618,7 +618,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
           .run(i -> {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
                 RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
             shell.executeStatement(sql);
@@ -649,7 +649,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
           .run(i -> {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
                 RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
             shell.executeStatement(sql);
@@ -684,7 +684,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
           .run(i -> {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
                 RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
             shell.executeStatement(sql[i]);
@@ -719,7 +719,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
           .run(i -> {
             init(shell, testTables, temp, executionEngine);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
                 RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
             shell.executeStatement(sql);

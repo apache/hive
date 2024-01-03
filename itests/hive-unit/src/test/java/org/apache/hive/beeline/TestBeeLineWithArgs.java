@@ -92,7 +92,7 @@ import org.junit.Test;
     HiveConf hiveConf = UtilsForTest.getHiveOnTezConfFromDir("../../data/conf/tez/");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, false);
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
     miniHS2 = new MiniHS2(hiveConf, MiniClusterType.TEZ);
 

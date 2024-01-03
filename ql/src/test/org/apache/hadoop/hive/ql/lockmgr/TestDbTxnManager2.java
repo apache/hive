@@ -502,7 +502,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(5, count);
 
     // Fail some inserts, so that we have records in TXN_COMPONENTS
-    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, true);
     driver.run("insert into temp.T10 values (9, 9)");
     driver.run("insert into temp.T11 values (10, 10)");
     driver.run("insert into temp.T12p partition (ds='today', hour='1') values (11, 11)");
@@ -510,7 +510,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
         "where \"TC_DATABASE\"='temp' and \"TC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(4, count);
-    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, false);
 
     // Drop a table/partition; corresponding records in TXN_COMPONENTS and COMPLETED_TXN_COMPONENTS should disappear
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
@@ -580,7 +580,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     // Tables need at least 2 delta files to compact, and minor compaction was just run, so insert
     driver.run("insert into temp.T11 values (14, 14)");
     driver.run("insert into temp.T12p partition (ds='tomorrow', hour='2') values (15, 15)");
-    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, true);
     driver.run("alter table temp.T11 compact 'major'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
         "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
@@ -606,7 +606,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
         "where \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t12p' and \"CC_STATE\"='f' and \"CC_TYPE\"='a'");
     Assert.assertEquals(1, count);
-    conf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, false);
 
     // Put 2 records into COMPACTION_QUEUE and do nothing
     driver.run("alter table temp.T11 compact 'major'");

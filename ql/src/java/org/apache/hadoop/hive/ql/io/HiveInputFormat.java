@@ -553,7 +553,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         } else {
           // if the input is Compressed OR not text we have no way of splitting them!
           // In that case RecordReader should take care of header/footer skipping!
-          HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+          HiveConf.setLongVar(conf, ConfVars.MAPRED_MIN_SPLIT_SIZE, Long.MAX_VALUE);
         }
       }
     }

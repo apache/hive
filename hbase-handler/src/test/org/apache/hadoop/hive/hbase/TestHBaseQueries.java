@@ -105,7 +105,7 @@ public class TestHBaseQueries {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES, true);
     conf.setBoolVar(HiveConf.ConfVars.CREATE_TABLES_AS_ACID, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
-    conf.setVar(HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT, "ORC");
+    conf.setVar(HiveConf.ConfVars.HIVE_DEFAULT_MANAGED_FILEFORMAT, "ORC");
 
     driver = DriverFactory.newDriver(conf);
 

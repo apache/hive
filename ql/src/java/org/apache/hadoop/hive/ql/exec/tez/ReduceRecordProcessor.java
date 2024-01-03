@@ -86,7 +86,7 @@ public class ReduceRecordProcessor extends RecordProcessor {
   public ReduceRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
 
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVE_QUERY_ID);
     cache = ObjectCacheFactory.getCache(jconf, queryId, true);
     dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false, true);
 

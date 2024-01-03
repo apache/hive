@@ -3371,8 +3371,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
       executor.shutdownNow();
     }
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && HiveConf.getBoolVar(conf, ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION)) {
-      throw new HiveException(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION.name() + "=true");
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && HiveConf.getBoolVar(conf, ConfVars.HIVE_TEST_MODE_FAIL_LOAD_DYNAMIC_PARTITION)) {
+      throw new HiveException(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_LOAD_DYNAMIC_PARTITION.name() + "=true");
     }
     try {
       if (isTxnTable) {
@@ -3680,7 +3680,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
       // enable dynamic partitioning
-      if ((val == null && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING))
+      if ((val == null && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING))
           || (val != null && val.length() == 0)) {
         throw new HiveException("get partition: Value for key "
             + field.getName() + " is null or empty");
@@ -4076,7 +4076,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
     }
     try {
-      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
       PartitionsByExprRequest req =
           new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(), ByteBuffer.wrap(exprBytes));
       if (defaultPartitionName != null) {
@@ -4523,7 +4523,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
     try {
       Preconditions.checkNotNull(partitions);
-      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
       if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
         partitions.addAll(tbl.getStorageHandler().getPartitionsByExpr(tbl, expr));
         return false;
@@ -5700,7 +5700,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
-    if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
+    if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPL_CM_ENABLED)) {
       recycleDirToCmPath(path, purge);
     }
     if (!fs.exists(path)) {
@@ -5910,7 +5910,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
         throw ex;
       }
-      String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
+      String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTORE_URIS);
       if (!org.apache.commons.lang3.StringUtils.isEmpty(metaStoreUris)) {
         // get a synchronized wrapper if the meta store is remote.
         metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);

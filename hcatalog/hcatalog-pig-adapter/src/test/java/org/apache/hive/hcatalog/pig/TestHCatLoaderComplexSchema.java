@@ -116,8 +116,8 @@ public class TestHCatLoaderComplexSchema {
         + File.separator + "mapred" + File.separator + "staging");
     hiveConf.set("mapred.temp.dir", workDir + File.separator + "TestHCatLoaderComplexSchema"
         + File.separator + "mapred" + File.separator + "temp");
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

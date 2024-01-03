@@ -836,7 +836,7 @@ public class SortedDynPartitionOptimizer extends Transform {
     private boolean shouldDo(List<Integer> partitionPos, Operator<? extends OperatorDesc> fsParent) {
 
       int threshold = HiveConf.getIntVar(this.parseCtx.getConf(),
-          HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD);
+          HiveConf.ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD);
       long MAX_WRITERS = -1;
 
       switch (threshold) {

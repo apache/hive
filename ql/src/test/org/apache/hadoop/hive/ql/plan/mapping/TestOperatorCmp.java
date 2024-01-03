@@ -190,7 +190,7 @@ public class TestOperatorCmp {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-    conf.setBoolVar(ConfVars.HIVEOPTPPD, false);
+    conf.setBoolVar(ConfVars.HIVE_OPT_PPD, false);
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
     conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
@@ -202,7 +202,7 @@ public class TestOperatorCmp {
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    HiveConf.setVar(conf, HiveConf.ConfVars.POSTEXECHOOKS, OperatorStatsReaderHook.class.getName());
+    HiveConf.setVar(conf, HiveConf.ConfVars.POST_EXEC_HOOKS, OperatorStatsReaderHook.class.getName());
     SessionState.start(conf);
 
     IDriver driver = DriverFactory.newDriver(conf);

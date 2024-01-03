@@ -141,7 +141,7 @@ import org.junit.Assert;
  *
  * An implementation of RawStore that verifies the DummyJdoConnectionUrlHook has already been
  * applied when this class's setConf method is called, by checking that the value of the
- * METASTORECONNECTURLKEY ConfVar has been updated.
+ * METASTORE_CONNECT_URL_KEY ConfVar has been updated.
  *
  * All non-void methods return default values.
  */

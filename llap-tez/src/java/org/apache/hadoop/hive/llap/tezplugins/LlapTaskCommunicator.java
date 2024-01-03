@@ -886,14 +886,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private String extractQueryId(TaskSpec taskSpec) throws IOException {
     UserPayload processorPayload = taskSpec.getProcessorDescriptor().getUserPayload();
     Configuration conf = TezUtils.createConfFromUserPayload(processorPayload);
-    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
   }
 
   private String extractQueryIdFromContext() {
     //TODO: Remove following instance of check, When TEZ-2672 exposes getConf from DagInfo
     DagInfo dagInfo = getContext().getCurrentDagInfo();
     if (dagInfo instanceof DAG) {
-      return ((DAG)dagInfo).getConf().get(ConfVars.HIVEQUERYID.varname);
+      return ((DAG)dagInfo).getConf().get(ConfVars.HIVE_QUERY_ID.varname);
     }
     return null;
   }
