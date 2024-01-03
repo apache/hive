@@ -1,7 +1,5 @@
 SELECT 'Upgrading MetaStore schema from 4.0.0-beta-1 to 4.0.0-beta-2';
 
-SELECT 'Finished upgrading MetaStore schema from 4.0.0-beta-1 to 4.0.0-beta-2';
-
 -- HIVE-27725
 DROP TABLE IF EXISTS `TAB_COL_STATS`;
 CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
@@ -100,3 +98,5 @@ TBLPROPERTIES (
 FROM
   \"PART_COL_STATS\""
 );
+
+SELECT 'Finished upgrading MetaStore schema from 4.0.0-beta-1 to 4.0.0-beta-2';

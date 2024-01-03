@@ -716,9 +716,6 @@ CREATE UNIQUE INDEX UNIQUE_CTLG ON CTLGS ("NAME");
 -- Constraints for table PART_COL_STATS for class(es) [org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics]
 ALTER TABLE PART_COL_STATS ADD CONSTRAINT PART_COL_STATS_FK1 FOREIGN KEY (PART_ID) REFERENCES PARTITIONS (PART_ID) ;
 
-CREATE INDEX PART_COL_STATS_N49 ON PART_COL_STATS (PART_ID);
-
-
 -- Constraints for table PART_PRIVS for class(es) [org.apache.hadoop.hive.metastore.model.MPartitionPrivilege]
 ALTER TABLE PART_PRIVS ADD CONSTRAINT PART_PRIVS_FK1 FOREIGN KEY (PART_ID) REFERENCES PARTITIONS (PART_ID) ;
 
@@ -769,9 +766,6 @@ CREATE INDEX DB_PRIVS_N49 ON DB_PRIVS (DB_ID);
 
 -- Constraints for table TAB_COL_STATS for class(es) [org.apache.hadoop.hive.metastore.model.MTableColumnStatistics]
 ALTER TABLE TAB_COL_STATS ADD CONSTRAINT TAB_COL_STATS_FK1 FOREIGN KEY (TBL_ID) REFERENCES TBLS (TBL_ID) ;
-
-CREATE INDEX TAB_COL_STATS_N49 ON TAB_COL_STATS (TBL_ID);
-
 
 -- Constraints for table TYPES for class(es) [org.apache.hadoop.hive.metastore.model.MType]
 CREATE UNIQUE INDEX UNIQUETYPE ON TYPES (TYPE_NAME);
