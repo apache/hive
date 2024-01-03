@@ -76,7 +76,7 @@ public class TestReplicationMetricCollector {
   @Mock
   private MetricSink metricSinkInstance;
 
-  static MockedStatic<MetricSink> metricSinkMockedStatic;
+  MockedStatic<MetricSink> metricSinkMockedStatic;
 
   @Before
   public void setup() throws Exception {
