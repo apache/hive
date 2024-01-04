@@ -5919,7 +5919,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     if (LOG.isInfoEnabled()) {
       for (Partition tmpPart : new_parts) {
-        LOG.info("New partition values:" + tmpPart.getValues());
+        LOG.info("New partition values: {}.{}.{}:{} ", catName, db_name, tbl_name, tmpPart.getValues());
       }
     }
     // all partitions are altered atomically
