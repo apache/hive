@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.thrift.TException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +53,6 @@ import org.junit.runners.Parameterized;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @RunWith(Parameterized.class)
@@ -126,13 +126,13 @@ public class TestTimedOutTxnNotificationLogging {
   public void testTxnNotificationLogging() throws Exception {
     try {
       List<Long> txnIds = openTxns(numberOfTxns, txnType);
-      assertEquals(txnIds.size(), getNumberOfTxnsWithTxnState(txnIds, TxnState.OPEN));
-      assertEquals(expectedNotifications, getNumberOfNotificationsWithEventType(txnIds, MessageBuilder.OPEN_TXN_EVENT));
+      Assert.assertEquals(txnIds.size(), getNumberOfTxnsWithTxnState(txnIds, TxnState.OPEN));
+      Assert.assertEquals(expectedNotifications, getNumberOfNotificationsWithEventType(txnIds, MessageBuilder.OPEN_TXN_EVENT));
       Thread.sleep(1000);
       acidHouseKeeperService.run(); //this will abort timed-out txns
       if (txnType != TxnType.REPL_CREATED) {
-        assertEquals(txnIds.size(), getNumberOfTxnsWithTxnState(txnIds, TxnState.ABORTED));
-        assertEquals(expectedNotifications, getNumberOfNotificationsWithEventType(txnIds, MessageBuilder.ABORT_TXN_EVENT));
+        Assert.assertEquals(txnIds.size(), getNumberOfTxnsWithTxnState(txnIds, TxnState.ABORTED));
+        Assert.assertEquals(expectedNotifications, getNumberOfNotificationsWithEventType(txnIds, MessageBuilder.ABORT_TXN_EVENT));
       }
     } finally {
       runCleanerServices();
