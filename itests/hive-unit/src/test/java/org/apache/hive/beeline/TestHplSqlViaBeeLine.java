@@ -657,6 +657,10 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testCURRENTHplSQLFunction1() throws Throwable {
     String SCRIPT_TEXT = "SELECT CURRENT DATE;";
+    testCurrentDate(SCRIPT_TEXT);
+  }
+
+  private void testCurrentDate(String SCRIPT_TEXT) throws Throwable {
     Date today = new Date(System.currentTimeMillis());
     testScriptFile(SCRIPT_TEXT, args(), today.toString());
   }
@@ -664,6 +668,10 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testCURRENTHplSQLFunction2() throws Throwable {
     String SCRIPT_TEXT = "SELECT CURRENT TIMESTAMP;";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  private void testCurrentTimestamp(String SCRIPT_TEXT) throws Throwable {
     Timestamp today = new Timestamp(System.currentTimeMillis());
     String timestamp = today.toString();
     testScriptFile(SCRIPT_TEXT, args(), timestamp.substring(0, timestamp.length() - 9));
@@ -678,8 +686,7 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testCURRENT_DATEHplSQLFunction() throws Throwable {
     String SCRIPT_TEXT = "SELECT CURRENT_DATE;";
-    Date today = new Date(System.currentTimeMillis());
-    testScriptFile(SCRIPT_TEXT, args(), today.toString());
+    testCurrentDate(SCRIPT_TEXT);
   }
 
   @Test
@@ -691,9 +698,7 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testCURRENT_TIMESTAMPHplSQLFunction() throws Throwable {
     String SCRIPT_TEXT = "SELECT CURRENT_TIMESTAMP;";
-    Timestamp today = new Timestamp(System.currentTimeMillis());
-    String timestamp = today.toString();
-    testScriptFile(SCRIPT_TEXT, args(), timestamp.substring(0, timestamp.length() - 9));
+    testCurrentTimestamp(SCRIPT_TEXT);
   }
 
   @Test
@@ -759,9 +764,7 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testNOWHplSQLFunction() throws Throwable {
     String SCRIPT_TEXT = "SELECT NOW();";
-    Timestamp today = new Timestamp(System.currentTimeMillis());
-    String timestamp = today.toString();
-    testScriptFile(SCRIPT_TEXT, args(), timestamp.substring(0, timestamp.length() - 9));
+    testCurrentTimestamp(SCRIPT_TEXT);
   }
 
   @Test
@@ -809,9 +812,7 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testSYSDATEHplSQLFunction() throws Throwable {
     String SCRIPT_TEXT = "SELECT SYSDATE;";
-    Timestamp today = new Timestamp(System.currentTimeMillis());
-    String timestamp = today.toString();
-    testScriptFile(SCRIPT_TEXT, args(), timestamp.substring(0, timestamp.length() - 9));
+    testCurrentTimestamp(SCRIPT_TEXT);
   }
 
   @Test
@@ -823,8 +824,7 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testTO_CHARHplSQLFunction() throws Throwable {
     String SCRIPT_TEXT = "SELECT TO_CHAR(CURRENT_DATE);";
-    Date today = new Date(System.currentTimeMillis());
-    testScriptFile(SCRIPT_TEXT, args(), today.toString());
+    testCurrentDate(SCRIPT_TEXT);
   }
 
   @Test

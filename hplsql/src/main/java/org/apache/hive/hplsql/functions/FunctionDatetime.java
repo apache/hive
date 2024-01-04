@@ -21,7 +21,6 @@ package org.apache.hive.hplsql.functions;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
