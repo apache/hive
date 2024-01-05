@@ -488,7 +488,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   }
 
   /**
-   * Move task output from the temp directory to the final location
+   * Move all of the files from the temp directory to the final location
    * @param srcf the file to move
    * @param srcDir the source directory
    * @param destDir the target directory
@@ -538,17 +538,17 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         final Path finalOutputPath = getFinalPath(destFs, srcF, srcDir, destDir, immutable);
         if (immutable && destFs.exists(finalOutputPath) &&
             !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, finalOutputPath)) {
-          if (partitionsDiscoveredByPath.containsKey(srcF.toString())) {
-            throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
-                "Data already exists in " + finalOutputPath
-                    + ", duplicate publish not possible.");
-          }
-          // parent directory may exist for multi-partitions, check lower level partitions
-          Collections.addAll(srcQ, srcFs.listStatus(srcF,HIDDEN_FILES_PATH_FILTER));
-        } else if (srcStatus.isDirectory()) {
+          throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
+              "Data already exists in " + finalOutputPath
+                  + ", duplicate publish not possible.");
+        }
+        if (srcStatus.isDirectory()) {
           if (canRename && dynamicPartitioningUsed) {
             // If it is partition, move the partition directory instead of each file.
-            moves.add(Pair.of(srcF, finalOutputPath));
+            // If custom dynamic location provided, need to rename to final output path
+            final Path parentDir = finalOutputPath.getParent();
+            Path dstPath = !customDynamicLocationUsed ? parentDir : finalOutputPath;
+            moves.add(Pair.of(srcF, dstPath));
           } else {
             Collections.addAll(srcQ, srcFs.listStatus(srcF, HIDDEN_FILES_PATH_FILTER));
           }
@@ -558,27 +558,16 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       }
     }
 
-    bulkMoveFiles(conf, srcFs, destFs, moves);
-  }
-
-  /**
-   * Bulk move files from source to destination.
-   * @param srcFs the source filesystem where the source files are
-   * @param destFs the destionation filesystem where the destionation files are
-   * @param pairs list of pairs of <source_path, destination_path>, move source_path to destination_path
-   * @throws java.io.IOException
-   */
-  private void bulkMoveFiles(final Configuration conf, final FileSystem srcFs, final FileSystem destFs, List<Pair<Path, Path>> pairs) throws IOException{
-    if (pairs.isEmpty()) {
+    if (moves.isEmpty()) {
       return;
     }
-    final boolean canRename = srcFs.getUri().equals(destFs.getUri());
+
     final List<Future<Pair<Path, Path>>> futures = new LinkedList<>();
     final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
         Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
 
-    for (final Pair<Path, Path> pair: pairs){
+    for (final Pair<Path, Path> pair: moves){
       Path srcP = pair.getLeft();
       Path dstP = pair.getRight();
       final String msg = "Unable to move source " + srcP + " to destination " + dstP;
