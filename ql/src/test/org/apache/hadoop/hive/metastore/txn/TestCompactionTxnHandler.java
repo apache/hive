@@ -1084,6 +1084,15 @@ public class TestCompactionTxnHandler {
     res = txnHandler.lock(req);
     assertSame(res.getState(), LockState.ACQUIRED);
 
+    CompactionRequest rqst = new CompactionRequest("mydb", "mytable", CompactionType.MINOR);
+    rqst.setPartitionname("mypartition=myvalue");
+    txnHandler.compact(rqst);
+
+    CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
+    assertNotNull(ci);
+    ci.highestWriteId = 41;
+    txnHandler.updateCompactorState(ci, 0);
+
     List<CompactionInfo> potentials = txnHandler.findReadyToCleanAborts(1, 0);
     assertEquals(1, potentials.size());
     CompactionInfo potentialToCleanAbort = potentials.get(0);
