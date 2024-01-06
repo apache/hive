@@ -385,7 +385,9 @@ public class Registry {
     // First try without qualifiers - would resolve builtin/temp functions
     FunctionInfo info = getFunctionInfo(WINDOW_FUNC_PREFIX + functionName);
     // Try qualifying with current db name for permanent functions
-    if (info == null) {
+    if (info == null
+            // and try register function to session
+            && FunctionRegistry.getFunctionInfo(functionName) != null) {
       String qualifiedName = FunctionUtils.qualifyFunctionName(
               functionName, SessionState.get().getCurrentDatabase().toLowerCase());
       info = getFunctionInfo(WINDOW_FUNC_PREFIX + qualifiedName);
