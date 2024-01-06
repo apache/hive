@@ -581,7 +581,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         Path dstP = pair.getRight();
         if (!moveFile(srcFs, srcP, destFs, dstP, conf, canRename)) {
           throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
-              "Unable to move source " + " , src = " + srcP + ", dest = " + dstP);
+              "Unable to move from " + srcP + " to " + dstP);
         }
       }
       return;
@@ -600,7 +600,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
             return pair;
           } else {
             throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
-                "Unable to move source " + " , src = " + srcP + ", dest = " + dstP);
+                "Unable to move from " + srcP + " to " + dstP);
           }
         }
       }));
@@ -617,7 +617,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   }
 
   private boolean moveFile(FileSystem srcFs, Path srcf, FileSystem destFs, Path destf, Configuration conf, boolean canRename) throws IOException {
-    LOG.debug("Moving src: {}, to dest: {}", srcf.toString(), destf.toString());
+    LOG.debug("Moving src: {}, to dest: {}", srcf, destf);
     boolean moved;
     if (canRename) {
       destFs.mkdirs(destf.getParent());
