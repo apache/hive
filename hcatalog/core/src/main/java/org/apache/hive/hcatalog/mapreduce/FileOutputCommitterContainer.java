@@ -540,8 +540,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
             !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, finalOutputPath)) {
           if (partitionsDiscoveredByPath.containsKey(srcF.toString())) {
             throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
-                "Data already exists in " + finalOutputPath
-                    + ", duplicate publish not possible.");
+                "Data already exists in " + finalOutputPath + ", duplicate publish not possible.");
           }
           // parent directory may exist for multi-partitions, check lower level partitions
           Collections.addAll(srcQ, srcFs.listStatus(srcF,HIDDEN_FILES_PATH_FILTER));
@@ -574,45 +573,51 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     }
     final boolean canRename = srcFs.getUri().equals(destFs.getUri());
     final List<Future<Pair<Path, Path>>> futures = new LinkedList<>();
-    final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
-        Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
+    final int moveThreadsCount = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25);
+
+    if (moveThreadsCount<=0) {
+      for (final Pair<Path, Path> pair: pairs) {
+        Path srcP = pair.getLeft();
+        Path dstP = pair.getRight();
+        if (!moveFile(srcFs, srcP, destFs, dstP, conf, canRename)) {
+          throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
+              "Unable to move source " + " , src = " + srcP + ", dest = " + dstP);
+        }
+      }
+      return;
+    }
+
+    final ExecutorService pool = Executors.newFixedThreadPool(moveThreadsCount,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build());
 
     for (final Pair<Path, Path> pair: pairs){
       Path srcP = pair.getLeft();
       Path dstP = pair.getRight();
-      final String msg = "Unable to move source " + srcP + " to destination " + dstP;
-      if (null==pool) {
-        moveFile(srcFs, srcP, destFs, dstP, conf, canRename);
-      } else {
-        futures.add(pool.submit(new Callable<Pair<Path, Path>>() {
-          @Override
-          public Pair<Path, Path> call() throws IOException {
-            if (moveFile(srcFs, srcP, destFs, dstP, conf, canRename)) {
-              return pair;
-            } else {
-              throw new HCatException(ErrorType.ERROR_MOVE_FAILED, msg);
-            }
+      futures.add(pool.submit(new Callable<Pair<Path, Path>>() {
+        @Override
+        public Pair<Path, Path> call() throws IOException {
+          if (moveFile(srcFs, srcP, destFs, dstP, conf, canRename)) {
+            return pair;
+          } else {
+            throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
+                "Unable to move source " + " , src = " + srcP + ", dest = " + dstP);
           }
-        }));
-      }
-    }
-    if (null != pool) {
-      pool.shutdown();
-      for (Future<Pair<Path, Path>> future : futures) {
-        try {
-          Pair<Path, Path> pair = future.get();
-          LOG.debug("Moved src: {}, to dest: {}", pair.getLeft().toString(), pair.getRight().toString());
-        } catch (Exception e) {
-          LOG.error("Failed to move {}", e.getMessage());
-          pool.shutdownNow();
-          throw new HCatException(ErrorType.ERROR_MOVE_FAILED, e.getMessage());
         }
+      }));
+    }
+    pool.shutdown();
+    for (Future<Pair<Path, Path>> future : futures) {
+      try {
+        future.get();
+      } catch (Exception e) {
+        pool.shutdownNow();
+        throw new HCatException(ErrorType.ERROR_MOVE_FAILED, e.getMessage());
       }
     }
   }
 
   private boolean moveFile(FileSystem srcFs, Path srcf, FileSystem destFs, Path destf, Configuration conf, boolean canRename) throws IOException {
+    LOG.debug("Moving src: {}, to dest: {}", srcf.toString(), destf.toString());
     boolean moved;
     if (canRename) {
       destFs.mkdirs(destf.getParent());
