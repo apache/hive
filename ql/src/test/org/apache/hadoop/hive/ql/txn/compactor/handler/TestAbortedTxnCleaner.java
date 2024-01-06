@@ -251,7 +251,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
   }
 
   @Test
-  public void testCleaningOfAbortedDirectoriesBelowBase() throws Exception {
+  public void testCleaningOfAbortedSkipsDirectoriesBelowBase() throws Exception {
     String dbName = "default", tableName = "handler_unpart_below_test";
     Table t = newTable(dbName, tableName, false);
 
@@ -284,12 +284,12 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.run();
 
-    Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
     Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
 
     directories = getDirectories(conf, t, null);
-    // The table is already compacted, so we must see 1 base delta
-    Assert.assertEquals(1, directories.size());
+    // Both base and delta files are present since we cleaner skips them as there is a newer write.
+    Assert.assertEquals(5, directories.size());
+    Assert.assertEquals(1, directories.stream().filter(dir -> dir.getName().startsWith(AcidUtils.BASE_PREFIX)).count());
   }
 
   @Test
