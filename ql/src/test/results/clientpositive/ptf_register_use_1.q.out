@@ -1,0 +1,8 @@
+PREHOOK: query: create function ptf_register_use_func as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRowNumber'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Input: database:default
+PREHOOK: Output: default.ptf_register_use_func
+POSTHOOK: query: create function ptf_register_use_func as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRowNumber'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Input: database:default
+POSTHOOK: Output: default.ptf_register_use_func
