@@ -38,7 +38,6 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.slf4j.Logger;
@@ -196,7 +195,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
   public void _testHCatDynamicPartitionMaxPartitions() throws Exception {
     HiveConf hc = new HiveConf(this.getClass());
 
-    int maxParts = hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS);
+    int maxParts = hiveConf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS);
     LOG.info("Max partitions allowed = {}", maxParts);
 
     IOException exc = null;

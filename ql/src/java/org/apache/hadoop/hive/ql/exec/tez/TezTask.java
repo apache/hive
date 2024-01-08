@@ -148,7 +148,7 @@ public class TezTask extends Task<TezWork> {
     Context ctx = null;
     Ref<TezSessionState> sessionRef = Ref.from(null);
 
-    final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
 
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
@@ -397,7 +397,7 @@ public class TezTask extends Task<TezWork> {
   private void updateNumRows() {
     if (counters != null) {
       TezCounter counter = counters.findCounter(
-        conf.getVar(HiveConf.ConfVars.HIVECOUNTERGROUP), FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
+        conf.getVar(HiveConf.ConfVars.HIVE_COUNTER_GROUP), FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
       if (counter != null) {
         queryState.setNumModifiedRows(counter.getValue());
       }
@@ -486,8 +486,8 @@ public class TezTask extends Task<TezWork> {
         .put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
-    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
-    dag.setConf(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
+    dag.setConf(HiveConf.ConfVars.HIVE_QUERY_ID.varname, queryId);
 
     LOG.debug("DagInfo: {}", dagInfo);
 
@@ -596,7 +596,7 @@ public class TezTask extends Task<TezWork> {
     String loginUser =
         loginUserUgi == null ? null : loginUserUgi.getShortUserName();
     boolean addHs2User =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVETEZHS2USERACCESS);
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_HS2_USER_ACCESS);
 
     // Temporarily re-using the TEZ AM View ACLs property for individual dag access control.
     // Hive may want to setup it's own parameters if it wants to control per dag access.

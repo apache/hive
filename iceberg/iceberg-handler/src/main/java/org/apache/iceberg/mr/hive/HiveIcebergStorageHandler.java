@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -66,11 +67,13 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -668,8 +671,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
-        hiveConf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
-        hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+        hiveConf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME),
+        hiveConf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
     List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = Lists.newLinkedList();
     dpCtx.setCustomSortExpressions(customSortExprs);
 
@@ -1064,7 +1067,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   String getPathForAuth(String locationProperty) {
     return getPathForAuth(locationProperty,
-        SessionStateUtil.getProperty(conf, hive_metastoreConstants.DEFAULT_TABLE_LOCATION).orElse(null));
+        SessionStateUtil.getProperty(conf, SessionStateUtil.DEFAULT_TABLE_LOCATION).orElse(null));
   }
 
   String getPathForAuth(String locationProperty, String defaultTableLocation) {
@@ -1104,6 +1107,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (table.currentSnapshot() != null &&
           Long.parseLong(table.currentSnapshot().summary().get(SnapshotSummary.TOTAL_RECORDS_PROP)) == 0) {
         // If the table is empty we don't have any danger that some data can get lost.
+        return;
+      }
+      if (RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, RewritePolicy.DEFAULT.name())) ==
+          RewritePolicy.ALL_PARTITIONS) {
+        // Table rewriting has special logic as part of IOW that handles the case when table had a partition evolution
         return;
       }
       if (IcebergTableUtil.isBucketed(table)) {
@@ -1638,6 +1646,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       tbl.getSd().getCols().addAll(tbl.getPartitionKeys());
       tbl.getTTable().setPartitionKeysIsSet(false);
     }
+  }
+
+  @Override
+  public void setTableLocationForCTAS(CreateTableDesc desc, String location) {
+    desc.setLocation(location);
   }
 
   @Override

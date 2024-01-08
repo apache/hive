@@ -70,13 +70,13 @@ public class TestHiveClientPool {
   @Test
   public void testConf() {
     HiveConf conf = createHiveConf();
-    conf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, "file:/mywarehouse/");
+    conf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, "file:/mywarehouse/");
 
     HiveClientPool clientPool = new HiveClientPool(10, conf);
     HiveConf clientConf = clientPool.hiveConf();
 
-    assertThat(clientConf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname))
-        .isEqualTo(conf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname));
+    assertThat(clientConf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname))
+        .isEqualTo(conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname));
     assertThat(clientPool.poolSize()).isEqualTo(10);
 
     // 'hive.metastore.sasl.enabled' should be 'true' as defined in xml

@@ -848,7 +848,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (amRegistry != null) {
         amRegistry.start();
         int pluginPort = pluginEndpoint != null ? pluginEndpoint.getActualPort() : -1;
-        amRegistry.register(amPort, pluginPort, HiveConf.getVar(conf, ConfVars.HIVESESSIONID),
+        amRegistry.register(amPort, pluginPort, HiveConf.getVar(conf, ConfVars.HIVE_SESSION_ID),
             serializedToken, jobIdForToken, 0);
       }
 

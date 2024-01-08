@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.txn.*;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
@@ -5795,9 +5796,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                        final EnvironmentContext envContext)
       throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
-    // TODO: this method name is confusing, it actually does full alter (sortof)
-    rename_partition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, null, newPartition,
-        envContext, null);
+    alter_partition_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, null,
+        newPartition, envContext, null);
   }
 
   @Deprecated
@@ -5805,9 +5805,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void rename_partition(final String db_name, final String tbl_name,
                                final List<String> part_vals, final Partition new_part)
       throws TException {
-    // Call rename_partition without an environment context.
+    // Call alter_partition_core without an environment context.
     String[] parsedDbName = parseDbName(db_name, conf);
-    rename_partition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, part_vals, new_part,
+    alter_partition_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, part_vals, new_part,
         null, null);
   }
 
@@ -5817,12 +5817,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     context.putToProperties(RENAME_PARTITION_MAKE_COPY, String.valueOf(req.isClonePart()));
     context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
     
-    rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
+    alter_partition_core(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
         req.getNewPart(), context, req.getValidWriteIdList());
     return new RenamePartitionResponse();
   };
 
-  private void rename_partition(String catName, String db_name, String tbl_name,
+  private void alter_partition_core(String catName, String db_name, String tbl_name,
                                 List<String> part_vals, Partition new_part, EnvironmentContext envContext,
                                 String validWriteIds) throws TException {
     startTableFunction("alter_partition", catName, db_name, tbl_name);
@@ -5851,8 +5851,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Partition oldPart = null;
     Exception ex = null;
     try {
-      Table table = null;
-      table = getMS().getTable(catName, db_name, tbl_name, null);
+      Table table = getMS().getTable(catName, db_name, tbl_name, null);
 
       firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, part_vals, new_part, this));
       if (part_vals != null && !part_vals.isEmpty()) {
@@ -5862,8 +5861,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       oldPart = alterHandler.alterPartition(getMS(), wh, catName, db_name, tbl_name,
           part_vals, new_part, envContext, this, validWriteIds);
-
-      // Only fetch the table if we actually have a listener
 
       if (!listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners,
@@ -6699,6 +6696,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
             .includeParamKeyPattern(req.getIncludeParamKeyPattern())
             .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+            .partNames(req.getPartNames())
             .build());
     GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
     res.setPartitions(partitions);

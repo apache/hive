@@ -181,7 +181,7 @@ public class TestServerSpecificConfig {
     FileOutputStream out = new FileOutputStream(hiveSite);
     HiveConf.setHiveSiteLocation(oldDefaultHiveSite);
     HiveConf defaultHiveConf = new HiveConf();
-    defaultHiveConf.setVar(ConfVars.METASTOREURIS, "dummyvalue");
+    defaultHiveConf.setVar(ConfVars.METASTORE_URIS, "dummyvalue");
     // reset to the hive-site.xml values for following param
     defaultHiveConf.set("hive.dummyparam.test.server.specific.config.override",
         "from.hive-site.xml");

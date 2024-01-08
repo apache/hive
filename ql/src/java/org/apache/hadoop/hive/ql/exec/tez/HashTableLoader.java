@@ -79,7 +79,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.hconf = hconf;
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
-    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
     String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
@@ -100,7 +100,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     }
 
     boolean useOptimizedTables = HiveConf.getBoolVar(
-        hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+        hconf, HiveConf.ConfVars.HIVE_MAPJOIN_USE_OPTIMIZED_TABLE);
     boolean useHybridGraceHashJoin = desc.isHybridHashJoin();
     boolean isFirstKey = true;
 
@@ -109,13 +109,13 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     LOG.info("Memory manager allocates " + totalMapJoinMemory + " bytes for the loading hashtable.");
     if (totalMapJoinMemory <= 0) {
       totalMapJoinMemory = HiveConf.getLongVar(
-        hconf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+        hconf, HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
     }
 
     long processMaxMemory = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
     if (totalMapJoinMemory > processMaxMemory) {
       float hashtableMemoryUsage = HiveConf.getFloatVar(
-          hconf, HiveConf.ConfVars.HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE);
+          hconf, HiveConf.ConfVars.HIVE_HASHTABLE_FOLLOWBY_GBY_MAX_MEMORY_USAGE);
       LOG.warn("totalMapJoinMemory value of " + totalMapJoinMemory +
           " is greater than the max memory size of " + processMaxMemory);
       // Don't want to attempt to grab more memory than we have available .. percentage is a bit arbitrary
@@ -153,8 +153,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       int numPartitions = 0;
       try {
         numPartitions = HybridHashTableContainer.calcNumPartitions(memory, maxSize,
-            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
-            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE));
+            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_NUM_PARTITIONS),
+            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_WB_SIZE));
       } catch (IOException e) {
         throw new HiveException(e);
       }

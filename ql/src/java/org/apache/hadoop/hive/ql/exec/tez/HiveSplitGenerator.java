@@ -23,14 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.fs.BlockLocation;
@@ -191,7 +188,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
         int availableSlots = getAvailableSlotsCalculator().getAvailableSlots();
 
-        if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
+        if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
           final long blockSize = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
             DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
@@ -199,7 +196,7 @@ public class HiveSplitGenerator extends InputInitializer {
             TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
             TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
           final long preferredSplitSize = Math.min(blockSize / 2, minGrouping);
-          HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, preferredSplitSize);
+          HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, preferredSplitSize);
           LOG.info("The preferred split size is " + preferredSplitSize);
         }
 
@@ -216,7 +213,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
         InputSplit[] splits;
         if (generateSingleSplit &&
-          conf.get(HiveConf.ConfVars.HIVETEZINPUTFORMAT.varname).equals(HiveInputFormat.class.getName())) {
+          conf.get(HiveConf.ConfVars.HIVE_TEZ_INPUT_FORMAT.varname).equals(HiveInputFormat.class.getName())) {
           MapWork mapWork = Utilities.getMapWork(jobConf);
           List<Path> paths = Utilities.getInputPathsTez(jobConf, mapWork);
           FileSystem fs = paths.get(0).getFileSystem(jobConf);

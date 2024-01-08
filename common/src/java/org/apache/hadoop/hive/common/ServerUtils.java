@@ -38,7 +38,7 @@ public class ServerUtils {
 
   public static void cleanUpScratchDir(HiveConf hiveConf) {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_START_CLEANUP_SCRATCHDIR)) {
-      String hiveScratchDir = hiveConf.get(HiveConf.ConfVars.SCRATCHDIR.varname);
+      String hiveScratchDir = hiveConf.get(HiveConf.ConfVars.SCRATCH_DIR.varname);
       try {
         Path jobScratchDir = new Path(hiveScratchDir);
         LOG.info("Cleaning scratchDir : " + hiveScratchDir);

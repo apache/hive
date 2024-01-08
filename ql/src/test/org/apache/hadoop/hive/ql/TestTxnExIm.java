@@ -584,9 +584,9 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     runStatementOnDriver("create table T (a int, b int)");
     runStatementOnDriver("create table Tstage (a int, b int)");
 
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, true);
     runStatementOnDriver("insert into Tstage" + TestTxnCommands2.makeValuesClause(dataAbort));
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, false);
     runStatementOnDriver("insert into Tstage" + TestTxnCommands2.makeValuesClause(data));
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
 

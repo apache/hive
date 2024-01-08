@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.Behaviour
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import org.junit.After;
@@ -46,7 +45,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.junit.Ignore;
 import org.junit.Assert;
 
 import java.io.IOException;
@@ -337,7 +335,7 @@ public class TestStatsReplicationScenarios {
 
     // Load, if necessary changing configuration.
     if (parallelLoad) {
-      replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, true);
+      replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXEC_PARALLEL, true);
     }
 
     // Fail load if for testing failure and retry scenario. Fail the load while setting
@@ -350,7 +348,7 @@ public class TestStatsReplicationScenarios {
       }
     }
     
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
     if(nonRecoverablePath != null){
       baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -366,7 +364,7 @@ public class TestStatsReplicationScenarios {
     }
 
     if (parallelLoad) {
-      replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, false);
+      replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXEC_PARALLEL, false);
     }
 
     // Test statistics

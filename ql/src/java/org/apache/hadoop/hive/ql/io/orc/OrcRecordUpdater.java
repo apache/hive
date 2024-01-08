@@ -359,7 +359,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
       }
     }
-    if(!HiveConf.getBoolVar(options.getConfiguration(), HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP)) {
+    if(!HiveConf.getBoolVar(options.getConfiguration(), HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP)) {
       writerOptions.fileSystem(fs).callback(indexBuilder);
     }
     rowInspector = (StructObjectInspector)options.getInspector();

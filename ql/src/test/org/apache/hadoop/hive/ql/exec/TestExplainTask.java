@@ -210,7 +210,7 @@ public class TestExplainTask {
 
   @Test
   public void testGetJSONPlan() throws Exception {
-    uut.conf.setVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE, "EXECUTION");
+    uut.conf.setVar(HiveConf.ConfVars.HIVE_STAGE_ID_REARRANGE, "EXECUTION");
     Task mockTask = mockTask();
     when(mockTask.getId()).thenReturn("mockTaskId");
     ExplainWork explainWorkMock = mockExplainWork();

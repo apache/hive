@@ -85,7 +85,7 @@ public class TestRetriesInRetryingHMSHandler {
 
   /*
    * If the init method in HMSHandler throws exception all the times it should be retried until
-   * HiveConf.ConfVars.HMSHANDLERATTEMPTS is reached before giving up
+   * HiveConf.ConfVars.HMS_HANDLER_ATTEMPTS is reached before giving up
    */
   @Test
   public void testRetriesLimit() throws MetaException {

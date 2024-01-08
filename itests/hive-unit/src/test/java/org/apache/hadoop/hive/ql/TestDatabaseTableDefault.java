@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -36,9 +35,7 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +90,7 @@ public class TestDatabaseTableDefault {
         HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.CREATE_TABLES_AS_ACID, true);
         HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
         HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-        hiveConf.set(HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT.varname, "ORC");
+        hiveConf.set(HiveConf.ConfVars.HIVE_DEFAULT_MANAGED_FILEFORMAT.varname, "ORC");
         hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
         hiveConf.set(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname, "HIVEFULLACIDREAD,HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD");
         TestTxnDbUtil.setConfValues(hiveConf);

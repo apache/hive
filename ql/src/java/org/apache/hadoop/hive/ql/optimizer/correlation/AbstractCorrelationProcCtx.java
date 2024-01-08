@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.optimizer.correlation;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESCRIPTOPERATORTRUST;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION_MIN_REDUCER;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_SCRIPT_OPERATOR_TRUST;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_MAPSIDE_AGGREGATE;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,9 +44,9 @@ abstract class AbstractCorrelationProcCtx implements NodeProcessorCtx {
 
   public AbstractCorrelationProcCtx(ParseContext pctx) {
     removedOps = new HashSet<Operator<?>>();
-    trustScript = pctx.getConf().getBoolVar(HIVESCRIPTOPERATORTRUST);
-    minReducer = pctx.getConf().getIntVar(HIVEOPTREDUCEDEDUPLICATIONMINREDUCER);
-    isMapAggr = pctx.getConf().getBoolVar(HIVEMAPSIDEAGGREGATE);
+    trustScript = pctx.getConf().getBoolVar(HIVE_SCRIPT_OPERATOR_TRUST);
+    minReducer = pctx.getConf().getIntVar(HIVE_OPT_REDUCE_DEDUPLICATION_MIN_REDUCER);
+    isMapAggr = pctx.getConf().getBoolVar(HIVE_MAPSIDE_AGGREGATE);
     this.pctx = pctx;
   }
 

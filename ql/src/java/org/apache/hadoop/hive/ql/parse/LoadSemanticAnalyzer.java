@@ -351,7 +351,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
     // for managed tables, make sure the file formats match
     if (TableType.MANAGED_TABLE.equals(ts.tableHandle.getTableType())
-        && conf.getBoolVar(HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
+        && conf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_FILEFORMAT)) {
       ensureFileFormatsMatch(ts, files, fromURI);
     }
     inputs.add(toReadEntity(new Path(fromURI)));
@@ -557,7 +557,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     // Step 3 : parse the query
     // Set dynamic partitioning to nonstrict so that queries do not need any partition
     // references.
-    HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     // Parse the rewritten query string
     Context rewrittenCtx;
     rewrittenCtx = new Context(conf);

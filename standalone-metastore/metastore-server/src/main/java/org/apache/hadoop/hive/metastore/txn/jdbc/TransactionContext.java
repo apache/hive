@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
+import org.springframework.lang.NonNull;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
 /**
@@ -26,7 +28,7 @@ import org.springframework.transaction.TransactionStatus;
  * <b>In other words:</b> This wrapper automatically rolls back uncommitted transactions, but the commit
  * needs to be done manually using {@link TransactionContextManager#commit(TransactionContext)} method.
  */
-public class TransactionContext implements AutoCloseable {
+public class TransactionContext implements TransactionStatus, AutoCloseable {
 
   private final TransactionStatus transactionStatus;
   private final TransactionContextManager transactionManager;
@@ -36,15 +38,61 @@ public class TransactionContext implements AutoCloseable {
     this.transactionManager = transactionManager;
   }
 
+  @Override
+  public boolean hasSavepoint() {
+    return transactionStatus.hasSavepoint();
+  }
+
+  @Override
+  public void flush() {
+    transactionStatus.flush();
+  }
+
+  @NonNull
+  @Override
+  public Object createSavepoint() throws TransactionException {
+    return transactionStatus.createSavepoint();
+  }
+
+  @Override
+  public void rollbackToSavepoint(@NonNull Object savepoint) throws TransactionException {
+    transactionStatus.rollbackToSavepoint(savepoint);
+  }
+
+  @Override
+  public void releaseSavepoint(@NonNull Object savepoint) throws TransactionException {
+    transactionStatus.releaseSavepoint(savepoint);
+  }
+
+  @Override
+  public boolean isNewTransaction() {
+    return transactionStatus.isNewTransaction();
+  }
+
+  @Override
+  public void setRollbackOnly() {
+    transactionStatus.setRollbackOnly();
+  }
+
+  @Override
+  public boolean isRollbackOnly() {
+    return transactionStatus.isRollbackOnly();
+  }
+
+  @Override
+  public boolean isCompleted() {
+    return transactionStatus.isCompleted();
+  }
+
   /**
    * @return Returns the {@link TransactionStatus} instance wrapped by this object.
    */
-  public TransactionStatus getTransactionStatus() {
+  TransactionStatus getTransactionStatus() {
     return transactionStatus;
   }
 
   /**
-   * @see TransactionContext TransactionWrapper class level javadoc.
+   * @see TransactionContext class level javadoc.
    */
   @Override
   public void close() {

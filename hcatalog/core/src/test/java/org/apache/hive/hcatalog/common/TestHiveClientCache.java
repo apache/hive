@@ -83,7 +83,7 @@ public class TestHiveClientCache {
     client.close(); // close shouldn't matter
 
     // Setting a non important configuration should return the same client only
-    hiveConf.setIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS, 10);
+    hiveConf.setIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS, 10);
     HiveClientCache.ICacheableMetaStoreClient client2 = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     assertNotNull(client2);
     assertSame(client, client2);
@@ -98,7 +98,7 @@ public class TestHiveClientCache {
     assertNotNull(client);
 
     // Set different uri as it is one of the criteria deciding whether to return the same client or not
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, " "); // URIs are checked for string equivalence, even spaces make them different
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, " "); // URIs are checked for string equivalence, even spaces make them different
     IMetaStoreClient client2 = cache.get(hiveConf);
     assertNotNull(client2);
     assertNotSame(client, client2);
@@ -157,7 +157,7 @@ public class TestHiveClientCache {
   public void testCloseAllClients() throws IOException, MetaException, LoginException {
     final HiveClientCache cache = new HiveClientCache(1000);
     HiveClientCache.ICacheableMetaStoreClient client1 = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, " "); // URIs are checked for string equivalence, even spaces make them different
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, " "); // URIs are checked for string equivalence, even spaces make them different
     HiveClientCache.ICacheableMetaStoreClient client2 = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     cache.closeAllClientsQuietly();
     assertTrue(client1.isClosed());
@@ -227,18 +227,18 @@ public class TestHiveClientCache {
       securityManager = System.getSecurityManager();
       System.setSecurityManager(new NoExitSecurityManager());
       hiveConf = new HiveConf(TestHiveClientCache.class);
-      hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
+      hiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:"
           + MS_PORT);
-      hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-      hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
+      hiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
+      hiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_FAILURE_RETRIES, 3);
       hiveConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
           HCatSemanticAnalyzer.class.getName());
-      hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-      hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+      hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+      hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
       hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname,
           "false");
-      System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
-      System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
+      System.setProperty(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, " ");
+      System.setProperty(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, " ");
     }
 
     public void start() throws InterruptedException {

@@ -95,11 +95,11 @@ public class TestHCatStorerMulti {
 
     if (driver == null) {
       HiveConf hiveConf = new HiveConf(this.getClass());
-      hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-      hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+      hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+      hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
       hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-      hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
-      hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+      hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_MAPRED_MODE, "nonstrict");
       hiveConf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
           "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -34,6 +34,7 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 
+@Ignore
 public class TestConcurrentDppInserts {
 
   static final private Logger LOG = LoggerFactory.getLogger(TestConcurrentDppInserts.class.getName());

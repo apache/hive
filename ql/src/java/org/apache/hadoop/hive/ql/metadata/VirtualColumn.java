@@ -112,7 +112,7 @@ public enum VirtualColumn {
     ArrayList<VirtualColumn> l = new ArrayList<VirtualColumn>();
     l.add(BLOCKOFFSET);
     l.add(FILENAME);
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET)) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ROW_OFFSET)) {
       l.add(ROWOFFSET);
     }
     l.add(ROWID);

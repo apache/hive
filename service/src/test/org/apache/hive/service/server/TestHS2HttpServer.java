@@ -76,7 +76,7 @@ public class TestHS2HttpServer {
         Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
     apiBaseURL = "http://localhost:" + webUIPort + "/api/v1";
     hiveConf = new HiveConf();
-    hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
+    hiveConf.set(ConfVars.METASTORE_PWD.varname, metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -298,7 +298,7 @@ public class TestHS2HttpServer {
           if (line.contains(metastorePasswd)) {
             pwdValFound = line;
           }
-          if (line.contains(ConfVars.METASTOREPWD.varname)) {
+          if (line.contains(ConfVars.METASTORE_PWD.varname)) {
             pwdKeyFound = line;
           }
         }

@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.security.DummyHiveMetastoreAuthorizationProvider.AuthCallContext;
@@ -68,12 +67,12 @@ public class TestAuthorizationPreEventListener {
 
     clientHiveConf = new HiveConf(this.getClass());
 
-    clientHiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    clientHiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:" + port);
+    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
-    clientHiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    clientHiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    clientHiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    clientHiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
 
 
     SessionState.start(new CliSessionState(clientHiveConf));

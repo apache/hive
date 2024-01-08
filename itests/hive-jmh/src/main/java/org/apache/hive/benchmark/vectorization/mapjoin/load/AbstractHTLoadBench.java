@@ -123,8 +123,8 @@ public abstract class AbstractHTLoadBench {
       TypeInfo[] smallTableValueTypeInfos, int[] smallTableRetainKeyColumnNums,
       SmallTableGenerationParameters smallTableGenerationParameters) throws Exception {
 
-    hiveConf.set(HiveConf.ConfVars.HIVEMAPJOINPARALELHASHTABLETHREADS.varname, LOAD_THREADS_NUM + "");
-    LOG.info("Number of threads: " + hiveConf.get(HiveConf.ConfVars.HIVEMAPJOINPARALELHASHTABLETHREADS.varname));
+    hiveConf.set(HiveConf.ConfVars.HIVE_MAPJOIN_PARALEL_HASHTABLE_THREADS.varname, LOAD_THREADS_NUM + "");
+    LOG.info("Number of threads: " + hiveConf.get(HiveConf.ConfVars.HIVE_MAPJOIN_PARALEL_HASHTABLE_THREADS.varname));
 
 
     this.rowCount = rowCount;

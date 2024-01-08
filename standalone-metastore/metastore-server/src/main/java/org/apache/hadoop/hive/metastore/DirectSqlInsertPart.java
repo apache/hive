@@ -83,13 +83,7 @@ class DirectSqlInsertPart {
       return;
     }
     int maxRowsInBatch = batchSize > 0 ? batchSize : rowCount;
-    if (dbType.isSQLSERVER()) {
-      // SQL Server supports a maximum of 2100 parameters in a request. Adjust the maxRowsInBatch accordingly
-      int maxAllowedRows = (2100 - columnCount) / columnCount;
-      if (maxRowsInBatch > maxAllowedRows) {
-        maxRowsInBatch = maxAllowedRows;
-      }
-    }
+    maxRowsInBatch = dbType.getMaxRows(maxRowsInBatch, columnCount);
     int maxBatches = rowCount / maxRowsInBatch;
     int last = rowCount % maxRowsInBatch;
     String rowFormat = "(" + repeat(",?", columnCount).substring(1) + ")";

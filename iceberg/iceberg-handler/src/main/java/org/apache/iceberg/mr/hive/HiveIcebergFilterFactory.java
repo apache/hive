@@ -110,9 +110,6 @@ public class HiveIcebergFilterFactory {
         return in(column, leafToLiteralList(leaf));
       case BETWEEN:
         List<Object> icebergLiterals = leafToLiteralList(leaf);
-        if (icebergLiterals.size() < 2) {
-          throw new UnsupportedOperationException("Missing leaf literals: " + leaf);
-        }
         if (icebergLiterals.size() == 2) {
           return and(greaterThanOrEqual(column, icebergLiterals.get(0)),
               lessThanOrEqual(column, icebergLiterals.get(1)));

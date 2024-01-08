@@ -72,7 +72,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
 
     setWriterLevelConfiguration(jc, table);
     return WriterBuilder.builderFor(table)
-        .queryId(jc.get(HiveConf.ConfVars.HIVEQUERYID.varname))
+        .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
         .tableName(tableName)
         .attemptID(taskAttemptID)
         .poolSize(poolSize)

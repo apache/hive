@@ -51,7 +51,7 @@ public abstract class AbstractAlterTableArchiveAnalyzer extends AbstractAlterTab
   // the AST tree
   protected void analyzeCommand(TableName tableName, Map<String, String> partSpec, ASTNode command)
       throws SemanticException {
-    if (!conf.getBoolVar(HiveConf.ConfVars.HIVEARCHIVEENABLED)) {
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_ARCHIVE_ENABLED)) {
       throw new SemanticException(ErrorMsg.ARCHIVE_METHODS_DISABLED.getMsg());
     }
 

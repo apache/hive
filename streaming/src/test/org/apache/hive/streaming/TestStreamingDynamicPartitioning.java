@@ -513,7 +513,7 @@ public class TestStreamingDynamicPartitioning {
     assertEquals("7\tfoo\t" + defaultPartitionName + "\t" + defaultPartitionName, res.get(6));
     assertEquals("8\tbar\t" + defaultPartitionName + "\t12", res.get(7));
 
-    defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     res = queryTable(driver, "show partitions " + (dbName + "." + tblName));
     assertEquals(5, res.size());
     assertTrue(res.contains("year=2018/month=2"));
@@ -573,7 +573,7 @@ public class TestStreamingDynamicPartitioning {
     assertTrue(exception.getMessage().equals("Transaction state is not OPEN. Missing beginTransaction?"));
 
     connection.close();
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     List<String> res = queryTable(driver, "select * from " + (dbName + "." + tblName) + " order by id");
     assertEquals(2, res.size());
     assertEquals("1\tfoo\tAsia\t" + defaultPartitionName, res.get(0));
@@ -707,7 +707,7 @@ public class TestStreamingDynamicPartitioning {
     assertNotNull(exception);
     assertTrue(exception.getMessage().endsWith("Streaming connection is closed already."));
 
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     List<String> res = queryTable(driver, "select * from " + (dbName + "." + tblName) + " order by id");
     assertEquals(2, res.size());
     assertEquals("1\tfoo\tAsia\t" + defaultPartitionName, res.get(0));
@@ -758,7 +758,7 @@ public class TestStreamingDynamicPartitioning {
     }
     assertNotNull(exception);
     assertTrue(exception.getMessage().equals("Streaming connection is closed already."));
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     List<String> res = queryTable(driver, "select * from " + (dbName + "." + tblName) + " order by id");
     assertEquals(3, res.size());
     assertEquals("1\tfoo\tAsia\t" + defaultPartitionName, res.get(0));

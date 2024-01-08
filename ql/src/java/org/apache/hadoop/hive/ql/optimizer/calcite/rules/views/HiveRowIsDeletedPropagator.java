@@ -174,31 +174,6 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
             .build();
   }
 
-  private static class InputRefShifter extends RexShuttle {
-    private final int startIndex;
-    private final RelBuilder relBuilder;
-
-    private InputRefShifter(int startIndex, RelBuilder relBuilder) {
-      this.startIndex = startIndex;
-      this.relBuilder = relBuilder;
-    }
-
-    /**
-     * Shift input reference index by one if the referenced column index is higher or equals with the startIndex.
-     * @param inputRef - {@link RexInputRef} to transform
-     * @return new {@link RexInputRef} if the referenced column index is higher or equals with the startIndex,
-     * original otherwise
-     */
-    @Override
-    public RexNode visitInputRef(RexInputRef inputRef) {
-      if (inputRef.getIndex() >= startIndex) {
-        RexBuilder rexBuilder = relBuilder.getRexBuilder();
-        return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + 1);
-      }
-      return inputRef;
-    }
-  }
-
   private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType,
                                 List<RexNode> projects, List<String> projectNames) {
     populateProjects(rexBuilder, inputRowType, 0, inputRowType.getFieldCount(), projects, projectNames);

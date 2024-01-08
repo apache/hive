@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -40,10 +39,9 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -68,7 +66,7 @@ public class InitiatorBase extends MetaStoreCompactorThread {
     List<CompactionResponse> compactionResponses = new ArrayList<>();
     partitions.entrySet().parallelStream().forEach(entry -> {
       try {
-        StorageDescriptor sd = resolveStorageDescriptor(table, entry.getValue());
+        StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(table, entry.getValue());
         String runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
         CompactionInfo ci =
             new CompactionInfo(table.getDbName(), table.getTableName(), entry.getKey(), request.getType());
@@ -195,7 +193,7 @@ public class InitiatorBase extends MetaStoreCompactorThread {
     LOG.debug("Found " + deltas.size() + " delta files, and " + (noBase ? "no" : "has") + " base," + "requesting "
         + (noBase ? "major" : "minor") + " compaction");
 
-    return noBase || !isMinorCompactionSupported(tblProperties, dir) ? CompactionType.MAJOR : CompactionType.MINOR;
+    return noBase || !CompactorUtil.isMinorCompactionSupported(conf, tblProperties, dir) ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
   private long getBaseSize(AcidDirectory dir) throws IOException {
@@ -243,7 +241,7 @@ public class InitiatorBase extends MetaStoreCompactorThread {
     AcidMetricService.updateMetricsFromInitiator(ci.dbname, ci.tableName, ci.partName, conf, txnHandler, baseSize,
         deltaSizes, acidDirectory.getObsolete());
 
-    if (runJobAsSelf(runAs)) {
+    if (CompactorUtil.runJobAsSelf(runAs)) {
       return determineCompactionType(ci, acidDirectory, tblProperties, baseSize, deltaSize);
     } else {
       LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
@@ -279,11 +277,11 @@ public class InitiatorBase extends MetaStoreCompactorThread {
   protected CompactionResponse scheduleCompactionIfRequired(CompactionInfo ci, Table t,
       Partition p, String runAs, boolean metricsEnabled)
       throws MetaException {
-    StorageDescriptor sd = resolveStorageDescriptor(t, p);
+    StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(t, p);
     try {
       ValidWriteIdList validWriteIds = resolveValidWriteIds(t);
 
-      checkInterrupt();
+      CompactorUtil.checkInterrupt(InitiatorBase.class.getName());
 
       CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs);
       if (type != null) {

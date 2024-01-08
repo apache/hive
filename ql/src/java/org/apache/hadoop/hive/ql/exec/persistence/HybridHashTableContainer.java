@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer.VectorRowBytesContainer;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
@@ -279,15 +278,15 @@ public class HybridHashTableContainer
   public HybridHashTableContainer(Configuration hconf, long keyCount, long memoryAvailable,
                                   long estimatedTableSize, HybridHashTableConf nwayConf)
       throws SerDeException, IOException {
-    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEMAPJOINOPTIMIZEDTABLEPROBEPERCENT),
-        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINBLOOMFILTER),
+    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_KEY_COUNT_ADJUSTMENT),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_THRESHOLD),
+        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_LOAD_FACTOR),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MEMCHECK_FREQ),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_WB_SIZE),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_WB_SIZE),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_NUM_PARTITIONS),
+        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_OPTIMIZED_TABLE_PROBE_PERCENT),
+        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_BLOOMFILTER),
         estimatedTableSize, keyCount, memoryAvailable, nwayConf,
         HiveUtils.getLocalDirList(hconf));
   }

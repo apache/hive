@@ -251,10 +251,10 @@ public class LimitPushdownOptimizer extends Transform {
     private final float threshold;
 
     public LimitPushdownContext(HiveConf conf) throws SemanticException {
-      threshold = conf.getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
+      threshold = conf.getFloatVar(HiveConf.ConfVars.HIVE_LIMIT_PUSHDOWN_MEMORY_USAGE);
       if (threshold <= 0 || threshold >= 1) {
         throw new SemanticException("Invalid memory usage value " + threshold +
-            " for " + HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
+            " for " + HiveConf.ConfVars.HIVE_LIMIT_PUSHDOWN_MEMORY_USAGE);
       }
     }
   }

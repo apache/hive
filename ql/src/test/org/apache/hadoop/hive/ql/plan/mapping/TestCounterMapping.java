@@ -148,7 +148,7 @@ public class TestCounterMapping {
         "explain select sum(id_uv) from tu where u in (1,2) group by u";
 
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.setIntVar(ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN, 10);
+    conf.setIntVar(ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN, 10);
     IDriver driver = createDriver();
 
     PlanMapper pm = getMapperForQuery(driver, query);
@@ -229,7 +229,7 @@ public class TestCounterMapping {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     //    conf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, CheckInputReadEntityDirect.class.getName());
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    HiveConf.setVar(conf, HiveConf.ConfVars.POSTEXECHOOKS, OperatorStatsReaderHook.class.getName());
+    HiveConf.setVar(conf, HiveConf.ConfVars.POST_EXEC_HOOKS, OperatorStatsReaderHook.class.getName());
     SessionState.start(conf);
 
     IDriver driver = DriverFactory.newDriver(conf);

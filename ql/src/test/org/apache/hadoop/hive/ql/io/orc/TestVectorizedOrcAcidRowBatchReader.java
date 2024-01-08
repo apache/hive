@@ -383,13 +383,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
   @Test
   public void testDeleteEventFilteringOnWithoutIdx2() throws Exception {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP, true);
     testDeleteEventFiltering2();
   }
   @Test
   public void testDeleteEventFilteringOnWithoutIdx3() throws Exception {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP, true);
     conf.set("orc.stripe.size", "1000");
     testDeleteEventFiltering();
   }
@@ -398,7 +398,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     boolean filterOn =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS);
     boolean skipKeyIdx =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP);
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP);
     int bucket = 1;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .filesystem(fs)

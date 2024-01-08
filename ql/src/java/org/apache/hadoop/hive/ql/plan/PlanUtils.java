@@ -1026,7 +1026,7 @@ public final class PlanUtils {
    * @return
    */
   public static String removePrefixFromWarehouseConfig(String origiKey) {
-    String prefix = SessionState.get().getConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+    String prefix = SessionState.get().getConf().getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE);
     if ((prefix != null) && (prefix.length() > 0)) {
       //Local file system is using pfile:/// {@link ProxyLocalFileSystem}
       prefix = prefix.replace("pfile:///", "pfile:/");
