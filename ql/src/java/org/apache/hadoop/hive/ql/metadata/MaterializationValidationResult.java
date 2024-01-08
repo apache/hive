@@ -16,46 +16,26 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.metadata;
 
-import org.apache.calcite.rel.RelNode;
-import org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm;
-
+import java.util.EnumSet;
 import java.util.Set;
 
-/**
- * Wrapper of Calcite plan.
- */
-public class CBOPlan {
-  private final ASTNode ast;
-  private final RelNode plan;
-  private final Set<RewriteAlgorithm> supportedRewriteAlgorithms;
+public class MaterializationValidationResult {
+  private final EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms;
+  private final String errorMessage;
 
-  public CBOPlan(ASTNode ast, RelNode plan, Set<RewriteAlgorithm> supportedRewriteAlgorithms) {
-    this.ast = ast;
-    this.plan = plan;
+  public MaterializationValidationResult(
+      EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms, String errorMessage) {
     this.supportedRewriteAlgorithms = supportedRewriteAlgorithms;
+    this.errorMessage = errorMessage;
   }
 
-  public ASTNode getAst() {
-    return ast;
-  }
-
-  /**
-   * Root node of plan.
-   * @return Root {@link RelNode}
-   */
-  public RelNode getPlan() {
-    return plan;
-  }
-
-  /**
-   * Returns an error message if this plan can not be a definition of a Materialized view which is an input of
-   * Calcite based materialized view query rewrite.
-   * Null or empty string otherwise.
-   * @return String contains error message or null.
-   */
   public Set<RewriteAlgorithm> getSupportedRewriteAlgorithms() {
     return supportedRewriteAlgorithms;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
   }
 }
