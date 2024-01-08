@@ -67,7 +67,7 @@ public class GenericUDFYesterday extends GenericUDF {
     @Override
     public void copyToNewInstance(Object newInstance) throws UDFArgumentException {
         super.copyToNewInstance(newInstance);
-        // Need to preserve currentDate
+
         GenericUDFYesterday other = (GenericUDFYesterday) newInstance;
         if (this.yesterday != null) {
             other.yesterday = new DateWritableV2(this.yesterday);

@@ -1,0 +1,150 @@
+PREHOOK: query: desc function yesterday
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: desc function yesterday
+POSTHOOK: type: DESCFUNCTION
+yesterday() - Returns yesterday's date at the start of query evaluation. The same as 'date_sub(current_date, 1)' All calls of yesterday within the same query return the same value.
+PREHOOK: query: desc function extended yesterday
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: desc function extended yesterday
+POSTHOOK: type: DESCFUNCTION
+yesterday() - Returns yesterday's date at the start of query evaluation. The same as 'date_sub(current_date, 1)' All calls of yesterday within the same query return the same value.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFYesterday
+Function type:BUILTIN
+PREHOOK: query: select
+	yesterday() - yesterday(),
+	yesterday()
+from alltypesorc limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select
+	yesterday() - yesterday(),
+	yesterday()
+from alltypesorc limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0 00:00:00.000000000	2024-01-17
+0 00:00:00.000000000	2024-01-17
+0 00:00:00.000000000	2024-01-17
+0 00:00:00.000000000	2024-01-17
+0 00:00:00.000000000	2024-01-17
+PREHOOK: query: select yesterday()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select yesterday()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2024-01-17
+PREHOOK: query: select 
+	to_date(yesterday()),
+	year(yesterday()),
+	month(yesterday()),
+	day(yesterday()),
+	weekofyear(yesterday()),
+	datediff(yesterday(), yesterday()),
+	to_date(date_add(yesterday(), 31)),
+	to_date(date_sub(yesterday(), 31)),
+	last_day(yesterday()),
+	next_day(yesterday(),'FRIDAY')
+from alltypesorc limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+	to_date(yesterday()),
+	year(yesterday()),
+	month(yesterday()),
+	day(yesterday()),
+	weekofyear(yesterday()),
+	datediff(yesterday(), yesterday()),
+	to_date(date_add(yesterday(), 31)),
+	to_date(date_sub(yesterday(), 31)),
+	last_day(yesterday()),
+	next_day(yesterday(),'FRIDAY')
+from alltypesorc limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+2024-01-17	2024	1	17	3	0	2024-02-17	2023-12-17	2024-01-31	2024-01-19
+2024-01-17	2024	1	17	3	0	2024-02-17	2023-12-17	2024-01-31	2024-01-19
+2024-01-17	2024	1	17	3	0	2024-02-17	2023-12-17	2024-01-31	2024-01-19
+2024-01-17	2024	1	17	3	0	2024-02-17	2023-12-17	2024-01-31	2024-01-19
+2024-01-17	2024	1	17	3	0	2024-02-17	2023-12-17	2024-01-31	2024-01-19
+PREHOOK: query: drop table if exists tmp_runtimeconstant
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tmp_runtimeconstant
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create temporary table tmp_runtimeconstant(d date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_runtimeconstant
+POSTHOOK: query: create temporary table tmp_runtimeconstant(d date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_runtimeconstant
+PREHOOK: query: insert into table tmp_runtimeconstant
+select yesterday() from alltypesorc limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@tmp_runtimeconstant
+POSTHOOK: query: insert into table tmp_runtimeconstant
+select yesterday() from alltypesorc limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@tmp_runtimeconstant
+POSTHOOK: Lineage: tmp_runtimeconstant.d SIMPLE []
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+PREHOOK: query: select 
+	d = date_sub(current_date, 1),
+	d = date_add(current_date, -1),
+	d = date_sub(from_unixtime(unix_timestamp()), 1),
+	d = date_add(from_unixtime(unix_timestamp()), -1),
+	d = from_unixtime(unix_timestamp() - 1 * 24 * 60 * 60, 'yyyy-MM-dd'),
+	d = date_sub(current_timestamp, 1),
+	d = date_add(current_timestamp, -1)
+from tmp_runtimeconstant
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_runtimeconstant
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+	d = date_sub(current_date, 1),
+	d = date_add(current_date, -1),
+	d = date_sub(from_unixtime(unix_timestamp()), 1),
+	d = date_add(from_unixtime(unix_timestamp()), -1),
+	d = from_unixtime(unix_timestamp() - 1 * 24 * 60 * 60, 'yyyy-MM-dd'),
+	d = date_sub(current_timestamp, 1),
+	d = date_add(current_timestamp, -1)
+from tmp_runtimeconstant
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_runtimeconstant
+#### A masked pattern was here ####
+true	true	true	true	true	true	true
+true	true	true	true	true	true	true
+true	true	true	true	true	true	true
+true	true	true	true	true	true	true
+true	true	true	true	true	true	true
+PREHOOK: query: select 
+	count(*) as cnt
+from tmp_runtimeconstant
+where yesterday() != d
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_runtimeconstant
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+	count(*) as cnt
+from tmp_runtimeconstant
+where yesterday() != d
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_runtimeconstant
+#### A masked pattern was here ####
+0
