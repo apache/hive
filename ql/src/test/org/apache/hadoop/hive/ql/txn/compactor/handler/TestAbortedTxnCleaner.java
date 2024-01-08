@@ -316,24 +316,17 @@ public class TestAbortedTxnCleaner extends TestHandler {
     long openTxnId1 = openTxn();
     long openTxnId2 = openTxn();
     long openTxnId3 = openTxn();
-    long openTxnId4 = openTxn();
     long writeId2 = ms.allocateTableWriteId(openTxnId2, t.getDbName(), t.getTableName());
     long writeId3 = ms.allocateTableWriteId(openTxnId3, t.getDbName(), t.getTableName());
     long writeId1 = ms.allocateTableWriteId(openTxnId1, t.getDbName(), t.getTableName());
-    long writeId4 = ms.allocateTableWriteId(openTxnId4, t.getDbName(), t.getTableName());
     assert writeId2 < writeId1 && writeId2 < writeId3;
     acquireLock(t, null, openTxnId3);
     acquireLock(t, null, openTxnId2);
     acquireLock(t, null, openTxnId1);
-    acquireLock(t, null, openTxnId4);
     addDeltaFile(t, null, writeId3, writeId3, 2);
     addDeltaFile(t, null, writeId1, writeId1, 2);
     addDeltaFile(t, null, writeId2, writeId2, 2);
 
-    List<Long> txnsToAbort = new ArrayList<>();
-    txnsToAbort.add(openTxnId2);
-    txnsToAbort.add(openTxnId4);
-    ms.abortTxns(txnsToAbort);
     ms.commitTxn(openTxnId3);
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
