@@ -915,7 +915,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fsp.initializeBucketPaths(filesIdx, AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS, bucketId),
             isNativeTable(), isSkewedStoredAsSubDirectories);
       } else {
-        fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable(), isSkewedStoredAsSubDirectories);
+        fsp.initializeBucketPaths(filesIdx, Utilities.getTaskIdFromFilename(taskId), isNativeTable(),
+            isSkewedStoredAsSubDirectories);
       }
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("createBucketForFileIdx " + filesIdx + ": final path " + fsp.finalPaths[filesIdx]
