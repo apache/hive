@@ -284,6 +284,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.run();
 
+    Mockito.verifyNoInteractions(mockedFSRemover);
     Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
 
     directories = getDirectories(conf, t, null);
