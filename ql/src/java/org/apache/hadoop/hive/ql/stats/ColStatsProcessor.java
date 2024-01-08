@@ -211,7 +211,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       if (colStats.isEmpty()) {
         continue;
       }
-      SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats, Constants.HIVE_ENGINE);
+      SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
       request.setNeedMerge(colStatDesc.isNeedMerge());
       if (txnMgr != null) {
         request.setWriteId(writeId);

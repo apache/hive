@@ -317,7 +317,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private int persistColumnStats(Hive db) throws HiveException, MetaException, IOException {
     ColumnStatistics colStats = constructColumnStatsFromInput();
     SetPartitionsStatsRequest request =
-            new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
+            new SetPartitionsStatsRequest(Collections.singletonList(colStats));
 
     // Set writeId and validWriteId list for replicated statistics. getColStats() will return
     // non-null value only during replication.

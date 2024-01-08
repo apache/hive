@@ -5938,10 +5938,11 @@ void swap(AggrStats &a, AggrStats &b);
 std::ostream& operator<<(std::ostream& out, const AggrStats& obj);
 
 typedef struct _SetPartitionsStatsRequest__isset {
-  _SetPartitionsStatsRequest__isset() : needMerge(false), writeId(true), validWriteIdList(false) {}
+  _SetPartitionsStatsRequest__isset() : needMerge(false), writeId(true), validWriteIdList(false), engine(true) {}
   bool needMerge :1;
   bool writeId :1;
   bool validWriteIdList :1;
+  bool engine :1;
 } _SetPartitionsStatsRequest__isset;
 
 class SetPartitionsStatsRequest : public virtual ::apache::thrift::TBase {
@@ -5949,11 +5950,10 @@ class SetPartitionsStatsRequest : public virtual ::apache::thrift::TBase {
 
   SetPartitionsStatsRequest(const SetPartitionsStatsRequest&);
   SetPartitionsStatsRequest& operator=(const SetPartitionsStatsRequest&);
-  SetPartitionsStatsRequest() noexcept
-                            : needMerge(0),
-                              writeId(-1LL),
-                              validWriteIdList(),
-                              engine() {
+  SetPartitionsStatsRequest() : needMerge(0),
+                                writeId(-1LL),
+                                validWriteIdList(),
+                                engine("hive") {
   }
 
   virtual ~SetPartitionsStatsRequest() noexcept;
@@ -5991,7 +5991,9 @@ class SetPartitionsStatsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
-    if (!(engine == rhs.engine))
+    if (__isset.engine != rhs.__isset.engine)
+      return false;
+    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     return true;
   }
@@ -7473,9 +7475,10 @@ void swap(PartitionsStatsResult &a, PartitionsStatsResult &b);
 std::ostream& operator<<(std::ostream& out, const PartitionsStatsResult& obj);
 
 typedef struct _TableStatsRequest__isset {
-  _TableStatsRequest__isset() : catName(false), validWriteIdList(false), id(true) {}
+  _TableStatsRequest__isset() : catName(false), validWriteIdList(false), engine(true), id(true) {}
   bool catName :1;
   bool validWriteIdList :1;
+  bool engine :1;
   bool id :1;
 } _TableStatsRequest__isset;
 
@@ -7484,13 +7487,12 @@ class TableStatsRequest : public virtual ::apache::thrift::TBase {
 
   TableStatsRequest(const TableStatsRequest&);
   TableStatsRequest& operator=(const TableStatsRequest&);
-  TableStatsRequest() noexcept
-                    : dbName(),
-                      tblName(),
-                      catName(),
-                      validWriteIdList(),
-                      engine(),
-                      id(-1LL) {
+  TableStatsRequest() : dbName(),
+                        tblName(),
+                        catName(),
+                        validWriteIdList(),
+                        engine("hive"),
+                        id(-1LL) {
   }
 
   virtual ~TableStatsRequest() noexcept;
@@ -7534,7 +7536,9 @@ class TableStatsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
-    if (!(engine == rhs.engine))
+    if (__isset.engine != rhs.__isset.engine)
+      return false;
+    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     if (__isset.id != rhs.__isset.id)
       return false;
@@ -7559,9 +7563,10 @@ void swap(TableStatsRequest &a, TableStatsRequest &b);
 std::ostream& operator<<(std::ostream& out, const TableStatsRequest& obj);
 
 typedef struct _PartitionsStatsRequest__isset {
-  _PartitionsStatsRequest__isset() : catName(false), validWriteIdList(false) {}
+  _PartitionsStatsRequest__isset() : catName(false), validWriteIdList(false), engine(true) {}
   bool catName :1;
   bool validWriteIdList :1;
+  bool engine :1;
 } _PartitionsStatsRequest__isset;
 
 class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
@@ -7569,12 +7574,11 @@ class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
 
   PartitionsStatsRequest(const PartitionsStatsRequest&);
   PartitionsStatsRequest& operator=(const PartitionsStatsRequest&);
-  PartitionsStatsRequest() noexcept
-                         : dbName(),
-                           tblName(),
-                           catName(),
-                           validWriteIdList(),
-                           engine() {
+  PartitionsStatsRequest() : dbName(),
+                             tblName(),
+                             catName(),
+                             validWriteIdList(),
+                             engine("hive") {
   }
 
   virtual ~PartitionsStatsRequest() noexcept;
@@ -7620,7 +7624,9 @@ class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
-    if (!(engine == rhs.engine))
+    if (__isset.engine != rhs.__isset.engine)
+      return false;
+    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     return true;
   }

@@ -7955,7 +7955,7 @@ class SetPartitionsStatsRequest(object):
     """
 
 
-    def __init__(self, colStats=None, needMerge=None, writeId=-1, validWriteIdList=None, engine=None,):
+    def __init__(self, colStats=None, needMerge=None, writeId=-1, validWriteIdList=None, engine="hive",):
         self.colStats = colStats
         self.needMerge = needMerge
         self.writeId = writeId
@@ -8041,8 +8041,6 @@ class SetPartitionsStatsRequest(object):
     def validate(self):
         if self.colStats is None:
             raise TProtocolException(message='Required field colStats is unset!')
-        if self.engine is None:
-            raise TProtocolException(message='Required field engine is unset!')
         return
 
     def __repr__(self):
@@ -10466,7 +10464,7 @@ class TableStatsRequest(object):
     """
 
 
-    def __init__(self, dbName=None, tblName=None, colNames=None, catName=None, validWriteIdList=None, engine=None, id=-1,):
+    def __init__(self, dbName=None, tblName=None, colNames=None, catName=None, validWriteIdList=None, engine="hive", id=-1,):
         self.dbName = dbName
         self.tblName = tblName
         self.colNames = colNames
@@ -10575,8 +10573,6 @@ class TableStatsRequest(object):
             raise TProtocolException(message='Required field tblName is unset!')
         if self.colNames is None:
             raise TProtocolException(message='Required field colNames is unset!')
-        if self.engine is None:
-            raise TProtocolException(message='Required field engine is unset!')
         return
 
     def __repr__(self):
@@ -10605,7 +10601,7 @@ class PartitionsStatsRequest(object):
     """
 
 
-    def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None, validWriteIdList=None, engine=None,):
+    def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None, validWriteIdList=None, engine="hive",):
         self.dbName = dbName
         self.tblName = tblName
         self.colNames = colNames
@@ -10724,8 +10720,6 @@ class PartitionsStatsRequest(object):
             raise TProtocolException(message='Required field colNames is unset!')
         if self.partNames is None:
             raise TProtocolException(message='Required field partNames is unset!')
-        if self.engine is None:
-            raise TProtocolException(message='Required field engine is unset!')
         return
 
     def __repr__(self):
@@ -31845,7 +31839,7 @@ SetPartitionsStatsRequest.thrift_spec = (
     (2, TType.BOOL, 'needMerge', None, None, ),  # 2
     (3, TType.I64, 'writeId', None, -1, ),  # 3
     (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
-    (5, TType.STRING, 'engine', 'UTF8', None, ),  # 5
+    (5, TType.STRING, 'engine', 'UTF8', "hive", ),  # 5
 )
 all_structs.append(SetPartitionsStatsResponse)
 SetPartitionsStatsResponse.thrift_spec = (
@@ -32044,7 +32038,7 @@ TableStatsRequest.thrift_spec = (
     (3, TType.LIST, 'colNames', (TType.STRING, 'UTF8', False), None, ),  # 3
     (4, TType.STRING, 'catName', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 5
-    (6, TType.STRING, 'engine', 'UTF8', None, ),  # 6
+    (6, TType.STRING, 'engine', 'UTF8', "hive", ),  # 6
     (7, TType.I64, 'id', None, -1, ),  # 7
 )
 all_structs.append(PartitionsStatsRequest)
@@ -32056,7 +32050,7 @@ PartitionsStatsRequest.thrift_spec = (
     (4, TType.LIST, 'partNames', (TType.STRING, 'UTF8', False), None, ),  # 4
     (5, TType.STRING, 'catName', 'UTF8', None, ),  # 5
     (6, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 6
-    (7, TType.STRING, 'engine', 'UTF8', None, ),  # 7
+    (7, TType.STRING, 'engine', 'UTF8', "hive", ),  # 7
 )
 all_structs.append(AddPartitionsResult)
 AddPartitionsResult.thrift_spec = (
