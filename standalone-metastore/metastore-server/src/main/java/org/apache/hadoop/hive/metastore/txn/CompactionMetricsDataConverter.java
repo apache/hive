@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionMetricsMetricType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData;
 
 public class CompactionMetricsDataConverter {
 

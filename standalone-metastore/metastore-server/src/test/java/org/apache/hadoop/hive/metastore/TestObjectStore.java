@@ -503,7 +503,7 @@ public class TestObjectStore {
       objectStore.alterPartitions(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", part_vals, parts, 0, "");
     } catch (MetaException e) {
       // expected
-      Assert.assertTrue(e.getCause() instanceof NoSuchObjectException);
+      Assert.assertEquals(e.getMessage(), "Specified catalog.database.table does not exist : hive.testobjectstoredb1.not_existed_table");
     }
   }
 

@@ -233,8 +233,12 @@ final class CommandAuthorizerV2 {
       break;
     case DUMMYPARTITION:
     case PARTITION:
-      // TODO: not currently handled
-      return;
+      Table tbl = privObject.getTable();
+      List<String> col = tableName2Cols == null ? null :
+              tableName2Cols.get(Table.getCompleteName(tbl.getDbName(), tbl.getTableName()));
+      hivePrivObject = new HivePrivilegeObject(privObjType, tbl.getDbName(), tbl.getTableName(),
+              null, col, actionType, null, null, tbl.getOwner(), tbl.getOwnerType());
+      break;
     case SERVICE_NAME:
       hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getServiceName(), null,
           null, actionType, null, null, null, null);

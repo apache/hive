@@ -2360,7 +2360,8 @@ struct GetPartitionsPsWithAuthRequest {
    9: optional i64 id=-1 // table id
    10: optional bool skipColumnSchemaForPartition,
    11: optional string includeParamKeyPattern,
-   12: optional string excludeParamKeyPattern
+   12: optional string excludeParamKeyPattern,
+   13: optional list<string> partNames;
 }
 
 struct GetPartitionsPsWithAuthResponse {

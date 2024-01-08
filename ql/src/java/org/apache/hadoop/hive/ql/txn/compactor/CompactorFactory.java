@@ -21,7 +21,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class CompactorFactory {
   private static final Logger LOG = LoggerFactory.getLogger(CompactorFactory.class.getName());
+  private static final String ICEBERG_MAJOR_QUERY_COMPACTOR_CLASS = "org.apache.iceberg.mr.hive.compaction.IcebergMajorQueryCompactor";
 
   private static final CompactorFactory INSTANCE = new CompactorFactory();
 
@@ -67,7 +70,7 @@ public final class CompactorFactory {
    * @param compactionInfo provides insight about the type of compaction, must be not null.
    * @return {@link QueryCompactor} or null.
    */
-  public CompactorPipeline getCompactorPipeline(Table table, HiveConf configuration, CompactionInfo compactionInfo,IMetaStoreClient msc)
+  public CompactorPipeline getCompactorPipeline(Table table, HiveConf configuration, CompactionInfo compactionInfo, IMetaStoreClient msc)
       throws HiveException {
     if (AcidUtils.isFullAcidTable(table.getParameters())) {
       if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) ||
@@ -107,6 +110,24 @@ public final class CompactorFactory {
         default:
           throw new HiveException(
               compactionInfo.type.name() + " compaction is not supported on insert only tables.");
+      }
+    } else if (MetaStoreUtils.isIcebergTable(table.getParameters())) {
+      switch (compactionInfo.type) {
+        case MAJOR:
+
+          try {
+            Class<? extends QueryCompactor> icebergMajorQueryCompactor = (Class<? extends QueryCompactor>)
+                Class.forName(ICEBERG_MAJOR_QUERY_COMPACTOR_CLASS, true, 
+                    Utilities.getSessionSpecifiedClassLoader());
+
+            return new CompactorPipeline(icebergMajorQueryCompactor.newInstance());
+          }
+          catch (Exception e) {
+            throw new HiveException("Failed instantiating and calling Iceberg compactor");
+          }
+        default:
+          throw new HiveException(
+                  compactionInfo.type.name() + " compaction is not supported on Iceberg tables.");
       }
     }
     throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.junit.After;
@@ -463,7 +464,7 @@ public class TestCompactionTxnHandler {
       txnHandler.markFailed(ci);
       fail("The first call to markFailed() must have failed as this call did "
           + "not throw the expected exception");
-    } catch (MetaException e) {
+    } catch (IllegalStateException e) {
       // This is expected
       assertTrue(e.getMessage().contains("No record with CQ_ID="));
     }
@@ -753,7 +754,7 @@ public class TestCompactionTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
 
     Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(2, potentials.size());
@@ -1014,7 +1015,7 @@ public class TestCompactionTxnHandler {
     LockResponse res = txnHandler.lock(req);
     assertSame(res.getState(), LockState.ACQUIRED);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
 
     Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(1, potentials.size());
