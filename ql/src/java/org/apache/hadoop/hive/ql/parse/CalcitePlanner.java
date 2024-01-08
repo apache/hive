@@ -1681,7 +1681,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       materializationValidator.validate(calcitePlan);
       setInvalidResultCacheReason(
           materializationValidator.getResultCacheInvalidReason());
-      setAutomaticRewritingValidationResult(
+      setMaterializationValidationResult(
           materializationValidator.getAutomaticRewritingValidationResult());
 
       // 2. Apply pre-join order optimizations

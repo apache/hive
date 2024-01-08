@@ -15933,11 +15933,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     public String colTypes;
   }
 
-  public MaterializationValidationResult getAutomaticRewritingValidationResult() {
+  public MaterializationValidationResult getMaterializationValidationResult() {
     return materializationValidationResult;
   }
 
-  public void setAutomaticRewritingValidationResult(
+  public void setMaterializationValidationResult(
       MaterializationValidationResult materializationValidationResult) {
     this.materializationValidationResult =
         materializationValidationResult;

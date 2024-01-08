@@ -542,7 +542,7 @@ public final class ParseUtils {
     final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
     RelNode logicalPlan = analyzer.genLogicalPlan(ast);
     return new CBOPlan(
-        ast, logicalPlan, analyzer.getAutomaticRewritingValidationResult().getSupportedRewriteAlgorithms());
+        ast, logicalPlan, analyzer.getMaterializationValidationResult().getSupportedRewriteAlgorithms());
   }
 
   public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
