@@ -44,10 +44,12 @@
   <description>A base for other temporary directories.</description>
 </property>
 
+<!-- in LLAP mode hive.tez.container.size isn't used to actually determine container size, however while -->
+<!-- calculating available slots (in split generation) in it's used through -->
+<!-- the Vertex resource, so this has to be defined in order to get consistent test results -->
 <property>
   <name>hive.tez.container.size</name>
   <value>128</value>
-  <description></description>
 </property>
 
 <property>
