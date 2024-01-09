@@ -663,7 +663,7 @@ public class MetaStoreServerUtils {
     if (!madeDir) {
       // The partition location already existed and may contain data. Lets try to
       // populate those statistics that don't require a full scan of the data.
-      LOG.info("Updating partition stats fast for: {}.{}.{}:{}",
+      LOG.info("Updating partition stats fast for: catalog: {} database: {} table: {} partition: {}",
               part.getCatName(), part.getDbName(), part.getTableName(), part.getCurrent().getValues());
       List<FileStatus> fileStatus = wh.getFileStatusesForLocation(part.getLocation());
       // TODO: this is invalid for ACID tables, and we cannot access AcidUtils here.
