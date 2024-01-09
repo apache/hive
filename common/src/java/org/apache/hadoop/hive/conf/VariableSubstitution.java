@@ -59,12 +59,12 @@ public class VariableSubstitution extends SystemVariables {
     if (expr == null) {
       return expr;
     }
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEVARIABLESUBSTITUTE)) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VARIABLE_SUBSTITUTE)) {
       l4j.debug("Substitution is on: " + expr);
     } else {
       return expr;
     }
-    int depth = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEVARIABLESUBSTITUTEDEPTH);
+    int depth = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_VARIABLE_SUBSTITUTE_DEPTH);
     return substitute(conf, expr, depth);
   }
 }

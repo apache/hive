@@ -503,7 +503,7 @@ public class TestObjectStore {
       objectStore.alterPartitions(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", part_vals, parts, 0, "");
     } catch (MetaException e) {
       // expected
-      Assert.assertTrue(e.getCause() instanceof NoSuchObjectException);
+      Assert.assertEquals(e.getMessage(), "Specified catalog.database.table does not exist : hive.testobjectstoredb1.not_existed_table");
     }
   }
 
@@ -1181,10 +1181,10 @@ public class TestObjectStore {
      */
 
 //    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, "com.mysql.jdbc.Driver");
-//    conf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
+//    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY,
 //        "jdbc:mysql://localhost:3306/metastore_db");
 //    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME, "");
-//    conf.setVar(HiveConf.ConfVars.METASTOREPWD, "");
+//    conf.setVar(HiveConf.ConfVars.METASTORE_PWD, "");
 
     /*
      we have to  add this one manually as for tests the db is initialized via the metastoreDiretSQL

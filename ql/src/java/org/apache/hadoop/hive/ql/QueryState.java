@@ -98,7 +98,7 @@ public class QueryState {
 
   // Get the query id stored in query specific config.
   public String getQueryId() {
-    return queryConf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    return queryConf.getVar(HiveConf.ConfVars.HIVE_QUERY_ID);
   }
 
   public String getQueryString() {
@@ -172,15 +172,15 @@ public class QueryState {
   }
 
   public String getQueryTag() {
-    return HiveConf.getVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
+    return HiveConf.getVar(this.queryConf, HiveConf.ConfVars.HIVE_QUERY_TAG);
   }
 
   public void setQueryTag(String queryTag) {
-    HiveConf.setVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG, queryTag);
+    HiveConf.setVar(this.queryConf, HiveConf.ConfVars.HIVE_QUERY_TAG, queryTag);
   }
 
   public static void setApplicationTag(HiveConf queryConf, String queryTag) {
-    String jobTag = HiveConf.getVar(queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
+    String jobTag = HiveConf.getVar(queryConf, HiveConf.ConfVars.HIVE_QUERY_TAG);
     if (jobTag == null || jobTag.isEmpty()) {
       jobTag = queryTag;
     } else {
@@ -327,13 +327,13 @@ public class QueryState {
       // Generate the new queryId if needed
       if (generateNewQueryId) {
         String queryId = QueryPlan.makeQueryId();
-        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        queryConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
         setApplicationTag(queryConf, queryId);
 
         // FIXME: druid storage handler relies on query.id to maintain some staging directories
         // expose queryid to session level
         if (hiveConf != null) {
-          hiveConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+          hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
         }
       }
 

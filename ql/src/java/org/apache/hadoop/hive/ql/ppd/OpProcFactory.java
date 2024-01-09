@@ -174,7 +174,7 @@ public final class OpProcFactory {
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       ExprWalkerInfo childInfo = getChildWalkerInfo((Operator<?>) nd, owi);
       if (childInfo != null && HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
         ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, null, false);
         return createFilter((Operator)nd, unpushedPreds, owi);
       }
@@ -214,7 +214,7 @@ public final class OpProcFactory {
         return;
       }
 
-      float threshold = owi.getParseContext().getConf().getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
+      float threshold = owi.getParseContext().getConf().getFloatVar(HiveConf.ConfVars.HIVE_LIMIT_PUSHDOWN_MEMORY_USAGE);
       if (threshold <= 0 || threshold >= 1) {
         return;
       }
@@ -356,7 +356,7 @@ public final class OpProcFactory {
         return;
       }
 
-      float threshold = conf.getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);
+      float threshold = conf.getFloatVar(HiveConf.ConfVars.HIVE_LIMIT_PUSHDOWN_MEMORY_USAGE);
 
       ReduceSinkOperator rSink = (ReduceSinkOperator) gP;
       ReduceSinkDesc rDesc = rSink.getConf();
@@ -392,7 +392,7 @@ public final class OpProcFactory {
       Object o = super.process(nd, stack, procCtx, nodeOutputs);
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
         // The lateral view join is allowed to have a filter pushed through it.
         // We need to remove the filter candidate here once it has been applied.
         // If we do not remove it here, the candidates will be cleared out through
@@ -440,7 +440,7 @@ public final class OpProcFactory {
       TableScanOperator tsOp = (TableScanOperator) nd;
       mergeWithChildrenPred(tsOp, owi, null, null);
       if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
         // remove all the candidate filter operators
         // when we get to the TS
         removeAllCandidates(owi);
@@ -495,7 +495,7 @@ public final class OpProcFactory {
         logExpr(nd, ewi);
         owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
         if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-            HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+            HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
           // add this filter for deletion, if it does not have non-final candidates
           owi.addCandidateFilterOp((FilterOperator)op);
           Map<String, List<ExprNodeDesc>> residual = ewi.getResidualPredicates(true);
@@ -505,7 +505,7 @@ public final class OpProcFactory {
       // merge it with children predicates
       boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, ewi, null);
       if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
         if (hasUnpushedPredicates) {
           ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, null, false);
           return createFilter((Operator)nd, unpushedPreds, owi);
@@ -611,7 +611,7 @@ public final class OpProcFactory {
     protected Object handlePredicates(Node nd, ExprWalkerInfo prunePreds, OpWalkerInfo owi)
         throws SemanticException {
       if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
         return createFilter((Operator)nd, prunePreds.getResidualPredicates(true), owi);
       }
       return null;
@@ -685,7 +685,7 @@ public final class OpProcFactory {
       if (operator.getNumChild() == 1 &&
           operator.getChildOperators().get(0) instanceof JoinOperator) {
         if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-            HiveConf.ConfVars.HIVEPPDRECOGNIZETRANSITIVITY)) {
+            HiveConf.ConfVars.HIVE_PPD_RECOGNIZE_TRANSITIVITY)) {
           JoinOperator child = (JoinOperator) operator.getChildOperators().get(0);
           int targetPos = child.getParentOperators().indexOf(operator);
           applyFilterTransitivity(child, targetPos, owi);
@@ -724,7 +724,7 @@ public final class OpProcFactory {
 
       ExprWalkerInfo rsPreds = owi.getPrunedPreds(target);
       boolean recogniseColumnEqualities = HiveConf.getBoolVar(owi.getParseContext().getConf(),
-              HiveConf.ConfVars.HIVEPPD_RECOGNIZE_COLUMN_EQUALITIES);
+              HiveConf.ConfVars.HIVE_PPD_RECOGNIZE_COLUMN_EQUALITIES);
       for (int sourcePos = 0; sourcePos < parentOperators.size(); sourcePos++) {
         ReduceSinkOperator source = (ReduceSinkOperator) parentOperators.get(sourcePos);
         List<ExprNodeDesc> sourceKeys = source.getConf().getKeyCols();
@@ -1095,7 +1095,7 @@ public final class OpProcFactory {
       Set<String> includes = getQualifiedAliases((Operator<?>) nd, owi);
       boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, null, includes);
       if (hasUnpushedPredicates && HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
         if (includes != null || nd instanceof ReduceSinkOperator) {
           owi.getCandidateFilterOps().clear();
         } else {
@@ -1257,7 +1257,7 @@ public final class OpProcFactory {
       boolean pushFilterToStorage;
       HiveConf hiveConf = owi.getParseContext().getConf();
       pushFilterToStorage =
-        hiveConf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_STORAGE);
+        hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_OPT_PPD_STORAGE);
       if (pushFilterToStorage) {
         condn = pushFilterToStorageHandler(
           (TableScanOperator) op,
@@ -1288,7 +1288,7 @@ public final class OpProcFactory {
     }
 
     if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-        HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
       // remove the candidate filter ops
       removeCandidates(op, owi);
     }
@@ -1326,7 +1326,7 @@ public final class OpProcFactory {
 
     TableScanDesc tableScanDesc = tableScanOp.getConf();
     Table tbl = tableScanDesc.getTableMetadata();
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER)) {
       // attach the original predicate to the table scan operator for index
       // optimizations that require the pushed predicate before pcr & later
       // optimizations are applied

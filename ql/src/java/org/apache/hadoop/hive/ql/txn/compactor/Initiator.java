@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -107,7 +107,7 @@ public class Initiator extends InitiatorBase {
 
           final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          checkInterrupt();
+          CompactorUtil.checkInterrupt(CLASS_NAME);
 
           // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
           // table property hive.repl.first.inc.pending which would be cached.
@@ -122,7 +122,7 @@ public class Initiator extends InitiatorBase {
               .collect(Collectors.toSet())).get();
           LOG.debug("Found {} potential compactions, checking to see if we should compact any of them", potentials.size());
 
-          checkInterrupt();
+          CompactorUtil.checkInterrupt(CLASS_NAME);
 
           Map<String, String> tblNameOwners = new HashMap<>();
           List<CompletableFuture<Void>> compactionList = new ArrayList<>();
@@ -234,7 +234,7 @@ public class Initiator extends InitiatorBase {
       throws IOException, InterruptedException {
     //Figure out who we should run the file operations as
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-    StorageDescriptor sd = resolveStorageDescriptor(t, p);
+    StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(t, p);
 
     String user = cache.get(fullTableName);
     if (user == null) {

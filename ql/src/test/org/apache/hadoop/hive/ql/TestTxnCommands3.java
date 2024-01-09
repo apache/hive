@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -426,7 +426,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into T values(1,4)");//makes delta_2_2 in T2
 
     //create failed compaction attempt so that compactor txn is aborted
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, true);
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
 
@@ -456,7 +456,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_COMPONENTS where TC_WRITEID=" + highestCompactWriteId));
     //now make a successful compactor run so that next Cleaner run actually cleans
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, false);
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
 

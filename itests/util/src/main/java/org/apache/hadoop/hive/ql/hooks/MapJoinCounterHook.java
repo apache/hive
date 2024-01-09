@@ -30,7 +30,7 @@ public class MapJoinCounterHook implements ExecuteWithHookContext {
 
   public void run(HookContext hookContext) {
     HiveConf conf = hookContext.getConf();
-    boolean enableConvert = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECONVERTJOIN);
+    boolean enableConvert = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CONVERT_JOIN);
     if (!enableConvert) {
       return;
     }

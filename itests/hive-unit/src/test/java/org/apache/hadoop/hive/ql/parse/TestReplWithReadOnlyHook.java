@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook.READON
 import static org.apache.hadoop.hive.common.repl.ReplConst.READ_ONLY_HOOK;
 import static org.junit.Assert.assertEquals;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -66,7 +65,7 @@ public class TestReplWithReadOnlyHook extends BaseReplicationScenariosAcidTables
     acidEnableConf.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
     acidEnableConf.put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname,
       "false");
-    acidEnableConf.put(HiveConf.ConfVars.PREEXECHOOKS.varname, READ_ONLY_HOOK);
+    acidEnableConf.put(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, READ_ONLY_HOOK);
 
     acidEnableConf.putAll(overrides);
 

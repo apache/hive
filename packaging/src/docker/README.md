@@ -88,9 +88,17 @@ Launch the HiveServer2 with an embedded Metastore,
     docker run -d -p 10000:10000 -p 10002:10002 --env SERVICE_NAME=hiveserver2 \
          --env SERVICE_OPTS="-Dhive.metastore.uris=thrift://metastore:9083" \
          --env IS_RESUME="true" \
+         --env VERBOSE="true" \
          --name hiveserver2-standalone apache/hive:${HIVE_VERSION}
    ```
+
+NOTE:
+
+To skip schematool initialisation or upgrade for metastore use `IS_RESUME="true"`, and for verbose logging set `VERBOSE="true"`
+
+
   To save the data between container restarts, you can start the HiveServer2 with a Volume,
+
    ```shell
    docker run -d -p 10000:10000 -p 10002:10002 --env SERVICE_NAME=hiveserver2 \
       --env SERVICE_OPTS="-Dhive.metastore.uris=thrift://metastore:9083" \

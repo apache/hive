@@ -291,7 +291,7 @@ public class BeeLineOpts implements Completer {
       if (conf == null) {
         conf = beeLine.getCommands().getHiveConf(false);
       }
-      setForce(HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS));
+      setForce(HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLI_IGNORE_ERRORS));
     }
   }
 
@@ -529,7 +529,7 @@ public class BeeLineOpts implements Completer {
       return showDbInPrompt;
     } else {
       HiveConf conf = beeLine.getCommands().getHiveConf(true);
-      return HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIPRINTCURRENTDB);
+      return HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLI_PRINT_CURRENT_DB);
     }
   }
 

@@ -280,7 +280,7 @@ public class TestHiveCli {
   public static void init(){
     // something changed scratch dir permissions, so test can't execute
     HiveConf hiveConf = new HiveConf();
-    String scratchDir = hiveConf.get(HiveConf.ConfVars.SCRATCHDIR.varname);
+    String scratchDir = hiveConf.get(HiveConf.ConfVars.SCRATCH_DIR.varname);
     File file = new File(scratchDir);
     if (file.exists()) {
       file.setWritable(true, false);

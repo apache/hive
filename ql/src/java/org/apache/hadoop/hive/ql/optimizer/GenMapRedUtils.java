@@ -544,7 +544,7 @@ public final class GenMapRedUtils {
         parseCtx.getGlobalLimitCtx().disableOpt();
       } else {
         long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),
-            HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
+            HiveConf.ConfVars.HIVE_LIMIT_MAX_ROW_SIZE);
         sizeNeeded = (parseCtx.getGlobalLimitCtx().getGlobalOffset()
             + parseCtx.getGlobalLimitCtx().getGlobalLimit()) * sizePerRow;
         // for the optimization that reduce number of input file, we limit number
@@ -553,7 +553,7 @@ public final class GenMapRedUtils {
         // inputs can cause unpredictable latency. It's not necessarily to be
         // cheaper.
         fileLimit =
-            HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVELIMITOPTLIMITFILE);
+            HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVE_LIMIT_OPT_LIMIT_FILE);
 
         if (sizePerRow <= 0 || fileLimit <= 0) {
           LOG.info("Skip optimization to reduce input size of 'limit'");
@@ -1002,13 +1002,13 @@ public final class GenMapRedUtils {
 
     // Create a FileSinkOperator for the file name of taskTmpDir
     boolean compressIntermediate =
-        parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE);
+        parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESS_INTERMEDIATE);
     FileSinkDesc desc = new FileSinkDesc(taskTmpDir, tt_desc, compressIntermediate);
     if (compressIntermediate) {
       desc.setCompressCodec(parseCtx.getConf().getVar(
-          HiveConf.ConfVars.COMPRESSINTERMEDIATECODEC));
+          HiveConf.ConfVars.COMPRESS_INTERMEDIATE_CODEC));
       desc.setCompressType(parseCtx.getConf().getVar(
-          HiveConf.ConfVars.COMPRESSINTERMEDIATETYPE));
+          HiveConf.ConfVars.COMPRESS_INTERMEDIATE_TYPE));
     }
     Operator<? extends OperatorDesc> fileSinkOp = OperatorFactory.get(
         parent.getCompilationOpContext(), desc, parent.getSchema());
@@ -1251,9 +1251,9 @@ public final class GenMapRedUtils {
           + " into " + finalName);
     }
 
-    boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
+    boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVE_MERGE_RCFILE_BLOCK_LEVEL) &&
         fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
-        (conf.getBoolVar(ConfVars.HIVEMERGEORCFILESTRIPELEVEL) &&
+        (conf.getBoolVar(ConfVars.HIVE_MERGE_ORC_FILE_STRIPE_LEVEL) &&
             fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class));
 
     RowSchema inputRS = fsInput.getSchema();
@@ -1268,7 +1268,7 @@ public final class GenMapRedUtils {
       // Create a FileSink operator
       TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
       Path mergeDest = srcMmWriteId == null ? finalName : finalName.getParent();
-      fsOutputDesc = new FileSinkDesc(mergeDest, ts, conf.getBoolVar(ConfVars.COMPRESSRESULT));
+      fsOutputDesc = new FileSinkDesc(mergeDest, ts, conf.getBoolVar(ConfVars.COMPRESS_RESULT));
       fsOutputDesc.setMmWriteId(srcMmWriteId);
       fsOutputDesc.setIsMerge(true);
       // Create and attach the filesink for the merge.
@@ -1316,7 +1316,7 @@ public final class GenMapRedUtils {
       cplan = GenMapRedUtils.createMergeTask(fsInputDesc, finalName,
           dpCtx != null && dpCtx.getNumDPCols() > 0, fsInput.getCompilationOpContext());
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-        work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf);
+        work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVE_QUERY_ID), conf);
         cplan.setName("File Merge");
         ((TezWork) work).add(cplan);
       } else {
@@ -1325,7 +1325,7 @@ public final class GenMapRedUtils {
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-        work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf);
+        work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVE_QUERY_ID), conf);
         cplan.setName("File Merge");
         ((TezWork)work).add(cplan);
       } else {
@@ -1910,7 +1910,7 @@ public final class GenMapRedUtils {
 
     if (currTask.getWork() instanceof TezWork) {
       // tez blurs the boundary between map and reduce, thus it has it's own config
-      return hconf.getBoolVar(ConfVars.HIVEMERGETEZFILES);
+      return hconf.getBoolVar(ConfVars.HIVE_MERGE_TEZ_FILES);
     }
     return isMergeRequiredForMr(hconf, fsOp, currTask);
   }
@@ -1918,12 +1918,12 @@ public final class GenMapRedUtils {
   private static boolean isMergeRequiredForMr(HiveConf hconf,
       FileSinkOperator fsOp, Task<?> currTask) {
     if (fsOp.getConf().isLinkedFileSink()) {
-      // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
+      // If the user has HIVE_MERGE_MAPRED_FILES set to false, the idea was the
       // number of reducers are few, so the number of files anyway are small.
       // However, with this optimization, we are increasing the number of files
       // possibly by a big margin. So, merge aggressively.
-      return (hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
-          hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES));
+      return (hconf.getBoolVar(ConfVars.HIVE_MERGE_MAPFILES) ||
+          hconf.getBoolVar(ConfVars.HIVE_MERGE_MAPRED_FILES));
     }
     // There are separate configuration parameters to control whether to
     // merge for a map-only job
@@ -1931,9 +1931,9 @@ public final class GenMapRedUtils {
     if (currTask.getWork() instanceof MapredWork) {
       ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
       boolean mergeMapOnly =
-        hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
+        hconf.getBoolVar(ConfVars.HIVE_MERGE_MAPFILES) && reduceWork == null;
       boolean mergeMapRed =
-        hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
+        hconf.getBoolVar(ConfVars.HIVE_MERGE_MAPRED_FILES) &&
         reduceWork != null;
       if (mergeMapOnly || mergeMapRed) {
         return true;

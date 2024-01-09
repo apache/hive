@@ -52,7 +52,6 @@ import org.apache.curator.framework.api.CuratorEvent;
 import org.apache.curator.framework.api.CuratorEventType;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
@@ -106,7 +105,6 @@ import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
-import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -1044,7 +1042,7 @@ public class HiveServer2 extends CompositeService {
           .daemon(true)
           .build());
       executor.scheduleAtFixedRate(new ClearDanglingScratchDir(false, false, false,
-          HiveConf.getVar(hiveConf, HiveConf.ConfVars.SCRATCHDIR), hiveConf), initialWaitInSec,
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.SCRATCH_DIR), hiveConf), initialWaitInSec,
           HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR_INTERVAL,
           TimeUnit.SECONDS), TimeUnit.SECONDS);
     }

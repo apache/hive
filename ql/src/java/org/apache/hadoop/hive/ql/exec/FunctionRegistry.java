@@ -486,6 +486,9 @@ public final class FunctionRegistry {
     system.registerGenericUDF("!", GenericUDFOPNot.class);
     system.registerGenericUDF("between", GenericUDFBetween.class);
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
+    system.registerGenericUDF("toMap", GenericUDFToMap.class);
+    system.registerGenericUDF("toArray", GenericUDFToArray.class);
+    system.registerGenericUDF("toStruct", GenericUDFToStruct.class);
 
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
@@ -560,7 +563,6 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
-    system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
     system.registerGenericUDAF("compute_bit_vector_hll", new GenericUDAFComputeBitVectorHLL());
     system.registerGenericUDAF("compute_bit_vector_fm", new GenericUDAFComputeBitVectorFMSketch());

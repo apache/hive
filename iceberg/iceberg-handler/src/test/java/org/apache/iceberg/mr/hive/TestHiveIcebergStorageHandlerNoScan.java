@@ -1978,7 +1978,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     String dBName = "testdb";
     String tableName = "tbl";
     String dbWithSuffix = "/" + dBName + ".db";
-    String dbManagedLocation = shell.getHiveConf().get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname) + dbWithSuffix;
+    String dbManagedLocation = shell.getHiveConf().get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname) + dbWithSuffix;
     String dbExternalLocation = shell.getHiveConf().get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname) +
         dbWithSuffix;
     Path noExistedTblPath = new Path(dbManagedLocation + "/" + tableName);

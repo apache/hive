@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -86,6 +86,11 @@ public abstract class MetaStoreCompactorThread extends CompactorThread implement
 
   @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
     return CompactorUtil.getPartitionsByNames(conf, ci.dbname, ci.tableName, ci.partName);
+  }
+
+  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
+    return CompactorUtil.resolvePartition(conf, null, ci.dbname, ci.tableName, ci.partName, 
+        CompactorUtil.METADATA_FETCH_MODE.LOCAL);
   }
 
   protected abstract boolean isCacheEnabled();

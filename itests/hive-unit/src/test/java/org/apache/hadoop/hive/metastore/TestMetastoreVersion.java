@@ -70,7 +70,7 @@ public class TestMetastoreVersion {
         DummyPreListener.class.getName());
     testMetastoreDB = System.getProperty("java.io.tmpdir") +
       File.separator + "test_metastore-" + System.currentTimeMillis();
-    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+    System.setProperty(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf,
         System.getProperty("test.tmp.dir", "target/tmp"), "derby");

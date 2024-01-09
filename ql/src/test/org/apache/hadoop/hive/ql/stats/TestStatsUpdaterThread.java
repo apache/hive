@@ -74,10 +74,10 @@ public class TestStatsUpdaterThread {
   @Before
   public void setUp() throws Exception {
     this.hiveConf = new HiveConf(TestStatsUpdaterThread.class);
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getTestDataDir());
-    hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getTestDataDir());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 //    hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);

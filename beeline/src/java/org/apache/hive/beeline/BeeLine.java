@@ -1831,7 +1831,7 @@ public class BeeLine implements Closeable {
     String prompt;
     // read prompt configuration and substitute variables.
     HiveConf conf = getCommands().getHiveConf(true);
-    prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
+    prompt = conf.getVar(HiveConf.ConfVars.CLI_PROMPT);
     prompt = getCommands().substituteVariables(conf, prompt);
     return prompt + getFormattedDb() + "> ";
   }

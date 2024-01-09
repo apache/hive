@@ -147,7 +147,7 @@ public final class GenMRSkewJoinProcessor {
     joinDescriptor.setBigKeysDirMap(bigKeysDirMap);
     joinDescriptor.setSmallKeysDirMap(smallKeysDirMap);
     joinDescriptor.setSkewKeyDefinition(HiveConf.getIntVar(parseCtx.getConf(),
-        HiveConf.ConfVars.HIVESKEWJOINKEY));
+        HiveConf.ConfVars.HIVE_SKEWJOIN_KEY));
 
     HashMap<Path, Task<?>> bigKeysDirToTaskMap =
       new HashMap<Path, Task<?>>();
@@ -323,9 +323,9 @@ public final class GenMRSkewJoinProcessor {
           GenMRSkewJoinProcessor.class);
 
       newPlan.setNumMapTasks(HiveConf
-          .getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINNUMMAPTASK));
+          .getIntVar(jc, HiveConf.ConfVars.HIVE_SKEWJOIN_MAPJOIN_NUM_MAP_TASK));
       newPlan
-          .setMinSplitSize(HiveConf.getLongVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINMINSPLIT));
+          .setMinSplitSize(HiveConf.getLongVar(jc, HiveConf.ConfVars.HIVE_SKEWJOIN_MAPJOIN_MIN_SPLIT));
       newPlan.setInputformat(HiveInputFormat.class.getName());
 
       MapredWork w = new MapredWork();
@@ -366,7 +366,7 @@ public final class GenMRSkewJoinProcessor {
 
   public static boolean skewJoinEnabled(HiveConf conf, JoinOperator joinOp) {
 
-    if (conf != null && !conf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
+    if (conf != null && !conf.getBoolVar(HiveConf.ConfVars.HIVE_SKEW_JOIN)) {
       return false;
     }
 

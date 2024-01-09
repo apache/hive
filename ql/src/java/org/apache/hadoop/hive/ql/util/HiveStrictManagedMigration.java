@@ -574,7 +574,7 @@ public class HiveStrictManagedMigration {
     });
     if (runOptions.shouldModifyManagedTableLocation || runOptions.shouldMoveExternal) {
       Configuration oldConf = new Configuration(conf);
-      HiveConf.setVar(oldConf, HiveConf.ConfVars.METASTOREWAREHOUSE, runOptions.oldWarehouseRoot);
+      HiveConf.setVar(oldConf, HiveConf.ConfVars.METASTORE_WAREHOUSE, runOptions.oldWarehouseRoot);
 
       oldWh = ThreadLocal.withInitial(() -> {
         try {
@@ -650,7 +650,7 @@ public class HiveStrictManagedMigration {
         shouldMoveExternal = false;
       } else {
         String currentPathString = shouldModifyManagedTableLocation ?
-          HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE) :
+          HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_WAREHOUSE) :
           HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL);
         if (arePathsEqual(conf, runOptions.oldWarehouseRoot, currentPathString)) {
           LOG.info("oldWarehouseRoot is the same as the target path {}."

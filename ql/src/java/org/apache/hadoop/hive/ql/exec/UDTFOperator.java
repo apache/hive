@@ -94,7 +94,7 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
 
     // Set up periodic progress reporting in case the UDTF doesn't output rows
     // for a while
-    if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEUDTFAUTOPROGRESS)) {
+    if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_UDTF_AUTO_PROGRESS)) {
       autoProgressor = new AutoProgressor(this.getClass().getName(), reporter,
           Utilities.getDefaultNotificationInterval(hconf),
           HiveConf.getTimeVar(

@@ -391,7 +391,7 @@ public class SessionState implements ISessionAuthState{
 
   public boolean getIsSilent() {
     if(sessionConf != null) {
-      return sessionConf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
+      return sessionConf.getBoolVar(HiveConf.ConfVars.HIVE_SESSION_SILENT);
     } else {
       return isSilent;
     }
@@ -407,7 +407,7 @@ public class SessionState implements ISessionAuthState{
 
   public void setIsSilent(boolean isSilent) {
     if(sessionConf != null) {
-      sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
+      sessionConf.setBoolVar(HiveConf.ConfVars.HIVE_SESSION_SILENT, isSilent);
     }
     this.isSilent = isSilent;
   }
@@ -463,13 +463,13 @@ public class SessionState implements ISessionAuthState{
     if (LOG.isDebugEnabled()) {
       LOG.debug("SessionState user: " + userName);
     }
-    isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
+    isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVE_SESSION_SILENT);
     resourceMaps = new ResourceMaps();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
     // if there isn't already a session name, go ahead and create it.
-    if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
-      conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+    if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVE_SESSION_ID))) {
+      conf.setVar(HiveConf.ConfVars.HIVE_SESSION_ID, makeSessionId());
       getConsole().printInfo("Hive Session ID = " + getSessionId());
     }
     // Using system classloader as the parent. Using thread context
@@ -500,7 +500,7 @@ public class SessionState implements ISessionAuthState{
   }
 
   public String getSessionId() {
-    return (sessionConf.getVar(HiveConf.ConfVars.HIVESESSIONID));
+    return (sessionConf.getVar(HiveConf.ConfVars.HIVE_SESSION_ID));
   }
 
   public void updateThreadName() {
@@ -781,14 +781,14 @@ public class SessionState implements ISessionAuthState{
     HiveConf conf = getConf();
     Path rootHDFSDirPath = createRootHDFSDir(conf);
     // Now create session specific dirs
-    String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
+    String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION);
     Path path;
     // 1. HDFS scratch dir
     path = new Path(rootHDFSDirPath, userName);
     hdfsScratchDirURIString = path.toUri().toString();
     createPath(conf, path, scratchDirPermission, false, false);
     // 2. Local scratch dir
-    path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
     createPath(conf, path, scratchDirPermission, true, false);
     // 3. Download resources dir
     path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
@@ -812,7 +812,7 @@ public class SessionState implements ISessionAuthState{
       hdfsSessionPathLockFile = fs.create(new Path(hdfsSessionPath, LOCK_FILE_NAME), true);
     }
     // 6. Local session path
-    localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR), sessionId);
+    localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR), sessionId);
     createPath(conf, localSessionPath, scratchDirPermission, true, true);
     conf.set(LOCAL_SESSION_PATH_KEY, localSessionPath.toUri().toString());
     // 7. HDFS temp table space
@@ -837,7 +837,7 @@ public class SessionState implements ISessionAuthState{
    * @throws IOException
    */
   private Path createRootHDFSDir(HiveConf conf) throws IOException {
-    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
     Utilities.ensurePathIsWritable(rootHDFSDirPath, conf);
     return rootHDFSDirPath;
   }
@@ -1077,8 +1077,8 @@ public class SessionState implements ISessionAuthState{
    * @throws IOException
    */
   private static File createTempFile(HiveConf conf) throws IOException {
-    String lScratchDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
-    String sessionID = conf.getVar(HiveConf.ConfVars.HIVESESSIONID);
+    String lScratchDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR);
+    String sessionID = conf.getVar(HiveConf.ConfVars.HIVE_SESSION_ID);
 
     return FileUtils.createTempFile(lScratchDir, sessionID, ".pipeout");
   }
@@ -1462,10 +1462,10 @@ public class SessionState implements ISessionAuthState{
   public void loadReloadableAuxJars() throws IOException {
     LOG.info("Reloading auxiliary JAR files");
 
-    final String renewableJarPath = sessionConf.getVar(ConfVars.HIVERELOADABLEJARS);
+    final String renewableJarPath = sessionConf.getVar(ConfVars.HIVE_RELOADABLE_JARS);
     // do nothing if this property is not specified or empty
     if (StringUtils.isBlank(renewableJarPath)) {
-      LOG.warn("Configuration {} not specified", ConfVars.HIVERELOADABLEJARS);
+      LOG.warn("Configuration {} not specified", ConfVars.HIVE_RELOADABLE_JARS);
       return;
     }
 
@@ -2113,7 +2113,7 @@ public class SessionState implements ISessionAuthState{
     // Provide a facility to set current timestamp during tests
     if (sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
       String overrideTimestampString =
-          HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
+          HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVE_TEST_CURRENT_TIMESTAMP, (String)null);
       if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
         TimestampTZ zonedDateTime = TimestampTZUtil.convert(
             Timestamp.valueOf(overrideTimestampString), sessionConf.getLocalTimeZone());

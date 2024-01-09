@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.*;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
@@ -96,7 +95,7 @@ public class GenTezUtils {
     float maxPartitionFactor =
         context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR);
     float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
-    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
     int defaultTinyBufferSize = context.conf.getIntVar(HiveConf.ConfVars.TEZ_SIMPLE_CUSTOM_EDGE_TINY_BUFFER_SIZE_MB);
 
     ReduceWork reduceWork = new ReduceWork(Utilities.REDUCENAME + context.nextSequenceNumber());
@@ -126,7 +125,7 @@ public class GenTezUtils {
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
 
       // configured limit for reducers
-      final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
       // estimated number of reducers
       final int nReducers = reduceSink.getConf().getNumReducers();
 

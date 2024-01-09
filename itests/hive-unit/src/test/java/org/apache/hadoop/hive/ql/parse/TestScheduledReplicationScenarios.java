@@ -137,7 +137,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       primary.run("create scheduled query s1_t1 every 5 seconds as repl dump " + primaryDbName);
       replica.run("create scheduled query s2_t1 every 5 seconds as repl load " + primaryDbName + " INTO "
               + replicatedDbName);
-      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
+      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR),
               Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
 
@@ -208,7 +208,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
       primary.run("create scheduled query s1_t2 every 5 seconds as repl dump " + primaryDbName + withClause);
       replica.run("create scheduled query s2_t2 every 5 seconds as repl load " + primaryDbName + " INTO "
               + replicatedDbName + withClause);
-      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
+      Path dumpRoot = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR),
               Base64.getEncoder().encodeToString(primaryDbName.toLowerCase().getBytes(StandardCharsets.UTF_8.name())));
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;

@@ -97,7 +97,7 @@ public class AlterTableAlterPartitionOperation extends DDLOperation<AlterTableAl
       try {
         List<String> values = Warehouse.getPartValuesFromPartName(partName);
         String value = values.get(colIndex);
-        if (value.equals(context.getConf().getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME))) {
+        if (value.equals(context.getConf().getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME))) {
           continue;
         }
         Object convertedValue = converter.convert(value);

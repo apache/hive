@@ -3912,7 +3912,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorMapJoinInfo.setBigTableFilterExpressions(bigTableFilterExpressions);
 
     boolean useOptimizedTable =
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAPJOIN_USE_OPTIMIZED_TABLE);
 
     // Remember the condition variables for EXPLAIN regardless of whether we specialize or not.
     vectorDesc.setVectorMapJoinInfo(vectorMapJoinInfo);
@@ -5330,7 +5330,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
                 // TEMPORARY Until Native Vector Map Join with Hybrid passes tests...
                 // HiveConf.setBoolVar(physicalContext.getConf(),
-                //    HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN, false);
+                //    HiveConf.ConfVars.HIVE_USE_HYBRIDGRACE_HASHJOIN, false);
 
                 vectorOp = specializeMapJoinOperator(op, vContext, desc, vectorMapJoinDesc);
                 isNative = true;

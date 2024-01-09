@@ -28,9 +28,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -73,12 +71,12 @@ public class TestConstraintsMerge {
   @Before
   public void setUp() throws Exception {
     hiveConf = new HiveConf(this.getClass());
-    hiveConf.set(ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+    hiveConf.set(ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(ConfVars.POST_EXEC_HOOKS.varname, "");
+    hiveConf.set(ConfVars.METASTORE_WAREHOUSE.varname, TEST_WAREHOUSE_DIR);
     hiveConf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    hiveConf.setVar(ConfVars.HIVEMAPREDMODE, "nonstrict");
-    hiveConf.setVar(ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf.setVar(ConfVars.HIVE_MAPRED_MODE, "nonstrict");
+    hiveConf.setVar(ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf
         .setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -299,12 +299,12 @@ public class ManyMiniCluster {
 
     //The default org.apache.hadoop.hive.ql.hooks.PreExecutePrinter hook
     //is present only in the ql/test directory
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+    hiveConf.set(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
       "jdbc:derby:" + new File(workDir + "/metastore_db") + ";create=true");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.toString(),
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.toString(),
       new File(workDir, "warehouse").toString());
     //set where derby logs
     File derbyLogFile = new File(workDir + "/derby.log");

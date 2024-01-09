@@ -41,7 +41,7 @@ public class PathInfo {
 
   public PathInfo(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
-    stagingDir = HiveConf.getVar(hiveConf, HiveConf.ConfVars.STAGINGDIR);
+    stagingDir = HiveConf.getVar(hiveConf, HiveConf.ConfVars.STAGING_DIR);
   }
 
   public Map<String, Path> getFsScratchDirs() {

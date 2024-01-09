@@ -139,7 +139,7 @@ public class HiveSessionImpl implements HiveSession {
     this.operationLock = serverConf.getBoolVar(
         ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION) ? null : new Semaphore(1);
     // Set an explicit session name to control the download directory name
-    sessionConf.set(ConfVars.HIVESESSIONID.varname,
+    sessionConf.set(ConfVars.HIVE_SESSION_ID.varname,
         this.sessionHandle.getHandleIdentifier().toString());
     // Use thrift transportable formatter
     sessionConf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, ThriftFormatter.class.getName());
@@ -468,7 +468,7 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public HiveConf getHiveConf() {
-    sessionConf.setVar(HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE, FETCH_WORK_SERDE_CLASS);
+    sessionConf.setVar(HiveConf.ConfVars.HIVE_FETCH_OUTPUT_SERDE, FETCH_WORK_SERDE_CLASS);
     return sessionConf;
   }
 

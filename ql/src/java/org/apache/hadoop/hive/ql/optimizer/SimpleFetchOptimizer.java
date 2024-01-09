@@ -131,7 +131,7 @@ public class SimpleFetchOptimizer extends Transform {
   private FetchTask optimize(ParseContext pctx, String alias, TableScanOperator source)
       throws Exception {
     String mode = HiveConf.getVar(
-        pctx.getConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION);
+        pctx.getConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION);
 
     boolean aggressive = "more".equals(mode);
     final int limit = pctx.getQueryProperties().getOuterQueryLimit();
@@ -144,7 +144,7 @@ public class SimpleFetchOptimizer extends Transform {
       FetchWork fetchWork = fetch.convertToWork();
       FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork);
       fetchTask.setCachingEnabled(HiveConf.getBoolVar(pctx.getConf(),
-              HiveConf.ConfVars.HIVEFETCHTASKCACHING));
+              HiveConf.ConfVars.HIVE_FETCH_TASK_CACHING));
       fetchWork.setSink(fetch.completed(pctx, fetchWork));
       fetchWork.setSource(source);
       fetchWork.setLimit(limit);
@@ -154,7 +154,7 @@ public class SimpleFetchOptimizer extends Transform {
   }
 
   private boolean checkThreshold(FetchData data, int limit, ParseContext pctx) throws Exception {
-    boolean cachingEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVEFETCHTASKCACHING);
+    boolean cachingEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CACHING);
     if (!cachingEnabled) {
       if (limit > 0) {
         if (data.hasOnlyPruningFilter()) {
@@ -176,7 +176,7 @@ public class SimpleFetchOptimizer extends Transform {
     }
     // if caching is enabled we apply the treshold in all cases
     long threshold = HiveConf.getLongVar(pctx.getConf(),
-        HiveConf.ConfVars.HIVEFETCHTASKCONVERSIONTHRESHOLD);
+        HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION_THRESHOLD);
     if (threshold < 0) {
       return true;
     }
@@ -209,7 +209,7 @@ public class SimpleFetchOptimizer extends Transform {
     }
 
     boolean bypassFilter = false;
-    if (HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVEOPTPPD)) {
+    if (HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_OPT_PPD)) {
       ExprNodeDesc pruner = pctx.getOpToPartPruner().get(ts);
       if (PartitionPruner.onlyContainsPartnCols(table, pruner)) {
         bypassFilter = !pctx.getPrunedPartitions(alias, ts).hasUnknownPartitions();

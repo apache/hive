@@ -348,12 +348,12 @@ public class MiniHS2 extends AbstractHiveService {
     Path scratchDir = new Path(baseFsDir, "scratch");
     // Create root scratchdir with write all, so that user impersonation has no issues.
     Utilities.createDirsWithPermission(hiveConf, scratchDir, WRITE_ALL_PERM, true);
-    System.setProperty(HiveConf.ConfVars.SCRATCHDIR.varname, scratchDir.toString());
-    hiveConf.setVar(ConfVars.SCRATCHDIR, scratchDir.toString());
+    System.setProperty(HiveConf.ConfVars.SCRATCH_DIR.varname, scratchDir.toString());
+    hiveConf.setVar(ConfVars.SCRATCH_DIR, scratchDir.toString());
 
     String localScratchDir = baseDir.getPath() + File.separator + "scratch";
-    System.setProperty(HiveConf.ConfVars.LOCALSCRATCHDIR.varname, localScratchDir);
-    hiveConf.setVar(ConfVars.LOCALSCRATCHDIR, localScratchDir);
+    System.setProperty(HiveConf.ConfVars.LOCAL_SCRATCH_DIR.varname, localScratchDir);
+    hiveConf.setVar(ConfVars.LOCAL_SCRATCH_DIR, localScratchDir);
   }
 
   public MiniHS2(HiveConf hiveConf) throws Exception {

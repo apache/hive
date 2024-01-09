@@ -107,7 +107,7 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
     conf.setBoolVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, true);
-    conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+    conf.setVar(HiveConf.ConfVars.HIVE_MAPRED_MODE, "nonstrict");
     conf.setBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE, true);
     conf.setBoolVar(ConfVars.HIVE_ZOOKEEPER_KILLQUERY_ENABLE, false);
 

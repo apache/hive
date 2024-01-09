@@ -26,7 +26,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -44,7 +43,6 @@ import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.operation.MetadataOperation;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
-import org.apache.hive.service.server.HiveServer2;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +74,7 @@ public class TestSessionManagerMetrics {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
-    conf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, false);
     //NOTES: If we enable operation log, SessionManager will delete operation logs directory on exit,
     //it maybe impact TestSessionCleanup, because they use the same location ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION,
     // when we run testing in parallel on local machine with -DforkCount=x, it happen.
