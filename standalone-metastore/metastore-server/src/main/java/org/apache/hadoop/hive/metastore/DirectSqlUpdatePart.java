@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -181,7 +182,7 @@ class DirectSqlUpdatePart {
             e -> e.partitionId).collect(Collectors.toList()
     );
 
-    prefix.append("select \"PART_ID\", \"COLUMN_NAME\" from \"PART_COL_STATS\" WHERE ");
+    prefix.append("select \"PART_ID\", \"COLUMN_NAME\", \"ENGINE\" from \"PART_COL_STATS\" WHERE ");
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
             partIdList, "\"PART_ID\"", true, false);
 
@@ -191,7 +192,7 @@ class DirectSqlUpdatePart {
         LOG.debug("Going to execute query " + query);
         rs = statement.executeQuery(query);
         while (rs.next()) {
-          selectedParts.add(new PartColNameInfo(rs.getLong(1), rs.getString(2)));
+          selectedParts.add(new PartColNameInfo(rs.getLong(1), rs.getString(2), rs.getString(3)));
         }
       } finally {
         close(rs, statement, null);
@@ -207,7 +208,8 @@ class DirectSqlUpdatePart {
         statsDesc.setCatName(tbl.getCatName());
       }
       for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
-        PartColNameInfo temp = new PartColNameInfo(partId, statisticsObj.getColName());
+        PartColNameInfo temp = new PartColNameInfo(partId, statisticsObj.getColName(),
+            colStats.getEngine());
         if (selectedParts.contains(temp)) {
           updateMap.put(temp, StatObjectConverter.
                   convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine()));
@@ -221,25 +223,46 @@ class DirectSqlUpdatePart {
 
   private void updatePartColStatTable(Map<PartColNameInfo, MPartitionColumnStatistics> updateMap,
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
-    PreparedStatement pst = null;
+    Map<String, List<Map.Entry>> updates = new HashMap<>();
     for (Map.Entry entry : updateMap.entrySet()) {
-      PartColNameInfo partColNameInfo = (PartColNameInfo) entry.getKey();
-      Long partId = partColNameInfo.partitionId;
       MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) entry.getValue();
-      String update = "UPDATE \"PART_COL_STATS\" SET ";
-      update += StatObjectConverter.getUpdatedColumnSql(mPartitionColumnStatistics);
-      update += " WHERE \"PART_ID\" = " + partId + " AND "
-              + " \"COLUMN_NAME\" = " +  quoteString(mPartitionColumnStatistics.getColName());
-      try {
-        pst = dbConn.prepareStatement(update);
-        StatObjectConverter.initUpdatedColumnStatement(mPartitionColumnStatistics, pst);
-        LOG.debug("Going to execute update " + update);
-        int numUpdate = pst.executeUpdate();
-        if (numUpdate != 1) {
-          throw new MetaException("Invalid state of  PART_COL_STATS for PART_ID " + partId);
+      StringBuilder update = new StringBuilder("UPDATE \"PART_COL_STATS\" SET ")
+          .append(StatObjectConverter.getUpdatedColumnSql(mPartitionColumnStatistics))
+          .append(" WHERE \"PART_ID\" = ? AND \"COLUMN_NAME\" = ? AND \"ENGINE\" = ?");
+      updates.computeIfAbsent(update.toString(), k -> new ArrayList<>()).add(entry);
+    }
+
+    for (Map.Entry<String, List<Map.Entry>> entry : updates.entrySet()) {
+      List<Long> partIds = new ArrayList<>();
+      try (PreparedStatement pst = dbConn.prepareStatement(entry.getKey())) {
+        List<Map.Entry> entries = entry.getValue();
+        for (Map.Entry partStats : entries) {
+          PartColNameInfo partColNameInfo = (PartColNameInfo) partStats.getKey();
+          MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) partStats.getValue();
+          int colIdx = StatObjectConverter.initUpdatedColumnStatement(mPartitionColumnStatistics, pst);
+          pst.setLong(colIdx++, partColNameInfo.partitionId);
+          pst.setString(colIdx++, mPartitionColumnStatistics.getColName());
+          pst.setString(colIdx++, mPartitionColumnStatistics.getEngine());
+          partIds.add(partColNameInfo.partitionId);
+          pst.addBatch();
+          if (partIds.size() == maxBatchSize) {
+            LOG.debug("Going to execute updates on part: {}", partIds);
+            verifyUpdates(pst.executeBatch(), partIds);
+            partIds = new ArrayList<>();
+          }
         }
-      } finally {
-        closeStmt(pst);
+        if (!partIds.isEmpty()) {
+          LOG.debug("Going to execute updates on part: {}", partIds);
+          verifyUpdates(pst.executeBatch(), partIds);
+        }
+      }
+    }
+  }
+
+  private void verifyUpdates(int[] numUpdates, List<Long> partIds) throws MetaException {
+    for (int i = 0; i < numUpdates.length; i++) {
+      if (numUpdates[i] != 1) {
+        throw new MetaException("Invalid state of PART_COL_STATS for PART_ID " + partIds.get(i));
       }
     }
   }
@@ -1501,9 +1524,11 @@ class DirectSqlUpdatePart {
   private static final class PartColNameInfo {
     long partitionId;
     String colName;
-    public PartColNameInfo(long partitionId, String colName) {
+    String engine;
+    public PartColNameInfo(long partitionId, String colName, String engine) {
       this.partitionId = partitionId;
       this.colName = colName;
+      this.engine = engine;
     }
 
     @Override
@@ -1527,10 +1552,10 @@ class DirectSqlUpdatePart {
       if (this.partitionId != other.partitionId) {
         return false;
       }
-      if (this.colName.equalsIgnoreCase(other.colName)) {
-        return true;
+      if (!this.colName.equalsIgnoreCase(other.colName)) {
+        return false;
       }
-      return false;
+      return Objects.equals(this.engine, other.engine);
     }
   }
 }
