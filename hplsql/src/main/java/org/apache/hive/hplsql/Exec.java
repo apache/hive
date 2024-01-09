@@ -2416,7 +2416,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   public Integer visitExpr_dot_property_access(HplsqlParser.Expr_dot_property_accessContext ctx) {
     if (exec.buildSql) {
       String property = ctx.ident(ctx.ident().size() - 1).getText();
-      if (TableClass.isTableAttributeExists(property.toLowerCase())) {
+      if (TableClass.isTableAttributeExists(property)) {
         exec.stackPush(new Var(Var.Type.IDENT, ctx.getText()));
       } else {
         exec.stackPush(new Var(Var.Type.IDENT, property));
