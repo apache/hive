@@ -180,9 +180,9 @@ public class StorageFormat {
         if (type.name().equalsIgnoreCase(node.getText())) {
           inputFormat = type.inputFormat();
           outputFormat = type.outputFormat();
-          assert type.className != null;
+          assert type.className() != null;
           // Should never fail
-          return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(type.className));
+          return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(type.className()));
         }
       }
     }
