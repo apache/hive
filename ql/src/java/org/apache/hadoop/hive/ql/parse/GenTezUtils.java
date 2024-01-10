@@ -401,6 +401,7 @@ public class GenTezUtils {
     operators.addAll(newRoots);
 
     Set<Operator<?>> seen = new HashSet<Operator<?>>();
+    Set<Operator<?>> removedParents = new HashSet<Operator<?>>();
 
     Set<FileStatus> fileStatusesToFetch = null;
     if(context.parseContext.getFetchTask() != null) {
@@ -468,7 +469,12 @@ public class GenTezUtils {
           // root operator is union (can happen in reducers)
           replacementMap.put(current, current.getChildOperators().get(0));
         } else {
-          parent.removeChildAndAdoptItsChildren(current);
+          // For complex queries, there is a UNION with the same parent.
+          // In that case, the parent UNION that has already been removed will not be removed.
+          if (!removedParents.contains(parent)) {
+            parent.removeChildAndAdoptItsChildren(current);
+            removedParents.add(parent);
+          }
           operators.remove(current);
         }
       }
