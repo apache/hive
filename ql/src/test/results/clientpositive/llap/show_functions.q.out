@@ -493,6 +493,7 @@ xpath_number
 xpath_short
 xpath_string
 year
+yesterday
 |
 ~
 PREHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'c%'
@@ -1121,6 +1122,7 @@ xpath_number
 xpath_short
 xpath_string
 year
+yesterday
 |
 ~
 PREHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'When'
