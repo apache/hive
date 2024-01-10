@@ -425,6 +425,32 @@ public class MapJoinProcessor extends Transform {
       return false;
     }
 
+    // Do not convert to MapJoin if FullOuterJoin has any filter expression.
+    // This partially disables HIVE-18908 optimization and solves the MapJoin correctness problems
+    // described in HIVE-27226.
+    if (joinDesc.getFilters() != null) {
+      // Unlike CommonJoinOperator.hasFilter(), we check getFilters() instead of getFilterMap() because
+      // getFilterMap() can be non-null while getFilters() is empty.
+
+      boolean hasFullOuterJoinWithFilter = Arrays.stream(joinDesc.getConds()).anyMatch(cond -> {
+        if (cond.getType() == JoinDesc.FULL_OUTER_JOIN) {
+          Byte left = (byte) cond.getLeft();
+          Byte right = (byte) cond.getRight();
+          boolean leftHasFilter =
+              joinDesc.getFilters().containsKey(left) && !joinDesc.getFilters().get(left).isEmpty();
+          boolean rightHasFilter =
+              joinDesc.getFilters().containsKey(right) && !joinDesc.getFilters().get(right).isEmpty();
+          return leftHasFilter || rightHasFilter;
+        } else {
+          return false;
+        }
+      });
+      if (hasFullOuterJoinWithFilter) {
+        LOG.debug("FULL OUTER MapJoin not enabled: FullOuterJoin with filters not supported");
+        return false;
+      }
+    }
+
     return true;
   }
 
