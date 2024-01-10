@@ -1328,6 +1328,8 @@ public class HiveConf extends Configuration {
         + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FIRE_EVENTS_FOR_DML("hive.metastore.dml.events", false, "If true, the metastore will be asked" +
         " to fire events for DML operations"),
+    HIVE_SUPPORT_MULTIPLE_FSLOCATIONS("hive.support.multiple.fslocations", false, "If true, locations of different filesystem" +
+            " will be supported when writing"),
     METASTORE_CLIENT_DROP_PARTITIONS_WITH_EXPRESSIONS("hive.metastore.client.drop.partitions.using.expressions", true,
         "Choose whether dropping partitions with HCatClient pushes the partition-predicate to the metastore, " +
             "or drops partitions iteratively"),

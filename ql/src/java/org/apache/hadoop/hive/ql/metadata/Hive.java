@@ -1757,10 +1757,17 @@ public class Hive {
            *
            * See: HIVE-1707 and HIVE-2117 for background
            */
-          FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
-          FileSystem loadPathFS = loadPath.getFileSystem(getConf());
-          if (FileUtils.equalsFileSystem(oldPartPathFS,loadPathFS)) {
-            newPartPath = oldPartPath;
+          boolean isSupportDifferentFs = conf.getBoolVar(ConfVars.HIVE_SUPPORT_MULTIPLE_FSLOCATIONS);
+          if (!isSupportDifferentFs) {
+            FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
+            FileSystem tblPathFS = tblDataLocationPath.getFileSystem(getConf());
+            if (FileUtils.equalsFileSystem(oldPartPathFS, tblPathFS)) {
+              newPartPath = oldPartPath;
+            }
+          } else {
+            if (oldPartPath != null) {
+              newPartPath = oldPartPath;
+            }
           }
         }
       } else {
@@ -1817,7 +1824,7 @@ public class Hive {
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
               isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
         } else {
-          FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
+          FileSystem fs = destPath.getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles,
               tbl.getNumBuckets() > 0, isFullAcidTable, isManaged);
@@ -2699,7 +2706,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         insertData.setReplace(replace);
         data.setInsertData(insertData);
         if (newFiles != null && !newFiles.isEmpty()) {
-          addInsertFileInformation(newFiles, fileSystem, insertData);
+          addInsertFileInformation(newFiles, fileSystem, insertData, conf);
         } else {
           insertData.setFilesAdded(new ArrayList<String>());
         }
@@ -2722,17 +2729,22 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
 
   private static void addInsertFileInformation(List<Path> newFiles, FileSystem fileSystem,
-      InsertEventRequestData insertData) throws IOException {
+                                               InsertEventRequestData insertData, HiveConf conf) throws IOException {
     LinkedList<Path> directories = null;
+    boolean isSupportDifferentFs = conf.getBoolVar(ConfVars.HIVE_SUPPORT_MULTIPLE_FSLOCATIONS);
     for (Path p : newFiles) {
-      if (fileSystem.isDirectory(p)) {
+      FileSystem pFileSystem = fileSystem;
+      if (isSupportDifferentFs && (!(p.toUri().getScheme().equals(fileSystem.getScheme())))) {
+        pFileSystem = p.getFileSystem(conf);
+      }
+      if (pFileSystem.isDirectory(p)) {
         if (directories == null) {
           directories = new LinkedList<>();
         }
         directories.add(p);
         continue;
       }
-      addInsertNonDirectoryInformation(p, fileSystem, insertData);
+      addInsertNonDirectoryInformation(p, pFileSystem, insertData);
     }
     if (directories == null) {
       return;
@@ -2741,7 +2753,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // are some examples where we would have 1, or few, levels respectively.
     while (!directories.isEmpty()) {
       Path dir = directories.poll();
-      FileStatus[] contents = fileSystem.listStatus(dir);
+      FileSystem dFileSystem = fileSystem;
+      if (isSupportDifferentFs && (!(dir.toUri().getScheme().equals(fileSystem.getScheme())))) {
+        dFileSystem = dir.getFileSystem(conf);
+      }
+      FileStatus[] contents = dFileSystem.listStatus(dir);
       if (contents == null) {
         continue;
       }
@@ -2750,7 +2766,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           directories.add(status.getPath());
           continue;
         }
-        addInsertNonDirectoryInformation(status.getPath(), fileSystem, insertData);
+        addInsertNonDirectoryInformation(status.getPath(), dFileSystem, insertData);
       }
     }
   }
