@@ -40,8 +40,4 @@ public class MethodDictionary<T extends HplObject> {
     }
     return result;
   }
-
-  public boolean isMethodNameExists(String methodName) {
-    return dict.containsKey(methodName.toUpperCase());
-  }
 }

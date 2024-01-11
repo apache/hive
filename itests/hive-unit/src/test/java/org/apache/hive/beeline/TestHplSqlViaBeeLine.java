@@ -617,7 +617,7 @@ public class TestHplSqlViaBeeLine {
         "DROP TABLE IF EXISTS result;\n" +
         "CREATE TABLE input (col1 string, col2 int);\n" +
         "CREATE TABLE result (res string);\n" +
-        "INSERT INTO input VALUES('Hive', 3);\n" +
+        "INSERT INTO input VALUES('Hive', 2023);\n" +
         "CREATE PROCEDURE p1() AS\n" +
         "  BEGIN\n" +
         "    FOR rec IN (select tab.col1, tab.col2 num from input tab) LOOP\n" +
@@ -626,7 +626,7 @@ public class TestHplSqlViaBeeLine {
         "END;\n" +
         "p1();\n" +
         "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "3 = Hive");
+    testScriptFile(SCRIPT_TEXT, args(), "2023 = Hive");
   }
 
   private static List<String> args() {

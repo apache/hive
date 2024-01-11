@@ -136,8 +136,4 @@ public class TableClass implements HplClass {
   public boolean rowType() {
     return rowType;
   }
-
-  public static boolean isTableAttributeExists(String tableAttribute) {
-    return methodDictionary.isMethodNameExists(tableAttribute);
-  }
 }
