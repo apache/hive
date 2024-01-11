@@ -601,11 +601,7 @@ public class Var {
       return (String)value;
     }
     else if (type == Type.DATE) {
-      String date = ((Date)value).toString();
-      StringBuilder dateSB = new StringBuilder("DATE '");
-      dateSB.append(date);
-      dateSB.append("'");
-      return dateSB.toString();
+      return String.format("DATE '%s'", value);
     }
     else if (type == Type.TIMESTAMP) {
       int len = 19;
@@ -616,10 +612,7 @@ public class Var {
       if (t.length() > len) {
         t = t.substring(0, len);
       }
-      StringBuilder tsSB = new StringBuilder("TIMESTAMP '");
-      tsSB.append(t);
-      tsSB.append("'");
-      return tsSB.toString();
+      return String.format("TIMESTAMP '%s'", t);
     }
 	  return value.toString();
 	}
