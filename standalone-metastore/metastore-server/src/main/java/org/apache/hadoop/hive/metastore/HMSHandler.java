@@ -8871,7 +8871,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public void set_hadoop_jobid(String jobId, long cqId) throws MetaException {
+  public void set_hadoop_jobid(String jobId, long cqId) {
     getTxnHandler().setHadoopJobId(jobId, cqId);
   }
 
