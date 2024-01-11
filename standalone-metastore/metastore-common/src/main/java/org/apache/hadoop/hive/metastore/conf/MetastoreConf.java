@@ -1631,7 +1631,7 @@ public class MetastoreConf {
         "Time before an open transaction operation should persist, otherwise it is considered invalid and rolled back"),
     TXN_USE_MIN_HISTORY_LEVEL("metastore.txn.use.minhistorylevel", "hive.txn.use.minhistorylevel", true,
         "Set this to false, for the TxnHandler and Cleaner to not use MIN_HISTORY_LEVEL table and take advantage of openTxn optimisation.\n"
-            + "If the table is dropped HMS will switch this flag to false, any other value changes need a restart to take effect."),
+            + "If the table is dropped HMS will switch this flag to false."),
     TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", false,
       "Set this to true, to avoid global minOpenTxn check in Cleaner.\n"
             + "If the table is dropped HMS will switch this flag to false."),
