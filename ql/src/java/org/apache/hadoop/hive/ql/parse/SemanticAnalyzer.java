@@ -15709,7 +15709,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (transactionalTables.size() > 0) {
       try {
         String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-        return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
+        return getTxnMgr().getValidWriteIds(transactionalTables, txnString, true);
       } catch (Exception err) {
         String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
                 + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);

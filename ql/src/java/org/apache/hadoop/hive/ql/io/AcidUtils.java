@@ -2411,7 +2411,7 @@ public class AcidUtils {
           return null;
         }
         if (validWriteIdList == null) {
-          validWriteIdList = getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
+          validWriteIdList = getTableValidWriteIdListWithTxnList(conf, dbName, tblName, false);
         }
         if (validWriteIdList == null) {
           throw new AssertionError("Cannot find valid write ID list for " + tblName);
@@ -2433,7 +2433,7 @@ public class AcidUtils {
    * @throws LockException
    */
   public static ValidWriteIdList getTableValidWriteIdListWithTxnList(
-      Configuration conf, String dbName, String tableName) throws LockException {
+      Configuration conf, String dbName, String tableName, boolean useWriteIdCache) throws LockException {
     HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
     if (sessionTxnMgr == null) {
       return null;
@@ -2446,7 +2446,7 @@ public class AcidUtils {
     String fullTableName = getFullTableName(dbName, tableName);
     tablesInput.add(fullTableName);
 
-    validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
+    validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList, useWriteIdCache);
     return validTxnWriteIdList != null ?
         validTxnWriteIdList.getTableValidWriteIdList(fullTableName) : null;
   }

@@ -1626,7 +1626,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     String fullTableName = AcidUtils.getFullTableName(dbName, tblName);
     ValidWriteIdList validWriteIds = getTxnMgr()
-            .getValidWriteIds(Collections.singletonList(fullTableName), validTxnString)
+            .getValidWriteIds(Collections.singletonList(fullTableName), validTxnString, false)
             .getTableValidWriteIdList(fullTableName);
     return ((validWriteIds != null) ? validWriteIds.toString() : null);
   }

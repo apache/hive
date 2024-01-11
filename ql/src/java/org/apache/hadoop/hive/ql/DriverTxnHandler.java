@@ -372,7 +372,7 @@ class DriverTxnHandler {
       txnWriteIds = new ValidTxnWriteIdList(driverContext.getCompactorTxnId());
       txnWriteIds.addTableValidWriteIdList(driverContext.getCompactionWriteIds());
     } else {
-      txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
+      txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString, false);
     }
     if (driverContext.getTxnType() == TxnType.READ_ONLY && !getTables(false, true).isEmpty()) {
       throw new IllegalStateException(String.format(

@@ -104,7 +104,7 @@ public class CacheTableHelper {
     }
     String validTxnList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     try {
-      txnMgr.getValidWriteIds(fullTableNamesList, validTxnList);
+      txnMgr.getValidWriteIds(fullTableNamesList, validTxnList, true);
     } catch (Exception e) {
       LOG.info("Population of valid write id list cache failed, will be done later in query.");
     }

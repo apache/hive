@@ -2517,7 +2517,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       }
       final String fullTableName = TableName.getDbTable(dbName, tblName);
       final ValidTxnWriteIdList validTxnWriteIdList = SessionState.get().getTxnMgr()
-          .getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
+          .getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList, true);
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
       return (writeIdList != null) ? writeIdList.toString() : null;
     } catch (Exception e) {

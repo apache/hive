@@ -60,7 +60,7 @@ class TestTxnManager extends DummyTxnManager {
 
   @Override
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
-                                              String validTxnList) throws LockException {
+                                              String validTxnList, boolean useWriteIdCache) throws LockException {
     // Format : <txnId>$<table_name>:<hwm>:<minOpenWriteId>:<open_writeids>:<abort_writeids>
     return new ValidTxnWriteIdList(getCurrentTxnId() + DOLLAR.toString() + "db.table" + COLON +
         getCurrentTxnId() + COLON +

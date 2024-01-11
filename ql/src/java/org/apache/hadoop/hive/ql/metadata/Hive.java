@@ -1728,7 +1728,7 @@ public class Hive {
         long txnId = SessionState.get() != null && SessionState.get().getTxnMgr() != null ?
             SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
         if (txnId > 0) {
-          validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
+          validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName, true);
         }
         request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
       }
@@ -1795,7 +1795,7 @@ public class Hive {
     HiveTxnManager txnMgr = sessionState != null? sessionState.getTxnMgr() : null;
     long txnId = txnMgr != null ? txnMgr.getCurrentTxnId() : 0;
     if (txnId > 0) {
-      validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
+      validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName, true);
     } else {
       String fullTableName = getFullTableName(dbName, tableName);
       validWriteIdList = new ValidReaderWriteIdList(fullTableName, new long[0], new BitSet(), Long.MAX_VALUE);
@@ -2531,7 +2531,7 @@ public class Hive {
     TableSnapshot tableSnapshot = null;
     if ((writeId != null) && (writeId > 0)) {
       ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
-              conf, tbl.getDbName(), tbl.getTableName());
+              conf, tbl.getDbName(), tbl.getTableName(), false);
       tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
     } else {
       // Make sure we pass in the names, so we can get the correct snapshot for rename table.

@@ -3274,7 +3274,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     long testTxnId = txnMgr2.openTxn(ctx, "u2");
     Assert.assertTrue("Invalid txn ID", testTxnId > underHwmOpenTxnId);
     String testValidTxns = txnMgr2.getValidTxns().toString();
-    ValidWriteIdList testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+    ValidWriteIdList testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns, true)
             .getTableValidWriteIdList("temp.t7");
     Assert.assertEquals(baseWriteId, testValidWriteIds.getHighWatermark());
     Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));
@@ -3291,7 +3291,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(3, underHwmOpenWriteId);
 
     // Verify the ValidWriteIdList with one open txn on this table. Write ID of open txn should be invalid.
-    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns, false)
         .getTableValidWriteIdList("temp.t7");
     Assert.assertEquals(underHwmOpenWriteId, testValidWriteIds.getHighWatermark());
     Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));
@@ -3301,7 +3301,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     // Commit the txn under HWM.
     // Verify the writeId of this committed txn should be invalid for test txn.
     txnMgr1.commitTxn();
-    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns, true)
         .getTableValidWriteIdList("temp.t7");
     Assert.assertEquals(underHwmOpenWriteId, testValidWriteIds.getHighWatermark());
     Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));
@@ -3314,7 +3314,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     long testWriteId = txnMgr2.getTableWriteId("temp", "T7");
     Assert.assertEquals(4, testWriteId);
 
-    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns, false)
         .getTableValidWriteIdList("temp.t7");
     Assert.assertEquals(testWriteId, testValidWriteIds.getHighWatermark());
     Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));

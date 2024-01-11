@@ -294,7 +294,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
-                                              String validTxnList) throws LockException {
+                                              String validTxnList, boolean useWriteIdCache) throws LockException {
     return new ValidTxnWriteIdList(getCurrentTxnId());
   }
 

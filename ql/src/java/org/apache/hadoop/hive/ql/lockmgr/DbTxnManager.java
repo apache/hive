@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.TException;
@@ -179,6 +180,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   //Contains database under replication name for hive replication transactions (dump and load operation)
   private String replPolicy;
+  //Cache to store the tables list/txn list to the validWriteIdList
+  private Map<Integer, ValidTxnWriteIdList> validTxnWriteIdListHashMap = new HashMap<>();
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -803,16 +806,24 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
-                                              String validTxnList) throws LockException {
+                                              String validTxnList, boolean useWriteIdCache) throws LockException {
     assert isTxnOpen();
+    ValidTxnWriteIdList validTxnWriteIdList = null;
     if (!StringUtils.isEmpty(validTxnList)) {
       try {
-        return TxnCommonUtils.createValidTxnWriteIdList(txnId, getMS().getValidWriteIds(tableList, validTxnList));
+        int key = validTxnList.hashCode() & tableList.hashCode();
+        if (useWriteIdCache && validTxnWriteIdListHashMap.containsKey(key)) {
+          validTxnWriteIdList = validTxnWriteIdListHashMap.get(key);
+        } else {
+          validTxnWriteIdList =
+              TxnCommonUtils.createValidTxnWriteIdList(txnId, getMS().getValidWriteIds(tableList, validTxnList));
+          validTxnWriteIdListHashMap.put(key, validTxnWriteIdList);
+        }
       } catch (TException e) {
         throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
       }
     }
-    return null;
+    return validTxnWriteIdList;
   }
 
   @Override

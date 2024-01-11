@@ -208,7 +208,7 @@ public interface HiveTxnManager {
    * @return list of valid table write Ids.
    * @throws LockException
    */
-  ValidTxnWriteIdList getValidWriteIds(List<String> tableList, String validTxnList) throws LockException;
+  ValidTxnWriteIdList getValidWriteIds(List<String> tableList, String validTxnList, boolean useWriteIdCache) throws LockException;
 
   /**
    * Get the name for currently installed transaction manager.
