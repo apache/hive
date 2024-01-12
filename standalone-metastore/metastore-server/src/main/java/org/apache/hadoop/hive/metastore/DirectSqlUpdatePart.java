@@ -223,22 +223,22 @@ class DirectSqlUpdatePart {
 
   private void updatePartColStatTable(Map<PartColNameInfo, MPartitionColumnStatistics> updateMap,
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
-    Map<String, List<Map.Entry>> updates = new HashMap<>();
-    for (Map.Entry entry : updateMap.entrySet()) {
-      MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) entry.getValue();
+    Map<String, List<Map.Entry<PartColNameInfo, MPartitionColumnStatistics>>> updates = new HashMap<>();
+    for (Map.Entry<PartColNameInfo, MPartitionColumnStatistics> entry : updateMap.entrySet()) {
+      MPartitionColumnStatistics mPartitionColumnStatistics = entry.getValue();
       StringBuilder update = new StringBuilder("UPDATE \"PART_COL_STATS\" SET ")
           .append(StatObjectConverter.getUpdatedColumnSql(mPartitionColumnStatistics))
           .append(" WHERE \"PART_ID\" = ? AND \"COLUMN_NAME\" = ? AND \"ENGINE\" = ?");
       updates.computeIfAbsent(update.toString(), k -> new ArrayList<>()).add(entry);
     }
 
-    for (Map.Entry<String, List<Map.Entry>> entry : updates.entrySet()) {
+    for (Map.Entry<String, List<Map.Entry<PartColNameInfo, MPartitionColumnStatistics>>> entry : updates.entrySet()) {
       List<Long> partIds = new ArrayList<>();
       try (PreparedStatement pst = dbConn.prepareStatement(entry.getKey())) {
-        List<Map.Entry> entries = entry.getValue();
-        for (Map.Entry partStats : entries) {
-          PartColNameInfo partColNameInfo = (PartColNameInfo) partStats.getKey();
-          MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) partStats.getValue();
+        List<Map.Entry<PartColNameInfo, MPartitionColumnStatistics>> entries = entry.getValue();
+        for (Map.Entry<PartColNameInfo, MPartitionColumnStatistics> partStats : entries) {
+          PartColNameInfo partColNameInfo = partStats.getKey();
+          MPartitionColumnStatistics mPartitionColumnStatistics = partStats.getValue();
           int colIdx = StatObjectConverter.initUpdatedColumnStatement(mPartitionColumnStatistics, pst);
           pst.setLong(colIdx++, partColNameInfo.partitionId);
           pst.setString(colIdx++, mPartitionColumnStatistics.getColName());

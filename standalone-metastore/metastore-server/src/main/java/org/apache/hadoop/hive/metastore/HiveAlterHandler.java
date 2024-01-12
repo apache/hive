@@ -399,9 +399,9 @@ public class HiveAlterHandler implements AlterHandler {
               @Override
               public List<Void> run(List<Partition> input) throws Exception {
                 msdb.alterPartitions(catalogName, newDbName, newTblName,
-                    input.stream().map(part -> part.getValues()).collect(Collectors.toList()),
+                    input.stream().map(Partition::getValues).collect(Collectors.toList()),
                     input, newt.getWriteId(), writeIdList);
-                return null;
+                return Collections.emptyList();
               }
             });
           }
