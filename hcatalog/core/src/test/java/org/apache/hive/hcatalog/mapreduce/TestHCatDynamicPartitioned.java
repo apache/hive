@@ -122,8 +122,10 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
   protected void runHCatDynamicPartitionedTable(boolean asSingleMapTask,
       String customDynamicPathPattern) throws Exception {
     generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
-    runMRCreate(null, dataColumns, writeRecords.subList(0,NUM_RECORDS/2), NUM_RECORDS/2, true, asSingleMapTask, customDynamicPathPattern);
-    runMRCreate(null, dataColumns, writeRecords.subList(NUM_RECORDS/2,NUM_RECORDS), NUM_RECORDS/2, true, asSingleMapTask, customDynamicPathPattern);
+    runMRCreate(null, dataColumns, writeRecords.subList(0,NUM_RECORDS/2), NUM_RECORDS/2,
+        true, asSingleMapTask, customDynamicPathPattern);
+    runMRCreate(null, dataColumns, writeRecords.subList(NUM_RECORDS/2,NUM_RECORDS), NUM_RECORDS/2,
+        true, asSingleMapTask, customDynamicPathPattern);
 
     runMRRead(NUM_RECORDS);
 
