@@ -51,7 +51,7 @@ public class TestStringExpr {
   }
 
   @Test
-  public void test2() throws Exception {
+  public void testControlCharacters() throws Exception {
     StringExpr.Finder pattern = compile("pattern");
     assertNotNull(pattern);
 
