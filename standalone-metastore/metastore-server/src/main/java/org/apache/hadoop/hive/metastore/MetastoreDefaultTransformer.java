@@ -772,7 +772,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       return hmsHandler.get_database_core(oldTable.getCatName(), oldTable.getDbName());
     } catch (NoSuchObjectException e) {
       throw new MetaException(
-          "Database " + oldTable.getTableName() + " for table " + oldTable.getTableName() + " could not be found");
+          "Database " + oldTable.getDbName() + " for table " + oldTable.getTableName() + " could not be found");
     }
   }
 
@@ -895,7 +895,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     try {
       db = hmsHandler.get_database_core(table.getCatName(), table.getDbName());
     } catch (NoSuchObjectException e) {
-      throw new MetaException("Database " + table.getTableName() + " for table " + table.getTableName() + " could not be found");
+      throw new MetaException("Database " + table.getDbName() + " for table " + table.getTableName() + " could not be found");
     }
 
     if (TableType.MANAGED_TABLE.name().equals(table.getTableType())) {
