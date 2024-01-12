@@ -164,7 +164,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         }
 
         PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
-                MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+                HiveConf.getIntVar(context.getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
         int numParts = 0;
         for (Partition p : partitions) {
           Map<String, String> partitionProps = p.getParameters();
@@ -237,7 +237,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     FieldSchema partCol = table.getPartColByName(colNames.get(0));
     cols.add(partCol);
     PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
-        MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+        HiveConf.getIntVar(context.getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
     ColumnInfo ci = new ColumnInfo(partCol.getName(),
         TypeInfoUtils.getTypeInfoFromTypeString(partCol.getType()), null, false);
     ColStatistics cs = StatsUtils.getColStatsForPartCol(ci, parts, context.getConf());

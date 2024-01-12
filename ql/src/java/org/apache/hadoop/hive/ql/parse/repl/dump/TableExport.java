@@ -177,8 +177,8 @@ public class TableExport {
             // Hence, we create a local thread variable of Hive class and use it here while constructing
             // PartitionIterable object. This creates a local copy of MS client for each thread.
 
-            return new PartitionIterable(Hive.get(conf), tableSpec.tableHandle, null, MetastoreConf.getIntVar(
-                conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX), true);
+            return new PartitionIterable(Hive.get(conf), tableSpec.tableHandle, null, HiveConf
+                    .getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX), true);
           }
         } else {
           // PARTITIONS specified - partitions inside tableSpec

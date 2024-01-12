@@ -345,7 +345,7 @@ public class TestStatsUpdaterThread {
   @Test(timeout=160000)
   public void testQueueingWithThreads() throws Exception {
     final int PART_COUNT = 12;
-    hiveConf.setInt(MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX.getVarname(), 5);
+    hiveConf.setInt(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX.varname, 5);
     hiveConf.setInt(MetastoreConf.ConfVars.STATS_AUTO_UPDATE_WORKER_COUNT.getVarname(), 2);
     StatsUpdaterThread su = createUpdater();
     su.startWorkers();

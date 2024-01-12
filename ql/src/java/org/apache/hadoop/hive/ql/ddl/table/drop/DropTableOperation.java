@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.drop;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -96,7 +97,7 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
         // any partitions inside that are older.
         if (table.isPartitioned()) {
           PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
-              MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+              HiveConf.getIntVar(context.getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
           for (Partition p : partitions) {
             if (replicationSpec.allowEventReplacementInto(dbParams)) {
               context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);

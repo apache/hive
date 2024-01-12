@@ -1296,10 +1296,7 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG",
         "Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]"),
-    /**
-     * @deprecated Use MetastoreConf.BATCH_RETRIEVE_MAX
-     */
-    @Deprecated
+
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300,
          new RangeValidator(1, null),
         "Maximum number of objects (tables/partitions) can be retrieved from metastore in one batch. \n" +

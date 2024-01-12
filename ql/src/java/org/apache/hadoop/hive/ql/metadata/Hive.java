@@ -4114,7 +4114,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
     try {
-      int batchSize= MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+      int batchSize= HiveConf.getIntVar(Hive.get().getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
       return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf
                       .getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
               null, true, getUserName(), getGroupNames()));
@@ -4153,8 +4153,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
-    int batchSize= MetastoreConf.getIntVar(
-            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    int batchSize= HiveConf.getIntVar(Hive.get().getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
               Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), null, false);
@@ -4216,7 +4215,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (limit >= 0) {
         return getPartitionsWithAuth(tbl, partialPartSpec, limit);
       } else {
-        int batchSize = MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        int batchSize = HiveConf.getIntVar(Hive.get().getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
         return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR,
                 MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
                 partialPartSpec, true, getUserName(), getGroupNames()));

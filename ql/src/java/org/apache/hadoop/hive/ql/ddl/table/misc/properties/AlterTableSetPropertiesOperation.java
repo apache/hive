@@ -75,7 +75,7 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
         } else {
           if (!table.getPartitionKeys().isEmpty()) {
             PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
-                MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+                    HiveConf.getIntVar(context.getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
             for (Partition part : parts) {
               checkMmLb(part);
             }
@@ -122,7 +122,7 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
 
     if (!table.getPartitionKeys().isEmpty()) {
       PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
-          MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+          HiveConf.getIntVar(context.getConf(), HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
       for (Partition part : parts) {
         checkMmLb(part);
         Path source = part.getDataLocation();
