@@ -27,6 +27,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,11 @@ public class DatabaseProduct implements Configurable {
           // TODO: collect more unrecoverable SQLExceptions
           SQLIntegrityConstraintViolationException.class
   };
+
+  /**
+   * Derby specific concurrency control
+   */
+  private static final ReentrantLock derbyLock = new ReentrantLock(true);
 
   public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
   public DbType dbType;
@@ -775,5 +781,22 @@ public class DatabaseProduct implements Configurable {
   @Override
   public void setConf(Configuration c) {
     myConf = c;
+  }
+
+  /**
+   * lockInternal() and {@link #unlockInternal()} are used to serialize those operations that require
+   * Select ... For Update to sequence operations properly.  In practice that means when running
+   * with Derby database.  See more notes at class level.
+   */
+  public void lockInternal() {
+    if(isDERBY()) {
+      derbyLock.lock();
+    }
+  }
+
+  public void unlockInternal() {
+    if(isDERBY()) {
+      derbyLock.unlock();
+    }
   }
 }
