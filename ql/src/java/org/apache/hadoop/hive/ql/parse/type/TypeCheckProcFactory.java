@@ -998,25 +998,20 @@ public class TypeCheckProcFactory<T> {
           // different value type. The reason is that Hive and Calcite treat
           // types in IN clauses differently and it is practically impossible
           // to find some correct implementation unless this is done.
-          boolean hasNullValue = false;
           ListMultimap<TypeInfo, T> expressions = ArrayListMultimap.create();
           for (int i = 1; i < children.size(); i++) {
             T columnDesc = children.get(0);
             T valueDesc = interpretNode(columnDesc, children.get(i));
-            if (valueDesc == null) {
-              // Keep original
-              TypeInfo targetType = exprFactory.getTypeInfo(children.get(i));
-              if (!expressions.containsKey(targetType)) {
-                expressions.put(targetType, columnDesc);
-              }
-              expressions.put(targetType, children.get(i));
-            } else {
+            if (valueDesc != null) {
               TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
               if (!expressions.containsKey(targetType)) {
                 expressions.put(targetType, columnDesc);
               }
               expressions.put(targetType, valueDesc);
             }
+          }
+          if(expressions.isEmpty()) {
+            return exprFactory.createBooleanConstantExpr(null);
           }
 
           children.clear();
