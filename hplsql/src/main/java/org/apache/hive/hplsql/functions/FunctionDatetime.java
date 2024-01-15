@@ -21,7 +21,6 @@ package org.apache.hive.hplsql.functions;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,15 +38,11 @@ public class FunctionDatetime extends BuiltinFunctions {
   @Override
   public void register(BuiltinFunctions f) {
     f.map.put("DATE", this::date);
-    f.map.put("FROM_UNIXTIME", this::fromUnixtime);
     f.map.put("NOW", ctx -> now(ctx));
     f.map.put("TIMESTAMP_ISO", this::timestampIso);
     f.map.put("TO_TIMESTAMP", this::toTimestamp);
-    f.map.put("UNIX_TIMESTAMP", this::unixTimestamp);
     f.map.put("CURRENT_TIME_MILLIS", this::currentTimeMillis);
 
-    f.specMap.put("CURRENT_DATE", this::currentDate);
-    f.specMap.put("CURRENT_TIMESTAMP", this::currentTimestamp);
     f.specMap.put("SYSDATE", this::currentTimestamp);
 
     f.specSqlMap.put("CURRENT_DATE", (FuncSpecCommand) this::currentDateSql);
@@ -57,10 +52,6 @@ public class FunctionDatetime extends BuiltinFunctions {
   /**
    * CURRENT_DATE
    */
-  public void currentDate(HplsqlParser.Expr_spec_funcContext ctx) {
-    evalVar(currentDate());
-  }
-  
   public static Var currentDate() {
     SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
     String s = f.format(Calendar.getInstance().getTime());
@@ -86,7 +77,7 @@ public class FunctionDatetime extends BuiltinFunctions {
     int precision = evalPop(ctx.expr(0), 3).intValue();
     evalVar(currentTimestamp(precision));
   }
-  
+
   public static Var currentTimestamp(int precision) {
     String format = "yyyy-MM-dd HH:mm:ss";
     if (precision > 0 && precision <= 3) {
@@ -118,7 +109,9 @@ public class FunctionDatetime extends BuiltinFunctions {
       return;
     }
     Var var = new Var(Var.Type.DATE);
-    var.cast(evalPop(ctx.func_param(0).expr()));
+    Var date = evalPop(ctx.func_param(0).expr());
+    date.setValue(Utils.unquoteString(date.toString()));
+    var.cast(date);
     evalVar(var);
   }
   
@@ -142,7 +135,9 @@ public class FunctionDatetime extends BuiltinFunctions {
       return;
     }
     Var var = new Var(Var.Type.TIMESTAMP);
-    var.cast(evalPop(ctx.func_param(0).expr()));
+    Var val = evalPop(ctx.func_param(0).expr());
+    val.setValue(Utils.unquoteString(val.toString()));
+    var.cast(val);
     evalVar(var);
   }
   
@@ -154,8 +149,8 @@ public class FunctionDatetime extends BuiltinFunctions {
       evalNull();
       return;
     }    
-    String value = evalPop(ctx.func_param(0).expr()).toString();
-    String sqlFormat = evalPop(ctx.func_param(1).expr()).toString();
+    String value = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString());
+    String sqlFormat = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
     String format = Utils.convertSqlDatetimeFormat(sqlFormat);
     try {
       long timeInMs = new SimpleDateFormat(format).parse(value).getTime();
@@ -165,30 +160,6 @@ public class FunctionDatetime extends BuiltinFunctions {
       exec.signal(e);
       evalNull();
     }
-  }
-  
-  /**
-   * FROM_UNIXTIME() function (convert seconds since 1970-01-01 00:00:00 to timestamp)
-   */
-  void fromUnixtime(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = BuiltinFunctions.getParamCount(ctx);
-    if (cnt == 0) {
-      evalNull();
-      return;
-    }
-    long epoch = evalPop(ctx.func_param(0).expr()).longValue();
-    String format = "yyyy-MM-dd HH:mm:ss";
-    if (cnt > 1) {
-      format = evalPop(ctx.func_param(1).expr()).toString();
-    }
-    evalString(new SimpleDateFormat(format).format(new Date(epoch * 1000)));
-  }
-  
-  /**
-   * UNIX_TIMESTAMP() function (current date and time in seconds since 1970-01-01 00:00:00)
-   */
-  void unixTimestamp(HplsqlParser.Expr_func_paramsContext ctx) {
-    evalVar(new Var(System.currentTimeMillis()/1000));
   }
 
   public void currentTimeMillis(HplsqlParser.Expr_func_paramsContext ctx) {
