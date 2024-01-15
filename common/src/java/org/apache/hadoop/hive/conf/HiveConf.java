@@ -3693,8 +3693,12 @@ public class HiveConf extends Configuration {
     HIVE_CLI_PRINT_ESCAPE_CRLF("hive.cli.print.escape.crlf", false,
         "Whether to print carriage returns and line feeds in row output as escaped \\r and \\n"),
 
+    HIVE_CLI_TEZ_INITIALIZE_SESSION("hive.cli.tez.initialize.session", true,
+        "When enabled, CLI running with Tez will preemptively open a tez session during start up."),
+
     HIVE_CLI_TEZ_SESSION_ASYNC("hive.cli.tez.session.async", true, "Whether to start Tez\n" +
-        "session in background when running CLI with Tez, allowing CLI to be available earlier."),
+        "session in background when running CLI with Tez, allowing CLI to be available earlier. " +
+        "If hive.cli.tez.initialize.session is set to false, this value is ignored."),
 
     HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS("hive.disable.unsafe.external.table.operations", true,
         "Whether to disable certain optimizations and operations on external tables," +
