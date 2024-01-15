@@ -112,7 +112,7 @@ def sonarAnalysis(args) {
       """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
 
       sh """#!/bin/bash -e
-      sw java 11 && . /etc/profile.d/java.sh
+      sw java 17 && . /etc/profile.d/java.sh
       export MAVEN_OPTS=-Xmx5G
       """+mvnCmd
   }
