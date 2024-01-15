@@ -33,18 +33,12 @@ public class FunctionString extends BuiltinFunctions {
   public void register(BuiltinFunctions f) {
     f.map.put("CONCAT", this::concat);
     f.map.put("CHAR", this::char_);
-    f.map.put("INSTR", this::instr);
     f.map.put("LEN", this::len);
-    f.map.put("LENGTH", this::length);
-    f.map.put("LOWER", this::lower);
-    f.map.put("REPLACE", this::replace);
     f.map.put("SUBSTR", this::substr);
     f.map.put("SUBSTRING", this::substr);
     f.map.put("TO_CHAR", this::toChar);
     f.map.put("UPPER", this::upper);
-    
     f.specMap.put("SUBSTRING", this::substring);
-    f.specMap.put("TRIM", this::trim);
   }
   
   /**
@@ -52,12 +46,13 @@ public class FunctionString extends BuiltinFunctions {
    */
   void concat(HplsqlParser.Expr_func_paramsContext ctx) {
     StringBuilder val = new StringBuilder();
+    appendSingleQuote(val);
     int cnt = getParamCount(ctx);
     boolean nulls = true;
     for (int i = 0; i < cnt; i++) {
       Var c = evalPop(ctx.func_param(i).expr());
-      if (!c.isNull()) {
-        val.append(c.toString());
+      if (!c.isNull() && !"null".equalsIgnoreCase((String)c.value)) {
+        val.append(Utils.unquoteString(c.toString()));
         nulls = false;
       }
     }
@@ -65,6 +60,7 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
     }
     else {
+      appendSingleQuote(val);
       evalString(val);
     }
   }
@@ -83,67 +79,6 @@ public class FunctionString extends BuiltinFunctions {
   }
   
   /**
-   * INSTR function
-   */
-  void instr(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = getParamCount(ctx);
-    if (cnt < 2) {
-      evalNull();
-      return;
-    }
-    String str = evalPop(ctx.func_param(0).expr()).toString();
-    if (str == null) {
-      evalNull();
-      return;
-    }
-    else if(str.isEmpty()) {
-      evalInt(0);
-      return;
-    }
-    String substr = evalPop(ctx.func_param(1).expr()).toString();
-    int pos = 1;
-    int occur = 1;
-    int idx = 0;
-    if (cnt >= 3) {
-      pos = evalPop(ctx.func_param(2).expr()).intValue();
-      if (pos == 0) {
-        pos = 1;
-      }
-    }
-    if (cnt >= 4) {
-      occur = evalPop(ctx.func_param(3).expr()).intValue();
-      if (occur < 0) {
-        occur = 1;
-      }
-    }
-    for (int i = occur; i > 0; i--) {
-      if (pos > 0) {
-        idx = str.indexOf(substr, pos - 1);
-      }
-      else {
-        str = str.substring(0, str.length() - pos*(-1));
-        idx = str.lastIndexOf(substr);
-      }
-      if (idx == -1) {
-        idx = 0;
-        break;
-      }
-      else {
-        idx++;
-      }
-      if (i > 1) {
-        if (pos > 0) {
-          pos = idx + 1;
-        }
-        else {
-          pos = (str.length() - idx + 1) * (-1);
-        }
-      }
-    }
-    evalInt(idx);
-  }
-  
-  /**
    * LEN function (excluding trailing spaces)
    */
   void len(HplsqlParser.Expr_func_paramsContext ctx) {
@@ -151,49 +86,10 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    int len = evalPop(ctx.func_param(0).expr()).toString().trim().length(); 
+    int len = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString()).trim().length();
     evalInt(len);
   }
-  
-  /**
-   * LENGTH function
-   */
-  void length(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.func_param().size() != 1) {
-      evalNull();
-      return;
-    }
-    int len = evalPop(ctx.func_param(0).expr()).toString().length(); 
-    evalInt(len);
-  }
-  
-  /**
-   * LOWER function
-   */
-  void lower(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.func_param().size() != 1) {
-      evalNull();
-      return;
-    }
-    String str = evalPop(ctx.func_param(0).expr()).toString().toLowerCase(); 
-    evalString(str);
-  }
-  
-  /**
-   * REPLACE function
-   */
-  void replace(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = getParamCount(ctx);
-    if (cnt < 3) {
-      evalNull();
-      return;
-    }
-    String str = evalPop(ctx.func_param(0).expr()).toString(); 
-    String what = evalPop(ctx.func_param(1).expr()).toString();
-    String with = evalPop(ctx.func_param(2).expr()).toString();
-    evalString(str.replaceAll(what, with));
-  }
-  
+
   /**
    * SUBSTR and SUBSTRING function
    */
@@ -203,18 +99,18 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.func_param(0).expr()).toString(); 
+    String str = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString());
     int start = evalPop(ctx.func_param(1).expr()).intValue();
     int len = -1;
     if (start == 0) {
-      start = 1; 
+      start = 1;
     }
     if (cnt > 2) {
       len = evalPop(ctx.func_param(2).expr()).intValue();
     }
     substr(str, start, len);
   }
-  
+
   void substr(String str, int start, int len) {
     if (str == null) {
       evalNull();
@@ -225,45 +121,47 @@ public class FunctionString extends BuiltinFunctions {
       return;
     }
     if (start == 0) {
-      start = 1; 
+      start = 1;
     }
+    StringBuilder resultStr = new StringBuilder();
     if (len == -1) {
       if (start > 0) {
-        evalString(str.substring(start - 1));
+        String substring = str.substring(start - 1);
+        appendSingleQuote(resultStr);
+        resultStr.append(substring);
+        appendSingleQuote(resultStr);
+        evalString(resultStr);
       }
     }
     else {
-      evalString(str.substring(start - 1, start - 1 + len));      
+      String substring = str.substring(start - 1, start - 1 + len);
+      appendSingleQuote(resultStr);
+      resultStr.append(substring);
+      appendSingleQuote(resultStr);
+      evalString(resultStr);
     }
   }
-  
+
+  private void appendSingleQuote(StringBuilder resultStr) {
+    if (exec.buildSql) {
+      resultStr.append("'");
+    }
+  }
+
   /**
    * SUBSTRING FROM FOR function
    */
   void substring(HplsqlParser.Expr_spec_funcContext ctx) {
-    String str = evalPop(ctx.expr(0)).toString(); 
+    String str = evalPop(ctx.expr(0)).toString();
     int start = evalPop(ctx.expr(1)).intValue();
     int len = -1;
     if (start == 0) {
-      start = 1; 
+      start = 1;
     }
     if (ctx.T_FOR() != null) {
       len = evalPop(ctx.expr(2)).intValue();
     }
     substr(str, start, len);
-  }
-  
-  /**
-   * TRIM function
-   */
-  void trim(HplsqlParser.Expr_spec_funcContext ctx) {
-    int cnt = ctx.expr().size();
-    if (cnt != 1) {
-      evalNull();
-      return;
-    }
-    String str = evalPop(ctx.expr(0)).toString(); 
-    evalString(str.trim());
   }
   
   /**

@@ -114,7 +114,10 @@ public class BuiltinFunctions {
       execMinPartDate(ctx);
     } else if (ctx.T_PART_LOC() != null) {
       execPartLoc(ctx);
-    } else {
+    } else if (exec.buildSql){
+      exec.stackPush(Exec.getFormattedText(ctx));
+    }
+    else {
       evalNull();
     }
   }
@@ -132,7 +135,7 @@ public class BuiltinFunctions {
       func.run(ctx);
     }
     else {
-      exec.stackPush(Exec.getFormattedText(ctx));
+      specExec(ctx);
     }
   }
 
