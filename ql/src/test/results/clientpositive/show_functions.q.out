@@ -253,6 +253,7 @@ substr
 substring
 substring_index
 sum
+surrogate_key
 tan
 to_date
 to_epoch_milli

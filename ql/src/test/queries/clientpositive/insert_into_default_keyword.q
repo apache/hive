@@ -46,6 +46,14 @@ INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT);
 SELECT * from insert_into1_n0;
 TRUNCATE table insert_into1_n0;
 
+-- with default complex constraint
+CREATE TABLE insert_into1_n1 (key int, value string DEFAULT cast(round(round(1.245, 2), 1) as string))
+     clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
+EXPLAIN INSERT INTO TABLE insert_into1_n1 values(default, DEFAULT);
+INSERT INTO TABLE insert_into1_n1 values(default, DEFAULT);
+SELECT * from insert_into1_n1;
+TRUNCATE table insert_into1_n1;
+
 -- should be able to use any case for DEFAULT
 EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt);
 INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt);
