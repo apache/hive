@@ -14,15 +14,15 @@ POSTHOOK: query: create temporary table bar (col binary) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bar
-PREHOOK: query: INSERT INTO bar values(unhex('6161-16161'))
+PREHOOK: query: INSERT INTO bar select unhex('6162636465-166676869')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bar
-POSTHOOK: query: INSERT INTO bar values(unhex('6161-16161'))
+POSTHOOK: query: INSERT INTO bar select unhex('6162636465-166676869')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bar
-POSTHOOK: Lineage: bar.col SCRIPT []
+POSTHOOK: Lineage: bar.col SIMPLE []
 PREHOOK: query: INSERT INTO foo SELECT col FROM bar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bar
@@ -32,11 +32,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bar
 POSTHOOK: Output: default@foo
 POSTHOOK: Lineage: foo.col EXPRESSION [(bar)bar.FieldSchema(name:col, type:binary, comment:null), ]
-PREHOOK: query: explain select col, count(*) from foo where col like '%bc%' group by col
+PREHOOK: query: explain select col, count(*) from foo where col like '%fg%' group by col
 PREHOOK: type: QUERY
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
-POSTHOOK: query: explain select col, count(*) from foo where col like '%bc%' group by col
+POSTHOOK: query: explain select col, count(*) from foo where col like '%fg%' group by col
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
@@ -56,10 +56,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: foo
-                  filterExpr: (col like '%bc%') (type: boolean)
+                  filterExpr: (col like '%fg%') (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (col like '%bc%') (type: boolean)
+                    predicate: (col like '%fg%') (type: boolean)
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -100,11 +100,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select col, count(*) from foo where col like '%bc%' group by col
+PREHOOK: query: select col, count(*) from foo where col like '%fg%' group by col
 PREHOOK: type: QUERY
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
-POSTHOOK: query: select col, count(*) from foo where col like '%bc%' group by col
+POSTHOOK: query: select col, count(*) from foo where col like '%fg%' group by col
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
+abcde�fghi	1
