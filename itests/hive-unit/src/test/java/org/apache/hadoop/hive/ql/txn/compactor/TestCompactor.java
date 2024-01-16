@@ -1169,7 +1169,7 @@ public class TestCompactor extends TestCompactorBase {
 
     // After the cleaner runs TXN_COMPONENTS and COMPACTION_QUEUE should have zero rows, also the folders should have been deleted.
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), (singleSession && partialAbort) ? 3 : 2, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), (singleSession && partialAbort) ? 1 : 0, count);
 
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
@@ -1241,7 +1241,7 @@ public class TestCompactor extends TestCompactorBase {
     runCleaner(conf);
     // After the cleaner runs TXN_COMPONENTS and COMPACTION_QUEUE should have zero rows, also the folders should have been deleted.
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 2, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
 
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
@@ -1317,7 +1317,7 @@ public class TestCompactor extends TestCompactorBase {
     runCleaner(conf);
 
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
 
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Partition p1 = msClient.getPartition(dbName, tblName, "a=1"),
@@ -1367,7 +1367,7 @@ public class TestCompactor extends TestCompactorBase {
     Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
 
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 1, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
 
   }
 
