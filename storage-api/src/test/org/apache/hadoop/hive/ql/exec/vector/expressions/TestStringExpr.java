@@ -20,10 +20,11 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.*;
 
 public class TestStringExpr {
   @Test
