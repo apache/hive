@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
+import java.sql.Types;
+
 public class OnRenameFunction implements TransactionalFunction<Void> {
 
   private static final Logger LOG = LoggerFactory.getLogger(OnRenameFunction.class);
@@ -132,12 +134,12 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
     }
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource()
-        .addValue("oldDbName", StringUtils.lowerCase(oldDbName))
-        .addValue("newDbName", StringUtils.lowerCase(newDbName))
-        .addValue("oldTableName", StringUtils.lowerCase(oldTabName))
-        .addValue("newTableName", StringUtils.lowerCase(newTabName))
-        .addValue("oldPartName", oldPartName)
-        .addValue("newPartName", newPartName);
+        .addValue("oldDbName", StringUtils.lowerCase(oldDbName), Types.VARCHAR)
+        .addValue("newDbName", StringUtils.lowerCase(newDbName), Types.VARCHAR)
+        .addValue("oldTableName", StringUtils.lowerCase(oldTabName), Types.VARCHAR)
+        .addValue("newTableName", StringUtils.lowerCase(newTabName), Types.VARCHAR)
+        .addValue("oldPartName", oldPartName, Types.VARCHAR)
+        .addValue("newPartName", newPartName, Types.VARCHAR);
     try {
       for (String command : UPDATE_COMMANNDS) {
         jdbcResource.getJdbcTemplate().update(command, paramSource);

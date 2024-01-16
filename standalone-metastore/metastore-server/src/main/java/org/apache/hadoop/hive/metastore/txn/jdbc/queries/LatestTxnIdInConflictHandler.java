@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc.queries;
 
-import com.sun.tools.javac.util.List;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.entities.OperationType;
@@ -30,6 +29,8 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LatestTxnIdInConflictHandler implements QueryHandler<Long> {
   
@@ -65,9 +66,12 @@ public class LatestTxnIdInConflictHandler implements QueryHandler<Long> {
 
   @Override
   public SqlParameterSource getQueryParameters() {
+    List<String> types = new ArrayList<>(2);
+    types.add(OperationType.UPDATE.getSqlConst());
+    types.add(OperationType.DELETE.getSqlConst());
     return new MapSqlParameterSource()
         .addValue("txnId", txnId)
-        .addValue("types", List.of(OperationType.UPDATE.getSqlConst(), OperationType.DELETE.getSqlConst()), Types.CHAR)
+        .addValue("types", types, Types.CHAR)
         .addValue("wsType", OperationType.INSERT.getSqlConst(), Types.CHAR);        
   }
 

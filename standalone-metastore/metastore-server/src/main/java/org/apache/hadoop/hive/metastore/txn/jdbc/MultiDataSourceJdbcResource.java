@@ -191,32 +191,23 @@ public class MultiDataSourceJdbcResource {
    * call using the query string obtained from {@link ParameterizedBatchCommand#getParameterizedQueryString(DatabaseProduct)},
    * the parameters obtained from {@link ParameterizedBatchCommand#getQueryParameters()}, and the
    * {@link org.springframework.jdbc.core.PreparedStatementSetter} obtained from 
-   * {@link ParameterizedBatchCommand#getPreparedStatementSetter()} methods. The batchSize is coming fomr the 
-   * {@link Configuration} object. After the execution, this method validates the resulted number of affected rows using the
-   * {@link ParameterizedBatchCommand#resultPolicy()} function for each element in the batch.
+   * {@link ParameterizedBatchCommand#getPreparedStatementSetter()} methods. The batchSize is coming from the 
+   * {@link Configuration} object.
    *
    * @param command The {@link ParameterizedBatchCommand} to execute.
-   * @return Returns an integer array,containing the number of affected rows for each element in the batch.
    */
-  public <T> int execute(ParameterizedBatchCommand<T> command) throws MetaException {
+  public <T> void execute(ParameterizedBatchCommand<T> command) throws MetaException {
     if (!shouldExecute(command)) {
-      return 0;
+      return;
     }
     try {      
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
-      int[][] result = getJdbcTemplate().getJdbcTemplate().batchUpdate(
+      getJdbcTemplate().getJdbcTemplate().batchUpdate(
           command.getParameterizedQueryString(databaseProduct),
           command.getQueryParameters(),
           maxBatchSize,
           command.getPreparedStatementSetter()
-      );
-      
-      Function<Integer, Boolean> resultPolicy = command.resultPolicy();
-      if (resultPolicy != null && !Arrays.stream(result).allMatch(inner -> Arrays.stream(inner).allMatch(resultPolicy::apply))) {
-        LOG.error("The update count was rejected in at least one of the result array. Rolling back.");
-        throw new MetaException("The update count was rejected in at least one of the result array. Rolling back.");        
-      }
-      return Arrays.stream(result).reduce(0, (acc, i) -> acc + Arrays.stream(i).sum(), Integer::sum);      
+      );      
     } catch (Exception e) {
       handleError(command, e);
       throw e;
