@@ -40,8 +40,8 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergStatsSource;
 import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergTable;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.CALCITE;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.CALCITE;
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ALL;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
@@ -2236,7 +2236,7 @@ public class Hive {
 
   private List<HiveRelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
       Set<TableName> tablesUsed, boolean forceMVContentsUpToDate, boolean expandGroupingSets,
-      HiveTxnManager txnMgr, EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope)
+      HiveTxnManager txnMgr, EnumSet<RewriteAlgorithm> scope)
       throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     final boolean tryIncrementalRewriting =

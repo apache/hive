@@ -27,6 +27,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -184,8 +186,8 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'This is ' || b;\n" +
             "END;\n" +
-            "SELECT check(col_b) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "This is true.*This is false");
+            "SELECT check(col_b) FROM result ORDER BY col_b ASC;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "This is false.*This is true");
   }
 
   @Test
@@ -280,7 +282,7 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'Hello ' || s || '!';\n" +
             "END;\n" +
-            "SELECT hello(col_s) FROM result;\n";
+            "SELECT hello(col_s) FROM result ORDER BY col_s ASC;\n";
     testScriptFile(SCRIPT_TEXT, args(), "Hello Alice!.*Hello Smith!");
   }
 
@@ -344,8 +346,8 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'Hello ' || v || '!';\n" +
             "END;\n" +
-            "SELECT hello(col_v) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello Smith!.*Hello Sachin!");
+            "SELECT hello(col_v) FROM result ORDER BY col_v ASC;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello Sachin!.*Hello Smith!");
   }
 
   @Test
@@ -360,8 +362,8 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'Hello ' || c || '!';\n" +
             "END;\n" +
-            "SELECT hello(col_c) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello Daya!.*Hello Alice!");
+            "SELECT hello(col_c) FROM result ORDER BY col_c ASC;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello Alice!.*Hello Daya!");
   }
 
   @Test
@@ -610,11 +612,267 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(NullPointerException)))*$", OutStream.ERR);
   }
 
+  @Test
+  public void testACTIVITY_COUNTHplSqlFunction() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+        "CREATE TABLE result (col1 string);\n" +
+        "INSERT INTO result VALUES('Alice');\n" +
+        "INSERT INTO result VALUES('Bob');\n" +
+        "SELECT * FROM result;\n" +
+        "SELECT ACTIVITY_COUNT;";
+    testScriptFile(SCRIPT_TEXT, args(), "2");
+  }
+
+  @Test
+  public void testCASTHplSqlFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CAST('Abc' AS CHAR(1));";
+    testScriptFile(SCRIPT_TEXT, args(), "A");
+  }
+
+  @Test
+  public void testCASTHplSqlFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CAST(TIMESTAMP '2015-03-12 10:58:34.111' AS CHAR(10));";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12");
+  }
+
+  @Test
+  public void testCHARHplSqlFunction() throws Throwable {
+    String SCRIPT_TEXT = "select CHAR(2023)";
+    testScriptFile(SCRIPT_TEXT, args(), "2023");
+  }
+
+  @Test
+  public void testCOALESCEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "select COALESCE(null,123,2023)";
+    testScriptFile(SCRIPT_TEXT, args(), "123");
+  }
+
+  @Test
+  public void testCONCATHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "select CONCAT('a', 'b', NULL, 'c')";
+    testScriptFile(SCRIPT_TEXT, args(), "abc");
+  }
+
+  @Test
+  public void testCURRENTHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT DATE;";
+    testCurrentDate(SCRIPT_TEXT);
+  }
+
+  private void testCurrentDate(String SCRIPT_TEXT) throws Throwable {
+    Date today = new Date(System.currentTimeMillis());
+    testScriptFile(SCRIPT_TEXT, args(), today.toString());
+  }
+
+  @Test
+  public void testCURRENTHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT TIMESTAMP;";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  private void testCurrentTimestamp(String SCRIPT_TEXT) throws Throwable {
+    Timestamp today = new Timestamp(System.currentTimeMillis());
+    String timestamp = today.toString();
+    testScriptFile(SCRIPT_TEXT, args(), timestamp.substring(0, timestamp.length() - 9));
+  }
+
+  @Test
+  public void testCURRENTHplSQLFunction3() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT USER;";
+    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+  }
+
+  @Test
+  public void testCURRENT_DATEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_DATE;";
+    testCurrentDate(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testCURRENT_TIME_MILLISHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_TIME_MILLIS();";
+    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis() / 100000));
+  }
+
+  @Test
+  public void testCURRENT_TIMESTAMPHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_TIMESTAMP;";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testCURRENT_USERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+  }
+
+  @Test
+  public void testDATEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT DATE('2015-03-12');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12");
+  }
+
+  @Test
+  public void testDECODEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "DECLARE var1 INT DEFAULT 3;\n" + "SELECT DECODE (var1, 1, 'A', 2, 'B', 3, 'C');";
+    testScriptFile(SCRIPT_TEXT, args(), "C");
+  }
+
+  @Test
+  public void testFROM_UNIXTIMEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT from_unixtime(1447141681, 'yyyy-MM-dd');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-11-");
+  }
+
+  @Test
+  public void testINSTRHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT INSTR('abc', 'b');";
+    testScriptFile(SCRIPT_TEXT, args(), "2");
+  }
+
+  @Test
+  public void testINSTRHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT INSTR('abcabcabc', 'b', 3, 2);";
+    testScriptFile(SCRIPT_TEXT, args(), "8");
+  }
+
+  @Test
+  public void testLOWERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT LOWER('ABC');";
+    testScriptFile(SCRIPT_TEXT, args(), "abc");
+  }
+
+  @Test
+  public void testLENHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT LEN('Abc ');";
+    testScriptFile(SCRIPT_TEXT, args(), "3");
+  }
+
+  @Test
+  public void testLENGTHHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT LENGTH('Abc ');";
+    testScriptFile(SCRIPT_TEXT, args(), "4");
+  }
+
+  @Test
+  public void testMODHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT MOD(5,2);";
+    testScriptFile(SCRIPT_TEXT, args(), "1");
+  }
+
+  @Test
+  public void testNOWHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT NOW();";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testNVLHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT NVL(NULL, 100);";
+    testScriptFile(SCRIPT_TEXT, args(), "100");
+  }
+
+  @Test
+  public void testNVL2HplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT NVL2(NULL, 100, 200);";
+    testScriptFile(SCRIPT_TEXT, args(), "200");
+  }
+
+  @Test
+  public void testREPLACEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT replace('2016-03-03', '-', '');";
+    testScriptFile(SCRIPT_TEXT, args(), "20160303");
+  }
+
+  @Test
+  public void testSUBSTRHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTR('Remark', 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mark");
+  }
+
+  @Test
+  public void testSUBSTRHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTR('Remark', 3, 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mar");
+  }
+
+  @Test
+  public void testSUBSTRINGHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTRING('Remark', 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mark");
+  }
+
+  @Test
+  public void testSUBSTRINGHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTRING('Remark', 3, 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mar");
+  }
+
+  @Test
+  public void testSYSDATEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SYSDATE;";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testTIMESTAMP_ISOHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TIMESTAMP_ISO('2015-03-12');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12 00:00:00");
+  }
+
+  @Test
+  public void testTO_CHARHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_CHAR(CURRENT_DATE);";
+    testCurrentDate(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testTO_TIMESTAMPHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('2015-04-02', 'YYYY-MM-DD');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 00:00:00.0");
+  }
+
+  @Test
+  public void testTO_TIMESTAMPHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('04/02/2015', 'mm/dd/yyyy');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 00:00:00.0");
+  }
+
+  @Test
+  public void testTO_TIMESTAMPHplSQLFunction3() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('2015-04-02 13:51:31', 'YYYY-MM-DD HH24:MI:SS');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 13:51:31.0");
+  }
+
+  @Test
+  public void testTRIMHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT '#' || TRIM(' Hello ') || '#';";
+    testScriptFile(SCRIPT_TEXT, args(), "#Hello#");
+  }
+
+  @Test
+  public void testUNIX_TIMESTAMPHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT UNIX_TIMESTAMP()";
+    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis()/10000));
+  }
+
+  @Test
+  public void testUPPERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT UPPER('abc');";
+    testScriptFile(SCRIPT_TEXT, args(), "ABC");
+  }
+
+  @Test
+  public void testUSERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT USER;";
+    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
   }
-
 
   private void testScriptFile(String scriptText, List<String> argList, String expectedPattern)
           throws Throwable {

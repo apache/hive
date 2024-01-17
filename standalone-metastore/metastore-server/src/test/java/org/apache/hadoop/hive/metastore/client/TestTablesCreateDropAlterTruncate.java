@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -68,6 +71,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -118,6 +122,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
     extraConf.put(ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS.getVarname(), " ");
+    extraConf.put(ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS.getVarname(), "true");
 
     startMetaStores(msConf, extraConf);
   }
@@ -1561,6 +1566,41 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = NoSuchObjectException.class)
   public void dropTableBogusCatalog() throws TException {
     client.dropTable("nosuch", testTables[0].getDbName(), testTables[0].getTableName(), true, false);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testDropManagedTableWithoutStoragePermission() throws TException, IOException {
+    String dbName = testTables[0].getDbName();
+    String tblName = testTables[0].getTableName();
+    Table table = client.getTable(dbName, tblName);
+    Path tablePath = new Path(table.getSd().getLocation());
+    FileSystem fs = Warehouse.getFs(tablePath, new Configuration());
+    fs.setPermission(tablePath.getParent(), new FsPermission((short) 0555));
+
+    try {
+      client.dropTable(dbName, tblName);
+    } finally {
+      // recover write permission so that file can be cleaned.
+      fs.setPermission(tablePath.getParent(), new FsPermission((short) 0755));
+    }
+  }
+
+  @Test
+  public void testDropExternalTableWithoutStoragePermission() throws TException, IOException {
+    // external table
+    String dbName = testTables[4].getDbName();
+    String tblName = testTables[4].getTableName();
+    Table table = client.getTable(dbName, tblName);
+    Path tablePath = new Path(table.getSd().getLocation());
+    FileSystem fs = Warehouse.getFs(tablePath, new Configuration());
+    fs.setPermission(tablePath.getParent(), new FsPermission((short) 0555));
+
+    try {
+      client.dropTable(dbName, tblName);
+    } finally {
+      // recover write permission so that file can be cleaned.
+      fs.setPermission(tablePath.getParent(), new FsPermission((short) 0755));
+    }
   }
 
   /**

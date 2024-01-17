@@ -36,4 +36,8 @@ PREHOOK: query: alter materialized view cmv_mat_view enable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Cannot enable rewriting for materialized view. Statement has unsupported clause: sort by.
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported clause: sort by.
+POSTHOOK: query: alter materialized view cmv_mat_view enable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view
+POSTHOOK: Output: default@cmv_mat_view

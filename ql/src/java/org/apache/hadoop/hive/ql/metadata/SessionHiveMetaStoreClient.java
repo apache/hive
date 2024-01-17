@@ -823,7 +823,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if (pathStr != null) {
       try {
         tablePath = new Path(table.getSd().getLocation());
-        if (!getWh().isWritable(tablePath.getParent())) {
+        if (deleteData && !isExternalTable(table) && !getWh().isWritable(tablePath.getParent())) {
           throw new MetaException("Table metadata not deleted since " + tablePath.getParent() +
               " is not writable by " + SecurityUtils.getUser());
         }

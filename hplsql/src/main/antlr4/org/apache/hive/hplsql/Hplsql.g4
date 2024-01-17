@@ -1049,8 +1049,8 @@ expr :
      | expr_case
      | expr_cursor_attribute
      | expr_agg_window_func
-     | expr_spec_func
      | expr_func
+     | expr_spec_func
      | expr_atom    
      ;
 
@@ -1324,6 +1324,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CURRENT 
      | T_CURRENT_DATE
      | T_CURRENT_SCHEMA
+     | T_CURRENT_TIME_MILLIS
      | T_CURRENT_TIMESTAMP
      | T_CURRENT_USER
      | T_CURSOR  
@@ -1770,6 +1771,7 @@ T_MERGE           : M E R G E ;
 T_MESSAGE_TEXT    : M E S S A G E '_' T E X T ;
 T_MICROSECOND     : M I C R O S E C O N D ;
 T_MICROSECONDS    : M I C R O S E C O N D S;
+T_MILLIS          : M I L L I S ;
 T_MIN             : M I N ;
 T_MULTISET        : M U L T I S E T ; 
 T_NCHAR           : N C H A R ; 
@@ -1877,6 +1879,7 @@ T_TEMPORARY       : T E M P O R A R Y ;
 T_TERMINATED      : T E R M I N A T E D ; 
 T_TEXTIMAGE_ON    : T E X T I M A G E '_' O N ;
 T_THEN            : T H E N ;
+T_TIME            : T I M E ;
 T_TIMESTAMP       : T I M E S T A M P ;
 T_TINYINT         : T I N Y I N T ;
 T_TITLE           : T I T L E ;
@@ -1913,6 +1916,7 @@ T_YES             : Y E S ;
 T_ACTIVITY_COUNT       : A C T I V I T Y '_' C O U N T ;
 T_CUME_DIST            : C U M E '_' D I S T ; 
 T_CURRENT_DATE         : C U R R E N T '_' D A T E ;
+T_CURRENT_TIME_MILLIS  : C U R R E N T '_' T I M E '_' M I L L I S ;
 T_CURRENT_TIMESTAMP    : C U R R E N T '_' T I M E S T A M P ;
 T_CURRENT_USER         : C U R R E N T '_' U S E R ;
 T_DENSE_RANK           : D E N S E '_' R A N K ;
