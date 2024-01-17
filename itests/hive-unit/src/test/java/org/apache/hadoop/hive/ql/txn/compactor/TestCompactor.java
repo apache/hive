@@ -1130,7 +1130,7 @@ public class TestCompactor extends TestCompactorBase {
     cleaner.run();
 
     int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
-    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 2, count);
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 1, count);
   }
 
   private void assertAndCompactCleanAbort(String dbName, String tblName, boolean partialAbort, boolean singleSession) throws Exception {
@@ -1176,7 +1176,6 @@ public class TestCompactor extends TestCompactorBase {
 
     RemoteIterator<LocatedFileStatus> it =
         fs.listFiles(new Path(table.getSd().getLocation()), true);
-
     if (it.hasNext() && !partialAbort) {
       Assert.fail("Expected cleaner to drop aborted delta & base directories, FileStatus[] stat " + Arrays.toString(stat));
     }
