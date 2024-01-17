@@ -100,8 +100,10 @@ public class HeapMemoryMonitor {
         if (isUsageThresholdSupported) {
           return pool;
         } else {
-          LOG.error("{} vendor does not support isCollectionUsageThresholdSupported() and isUsageThresholdSupported()" +
-            " for tenured memory pool '{}'.", vendor, pool.getName());
+          LOG.error("""
+            {} vendor does not support isCollectionUsageThresholdSupported() and isUsageThresholdSupported()\
+             for tenured memory pool '{}'.\
+            """, vendor, pool.getName());
         }
       }
     }

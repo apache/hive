@@ -74,8 +74,10 @@ public enum ErrorMsg {
   @Deprecated INVALID_JOIN_CONDITION_2(10018, "Neither left nor right aliases encountered in JOIN"),
   @Deprecated INVALID_JOIN_CONDITION_3(10019, "OR not supported in JOIN currently"),
   INVALID_TRANSFORM(10020, "TRANSFORM with other SELECT columns not supported"),
-  UNSUPPORTED_MULTIPLE_DISTINCTS(10022, "DISTINCT on different columns not supported" +
-      " with skew in data"),
+  UNSUPPORTED_MULTIPLE_DISTINCTS(10022, """
+      DISTINCT on different columns not supported\
+       with skew in data\
+      """),
   NO_SUBQUERY_ALIAS(10023, "No alias for subquery"),
   NO_INSERT_INSUBQUERY(10024, "Cannot insert in a subquery. Inserting to table "),
   NON_KEY_EXPR_IN_GROUPBY(10025, "Expression not in GROUP BY key"),
@@ -106,84 +108,128 @@ public enum ErrorMsg {
   CLUSTERBY_SORTBY_CONFLICT(10048, "Cannot have both CLUSTER BY and SORT BY clauses"),
   ORDERBY_SORTBY_CONFLICT(10049, "Cannot have both ORDER BY and SORT BY clauses"),
   CLUSTERBY_ORDERBY_CONFLICT(10050, "Cannot have both CLUSTER BY and ORDER BY clauses"),
-  NO_LIMIT_WITH_ORDERBY(10051, "In strict mode, if ORDER BY is specified, "
-      + "LIMIT must also be specified"),
-  UNION_NOTIN_SUBQ(10053, "Top level UNION is not supported currently; "
-      + "use a subquery for the UNION"),
+  NO_LIMIT_WITH_ORDERBY(10051, """
+      In strict mode, if ORDER BY is specified, \
+      LIMIT must also be specified\
+      """),
+  UNION_NOTIN_SUBQ(10053, """
+      Top level UNION is not supported currently; \
+      use a subquery for the UNION\
+      """),
   INVALID_INPUT_FORMAT_TYPE(10054, "Input format must implement InputFormat"),
-  INVALID_OUTPUT_FORMAT_TYPE(10055, "Output Format must implement HiveOutputFormat, "
-      + "otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat"),
+  INVALID_OUTPUT_FORMAT_TYPE(10055, """
+      Output Format must implement HiveOutputFormat, \
+      otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat\
+      """),
   NO_VALID_PARTN(10056, HiveConf.StrictChecks.NO_PARTITIONLESS_MSG),
   NO_OUTER_MAPJOIN(10057, "MAPJOIN cannot be performed with OUTER JOIN"),
   INVALID_MAPJOIN_HINT(10058, "All tables are specified as map-table for join"),
   INVALID_MAPJOIN_TABLE(10059, "Result of a union cannot be a map table"),
   NON_BUCKETED_TABLE(10060, "Sampling expression needed for non-bucketed table"),
-  BUCKETED_NUMERATOR_BIGGER_DENOMINATOR(10061, "Numerator should not be bigger than "
-      + "denominator in sample clause for table"),
-  NEED_PARTITION_ERROR(10062, "Need to specify partition columns because the destination "
-      + "table is partitioned"),
-  CTAS_CTLT_COEXISTENCE(10063, "Create table command does not allow LIKE and AS-SELECT in "
-      + "the same command"),
-  LINES_TERMINATED_BY_NON_NEWLINE(10064, "LINES TERMINATED BY only supports "
-      + "newline '\\n' right now"),
-  CTAS_COLLST_COEXISTENCE(10065, "CREATE TABLE AS SELECT command cannot specify "
-      + "the list of columns "
-      + "for the target table"),
-  CTLT_COLLST_COEXISTENCE(10066, "CREATE TABLE LIKE command cannot specify the list of columns for "
-      + "the target table"),
+  BUCKETED_NUMERATOR_BIGGER_DENOMINATOR(10061, """
+      Numerator should not be bigger than \
+      denominator in sample clause for table\
+      """),
+  NEED_PARTITION_ERROR(10062, """
+      Need to specify partition columns because the destination \
+      table is partitioned\
+      """),
+  CTAS_CTLT_COEXISTENCE(10063, """
+      Create table command does not allow LIKE and AS-SELECT in \
+      the same command\
+      """),
+  LINES_TERMINATED_BY_NON_NEWLINE(10064, """
+      LINES TERMINATED BY only supports \
+      newline '\\n' right now\
+      """),
+  CTAS_COLLST_COEXISTENCE(10065, """
+      CREATE TABLE AS SELECT command cannot specify \
+      the list of columns \
+      for the target table\
+      """),
+  CTLT_COLLST_COEXISTENCE(10066, """
+      CREATE TABLE LIKE command cannot specify the list of columns for \
+      the target table\
+      """),
   INVALID_SELECT_SCHEMA(10067, "Cannot derive schema from the select-clause"),
-  CTAS_PARCOL_COEXISTENCE(10068, "CREATE-TABLE-AS-SELECT does not support "
-      + "partitioning in the target table "),
+  CTAS_PARCOL_COEXISTENCE(10068, """
+      CREATE-TABLE-AS-SELECT does not support \
+      partitioning in the target table \
+      """),
   CTAS_MULTI_LOADFILE(10069, "CREATE-TABLE-AS-SELECT results in multiple file load"),
   CTAS_EXTTBL_COEXISTENCE(10070, "CREATE-TABLE-AS-SELECT cannot create external table"),
   INSERT_EXTERNAL_TABLE(10071, "Inserting into a external table is not allowed"),
   DATABASE_NOT_EXISTS(10072, "Database does not exist:"),
   TABLE_ALREADY_EXISTS(10073, "Table already exists:", "42S02"),
   COLUMN_ALIAS_ALREADY_EXISTS(10074, "Column alias already exists:", "42S02"),
-  UDTF_MULTIPLE_EXPR(10075, "Only a single expression in the SELECT clause is "
-      + "supported with UDTF's"),
+  UDTF_MULTIPLE_EXPR(10075, """
+      Only a single expression in the SELECT clause is \
+      supported with UDTF's\
+      """),
   @Deprecated UDTF_REQUIRE_AS(10076, "UDTF's require an AS clause"),
   UDTF_NO_GROUP_BY(10077, "GROUP BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_SORT_BY(10078, "SORT BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_CLUSTER_BY(10079, "CLUSTER BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_DISTRIBUTE_BY(10080, "DISTRIBUTE BY is not supported with a UDTF in the SELECT clause"),
-  UDTF_INVALID_LOCATION(10081, "UDTF's are not supported outside the SELECT clause, nor nested "
-      + "in expressions"),
+  UDTF_INVALID_LOCATION(10081, """
+      UDTF's are not supported outside the SELECT clause, nor nested \
+      in expressions\
+      """),
   UDTF_LATERAL_VIEW(10082, "UDTF's cannot be in a select expression when there is a lateral view"),
-  UDTF_ALIAS_MISMATCH(10083, "The number of aliases supplied in the AS clause does not match the "
-      + "number of columns output by the UDTF"),
+  UDTF_ALIAS_MISMATCH(10083, """
+      The number of aliases supplied in the AS clause does not match the \
+      number of columns output by the UDTF\
+      """),
   UDF_STATEFUL_INVALID_LOCATION(10084, "Stateful UDF's can only be invoked in the SELECT list"),
   LATERAL_VIEW_WITH_JOIN(10085, "JOIN with a LATERAL VIEW is not supported"),
   LATERAL_VIEW_INVALID_CHILD(10086, "LATERAL VIEW AST with invalid child"),
   OUTPUT_SPECIFIED_MULTIPLE_TIMES(10087, "The same output cannot be present multiple times: "),
   INVALID_AS(10088, "AS clause has an invalid number of aliases"),
-  VIEW_COL_MISMATCH(10089, "The number of columns produced by the SELECT clause does not match the "
-      + "number of column names specified by CREATE VIEW"),
+  VIEW_COL_MISMATCH(10089, """
+      The number of columns produced by the SELECT clause does not match the \
+      number of column names specified by CREATE VIEW\
+      """),
   DML_AGAINST_VIEW(10090, "A view cannot be used as target table for LOAD or INSERT"),
   ANALYZE_VIEW(10091, "ANALYZE is not supported for views"),
   VIEW_PARTITION_TOTAL(10092, "At least one non-partitioning column must be present in view"),
-  VIEW_PARTITION_MISMATCH(10093, "Rightmost columns in view output do not match "
-      + "PARTITIONED ON clause"),
+  VIEW_PARTITION_MISMATCH(10093, """
+      Rightmost columns in view output do not match \
+      PARTITIONED ON clause\
+      """),
   PARTITION_DYN_STA_ORDER(10094, "Dynamic partition cannot be the parent of a static partition"),
-  DYNAMIC_PARTITION_DISABLED(10095, "Dynamic partition is disabled. Either enable it by setting "
-      + "hive.exec.dynamic.partition=true or specify partition column values"),
-  DYNAMIC_PARTITION_STRICT_MODE(10096, "Dynamic partition strict mode requires at least one "
-      + "static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstrict"),
+  DYNAMIC_PARTITION_DISABLED(10095, """
+      Dynamic partition is disabled. Either enable it by setting \
+      hive.exec.dynamic.partition=true or specify partition column values\
+      """),
+  DYNAMIC_PARTITION_STRICT_MODE(10096, """
+      Dynamic partition strict mode requires at least one \
+      static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstrict\
+      """),
   NONEXISTPARTCOL(10098, "Non-Partition column appears in the partition specification: "),
-  UNSUPPORTED_TYPE(10099, "DATETIME type isn't supported yet. Please use "
-      + "DATE or TIMESTAMP instead"),
+  UNSUPPORTED_TYPE(10099, """
+      DATETIME type isn't supported yet. Please use \
+      DATE or TIMESTAMP instead\
+      """),
   CREATE_NON_NATIVE_AS(10100, "CREATE TABLE AS SELECT cannot be used for a non-native table"),
   LOAD_INTO_NON_NATIVE(10101, "A non-native table cannot be used as target for LOAD"),
   LOCKMGR_NOT_SPECIFIED(10102, "Lock manager not specified correctly, set hive.lock.manager"),
   LOCKMGR_NOT_INITIALIZED(10103, "Lock manager could not be initialized, check hive.lock.manager "),
-  LOCK_CANNOT_BE_ACQUIRED(10104, "Locks on the underlying objects cannot be acquired, "
-      + "retry after some time."),
-  ZOOKEEPER_CLIENT_COULD_NOT_BE_INITIALIZED(10105, "Check hive.zookeeper.quorum "
-      + "and hive.zookeeper.client.port"),
-  OVERWRITE_ARCHIVED_PART(10106, "Cannot overwrite an archived partition. " +
-      "Unarchive before running this command"),
-  ARCHIVE_METHODS_DISABLED(10107, "Archiving methods are currently disabled. " +
-      "Please see the Hive wiki for more information about enabling archiving"),
+  LOCK_CANNOT_BE_ACQUIRED(10104, """
+      Locks on the underlying objects cannot be acquired, \
+      retry after some time.\
+      """),
+  ZOOKEEPER_CLIENT_COULD_NOT_BE_INITIALIZED(10105, """
+      Check hive.zookeeper.quorum \
+      and hive.zookeeper.client.port\
+      """),
+  OVERWRITE_ARCHIVED_PART(10106, """
+      Cannot overwrite an archived partition. \
+      Unarchive before running this command\
+      """),
+  ARCHIVE_METHODS_DISABLED(10107, """
+      Archiving methods are currently disabled. \
+      Please see the Hive wiki for more information about enabling archiving\
+      """),
   ARCHIVE_ON_MULI_PARTS(10108, "ARCHIVE can only be run on a single partition"),
   UNARCHIVE_ON_MULI_PARTS(10109, "ARCHIVE can only be run on a single partition"),
   ARCHIVE_ON_TABLE(10110, "ARCHIVE can only be run on partitions"),
@@ -197,9 +243,11 @@ public enum ErrorMsg {
   INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the Export/Import spec. "),
   EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table."),
   INSERT_INTO_BUCKETIZED_TABLE(10122, "Bucketized tables do not support INSERT INTO:"),
-  PARTSPEC_DIFFER_FROM_SCHEMA(10125, "Partition columns in partition specification are "
-      + "not the same as that defined in the table schema. "
-      + "The names and orders have to be exactly the same."),
+  PARTSPEC_DIFFER_FROM_SCHEMA(10125, """
+      Partition columns in partition specification are \
+      not the same as that defined in the table schema. \
+      The names and orders have to be exactly the same.\
+      """),
   PARTITION_COLUMN_NON_PRIMITIVE(10126, "Partition column must be of primitive type."),
   INSERT_INTO_DYNAMICPARTITION_IFNOTEXISTS(10127,
       "Dynamic partitions do not support IF NOT EXISTS. Specified partitions with value :"),
@@ -211,25 +259,33 @@ public enum ErrorMsg {
   ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
   ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE can only be used for {0} to a non-native table  {1}", true),
   SORTMERGE_MAPJOIN_FAILED(10135,
-      "Sort merge bucketed join could not be performed. " +
-      "If you really want to perform the operation, either set " +
-      "hive.optimize.bucketmapjoin.sortedmerge=false, or set " +
-      "hive.enforce.sortmergebucketmapjoin=false."),
+      """
+      Sort merge bucketed join could not be performed. \
+      If you really want to perform the operation, either set \
+      hive.optimize.bucketmapjoin.sortedmerge=false, or set \
+      hive.enforce.sortmergebucketmapjoin=false.\
+      """),
   BUCKET_MAPJOIN_NOT_POSSIBLE(10136,
-    "Bucketed mapjoin cannot be performed. " +
-    "This can be due to multiple reasons: " +
-    " . Join columns don't match bucketed columns. " +
-    " . Number of buckets are not a multiple of each other. " +
-    "If you really want to perform the operation, either remove the " +
-    "mapjoin hint from your query or set hive.enforce.bucketmapjoin to false."),
+    """
+    Bucketed mapjoin cannot be performed. \
+    This can be due to multiple reasons: \
+     . Join columns don't match bucketed columns. \
+     . Number of buckets are not a multiple of each other. \
+    If you really want to perform the operation, either remove the \
+    mapjoin hint from your query or set hive.enforce.bucketmapjoin to false.\
+    """),
 
   BUCKETED_TABLE_METADATA_INCORRECT(10141,
-   "Bucketed table metadata is not correct. " +
-    "Fix the metadata or don't use bucketed mapjoin, by setting " +
-    "hive.enforce.bucketmapjoin to false."),
+   """
+   Bucketed table metadata is not correct. \
+   Fix the metadata or don't use bucketed mapjoin, by setting \
+   hive.enforce.bucketmapjoin to false.\
+   """),
 
-  JOINNODE_OUTERJOIN_MORETHAN_16(10142, "Single join node containing outer join(s) " +
-      "cannot have more than 16 aliases"),
+  JOINNODE_OUTERJOIN_MORETHAN_16(10142, """
+      Single join node containing outer join(s) \
+      cannot have more than 16 aliases\
+      """),
 
   INVALID_JDO_FILTER_EXPRESSION(10143, "Invalid expression for JDO filter"),
 
@@ -238,8 +294,10 @@ public enum ErrorMsg {
   TRUNCATE_FOR_NON_MANAGED_TABLE(10146, "Cannot truncate non-managed table {0}.", true),
   TRUNCATE_FOR_NON_NATIVE_TABLE(10147, "Cannot truncate non-native table {0}.", true),
   PARTSPEC_FOR_NON_PARTITIONED_TABLE(10148, "Partition spec for non partitioned table {0}.", true),
-  INVALID_TABLE_IN_ON_CLAUSE_OF_MERGE(10149, "No columns from target table ''{0}'' found in ON " +
-    "clause ''{1}'' of MERGE statement.", true),
+  INVALID_TABLE_IN_ON_CLAUSE_OF_MERGE(10149, """
+    No columns from target table ''{0}'' found in ON \
+    clause ''{1}'' of MERGE statement.\
+    """, true),
 
   LOAD_INTO_STORED_AS_DIR(10195, "A stored-as-directories table cannot be used as target for LOAD"),
   ALTER_TBL_STOREDASDIR_NOT_SKEWED(10196, "This operation is only valid on skewed table."),
@@ -256,39 +314,53 @@ public enum ErrorMsg {
   SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_2(10205,
       "Skewed column value is empty but skewed name is not."),
   SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_3(10206,
-      "The number of skewed column names and the number of " +
-      "skewed column values are different: "),
+      """
+      The number of skewed column names and the number of \
+      skewed column values are different: \
+      """),
   ALTER_TABLE_NOT_ALLOWED_RENAME_SKEWED_COLUMN(10207,
-      " is a skewed column. It's not allowed to rename skewed column"
-          + " or change skewed column type."),
+      """
+       is a skewed column. It's not allowed to rename skewed column\
+       or change skewed column type.\
+      """),
   HIVE_GROUPING_SETS_AGGR_NOMAPAGGR(10209,
-    "Grouping sets aggregations (with rollups or cubes) are not allowed if map-side " +
-    " aggregation is turned off. Set hive.map.aggr=true if you want to use grouping sets"),
+    """
+    Grouping sets aggregations (with rollups or cubes) are not allowed if map-side \
+     aggregation is turned off. Set hive.map.aggr=true if you want to use grouping sets\
+    """),
   HIVE_GROUPING_SETS_AGGR_EXPRESSION_INVALID(10210,
-    "Grouping sets aggregations (with rollups or cubes) are not allowed if aggregation function " +
-    "parameters overlap with the aggregation functions columns"),
+    """
+    Grouping sets aggregations (with rollups or cubes) are not allowed if aggregation function \
+    parameters overlap with the aggregation functions columns\
+    """),
 
   HIVE_GROUPING_SETS_EMPTY(10211,
     "Empty grouping sets not allowed"),
 
   HIVE_UNION_REMOVE_OPTIMIZATION_NEEDS_SUBDIRECTORIES(10212,
-    "In order to use hive.optimize.union.remove, the hadoop version that you are using " +
-    "should support sub-directories for tables/partitions. If that is true, set " +
-    "hive.hadoop.supports.subdirectories to true. Otherwise, set hive.optimize.union.remove " +
-    "to false"),
+    """
+    In order to use hive.optimize.union.remove, the hadoop version that you are using \
+    should support sub-directories for tables/partitions. If that is true, set \
+    hive.hadoop.supports.subdirectories to true. Otherwise, set hive.optimize.union.remove \
+    to false\
+    """),
 
   HIVE_GROUPING_SETS_EXPR_NOT_IN_GROUPBY(10213,
     "Grouping sets expression is not in GROUP BY key"),
   INVALID_PARTITION_SPEC(10214, "Invalid partition spec specified"),
   ALTER_TBL_UNSET_NON_EXIST_PROPERTY(10215,
-    "Please use the following syntax if not sure " +
-    "whether the property existed or not:\n" +
-    "ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)\n"),
+    """
+    Please use the following syntax if not sure \
+    whether the property existed or not:
+    ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)
+    """),
   ALTER_VIEW_AS_SELECT_NOT_EXIST(10216,
     "Cannot ALTER VIEW AS SELECT if view currently does not exist\n"),
   REPLACE_VIEW_WITH_PARTITION(10217,
-    "Cannot replace a view with CREATE VIEW or REPLACE VIEW or " +
-    "ALTER VIEW AS SELECT if the view has partitions\n"),
+    """
+    Cannot replace a view with CREATE VIEW or REPLACE VIEW or \
+    ALTER VIEW AS SELECT if the view has partitions
+    """),
   EXISTING_TABLE_IS_NOT_VIEW(10218,
     "Existing table is not a view\n"),
   NO_SUPPORTED_ORDERBY_ALLCOLREF_POS(10219,
@@ -299,27 +371,37 @@ public enum ErrorMsg {
     "Invalid position alias in Order By\n"),
 
   HIVE_GROUPING_SETS_THRESHOLD_NOT_ALLOWED_WITH_SKEW(10225,
-    "An additional MR job is introduced since the number of rows created per input row " +
-    "due to grouping sets is more than hive.new.job.grouping.set.cardinality. There is no need " +
-    "to handle skew separately. set hive.groupby.skewindata to false."),
+    """
+    An additional MR job is introduced since the number of rows created per input row \
+    due to grouping sets is more than hive.new.job.grouping.set.cardinality. There is no need \
+    to handle skew separately. set hive.groupby.skewindata to false.\
+    """),
   HIVE_GROUPING_SETS_THRESHOLD_NOT_ALLOWED_WITH_DISTINCTS(10226,
-    "An additional MR job is introduced since the cardinality of grouping sets " +
-    "is more than hive.new.job.grouping.set.cardinality. This functionality is not supported " +
-    "with distincts. Either set hive.new.job.grouping.set.cardinality to a high number " +
-    "(higher than the number of rows per input row due to grouping sets in the query), or " +
-    "rewrite the query to not use distincts."),
+    """
+    An additional MR job is introduced since the cardinality of grouping sets \
+    is more than hive.new.job.grouping.set.cardinality. This functionality is not supported \
+    with distincts. Either set hive.new.job.grouping.set.cardinality to a high number \
+    (higher than the number of rows per input row due to grouping sets in the query), or \
+    rewrite the query to not use distincts.\
+    """),
 
   OPERATOR_NOT_ALLOWED_WITH_MAPJOIN(10227,
     "Not all clauses are supported with mapjoin hint. Please remove mapjoin hint."),
 
   ANALYZE_TABLE_NOSCAN_NON_NATIVE(10228, "ANALYZE TABLE NOSCAN cannot be used for " + "a non-native table"),
 
-  PARTITION_VALUE_NOT_CONTINUOUS(10234, "Partition values specified are not continuous." +
-            " A subpartition value is specified without specifying the parent partition's value"),
-  TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
-            " cannot be exchanged."),
-  EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES(10236, "Exchange partition is not allowed with "
-          + "transactional tables. Alternatively, shall use load data or insert overwrite to move partitions."),
+  PARTITION_VALUE_NOT_CONTINUOUS(10234, """
+            Partition values specified are not continuous.\
+             A subpartition value is specified without specifying the parent partition's value\
+            """),
+  TABLES_INCOMPATIBLE_SCHEMAS(10235, """
+            Tables have incompatible schemas and their partitions \
+             cannot be exchanged.\
+            """),
+  EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES(10236, """
+          Exchange partition is not allowed with \
+          transactional tables. Alternatively, shall use load data or insert overwrite to move partitions.\
+          """),
 
   TRUNCATE_COLUMN_NOT_RC(10237, "Only RCFileFormat supports column truncation."),
   TRUNCATE_COLUMN_ARCHIVED(10238, "Column truncation cannot be performed on archived partitions."),
@@ -341,8 +423,10 @@ public enum ErrorMsg {
 
   INVALID_HDFS_URI(10251, "{0} is not a hdfs uri", true),
   INVALID_DIR(10252, "{0} is not a directory", true),
-  NO_VALID_LOCATIONS(10253, "Could not find any valid location to place the jars. " +
-      "Please update hive.jar.directory or hive.user.install.directory with a valid location", false),
+  NO_VALID_LOCATIONS(10253, """
+      Could not find any valid location to place the jars. \
+      Please update hive.jar.directory or hive.user.install.directory with a valid location\
+      """, false),
   UNSUPPORTED_AUTHORIZATION_PRINCIPAL_TYPE_GROUP(10254,
       "Principal type GROUP is not supported in this authorization setting", "28000"),
   INVALID_TABLE_NAME(10255, "Invalid table name {0}", true),
@@ -352,53 +436,83 @@ public enum ErrorMsg {
   UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_COLUMN(10258,
       "Resource type COLUMN is not supported in this authorization setting", "28000"),
 
-  TXNMGR_NOT_SPECIFIED(10260, "Transaction manager not specified correctly, " +
-      "set hive.txn.manager"),
-  TXNMGR_NOT_INSTANTIATED(10261, "Transaction manager could not be " +
-      "instantiated, check hive.txn.manager"),
-  TXN_NO_SUCH_TRANSACTION(10262, "No record of transaction {0} could be found, " +
-      "may have timed out", true),
+  TXNMGR_NOT_SPECIFIED(10260, """
+      Transaction manager not specified correctly, \
+      set hive.txn.manager\
+      """),
+  TXNMGR_NOT_INSTANTIATED(10261, """
+      Transaction manager could not be \
+      instantiated, check hive.txn.manager\
+      """),
+  TXN_NO_SUCH_TRANSACTION(10262, """
+      No record of transaction {0} could be found, \
+      may have timed out\
+      """, true),
   TXN_ABORTED(10263, "Transaction manager has aborted the transaction {0}.  Reason: {1}", true),
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
   TXNMGR_NOT_ACID(10265, "This command is not allowed on an ACID table {0}.{1} with a non-ACID transaction manager", true),
-  LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
-      "may have timed out", true),
-  LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
-      "support explicit lock requests.  Transaction manager:  "),
+  LOCK_NO_SUCH_LOCK(10270, """
+      No record of lock {0} could be found, \
+      may have timed out\
+      """, true),
+  LOCK_REQUEST_UNSUPPORTED(10271, """
+      Current transaction manager does not \
+      support explicit lock requests.  Transaction manager:  \
+      """),
 
-  METASTORE_COMMUNICATION_FAILED(10280, "Error communicating with the " +
-      "metastore"),
-  METASTORE_COULD_NOT_INITIATE(10281, "Unable to initiate connection to the " +
-      "metastore."),
-  INVALID_COMPACTION_TYPE(10282, "Invalid compaction type, supported values are 'major' and " +
-      "'minor'"),
+  METASTORE_COMMUNICATION_FAILED(10280, """
+      Error communicating with the \
+      metastore\
+      """),
+  METASTORE_COULD_NOT_INITIATE(10281, """
+      Unable to initiate connection to the \
+      metastore.\
+      """),
+  INVALID_COMPACTION_TYPE(10282, """
+      Invalid compaction type, supported values are 'major' and \
+      'minor'\
+      """),
   NO_COMPACTION_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
-  TOO_MANY_COMPACTION_PARTITIONS(10284, "Compaction can only be requested on one partition at a " +
-      "time."),
+  TOO_MANY_COMPACTION_PARTITIONS(10284, """
+      Compaction can only be requested on one partition at a \
+      time.\
+      """),
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
   NONACID_COMPACTION_NOT_SUPPORTED(10286, "Compaction is not allowed on non-ACID table {0}.{1}", true),
   MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
-      "Detected {0}.{1} has row masking/column filtering enabled, " +
-      "which is not supported for query involving ACID operations", true),
+      """
+      Detected {0}.{1} has row masking/column filtering enabled, \
+      which is not supported for query involving ACID operations\
+      """, true),
   MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
-      "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
-          "used by materialized view has row masking/column filtering enabled", true),
+      """
+      Querying directly materialized view contents is not supported since we detected {0}.{1} \
+      used by materialized view has row masking/column filtering enabled\
+      """, true),
   MASKING_COMPLEX_TYPE_NOT_SUPPORTED(10289,
       "Masking complex types is not supported, found a masking expression {0} over column {1}:{2}", true),
 
-  UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
-      "delete query"),
+  UPDATEDELETE_PARSE_ERROR(10290, """
+      Encountered parse error while parsing rewritten merge/update or \
+      delete query\
+      """),
   UPDATE_CANNOT_UPDATE_PART_VALUE(10292, "Updating values of partition columns is not supported"),
   INSERT_CANNOT_CREATE_TEMP_FILE(10293, "Unable to create temp file for insert values "),
-  ACID_OP_ON_NONACID_TXNMGR(10294, "Attempt to do update or delete using transaction manager that" +
-      " does not support these operations."),
+  ACID_OP_ON_NONACID_TXNMGR(10294, """
+      Attempt to do update or delete using transaction manager that\
+       does not support these operations.\
+      """),
   VALUES_TABLE_CONSTRUCTOR_NOT_SUPPORTED(10296,
       "Values clause with table constructor not yet supported"),
-  ACID_OP_ON_NONACID_TABLE(10297, "Attempt to do update or delete on table {0} that is " +
-    "not transactional", true),
-  ACID_NO_SORTED_BUCKETS(10298, "ACID insert, update, delete not supported on tables that are " +
-      "sorted, table {0}", true),
+  ACID_OP_ON_NONACID_TABLE(10297, """
+    Attempt to do update or delete on table {0} that is \
+    not transactional\
+    """, true),
+  ACID_NO_SORTED_BUCKETS(10298, """
+      ACID insert, update, delete not supported on tables that are \
+      sorted, table {0}\
+      """, true),
   ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED(10299,
       "Alter table partition type {0} does not allow partial partition spec", true),
   ALTER_TABLE_PARTITION_CASCADE_NOT_SUPPORTED(10300,
@@ -420,8 +534,10 @@ public enum ErrorMsg {
   REPLACE_CANNOT_DROP_COLUMNS(10313, "Replacing columns cannot drop columns for table {0}. SerDe may be incompatible", true),
   REPLACE_UNSUPPORTED_TYPE_CONVERSION(10314, "Replacing columns with unsupported type conversion (from {0} to {1}) for column {2}. SerDe may be incompatible", true),
   HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY(10315,
-      "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
-      "HIVE_MULTI_GROUPBY_SINGLE_REDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
+      """
+      Grouping sets aggregations (with rollups or cubes) are not allowed when \
+      HIVE_MULTI_GROUPBY_SINGLE_REDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets\
+      """),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
@@ -432,8 +548,10 @@ public enum ErrorMsg {
   IMPORT_SEMANTIC_ERROR(10324, "Import Semantic Analyzer Error"),
   INVALID_FK_SYNTAX(10325, "Invalid Foreign Key syntax"),
   INVALID_CSTR_SYNTAX(10326, "Invalid Constraint syntax"),
-  ACID_NOT_ENOUGH_HISTORY(10327, "Not enough history available for ({0},{1}).  " +
-    "Oldest available base: {2}", true),
+  ACID_NOT_ENOUGH_HISTORY(10327, """
+    Not enough history available for ({0},{1}).  \
+    Oldest available base: {2}\
+    """, true),
   INVALID_COLUMN_NAME(10328, "Invalid column name"),
   UNSUPPORTED_SET_OPERATOR(10329, "Unsupported set operator"),
   LOCK_ACQUIRE_CANCELLED(10330, "Query was cancelled while acquiring locks on the underlying objects. "),
@@ -444,8 +562,10 @@ public enum ErrorMsg {
   REPLACE_MATERIALIZED_WITH_VIEW(10401, "Attempt to replace materialized view {0} with view", true),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
   MATERIALIZED_VIEW_DEF_EMPTY(10403, "Query for the materialized view rebuild could not be retrieved"),
-  MERGE_PREDIACTE_REQUIRED(10404, "MERGE statement with both UPDATE and DELETE clauses " +
-    "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),
+  MERGE_PREDIACTE_REQUIRED(10404, """
+    MERGE statement with both UPDATE and DELETE clauses \
+    requires "AND <boolean>" on the 1st WHEN MATCHED clause of <{0}>\
+    """, true),
   MERGE_TOO_MANY_DELETE(10405, "MERGE statement can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
   MERGE_TOO_MANY_UPDATE(10406, "MERGE statement can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
   INVALID_JOIN_CONDITION(10407, "Error parsing condition in join"),
@@ -459,8 +579,10 @@ public enum ErrorMsg {
   LOAD_DATA_ACID_FILE(10413,
       "\"{0}\" was created by Acid write - it cannot be loaded into anther Acid table",
       true),
-  ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
-    "insert-only transactional", true),
+  ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, """
+    Attempt to do update or delete on table {0} that is \
+    insert-only transactional\
+    """, true),
   LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
@@ -493,15 +615,23 @@ public enum ErrorMsg {
   //========================== 20000 range starts here ========================//
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
-  SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
-      + "It may have crashed with an error."),
-  SCRIPT_GENERIC_ERROR(20002, "Hive encountered some unknown error while "
-      + "running your custom script."),
-  SCRIPT_CLOSING_ERROR(20003, "An error occurred when trying to close the Operator " +
-      "running your custom script."),
-  DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR(20004, "Fatal error occurred when node " +
-      "tried to create too many dynamic partitions. The maximum number of dynamic partitions " +
-      "is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. "),
+  SCRIPT_IO_ERROR(20001, """
+      An error occurred while reading or writing to your custom script. \
+      It may have crashed with an error.\
+      """),
+  SCRIPT_GENERIC_ERROR(20002, """
+      Hive encountered some unknown error while \
+      running your custom script.\
+      """),
+  SCRIPT_CLOSING_ERROR(20003, """
+      An error occurred when trying to close the Operator \
+      running your custom script.\
+      """),
+  DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR(20004, """
+      Fatal error occurred when node \
+      tried to create too many dynamic partitions. The maximum number of dynamic partitions \
+      is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. \
+      """),
   /**
    * {1} is the transaction id;
    * use {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)} to format
@@ -535,54 +665,78 @@ public enum ErrorMsg {
 
   //========================== 30000 range starts here ========================//
 
-  STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
-    "There was a error to retrieve the StatsPublisher, and retrying " +
-    "might help. If you don't want the query to fail because accurate statistics " +
-    "could not be collected, set hive.stats.reliable=false"),
-  STATSPUBLISHER_INITIALIZATION_ERROR(30001, "StatsPublisher cannot be initialized. " +
-    "There was a error in the initialization of StatsPublisher, and retrying " +
-    "might help. If you don't want the query to fail because accurate statistics " +
-    "could not be collected, set hive.stats.reliable=false"),
-  STATSPUBLISHER_CONNECTION_ERROR(30002, "StatsPublisher cannot be connected to." +
-    "There was a error while connecting to the StatsPublisher, and retrying " +
-    "might help. If you don't want the query to fail because accurate statistics " +
-    "could not be collected, set hive.stats.reliable=false"),
-  STATSPUBLISHER_PUBLISHING_ERROR(30003, "Error in publishing stats. There was an " +
-    "error in publishing stats via StatsPublisher, and retrying " +
-    "might help. If you don't want the query to fail because accurate statistics " +
-    "could not be collected, set hive.stats.reliable=false"),
-  STATSPUBLISHER_CLOSING_ERROR(30004, "StatsPublisher cannot be closed." +
-    "There was a error while closing the StatsPublisher, and retrying " +
-    "might help. If you don't want the query to fail because accurate statistics " +
-    "could not be collected, set hive.stats.reliable=false"),
+  STATSPUBLISHER_NOT_OBTAINED(30000, """
+    StatsPublisher cannot be obtained. \
+    There was a error to retrieve the StatsPublisher, and retrying \
+    might help. If you don't want the query to fail because accurate statistics \
+    could not be collected, set hive.stats.reliable=false\
+    """),
+  STATSPUBLISHER_INITIALIZATION_ERROR(30001, """
+    StatsPublisher cannot be initialized. \
+    There was a error in the initialization of StatsPublisher, and retrying \
+    might help. If you don't want the query to fail because accurate statistics \
+    could not be collected, set hive.stats.reliable=false\
+    """),
+  STATSPUBLISHER_CONNECTION_ERROR(30002, """
+    StatsPublisher cannot be connected to.\
+    There was a error while connecting to the StatsPublisher, and retrying \
+    might help. If you don't want the query to fail because accurate statistics \
+    could not be collected, set hive.stats.reliable=false\
+    """),
+  STATSPUBLISHER_PUBLISHING_ERROR(30003, """
+    Error in publishing stats. There was an \
+    error in publishing stats via StatsPublisher, and retrying \
+    might help. If you don't want the query to fail because accurate statistics \
+    could not be collected, set hive.stats.reliable=false\
+    """),
+  STATSPUBLISHER_CLOSING_ERROR(30004, """
+    StatsPublisher cannot be closed.\
+    There was a error while closing the StatsPublisher, and retrying \
+    might help. If you don't want the query to fail because accurate statistics \
+    could not be collected, set hive.stats.reliable=false\
+    """),
 
-  COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, "Invalid partitioning key specified in ANALYZE " +
-    "statement"),
-  COLUMNSTATSCOLLECTOR_INVALID_PARTITION(30007, "Invalid partitioning key/value specified in " +
-    "ANALYZE statement"),
+  COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, """
+    Invalid partitioning key specified in ANALYZE \
+    statement\
+    """),
+  COLUMNSTATSCOLLECTOR_INVALID_PARTITION(30007, """
+    Invalid partitioning key/value specified in \
+    ANALYZE statement\
+    """),
   COLUMNSTATSCOLLECTOR_PARSE_ERROR(30009, "Encountered parse error while parsing rewritten query"),
   DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION(30011, "Partition protected from being dropped"),
-  COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
-      + "for partition columns"),
+  COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, """
+      Column statistics are not supported \
+      for partition columns\
+      """),
 
   STATSAGGREGATOR_SOURCETASK_NULL(30014, "SourceTask of StatsTask should not be null"),
   STATSAGGREGATOR_CONNECTION_ERROR(30015,
       "Stats aggregator of type {0} cannot be connected to", true),
   STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true),
 
-  INVALID_FILE_FORMAT_IN_LOAD(30019, "The file that you are trying to load does not match the" +
-      " file format of the destination table."),
+  INVALID_FILE_FORMAT_IN_LOAD(30019, """
+      The file that you are trying to load does not match the\
+       file format of the destination table.\
+      """),
 
-  SCHEMA_REQUIRED_TO_READ_ACID_TABLES(30020, "Neither the configuration variables " +
-          "schema.evolution.columns / schema.evolution.columns.types " +
-          "nor the " +
-          "columns / columns.types " +
-          "are set.  Table schema information is required to read ACID tables"),
+  SCHEMA_REQUIRED_TO_READ_ACID_TABLES(30020, """
+          Neither the configuration variables \
+          schema.evolution.columns / schema.evolution.columns.types \
+          nor the \
+          columns / columns.types \
+          are set.  Table schema information is required to read ACID tables\
+          """),
   ACID_TABLES_MUST_BE_READ_WITH_ACID_READER(30021, "An ORC ACID reader required to read ACID tables"),
-  ACID_TABLES_MUST_BE_READ_WITH_HIVEINPUTFORMAT(30022, "Must use HiveInputFormat to read ACID tables " +
-          "(set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat)"),
-  ACID_LOAD_DATA_INVALID_FILE_NAME(30023, "{0} file name is not valid in Load Data into Acid " +
-    "table {1}.  Examples of valid names are: 00000_0, 00000_0_copy_1", true),
+  ACID_TABLES_MUST_BE_READ_WITH_HIVEINPUTFORMAT(30022, """
+          Must use HiveInputFormat to read ACID tables \
+          (set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat)\
+          """),
+  ACID_LOAD_DATA_INVALID_FILE_NAME(30023, """
+    {0} file name is not valid in Load Data into Acid \
+    table {1}.  Examples of valid names are: 00000_0, 00000_0_copy_1\
+    """, true),
 
   CONCATENATE_UNSUPPORTED_FILE_FORMAT(30030, "Concatenate/Merge only supported for RCFile and ORCFile formats"),
   CONCATENATE_UNSUPPORTED_TABLE_BUCKETED(30031, "Concatenate/Merge can not be performed on bucketed tables"),
@@ -601,13 +755,17 @@ public enum ErrorMsg {
 
   REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication."),
   REPL_INVALID_DB_OR_TABLE_PATTERN(40005,
-                                     "Invalid pattern for the DB or table name in the replication policy. "
-                                     + "It should be a valid regex enclosed within single or double quotes."),
+                                     """
+                                     Invalid pattern for the DB or table name in the replication policy. \
+                                     It should be a valid regex enclosed within single or double quotes.\
+                                     """),
   //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
   //method in HiveMetaStoreClient
   REPL_EVENTS_MISSING_IN_METASTORE(40006, "Notification events are missing in the meta store."),
-  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(40007, "Load path {0} not valid as target database is bootstrapped " +
-    "from some other path : {1}.", true),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(40007, """
+    Load path {0} not valid as target database is bootstrapped \
+    from some other path : {1}.\
+    """, true),
   REPL_INVALID_CONFIG_FOR_SERVICE(40008, "Invalid config error : {0} for {1} service.", true),
   REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE(40009, "Invalid internal config error : {0} for {1} service.", true),
   REPL_RETRY_EXHAUSTED(40010, "Retry exhausted for retryable error code {0}.", true),

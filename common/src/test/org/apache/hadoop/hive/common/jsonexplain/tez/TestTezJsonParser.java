@@ -35,8 +35,10 @@ public class TestTezJsonParser {
 
   @Test
   public void testExtractStagesAndPlans() throws Exception {
-    String jsonString = "{\"STAGE DEPENDENCIES\":{\"s1\":{\"ROOT STAGE\":\"\"}," +
-            "\"s2\":{\"DEPENDENT STAGES\":\"s1\"}},\"STAGE PLANS\":{}}";
+    String jsonString = """
+            {"STAGE DEPENDENCIES":{"s1":{"ROOT STAGE":""},\
+            "s2":{"DEPENDENT STAGES":"s1"}},"STAGE PLANS":{}}\
+            """;
     JSONObject input = new JSONObject(jsonString);
 
     uut.extractStagesAndPlans(input);
