@@ -2974,7 +2974,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
       tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
-      if (tbl.getSd().getLocation() != null) {
+      if (tableDataShouldBeDeleted && tbl.getSd().getLocation() != null) {
         tblPath = new Path(tbl.getSd().getLocation());
         if (!wh.isWritable(tblPath.getParent())) {
           String target = indexName == null ? "Table" : "Index table";
@@ -4976,6 +4976,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Table tbl = null;
     Partition part = null;
     boolean mustPurge = false;
+    boolean tableDataShouldBeDeleted = false;
     long writeId = 0;
     
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
@@ -4999,7 +5000,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       request.setCatName(catName);
       tbl = get_table_core(request);
       firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
-      
+
+      tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
       mustPurge = isMustPurge(envContext, tbl);
       writeId = getWriteId(envContext);
             
@@ -5007,12 +5009,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new NoSuchObjectException("Partition doesn't exist. " + part_vals);
       }
       isArchived = MetaStoreUtils.isArchived(part);
-      if (isArchived) {
+      if (tableDataShouldBeDeleted && isArchived) {
         archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
         verifyIsWritablePath(archiveParentDir);
       }
 
-      if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+      if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
         partPath = new Path(part.getSd().getLocation());
         verifyIsWritablePath(partPath);
       }
@@ -5032,9 +5034,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } finally {
       if (!success) {
         ms.rollbackTransaction();
-      } else if (checkTableDataShouldBeDeleted(tbl, deleteData) && 
-          (partPath != null || archiveParentDir != null)) {
-
+      } else if (tableDataShouldBeDeleted && (partPath != null || archiveParentDir != null)) {
         LOG.info(mustPurge ?
           "dropPartition() will purge " + partPath + " directly, skipping trash." :
           "dropPartition() will move " + partPath + " to trash-directory.");
@@ -5164,7 +5164,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean deleteData = request.isSetDeleteData() && request.isDeleteData();
     boolean ignoreProtection = request.isSetIgnoreProtection() && request.isIgnoreProtection();
     boolean needResult = !request.isSetNeedResult() || request.isNeedResult();
-    
+
     List<PathAndDepth> dirsToDelete = new ArrayList<>();
     List<Path> archToDelete = new ArrayList<>();
     EnvironmentContext envContext = 
@@ -5174,19 +5174,21 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Table tbl = null;
     List<Partition> parts = null;
     boolean mustPurge = false;
+    boolean tableDataShouldBeDeleted = false;
     long writeId = 0;
     
     Map<String, String> transactionalListenerResponses = null;
     boolean needsCm = false;
-    
+
     try {
       ms.openTransaction();
       // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
       // Great... Maybe we could bypass fetching MPartitions by issuing direct SQL deletes.
       tbl = get_table_core(catName, dbName, tblName);
       mustPurge = isMustPurge(envContext, tbl);
+      tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
       writeId = getWriteId(envContext);
-      
+
       int minCount = 0;
       RequestPartsSpec spec = request.getParts();
       List<String> partNames = null;
@@ -5250,14 +5252,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (colNames != null) {
           partNames.add(FileUtils.makePartName(colNames, part.getValues()));
         }
-        // Preserve the old behavior of failing when we cannot write, even w/o deleteData,
-        // and even if the table is external. That might not make any sense.
-        if (MetaStoreUtils.isArchived(part)) {
+        if (tableDataShouldBeDeleted && MetaStoreUtils.isArchived(part)) {
           Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
           verifyIsWritablePath(archiveParentDir);
           archToDelete.add(archiveParentDir);
         }
-        if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+        if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
           Path partPath = new Path(part.getSd().getLocation());
           verifyIsWritablePath(partPath);
           dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
@@ -5281,7 +5281,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } finally {
       if (!success) {
         ms.rollbackTransaction();
-      } else if (checkTableDataShouldBeDeleted(tbl, deleteData)) {
+      } else if (tableDataShouldBeDeleted) {
         LOG.info(mustPurge ?
             "dropPartition() will purge partition-directories directly, skipping trash."
             :  "dropPartition() will move partition-directories to trash-directory.");

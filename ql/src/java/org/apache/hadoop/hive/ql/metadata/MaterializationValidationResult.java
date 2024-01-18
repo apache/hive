@@ -16,29 +16,26 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.leader;
+package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Set;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+public class MaterializationValidationResult {
+  private final EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms;
+  private final String errorMessage;
 
-/**
- * Simple factory for creating the elector
- */
-public class LeaderElectionFactory {
-
-  public static LeaderElection create(Configuration conf) throws IOException  {
-    String method =
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
-    switch (method.toLowerCase()) {
-      case "host":
-        return new StaticLeaderElection();
-      case "lock":
-        return new LeaseLeaderElection();
-      default:
-        throw new UnsupportedOperationException(method + " is not supported for electing the leader");
-    }
+  public MaterializationValidationResult(
+      EnumSet<RewriteAlgorithm> supportedRewriteAlgorithms, String errorMessage) {
+    this.supportedRewriteAlgorithms = supportedRewriteAlgorithms;
+    this.errorMessage = errorMessage;
   }
 
+  public Set<RewriteAlgorithm> getSupportedRewriteAlgorithms() {
+    return supportedRewriteAlgorithms;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
+  }
 }

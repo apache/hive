@@ -601,7 +601,7 @@ public class Var {
       return (String)value;
     }
     else if (type == Type.DATE) {
-      return ((Date)value).toString();
+      return String.format("DATE '%s'", value);
     }
     else if (type == Type.TIMESTAMP) {
       int len = 19;
@@ -612,7 +612,7 @@ public class Var {
       if (t.length() > len) {
         t = t.substring(0, len);
       }
-      return t;
+      return String.format("TIMESTAMP '%s'", t);
     }
 	  return value.toString();
 	}

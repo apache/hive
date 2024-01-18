@@ -2461,7 +2461,20 @@ public class HiveConf extends Configuration {
         "The default input format for tez. Tez groups splits in the AM."),
 
     HIVE_TEZ_CONTAINER_SIZE("hive.tez.container.size", -1,
-        "By default Tez will spawn containers of the size of a mapper. This can be used to overwrite."),
+        "The memory in MB that's used by a Tez task container (TezChild) in Tez container mode. Hive uses this \n"
+        + "property to create a Resource object which is accepted by Yarn (and used in TezAM to ask for TezChild \n"
+        + "containers). This should be distinguished from the Tez AM's (DAGAppMaster) memory, \n"
+        + "which is driven by tez.am.resource.memory.mb! \n"
+        + "Also, as Hive takes care of TezChild memory by setting this option, there is no need \n "
+        + "to set tez.task.resource.memory.mb differently. \n"
+        + "The final -Xmx arg for TezChild process is not equal to this setting, \n "
+        + "because Tez considers a heap fraction (80%), so by default: \n"
+        + "Xmx = hive.tez.container.size * tez.container.max.java.heap.fraction. \n"
+        + "In case of values <= 0, container size falls back to mapreduce.map.memory.mb. \n"
+        + "LLAP notes: while generating splits, the needed per-task resource is derived from this option \n"
+        + "(refer to HiveSplitGenerator, TezAvailableSlotsCalculator), so even if its value doesn't change the \n"
+        + "LLAP daemons' total physical size, it has to be configured properly. In this context \n"
+        + "4096 implies that you assume a single task will consume 4096MB from a daemon's shared heap."),
     HIVE_TEZ_CPU_VCORES("hive.tez.cpu.vcores", -1,
         "By default Tez will ask for however many cpus map-reduce is configured to use per container.\n" +
         "This can be used to overwrite."),
@@ -3680,8 +3693,12 @@ public class HiveConf extends Configuration {
     HIVE_CLI_PRINT_ESCAPE_CRLF("hive.cli.print.escape.crlf", false,
         "Whether to print carriage returns and line feeds in row output as escaped \\r and \\n"),
 
+    HIVE_CLI_TEZ_INITIALIZE_SESSION("hive.cli.tez.initialize.session", true,
+        "When enabled, CLI running with Tez will preemptively open a tez session during start up."),
+
     HIVE_CLI_TEZ_SESSION_ASYNC("hive.cli.tez.session.async", true, "Whether to start Tez\n" +
-        "session in background when running CLI with Tez, allowing CLI to be available earlier."),
+        "session in background when running CLI with Tez, allowing CLI to be available earlier. " +
+        "If hive.cli.tez.initialize.session is set to false, this value is ignored."),
 
     HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS("hive.disable.unsafe.external.table.operations", true,
         "Whether to disable certain optimizations and operations on external tables," +

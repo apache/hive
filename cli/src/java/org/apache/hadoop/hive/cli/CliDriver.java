@@ -809,6 +809,7 @@ public class CliDriver {
     } catch (CommandProcessorException e) {
       return e.getResponseCode();
     } finally {
+      SessionState.endStart(ss);
       ss.resetThreadName();
       ss.close();
     }

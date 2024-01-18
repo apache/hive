@@ -16,29 +16,29 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.leader;
+package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.IOException;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
- * Simple factory for creating the elector
- */
-public class LeaderElectionFactory {
+   * Enumeration of Materialized view query rewrite algorithms.
+   */
+public enum RewriteAlgorithm {
+  /**
+   * Query sql text is compared to stored materialized view definition sql texts.
+   */
+  TEXT,
+  /**
+   * Use rewriting algorithm provided by Calcite.
+   */
+  CALCITE;
 
-  public static LeaderElection create(Configuration conf) throws IOException  {
-    String method =
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
-    switch (method.toLowerCase()) {
-      case "host":
-        return new StaticLeaderElection();
-      case "lock":
-        return new LeaseLeaderElection();
-      default:
-        throw new UnsupportedOperationException(method + " is not supported for electing the leader");
-    }
-  }
+  public static final EnumSet<RewriteAlgorithm> ALL = EnumSet.allOf(RewriteAlgorithm.class);
 
+  public static final Predicate<Set<RewriteAlgorithm>> ANY =
+      rewriteAlgorithms -> true;
+  public static final Predicate<Set<RewriteAlgorithm>> NON_CALCITE =
+      rewriteAlgorithms -> !rewriteAlgorithms.contains(CALCITE);
 }

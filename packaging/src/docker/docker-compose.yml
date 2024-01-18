@@ -32,6 +32,9 @@ services:
         - '9083:9083'
     volumes:
         - warehouse:/opt/hive/data/warehouse
+        - type: bind
+          source: ${POSTGRES_LOCAL_PATH}
+          target: /opt/hive/lib/postgres.jar
 
   hiveserver2:
     image: apache/hive:${HIVE_VERSION}

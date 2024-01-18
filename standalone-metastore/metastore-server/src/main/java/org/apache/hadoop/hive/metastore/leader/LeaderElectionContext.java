@@ -42,12 +42,12 @@ public class LeaderElectionContext {
    * For those tasks which belong to the same type, they will be running in the same leader.
    */
   public enum TTYPE {
-    HOUSEKEEPING(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "sys",
-        "metastore_housekeeping_leader"), "housekeeping"),
-    WORKER(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "sys",
-        "metastore_worker_leader"), "compactor_worker"),
-    ALWAYS_TASKS(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "sys",
-        "metastore_always_tasks_leader"), "always_tasks");
+    HOUSEKEEPING(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "__METASTORE_LEADER_ELECTION__",
+        "metastore_housekeeping"), "housekeeping"),
+    WORKER(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "__METASTORE_LEADER_ELECTION__",
+        "metastore_compactor_worker"), "compactor_worker"),
+    ALWAYS_TASKS(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "__METASTORE_LEADER_ELECTION__",
+        "metastore_always_tasks"), "always_tasks");
     // Mutex of TTYPE, which can be a nonexistent table
     private final TableName mutex;
     // Name of TTYPE
@@ -127,9 +127,10 @@ public class LeaderElectionContext {
           throw new RuntimeException("Error claiming to be leader: " + leaderElection.getName(), e);
         }
       });
+      daemon.setName("Metastore Election " + leaderElection.getName());
+      daemon.setDaemon(true);
+
       if (startAsDaemon) {
-        daemon.setName("Leader-Election-" + leaderElection.getName());
-        daemon.setDaemon(true);
         daemon.start();
       } else {
         daemon.run();
@@ -154,7 +155,13 @@ public class LeaderElectionContext {
     case "host":
       return servHost;
     case "lock":
-      return ttype.getTableName();
+      TableName mutex = ttype.getTableName();
+      String namespace =
+          MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_LOCK_NAMESPACE);
+      if (StringUtils.isNotEmpty(namespace)) {
+        return new TableName(mutex.getCat(), namespace, mutex.getTable());
+      }
+      return mutex;
     default:
       throw new UnsupportedOperationException(method + " not supported for leader election");
     }

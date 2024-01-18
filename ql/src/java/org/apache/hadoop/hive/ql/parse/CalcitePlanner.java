@@ -355,7 +355,7 @@ import javax.sql.DataSource;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ANY;
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -1681,8 +1681,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       materializationValidator.validate(calcitePlan);
       setInvalidResultCacheReason(
           materializationValidator.getResultCacheInvalidReason());
-      setInvalidAutomaticRewritingMaterializationReason(
-          materializationValidator.getAutomaticRewritingInvalidReason());
+      setMaterializationValidationResult(
+          materializationValidator.getAutomaticRewritingValidationResult());
 
       // 2. Apply pre-join order optimizations
       calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
