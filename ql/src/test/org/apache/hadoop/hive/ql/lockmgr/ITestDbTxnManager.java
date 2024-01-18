@@ -50,7 +50,7 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
             .toLowerCase();
     rule = getDatabaseRule(metastoreType).setVerbose(false);
 
-    conf.setVar(HiveConf.ConfVars.METASTOREDBTYPE, metastoreType.toUpperCase());
+    conf.setVar(HiveConf.ConfVars.METASTORE_DB_TYPE, metastoreType.toUpperCase());
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, rule.getJdbcUrl());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, rule.getJdbcDriver());

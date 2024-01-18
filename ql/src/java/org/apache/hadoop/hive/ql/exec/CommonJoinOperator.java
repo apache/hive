@@ -239,7 +239,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.hconf = hconf;
 
     heartbeatInterval = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVESENDHEARTBEAT);
+        HiveConf.ConfVars.HIVE_SEND_HEARTBEAT);
     countAfterReport = 0;
 
     totalSz = 0;
@@ -296,9 +296,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     dummyObjVectors = new RowContainer[numAliases];
 
     joinEmitInterval = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVEJOINEMITINTERVAL);
+        HiveConf.ConfVars.HIVE_JOIN_EMIT_INTERVAL);
     joinCacheSize = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVEJOINCACHESIZE);
+        HiveConf.ConfVars.HIVE_JOIN_CACHE_SIZE);
 
     logEveryNRows = HiveConf.getLongVar(hconf,
         HiveConf.ConfVars.HIVE_LOG_N_RECORDS);

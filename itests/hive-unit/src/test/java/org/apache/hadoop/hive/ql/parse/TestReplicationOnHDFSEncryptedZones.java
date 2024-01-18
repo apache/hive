@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -119,7 +118,7 @@ public class TestReplicationOnHDFSEncryptedZones {
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
               UserGroupInformation.getCurrentUser().getUserName());
-          put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
+          put(HiveConf.ConfVars.REPL_DIR.varname, primary.repldDir);
         }}, "test_key123");
 
     //read should pass without raw-byte distcp
@@ -162,7 +161,7 @@ public class TestReplicationOnHDFSEncryptedZones {
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
               UserGroupInformation.getCurrentUser().getUserName());
-          put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
+          put(HiveConf.ConfVars.REPL_DIR.varname, primary.repldDir);
         }}, "test_key");
 
     List<String> dumpWithClause = Arrays.asList(

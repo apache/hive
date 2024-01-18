@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
@@ -761,11 +762,26 @@ public class DatabaseProduct implements Configurable {
 
   public Object convertTimestampValue(Object timestampValue) {
     assert timestampValue instanceof String;
-    MetaStoreUtils.convertStringToTimestamp((String)timestampValue);
+    MetaStoreUtils.convertStringToTimestamp((String) timestampValue);
     // The timestampValue looks valid now, for Postgres/SQLServer/Oracle, return timestampValue as it is,
     // otherwise we may run into different results on SQL and JDO, check the partition_timestamp3.q
     // for such case.
     return timestampValue;
+  }
+  
+  /**
+   * Get the max rows in a query with paramSize.
+   * @param batch the configured batch size
+   * @param paramSize the parameter size in a query statement
+   * @return the max allowed rows in a query
+   */
+  public int getMaxRows(int batch, int paramSize) {
+    if (isSQLSERVER()) {
+      // SQL Server supports a maximum of 2100 parameters in a request. Adjust the maxRowsInBatch accordingly
+      int maxAllowedRows = (2100 - paramSize) / paramSize;
+      return Math.min(batch, maxAllowedRows);
+    }
+    return batch;
   }
 
   // This class implements the Configurable interface for the benefit

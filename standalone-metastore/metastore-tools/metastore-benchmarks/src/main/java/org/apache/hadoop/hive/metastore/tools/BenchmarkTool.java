@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.metastore.tools.Constants.HMS_DEFAULT_PORT;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkAlterPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartition;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkCreatePartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDeleteCreate;
@@ -311,6 +312,8 @@ public class BenchmarkTool implements Runnable {
               () -> benchmarkCreatePartitions(bench, bData, howMany))
           .add("dropPartitions" + '.' + howMany,
               () -> benchmarkDropPartitions(bench, bData, howMany))
+          .add("alterPartitions" + '.' + howMany,
+              () -> benchmarkAlterPartitions(bench, bData, howMany))
           .add("renameTable" + '.' + howMany,
               () -> benchmarkRenameTable(bench, bData, howMany))
           .add("dropDatabase" + '.' + howMany,

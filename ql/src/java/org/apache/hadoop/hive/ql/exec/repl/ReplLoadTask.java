@@ -92,7 +92,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedList;
@@ -436,8 +435,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private boolean isReadOnlyHookRegistered() {
-    return conf.get(HiveConf.ConfVars.PREEXECHOOKS.varname) != null &&
-      conf.get(HiveConf.ConfVars.PREEXECHOOKS.varname).contains(READ_ONLY_HOOK);
+    return conf.get(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname) != null &&
+      conf.get(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname).contains(READ_ONLY_HOOK);
   }
 
   /**

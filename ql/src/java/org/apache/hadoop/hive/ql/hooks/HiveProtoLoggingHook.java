@@ -426,7 +426,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
               plan.getOptimizedQueryString(),
               plan.getOptimizedCBOPlan());
       return new HiveHookEventProtoPartialBuilder(
-              builder, explainWork, otherInfo, plan.getQueryStr(), conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+              builder, explainWork, otherInfo, plan.getQueryStr(), conf.getVar(ConfVars.HIVE_STAGE_ID_REARRANGE));
     }
 
     private HiveHookEventProtoPartialBuilder getPostHookEvent(HookContext hookContext, boolean success) {

@@ -83,7 +83,7 @@ public class GroupByOptimizer extends Transform {
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     HiveConf conf = pctx.getConf();
 
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
       // process group-by pattern
       opRules.put(new RuleRegExp("R1",
           GroupByOperator.getOperatorName() + "%" +
@@ -188,7 +188,7 @@ public class GroupByOptimizer extends Transform {
         if (!groupByOpDesc.isDistinct()) {
           removeReduceSink = true;
         }
-        else if (!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+        else if (!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
           // Optimize the query: select count(distinct keys) from T, where
           // T is bucketized and sorted by T
           // Partial aggregation can be done by the mappers in this scenario

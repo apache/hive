@@ -213,7 +213,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       return true;
     }
 
-    int windowLimit = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
+    int windowLimit = HiveConf.getIntVar(cfg, ConfVars.HIVE_JOIN_CACHE_SIZE);
 
     if (windowLimit < (start.getAmt() + end.getAmt() + 1)) {
       return false;
@@ -271,7 +271,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       return null;
     }
     
-    int windowLimit = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
+    int windowLimit = HiveConf.getIntVar(cfg, ConfVars.HIVE_JOIN_CACHE_SIZE);
 
     if (windowLimit < (endPos - startPos + 1)) {
       return null;

@@ -541,7 +541,8 @@ public final class ParseUtils {
     final ASTNode ast = parse(viewQuery, ctx);
     final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
     RelNode logicalPlan = analyzer.genLogicalPlan(ast);
-    return new CBOPlan(ast, logicalPlan, analyzer.getInvalidAutomaticRewritingMaterializationReason());
+    return new CBOPlan(
+        ast, logicalPlan, analyzer.getMaterializationValidationResult().getSupportedRewriteAlgorithms());
   }
 
   public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
@@ -571,7 +572,7 @@ public final class ParseUtils {
    */
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     Map<String, String> colTypes = new HashMap<>();
     List<FieldSchema> partitionKeys = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
             table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
@@ -697,7 +698,7 @@ public final class ParseUtils {
     // Set dynamic partitioning to nonstrict so that queries do not need any partition
     // references.
     // TODO: this may be a perf issue as it prevents the optimizer.. or not
-    HiveConf.setVar(ctx.getConf(), HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    HiveConf.setVar(ctx.getConf(), HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
     HiveConf.setBoolVar(ctx.getConf(), HiveConf.ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
     // Parse the rewritten query string

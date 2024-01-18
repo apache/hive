@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -120,23 +119,23 @@ public class TestHCatPartitionPublish {
     System.setSecurityManager(new NoExitSecurityManager());
     Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
+    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
+    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_FAILURE_RETRIES, 3);
     hcatConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 120, TimeUnit.SECONDS);
     hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
         HCatSemanticAnalyzer.class.getName());
-    hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hcatConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hcatConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname,
         "false");
     msc = new HiveMetaStoreClient(hcatConf);
-    System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
-    System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
-    System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+    System.setProperty(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.WAREHOUSE));
-    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+    System.setProperty(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
-    System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
+    System.setProperty(HiveConf.ConfVars.METASTORE_URIS.varname,
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
   }
 

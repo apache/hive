@@ -75,9 +75,9 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     Path whPath = new Path(fsuri.getScheme(), fsuri.getAuthority(),
         getTestDir());
     hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hcatConf.set(ConfVars.METASTOREWAREHOUSE.varname, whPath.toString());
+    hcatConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hcatConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
+    hcatConf.set(ConfVars.METASTORE_WAREHOUSE.varname, whPath.toString());
     hcatConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

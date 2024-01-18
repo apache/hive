@@ -943,8 +943,8 @@ public class TestHive {
     prevHiveObj.getDatabaseCurrent();
     //change value of a metavar config param in new hive conf
     newHconf = new HiveConf(hiveConf);
-    newHconf.setIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
-        newHconf.getIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES) + 1);
+    newHconf.setIntVar(ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES,
+        newHconf.getIntVar(ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES) + 1);
     newHiveObj = Hive.get(newHconf);
     assertTrue(prevHiveObj != newHiveObj);
   }

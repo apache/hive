@@ -68,8 +68,8 @@ public abstract class CompactionService {
   }
 
   protected void failCompactionIfSetForTest() {
-    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
-      throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
+    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION)) {
+      throw new RuntimeException(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION.name() + "=true");
     }
   }
 

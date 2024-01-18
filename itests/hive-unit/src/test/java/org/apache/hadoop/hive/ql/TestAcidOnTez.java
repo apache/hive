@@ -113,12 +113,12 @@ public class TestAcidOnTez {
   @Before
   public void setUp() throws Exception {
     hiveConf = new HiveConf(this.getClass());
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, TEST_WAREHOUSE_DIR);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
-    hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_MAPRED_MODE, "nonstrict");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER, 
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
@@ -344,7 +344,7 @@ public class TestAcidOnTez {
    * data files in directly.
    *
    * Actually Insert Into ... select ... union all ... with
-   * HIVE_OPTIMIZE_UNION_REMOVE (and HIVEFETCHTASKCONVERSION="none"?) will create subdirs
+   * HIVE_OPTIMIZE_UNION_REMOVE (and HIVE_FETCH_TASK_CONVERSION="none"?) will create subdirs
    * but if writing to non acid table there is a merge task on MR (but not on Tez)
    */
   @Ignore("HIVE-17214")//this consistently works locally but never in ptest....
@@ -757,7 +757,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     HiveConf modConf = new HiveConf(hiveConf);
     setupTez(modConf);
     modConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    modConf.setVar(ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    modConf.setVar(ConfVars.HIVE_FETCH_TASK_CONVERSION, "more");
     modConf.setVar(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "localhost");
 
     // SessionState/Driver needs to be restarted with the Tez conf settings.
@@ -818,7 +818,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     HiveConf modConf = new HiveConf(hiveConf);
     setupTez(modConf);
     modConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    modConf.setVar(ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    modConf.setVar(ConfVars.HIVE_FETCH_TASK_CONVERSION, "more");
     modConf.setVar(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "localhost");
 
     // SessionState/Driver needs to be restarted with the Tez conf settings.
@@ -868,7 +868,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     // make a clone of existing hive conf
     HiveConf confForTez = new HiveConf(hiveConf);
     setupTez(confForTez); // one-time setup to make query able to run with Tez
-    HiveConf.setVar(confForTez, HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    HiveConf.setVar(confForTez, HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     runStatementOnDriver("create transactional table " + tblName + " (a int, b int) clustered by (a) into 2 buckets "
         + "stored as ORC TBLPROPERTIES('bucketing_version'='2', 'transactional'='true',"
         + " 'transactional_properties'='default')", confForTez);
@@ -1020,9 +1020,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   }
 
   private void setupMapJoin(HiveConf conf) {
-    conf.setBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASK, true);
-    conf.setLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD, 100000);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONALTASK, true);
+    conf.setLongVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD, 100000);
   }
 
   private List<String> runStatementOnDriver(String stmt) throws Exception {

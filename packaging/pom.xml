@@ -158,6 +158,10 @@
                   \Qhttps://opensource.org/licenses/Apache-2.0\E
                   \Qhttp://www.apache.org/licenses/\E
                 </APACHE-2.0>
+                <BSD-2-CLAUSE>
+                  https?://(www\.)?opensource.org/licenses/bsd-license.php
+                  https?://(www\.)?opensource.org/licenses/BSD-2-Clause
+                </BSD-2-CLAUSE>
                 <BSD-3-CLAUSE>
                   https?://(www\.)?opensource.org/licenses/BSD-3-Clause
                 </BSD-3-CLAUSE>

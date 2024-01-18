@@ -149,8 +149,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     if (blackListedConfEntries == null) {
       blackListedConfEntries = new HashSet<String>();
       if (conf != null) {
-        String bl = conf.get(HiveConf.ConfVars.HIVESCRIPT_ENV_BLACKLIST.toString(),
-          HiveConf.ConfVars.HIVESCRIPT_ENV_BLACKLIST.getDefaultValue());
+        String bl = conf.get(HiveConf.ConfVars.HIVE_SCRIPT_ENV_BLACKLIST.toString(),
+          HiveConf.ConfVars.HIVE_SCRIPT_ENV_BLACKLIST.getDefaultValue());
         if (bl != null && !bl.isEmpty()) {
           String[] bls = bl.split(",");
           Collections.addAll(blackListedConfEntries, bls);
@@ -175,7 +175,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         String value = conf.get(name); // does variable expansion
         name = safeEnvVarName(name);
         boolean truncate = conf
-            .getBoolean(HiveConf.ConfVars.HIVESCRIPTTRUNCATEENV.toString(), false);
+            .getBoolean(HiveConf.ConfVars.HIVE_SCRIPT_TRUNCATE_ENV.toString(), false);
         value = safeEnvVarValue(value, name, truncate);
         env.put(name, value);
       }
@@ -290,12 +290,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   boolean allowPartialConsumption() {
-    return HiveConf.getBoolVar(hconf, HiveConf.ConfVars.ALLOWPARTIALCONSUMP);
+    return HiveConf.getBoolVar(hconf, HiveConf.ConfVars.ALLOW_PARTIAL_CONSUMP);
   }
 
   void displayBrokenPipeInfo() {
     LOG.info("The script did not consume all input data. This is considered as an error.");
-    LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString() + "=true; to ignore it.");
+    LOG.info("set " + HiveConf.ConfVars.ALLOW_PARTIAL_CONSUMP.toString() + "=true; to ignore it.");
     return;
   }
 
@@ -339,13 +339,13 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
         Map<String, String> env = pb.environment();
         addJobConfToEnvironment(hconf, env);
-        env.put(safeEnvVarName(HiveConf.ConfVars.HIVEALIAS.varname), String
+        env.put(safeEnvVarName(HiveConf.ConfVars.HIVE_ALIAS.varname), String
             .valueOf(alias));
 
         // Create an environment variable that uniquely identifies this script
         // operator
         String idEnvVarName = HiveConf.getVar(hconf,
-            HiveConf.ConfVars.HIVESCRIPTIDENVVAR);
+            HiveConf.ConfVars.HIVE_SCRIPT_ID_ENV_VAR);
         String idEnvVarVal = getOperatorId();
         env.put(safeEnvVarName(idEnvVarName), idEnvVarVal);
 
@@ -376,11 +376,11 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             .getProperties());
 
         errThread = new StreamThread(scriptErrReader, new ErrorStreamProcessor(
-            HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
+            HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPT_ERROR_LIMIT)),
             "ErrorProcessor");
 
         if (HiveConf
-            .getBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTAUTOPROGRESS)) {
+            .getBoolVar(hconf, HiveConf.ConfVars.HIVE_SCRIPT_AUTO_PROGRESS)) {
           autoProgressor = new AutoProgressor(this.getClass().getName(),
               reporter, Utilities.getDefaultNotificationInterval(hconf),
               HiveConf.getTimeVar(
@@ -574,7 +574,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     private final Reporter reporter;
 
     CounterStatusProcessor(Configuration hconf, Reporter reporter){
-      this.reporterPrefix = HiveConf.getVar(hconf, HiveConf.ConfVars.STREAMREPORTERPERFIX);
+      this.reporterPrefix = HiveConf.getVar(hconf, HiveConf.ConfVars.STREAM_REPORTER_PREFIX);
       this.counterPrefix = reporterPrefix + "counter:";
       this.statusPrefix = reporterPrefix + "status:";
       this.reporter = reporter;
@@ -625,7 +625,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     public ErrorStreamProcessor(int maxBytes) {
       this.maxBytes = maxBytes;
       lastReportTime = 0;
-      if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.STREAMREPORTERENABLED)){
+      if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.STREAM_REPORTER_ENABLED)){
         counterStatus = new CounterStatusProcessor(hconf, reporter);
       }
     }
@@ -732,7 +732,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
    * Wrap the script in a wrapper that allows admins to control.
    */
   protected String[] addWrapper(String[] inArgs) {
-    String wrapper = HiveConf.getVar(hconf, HiveConf.ConfVars.SCRIPTWRAPPER);
+    String wrapper = HiveConf.getVar(hconf, HiveConf.ConfVars.SCRIPT_WRAPPER);
     if (wrapper == null) {
       return inArgs;
     }

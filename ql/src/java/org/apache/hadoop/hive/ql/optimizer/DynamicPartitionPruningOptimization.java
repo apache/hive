@@ -492,16 +492,16 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
 
     // do a group by on the list to dedup
     float groupByMemoryUsage =
-        HiveConf.getFloatVar(parseContext.getConf(), HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+        HiveConf.getFloatVar(parseContext.getConf(), HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MEMORY);
     float memoryThreshold =
         HiveConf.getFloatVar(parseContext.getConf(),
-            HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+            HiveConf.ConfVars.HIVE_MAP_AGGR_MEMORY_THRESHOLD);
     float minReductionHashAggr =
         HiveConf.getFloatVar(parseContext.getConf(),
-            ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+            ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION);
     float minReductionHashAggrLowerBound =
         HiveConf.getFloatVar(parseContext.getConf(),
-            ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
+            ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND);
 
     List<ExprNodeDesc> groupByExprs = new ArrayList<ExprNodeDesc>();
     ExprNodeDesc groupByExpr =
@@ -613,16 +613,16 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
 
     // do a group by to aggregate min,max and bloom filter.
     float groupByMemoryUsage =
-            HiveConf.getFloatVar(parseContext.getConf(), HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+            HiveConf.getFloatVar(parseContext.getConf(), HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MEMORY);
     float memoryThreshold =
             HiveConf.getFloatVar(parseContext.getConf(),
-                    HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+                    HiveConf.ConfVars.HIVE_MAP_AGGR_MEMORY_THRESHOLD);
     float minReductionHashAggr =
         HiveConf.getFloatVar(parseContext.getConf(),
-            ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+            ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION);
     float minReductionHashAggrLowerBound =
         HiveConf.getFloatVar(parseContext.getConf(),
-            ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
+            ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND);
 
     // Add min/max and bloom filter aggregations
     List<ObjectInspector> aggFnOIs = new ArrayList<ObjectInspector>();

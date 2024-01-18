@@ -61,9 +61,9 @@ public class TestHiveHooks {
   @Test
   public void testLoadHooksFromConf() throws Exception {
     HiveConf hiveConf = new HiveConf();
-    hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS,
+    hiveConf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS,
         PreExecHook.class.getName() + "," + PreExecHook.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS,
+    hiveConf.setVar(HiveConf.ConfVars.POST_EXEC_HOOKS,
         PostExecHook.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
         SemanticAnalysisHook.class.getName());

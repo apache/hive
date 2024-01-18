@@ -54,9 +54,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
@@ -109,9 +107,9 @@ public class TestHCatClient {
   public static void startMetaStoreServer() throws Exception {
 
     hcatConf = new HiveConf(TestHCatClient.class);
-    String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTOREURIS.varname);
+    String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTORE_URIS.varname);
     if (metastoreUri != null) {
-      hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
+      hcatConf.setVar(HiveConf.ConfVars.METASTORE_URIS, metastoreUri);
       useExternalMS = true;
       return;
     }
@@ -130,17 +128,17 @@ public class TestHCatClient {
     System.setSecurityManager(new NoExitSecurityManager());
     Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
+    hcatConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:"
       + msPort);
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
     hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
       HCatSemanticAnalyzer.class.getName());
-    hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hcatConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hcatConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname,
       "false");
-    System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
-    System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, " ");
   }
 
   public static HiveConf getConf(){
@@ -819,7 +817,7 @@ public class TestHCatClient {
         .replace("metastore", "target_metastore"));
       replicationTargetHCatPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
       replicationTargetHCatConf = new HiveConf(hcatConf);
-      replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
+      replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTORE_URIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);
       isReplicationTargetHCatRunning = true;
     }

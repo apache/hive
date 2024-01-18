@@ -75,7 +75,7 @@ public class PTFPartition {
     this.inputOI = inputOI;
     this.outputOI = outputOI;
     if ( createElemContainer ) {
-      int containerNumRows = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
+      int containerNumRows = HiveConf.getIntVar(cfg, ConfVars.HIVE_JOIN_CACHE_SIZE);
       elems = new PTFRowContainer<List<Object>>(containerNumRows, cfg, null);
       elems.setSerDe(serDe, outputOI);
       elems.setTableDesc(PTFRowContainer.createTableDesc(inputOI));
