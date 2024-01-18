@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.Test;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,6 +55,28 @@ public class TestLeaderElection {
     assertFalse(election.isLeader());
   }
 
+  static class TestLeaderListener implements LeaderElection.LeadershipStateListener {
+    AtomicBoolean flag;
+    TestLeaderListener(AtomicBoolean flag) {
+      this.flag = flag;
+    }
+    @Override
+    public void takeLeadership(LeaderElection election) throws Exception {
+      synchronized (flag) {
+        flag.set(true);
+        flag.notifyAll();
+      }
+    }
+
+    @Override
+    public void lossLeadership(LeaderElection election) throws Exception {
+      synchronized (flag) {
+        flag.set(false);
+        flag.notifyAll();
+      }
+    }
+  }
+
   @Test
   public void testLeaseLeaderElection() throws Exception {
     Configuration configuration = MetastoreConf.newMetastoreConf();
@@ -68,16 +93,7 @@ public class TestLeaderElection {
     TableName mutex = new TableName("hive", "default", "leader_lease_ms");
     LeaseLeaderElection instance1 = new LeaseLeaderElection();
     AtomicBoolean flag1 = new AtomicBoolean(false);
-    instance1.addStateListener(new LeaderElection.LeadershipStateListener() {
-      @Override
-      public void takeLeadership(LeaderElection election) {
-        flag1.set(true);
-      }
-      @Override
-      public void lossLeadership(LeaderElection election) {
-        flag1.set(false);
-      }
-    });
+    instance1.addStateListener(new TestLeaderListener(flag1));
     instance1.tryBeLeader(configuration, mutex);
     // elect1 as a leader now
     assertTrue(flag1.get() && instance1.isLeader());
@@ -85,31 +101,22 @@ public class TestLeaderElection {
     configuration.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, true);
     LeaseLeaderElection instance2 = new LeaseLeaderElection();
     AtomicBoolean flag2 = new AtomicBoolean(false);
-    instance2.addStateListener(new LeaderElection.LeadershipStateListener() {
-      @Override
-      public void takeLeadership(LeaderElection election) {
-        flag2.set(true);
-      }
-      @Override
-      public void lossLeadership(LeaderElection election) {
-        flag2.set(false);
-      }
-    });
+    instance2.addStateListener(new TestLeaderListener(flag2));
     instance2.tryBeLeader(configuration, mutex);
-
     // instance2 should not be leader as elect1 holds the lease
     assertFalse(flag2.get() || instance2.isLeader());
-    Thread.sleep(15 * 1000);
+
+    ExecutorService service = Executors.newFixedThreadPool(4);
+    wait(service, flag1, flag2);
     // now instance1 lease is timeout, the instance2 should be leader now
     assertTrue(instance2.isLeader() && flag2.get());
-
     assertFalse(flag1.get() || instance1.isLeader());
     assertTrue(flag2.get() && instance2.isLeader());
+
     // remove leader's lease (instance2)
     long lockId2 = instance2.getLockId();
     txnStore.unlock(new UnlockRequest(lockId2));
-    Thread.sleep(4 * 1000);
-    assertTrue(flag1.get() && instance1.isLeader());
+    wait(service, flag1, flag2);
     assertFalse(flag2.get() || instance2.isLeader());
     assertTrue(lockId2 > 0);
     assertFalse(instance2.getLockId() == lockId2);
@@ -117,7 +124,7 @@ public class TestLeaderElection {
     // remove leader's lease(instance1)
     long lockId1 = instance1.getLockId();
     txnStore.unlock(new UnlockRequest(lockId1));
-    Thread.sleep(4 * 1000);
+    wait(service, flag1, flag2);
     assertFalse(lockId1 == instance1.getLockId());
     assertTrue(lockId1 > 0);
 
@@ -125,6 +132,25 @@ public class TestLeaderElection {
       assertFalse(flag1.get() || instance1.isLeader());
       assertTrue(flag2.get() && instance2.isLeader());
       Thread.sleep(1 * 1000);
+    }
+  }
+
+  private void wait(ExecutorService service, Object... obj) throws Exception {
+    Future[] fs = new Future[obj.length];
+    for (int i = 0; i < obj.length; i++) {
+      Object monitor = obj[i];
+      fs[i] = service.submit(() -> {
+        try {
+          synchronized (monitor) {
+            monitor.wait();
+          }
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
+    for (Future f : fs) {
+      f.get();
     }
   }
 
