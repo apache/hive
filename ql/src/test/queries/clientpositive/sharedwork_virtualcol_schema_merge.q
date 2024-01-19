@@ -21,7 +21,7 @@ set hive.optimize.shared.work.merge.ts.schema=true;
 
 -- 2 of 3 map vertices scanning table t1 are merged:
 -- One projects BLOCK__OFFSET__INSIDE__FILE and INPUT__FILE__NAME and the second one projects INPUT__FILE__NAME only.
--- These are merged to on scan which projects both.
+-- These are merged to one scan which projects both.
 explain
 WITH t AS (
   select BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, a from (
