@@ -649,9 +649,9 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static boolean compatibleSchema(TableScanOperator tsOp1, TableScanOperator tsOp2) {
-    return tsOp1.getNeededColumns().equals(tsOp2.getNeededColumns())
-        && tsOp1.getNeededColumnIDs().equals(tsOp2.getNeededColumnIDs())
-        && tsOp1.getConf().getVirtualCols().equals(tsOp2.getConf().getVirtualCols());
+    return Objects.equals(tsOp1.getNeededColumns(), tsOp2.getNeededColumns())
+        && Objects.equals(tsOp1.getNeededColumnIDs(), tsOp2.getNeededColumnIDs())
+        && Objects.equals(tsOp1.getConf().getVirtualCols(), tsOp2.getConf().getVirtualCols());
   }
 
 
