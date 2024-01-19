@@ -616,7 +616,7 @@ public final class Util {
     return null;
   }
 
-  static Object updateManyPartitionsStat(@NotNull HMSClient client,
+  static Object updateManyPartitionsStats(@NotNull HMSClient client,
                                          @NotNull String dbName,
                                          @NotNull String tableName,
                                          @NotNull List<String> partNames) throws TException {
@@ -629,7 +629,7 @@ public final class Util {
       partDesc.setPartName(partName);
       ColumnStatistics partColStat = new ColumnStatistics(partDesc, statsObj);
       partColStat.setEngine("hive");
-      client.updatePartitionColumnStatistics(partColStat);
+      client.updatePartitionColumnStats(partColStat);
     }
     return null;
   }
@@ -653,7 +653,7 @@ public final class Util {
                                                    @NotNull String tableName,
                                                    @NotNull List<String> partNames) {
     throwingSupplierWrapper(() ->
-            updateManyPartitionsStat(client, dbName, tableName, partNames));
+            updateManyPartitionsStats(client, dbName, tableName, partNames));
   }
 
   /**

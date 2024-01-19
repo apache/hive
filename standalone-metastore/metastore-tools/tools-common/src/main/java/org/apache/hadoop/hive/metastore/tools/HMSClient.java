@@ -279,7 +279,7 @@ final class HMSClient implements AutoCloseable {
     client.add_partitions(partitions);
   }
 
-  void updatePartitionColumnStatistics(ColumnStatistics colStats) throws TException {
+  void updatePartitionColumnStats(ColumnStatistics colStats) throws TException {
     client.update_partition_column_statistics(colStats);
   }
 
