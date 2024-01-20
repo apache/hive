@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -66,7 +67,7 @@ public class TestSessionHiveMetastoreClientAddPartitionsFromSpecTempTable
   }
 
   private void initHiveConf() throws HiveException {
-    conf = Hive.get().getConf();
+    conf = new HiveConfForTest(Hive.get().getConf(), getClass());
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH, true);
   }
 

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 
 import org.junit.Before;
@@ -44,12 +45,13 @@ import static org.junit.Assert.assertEquals;
 public class TestAddResource {
 
   private static final String TEST_JAR_DIR = System.getProperty("test.tmp.dir", ".") + File.separator;
+
   private HiveConf conf;
   private ResourceType t;
 
   @Before
   public void setup() throws IOException {
-    conf = new HiveConf();
+    conf = new HiveConfForTest(getClass());
     t = ResourceType.JAR;
 
     //Generate test jar files
@@ -165,8 +167,6 @@ public class TestAddResource {
   // test when two jars with shared dependencies are added, the classloader contains union of the dependencies
   @Test
   public void testUnion() throws URISyntaxException, IOException {
-
-    HiveConf conf = new HiveConf();
     SessionState ss = Mockito.spy(SessionState.start(conf).get());
     ResourceType t = ResourceType.JAR;
     String query1 = "testQuery1";

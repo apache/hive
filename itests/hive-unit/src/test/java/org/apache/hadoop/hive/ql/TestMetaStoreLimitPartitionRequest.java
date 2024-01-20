@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -64,7 +65,7 @@ public class TestMetaStoreLimitPartitionRequest {
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
-    conf = new HiveConf();
+    conf = new HiveConfForTest(TestMetaStoreLimitPartitionRequest.class);
     DriverManager.setLoginTimeout(0);
 
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

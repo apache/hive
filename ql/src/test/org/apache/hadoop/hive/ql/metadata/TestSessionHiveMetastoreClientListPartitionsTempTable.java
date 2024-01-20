@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestMetastoreExpr;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -94,7 +95,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   }
 
   private void initHiveConf() throws HiveException {
-    conf = Hive.get().getConf();
+    conf = new HiveConfForTest(Hive.get().getConf(), getClass());
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH, true);
   }
 
