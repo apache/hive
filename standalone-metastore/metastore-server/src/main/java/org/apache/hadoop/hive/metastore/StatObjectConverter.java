@@ -288,11 +288,13 @@ public class StatObjectConverter {
     if (mStatsObj.getNumNulls() != null) {
       setStmt.append("\"NUM_NULLS\" = ? ,");
     }
-    setStmt.append("\"ENGINE\" = ? ");
+    setStmt.append("\"ENGINE\" = ? ,");
+    setStmt.append("\"DB_NAME\" = ? ,");
+    setStmt.append("\"TABLE_NAME\" = ? ");
     return setStmt.toString();
   }
 
-  public static void initUpdatedColumnStatement(MPartitionColumnStatistics mStatsObj,
+  public static int initUpdatedColumnStatement(MPartitionColumnStatistics mStatsObj,
                                                       PreparedStatement pst) throws SQLException {
     int colIdx = 1;
     if (mStatsObj.getAvgColLen() != null) {
@@ -339,6 +341,9 @@ public class StatObjectConverter {
       pst.setObject(colIdx++, mStatsObj.getNumNulls());
     }
     pst.setString(colIdx++, mStatsObj.getEngine());
+    pst.setString(colIdx++, mStatsObj.getDbName());
+    pst.setString(colIdx++, mStatsObj.getTableName());
+    return colIdx;
   }
 
   public static ColumnStatisticsObj getTableColumnStatisticsObj(
