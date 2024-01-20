@@ -35,11 +35,13 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArg
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -64,6 +66,9 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
 public class TestStatsReplicationScenarios {
   @Rule
   public final TestName testName = new TestName();
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   static WarehouseInstance primary;
@@ -92,7 +97,7 @@ public class TestStatsReplicationScenarios {
                                        Map<String, String> replicaOverrides, Class clazz,
                                        boolean autogather, AcidTableKind acidTableKind)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

@@ -26,20 +26,21 @@ import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 
 import java.io.File;
 
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.TEST_DATA_DIR;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.TEST_WAREHOUSE_DIR;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.runStatementOnDriver;
-import static org.apache.hadoop.hive.ql.TestAcidOnTez.setupTez;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -49,6 +50,13 @@ import static org.junit.Assert.assertTrue;
 public class TestConstraintsMerge {
   //bucket count for test tables; set it to 1 for easier debugging
   private static int BUCKET_COUNT = 2;
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   @Rule
   public TestName testName = new TestName();
   private HiveConf hiveConf;
@@ -70,7 +78,7 @@ public class TestConstraintsMerge {
 
   @Before
   public void setUp() throws Exception {
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     hiveConf.set(ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(ConfVars.METASTORE_WAREHOUSE.varname, TEST_WAREHOUSE_DIR);
@@ -134,19 +142,17 @@ public class TestConstraintsMerge {
 
   @Test
   public void testUpdateInMergeViolatesCheckConstraint() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf);
-    confForTez.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
-    setupTez(confForTez);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
 
     runStatementOnDriver("insert into " + Table.TBL_CHECK_MERGE + "(name, age, gpa) values " +
-            "('student1', 16, 2.0)", confForTez);
+            "('student1', 16, 2.0)", hiveConf);
 
     Throwable error = null;
     try {
       runStatementOnDriver("merge into " + Table.TBL_CHECK_MERGE +
               " using (select age from table_source) source\n" +
               "on source.age=table_check_merge.age\n" +
-              "when matched then update set gpa=6", confForTez);
+              "when matched then update set gpa=6", hiveConf);
     } catch (Throwable t) {
       error = t;
     }

@@ -24,11 +24,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +46,12 @@ public class BaseReplicationAcrossInstances {
   @Rule
   public final TestName testName = new TestName();
 
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   protected static final Logger LOG = LoggerFactory.getLogger(BaseReplicationAcrossInstances.class);
   static WarehouseInstance primary;
   static WarehouseInstance replica;
@@ -54,7 +63,7 @@ public class BaseReplicationAcrossInstances {
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hive.repl.cmrootdir", "/tmp/");
     conf.set("dfs.namenode.acls.enabled", "true");

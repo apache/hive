@@ -37,11 +37,15 @@ import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 /**
  * This unit test is for testing HIVE-13884 with more complex queries and
@@ -52,6 +56,11 @@ import org.junit.Test;
  * via directSQL, so it falls back to ORM.
  */
 public class TestMetaStoreLimitPartitionRequest {
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
   private static final String DB_NAME = "max_partition_test_db";
   private static final String TABLE_NAME = "max_partition_test_table";
@@ -64,7 +73,7 @@ public class TestMetaStoreLimitPartitionRequest {
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
-    conf = new HiveConf();
+    conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     DriverManager.setLoginTimeout(0);
 
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

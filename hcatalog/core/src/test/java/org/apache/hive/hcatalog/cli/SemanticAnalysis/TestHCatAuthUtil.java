@@ -54,7 +54,7 @@ public class TestHCatAuthUtil {
    */
   @Test
   public void authEnabledV1Auth() throws Exception {
-    HiveConf hcatConf = new HiveConf(this.getClass());
+    HiveConf hcatConf = getHiveConf();
     hcatConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hcatConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, StorageBasedAuthorizationProvider.class.getName());
     SessionState.start(hcatConf);
@@ -66,7 +66,7 @@ public class TestHCatAuthUtil {
    */
   @Test
   public void authEnabledV2Auth() throws Exception {
-    HiveConf hcatConf = new HiveConf(this.getClass());
+    HiveConf hcatConf = getHiveConf();
     hcatConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hcatConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, DummyV2AuthorizerFactory.class.getName());
     SessionState.start(hcatConf);
@@ -78,9 +78,17 @@ public class TestHCatAuthUtil {
    */
   @Test
   public void authDisabled() throws Exception {
-    HiveConf hcatConf = new HiveConf(this.getClass());
+    HiveConf hcatConf = getHiveConf();
     hcatConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, false);
     SessionState.start(hcatConf);
     assertFalse("hcat auth should be disabled", HCatAuthUtil.isAuthorizationEnabled(hcatConf));
   }
+
+  private HiveConf getHiveConf() {
+    HiveConf conf = new HiveConf(this.getClass());
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
+    return conf;
+  }
+
 }

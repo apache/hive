@@ -28,9 +28,13 @@ import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +47,12 @@ import static org.junit.Assert.fail;
 
 public class TestQueryShutdownHooks {
 
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   private static final long ASYNC_QUERY_TIMEOUT_MS = 600000;
   private EmbeddedThriftBinaryCLIService service;
   private ThriftCLIServiceClient client;
@@ -53,7 +63,7 @@ public class TestQueryShutdownHooks {
   public void setUp() throws Exception {
 
     service = new EmbeddedThriftBinaryCLIService();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
@@ -99,7 +109,9 @@ public class TestQueryShutdownHooks {
       assertEquals("Query should be finished", OperationState.FINISHED, state);
     }
 
-    ShutdownHookManagerInspector.assertShutdownHookCount(shutdownHooksBeforeQueries);
+    // the query starts a Tez session, which involves a TezJobMonitor hook
+    int expectedHooks = shutdownHooksBeforeQueries + 1;
+    ShutdownHookManagerInspector.assertShutdownHookCount(expectedHooks);
   }
 
   @Test

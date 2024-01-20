@@ -27,9 +27,12 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hive.testutils.HiveTestEnvSetup;
+
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.AfterClass;
 
 import java.io.IOException;
@@ -52,6 +56,12 @@ import com.google.common.collect.Lists;
  * TestReplicationScenariosAcidTables - test replication for ACID tables
  */
 public class TestReplicationScenariosIncrementalLoadAcidTables {
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   @Rule
   public final TestName testName = new TestName();
 
@@ -72,7 +82,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

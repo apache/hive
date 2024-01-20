@@ -96,7 +96,10 @@ public class TestFunctionRegistry {
     varchar5 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
     char10 = TypeInfoFactory.getPrimitiveTypeInfo("char(10)");
     char5 = TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
-    SessionState.start(new HiveConf());
+    HiveConf conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
+    SessionState.start(conf);
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {

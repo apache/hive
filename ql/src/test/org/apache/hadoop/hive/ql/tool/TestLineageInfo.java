@@ -17,7 +17,6 @@
  */
 
 package org.apache.hadoop.hive.ql.tool;
-
 import static org.junit.Assert.fail;
 
 import java.util.TreeSet;
@@ -41,6 +40,8 @@ public class TestLineageInfo {
   @Before
   public void before() {
     HiveConf conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     SessionState.start(conf);
     ctx = new Context(conf);
   }

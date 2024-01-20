@@ -41,13 +41,16 @@ import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +79,12 @@ public class TestReplicationFilterTransactions {
           TestReplicationFilterTransactions.class.getCanonicalName().toLowerCase().replace('.','_') + "_" + System.currentTimeMillis();
   private final static String TEST_PATH =
           System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
   @Rule
   public TemporaryFolder tempFolder= new TemporaryFolder();
@@ -253,7 +262,7 @@ public class TestReplicationFilterTransactions {
 
   @Before
   public void setup() throws Throwable {
-    TestReplicationFilterTransactions.dfsConf = new HiveConf(TestReplicationFilterTransactions.class);
+    TestReplicationFilterTransactions.dfsConf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     TestReplicationFilterTransactions.dfsConf.set("dfs.client.use.datanode.hostname", "true");
     TestReplicationFilterTransactions.dfsConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     TestReplicationFilterTransactions.dfsConf.set("dfs.namenode.acls.enabled", "true");

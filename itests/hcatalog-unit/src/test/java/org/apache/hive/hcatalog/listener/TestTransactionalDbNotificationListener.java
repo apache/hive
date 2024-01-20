@@ -33,8 +33,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -44,16 +42,16 @@ import org.junit.Test;
 
 public class TestTransactionalDbNotificationListener {
     private static IMetaStoreClient msClient;
-    private static IDriver driver;
 
     private int startTime;
     private long firstEventId;
 
 
-    @SuppressWarnings("rawtypes")
     @BeforeClass
     public static void connectToMetastore() throws Exception {
         HiveConf conf = new HiveConf();
+        // the test doesn't involve DAG execution, skip TezSessionState initialization
+        conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
         conf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
                 "org.apache.hive.hcatalog.listener.DbNotificationListener");
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -66,8 +64,6 @@ public class TestTransactionalDbNotificationListener {
         TestTxnDbUtil.setConfValues(conf);
         TestTxnDbUtil.prepDb(conf);
         msClient = new HiveMetaStoreClient(conf);
-        driver = DriverFactory.newDriver(conf);
-
     }
 
     @Before

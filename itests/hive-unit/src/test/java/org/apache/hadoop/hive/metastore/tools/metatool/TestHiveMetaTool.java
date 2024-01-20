@@ -109,6 +109,8 @@ public class TestHiveMetaTool {
               + File.separator + "mapred" + File.separator + "staging");
       hiveConf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
               + File.separator + "mapred" + File.separator + "temp");
+      // the test doesn't involve DAG execution, skip TezSessionState initialization
+      hiveConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
       hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
       hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
       hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getWarehouseDir());

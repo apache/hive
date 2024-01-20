@@ -46,9 +46,11 @@ import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -63,6 +65,10 @@ public class TestStatsUpdaterThread {
     File.separator + TestStatsUpdaterThread.class.getCanonicalName()
     + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
   private HiveConf hiveConf;
   private SessionState ss;
 
@@ -73,7 +79,7 @@ public class TestStatsUpdaterThread {
   @SuppressWarnings("deprecation")
   @Before
   public void setUp() throws Exception {
-    this.hiveConf = new HiveConf(TestStatsUpdaterThread.class);
+    hiveConf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getTestDataDir());

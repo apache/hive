@@ -18,16 +18,18 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -46,6 +48,12 @@ import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 public class TestCopyUtils {
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   @Rule
   public final TestName testName = new TestName();
 
@@ -63,9 +71,6 @@ public class TestCopyUtils {
       super(logger, cluster, overridesForHiveConf);
       HadoopShims shims = ShimLoader.getHadoopShims();
       mrCluster = shims.getLocalMiniTezCluster(hiveConf, false);
-      //      mrCluster = shims.getMiniMrCluster(hiveConf, 2,
-      //          miniDFSCluster.getFileSystem().getUri().toString(), 1);
-
       mrCluster.setupConfiguration(hiveConf);
     }
 
@@ -80,7 +85,7 @@ public class TestCopyUtils {
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    Configuration conf = new Configuration();
+    HiveConf conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     conf.set("dfs.client.use.datanode.hostname", "true");
 
     UserGroupInformation ugi = Utils.getUGI();

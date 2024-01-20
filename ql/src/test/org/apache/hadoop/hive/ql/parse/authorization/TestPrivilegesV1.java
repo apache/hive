@@ -42,6 +42,8 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
     queryState = new QueryState.Builder().build();
     db = Mockito.mock(Hive.class);
     HiveConf hiveConf = queryState.getConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     table = new Table(DB, TABLE);
     partition = new Partition(table);
     hiveConf

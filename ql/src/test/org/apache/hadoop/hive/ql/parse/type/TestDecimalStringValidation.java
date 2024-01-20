@@ -100,7 +100,7 @@ public class TestDecimalStringValidation {
 
   @Test
   public void testValidationDecimalWithCharacterFailsWhenStrictChecksEnabled() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getHiveConf();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY, true);
     try {
       validateCall(conf);
@@ -112,9 +112,16 @@ public class TestDecimalStringValidation {
 
   @Test
   public void testValidationDecimalWithCharacterSucceedsWhenStrictChecksDisabled() throws SemanticException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getHiveConf();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY, false);
     validateCall(conf);
+  }
+
+  private HiveConf getHiveConf() {
+    HiveConf conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
+    return conf;
   }
 
   private void validateCall(HiveConf conf) throws SemanticException {

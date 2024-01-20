@@ -34,9 +34,13 @@ import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +50,12 @@ import org.slf4j.LoggerFactory;
  */
 public class TestDatabaseTableDefault {
     static final private Logger LOG = LoggerFactory.getLogger(TestDatabaseTableDefault.class);
+
+    @ClassRule
+    public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+    @Rule
+    public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
     private HiveConf hiveConf;
     private IDriver d;
@@ -86,7 +96,7 @@ public class TestDatabaseTableDefault {
 
     @Before
     public void setUp() throws Exception {
-        hiveConf = new HiveConf(this.getClass());
+        hiveConf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
         HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.CREATE_TABLES_AS_ACID, true);
         HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
         HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);

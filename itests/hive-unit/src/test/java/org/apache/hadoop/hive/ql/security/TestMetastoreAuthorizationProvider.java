@@ -82,7 +82,10 @@ public class TestMetastoreAuthorizationProvider {
   }
 
   protected HiveConf createHiveConf() throws Exception {
-    return new HiveConf(this.getClass());
+    HiveConf conf = new HiveConf(this.getClass());
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
+    return conf;
   }
 
   protected String getProxyUserName() {

@@ -62,13 +62,18 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
 public class TestGetInputSummary {
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
 
   private static final String TEST_TABLE_NAME = "testTable";
   private static final Path TEST_TABLE_PATH = new Path(TEST_TABLE_NAME);
@@ -79,7 +84,7 @@ public class TestGetInputSummary {
   @Before
   public void setup() throws Exception {
     // creates scratch directories needed by the Context object
-    SessionState.start(new HiveConf());
+    SessionState.start(new HiveConf(ENVIRONMENT.getTestCtx().hiveConf));
 
     this.jobConf = new JobConf();
     this.properties = new Properties();

@@ -46,19 +46,28 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class TestStreamingDynamicPartitioning {
   private static final Logger LOG = LoggerFactory.getLogger(TestStreamingDynamicPartitioning.class);
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
   public static class RawFileSystem extends RawLocalFileSystem {
     private static final URI NAME;
@@ -126,7 +135,7 @@ public class TestStreamingDynamicPartitioning {
   private final static String dbName2 = "testing2";
 
   public TestStreamingDynamicPartitioning() throws Exception {
-    conf = new HiveConf(this.getClass());
+    conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     conf.set("fs.raw.impl", RawFileSystem.class.getName());
     conf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

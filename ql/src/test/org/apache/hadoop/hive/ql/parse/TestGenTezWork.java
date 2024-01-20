@@ -68,8 +68,9 @@ public class TestGenTezWork {
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
-    // Init conf
     final HiveConf conf = new HiveConf(SemanticAnalyzer.class);
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     SessionState.start(conf);
 
     // Init parse context

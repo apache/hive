@@ -84,6 +84,8 @@ public class TestNullScanTaskDispatcher {
   @Before
   public void setup() {
     hiveConf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     hiveConf.set("fs.mock.impl", MockFileSystem.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES, true);
     sessionState = SessionState.start(hiveConf);

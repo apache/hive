@@ -133,6 +133,8 @@ public class TestSessionUserName {
    */
   private HiveConf getAuthV2HiveConf() {
     HiveConf conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         HiveAuthorizerStoringUserNameFactory.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,

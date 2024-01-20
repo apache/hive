@@ -45,18 +45,28 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.hadoop.mapred.TextInputFormat;
+
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 /**
  * TestHiveHistory.
  *
  */
 public class TestHiveHistory {
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
   static HiveConf conf;
 
@@ -71,7 +81,7 @@ public class TestHiveHistory {
   @Before
   public void setUp() {
     try {
-      conf = new HiveConf(HiveHistory.class);
+      conf = getHiveConf();
       SessionState.start(conf);
 
       fs = FileSystem.get(conf);
@@ -136,7 +146,7 @@ public class TestHiveHistory {
         LogUtils.initHiveLog4j();
       } catch (LogInitializationException e) {
       }
-      HiveConf hconf = new HiveConf(SessionState.class);
+      HiveConf hconf = getHiveConf();
       hconf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
       CliSessionState ss = new CliSessionState(hconf);
       ss.in = System.in;
@@ -187,7 +197,7 @@ public class TestHiveHistory {
     }
     try {
       String actualDir = parentTmpDir + "/test";
-      HiveConf conf = new HiveConf(SessionState.class);
+      HiveConf conf = getHiveConf();
       conf.set(HiveConf.ConfVars.HIVE_HISTORY_FILE_LOC.toString(), actualDir);
       SessionState ss = new CliSessionState(conf);
       HiveHistory hiveHistory = new HiveHistoryImpl(ss);
@@ -209,7 +219,7 @@ public class TestHiveHistory {
    */
   @Test
   public void testHiveHistoryConfigEnabled() throws Exception {
-      HiveConf conf = new HiveConf(SessionState.class);
+      HiveConf conf = getHiveConf();
       conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
       SessionState ss = new CliSessionState(conf);
       SessionState.start(ss);
@@ -223,7 +233,7 @@ public class TestHiveHistory {
    */
   @Test
   public void testHiveHistoryConfigDisabled() throws Exception {
-    HiveConf conf = new HiveConf(SessionState.class);
+    HiveConf conf = getHiveConf();
     conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, false);
     SessionState ss = new CliSessionState(conf);
     SessionState.start(ss);
@@ -236,7 +246,10 @@ public class TestHiveHistory {
 
   }
 
-
-
-
+  private HiveConf getHiveConf() {
+    HiveConf conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
+    // to get consistent number of tasks in assertions
+    conf.setVar(ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    return conf;
+  }
 }

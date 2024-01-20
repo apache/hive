@@ -53,6 +53,8 @@ public class TestHBaseQueries {
    */
   public TestHBaseQueries() throws Exception {
     baseConf = new HiveConf(HBaseConfiguration.create(), TestHBaseQueries.class);
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    baseConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     baseConf.set(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, SQLStdHiveAuthorizerFactory.class.getName());
 
     // set up Zookeeper

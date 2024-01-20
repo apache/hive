@@ -72,6 +72,8 @@ public class TestSessionHiveMetastoreClientAlterPartitionsTempTable extends Test
 
   private void initHiveConf() throws HiveException {
     conf = Hive.get().getConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH, true);
   }
 
