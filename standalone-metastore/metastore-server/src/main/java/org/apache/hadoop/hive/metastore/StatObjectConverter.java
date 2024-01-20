@@ -285,9 +285,7 @@ public class StatObjectConverter {
     if (mStatsObj.getNumNulls() != null) {
       setStmt.append("\"NUM_NULLS\" = ? ,");
     }
-    setStmt.append("\"ENGINE\" = ? ,");
-    setStmt.append("\"DB_NAME\" = ? ,");
-    setStmt.append("\"TABLE_NAME\" = ? ");
+    setStmt.append("\"ENGINE\" = ? ");
     return setStmt.toString();
   }
 
@@ -338,8 +336,6 @@ public class StatObjectConverter {
       pst.setObject(colIdx++, mStatsObj.getNumNulls());
     }
     pst.setString(colIdx++, mStatsObj.getEngine());
-    pst.setString(colIdx++, mStatsObj.getDbName());
-    pst.setString(colIdx++, mStatsObj.getTableName());
     return colIdx;
   }
 
