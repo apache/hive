@@ -384,8 +384,8 @@ public class Registry {
   public WindowFunctionInfo getWindowFunctionInfo(String functionName) throws SemanticException {
     // First try without qualifiers - would resolve builtin/temp functions
     FunctionInfo info = getFunctionInfo(WINDOW_FUNC_PREFIX + functionName);
-    // Try qualifying with current db name for permanent functions
-    if (info == null) {
+    // Try qualifying with current db name for permanent functions and try register function to session
+    if (info == null && FunctionRegistry.getFunctionInfo(functionName) != null) {
       String qualifiedName = FunctionUtils.qualifyFunctionName(
               functionName, SessionState.get().getCurrentDatabase().toLowerCase());
       info = getFunctionInfo(WINDOW_FUNC_PREFIX + qualifiedName);
