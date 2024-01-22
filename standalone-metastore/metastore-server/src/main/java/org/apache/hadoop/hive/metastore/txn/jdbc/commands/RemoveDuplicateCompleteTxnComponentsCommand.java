@@ -42,57 +42,47 @@ public class RemoveDuplicateCompleteTxnComponentsCommand implements Parameterize
     switch (databaseProduct.dbType) {
       case MYSQL:
       case SQLSERVER:
-        return "DELETE \"tc\" " +
-            "FROM \"COMPLETED_TXN_COMPONENTS\" \"tc\" " +
+        return "DELETE tc " +
+            "FROM \"COMPLETED_TXN_COMPONENTS\" tc " +
             "INNER JOIN (" +
-            "  SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"highestWriteId\"" +
-            "  FROM \"COMPLETED_TXN_COMPONENTS\"" +
-            "  GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c\" " +
-            "ON \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
-            "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL)) " +
-            "LEFT JOIN (" +
-            "  SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"updateWriteId\"" +
-            "  FROM \"COMPLETED_TXN_COMPONENTS\"" +
-            "  WHERE \"CTC_UPDATE_DELETE\" = 'Y'" +
-            "  GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c2\" " +
-            "ON \"tc\".\"CTC_DATABASE\" = \"c2\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c2\".\"CTC_TABLE\"" +
-            "  AND (\"tc\".\"CTC_PARTITION\" = \"c2\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c2\".\"CTC_PARTITION\" IS NULL)) " +
-            "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" " +
+            "    SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\"," +
+            "        MAX(\"CTC_WRITEID\") highestWriteId," +
+            "        MAX(CASE WHEN \"CTC_UPDATE_DELETE\" = 'Y' THEN \"CTC_WRITEID\" END) updateWriteId" +
+            "    FROM \"COMPLETED_TXN_COMPONENTS\"" +
+            "    GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\"" +
+            ") c ON " +
+            "      tc.\"CTC_DATABASE\" = c.\"CTC_DATABASE\" " +
+            "      AND tc.\"CTC_TABLE\" = c.\"CTC_TABLE\"" +
+            "      AND (tc.\"CTC_PARTITION\" = c.\"CTC_PARTITION\" OR (tc.\"CTC_PARTITION\" IS NULL AND c.\"CTC_PARTITION\" IS NULL)) " +
+            "WHERE tc.\"CTC_WRITEID\" < c.\"highestWriteId\" " +
             (MYSQL == databaseProduct.dbType ?
-                "  AND NOT \"tc\".\"CTC_WRITEID\" <=> \"c2\".\"updateWriteId\"" :
-                "  AND (\"tc\".\"CTC_WRITEID\" != \"c2\".\"updateWriteId\" OR \"c2\".\"updateWriteId\" IS NULL)");
-      case DERBY:
+                "  AND NOT tc.\"CTC_WRITEID\" <=> c.updateWriteId" :
+                "  AND (tc.\"CTC_WRITEID\" != c.updateWriteId OR c.updateWriteId IS NULL)");
+        
+      case DERBY: 
       case ORACLE:
-      case CUSTOM:
-        return "DELETE from \"COMPLETED_TXN_COMPONENTS\" \"tc\"" +
-            "WHERE EXISTS (" +
-            "  SELECT 1" +
-            "  FROM \"COMPLETED_TXN_COMPONENTS\"" +
-            "  WHERE \"CTC_DATABASE\" = \"tc\".\"CTC_DATABASE\"" +
-            "    AND \"CTC_TABLE\" = \"tc\".\"CTC_TABLE\"" +
-            "    AND (\"CTC_PARTITION\" = \"tc\".\"CTC_PARTITION\" OR (\"CTC_PARTITION\" IS NULL AND \"tc\".\"CTC_PARTITION\" IS NULL))" +
-            "    AND (\"tc\".\"CTC_UPDATE_DELETE\"='N' OR \"CTC_UPDATE_DELETE\"='Y')" +
-            "    AND \"tc\".\"CTC_WRITEID\" < \"CTC_WRITEID\")";
       case POSTGRES:
-        return "DELETE " +
-            "FROM \"COMPLETED_TXN_COMPONENTS\" \"tc\" " +
-            "USING (" +
-            "  SELECT \"c1\".*, \"c2\".\"updateWriteId\" FROM" +
-            "    (SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"highestWriteId\"" +
-            "      FROM \"COMPLETED_TXN_COMPONENTS\"" +
-            "      GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c1\"" +
-            "  LEFT JOIN" +
-            "    (SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"updateWriteId\"" +
-            "      FROM \"COMPLETED_TXN_COMPONENTS\"" +
-            "      WHERE \"CTC_UPDATE_DELETE\" = 'Y'" +
-            "      GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c2\"" +
-            "  ON \"c1\".\"CTC_DATABASE\" = \"c2\".\"CTC_DATABASE\" AND \"c1\".\"CTC_TABLE\" = \"c2\".\"CTC_TABLE\"" +
-            "    AND (\"c1\".\"CTC_PARTITION\" = \"c2\".\"CTC_PARTITION\" OR (\"c1\".\"CTC_PARTITION\" IS NULL AND \"c2\".\"CTC_PARTITION\" IS NULL))" +
-            ") \"c\" " +
-            "WHERE \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
-            "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL))" +
-            "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" " +
-            "  AND \"tc\".\"CTC_WRITEID\" IS DISTINCT FROM \"c\".\"updateWriteId\"";
+      case CUSTOM:
+        String existsSubQuery =   
+          "EXISTS (" +
+          "    SELECT 1" +
+          "    FROM \"COMPLETED_TXN_COMPONENTS\" c" +
+          "    WHERE tc.\"CTC_DATABASE\" = c.\"CTC_DATABASE\"" +
+          "      AND tc.\"CTC_TABLE\" = c.\"CTC_TABLE\"" +
+          "      AND %s" +
+          "      AND (tc.\"CTC_UPDATE_DELETE\" = 'N' OR c.\"CTC_UPDATE_DELETE\" = 'Y')" +
+          "      AND tc.\"CTC_WRITEID\" < c.\"CTC_WRITEID\"" +
+          ")";
+        
+        return new StringBuilder()
+          .append("DELETE FROM \"COMPLETED_TXN_COMPONENTS\" tc WHERE ") 
+          .append(String.format(existsSubQuery, 
+              "tc.\"CTC_PARTITION\" = c.\"CTC_PARTITION\""))
+          .append(" OR ")
+          .append(String.format(existsSubQuery, 
+              "tc.\"CTC_PARTITION\" IS NULL AND c.\"CTC_PARTITION\" IS NULL"))
+          .toString();
+     
       default:
         String msg = "Unknown database product: " + databaseProduct.dbType;
         throw new MetaException(msg);
