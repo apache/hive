@@ -600,7 +600,7 @@ struct ColumnStatistics {
 2: required list<ColumnStatisticsObj> statsObj,
 3: optional bool isStatsCompliant, // Are the stats isolation-level-compliant with the
                                                       // the calling query?
-4: optional string engine
+4: optional string engine = "hive"
 }
 
 // FileMetadata represents the table-level (in case of unpartitioned) or partition-level
@@ -993,7 +993,7 @@ struct GetPartitionsByNamesRequest {
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
-  7: optional string engine,
+  7: optional string engine = "hive",
   8: optional string validWriteIdList,
   9: optional bool getFileMetadata,
   10: optional i64 id=-1,  // table id
@@ -1710,7 +1710,7 @@ struct GetTableRequest {
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
   9: optional string processorIdentifier,
-  10: optional string engine,
+  10: optional string engine = "hive",
   11: optional i64 id=-1 // table id
 }
 

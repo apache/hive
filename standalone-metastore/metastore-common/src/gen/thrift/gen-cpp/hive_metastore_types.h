@@ -5012,7 +5012,7 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b);
 std::ostream& operator<<(std::ostream& out, const ColumnStatisticsDesc& obj);
 
 typedef struct _ColumnStatistics__isset {
-  _ColumnStatistics__isset() : isStatsCompliant(false), engine(false) {}
+  _ColumnStatistics__isset() : isStatsCompliant(false), engine(true) {}
   bool isStatsCompliant :1;
   bool engine :1;
 } _ColumnStatistics__isset;
@@ -5022,9 +5022,8 @@ class ColumnStatistics : public virtual ::apache::thrift::TBase {
 
   ColumnStatistics(const ColumnStatistics&);
   ColumnStatistics& operator=(const ColumnStatistics&);
-  ColumnStatistics() noexcept
-                   : isStatsCompliant(0),
-                     engine() {
+  ColumnStatistics() : isStatsCompliant(0),
+                       engine("hive") {
   }
 
   virtual ~ColumnStatistics() noexcept;
@@ -8260,7 +8259,7 @@ void swap(PartitionValuesResponse &a, PartitionValuesResponse &b);
 std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse& obj);
 
 typedef struct _GetPartitionsByNamesRequest__isset {
-  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false), getFileMetadata(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
+  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(true), validWriteIdList(false), getFileMetadata(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool names :1;
   bool get_col_stats :1;
   bool processorCapabilities :1;
@@ -8279,18 +8278,17 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
 
   GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest&);
   GetPartitionsByNamesRequest& operator=(const GetPartitionsByNamesRequest&);
-  GetPartitionsByNamesRequest() noexcept
-                              : db_name(),
-                                tbl_name(),
-                                get_col_stats(0),
-                                processorIdentifier(),
-                                engine(),
-                                validWriteIdList(),
-                                getFileMetadata(0),
-                                id(-1LL),
-                                skipColumnSchemaForPartition(0),
-                                includeParamKeyPattern(),
-                                excludeParamKeyPattern() {
+  GetPartitionsByNamesRequest() : db_name(),
+                                  tbl_name(),
+                                  get_col_stats(0),
+                                  processorIdentifier(),
+                                  engine("hive"),
+                                  validWriteIdList(),
+                                  getFileMetadata(0),
+                                  id(-1LL),
+                                  skipColumnSchemaForPartition(0),
+                                  includeParamKeyPattern(),
+                                  excludeParamKeyPattern() {
   }
 
   virtual ~GetPartitionsByNamesRequest() noexcept;
@@ -13894,7 +13892,7 @@ void swap(GetProjectionsSpec &a, GetProjectionsSpec &b);
 std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj);
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(false), id(true) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(true), id(true) {}
   bool capabilities :1;
   bool catName :1;
   bool validWriteIdList :1;
@@ -13910,15 +13908,14 @@ class GetTableRequest : public virtual ::apache::thrift::TBase {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() noexcept
-                  : dbName(),
-                    tblName(),
-                    catName(),
-                    validWriteIdList(),
-                    getColumnStats(0),
-                    processorIdentifier(),
-                    engine(),
-                    id(-1LL) {
+  GetTableRequest() : dbName(),
+                      tblName(),
+                      catName(),
+                      validWriteIdList(),
+                      getColumnStats(0),
+                      processorIdentifier(),
+                      engine("hive"),
+                      id(-1LL) {
   }
 
   virtual ~GetTableRequest() noexcept;
