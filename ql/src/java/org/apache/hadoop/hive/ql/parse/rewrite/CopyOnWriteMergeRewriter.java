@@ -229,10 +229,11 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
       if (isNotBlank(onClausePredicate)) {
         whereClause.append(" OR ");
-        whereClause.append(columnRefsFunc.apply(mergeStatement.getOnClausePredicate()));
+        whereClause.append(mergeStatement.getOnClausePredicate());
       }
       sqlGenerator.append("\n").indent();
-      sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", whereClause.toString()));
+      sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
+          whereClause.toString())));
       
       sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.
