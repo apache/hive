@@ -23,14 +23,16 @@ import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
@@ -49,10 +51,10 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 
 public class TestRuleBase {
+  protected static RelBuilder REL_BUILDER;
   protected static final RexBuilder REX_BUILDER = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
   protected static final RelDataTypeFactory TYPE_FACTORY = REX_BUILDER.getTypeFactory();
 
@@ -114,6 +116,8 @@ public class TestRuleBase {
       put("e", SqlTypeName.VARCHAR);
       put("f", SqlTypeName.INTEGER);
     }}, singletonList(VirtualColumn.SNAPSHOT_ID));
+
+    REL_BUILDER = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, null);
   }
 
   private static Table createTable(String name) {

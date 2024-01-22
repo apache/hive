@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.IncrementalRebuildMode.UNKNOWN;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ALL;
 
 /**
@@ -139,7 +138,7 @@ abstract class ShowMaterializedViewsFormatter {
     String incrementalRebuild;
     HiveRelOptMaterialization relOptMaterialization = HiveMaterializedViewsRegistry.get().
             getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
-    if (relOptMaterialization == null || relOptMaterialization.getRebuildMode() == UNKNOWN) {
+    if (relOptMaterialization == null) {
       incrementalRebuild = "Unknown";
     } else {
       switch (relOptMaterialization.getRebuildMode()) {

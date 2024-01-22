@@ -229,7 +229,7 @@ shtb_aggr_view2     	Yes                 	Manual refresh      	Available in pres
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available in presence of insert operations only
 shtb_test1_view1    	No                  	Manual refresh      	Unknown             
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
-shtb_view_on_native 	Yes                 	Manual refresh      	Available           
+shtb_view_on_native 	Yes                 	Manual refresh      	Available in presence of insert operations only
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
@@ -294,7 +294,7 @@ shtb_aggr_view2     	Yes                 	Manual refresh      	Available in pres
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available in presence of insert operations only
 shtb_test1_view1    	No                  	Manual refresh      	Unknown             
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
-shtb_view_on_native 	Yes                 	Manual refresh      	Available           
+shtb_view_on_native 	Yes                 	Manual refresh      	Available in presence of insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
@@ -322,7 +322,7 @@ shtb_aggr_view2     	Yes                 	Manual refresh      	Available in pres
 shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available in presence of insert operations only
 shtb_test1_view1    	No                  	Manual refresh      	Unknown             
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
-shtb_view_on_native 	Yes                 	Manual refresh      	Available           
+shtb_view_on_native 	Yes                 	Manual refresh      	Available in presence of insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN default
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
