@@ -702,6 +702,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
       addCustomSortExpr(table, hmsTable, writeOperation, customSortExprs, getSortTransformSpec(table));
     }
+    dpCtx.setHasCustomSortExprs(!customSortExprs.isEmpty());
 
     return dpCtx;
   }
