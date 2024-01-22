@@ -329,6 +329,11 @@ final class HMSClient implements AutoCloseable {
     return client.get_partitions_by_names(dbName, tableName, names);
   }
 
+  List<Partition> getPartitionsByFilter(@NotNull String dbName, @NotNull String tableName,
+                                        @NotNull String filter) throws TException {
+    return client.get_partitions_by_filter(dbName, tableName, filter, (short) -1);
+  }
+
   boolean alterTable(@NotNull String dbName, @NotNull String tableName, @NotNull Table newTable)
       throws TException {
     client.alter_table(dbName, tableName, newTable);
