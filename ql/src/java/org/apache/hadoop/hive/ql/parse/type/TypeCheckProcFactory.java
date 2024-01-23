@@ -1011,7 +1011,12 @@ public class TypeCheckProcFactory<T> {
             }
           }
           if(expressions.isEmpty()) {
-            return exprFactory.createBooleanConstantExpr(null);
+            // We will only hit this when none of the operands inside the "in" clause can be type-coerced
+            // That would imply that the result of "in" is a boolean "false"
+            // This should not impact those cases where the "in" clause is used on a boolean column and
+            // there is no operand in the "in" clause that cannot be type-coerced into boolean because
+            // in case of boolean, Hive does not allow such use cases and throws an error
+            return exprFactory.createBooleanConstantExpr("false");
           }
 
           children.clear();

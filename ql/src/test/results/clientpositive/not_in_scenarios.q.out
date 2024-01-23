@@ -23,6 +23,9 @@ POSTHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@my_tbl
 #### A masked pattern was here ####
+100
+200
+300
 PREHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF', '123')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@my_tbl
