@@ -56,29 +56,33 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   }
 
   private static void validateCapacity(long capacity) {
-    if (Long.bitCount(capacity) != 1) {
-      throw new AssertionError("Capacity must be a power of two");
-    }
     if (capacity <= 0) {
       throw new AssertionError("Invalid capacity " + capacity);
+    }
+    if (Long.bitCount(capacity) != 1) {
+      throw new AssertionError("Capacity must be a power of two" + capacity);
     }
   }
 
   private static int nextHighestPowerOfTwo(int v) {
-    return Integer.highestOneBit(v) << 1;
+    int value = Integer.highestOneBit(v);
+    if (Integer.highestOneBit(v) == HIGHEST_INT_POWER_OF_2) {
+      LOG.warn("Reached highest 2 power: {}", HIGHEST_INT_POWER_OF_2);
+      return value;
+    }
+    return value << 1;
   }
 
   public VectorMapJoinFastHashTable(
         int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
 
-    initialCapacity = (Long.bitCount(initialCapacity) == 1)
+    this.logicalHashBucketCount = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
+    LOG.info("Initial Capacity {} Recomputed Capacity {}", initialCapacity, logicalHashBucketCount);
 
-    validateCapacity(initialCapacity);
+    validateCapacity(logicalHashBucketCount);
 
     this.estimatedKeyCount = estimatedKeyCount;
-
-    logicalHashBucketCount = initialCapacity;
     logicalHashBucketMask = logicalHashBucketCount - 1;
     resizeThreshold = (int)(logicalHashBucketCount * loadFactor);
 

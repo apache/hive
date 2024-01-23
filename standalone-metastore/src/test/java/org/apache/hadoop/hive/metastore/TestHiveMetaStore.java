@@ -245,15 +245,13 @@ public abstract class TestHiveMetaStore {
       assertNotNull("Unable to create partition " + part4, retp4);
 
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
-      if(isThriftClient) {
-        // since we are using thrift, 'part' will not have the create time and
-        // last DDL time set since it does not get updated in the add_partition()
-        // call - likewise part2 and part3 - set it correctly so that equals check
-        // doesn't fail
-        adjust(client, part, dbName, tblName);
-        adjust(client, part2, dbName, tblName);
-        adjust(client, part3, dbName, tblName);
-      }
+      // since we are using thrift, 'part' will not have the create time and
+      // last DDL time set since it does not get updated in the add_partition()
+      // call - likewise part2 and part3 - set it correctly so that equals check
+      // doesn't fail
+      adjust(client, part, dbName, tblName, isThriftClient);
+      adjust(client, part2, dbName, tblName, isThriftClient);
+      adjust(client, part3, dbName, tblName, isThriftClient);
       assertTrue("Partitions are not same", part.equals(part_get));
 
       // check null cols schemas for a partition
@@ -384,12 +382,10 @@ public abstract class TestHiveMetaStore {
       Partition mpart3 = makePartitionObject(dbName, tblName, mvals3, tbl, "/mpart3");
       client.add_partitions(Arrays.asList(mpart1,mpart2,mpart3));
 
-      if(isThriftClient) {
-        // do DDL time munging if thrift mode
-        adjust(client, mpart1, dbName, tblName);
-        adjust(client, mpart2, dbName, tblName);
-        adjust(client, mpart3, dbName, tblName);
-      }
+      // do DDL time munging if thrift mode
+      adjust(client, mpart1, dbName, tblName, isThriftClient);
+      adjust(client, mpart2, dbName, tblName, isThriftClient);
+      adjust(client, mpart3, dbName, tblName, isThriftClient);
       verifyPartitionsPublished(client, dbName, tblName,
           Arrays.asList(mvals1.get(0)),
           Arrays.asList(mpart1,mpart2,mpart3));
@@ -419,10 +415,8 @@ public abstract class TestHiveMetaStore {
       // add_partitions(5) : ok
       client.add_partitions(Arrays.asList(mpart5));
 
-      if(isThriftClient) {
-        // do DDL time munging if thrift mode
-        adjust(client, mpart5, dbName, tblName);
-      }
+      // do DDL time munging if thrift mode
+      adjust(client, mpart5, dbName, tblName, isThriftClient);
 
       verifyPartitionsPublished(client, dbName, tblName,
           Arrays.asList(mvals1.get(0)),
@@ -1977,11 +1971,16 @@ public abstract class TestHiveMetaStore {
   }
 
   private static void adjust(HiveMetaStoreClient client, Partition part,
-      String dbName, String tblName) throws TException {
+      String dbName, String tblName, boolean isThriftClient) throws TException {
     Partition part_get = client.getPartition(dbName, tblName, part.getValues());
-    part.setCreateTime(part_get.getCreateTime());
-    part.putToParameters(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DDL_TIME, Long.toString(part_get.getCreateTime()));
+    if (isThriftClient) {
+      part.setCreateTime(part_get.getCreateTime());
+      part.putToParameters(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DDL_TIME, Long.toString(part_get.getCreateTime()));
+    }
+    part.setWriteId(part_get.getWriteId());
   }
+
+
 
   private static void silentDropDatabase(String dbName) throws TException {
     try {

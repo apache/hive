@@ -701,7 +701,12 @@ public class Driver implements IDriver {
 
         try {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
-          doAuthorization(queryState.getHiveOperation(), sem, command);
+          // Authorization check for kill query will be in KillQueryImpl
+          // As both admin or operation owner can perform the operation.
+          // Which is not directly supported in authorizer
+          if (queryState.getHiveOperation() != HiveOperation.KILL_QUERY) {
+            doAuthorization(queryState.getHiveOperation(), sem, command);
+          }
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage()
               + ". Use SHOW GRANT to get more details.");
@@ -1443,7 +1448,7 @@ public class Driver implements IDriver {
 
   // Write the current set of valid write ids for the operated acid tables into the conf file so
   // that it can be read by the input format.
-  private void recordValidWriteIds(HiveTxnManager txnMgr) throws LockException {
+  private ValidTxnWriteIdList recordValidWriteIds(HiveTxnManager txnMgr) throws LockException {
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if ((txnString == null) || (txnString.isEmpty())) {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
@@ -1486,6 +1491,7 @@ public class Driver implements IDriver {
       }
     }
     LOG.debug("Encoding valid txn write ids info " + writeIdStr + " txnid:" + txnMgr.getCurrentTxnId());
+    return txnWriteIds;
   }
 
   // Make the list of transactional tables list which are getting read or written by current txn
@@ -1622,10 +1628,16 @@ public class Driver implements IDriver {
         }
       }
 
-      // Note: the sinks and DDL cannot coexist at this time; but if they could we would
-      //       need to make sure we don't get two write IDs for the same table.
+      if (plan.getAcidAnalyzeTable() != null) {
+        // Allocate write ID for the table being analyzed.
+        Table t = plan.getAcidAnalyzeTable().getTable();
+        queryTxnMgr.getTableWriteId(t.getDbName(), t.getTableName());
+      }
+
+
       DDLDescWithWriteId acidDdlDesc = plan.getAcidDdlDesc();
-      if (acidDdlDesc != null && acidDdlDesc.mayNeedWriteId()) {
+      boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
+      if (hasAcidDdl) {
         String fqTableName = acidDdlDesc.getFullTableName();
         long writeId = queryTxnMgr.getTableWriteId(
             Utilities.getDatabaseName(fqTableName), Utilities.getTableName(fqTableName));
@@ -1640,9 +1652,11 @@ public class Driver implements IDriver {
         throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
             JavaUtils.txnIdToString(queryTxnMgr.getCurrentTxnId()));
       }
-      if (plan.hasAcidResourcesInQuery()) {
+
+      if (plan.hasAcidResourcesInQuery() || hasAcidDdl) {
         recordValidWriteIds(queryTxnMgr);
       }
+
     } catch (Exception e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());

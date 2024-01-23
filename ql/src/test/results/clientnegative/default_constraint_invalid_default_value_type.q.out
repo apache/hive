@@ -1,1 +1,0 @@
-FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid Default value: cast(year("1970-01-01") as string). DEFAULT only allows constant or function expressions

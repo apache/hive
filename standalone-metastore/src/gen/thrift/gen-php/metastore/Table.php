@@ -127,6 +127,16 @@ class Table
             'isRequired' => false,
             'type' => TType::I32,
         ),
+        19 => array(
+            'var' => 'writeId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
+        20 => array(
+            'var' => 'isStatsCompliant',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -201,6 +211,14 @@ class Table
      * @var int
      */
     public $ownerType =     1;
+    /**
+     * @var int
+     */
+    public $writeId = -1;
+    /**
+     * @var bool
+     */
+    public $isStatsCompliant = null;
 
     public function __construct($vals = null)
     {
@@ -258,6 +276,12 @@ class Table
             }
             if (isset($vals['ownerType'])) {
                 $this->ownerType = $vals['ownerType'];
+            }
+            if (isset($vals['writeId'])) {
+                $this->writeId = $vals['writeId'];
+            }
+            if (isset($vals['isStatsCompliant'])) {
+                $this->isStatsCompliant = $vals['isStatsCompliant'];
             }
         }
     }
@@ -334,14 +358,14 @@ class Table
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->partitionKeys = array();
-                        $_size183 = 0;
-                        $_etype186 = 0;
-                        $xfer += $input->readListBegin($_etype186, $_size183);
-                        for ($_i187 = 0; $_i187 < $_size183; ++$_i187) {
-                            $elem188 = null;
-                            $elem188 = new \metastore\FieldSchema();
-                            $xfer += $elem188->read($input);
-                            $this->partitionKeys []= $elem188;
+                        $_size190 = 0;
+                        $_etype193 = 0;
+                        $xfer += $input->readListBegin($_etype193, $_size190);
+                        for ($_i194 = 0; $_i194 < $_size190; ++$_i194) {
+                            $elem195 = null;
+                            $elem195 = new \metastore\FieldSchema();
+                            $xfer += $elem195->read($input);
+                            $this->partitionKeys []= $elem195;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -351,16 +375,16 @@ class Table
                 case 9:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size189 = 0;
-                        $_ktype190 = 0;
-                        $_vtype191 = 0;
-                        $xfer += $input->readMapBegin($_ktype190, $_vtype191, $_size189);
-                        for ($_i193 = 0; $_i193 < $_size189; ++$_i193) {
-                            $key194 = '';
-                            $val195 = '';
-                            $xfer += $input->readString($key194);
-                            $xfer += $input->readString($val195);
-                            $this->parameters[$key194] = $val195;
+                        $_size196 = 0;
+                        $_ktype197 = 0;
+                        $_vtype198 = 0;
+                        $xfer += $input->readMapBegin($_ktype197, $_vtype198, $_size196);
+                        for ($_i200 = 0; $_i200 < $_size196; ++$_i200) {
+                            $key201 = '';
+                            $val202 = '';
+                            $xfer += $input->readString($key201);
+                            $xfer += $input->readString($val202);
+                            $this->parameters[$key201] = $val202;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -432,6 +456,20 @@ class Table
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 19:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->writeId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 20:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->isStatsCompliant);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -490,8 +528,8 @@ class Table
             }
             $xfer += $output->writeFieldBegin('partitionKeys', TType::LST, 8);
             $output->writeListBegin(TType::STRUCT, count($this->partitionKeys));
-            foreach ($this->partitionKeys as $iter196) {
-                $xfer += $iter196->write($output);
+            foreach ($this->partitionKeys as $iter203) {
+                $xfer += $iter203->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -502,9 +540,9 @@ class Table
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 9);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter197 => $viter198) {
-                $xfer += $output->writeString($kiter197);
-                $xfer += $output->writeString($viter198);
+            foreach ($this->parameters as $kiter204 => $viter205) {
+                $xfer += $output->writeString($kiter204);
+                $xfer += $output->writeString($viter205);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
@@ -558,6 +596,16 @@ class Table
         if ($this->ownerType !== null) {
             $xfer += $output->writeFieldBegin('ownerType', TType::I32, 18);
             $xfer += $output->writeI32($this->ownerType);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->writeId !== null) {
+            $xfer += $output->writeFieldBegin('writeId', TType::I64, 19);
+            $xfer += $output->writeI64($this->writeId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->isStatsCompliant !== null) {
+            $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 20);
+            $xfer += $output->writeBool($this->isStatsCompliant);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

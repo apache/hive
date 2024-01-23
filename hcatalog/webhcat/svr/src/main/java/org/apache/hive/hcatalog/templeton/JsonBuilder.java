@@ -49,7 +49,7 @@ public class JsonBuilder {
     hiveError2HttpStatusCode.put(ErrorMsg.INVALID_PARTITION.getErrorCode(), HttpStatus.NOT_FOUND_404);
 
     hiveError2HttpStatusCode.put(ErrorMsg.DUPLICATE_COLUMN_NAMES.getErrorCode(), HttpStatus.CONFLICT_409);
-    hiveError2HttpStatusCode.put(ErrorMsg.DATABSAE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+    hiveError2HttpStatusCode.put(ErrorMsg.DATABASE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
     hiveError2HttpStatusCode.put(ErrorMsg.PARTITION_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
     hiveError2HttpStatusCode.put(ErrorMsg.TABLE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
   }

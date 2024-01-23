@@ -1211,7 +1211,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             } else if (prevFsp.updaters[0] != null) {
               stats = prevFsp.updaters[0].getStats();
             }
-            if (stats != null) {
+            if (stats != null && !conf.isFullAcidTable()) {
                 prevFsp.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
                 prevFsp.addToStat(StatsSetupConst.ROW_COUNT, stats.getRowCount());
             }

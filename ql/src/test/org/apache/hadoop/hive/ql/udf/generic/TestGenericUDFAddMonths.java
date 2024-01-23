@@ -58,6 +58,8 @@ public class TestGenericUDFAddMonths extends TestCase {
     runAndVerify("2016-02-29", -12, "2015-02-28", udf);
     runAndVerify("2016-01-29", 1, "2016-02-29", udf);
     runAndVerify("2016-02-29", -1, "2016-01-31", udf);
+    runAndVerify("1001-10-05", 1, "1001-11-05", udf);
+    runAndVerify("1582-10-05", 1, "1582-11-05", udf);
 
     // ts str
     runAndVerify("2014-01-14 10:30:00", 1, "2014-02-14", udf);
@@ -157,8 +159,8 @@ public class TestGenericUDFAddMonths extends TestCase {
     ObjectInspector[] arguments = { valueOI0, valueOI1 };
 
     udf.initialize(arguments);
-    runAndVerify("2014-02-30", 1, "2014-04-02", udf);
-    runAndVerify("2014-02-32", 1, "2014-04-04", udf);
+    runAndVerify("2014-02-30", 1, null, udf);
+    runAndVerify("2014-02-32", 1, null, udf);
     runAndVerify("2014-01", 1, null, udf);
   }
 
@@ -170,8 +172,8 @@ public class TestGenericUDFAddMonths extends TestCase {
 
     udf.initialize(arguments);
 
-    runAndVerify("2014-02-30 10:30:00", 1, "2014-04-02", udf);
-    runAndVerify("2014-02-32 10:30:00", 1, "2014-04-04", udf);
+    runAndVerify("2014-02-30 10:30:00", 1, null, udf);
+    runAndVerify("2014-02-32 10:30:00", 1, null, udf);
     runAndVerify("2014/01/31 10:30:00", 1, null, udf);
     runAndVerify("2014-01-31T10:30:00", 1, "2014-02-28", udf);
   }

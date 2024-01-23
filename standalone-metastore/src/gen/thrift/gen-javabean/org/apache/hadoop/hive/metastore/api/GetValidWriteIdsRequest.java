@@ -13,105 +13,53 @@ package org.apache.hadoop.hive.metastore.api;
 
   private static final org.apache.thrift.protocol.TField FULL_TABLE_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("fullTableNames", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField VALID_TXN_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnList", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetValidWriteIdsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetValidWriteIdsRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> fullTableNames; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String validTxnList; // required
-
-  /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    FULL_TABLE_NAMES((short)1, "fullTableNames"),
-    VALID_TXN_LIST((short)2, "validTxnList");
-
-    private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
-
-    static {
-      for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
-        byName.put(field.getFieldName(), field);
-      }
-    }
-
-    /**
-     * Find the _Fields constant that matches fieldId, or null if its not found.
-     */
-    @org.apache.thrift.annotation.Nullable
-    public static _Fields findByThriftId(int fieldId) {
-      switch(fieldId) {
-        case 1: // FULL_TABLE_NAMES
-          return FULL_TABLE_NAMES;
-        case 2: // VALID_TXN_LIST
-          return VALID_TXN_LIST;
-        default:
-          return null;
-      }
-    }
-
-    /**
-     * Find the _Fields constant that matches fieldId, throwing an exception
-     * if it is not found.
-     */
-    public static _Fields findByThriftIdOrThrow(int fieldId) {
-      _Fields fields = findByThriftId(fieldId);
-      if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-      return fields;
-    }
-
-    /**
-     * Find the _Fields constant that matches name, or null if its not found.
-     */
-    @org.apache.thrift.annotation.Nullable
-    public static _Fields findByName(java.lang.String name) {
-      return byName.get(name);
-    }
-
-    private final short _thriftId;
-    private final java.lang.String _fieldName;
-
-    _Fields(short thriftId, java.lang.String fieldName) {
-      _thriftId = thriftId;
-      _fieldName = fieldName;
-    }
-
-    public short getThriftFieldId() {
-      return _thriftId;
-    }
-
-    public java.lang.String getFieldName() {
-      return _fieldName;
-    }
-  }
-
-  // isset id assignments
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.FULL_TABLE_NAMES, new org.apache.thrift.meta_data.FieldMetaData("fullTableNames", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+    tmpMap.put(_Fields.FULL_TABLE_NAMES, new org.apache.thrift.meta_data.FieldMetaData("fullTableNames", org.apache.thrift.TFieldRequirementType.REQUIRED,
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.VALID_TXN_LIST, new org.apache.thrift.meta_data.FieldMetaData("validTxnList", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.VALID_TXN_LIST, new org.apache.thrift.meta_data.FieldMetaData("validTxnList", org.apache.thrift.TFieldRequirementType.OPTIONAL,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("writeId", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetValidWriteIdsRequest.class, metaDataMap);
   }
 
+  private @org.apache.thrift.annotation.Nullable java.lang.String validTxnList; // optional
+
+  // isset id assignments
+  private static final int __WRITEID_ISSET_ID = 0;
+  private long writeId; // optional
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.WRITE_ID};
+  private byte __isset_bitfield = 0;
   public GetValidWriteIdsRequest() {
   }
 
+  public GetValidWriteIdsRequest deepCopy() {
+    return new GetValidWriteIdsRequest(this);
+  }
+
   public GetValidWriteIdsRequest(
-    java.util.List<java.lang.String> fullTableNames,
-    java.lang.String validTxnList)
+    java.util.List<java.lang.String> fullTableNames)
   {
     this();
     this.fullTableNames = fullTableNames;
-    this.validTxnList = validTxnList;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public GetValidWriteIdsRequest(GetValidWriteIdsRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetFullTableNames()) {
       java.util.List<java.lang.String> __this__fullTableNames = new java.util.ArrayList<java.lang.String>(other.fullTableNames);
       this.fullTableNames = __this__fullTableNames;
@@ -119,16 +67,19 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetValidTxnList()) {
       this.validTxnList = other.validTxnList;
     }
+    this.writeId = other.writeId;
   }
 
-  public GetValidWriteIdsRequest deepCopy() {
-    return new GetValidWriteIdsRequest(this);
+  public long getWriteId() {
+    return this.writeId;
   }
 
   @Override
   public void clear() {
     this.fullTableNames = null;
     this.validTxnList = null;
+    setWriteIdIsSet(false);
+    this.writeId = 0;
   }
 
   public int getFullTableNamesSize() {
@@ -195,6 +146,33 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @Override
+  public boolean equals(java.lang.Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof GetValidWriteIdsRequest)
+      return this.equals((GetValidWriteIdsRequest)that);
+    return false;
+  }
+
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+    setWriteIdIsSet(true);
+  }
+
+  public void unsetWriteId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  }
+
+  /** Returns true if field writeId is set (has been assigned a value) and false otherwise */
+  public boolean isSetWriteId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  }
+
+  public void setWriteIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __WRITEID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case FULL_TABLE_NAMES:
@@ -213,6 +191,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case WRITE_ID:
+      if (value == null) {
+        unsetWriteId();
+      } else {
+        setWriteId((java.lang.Long)value);
+      }
+      break;
+
     }
   }
 
@@ -224,6 +210,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case VALID_TXN_LIST:
       return getValidTxnList();
+
+    case WRITE_ID:
+      return getWriteId();
 
     }
     throw new java.lang.IllegalStateException();
@@ -240,17 +229,15 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetFullTableNames();
     case VALID_TXN_LIST:
       return isSetValidTxnList();
+    case WRITE_ID:
+      return isSetWriteId();
     }
     throw new java.lang.IllegalStateException();
   }
 
-  @Override
-  public boolean equals(java.lang.Object that) {
-    if (that == null)
-      return false;
-    if (that instanceof GetValidWriteIdsRequest)
-      return this.equals((GetValidWriteIdsRequest)that);
-    return false;
+  @org.apache.thrift.annotation.Nullable
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public boolean equals(GetValidWriteIdsRequest that) {
@@ -277,6 +264,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_writeId = true && this.isSetWriteId();
+    boolean that_present_writeId = true && that.isSetWriteId();
+    if (this_present_writeId || that_present_writeId) {
+      if (!(this_present_writeId && that_present_writeId))
+        return false;
+      if (this.writeId != that.writeId)
+        return false;
+    }
+
     return true;
   }
 
@@ -291,6 +287,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetValidTxnList()) ? 131071 : 524287);
     if (isSetValidTxnList())
       hashCode = hashCode * 8191 + validTxnList.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetWriteId()) ? 131071 : 524287);
+    if (isSetWriteId())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(writeId);
 
     return hashCode;
   }
@@ -323,12 +323,17 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetWriteId()).compareTo(other.isSetWriteId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWriteId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeId, other.writeId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public _Fields fieldForId(int fieldId) {
-    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
@@ -337,6 +342,16 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     scheme(oprot).write(oprot, this);
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
   @Override
@@ -351,14 +366,22 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.fullTableNames);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("validTxnList:");
-    if (this.validTxnList == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.validTxnList);
+    if (isSetValidTxnList()) {
+      if (!first) sb.append(", ");
+      sb.append("validTxnList:");
+      if (this.validTxnList == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.validTxnList);
+      }
+      first = false;
     }
-    first = false;
+    if (isSetWriteId()) {
+      if (!first) sb.append(", ");
+      sb.append("writeId:");
+      sb.append(this.writeId);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -367,10 +390,6 @@ package org.apache.hadoop.hive.metastore.api;
     // check for required fields
     if (!isSetFullTableNames()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'fullTableNames' is unset! Struct:" + toString());
-    }
-
-    if (!isSetValidTxnList()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'validTxnList' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -384,11 +403,69 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
-  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
-    try {
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
-      throw new java.io.IOException(te);
+  /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    FULL_TABLE_NAMES((short)1, "fullTableNames"),
+    VALID_TXN_LIST((short)2, "validTxnList"),
+    WRITE_ID((short)3, "writeId");
+
+    private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+    static {
+      for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+        byName.put(field.getFieldName(), field);
+      }
+    }
+
+    private final short _thriftId;
+    private final java.lang.String _fieldName;
+
+    _Fields(short thriftId, java.lang.String fieldName) {
+      _thriftId = thriftId;
+      _fieldName = fieldName;
+    }
+
+    /**
+     * Find the _Fields constant that matches fieldId, or null if its not found.
+     */
+    @org.apache.thrift.annotation.Nullable
+    public static _Fields findByThriftId(int fieldId) {
+      switch(fieldId) {
+        case 1: // FULL_TABLE_NAMES
+          return FULL_TABLE_NAMES;
+        case 2: // VALID_TXN_LIST
+          return VALID_TXN_LIST;
+        case 3: // WRITE_ID
+          return WRITE_ID;
+        default:
+          return null;
+      }
+    }
+
+    /**
+     * Find the _Fields constant that matches fieldId, throwing an exception
+     * if it is not found.
+     */
+    public static _Fields findByThriftIdOrThrow(int fieldId) {
+      _Fields fields = findByThriftId(fieldId);
+      if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+      return fields;
+    }
+
+    /**
+     * Find the _Fields constant that matches name, or null if its not found.
+     */
+    @org.apache.thrift.annotation.Nullable
+    public static _Fields findByName(java.lang.String name) {
+      return byName.get(name);
+    }
+
+    public short getThriftFieldId() {
+      return _thriftId;
+    }
+
+    public java.lang.String getFieldName() {
+      return _fieldName;
     }
   }
 
@@ -413,13 +490,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // FULL_TABLE_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
-                struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list618.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem619;
-                for (int _i620 = 0; _i620 < _list618.size; ++_i620)
+                org.apache.thrift.protocol.TList _list626 = iprot.readListBegin();
+                struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list626.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem627;
+                for (int _i628 = 0; _i628 < _list626.size; ++_i628)
                 {
-                  _elem619 = iprot.readString();
-                  struct.fullTableNames.add(_elem619);
+                  _elem627 = iprot.readString();
+                  struct.fullTableNames.add(_elem627);
                 }
                 iprot.readListEnd();
               }
@@ -432,6 +509,14 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.validTxnList = iprot.readString();
               struct.setValidTxnListIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // WRITE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.writeId = iprot.readI64();
+              struct.setWriteIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -453,17 +538,24 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(FULL_TABLE_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.fullTableNames.size()));
-          for (java.lang.String _iter621 : struct.fullTableNames)
+          for (java.lang.String _iter629 : struct.fullTableNames)
           {
-            oprot.writeString(_iter621);
+            oprot.writeString(_iter629);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
       if (struct.validTxnList != null) {
-        oprot.writeFieldBegin(VALID_TXN_LIST_FIELD_DESC);
-        oprot.writeString(struct.validTxnList);
+        if (struct.isSetValidTxnList()) {
+          oprot.writeFieldBegin(VALID_TXN_LIST_FIELD_DESC);
+          oprot.writeString(struct.validTxnList);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetWriteId()) {
+        oprot.writeFieldBegin(WRITE_ID_FIELD_DESC);
+        oprot.writeI64(struct.writeId);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -485,30 +577,50 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fullTableNames.size());
-        for (java.lang.String _iter622 : struct.fullTableNames)
+        for (java.lang.String _iter630 : struct.fullTableNames)
         {
-          oprot.writeString(_iter622);
+          oprot.writeString(_iter630);
         }
       }
-      oprot.writeString(struct.validTxnList);
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetValidTxnList()) {
+        optionals.set(0);
+      }
+      if (struct.isSetWriteId()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetValidTxnList()) {
+        oprot.writeString(struct.validTxnList);
+      }
+      if (struct.isSetWriteId()) {
+        oprot.writeI64(struct.writeId);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetValidWriteIdsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list623 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list623.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem624;
-        for (int _i625 = 0; _i625 < _list623.size; ++_i625)
+        org.apache.thrift.protocol.TList _list631 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list631.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem632;
+        for (int _i633 = 0; _i633 < _list631.size; ++_i633)
         {
-          _elem624 = iprot.readString();
-          struct.fullTableNames.add(_elem624);
+          _elem632 = iprot.readString();
+          struct.fullTableNames.add(_elem632);
         }
       }
       struct.setFullTableNamesIsSet(true);
-      struct.validTxnList = iprot.readString();
-      struct.setValidTxnListIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(2);
+      if (incoming.get(0)) {
+        struct.validTxnList = iprot.readString();
+        struct.setValidTxnListIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.writeId = iprot.readI64();
+        struct.setWriteIdIsSet(true);
+      }
     }
   }
 

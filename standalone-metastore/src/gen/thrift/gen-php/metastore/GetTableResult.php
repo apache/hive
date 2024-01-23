@@ -27,18 +27,30 @@ class GetTableResult
             'type' => TType::STRUCT,
             'class' => '\metastore\Table',
         ),
+        2 => array(
+            'var' => 'isStatsCompliant',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
      * @var \metastore\Table
      */
     public $table = null;
+    /**
+     * @var bool
+     */
+    public $isStatsCompliant = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['table'])) {
                 $this->table = $vals['table'];
+            }
+            if (isset($vals['isStatsCompliant'])) {
+                $this->isStatsCompliant = $vals['isStatsCompliant'];
             }
         }
     }
@@ -70,6 +82,13 @@ class GetTableResult
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 2:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->isStatsCompliant);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -90,6 +109,11 @@ class GetTableResult
             }
             $xfer += $output->writeFieldBegin('table', TType::STRUCT, 1);
             $xfer += $this->table->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->isStatsCompliant !== null) {
+            $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
+            $xfer += $output->writeBool($this->isStatsCompliant);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

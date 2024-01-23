@@ -52,7 +52,7 @@ public class PartExprEvalUtils {
    * @return value returned by the expression
    * @throws HiveException
    */
-  static synchronized public Object evalExprWithPart(ExprNodeDesc expr,
+  static public Object evalExprWithPart(ExprNodeDesc expr,
       Partition p, List<VirtualColumn> vcs,
       StructObjectInspector rowObjectInspector) throws HiveException {
     LinkedHashMap<String, String> partSpec = p.getSpec();
@@ -103,7 +103,7 @@ public class PartExprEvalUtils {
         .getPrimitiveJavaObject(evaluateResultO);
   }
 
-  static synchronized public ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
+  static public ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
       ExprNodeGenericFuncDesc expr, List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos) throws HiveException {
     // Create the row object
@@ -120,7 +120,7 @@ public class PartExprEvalUtils {
     return ObjectPair.create((PrimitiveObjectInspector)evaluateResultOI, evaluator);
   }
 
-  static synchronized public Object evaluateExprOnPart(
+  static public Object evaluateExprOnPart(
       ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> pair, Object partColValues)
           throws HiveException {
     return pair.getFirst().getPrimitiveJavaObject(pair.getSecond().evaluate(partColValues));

@@ -1,0 +1,97 @@
+PREHOOK: query: DESCRIBE FUNCTION mask
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION mask
+POSTHOOK: type: DESCFUNCTION
+masks the given value
+PREHOOK: query: DESC FUNCTION EXTENDED mask
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED mask
+POSTHOOK: type: DESCFUNCTION
+masks the given value
+Examples:
+   mask(ccn)
+   mask(ccn, 'X', 'x', '0')
+   mask(ccn, 'x', 'x', 'x')
+ Arguments:
+   mask(value, upperChar, lowerChar, digitChar, otherChar, numberChar, dayValue, monthValue, yearValue)
+     value      - value to mask. Supported types: TINYINT, SMALLINT, INT, BIGINT, STRING, VARCHAR, CHAR, DATE
+     upperChar  - character to replace upper-case characters with. Specify -1 to retain original character. Default value: 'X'
+     lowerChar  - character to replace lower-case characters with. Specify -1 to retain original character. Default value: 'x'
+     digitChar  - character to replace digit characters with. Specify -1 to retain original character. Default value: 'n'
+     otherChar  - character to replace all other characters with. Specify -1 to retain original character. Default value: -1
+     numberChar - character to replace digits in a number with. Valid values: 0-9. Default value: '1'
+     dayValue   - value to replace day field in a date with.  Specify -1 to retain original value. Valid values: 1-31. Default value: 1
+     monthValue - value to replace month field in a date with. Specify -1 to retain original value. Valid values: 0-11. Default value: 0
+     yearValue  - value to replace year field in a date with. Specify -1 to retain original value. Default value: 0
+ 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMask
+Function type:BUILTIN
+PREHOOK: query: explain select mask('TestString-123', 'X', 'x', '0', '1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select mask('TestString-123', 'X', 'x', '0', '1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 'XxxxXxxxxx1000' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select mask('TestString-123', 'X', 'x', '0', ':'),
+       mask(cast('TestString-123' as varchar(24)), 'X', 'x', '0', ':'),
+       mask(cast('TestString-123' as char(24)), 'X', 'x', '0', ':'),
+       mask(cast(0 as tinyint), -1, -1, -1, -1, 4),
+       mask(cast(0 as smallint), -1, -1, -1, -1, 4),
+       mask(cast(0 as int), -1, -1, -1, -1, 4),
+       mask(cast(0 as bigint), -1, -1, -1, -1, 4),
+       mask(cast(123 as tinyint), -1, -1, -1, -1, '5'),
+       mask(cast(12345 as smallint), -1, -1, -1, -1, '5'),
+       mask(cast(12345 as int), -1, -1, -1, -1, '5'),
+       mask(cast(12345 as bigint), -1, -1, -1, -1, '5'),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 0, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask('TestString-123', 'X', 'x', '0', ':'),
+       mask(cast('TestString-123' as varchar(24)), 'X', 'x', '0', ':'),
+       mask(cast('TestString-123' as char(24)), 'X', 'x', '0', ':'),
+       mask(cast(0 as tinyint), -1, -1, -1, -1, 4),
+       mask(cast(0 as smallint), -1, -1, -1, -1, 4),
+       mask(cast(0 as int), -1, -1, -1, -1, 4),
+       mask(cast(0 as bigint), -1, -1, -1, -1, 4),
+       mask(cast(123 as tinyint), -1, -1, -1, -1, '5'),
+       mask(cast(12345 as smallint), -1, -1, -1, -1, '5'),
+       mask(cast(12345 as int), -1, -1, -1, -1, '5'),
+       mask(cast(12345 as bigint), -1, -1, -1, -1, '5'),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 0, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+XxxxXxxxxx:000	XxxxXxxxxx:000	XxxxXxxxxx:000::::::::::                                                                                                                                                                                                                                       	4	4	4	4	43	-9981	55555	55555	0000-01-01	0000-01-20	0000-04-01	2016-01-01	2016-04-01	2016-01-20	0000-04-20	2016-04-20

@@ -34,6 +34,11 @@ SHOW RESOURCE PLANS;
 SHOW RESOURCE PLAN plan_2;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 
+-- Create plan with existing name, should fail
+CREATE RESOURCE PLAN plan_2;
+-- Create plan with existing name with IF NOT EXISTS
+CREATE RESOURCE PLAN IF NOT EXISTS plan_2;
+
 -- Should fail cannot set pool in create.
 CREATE RESOURCE PLAN plan_3 WITH QUERY_PARALLELISM=5, DEFAULT POOL = `all`;
 
@@ -137,6 +142,11 @@ DROP RESOURCE PLAN plan_2;
 -- Success.
 DROP RESOURCE PLAN plan_3;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
+
+-- Drop non existing resource plan, should fail
+DROP RESOURCE PLAN plan_99999;
+-- Drop non existing resource plan with IF EXISTS
+DROP RESOURCE PLAN IF EXISTS plan_99999;
 
 -- Use reserved keyword table as name.
 CREATE RESOURCE PLAN `table`;

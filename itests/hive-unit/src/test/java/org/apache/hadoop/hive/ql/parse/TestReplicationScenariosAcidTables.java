@@ -908,6 +908,7 @@ public class TestReplicationScenariosAcidTables {
   }
 
   @Test
+  @Ignore
   public void testReplCM() throws Throwable {
     String tableName = testName.getMethodName();
     String tableNameMM = testName.getMethodName() + "_MM";

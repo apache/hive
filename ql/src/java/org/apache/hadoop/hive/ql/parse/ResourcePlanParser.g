@@ -93,9 +93,9 @@ rpUnassignList
 createResourcePlanStatement
 @init { gParent.pushMsg("create resource plan statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_RESOURCE KW_PLAN (
-          (name=identifier KW_LIKE likeName=identifier -> ^(TOK_CREATE_RP $name ^(TOK_LIKERP $likeName)))
-        | (name=identifier (KW_WITH rpAssignList)? -> ^(TOK_CREATE_RP $name rpAssignList?))
+    : KW_CREATE KW_RESOURCE KW_PLAN ifNotExists? (
+          (name=identifier KW_LIKE likeName=identifier -> ^(TOK_CREATE_RP $name ifNotExists? ^(TOK_LIKERP $likeName)))
+        | (name=identifier (KW_WITH rpAssignList)? -> ^(TOK_CREATE_RP $name ifNotExists? rpAssignList?))
       )
     ;
 
@@ -140,7 +140,7 @@ replaceResourcePlanStatement
 dropResourcePlanStatement
 @init { gParent.pushMsg("drop resource plan statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_DROP KW_RESOURCE KW_PLAN name=identifier -> ^(TOK_DROP_RP $name)
+    : KW_DROP KW_RESOURCE KW_PLAN ifExists? name=identifier -> ^(TOK_DROP_RP $name ifExists?)
     ;
 
 poolPath

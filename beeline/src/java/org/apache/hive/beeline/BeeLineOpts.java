@@ -68,6 +68,7 @@ public class BeeLineOpts implements Completer {
   private final BeeLine beeLine;
   private boolean autosave = false;
   private boolean silent = false;
+  private Boolean report = null;
   private boolean color = false;
   private boolean showHeader = true;
   private boolean escapeCRLF = false;
@@ -114,6 +115,7 @@ public class BeeLineOpts implements Completer {
   private Map<String, String> hiveVariables = new HashMap<String, String>();
   private Map<String, String> hiveConfVariables = new HashMap<String, String>();
   private boolean helpAsked;
+  private boolean beelineSiteUrlsAsked;
 
   private String lastConnectedUrl = null;
 
@@ -569,6 +571,14 @@ public class BeeLineOpts implements Completer {
     return silent;
   }
 
+  public void setReport(boolean report) {
+    this.report = report;
+  }
+
+  public Boolean isReport() {
+    return report;
+  }
+
   public void setAutosave(boolean autosave) {
     this.autosave = autosave;
   }
@@ -678,7 +688,16 @@ public class BeeLineOpts implements Completer {
   public boolean isHelpAsked() {
     return helpAsked;
   }
+  
+  public void setBeelineSiteUrlsAsked(boolean beelineSiteUrlsAsked) {
+    this.beelineSiteUrlsAsked = beelineSiteUrlsAsked;
+  }
 
+  public boolean isBeelineSiteUrlsAsked() {
+    return beelineSiteUrlsAsked;
+  }
+
+  
   public String getLastConnectedUrl(){
     return lastConnectedUrl;
   }

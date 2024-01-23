@@ -220,14 +220,14 @@ class StorageDescriptor
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->cols = array();
-                        $_size145 = 0;
-                        $_etype148 = 0;
-                        $xfer += $input->readListBegin($_etype148, $_size145);
-                        for ($_i149 = 0; $_i149 < $_size145; ++$_i149) {
-                            $elem150 = null;
-                            $elem150 = new \metastore\FieldSchema();
-                            $xfer += $elem150->read($input);
-                            $this->cols []= $elem150;
+                        $_size152 = 0;
+                        $_etype155 = 0;
+                        $xfer += $input->readListBegin($_etype155, $_size152);
+                        for ($_i156 = 0; $_i156 < $_size152; ++$_i156) {
+                            $elem157 = null;
+                            $elem157 = new \metastore\FieldSchema();
+                            $xfer += $elem157->read($input);
+                            $this->cols []= $elem157;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -280,13 +280,13 @@ class StorageDescriptor
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->bucketCols = array();
-                        $_size151 = 0;
-                        $_etype154 = 0;
-                        $xfer += $input->readListBegin($_etype154, $_size151);
-                        for ($_i155 = 0; $_i155 < $_size151; ++$_i155) {
-                            $elem156 = null;
-                            $xfer += $input->readString($elem156);
-                            $this->bucketCols []= $elem156;
+                        $_size158 = 0;
+                        $_etype161 = 0;
+                        $xfer += $input->readListBegin($_etype161, $_size158);
+                        for ($_i162 = 0; $_i162 < $_size158; ++$_i162) {
+                            $elem163 = null;
+                            $xfer += $input->readString($elem163);
+                            $this->bucketCols []= $elem163;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -296,14 +296,14 @@ class StorageDescriptor
                 case 9:
                     if ($ftype == TType::LST) {
                         $this->sortCols = array();
-                        $_size157 = 0;
-                        $_etype160 = 0;
-                        $xfer += $input->readListBegin($_etype160, $_size157);
-                        for ($_i161 = 0; $_i161 < $_size157; ++$_i161) {
-                            $elem162 = null;
-                            $elem162 = new \metastore\Order();
-                            $xfer += $elem162->read($input);
-                            $this->sortCols []= $elem162;
+                        $_size164 = 0;
+                        $_etype167 = 0;
+                        $xfer += $input->readListBegin($_etype167, $_size164);
+                        for ($_i168 = 0; $_i168 < $_size164; ++$_i168) {
+                            $elem169 = null;
+                            $elem169 = new \metastore\Order();
+                            $xfer += $elem169->read($input);
+                            $this->sortCols []= $elem169;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -313,16 +313,16 @@ class StorageDescriptor
                 case 10:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size163 = 0;
-                        $_ktype164 = 0;
-                        $_vtype165 = 0;
-                        $xfer += $input->readMapBegin($_ktype164, $_vtype165, $_size163);
-                        for ($_i167 = 0; $_i167 < $_size163; ++$_i167) {
-                            $key168 = '';
-                            $val169 = '';
-                            $xfer += $input->readString($key168);
-                            $xfer += $input->readString($val169);
-                            $this->parameters[$key168] = $val169;
+                        $_size170 = 0;
+                        $_ktype171 = 0;
+                        $_vtype172 = 0;
+                        $xfer += $input->readMapBegin($_ktype171, $_vtype172, $_size170);
+                        for ($_i174 = 0; $_i174 < $_size170; ++$_i174) {
+                            $key175 = '';
+                            $val176 = '';
+                            $xfer += $input->readString($key175);
+                            $xfer += $input->readString($val176);
+                            $this->parameters[$key175] = $val176;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -364,8 +364,8 @@ class StorageDescriptor
             }
             $xfer += $output->writeFieldBegin('cols', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->cols));
-            foreach ($this->cols as $iter170) {
-                $xfer += $iter170->write($output);
+            foreach ($this->cols as $iter177) {
+                $xfer += $iter177->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -409,8 +409,8 @@ class StorageDescriptor
             }
             $xfer += $output->writeFieldBegin('bucketCols', TType::LST, 8);
             $output->writeListBegin(TType::STRING, count($this->bucketCols));
-            foreach ($this->bucketCols as $iter171) {
-                $xfer += $output->writeString($iter171);
+            foreach ($this->bucketCols as $iter178) {
+                $xfer += $output->writeString($iter178);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -421,8 +421,8 @@ class StorageDescriptor
             }
             $xfer += $output->writeFieldBegin('sortCols', TType::LST, 9);
             $output->writeListBegin(TType::STRUCT, count($this->sortCols));
-            foreach ($this->sortCols as $iter172) {
-                $xfer += $iter172->write($output);
+            foreach ($this->sortCols as $iter179) {
+                $xfer += $iter179->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -433,9 +433,9 @@ class StorageDescriptor
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 10);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter173 => $viter174) {
-                $xfer += $output->writeString($kiter173);
-                $xfer += $output->writeString($viter174);
+            foreach ($this->parameters as $kiter180 => $viter181) {
+                $xfer += $output->writeString($kiter180);
+                $xfer += $output->writeString($viter181);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

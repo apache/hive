@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -30,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearDate
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.io.IntWritable;
@@ -39,7 +39,7 @@ import org.apache.hadoop.io.Text;
  * UDFWeekOfYear.
  *
  */
-@Description(name = "yearweek",
+@Description(name = "weekofyear",
     value = "_FUNC_(date) - Returns the week of the year of the given date. A week "
     + "is considered to start on a Monday and week 1 is the first week with >3 days.",
     extended = "Examples:\n"
@@ -52,7 +52,7 @@ public class UDFWeekOfYear extends UDF {
 
   private final IntWritable result = new IntWritable();
 
-  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  private final Calendar calendar = DateTimeMath.getProlepticGregorianCalendarUTC();
 
 
   public UDFWeekOfYear() {
