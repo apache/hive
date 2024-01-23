@@ -83,6 +83,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date
 POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
 #### A masked pattern was here ####
+2038-03-22 07:26:48
 PREHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='aaa') values ('0001-01-01 00:00:00.0')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
