@@ -1003,6 +1003,7 @@ public class TypeCheckProcFactory<T> {
             T columnDesc = children.get(0);
             T valueDesc = interpretNode(columnDesc, children.get(i));
             if (valueDesc != null) {
+              // Only add to the expression map if types can be coerced
               TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
               if (!expressions.containsKey(targetType)) {
                 expressions.put(targetType, columnDesc);
