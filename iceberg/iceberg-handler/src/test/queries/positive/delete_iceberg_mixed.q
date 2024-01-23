@@ -5,7 +5,6 @@
 --! qt:replace:/("total-files-size":")\d+/$1#FileSize#/
 --! qt:replace:/("removed-files-size":")\d+/$1#FileSize#/
 
-
 -- create an unpartitioned table with skip delete data set to false
  create table ice01 (id int, name string) Stored by Iceberg stored as ORC
  TBLPROPERTIES('format-version'='2');
@@ -41,10 +40,10 @@ select * from ice01;
 delete from ice01 where not null;
 select * from ice01;
 
-delete from ice01 where name=null;
+delete from ice01 where name = null;
 select * from ice01;
 
-delete from ice01 where name!=null;
+delete from ice01 where name != null;
 select * from ice01;
 
 --disable cbo due to HIVE-27070

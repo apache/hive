@@ -205,12 +205,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	ABC
 3	NULL
 4	POPI
-PREHOOK: query: delete from ice01 where name=null
+PREHOOK: query: delete from ice01 where name = null
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
-POSTHOOK: query: delete from ice01 where name=null
+POSTHOOK: query: delete from ice01 where name = null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@ice01
@@ -226,12 +226,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	ABC
 3	NULL
 4	POPI
-PREHOOK: query: delete from ice01 where name!=null
+PREHOOK: query: delete from ice01 where name != null
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
-POSTHOOK: query: delete from ice01 where name!=null
+POSTHOOK: query: delete from ice01 where name != null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@ice01

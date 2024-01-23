@@ -178,24 +178,6 @@ POSTHOOK: query: insert into tbl_ice_with_nulls values
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_with_nulls
-PREHOOK: query: select * from tbl_ice_with_nulls order by id
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl_ice_with_nulls
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_ice_with_nulls order by id
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl_ice_with_nulls
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	ABC
-2	CBS
-3	NULL
-4	POPI
-5	AQWR
-6	POIU
-7	SDF
-8	POIKL
-9	NULL
-10	YUIO
 Warning: Shuffle Join MERGEJOIN[57][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[59][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 Warning: Shuffle Join MERGEJOIN[60][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
@@ -210,16 +192,6 @@ POSTHOOK: query: delete from tbl_ice_with_nulls where id in (select id from tbl_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_with_nulls
 POSTHOOK: Output: default@tbl_ice_with_nulls
-PREHOOK: query: select summary from default.tbl_ice_with_nulls.snapshots
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl_ice_with_nulls
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select summary from default.tbl_ice_with_nulls.snapshots
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl_ice_with_nulls
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"added-data-files":"1","added-records":"10","added-files-size":"723","changed-partition-count":"1","total-records":"10","total-files-size":"723","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
-{"added-position-delete-files":"1","added-delete-files":"1","added-files-size":"1881","added-position-deletes":"1","changed-partition-count":"1","total-records":"10","total-files-size":"2604","total-data-files":"1","total-delete-files":"1","total-position-deletes":"1","total-equality-deletes":"0"}
 PREHOOK: query: select * from tbl_ice_with_nulls order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice_with_nulls

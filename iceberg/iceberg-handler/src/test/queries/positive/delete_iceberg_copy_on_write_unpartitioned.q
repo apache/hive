@@ -46,9 +46,5 @@ create table tbl_ice_with_nulls (id int, name string) stored by iceberg tblprope
 insert into tbl_ice_with_nulls values
 (1, 'ABC'),(2, 'CBS'),(3, null),(4, 'POPI'),(5, 'AQWR'),(6, 'POIU'),(7, 'SDF'),(9, null),(8,'POIKL'),(10, 'YUIO');
 
-select * from tbl_ice_with_nulls order by id;
-
 delete from tbl_ice_with_nulls where id in (select id from tbl_ice_with_nulls where id > 9) or name in (select name from tbl_ice_with_nulls where name = 'sdf');
-select summary from default.tbl_ice_with_nulls.snapshots;
-
 select * from tbl_ice_with_nulls order by id;

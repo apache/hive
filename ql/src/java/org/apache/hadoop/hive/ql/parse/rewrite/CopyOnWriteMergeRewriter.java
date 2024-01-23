@@ -228,8 +228,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
 
       if (isNotBlank(onClausePredicate)) {
-        whereClause.append(" OR ");
-        whereClause.append(mergeStatement.getOnClausePredicate());
+        whereClause.append(" OR ").append(onClausePredicate);
       }
       sqlGenerator.append("\n").indent();
       sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
