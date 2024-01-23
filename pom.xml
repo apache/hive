@@ -224,7 +224,7 @@
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
     <aws-java-sdk.version>1.12.499</aws-java-sdk.version>
     <jansi.version>2.4.0</jansi.version>
-    <spring.version>5.2.24.RELEASE</spring.version>
+    <spring.version>6.0.15</spring.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
