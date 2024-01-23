@@ -45,6 +45,8 @@ public class WriterBuilder {
   private String queryId;
   private int poolSize;
   private Operation operation;
+  private boolean fanoutEnabled;
+
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
   private static AtomicInteger operationNum = new AtomicInteger(0);
 
@@ -82,6 +84,11 @@ public class WriterBuilder {
 
   public WriterBuilder operation(Operation newOperation) {
     this.operation = newOperation;
+    return this;
+  }
+
+  public WriterBuilder isFanoutEnabled(boolean isFanoutEnabled) {
+    this.fanoutEnabled = isFanoutEnabled;
     return this;
   }
 
@@ -133,7 +140,7 @@ public class WriterBuilder {
           break;
         case OTHER:
           writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
-            io, targetFileSize);
+            io, targetFileSize, fanoutEnabled);
           break;
         default:
           // Update and Merge should be splitted to inserts and deletes

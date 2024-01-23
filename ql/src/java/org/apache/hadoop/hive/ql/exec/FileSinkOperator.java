@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -633,6 +634,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       jc = new JobConf(hconf);
       setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
+      setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
+              dpCtx != null && dpCtx.hasCustomSortExprs());
 
       try {
         createHiveOutputFormat(jc);

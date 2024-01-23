@@ -52,6 +52,7 @@ public class DynamicPartitionCtx implements Serializable {
   private String defaultPartName; // default partition name in case of null or empty value
   private int maxPartsPerNode;    // maximum dynamic partitions created per mapper/reducer
   private Pattern whiteListPattern;
+  private boolean hasCustomSortExprs = false;
   /**
    * Expressions describing a custom way of sorting the table before write. Expressions can reference simple
    * column descriptions or a tree of expressions containing more columns and UDFs.
@@ -147,6 +148,7 @@ public class DynamicPartitionCtx implements Serializable {
     this.maxPartsPerNode = dp.maxPartsPerNode;
     this.whiteListPattern = dp.whiteListPattern;
     this.customSortExpressions = dp.customSortExpressions;
+    this.hasCustomSortExprs = dp.customSortExpressions != null && !dp.customSortExpressions.isEmpty();
     this.customSortOrder = dp.customSortOrder;
     this.customSortNullOrder = dp.customSortNullOrder;
   }
@@ -257,5 +259,13 @@ public class DynamicPartitionCtx implements Serializable {
 
   public void setCustomSortNullOrder(List<Integer> customSortNullOrder) {
     this.customSortNullOrder = customSortNullOrder;
+  }
+
+  public boolean hasCustomSortExprs() {
+    return hasCustomSortExprs;
+  }
+
+  public void setHasCustomSortExprs(boolean hasCustomSortExprs) {
+    this.hasCustomSortExprs = hasCustomSortExprs;
   }
 }

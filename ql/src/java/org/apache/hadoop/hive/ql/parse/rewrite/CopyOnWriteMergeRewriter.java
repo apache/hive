@@ -227,14 +227,14 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       String whereClauseStr = columnRefsFunc.apply(whereClause.toString());
       String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
 
-      sqlGenerator.append("\n").indent();
-      sqlGenerator.append("NOT(").append(whereClauseStr.replace("=","<=>"));
-      
       if (isNotBlank(onClausePredicate)) {
-        sqlGenerator.append(" OR ");
-        sqlGenerator.append(columnRefsFunc.apply(mergeStatement.getOnClausePredicate()));
+        whereClause.append(" OR ").append(onClausePredicate);
       }
-      sqlGenerator.append(")\n").indent();
+      sqlGenerator.append("\n").indent();
+      sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
+          whereClause.toString())));
+      
+      sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.
       sqlGenerator.append("AND ").append(filePathCol);
       sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
