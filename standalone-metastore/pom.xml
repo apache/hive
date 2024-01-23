@@ -110,7 +110,7 @@
     <nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
     <jetty.version>9.4.40.v20210413</jetty.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
-    <spring.version>5.2.24.RELEASE</spring.version>
+    <spring.version>6.0.15</spring.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
