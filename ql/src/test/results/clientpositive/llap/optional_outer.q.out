@@ -1,9 +1,9 @@
 PREHOOK: query: EXPLAIN SELECT * FROM src a LEFT OUTER JOIN src b on (a.key=b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a LEFT OUTER JOIN src b on (a.key=b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -84,11 +84,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a LEFT JOIN src b on (a.key=b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a LEFT JOIN src b on (a.key=b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -169,11 +169,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a RIGHT OUTER JOIN src b on (a.key=b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a RIGHT OUTER JOIN src b on (a.key=b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -254,11 +254,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a RIGHT JOIN src b on (a.key=b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a RIGHT JOIN src b on (a.key=b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -339,11 +339,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a FULL OUTER JOIN src b on (a.key=b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a FULL OUTER JOIN src b on (a.key=b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -420,11 +420,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a FULL JOIN src b on (a.key=b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a FULL JOIN src b on (a.key=b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

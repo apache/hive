@@ -53,7 +53,7 @@ select *
 from 
 T1_n38 a join T2_n25 b on a.key = b.key 
 join T3_n9 c on a.val = c.val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n38
 PREHOOK: Input: default@t2_n25
 PREHOOK: Input: default@t3_n9
@@ -63,7 +63,7 @@ select *
 from 
 T1_n38 a join T2_n25 b on a.key = b.key 
 join T3_n9 c on a.val = c.val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n38
 POSTHOOK: Input: default@t2_n25
 POSTHOOK: Input: default@t3_n9

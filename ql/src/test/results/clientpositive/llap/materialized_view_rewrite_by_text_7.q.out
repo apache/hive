@@ -39,14 +39,14 @@ PREHOOK: query: explain cbo
 select col0 from
   (select col0 from t1 where col0 > 15) sub
 where col0 = 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select col0 from
   (select col0 from t1 where col0 > 15) sub
 where col0 = 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -58,7 +58,7 @@ PREHOOK: query: explain cbo
 select col0 from
   (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 = 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -66,7 +66,7 @@ POSTHOOK: query: explain cbo
 select col0 from
   (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 = 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

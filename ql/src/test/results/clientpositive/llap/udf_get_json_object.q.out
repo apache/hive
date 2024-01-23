@@ -44,12 +44,12 @@ POSTHOOK: Output: default@dest1_n66
 POSTHOOK: Lineage: dest1_n66.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 #### A masked pattern was here ####
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_json
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

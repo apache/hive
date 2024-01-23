@@ -11,11 +11,11 @@ from_utc_timestamp(timestamp, string timezone) - Assumes given timestamp is UTC 
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp
 Function type:BUILTIN
 PREHOOK: query: explain select from_utc_timestamp('2012-02-11 10:30:00', 'PST')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select from_utc_timestamp('2012-02-11 10:30:00', 'PST')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

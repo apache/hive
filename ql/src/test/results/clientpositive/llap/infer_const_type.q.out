@@ -40,7 +40,7 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   fl  = '0906' AND
   db  = '-307' AND
   str = 1234
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
@@ -51,7 +51,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   fl  = '0906' AND
   db  = '-307' AND
   str = 1234
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -104,7 +104,7 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   bi  = '9223372036854775808' OR
   fl  = 'float' OR
   db  = 'double'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
@@ -114,7 +114,7 @@ POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   bi  = '9223372036854775808' OR
   fl  = 'float' OR
   db  = 'double'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -160,14 +160,14 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
   si  = 327.0 OR
   i   = '-100.0'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
   si  = 327.0 OR
   i   = '-100.0'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -208,14 +208,14 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti < '127.0' AND
   i > '100.0' AND
   str = 1.57
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti < '127.0' AND
   i > '100.0' AND
   str = 1.57
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

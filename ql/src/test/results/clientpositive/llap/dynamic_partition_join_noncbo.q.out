@@ -966,7 +966,7 @@ from t0
     ON ( (t1.pli = t2.pli) AND (t1.p1 = t2.p1))
 WHERE
 t0.p1 = 'P30'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t0
 PREHOOK: Input: default@t0@p1=P30
 PREHOOK: Input: default@t1
@@ -988,7 +988,7 @@ from t0
     ON ( (t1.pli = t2.pli) AND (t1.p1 = t2.p1))
 WHERE
 t0.p1 = 'P30'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t0
 POSTHOOK: Input: default@t0@p1=P30
 POSTHOOK: Input: default@t1
@@ -2430,7 +2430,7 @@ FROM table1 t0
  ON (( 'P30' = s0.col567
  AND t0.col7890 = s0.col7890
  ))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table1@col567=P1
 PREHOOK: Input: default@table1@col567=P10
@@ -2493,7 +2493,7 @@ FROM table1 t0
  ON (( 'P30' = s0.col567
  AND t0.col7890 = s0.col7890
  ))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table1@col567=P1
 POSTHOOK: Input: default@table1@col567=P10

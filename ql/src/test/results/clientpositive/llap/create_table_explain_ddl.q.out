@@ -7,11 +7,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter1
 PREHOOK: query: explain ddl select * from alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter1
 #### A masked pattern was here ####
 
@@ -69,11 +69,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: explain ddl select * from alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter1
 #### A masked pattern was here ####
 
@@ -133,11 +133,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: explain ddl select * from alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter1
 #### A masked pattern was here ####
 
@@ -198,11 +198,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: explain ddl select * from alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter1
 #### A masked pattern was here ####
 
@@ -263,11 +263,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: explain ddl select * from alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter1
 #### A masked pattern was here ####
 
@@ -328,11 +328,11 @@ POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: explain ddl select * from alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter1
 #### A masked pattern was here ####
 
@@ -395,11 +395,11 @@ POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: explain ddl select * from alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter1
 #### A masked pattern was here ####
 
@@ -485,11 +485,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter1_db@alter1
 POSTHOOK: Output: database:alter1_db
 PREHOOK: query: explain ddl select * from alter1_db.alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1_db.alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter1_db`;
@@ -547,11 +547,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: explain ddl select * from alter1_db.alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1_db.alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter1_db`;
@@ -611,11 +611,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: explain ddl select * from alter1_db.alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1_db.alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter1_db`;
@@ -676,11 +676,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: explain ddl select * from alter1_db.alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1_db.alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter1_db`;
@@ -741,11 +741,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: explain ddl select * from alter1_db.alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1_db.alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter1_db`;
@@ -806,11 +806,11 @@ POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: explain ddl select * from alter1_db.alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1_db.alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter1_db`;
@@ -873,11 +873,11 @@ POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
 PREHOOK: query: explain ddl select * from alter1_db.alter1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter1_db.alter1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter1_db`;
@@ -959,11 +959,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter2
 #### A masked pattern was here ####
 
@@ -1030,12 +1030,12 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter2
 PREHOOK: Input: default@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter2
 POSTHOOK: Input: default@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
@@ -1105,13 +1105,13 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter2
 PREHOOK: Input: default@alter2@insertdate=2008-01-01
 PREHOOK: Input: default@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter2
 POSTHOOK: Input: default@alter2@insertdate=2008-01-01
 POSTHOOK: Input: default@alter2@insertdate=2008-01-02
@@ -1194,11 +1194,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter2
 #### A masked pattern was here ####
 
@@ -1265,12 +1265,12 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter2
 PREHOOK: Input: default@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter2
 POSTHOOK: Input: default@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
@@ -1340,13 +1340,13 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter2
 PREHOOK: Input: default@alter2@insertdate=2008-01-01
 PREHOOK: Input: default@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter2
 POSTHOOK: Input: default@alter2@insertdate=2008-01-01
 POSTHOOK: Input: default@alter2@insertdate=2008-01-02
@@ -1453,11 +1453,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: database:alter2_db
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter2_db`;
@@ -1524,12 +1524,12 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
@@ -1599,13 +1599,13 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: Input: alter2_db@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-02
@@ -1688,11 +1688,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: database:alter2_db
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `alter2_db`;
@@ -1759,12 +1759,12 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
@@ -1834,13 +1834,13 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
 PREHOOK: query: explain ddl select * from alter2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 PREHOOK: Input: alter2_db@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from alter2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-02

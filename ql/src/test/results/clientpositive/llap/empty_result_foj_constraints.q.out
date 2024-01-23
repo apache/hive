@@ -39,14 +39,14 @@ _col0	_col1
 PREHOOK: query: explain cbo
 select * from (select a, b from t1 where 0=1) s
 full outer join t2 on s.a = t2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from (select a, b from t1 where 0=1) s
 full outer join t2 on s.a = t2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -73,14 +73,14 @@ NULL	NULL	3	three
 PREHOOK: query: explain cbo
 select * from t1
 full outer join (select c, d from t2 where 0=1) s on t1.a = s.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from t1
 full outer join (select c, d from t2 where 0=1) s on t1.a = s.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

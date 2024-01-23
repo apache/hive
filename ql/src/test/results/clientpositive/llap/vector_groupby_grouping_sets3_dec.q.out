@@ -38,12 +38,12 @@ POSTHOOK: Lineage: t1_n115.c_dec EXPRESSION [(t1_text_n10)t1_text_n10.FieldSchem
 a	b	c_dec
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 Explain
@@ -184,12 +184,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c_dec), count(*) from T1_n115 group by cube(a, b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c_dec), count(*) from T1_n115 group by cube(a, b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 Explain
@@ -355,12 +355,12 @@ NULL	3	5.000000	2
 NULL	NULL	3.833333	12
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 Explain

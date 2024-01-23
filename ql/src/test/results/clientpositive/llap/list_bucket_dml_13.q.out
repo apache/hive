@@ -17,13 +17,13 @@ POSTHOOK: Output: default@list_bucketing_mul_col
 PREHOOK: query: explain extended
 insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08',  hr = '2013-01-23+18:00:99')
 select 1, key, 1, value, 1 from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3A00%3A99
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08',  hr = '2013-01-23+18:00:99')
 select 1, key, 1, value, 1 from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3A00%3A99
 OPTIMIZED SQL: SELECT 1 AS `_o__c0`, `key`, 1 AS `_o__c2`, `value`, 1 AS `_o__c4`
@@ -291,14 +291,14 @@ Storage Desc Params:
 PREHOOK: query: explain extended
 select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='2013-01-23+18:00:99' and col2 = "466" and col4 = "val_466"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@list_bucketing_mul_col
 PREHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3A00%3A99
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='2013-01-23+18:00:99' and col2 = "466" and col4 = "val_466"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@list_bucketing_mul_col
 POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3A00%3A99
 #### A masked pattern was here ####

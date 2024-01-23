@@ -34,13 +34,13 @@ POSTHOOK: Output: default@viewtest
 POSTHOOK: Lineage: viewtest.a SIMPLE [(dependtest)dependtest.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: viewtest.b SIMPLE []
 PREHOOK: query: explain dependency select count(*) from viewtest
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependtest
 PREHOOK: Input: default@dependtest@b=1
 PREHOOK: Input: default@viewtest
 #### A masked pattern was here ####
 POSTHOOK: query: explain dependency select count(*) from viewtest
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependtest
 POSTHOOK: Input: default@dependtest@b=1
 POSTHOOK: Input: default@viewtest

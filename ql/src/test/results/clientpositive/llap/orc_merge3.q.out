@@ -54,14 +54,14 @@ POSTHOOK: Lineage: orcfile_merge3a_n0 PARTITION(ds=2).key EXPRESSION [(src)src.F
 POSTHOOK: Lineage: orcfile_merge3a_n0 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b_n0
     SELECT key, value FROM orcfile_merge3a_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orcfile_merge3a_n0
 PREHOOK: Input: default@orcfile_merge3a_n0@ds=1
 PREHOOK: Input: default@orcfile_merge3a_n0@ds=2
 PREHOOK: Output: default@orcfile_merge3b_n0
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b_n0
     SELECT key, value FROM orcfile_merge3a_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orcfile_merge3a_n0
 POSTHOOK: Input: default@orcfile_merge3a_n0@ds=1
 POSTHOOK: Input: default@orcfile_merge3a_n0@ds=2

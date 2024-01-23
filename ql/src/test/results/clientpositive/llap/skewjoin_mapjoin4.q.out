@@ -52,14 +52,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3_n27
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.*, c.* FROM T1_n124 a JOIN T2_n73 b ON a.key = b.key JOIN T3_n27 c on a.key = c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n124
 PREHOOK: Input: default@t2_n73
 PREHOOK: Input: default@t3_n27
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.*, c.* FROM T1_n124 a JOIN T2_n73 b ON a.key = b.key JOIN T3_n27 c on a.key = c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n124
 POSTHOOK: Input: default@t2_n73
 POSTHOOK: Input: default@t3_n27

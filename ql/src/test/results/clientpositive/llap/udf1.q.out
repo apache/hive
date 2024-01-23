@@ -22,7 +22,7 @@ FROM src INSERT OVERWRITE TABLE dest1_n1 SELECT 'a' LIKE '%a%', 'b' LIKE '%a%', 
   REGEXP_REPLACE('hadoop', '(.)[a-z]*', '$1ive'), REGEXP_REPLACE('hadoopAAA','A.*',''),
   REGEXP_REPLACE('abc', '', 'A'), 'abc' RLIKE ''
   WHERE src.key = 86
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n1
 POSTHOOK: query: EXPLAIN
@@ -33,7 +33,7 @@ FROM src INSERT OVERWRITE TABLE dest1_n1 SELECT 'a' LIKE '%a%', 'b' LIKE '%a%', 
   REGEXP_REPLACE('hadoop', '(.)[a-z]*', '$1ive'), REGEXP_REPLACE('hadoopAAA','A.*',''),
   REGEXP_REPLACE('abc', '', 'A'), 'abc' RLIKE ''
   WHERE src.key = 86
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n1
 STAGE DEPENDENCIES:

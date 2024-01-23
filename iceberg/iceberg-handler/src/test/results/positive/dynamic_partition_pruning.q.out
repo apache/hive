@@ -61,7 +61,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_iceberg
 PREHOOK: query: EXPLAIN create table srcpart_date_n2 as select ds as ds, ds as `date`  from srcpart group by ds
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -70,7 +70,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_n2
 POSTHOOK: query: EXPLAIN create table srcpart_date_n2 as select ds as ds, ds as `date`  from srcpart group by ds
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -279,12 +279,12 @@ POSTHOOK: Output: default@srcpart_double_hour_n0
 POSTHOOK: Lineage: srcpart_double_hour_n0.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpart_double_hour_n0.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -411,12 +411,12 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -541,14 +541,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
@@ -735,14 +735,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
@@ -907,12 +907,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0 on (srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr) where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0 on (srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr) where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1055,12 +1055,12 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0 on (srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr) where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0 on (srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr) where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1182,12 +1182,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = 'I DONT EXIST'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = 'I DONT EXIST'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1314,12 +1314,12 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = 'I DONT EXIST'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = 'I DONT EXIST'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1439,12 +1439,12 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_double_hour_n0 on (srcpart_iceberg.hr = cast(cast(srcpart_double_hour_n0.hr/2 as int) as string)) where srcpart_double_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_double_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_double_hour_n0 on (srcpart_iceberg.hr = cast(cast(srcpart_double_hour_n0.hr/2 as int) as string)) where srcpart_double_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_double_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1571,12 +1571,12 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_double_hour_n0 on (srcpart_iceberg.hr = cast(cast(srcpart_double_hour_n0.hr/2 as int) as string)) where srcpart_double_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_double_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_double_hour_n0 on (srcpart_iceberg.hr = cast(cast(srcpart_double_hour_n0.hr/2 as int) as string)) where srcpart_double_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_double_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1687,12 +1687,12 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg, srcpart_date_hour_n0 where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11 and srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg, srcpart_date_hour_n0 where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11 and srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1836,14 +1836,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart_iceberg.hr = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart_iceberg.hr = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
@@ -2030,14 +2030,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_iceberg.hr = 13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_iceberg.hr = 13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
@@ -2223,11 +2223,11 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg where srcpart_iceberg.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg where srcpart_iceberg.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -2439,11 +2439,11 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000
 PREHOOK: query: EXPLAIN select distinct(ds) from srcpart_iceberg where srcpart_iceberg.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select distinct(ds) from srcpart_iceberg where srcpart_iceberg.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -2658,11 +2658,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2008-04-08
 2008-04-09
 PREHOOK: query: EXPLAIN select ds from (select distinct(ds) as ds from srcpart_iceberg union all select distinct(ds) as ds from srcpart_iceberg) s where s.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select ds from (select distinct(ds) as ds from srcpart_iceberg union all select distinct(ds) as ds from srcpart_iceberg) s where s.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -2946,12 +2946,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2008-04-09
 2008-04-09
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -3086,14 +3086,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
@@ -3276,12 +3276,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0 on (srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr) where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0 on (srcpart_iceberg.ds = srcpart_date_hour_n0.ds and srcpart_iceberg.hr = srcpart_date_hour_n0.hr) where srcpart_date_hour_n0.`date` = '2008-04-08' and srcpart_date_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -3429,12 +3429,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = 'I DONT EXIST'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = 'I DONT EXIST'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -3555,12 +3555,12 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_double_hour_n0 on (srcpart_iceberg.hr = cast(cast(srcpart_double_hour_n0.hr/2 as int) as string)) where srcpart_double_hour_n0.hour = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_double_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_double_hour_n0 on (srcpart_iceberg.hr = cast(cast(srcpart_double_hour_n0.hr/2 as int) as string)) where srcpart_double_hour_n0.hour = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_double_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -3695,14 +3695,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart_iceberg.hr = 11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart_iceberg.hr = 11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
@@ -3875,14 +3875,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_iceberg.hr = 13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart_iceberg.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_iceberg.hr = 13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 POSTHOOK: Input: default@srcpart_iceberg
@@ -4054,11 +4054,11 @@ POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select distinct(ds) from srcpart_iceberg where srcpart_iceberg.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select distinct(ds) from srcpart_iceberg where srcpart_iceberg.ds in (select max(srcpart_iceberg.ds) from srcpart_iceberg union all select min(srcpart_iceberg.ds) from srcpart_iceberg)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -4293,12 +4293,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_date_hour_n0_iceberg
 PREHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0_iceberg on (srcpart_iceberg.ds = srcpart_date_hour_n0_iceberg.ds and srcpart_iceberg.hr = srcpart_date_hour_n0_iceberg.hr) where srcpart_date_hour_n0_iceberg.hour = 11 and (srcpart_date_hour_n0_iceberg.`date` = '2008-04-08' or srcpart_date_hour_n0_iceberg.`date` = '2008-04-09')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_hour_n0_iceberg
 PREHOOK: Input: default@srcpart_iceberg
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0_iceberg on (srcpart_iceberg.ds = srcpart_date_hour_n0_iceberg.ds and srcpart_iceberg.hr = srcpart_date_hour_n0_iceberg.hr) where srcpart_date_hour_n0_iceberg.hour = 11 and (srcpart_date_hour_n0_iceberg.`date` = '2008-04-08' or srcpart_date_hour_n0_iceberg.`date` = '2008-04-09')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_hour_n0_iceberg
 POSTHOOK: Input: default@srcpart_iceberg
 POSTHOOK: Output: hdfs://### HDFS PATH ###

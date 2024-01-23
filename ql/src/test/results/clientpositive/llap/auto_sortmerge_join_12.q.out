@@ -142,7 +142,7 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
 Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n15
 PREHOOK: Input: default@bucket_big_n15@ds=2008-04-08
 PREHOOK: Input: default@bucket_big_n15@ds=2008-04-09
@@ -152,7 +152,7 @@ PREHOOK: Input: default@bucket_small_n15
 PREHOOK: Input: default@bucket_small_n15@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n15
 POSTHOOK: Input: default@bucket_big_n15@ds=2008-04-08
 POSTHOOK: Input: default@bucket_big_n15@ds=2008-04-09

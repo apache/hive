@@ -10,7 +10,7 @@ PREHOOK: query: explain SELECT inline(
     STRUCT (3,'my car?')
   )
 )  as (id, text) FROM SRC limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT inline( 
@@ -20,7 +20,7 @@ POSTHOOK: query: explain SELECT inline(
     STRUCT (3,'my car?')
   )
 )  as (id, text) FROM SRC limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

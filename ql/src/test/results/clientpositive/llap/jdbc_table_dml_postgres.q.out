@@ -34,11 +34,11 @@ POSTHOOK: Input: default@country
 2	Russia
 3	USA
 PREHOOK: query: EXPLAIN CBO INSERT INTO country VALUES (8, 'Hungary')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@country
 POSTHOOK: query: EXPLAIN CBO INSERT INTO country VALUES (8, 'Hungary')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@country
 CBO PLAN:
@@ -46,11 +46,11 @@ HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(8, _UTF-16LE'Hungary':VARCHAR
   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: EXPLAIN INSERT INTO country VALUES (8, 'Hungary')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@country
 POSTHOOK: query: EXPLAIN INSERT INTO country VALUES (8, 'Hungary')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@country
 STAGE DEPENDENCIES:

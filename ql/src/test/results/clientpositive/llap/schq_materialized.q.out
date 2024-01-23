@@ -124,7 +124,7 @@ PREHOOK: query: EXPLAIN
 SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts
 PREHOOK: Input: default@emps
 PREHOOK: Input: default@mv1
@@ -133,7 +133,7 @@ POSTHOOK: query: EXPLAIN
 SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 POSTHOOK: Input: default@mv1
@@ -173,7 +173,7 @@ PREHOOK: query: EXPLAIN
 SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts
 PREHOOK: Input: default@emps
 #### A masked pattern was here ####
@@ -181,7 +181,7 @@ POSTHOOK: query: EXPLAIN
 SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####

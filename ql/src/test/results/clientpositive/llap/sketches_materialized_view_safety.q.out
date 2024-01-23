@@ -27,14 +27,14 @@ POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
 create  materialized view mv_1 as
   select 'no-rewrite-may-happen',category, count(distinct id) from sketch_input group by category
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 create  materialized view mv_1 as
   select 'no-rewrite-may-happen',category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_1
@@ -204,12 +204,12 @@ POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 alter materialized view mv_1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
 STAGE DEPENDENCIES:
@@ -355,12 +355,12 @@ POSTHOOK: Lineage: mv_1._c2 EXPRESSION [(sketch_input)sketch_input.FieldSchema(n
 POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
 select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewritten;mv not used',category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -439,12 +439,12 @@ rewritten;mv not used	a	10
 rewritten;mv not used	b	10
 PREHOOK: query: explain
 select 'mv used',category, count(distinct id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'mv used',category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

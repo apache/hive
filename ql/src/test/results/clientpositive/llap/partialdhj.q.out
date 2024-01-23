@@ -9,7 +9,7 @@ FROM (
 ) a
 JOIN src
 ON (a.value = src.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -24,7 +24,7 @@ FROM (
 ) a
 JOIN src
 ON (a.value = src.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -254,7 +254,7 @@ JOIN (
   GROUP BY a.value
 ) a
 ON (src.value = a.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -269,7 +269,7 @@ JOIN (
   GROUP BY a.value
 ) a
 ON (src.value = a.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

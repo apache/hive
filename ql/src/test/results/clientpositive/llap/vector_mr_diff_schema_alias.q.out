@@ -219,7 +219,7 @@ PREHOOK: query: explain vectorization select
  group by s_state
  order by s_state
  limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@date_dim_n0
 PREHOOK: Input: default@store_n2
 PREHOOK: Input: default@store_sales_n2
@@ -235,7 +235,7 @@ POSTHOOK: query: explain vectorization select
  group by s_state
  order by s_state
  limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@date_dim_n0
 POSTHOOK: Input: default@store_n2
 POSTHOOK: Input: default@store_sales_n2

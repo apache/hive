@@ -13,11 +13,11 @@ POSTHOOK: query: grant select on table test_user to user hive_test
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@test_user
 PREHOOK: query: explain select `user` from test_user
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_user
 #### A masked pattern was here ####
 POSTHOOK: query: explain select `user` from test_user
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_user
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -65,11 +65,11 @@ POSTHOOK: query: grant select on table test_user to user hive_test
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@test_user
 PREHOOK: query: explain select role from test_user
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_user
 #### A masked pattern was here ####
 POSTHOOK: query: explain select role from test_user
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_user
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -28,7 +28,7 @@ with cte as (select count(*) as small_count from t0 where col0 < 10)
 select t0.col0, (select small_count from cte)
 from t0
 order by t0.col0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cte
 PREHOOK: Input: default@t0
 #### A masked pattern was here ####
@@ -37,7 +37,7 @@ with cte as (select count(*) as small_count from t0 where col0 < 10)
 select t0.col0, (select small_count from cte)
 from t0
 order by t0.col0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cte
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####
@@ -271,7 +271,7 @@ with cte as (select count(*) as small_count from t0 where col0 < 10)
 select t0.col0, (select small_count from cte)
 from t0
 order by t0.col0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -279,7 +279,7 @@ with cte as (select count(*) as small_count from t0 where col0 < 10)
 select t0.col0, (select small_count from cte)
 from t0
 order by t0.col0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -409,7 +409,7 @@ select t0.col0
 from t0
 where t0.col0 > (select small_count from cte)
 order by t0.col0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cte
 PREHOOK: Input: default@t0
 #### A masked pattern was here ####
@@ -419,7 +419,7 @@ select t0.col0
 from t0
 where t0.col0 > (select small_count from cte)
 order by t0.col0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cte
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####
@@ -663,7 +663,7 @@ from t0
 group by col0
 having count(*) > (select small_count from cte)
 order by t0.col0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cte
 PREHOOK: Input: default@t0
 #### A masked pattern was here ####
@@ -674,7 +674,7 @@ from t0
 group by col0
 having count(*) > (select small_count from cte)
 order by t0.col0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cte
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####
@@ -945,7 +945,7 @@ join cte1 on t0.col0 = cte1.k1
 join cte3 on t0.col0 = cte3.k3
 group by col0
 having count(*) > (select all_count from cte2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cte2
 PREHOOK: Input: default@t0
 #### A masked pattern was here ####
@@ -959,7 +959,7 @@ join cte1 on t0.col0 = cte1.k1
 join cte3 on t0.col0 = cte3.k3
 group by col0
 having count(*) > (select all_count from cte2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cte2
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####

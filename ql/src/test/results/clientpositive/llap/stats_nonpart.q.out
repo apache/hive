@@ -47,11 +47,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_nonpartitioned
 PREHOOK: query: explain select count(*) from stats_nonpartitioned
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_nonpartitioned
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -109,11 +109,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain insert into table stats_nonpartitioned select * from mysource where p == 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mysource
 PREHOOK: Output: default@stats_nonpartitioned
 POSTHOOK: query: explain insert into table stats_nonpartitioned select * from mysource where p == 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mysource
 POSTHOOK: Output: default@stats_nonpartitioned
 STAGE DEPENDENCIES:
@@ -257,11 +257,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain select count(*) from stats_nonpartitioned
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_nonpartitioned
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -284,11 +284,11 @@ POSTHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 2
 PREHOOK: query: explain select count(key) from stats_nonpartitioned
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_nonpartitioned
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -321,11 +321,11 @@ POSTHOOK: Input: default@stats_nonpartitioned
 POSTHOOK: Output: default@stats_nonpartitioned
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(*) from stats_nonpartitioned
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_nonpartitioned
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -348,11 +348,11 @@ POSTHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 2
 PREHOOK: query: explain select count(key) from stats_nonpartitioned
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_nonpartitioned
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_nonpartitioned
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

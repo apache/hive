@@ -71,11 +71,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dates_removal_n0
 PREHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 
@@ -142,11 +142,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 
@@ -213,11 +213,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 
@@ -295,12 +295,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
 order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
 order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 
@@ -441,12 +441,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 
@@ -587,12 +587,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain ddl SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 
@@ -837,12 +837,12 @@ POSTHOOK: Lineage: customer_removal_n0.c_nation SIMPLE []
 POSTHOOK: Lineage: customer_removal_n0.c_phone SIMPLE []
 POSTHOOK: Lineage: customer_removal_n0.c_region SIMPLE []
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d_datekey = c_custkey group by d_datekey, d_id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d_datekey = c_custkey group by d_datekey, d_id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
@@ -1068,12 +1068,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
 order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
 order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 
@@ -1281,12 +1281,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain ddl SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
 group by c_custkey, c_nation
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
 group by c_custkey, c_nation
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 
@@ -1478,11 +1478,11 @@ POSTHOOK: Output: default@dest_g21
 POSTHOOK: Lineage: dest_g21.key1 SCRIPT []
 POSTHOOK: Lineage: dest_g21.value1 SCRIPT []
 PREHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -1542,11 +1542,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select key1 from dest_g21 where value1 > 1 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select key1 from dest_g21 where value1 > 1 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -1607,11 +1607,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain ddl select key1 from dest_g21 where key1 > 1 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select key1 from dest_g21 where key1 > 1 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -1672,11 +1672,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain ddl select count(key1) from dest_g21 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select count(key1) from dest_g21 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -1801,11 +1801,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select count(key1) from dest_g21 where value1 > 1 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select count(key1) from dest_g21 where value1 > 1 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -1932,11 +1932,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -2082,11 +2082,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -2264,11 +2264,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -2332,11 +2332,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain ddl select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -2490,11 +2490,11 @@ POSTHOOK: Lineage: tconst.d_year SCRIPT []
 POSTHOOK: Lineage: tconst.i SCRIPT []
 POSTHOOK: Lineage: tconst.j SCRIPT []
 PREHOOK: query: explain ddl select i, j from tconst where i is not null group by i,j, d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select i, j from tconst where i is not null group by i,j, d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 
@@ -2619,11 +2619,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 
@@ -2749,11 +2749,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 
@@ -2878,11 +2878,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 
@@ -3067,11 +3067,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 
@@ -3269,11 +3269,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g21
 PREHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select key1 from dest_g21 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 
@@ -3332,11 +3332,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g24
 PREHOOK: query: explain ddl select key1 from dest_g24 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g24
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select key1 from dest_g24 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g24
 #### A masked pattern was here ####
 
@@ -3617,7 +3617,7 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -3633,7 +3633,7 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -3901,7 +3901,7 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -3917,7 +3917,7 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -4200,7 +4200,7 @@ year_total t_s_secyear
 where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -4231,7 +4231,7 @@ year_total t_s_secyear
 where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -4594,7 +4594,7 @@ year_total t_s_secyear
 where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -4626,7 +4626,7 @@ year_total t_s_secyear
 where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -5065,7 +5065,7 @@ and t_s_secyear.dyear = 2001+1
 and t_s_firstyear.year_total > 0
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -5107,7 +5107,7 @@ and t_s_secyear.dyear = 2001+1
 and t_s_firstyear.year_total > 0
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -5739,7 +5739,7 @@ C_CUSTOMER_SK
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -5760,7 +5760,7 @@ C_CUSTOMER_SK
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -6031,7 +6031,7 @@ C_CUSTOMER_SK
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -6052,7 +6052,7 @@ C_CUSTOMER_SK
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -6359,7 +6359,7 @@ C_CUSTOMER_SK
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -6379,7 +6379,7 @@ C_CUSTOMER_SK
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -6683,7 +6683,7 @@ C_EMAIL_ADDRESS
 ,	C_PREFERRED_CUST_FLAG
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -6703,7 +6703,7 @@ C_EMAIL_ADDRESS
 ,	C_PREFERRED_CUST_FLAG
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -7010,11 +7010,11 @@ POSTHOOK: Lineage: web_sales.ws_item_sk SCRIPT []
 POSTHOOK: Lineage: web_sales.ws_order_number SCRIPT []
 POSTHOOK: Lineage: web_sales.ws_price SCRIPT []
 PREHOOK: query: explain ddl select count(distinct ws_order_number) from web_sales
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select count(distinct ws_order_number) from web_sales
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 
@@ -7350,11 +7350,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table22
 PREHOOK: query: explain ddl select * from table1_n13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n13
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table1_n13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n13
 #### A masked pattern was here ####
 
@@ -7410,11 +7410,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table2_n8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table2_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 
@@ -7464,11 +7464,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table3_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table3_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 
@@ -7517,11 +7517,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table4_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table4_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 
@@ -7571,11 +7571,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table5_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table5_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table5_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table5_n4
 #### A masked pattern was here ####
 
@@ -7624,11 +7624,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table6_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table6_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 
@@ -7678,11 +7678,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table7_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table7_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table7_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table7_n3
 #### A masked pattern was here ####
 
@@ -7733,11 +7733,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table8
 #### A masked pattern was here ####
 
@@ -7787,11 +7787,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table9
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table9
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table9
 #### A masked pattern was here ####
 
@@ -7842,11 +7842,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table10
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table10
 #### A masked pattern was here ####
 
@@ -7896,11 +7896,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table11
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table11
 #### A masked pattern was here ####
 
@@ -7952,11 +7952,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table12
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table12
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table12
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table12
 #### A masked pattern was here ####
 
@@ -8006,11 +8006,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table13
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table13
 #### A masked pattern was here ####
 
@@ -8061,11 +8061,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table14
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table14
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table14
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table14
 #### A masked pattern was here ####
 
@@ -8115,11 +8115,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table15
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table15
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table15
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table15
 #### A masked pattern was here ####
 
@@ -8169,11 +8169,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table16
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table16
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table16
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table16
 #### A masked pattern was here ####
 
@@ -8223,11 +8223,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table17
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table17
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table17
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table17
 #### A masked pattern was here ####
 
@@ -8277,11 +8277,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table18
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table18
 #### A masked pattern was here ####
 
@@ -8332,11 +8332,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table19
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table19
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table19
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table19
 #### A masked pattern was here ####
 
@@ -8387,11 +8387,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table20
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table20
 #### A masked pattern was here ####
 
@@ -8441,11 +8441,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table21
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table21
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table21
 #### A masked pattern was here ####
 
@@ -8496,11 +8496,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table22
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table22
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table22
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table22
 #### A masked pattern was here ####
 
@@ -8550,11 +8550,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table1_n13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n13
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table1_n13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n13
 #### A masked pattern was here ####
 
@@ -8607,11 +8607,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table2_n8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table2_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 
@@ -8661,11 +8661,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table3_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table3_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 
@@ -8714,11 +8714,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table4_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table4_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 
@@ -8768,11 +8768,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table5_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table5_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table5_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table5_n4
 #### A masked pattern was here ####
 
@@ -8821,11 +8821,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table6_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table6_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 
@@ -8875,11 +8875,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table7_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table7_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table7_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table7_n3
 #### A masked pattern was here ####
 
@@ -8930,11 +8930,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table8
 #### A masked pattern was here ####
 
@@ -8984,11 +8984,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table9
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table9
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table9
 #### A masked pattern was here ####
 
@@ -9039,11 +9039,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table10
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table10
 #### A masked pattern was here ####
 
@@ -9093,11 +9093,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table11
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table11
 #### A masked pattern was here ####
 
@@ -9149,11 +9149,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table12
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table12
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table12
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table12
 #### A masked pattern was here ####
 
@@ -9203,11 +9203,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table13
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table13
 #### A masked pattern was here ####
 
@@ -9258,11 +9258,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table14
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table14
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table14
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table14
 #### A masked pattern was here ####
 
@@ -9312,11 +9312,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table15
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table15
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table15
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table15
 #### A masked pattern was here ####
 
@@ -9366,11 +9366,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table16
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table16
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table16
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table16
 #### A masked pattern was here ####
 
@@ -9420,11 +9420,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table17
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table17
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table17
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table17
 #### A masked pattern was here ####
 
@@ -9474,11 +9474,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table18
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table18
 #### A masked pattern was here ####
 
@@ -9529,11 +9529,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table19
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table19
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table19
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table19
 #### A masked pattern was here ####
 
@@ -9584,11 +9584,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table20
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table20
 #### A masked pattern was here ####
 
@@ -9638,11 +9638,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table21
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table21
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table21
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table21
 #### A masked pattern was here ####
 
@@ -9693,11 +9693,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table22
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table22
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table22
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table22
 #### A masked pattern was here ####
 
@@ -9803,11 +9803,11 @@ POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: Input: default@table18
 POSTHOOK: Output: default@table18
 PREHOOK: query: explain ddl select * from table2_n8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table2_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 
@@ -9860,11 +9860,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table3_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table3_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 
@@ -9913,11 +9913,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table4_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table4_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 
@@ -9967,11 +9967,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table6_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table6_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 
@@ -10021,11 +10021,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table8
 #### A masked pattern was here ####
 
@@ -10075,11 +10075,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table16
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table16
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table16
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table16
 #### A masked pattern was here ####
 
@@ -10129,11 +10129,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table18
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table18
 #### A masked pattern was here ####
 
@@ -10184,11 +10184,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table2_n8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table2_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 
@@ -10241,11 +10241,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table3_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table3_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 
@@ -10294,11 +10294,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table4_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table4_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table4_n0
 #### A masked pattern was here ####
 
@@ -10348,11 +10348,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table6_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table6_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 
@@ -10402,11 +10402,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table8
 #### A masked pattern was here ####
 
@@ -10456,11 +10456,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table16
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table16
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table16
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table16
 #### A masked pattern was here ####
 
@@ -10510,11 +10510,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table18
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table18
 #### A masked pattern was here ####
 
@@ -10613,11 +10613,11 @@ POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: Input: default@table18
 POSTHOOK: Output: default@table18
 PREHOOK: query: explain ddl select * from table2_n8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table2_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table2_n8
 #### A masked pattern was here ####
 
@@ -10670,11 +10670,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table3_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table3_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table3_n1
 #### A masked pattern was here ####
 
@@ -10723,11 +10723,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table6_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table6_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table6_n3
 #### A masked pattern was here ####
 
@@ -10777,11 +10777,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table8
 #### A masked pattern was here ####
 
@@ -10832,11 +10832,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table16
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table16
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table16
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table16
 #### A masked pattern was here ####
 
@@ -10886,11 +10886,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table18
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table18
 #### A masked pattern was here ####
 
@@ -10957,11 +10957,11 @@ POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@table13
 POSTHOOK: Output: default@table13
 PREHOOK: query: explain ddl select * from table12
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table12
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table12
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table12
 #### A masked pattern was here ####
 
@@ -11014,11 +11014,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from table13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table13
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table13
 #### A masked pattern was here ####
 
@@ -11077,11 +11077,11 @@ POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: Input: default@table12
 POSTHOOK: Output: default@table12
 PREHOOK: query: explain ddl select * from table12
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table12
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table12
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table12
 #### A masked pattern was here ####
 
@@ -11160,11 +11160,11 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from DbConstraint.Table2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `dbconstraint`;
@@ -11217,11 +11217,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from DbConstraint.Table2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `dbconstraint`;
@@ -11279,11 +11279,11 @@ POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: Input: dbconstraint@table2
 POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from DbConstraint.Table2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `dbconstraint`;
@@ -11336,11 +11336,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from DbConstraint.Table2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `dbconstraint`;
@@ -11398,11 +11398,11 @@ POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: Input: dbconstraint@table2
 POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from DbConstraint.Table2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `dbconstraint`;
@@ -11460,11 +11460,11 @@ POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: Input: dbconstraint@table2
 POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: explain ddl select * from DbConstraint.Table2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from DbConstraint.Table2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `dbconstraint`;
@@ -11538,11 +11538,11 @@ POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: Input: default@table23
 POSTHOOK: Output: default@table23
 PREHOOK: query: explain ddl select * from table23
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table23
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from table23
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table23
 #### A masked pattern was here ####
 

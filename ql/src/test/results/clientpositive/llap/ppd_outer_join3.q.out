@@ -6,7 +6,7 @@ PREHOOK: query: EXPLAIN
  ON (a.key = b.key)
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -17,7 +17,7 @@ POSTHOOK: query: EXPLAIN
  ON (a.key = b.key)
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -255,7 +255,7 @@ PREHOOK: query: EXPLAIN
  ON (a.key = b.key)
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -266,7 +266,7 @@ POSTHOOK: query: EXPLAIN
  ON (a.key = b.key)
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

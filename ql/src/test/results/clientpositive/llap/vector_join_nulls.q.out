@@ -49,12 +49,12 @@ POSTHOOK: Input: default@myinput1_n4
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -289,12 +289,12 @@ POSTHOOK: Input: default@myinput1_n4
 4542003
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -462,12 +462,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -635,12 +635,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.value = b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.value = b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -809,13 +809,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key=b.key and a.value = b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION OPERATOR
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key=b.key and a.value = b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

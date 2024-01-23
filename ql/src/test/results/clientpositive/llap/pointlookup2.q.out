@@ -97,7 +97,7 @@ select key, value, ds
 from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -107,7 +107,7 @@ select key, value, ds
 from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -276,7 +276,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
@@ -285,7 +285,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
@@ -516,7 +516,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -526,7 +526,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -759,7 +759,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -770,7 +770,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -1033,7 +1033,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -1045,7 +1045,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -1527,7 +1527,7 @@ select key, value, ds
 from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -1537,7 +1537,7 @@ select key, value, ds
 from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -1706,7 +1706,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
@@ -1715,7 +1715,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
@@ -1946,7 +1946,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -1956,7 +1956,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -2189,7 +2189,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -2200,7 +2200,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -2451,7 +2451,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n2
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
@@ -2463,7 +2463,7 @@ select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09

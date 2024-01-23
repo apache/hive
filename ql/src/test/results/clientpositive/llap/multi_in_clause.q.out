@@ -28,12 +28,12 @@ POSTHOOK: Lineage: very_simple_table_for_in_test.name EXPRESSION []
 POSTHOOK: Lineage: very_simple_table_for_in_test.othername EXPRESSION []
 PREHOOK: query: explain cbo
 select * from very_simple_table_for_in_test where name IN('g','r') AND name IN('a','b')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from very_simple_table_for_in_test where name IN('g','r') AND name IN('a','b')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 CBO PLAN:
@@ -49,12 +49,12 @@ POSTHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 PREHOOK: query: explain cbo
 select name IN('g','r') AND name IN('a','b') from very_simple_table_for_in_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select name IN('g','r') AND name IN('a','b') from very_simple_table_for_in_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 CBO PLAN:
@@ -73,12 +73,12 @@ false
 NULL
 PREHOOK: query: explain cbo
 select name IN('g','r') AND name IN('a','b') AND othername IN('x', 'y') from very_simple_table_for_in_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select name IN('g','r') AND name IN('a','b') AND othername IN('x', 'y') from very_simple_table_for_in_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 CBO PLAN:

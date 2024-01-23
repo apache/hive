@@ -51,12 +51,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_small_n3
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_date_n7
 PREHOOK: Input: default@srcpart_small_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_date_n7
 POSTHOOK: Input: default@srcpart_small_n3
 POSTHOOK: Output: hdfs://### HDFS PATH ###

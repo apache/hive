@@ -1,11 +1,11 @@
 PREHOOK: query: explain create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
 strct struct<a:int, b:string, c:string>)
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@abc
 POSTHOOK: query: explain create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
 strct struct<a:int, b:string, c:string>)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@abc
 STAGE DEPENDENCIES:

@@ -33,7 +33,7 @@ PREHOOK: query: explain cbo
 create view v1 as
 select sub.* from (select * from t1 where col0 > 2 union select * from t1 where col0 = 0) sub
 where sub.col0 = 10
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v1
@@ -41,7 +41,7 @@ POSTHOOK: query: explain cbo
 create view v1 as
 select sub.* from (select * from t1 where col0 > 2 union select * from t1 where col0 = 0) sub
 where sub.col0 = 10
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
@@ -68,13 +68,13 @@ POSTHOOK: Output: default@v1
 POSTHOOK: Lineage: v1.col0 SIMPLE []
 PREHOOK: query: explain cbo
 select * from v1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@v1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from v1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####

@@ -53,14 +53,14 @@ POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).value SIMPLE [(srcpar
 PREHOOK: query: explain extended
 create table merge_src2 as 
 select key, value from merge_src
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@merge_src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@merge_src2
 POSTHOOK: query: explain extended
 create table merge_src2 as 
 select key, value from merge_src
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@merge_src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_src2
@@ -2306,7 +2306,7 @@ PREHOOK: query: explain extended
 insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds from merge_src_part
 where ds is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@merge_src_part
 PREHOOK: Input: default@merge_src_part@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part@ds=2008-04-09
@@ -2315,7 +2315,7 @@ POSTHOOK: query: explain extended
 insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds from merge_src_part
 where ds is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
@@ -4619,7 +4619,7 @@ PREHOOK: query: explain extended
 from (select * from merge_src_part where ds is not null distribute by ds) s
 insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@merge_src_part
 PREHOOK: Input: default@merge_src_part@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part@ds=2008-04-09
@@ -4628,7 +4628,7 @@ POSTHOOK: query: explain extended
 from (select * from merge_src_part where ds is not null distribute by ds) s
 insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09

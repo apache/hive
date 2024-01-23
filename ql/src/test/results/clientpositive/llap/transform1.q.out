@@ -8,13 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transform1_t1
 PREHOOK: query: EXPLAIN
 SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cat
 PREHOOK: Input: default@transform1_t1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@transform1_t1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -88,13 +88,13 @@ POSTHOOK: Output: default@transform1_t2
 POSTHOOK: Lineage: transform1_t2.col EXPRESSION []
 PREHOOK: query: EXPLAIN
 SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cat
 PREHOOK: Input: default@transform1_t2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@transform1_t2
 POSTHOOK: Output: hdfs://### HDFS PATH ###

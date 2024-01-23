@@ -26,7 +26,7 @@ select * from (
     union all
   select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tst
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
@@ -37,7 +37,7 @@ select * from (
     union all
   select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tst
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@tst@d=2009-02-02

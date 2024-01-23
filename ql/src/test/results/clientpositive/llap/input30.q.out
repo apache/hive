@@ -17,13 +17,13 @@ POSTHOOK: Output: default@tst_dest30
 PREHOOK: query: explain 
 insert overwrite table dest30
 select count(1) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tst_dest30
 POSTHOOK: query: explain 
 insert overwrite table dest30
 select count(1) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tst_dest30
 STAGE DEPENDENCIES:
@@ -146,13 +146,13 @@ POSTHOOK: Input: default@tst_dest30
 PREHOOK: query: explain
 insert overwrite table dest30
 select count(1) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest30
 POSTHOOK: query: explain
 insert overwrite table dest30
 select count(1) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest30
 STAGE DEPENDENCIES:

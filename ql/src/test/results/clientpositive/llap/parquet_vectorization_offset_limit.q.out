@@ -1,10 +1,10 @@
 WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 3,2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 3,2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -100,12 +100,12 @@ POSTHOOK: Input: default@alltypesparquet
 -1887561756	-8881.0
 PREHOOK: query: explain vectorization expression
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 10,3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 10,3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

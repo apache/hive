@@ -39,7 +39,7 @@ union all
 select 'b' as table_name, null as c1, null as c2, null as c3 from dummy_tab 
 ) t_union 
 group by c1,c2,c3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dummy_tab
 PREHOOK: Input: default@null_tab
 #### A masked pattern was here ####
@@ -50,7 +50,7 @@ union all
 select 'b' as table_name, null as c1, null as c2, null as c3 from dummy_tab 
 ) t_union 
 group by c1,c2,c3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dummy_tab
 POSTHOOK: Input: default@null_tab
 #### A masked pattern was here ####

@@ -25,13 +25,13 @@ POSTHOOK: Lineage: src_temp.value SIMPLE [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_nontemp
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_nontemp
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -141,14 +141,14 @@ POSTHOOK: Input: default@src_nontemp
 PREHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_nontemp
 PREHOOK: Input: default@src_temp
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_nontemp
 POSTHOOK: Input: default@src_temp
 #### A masked pattern was here ####
@@ -261,13 +261,13 @@ POSTHOOK: Input: default@src_temp
 PREHOOK: query: EXPLAIN
 FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_temp
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_temp
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

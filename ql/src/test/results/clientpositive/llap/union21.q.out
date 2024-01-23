@@ -12,7 +12,7 @@ FROM (
   SELECT lstring[0] as key from src_thrift
 ) union_output
 GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
@@ -30,7 +30,7 @@ FROM (
   SELECT lstring[0] as key from src_thrift
 ) union_output
 GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src_thrift
 #### A masked pattern was here ####

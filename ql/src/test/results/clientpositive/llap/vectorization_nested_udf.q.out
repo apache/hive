@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(abs(ctinyint)) from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(abs(ctinyint)) from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

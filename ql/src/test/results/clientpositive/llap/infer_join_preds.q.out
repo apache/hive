@@ -1,12 +1,12 @@
 PREHOOK: query: explain
 select * from src a join src1 b on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from src a join src1 b on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -143,7 +143,7 @@ select * from
 (select * from src where 1 = 0)a
 join
 (select * from src1)b on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -152,7 +152,7 @@ select * from
 (select * from src where 1 = 0)a
 join
 (select * from src1)b on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -187,7 +187,7 @@ select * from
 (select * from src where 1 = 0)a
 left outer join
 (select * from src1)b on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -196,7 +196,7 @@ select * from
 (select * from src where 1 = 0)a
 left outer join
 (select * from src1)b on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -231,7 +231,7 @@ select * from
 (select * from src where 1 = 0)a
 right outer join
 (select * from src1)b on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -240,7 +240,7 @@ select * from
 (select * from src where 1 = 0)a
 right outer join
 (select * from src1)b on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -305,7 +305,7 @@ select * from
 (select * from src where 1 = 0)a
 full outer join
 (select * from src1)b on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -314,7 +314,7 @@ select * from
 (select * from src where 1 = 0)a
 full outer join
 (select * from src1)b on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -379,7 +379,7 @@ select * from
 (select * from src)a
 right outer join
 (select * from src1 where 1 = 0)b on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -388,7 +388,7 @@ select * from
 (select * from src)a
 right outer join
 (select * from src1 where 1 = 0)b on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -420,13 +420,13 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from src join src1 on src.key = src1.key and src.value = src1.value
     where 4 between src.key and src.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from src join src1 on src.key = src1.key and src.value = src1.value
     where 4 between src.key and src.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -782,7 +782,7 @@ PREHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_i
                                     WHEN d.odf_ss_actuals IS NULL THEN 1
                                     ELSE d.odf_ss_actuals
                     END )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n8
 PREHOOK: Input: default@table2_n4
 #### A masked pattern was here ####
@@ -947,7 +947,7 @@ POSTHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_
                                     WHEN d.odf_ss_actuals IS NULL THEN 1
                                     ELSE d.odf_ss_actuals
                     END )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n8
 POSTHOOK: Input: default@table2_n4
 #### A masked pattern was here ####

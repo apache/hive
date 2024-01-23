@@ -64,12 +64,12 @@ POSTHOOK: Input: default@sketch_input
 15	b	1.0	0.9090909090909091
 PREHOOK: query: explain
 select id,'rewrite',cume_dist() over (partition by category order by id) from sketch_input order by category,id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select id,'rewrite',cume_dist() over (partition by category order by id) from sketch_input order by category,id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

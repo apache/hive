@@ -147,7 +147,7 @@ POSTHOOK: Lineage: view3.key EXPRESSION [(t4)t4.FieldSchema(name:key, type:strin
 POSTHOOK: Lineage: view3.value EXPRESSION [(t4)t4.FieldSchema(name:value, type:string, comment:null), (t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@dt=2018
 PREHOOK: Input: default@t2
@@ -160,7 +160,7 @@ PREHOOK: Input: default@view3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@dt=2018
 POSTHOOK: Input: default@t2

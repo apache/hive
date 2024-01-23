@@ -18,12 +18,12 @@ POSTHOOK: Lineage: ax.s SCRIPT []
 POSTHOOK: Lineage: ax.t SCRIPT []
 PREHOOK: query: explain
 select 'expected 2',count(*) from ax where s = 'a' and t = 'a'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'expected 2',count(*) from ax where s = 'a' and t = 'a'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -99,12 +99,12 @@ POSTHOOK: Input: default@ax
 expected 2	2
 PREHOOK: query: explain
 select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -215,11 +215,11 @@ POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 expected 2	2
 PREHOOK: query: explain select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -295,12 +295,12 @@ POSTHOOK: Input: default@ax
 expected 1	1
 PREHOOK: query: explain cbo select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 CBO PLAN:
@@ -310,12 +310,12 @@ HiveAggregate(group=[{}], agg#0=[count()])
 
 PREHOOK: query: explain select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -378,12 +378,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain cbo select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 CBO PLAN:
@@ -393,12 +393,12 @@ HiveAggregate(group=[{}], agg#0=[count()])
 
 PREHOOK: query: explain select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

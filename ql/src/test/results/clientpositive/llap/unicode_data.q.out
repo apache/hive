@@ -59,12 +59,12 @@ POSTHOOK: Output: database:unicode_data_db
 POSTHOOK: Output: unicode_data_db@t_view_test
 POSTHOOK: Lineage: t_view_test.value SIMPLE [(t_test)t_test.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: explain select * from t_view_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: unicode_data_db@t_test
 PREHOOK: Input: unicode_data_db@t_view_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t_view_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: unicode_data_db@t_test
 POSTHOOK: Input: unicode_data_db@t_view_test
 #### A masked pattern was here ####

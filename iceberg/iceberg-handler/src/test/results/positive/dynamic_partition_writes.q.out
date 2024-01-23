@@ -121,11 +121,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_target_identity
 PREHOOK: query: explain insert overwrite table tbl_target_identity select a, b from tbl_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_identity
 POSTHOOK: query: explain insert overwrite table tbl_target_identity select a, b from tbl_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_identity
 Plan optimized by CBO.
@@ -215,11 +215,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_target_bucket
 PREHOOK: query: explain insert into table tbl_target_bucket select a, b from tbl_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_bucket
 POSTHOOK: query: explain insert into table tbl_target_bucket select a, b from tbl_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_bucket
 Plan optimized by CBO.
@@ -309,11 +309,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_target_mixed
 PREHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_mixed
 POSTHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_mixed
 Plan optimized by CBO.
@@ -444,11 +444,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
        }	{1:   ,2:USD,3:
        }	NULL	[3]	NULL	0	{"a":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":6,"upper_bound":6},"c":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":10,"upper_bound":10},"ccy":{"column_size":12,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":"USD","upper_bound":"USD"}}
 PREHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'EUR'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_mixed
 POSTHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'EUR'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_mixed
 Plan optimized by CBO.
@@ -502,11 +502,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_mixed
 PREHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_mixed
 POSTHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_mixed
 Plan optimized by CBO.
@@ -675,11 +675,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_target_truncate_str
 PREHOOK: query: explain insert into table tbl_target_truncate_str select a, b from tbl_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_truncate_str
 POSTHOOK: query: explain insert into table tbl_target_truncate_str select a, b from tbl_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_truncate_str
 Plan optimized by CBO.
@@ -769,11 +769,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_target_truncate_int
 PREHOOK: query: explain insert into table tbl_target_truncate_int select a, b from tbl_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_truncate_int
 POSTHOOK: query: explain insert into table tbl_target_truncate_int select a, b from tbl_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_truncate_int
 Plan optimized by CBO.
@@ -863,11 +863,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_target_truncate_bigint
 PREHOOK: query: explain insert into table tbl_target_truncate_bigint select a, c from tbl_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_truncate_bigint
 POSTHOOK: query: explain insert into table tbl_target_truncate_bigint select a, c from tbl_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_truncate_bigint
 Plan optimized by CBO.
@@ -957,11 +957,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_target_truncate_decimal
 PREHOOK: query: explain insert into table tbl_target_truncate_decimal select a, b, 1.567894 from tbl_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_src
 PREHOOK: Output: default@tbl_target_truncate_decimal
 POSTHOOK: query: explain insert into table tbl_target_truncate_decimal select a, b, 1.567894 from tbl_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_src
 POSTHOOK: Output: default@tbl_target_truncate_decimal
 Plan optimized by CBO.
@@ -1057,11 +1057,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_year_date
 PREHOOK: query: explain insert into tbl_year_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_year_date
 POSTHOOK: query: explain insert into tbl_year_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_year_date
 Plan optimized by CBO.
@@ -1142,11 +1142,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_year_timestamp
 PREHOOK: query: explain insert into tbl_year_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_year_timestamp
 POSTHOOK: query: explain insert into tbl_year_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_year_timestamp
 Plan optimized by CBO.
@@ -1227,11 +1227,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_month_date
 PREHOOK: query: explain insert into tbl_month_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_month_date
 POSTHOOK: query: explain insert into tbl_month_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_month_date
 Plan optimized by CBO.
@@ -1312,11 +1312,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_month_timestamp
 PREHOOK: query: explain insert into tbl_month_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_month_timestamp
 POSTHOOK: query: explain insert into tbl_month_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_month_timestamp
 Plan optimized by CBO.
@@ -1397,11 +1397,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_day_date
 PREHOOK: query: explain insert into tbl_day_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_day_date
 POSTHOOK: query: explain insert into tbl_day_date values (88669, '2018-05-27', 2018), (40568, '2018-02-12', 2018), (40568, '2018-07-03', 2018)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_day_date
 Plan optimized by CBO.
@@ -1482,11 +1482,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_day_timestamp
 PREHOOK: query: explain insert into tbl_day_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_day_timestamp
 POSTHOOK: query: explain insert into tbl_day_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_day_timestamp
 Plan optimized by CBO.
@@ -1567,11 +1567,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_hour_timestamp
 PREHOOK: query: explain insert into tbl_hour_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_hour_timestamp
 POSTHOOK: query: explain insert into tbl_hour_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_hour_timestamp
 Plan optimized by CBO.

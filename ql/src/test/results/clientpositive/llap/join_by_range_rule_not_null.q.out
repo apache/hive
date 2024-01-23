@@ -1,10 +1,10 @@
 PREHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -91,12 +91,12 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key < b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key < b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -179,12 +179,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key = b.key AND a.value >= b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key = b.key AND a.value >= b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -272,12 +272,12 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key > b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key > b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -361,12 +361,12 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key > b.key OR 1 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key > b.key OR 1 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -441,12 +441,12 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key IS DISTINCT FROM b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src a JOIN src1 b ON a.key IS DISTINCT FROM b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

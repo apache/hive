@@ -217,11 +217,11 @@ OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain select count(*) from  llap_orders
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) from  llap_orders
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -246,11 +246,11 @@ Stage-0
                   default@llap_orders,llap_orders,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain insert into  llap_orders select * from llap_orders limit 100000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: default@llap_orders
 POSTHOOK: query: explain insert into  llap_orders select * from llap_orders limit 100000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
 Plan optimized by CBO.

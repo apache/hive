@@ -87,7 +87,7 @@ or (t=27 and si=28)
 or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over1k_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from over1k_n4 where (
@@ -111,7 +111,7 @@ or (t=27 and si=28)
 or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over1k_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -193,7 +193,7 @@ or (t=27 and si=28)
 or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over1k_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from over1k_n4 where (
@@ -217,7 +217,7 @@ or (t=27 and si=28)
 or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over1k_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

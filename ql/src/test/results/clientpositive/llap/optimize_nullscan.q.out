@@ -1,11 +1,11 @@
 PREHOOK: query: explain extended 
 select key from src where false
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended 
 select key from src where false
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -37,12 +37,12 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: explain extended
 select count(key) from srcpart where 1=2 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select count(key) from srcpart where 1=2 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -142,7 +142,7 @@ POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 PREHOOK: query: explain extended
 select * from (select key from src where false) a left outer join (select key from srcpart limit 0) b on a.key=b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -152,7 +152,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from (select key from src where false) a left outer join (select key from srcpart limit 0) b on a.key=b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -478,7 +478,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain extended
 select count(key) from src where false union all select count(key) from srcpart
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -488,7 +488,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select count(key) from src where false union all select count(key) from srcpart
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -853,7 +853,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 Warning: Shuffle Join MERGEJOIN[12][tables = [a, b]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain extended
 select * from (select key from src where false) a left outer join (select value from srcpart limit 0) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -863,7 +863,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from (select key from src where false) a left outer join (select value from srcpart limit 0) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -1188,13 +1188,13 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain extended 
 select * from (select key from src union all select src.key from src left outer join srcpart on src.key = srcpart.key) a  where false
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended 
 select * from (select key from src union all select src.key from src left outer join srcpart on src.key = srcpart.key) a  where false
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
@@ -1426,12 +1426,12 @@ POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 PREHOOK: query: explain extended 
 select * from src s1, src s2 where false and s1.value = s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended 
 select * from src s1, src s2 where false and s1.value = s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1622,12 +1622,12 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: explain extended
 select count(1) from src where null = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select count(1) from src where null = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

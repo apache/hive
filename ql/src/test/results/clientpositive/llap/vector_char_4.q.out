@@ -129,12 +129,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_lazy_binary_columnar
 PREHOOK: query: explain vectorization expression
 insert overwrite table char_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vectortab2korc
 PREHOOK: Output: default@char_lazy_binary_columnar
 POSTHOOK: query: explain vectorization expression
 insert overwrite table char_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vectortab2korc
 POSTHOOK: Output: default@char_lazy_binary_columnar
 PLAN VECTORIZATION:

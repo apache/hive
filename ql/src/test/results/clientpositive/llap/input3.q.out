@@ -41,12 +41,12 @@ test3a
 test3b
 PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
-PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test3b
 PREHOOK: Output: default@test3b
 POSTHOOK: query: EXPLAIN
 ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
-POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test3b
 POSTHOOK: Output: default@test3b
 STAGE DEPENDENCIES:
@@ -78,14 +78,14 @@ c                   	map<double,int>
 x                   	double              	                    
 PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3b RENAME TO TEST3c
-PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test3b
 PREHOOK: Output: database:default
 PREHOOK: Output: default@TEST3c
 PREHOOK: Output: default@test3b
 POSTHOOK: query: EXPLAIN
 ALTER TABLE TEST3b RENAME TO TEST3c
-POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test3b
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST3c
@@ -131,12 +131,12 @@ test3a
 test3c
 PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
-PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test3c
 PREHOOK: Output: default@test3c
 POSTHOOK: query: EXPLAIN
 ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
-POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test3c
 POSTHOOK: Output: default@test3c
 STAGE DEPENDENCIES:

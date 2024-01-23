@@ -36,13 +36,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n139
 PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n139
 POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
@@ -204,13 +204,13 @@ POSTHOOK: Input: default@t2_n81
 8	18	8	18
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n139
 PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n139
 POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
@@ -375,13 +375,13 @@ POSTHOOK: Input: default@t2_n81
 8	28	NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n139
 PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n139
 POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
@@ -568,13 +568,13 @@ POSTHOOK: Input: default@t2_n81
 8	2
 PREHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n139
 PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n139
 POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####

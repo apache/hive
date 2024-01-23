@@ -14,7 +14,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@non_acid
 PREHOOK: query: explain
 insert into table non_acid partition(ds,hr) select * from srcpart sort by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -23,7 +23,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@non_acid
 POSTHOOK: query: explain
 insert into table non_acid partition(ds,hr) select * from srcpart sort by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

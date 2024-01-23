@@ -5,7 +5,7 @@ from src
 where not key in
 (select key from src)
 order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -14,7 +14,7 @@ from src
 where not key in
 (select key from src)
 order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

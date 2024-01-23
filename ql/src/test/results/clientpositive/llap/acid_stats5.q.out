@@ -27,11 +27,11 @@ POSTHOOK: Output: default@stats2
 POSTHOOK: Lineage: stats2.key SCRIPT []
 POSTHOOK: Lineage: stats2.value SCRIPT []
 PREHOOK: query: explain select count(*) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -45,11 +45,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select min(key) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -127,11 +127,11 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 PREHOOK: query: explain select count(*) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -189,11 +189,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(distinct key) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct key) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -338,11 +338,11 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: explain select count(*) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -356,11 +356,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select min(key) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -486,11 +486,11 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: explain select count(*) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -504,11 +504,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select min(key) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -584,11 +584,11 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: explain select count(*) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -602,11 +602,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(distinct key) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct key) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -751,11 +751,11 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: explain select count(*) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -769,11 +769,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select min(key) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -899,11 +899,11 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: explain select count(*) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -917,11 +917,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select min(key) from stats2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select min(key) from stats2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

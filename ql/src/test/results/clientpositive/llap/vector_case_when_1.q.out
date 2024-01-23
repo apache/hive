@@ -140,7 +140,7 @@ SELECT
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
 FROM lineitem_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -183,7 +183,7 @@ SELECT
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
 FROM lineitem_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem_test
 #### A masked pattern was here ####
 Explain
@@ -477,7 +477,7 @@ SELECT
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
 FROM lineitem_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -520,7 +520,7 @@ SELECT
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
 FROM lineitem_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem_test
 #### A masked pattern was here ####
 Explain
@@ -814,7 +814,7 @@ SELECT
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
 FROM lineitem_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -857,7 +857,7 @@ SELECT
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
 FROM lineitem_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem_test
 #### A masked pattern was here ####
 Explain

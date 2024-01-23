@@ -15,7 +15,7 @@ WITH SERDEPROPERTIES(
   "escapeChar"    = "\\",
   "serialization.encoding" = "ISO8859_1"
 ) stored as textfile
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@serde_opencsv
 POSTHOOK: query: EXPLAIN
@@ -35,7 +35,7 @@ WITH SERDEPROPERTIES(
   "escapeChar"    = "\\",
   "serialization.encoding" = "ISO8859_1"
 ) stored as textfile
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@serde_opencsv
 STAGE DEPENDENCIES:

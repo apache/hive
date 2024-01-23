@@ -28,11 +28,11 @@ POSTHOOK: Output: default@foo_n9
 #### A masked pattern was here ####
 Warning: Value had a \n character in it.
 PREHOOK: query: explain select max(x) from foo_n9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo_n9
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(x) from foo_n9
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo_n9
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -46,11 +46,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(x) from foo_n9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo_n9
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(x) from foo_n9
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo_n9
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -64,11 +64,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(x), max(x), min(x) from foo_n9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo_n9
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(x), max(x), min(x) from foo_n9
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo_n9
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

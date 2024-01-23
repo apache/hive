@@ -319,11 +319,11 @@ POSTHOOK: Output: default@partitioned_t@dt=2022
 POSTHOOK: Lineage: partitioned_t PARTITION(dt=2022).key SCRIPT []
 POSTHOOK: Lineage: partitioned_t PARTITION(dt=2022).val SCRIPT []
 PREHOOK: query: explain alter table PARTITIONED_T compact 'major'
-PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partitioned_t
 PREHOOK: Output: default@partitioned_t
 POSTHOOK: query: explain alter table PARTITIONED_T compact 'major'
-POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partitioned_t
 POSTHOOK: Output: default@partitioned_t
 STAGE DEPENDENCIES:

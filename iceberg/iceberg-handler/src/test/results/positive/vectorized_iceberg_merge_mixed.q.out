@@ -236,7 +236,7 @@ WHEN NOT matched THEN
         s.ss_net_profit,
         "2451181"
     )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ssv
 PREHOOK: Input: default@store_sales
 PREHOOK: Output: default@merge_tmp_table
@@ -302,7 +302,7 @@ WHEN NOT matched THEN
         s.ss_net_profit,
         "2451181"
     )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ssv
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: default@merge_tmp_table
@@ -848,7 +848,7 @@ WHEN NOT matched THEN
         s.ss_net_profit,
         "2451181"
     )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ssv
 PREHOOK: Input: default@store_sales
 PREHOOK: Output: default@merge_tmp_table
@@ -914,7 +914,7 @@ WHEN NOT matched THEN
         s.ss_net_profit,
         "2451181"
     )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ssv
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: default@merge_tmp_table

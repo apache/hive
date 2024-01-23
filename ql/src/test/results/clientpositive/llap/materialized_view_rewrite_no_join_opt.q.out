@@ -178,7 +178,7 @@ PREHOOK: query: explain
 select emps_n30.name, emps_n30.salary, emps_n30.commission
 from emps_n30
 join depts_n20 using (deptno)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n20
 PREHOOK: Input: default@emps_n30
 PREHOOK: Input: default@mv1_n20
@@ -187,7 +187,7 @@ POSTHOOK: query: explain
 select emps_n30.name, emps_n30.salary, emps_n30.commission
 from emps_n30
 join depts_n20 using (deptno)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n20
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Input: default@mv1_n20
@@ -327,7 +327,7 @@ PREHOOK: query: explain
 select depts_n20.deptno, count(*) as c, sum(empid) as s
 from emps_n30 join depts_n20 using (deptno)
 group by depts_n20.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n20
 PREHOOK: Input: default@emps_n30
 PREHOOK: Input: default@mv1_n20
@@ -336,7 +336,7 @@ POSTHOOK: query: explain
 select depts_n20.deptno, count(*) as c, sum(empid) as s
 from emps_n30 join depts_n20 using (deptno)
 group by depts_n20.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n20
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Input: default@mv1_n20
@@ -460,7 +460,7 @@ from emps_n30
 join depts_n20 on (emps_n30.deptno = depts_n20.deptno)
 join dependents_n20 on (emps_n30.empid = dependents_n20.empid)
 group by dependents_n20.empid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n20
 PREHOOK: Input: default@depts_n20
 PREHOOK: Input: default@emps_n30
@@ -472,7 +472,7 @@ from emps_n30
 join depts_n20 on (emps_n30.deptno = depts_n20.deptno)
 join dependents_n20 on (emps_n30.empid = dependents_n20.empid)
 group by dependents_n20.empid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n20
 POSTHOOK: Input: default@depts_n20
 POSTHOOK: Input: default@emps_n30
@@ -636,7 +636,7 @@ from emps_n30
 join dependents_n20 on (emps_n30.empid = dependents_n20.empid)
 join depts_n20 a on (emps_n30.deptno=a.deptno)
 where emps_n30.name = 'Bill'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n20
 PREHOOK: Input: default@depts_n20
 PREHOOK: Input: default@emps_n30
@@ -648,7 +648,7 @@ from emps_n30
 join dependents_n20 on (emps_n30.empid = dependents_n20.empid)
 join depts_n20 a on (emps_n30.deptno=a.deptno)
 where emps_n30.name = 'Bill'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n20
 POSTHOOK: Input: default@depts_n20
 POSTHOOK: Input: default@emps_n30

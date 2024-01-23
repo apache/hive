@@ -46,7 +46,7 @@ select
   interval '2-2' year to month + dateval
 from interval_arithmetic_1
 order by dateval
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -60,7 +60,7 @@ select
   interval '2-2' year to month + dateval
 from interval_arithmetic_1
 order by dateval
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain
@@ -236,7 +236,7 @@ select
   dateval - dateval
 from interval_arithmetic_1
 order by dateval
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -247,7 +247,7 @@ select
   dateval - dateval
 from interval_arithmetic_1
 order by dateval
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain
@@ -420,7 +420,7 @@ select
   interval '2-2' year to month + tsval
 from interval_arithmetic_1
 order by tsval
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -434,7 +434,7 @@ select
   interval '2-2' year to month + tsval
 from interval_arithmetic_1
 order by tsval
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain
@@ -609,7 +609,7 @@ select
 from interval_arithmetic_1
 order by interval '2-2' year to month + interval '3-3' year to month
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -619,7 +619,7 @@ select
 from interval_arithmetic_1
 order by interval '2-2' year to month + interval '3-3' year to month
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain
@@ -751,7 +751,7 @@ select
   interval '99 11:22:33.123456789' day to second + dateval
 from interval_arithmetic_1
 order by dateval
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -765,7 +765,7 @@ select
   interval '99 11:22:33.123456789' day to second + dateval
 from interval_arithmetic_1
 order by dateval
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain
@@ -942,7 +942,7 @@ select
   tsval - tsval
 from interval_arithmetic_1
 order by dateval
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -954,7 +954,7 @@ select
   tsval - tsval
 from interval_arithmetic_1
 order by dateval
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain
@@ -1129,7 +1129,7 @@ select
   interval '99 11:22:33.123456789' day to second + tsval
 from interval_arithmetic_1
 order by tsval
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -1143,7 +1143,7 @@ select
   interval '99 11:22:33.123456789' day to second + tsval
 from interval_arithmetic_1
 order by tsval
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain
@@ -1317,7 +1317,7 @@ select
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
 from interval_arithmetic_1
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -1326,7 +1326,7 @@ select
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
 from interval_arithmetic_1
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 Explain

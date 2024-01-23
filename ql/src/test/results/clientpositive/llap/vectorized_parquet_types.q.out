@@ -128,13 +128,13 @@ POSTHOOK: Lineage: parquet_types_n2.t SIMPLE [(parquet_types_staging_n3)parquet_
 PREHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types_n2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types_n2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -190,12 +190,12 @@ POSTHOOK: Input: default@parquet_types_n2
 121	1	2	1.1	6.3	lmn	2032-10-10 22:22:22.222222222	bcdef	abcde		90.33
 PREHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_types_n2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_types_n2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -258,7 +258,7 @@ SELECT ctinyint,
 FROM parquet_types_n2
 GROUP BY ctinyint
 ORDER BY ctinyint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -272,7 +272,7 @@ SELECT ctinyint,
 FROM parquet_types_n2
 GROUP BY ctinyint
 ORDER BY ctinyint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -484,13 +484,13 @@ POSTHOOK: Lineage: parquet_type_nodict.t SIMPLE [(parquet_types_n2)parquet_types
 PREHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_type_nodict
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_type_nodict
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_type_nodict
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_type_nodict
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -546,12 +546,12 @@ POSTHOOK: Input: default@parquet_type_nodict
 121	1	2	1.1	6.3	lmn	2032-10-10 22:22:22.222222222	bcdef	abcde		90.33
 PREHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_type_nodict
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_type_nodict
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_type_nodict
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_type_nodict
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -604,11 +604,11 @@ uvwzy	5	abcdede	7	4.76	1
 vwxyz	5	abcdede	7	12.83	1
 wxyza	5	abcde	5	73.04	1
 PREHOOK: query: explain vectorization select max(t), min(t) from parquet_type_nodict
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_type_nodict
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select max(t), min(t) from parquet_type_nodict
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_type_nodict
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

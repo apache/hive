@@ -19,12 +19,12 @@ POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.id SCRIPT []
 PREHOOK: query: explain cbo
 select id, count(1) from test group by id limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select id, count(1) from test group by id limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 CBO PLAN:
@@ -35,12 +35,12 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[2])
 
 PREHOOK: query: explain extended
 select id, count(1) from test group by id limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select id, count(1) from test group by id limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `id`, COUNT(*) AS `$f1`
@@ -206,12 +206,12 @@ POSTHOOK: Input: default@test
 2	1
 PREHOOK: query: explain extended
 select id, count(1) from test group by id limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select id, count(1) from test group by id limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `id`, COUNT(*) AS `$f1`

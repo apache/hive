@@ -257,11 +257,11 @@ OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait
-PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: explain alter table ice_orc COMPACT 'major' and wait
-POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 STAGE DEPENDENCIES:

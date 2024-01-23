@@ -35,11 +35,11 @@ POSTHOOK: Lineage: vector_decimal64_mul_intcolumn_tmp.ss_ext_list_price SIMPLE [
 POSTHOOK: Lineage: vector_decimal64_mul_intcolumn_tmp.ss_ext_sales_price SIMPLE [(vector_decimal64_mul_intcolumn)vector_decimal64_mul_intcolumn.FieldSchema(name:ss_ext_sales_price, type:decimal(7,2), comment:null), ]
 POSTHOOK: Lineage: vector_decimal64_mul_intcolumn_tmp.ss_ext_wholesale_cost SIMPLE [(vector_decimal64_mul_intcolumn)vector_decimal64_mul_intcolumn.FieldSchema(name:ss_ext_wholesale_cost, type:decimal(19,1), comment:null), ]
 PREHOOK: query: explain vectorization detail select sum(ss_ext_list_price*ss_ext_discount_amt) from vector_decimal64_mul_intcolumn_tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_decimal64_mul_intcolumn_tmp
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(ss_ext_list_price*ss_ext_discount_amt) from vector_decimal64_mul_intcolumn_tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_decimal64_mul_intcolumn_tmp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -170,11 +170,11 @@ POSTHOOK: Input: default@vector_decimal64_mul_intcolumn_tmp
 #### A masked pattern was here ####
 984383500.00
 PREHOOK: query: explain vectorization detail select sum(ss_ext_wholesale_cost*ss_ext_discount_amt) from vector_decimal64_mul_intcolumn_tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_decimal64_mul_intcolumn_tmp
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(ss_ext_wholesale_cost*ss_ext_discount_amt) from vector_decimal64_mul_intcolumn_tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_decimal64_mul_intcolumn_tmp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

@@ -98,7 +98,7 @@ PREHOOK: query: EXPLAIN CBO
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n3
 PREHOOK: Input: default@cmv_basetable_n6
 #### A masked pattern was here ####
@@ -106,7 +106,7 @@ POSTHOOK: query: EXPLAIN CBO
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 #### A masked pattern was here ####
@@ -146,13 +146,13 @@ POSTHOOK: Input: default@cmv_basetable_n6
 3
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n3
 PREHOOK: Input: default@cmv_basetable_n6
 PREHOOK: Output: default@cmv_mat_view_n6
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Output: default@cmv_mat_view_n6
@@ -319,7 +319,7 @@ PREHOOK: query: EXPLAIN CBO
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n3
 PREHOOK: Input: default@cmv_basetable_n6
 PREHOOK: Input: default@cmv_mat_view_n6
@@ -328,7 +328,7 @@ POSTHOOK: query: EXPLAIN CBO
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Input: default@cmv_mat_view_n6
@@ -380,13 +380,13 @@ POSTHOOK: Lineage: cmv_basetable_n6.c SIMPLE [(cmv_basetable_n6)cmv_basetable_n6
 POSTHOOK: Lineage: cmv_basetable_n6.d SIMPLE [(cmv_basetable_n6)cmv_basetable_n6.FieldSchema(name:d, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n3
 PREHOOK: Input: default@cmv_basetable_n6
 PREHOOK: Output: default@cmv_mat_view_n6
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Output: default@cmv_mat_view_n6
@@ -551,7 +551,7 @@ PREHOOK: query: EXPLAIN CBO
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n3
 PREHOOK: Input: default@cmv_basetable_n6
 PREHOOK: Input: default@cmv_mat_view_n6
@@ -560,7 +560,7 @@ POSTHOOK: query: EXPLAIN CBO
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Input: default@cmv_mat_view_n6

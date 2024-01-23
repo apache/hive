@@ -328,11 +328,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_delete_config
 PREHOOK: query: explain delete from test_delete_config where b < 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_delete_config
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain delete from test_delete_config where b < 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_delete_config
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -345,11 +345,11 @@ STAGE PLANS:
       spec: AlterTableExecuteSpec{operationType=DELETE_METADATA, operationParams=org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec$#Masked#
 
 PREHOOK: query: explain delete from test_delete_config where b < 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_delete_config
 PREHOOK: Output: default@test_delete_config
 POSTHOOK: query: explain delete from test_delete_config where b < 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_delete_config
 POSTHOOK: Output: default@test_delete_config
 STAGE DEPENDENCIES:

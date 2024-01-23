@@ -49,11 +49,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part
 PREHOOK: query: explain select count(*) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -115,11 +115,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select max(key) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -293,11 +293,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain select count(key) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -311,11 +311,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select max(key) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -399,11 +399,11 @@ p=100
 p=101
 p=102
 PREHOOK: query: explain select count(*) from stats_part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -426,11 +426,11 @@ POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 8
 PREHOOK: query: explain select count(key) from stats_part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -453,11 +453,11 @@ POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 8
 PREHOOK: query: explain select count(key) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -480,11 +480,11 @@ POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 6
 PREHOOK: query: explain select max(key) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -631,13 +631,13 @@ POSTHOOK: Output: default@stats_part@p=102
 POSTHOOK: Lineage: stats_part PARTITION(p=101).key EXPRESSION [(stats_part)stats_part.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: stats_part PARTITION(p=101).value SIMPLE [(stats_part)stats_part.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain select max(key) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 PREHOOK: Input: default@stats_part@p=101
 PREHOOK: Input: default@stats_part@p=102
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Input: default@stats_part@p=101
 POSTHOOK: Input: default@stats_part@p=102
@@ -1092,11 +1092,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain select count(*) from stats_part where p = 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part where p = 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1119,11 +1119,11 @@ POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 1
 PREHOOK: query: explain select count(*) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1146,14 +1146,14 @@ POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 5
 PREHOOK: query: explain select count(key) from stats_part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 PREHOOK: Input: default@stats_part@p=100
 PREHOOK: Input: default@stats_part@p=101
 PREHOOK: Input: default@stats_part@p=102
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Input: default@stats_part@p=100
 POSTHOOK: Input: default@stats_part@p=101
@@ -1231,11 +1231,11 @@ POSTHOOK: Input: default@stats_part@p=102
 #### A masked pattern was here ####
 6
 PREHOOK: query: explain select count(*) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1258,13 +1258,13 @@ POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 5
 PREHOOK: query: explain select max(key) from stats_part where p > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 PREHOOK: Input: default@stats_part@p=101
 PREHOOK: Input: default@stats_part@p=102
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key) from stats_part where p > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Input: default@stats_part@p=101
 POSTHOOK: Input: default@stats_part@p=102

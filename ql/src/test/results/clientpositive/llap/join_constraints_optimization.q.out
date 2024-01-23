@@ -138,7 +138,7 @@ PREHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -146,7 +146,7 @@ POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -169,7 +169,7 @@ PREHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -177,7 +177,7 @@ POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -203,7 +203,7 @@ PREHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -211,7 +211,7 @@ POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -234,7 +234,7 @@ PREHOOK: query: EXPLAIN
 SELECT `lo_linenumber`, `c_region`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -242,7 +242,7 @@ POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`, `c_region`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -327,7 +327,7 @@ PREHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -335,7 +335,7 @@ POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -416,7 +416,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@dates_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
@@ -426,7 +426,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@dates_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
@@ -454,7 +454,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@dates_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
@@ -464,7 +464,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@dates_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
@@ -493,7 +493,7 @@ SELECT `lo_linenumber` FROM
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`) subq
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@dates_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
@@ -504,7 +504,7 @@ SELECT `lo_linenumber` FROM
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`) subq
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@dates_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
@@ -586,7 +586,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@dates_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
@@ -596,7 +596,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@dates_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
@@ -678,7 +678,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@dates_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
@@ -688,7 +688,7 @@ SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@dates_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
@@ -769,7 +769,7 @@ PREHOOK: query: EXPLAIN
 SELECT `lo_linenumber`, `c_custkey`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -777,7 +777,7 @@ POSTHOOK: query: EXPLAIN
 SELECT `lo_linenumber`, `c_custkey`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -804,7 +804,7 @@ FROM customer_removal_n0
     FROM lineorder_removal_n0
     WHERE lo_custkey IS NOT NULL
     GROUP BY lo_custkey) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -816,7 +816,7 @@ FROM customer_removal_n0
     FROM lineorder_removal_n0
     WHERE lo_custkey IS NOT NULL
     GROUP BY lo_custkey) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -844,7 +844,7 @@ FROM customer_removal_n0
       WHERE lo_custkey IS NOT NULL
       GROUP BY lo_custkey) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
 WHERE fkSide.sm > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -857,7 +857,7 @@ FROM customer_removal_n0
       WHERE lo_custkey IS NOT NULL
       GROUP BY lo_custkey) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
 WHERE fkSide.sm > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -882,7 +882,7 @@ FROM customer_removal_n0
     JOIN (SELECT lo_custkey
             FROM lineorder_removal_n0
             GROUP BY lo_custkey) fkSide on fkSide.lo_custkey = customer_removal_n0.c_custkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -892,7 +892,7 @@ FROM customer_removal_n0
     JOIN (SELECT lo_custkey
             FROM lineorder_removal_n0
             GROUP BY lo_custkey) fkSide on fkSide.lo_custkey = customer_removal_n0.c_custkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -919,7 +919,7 @@ FROM customer_removal_n0
                WHERE lo_custkey IS NOT NULL
                GROUP BY lo_linenumber, lo_custkey,lo_custkey
              ) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -931,7 +931,7 @@ FROM customer_removal_n0
                WHERE lo_custkey IS NOT NULL
                GROUP BY lo_linenumber, lo_custkey,lo_custkey
              ) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@lineorder_removal_n0
 #### A masked pattern was here ####
@@ -1067,7 +1067,7 @@ FROM customer_removal_n0
      (SELECT lo_custkey,lo_linenumber
       FROM t1
       WHERE lo_custkey IS NOT NULL) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -1078,7 +1078,7 @@ FROM customer_removal_n0
      (SELECT lo_custkey,lo_linenumber
       FROM t1
       WHERE lo_custkey IS NOT NULL) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -1145,7 +1145,7 @@ FROM customer_removal_n0
          JOIN
      (SELECT lo_custkey,lo_linenumber
       FROM t1) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -1155,7 +1155,7 @@ FROM customer_removal_n0
          JOIN
      (SELECT lo_custkey,lo_linenumber
       FROM t1) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

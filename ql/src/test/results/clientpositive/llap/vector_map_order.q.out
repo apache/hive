@@ -26,12 +26,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@map_table_n0
 PREHOOK: query: explain vectorization detail
 select * from map_table_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@map_table_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from map_table_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@map_table_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

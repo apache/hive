@@ -23,12 +23,12 @@ POSTHOOK: Output: default@mat1
 POSTHOOK: Lineage: mat1.col0 SIMPLE []
 PREHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'FOO'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'FOO'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -38,13 +38,13 @@ HiveProject($f0=[CAST(_UTF-16LE'FOO':VARCHAR(2147483647) CHARACTER SET "UTF-16LE
 
 PREHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

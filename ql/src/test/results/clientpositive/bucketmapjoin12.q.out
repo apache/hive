@@ -99,7 +99,7 @@ PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2_n0 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket_mapjoin_part_1
 PREHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 PREHOOK: Input: default@srcbucket_mapjoin_part_2_n0
@@ -109,7 +109,7 @@ POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2_n0 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n0
@@ -332,7 +332,7 @@ PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_3 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket_mapjoin_part_1
 PREHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 PREHOOK: Input: default@srcbucket_mapjoin_part_3
@@ -342,7 +342,7 @@ POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_3 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_3

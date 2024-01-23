@@ -23,7 +23,7 @@ FROM (
   WHERE key < 100
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1
 POSTHOOK: query: EXPLAIN
@@ -37,7 +37,7 @@ FROM (
   WHERE key < 100
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 STAGE DEPENDENCIES:

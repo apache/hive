@@ -41,13 +41,13 @@ POSTHOOK: Lineage: mv_1._c2 EXPRESSION [(sketch_input)sketch_input.FieldSchema(n
 POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
 select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select category, round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -99,13 +99,13 @@ a	10.0
 b	10.0
 PREHOOK: query: explain
 select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select round(ds_hll_estimate(ds_hll_sketch(id))) from sketch_input
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####

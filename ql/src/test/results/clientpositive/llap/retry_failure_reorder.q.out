@@ -108,7 +108,7 @@ select (1 > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tu
 PREHOOK: Input: default@tv
 PREHOOK: Input: default@tw
@@ -118,7 +118,7 @@ select (1 > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tu
 POSTHOOK: Input: default@tv
 POSTHOOK: Input: default@tw
@@ -186,7 +186,7 @@ select 1 > sum(u*v*w) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tu
 PREHOOK: Input: default@tv
 PREHOOK: Input: default@tw
@@ -251,7 +251,7 @@ select 200000 > sum(u*v*w) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tu
 PREHOOK: Input: default@tv
 PREHOOK: Input: default@tw
@@ -413,7 +413,7 @@ select assert_true_oom(1 > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tu
 PREHOOK: Input: default@tv
 PREHOOK: Input: default@tw

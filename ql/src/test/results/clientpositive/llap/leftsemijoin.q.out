@@ -118,11 +118,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@things_n1
 Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -273,11 +273,11 @@ STANDARD BURNISHED TIN
 STANDARD PLATED TIN
 STANDARD POLISHED STEEL
 PREHOOK: query: explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -29,7 +29,7 @@ select count(1)
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -37,7 +37,7 @@ select count(1)
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -118,7 +118,7 @@ select count(1)
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -126,7 +126,7 @@ select count(1)
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

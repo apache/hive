@@ -45,12 +45,12 @@ POSTHOOK: Lineage: t_test_grouping_sets.b SCRIPT []
 POSTHOOK: Lineage: t_test_grouping_sets.c SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST, a LIMIT 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS FIRST, a LIMIT 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -166,12 +166,12 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST, a LIMIT 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY b NULLS LAST, a LIMIT 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -287,12 +287,12 @@ NULL	2
 NULL	8
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a DESC, b ASC LIMIT 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a DESC, b ASC LIMIT 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -408,12 +408,12 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a DESC NULLS FIRST, b ASC NULLS FIRST LIMIT 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b FROM t_test_grouping_sets GROUP BY a,b GROUPING SETS ((a,b), (a), (b), ()) ORDER BY a DESC NULLS FIRST, b ASC NULLS FIRST LIMIT 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test_grouping_sets
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

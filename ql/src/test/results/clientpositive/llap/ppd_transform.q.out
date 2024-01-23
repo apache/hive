@@ -6,7 +6,7 @@ FROM (
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cat
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
@@ -18,7 +18,7 @@ FROM (
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -195,7 +195,7 @@ FROM (
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cat
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
@@ -207,7 +207,7 @@ FROM (
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -381,7 +381,7 @@ FROM (
     FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
 ) reduced
 #### A masked pattern was here ####
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cat
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -390,7 +390,7 @@ FROM (
     FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
 ) reduced
 #### A masked pattern was here ####
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

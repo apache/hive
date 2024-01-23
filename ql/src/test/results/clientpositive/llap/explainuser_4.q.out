@@ -5,7 +5,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -15,7 +15,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -89,7 +89,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -98,7 +98,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -165,7 +165,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by c1, a.csmallint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -176,7 +176,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by c1, a.csmallint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -256,7 +256,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -266,7 +266,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -337,7 +337,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -346,7 +346,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -410,7 +410,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by c1, a.csmallint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -421,7 +421,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by c1, a.csmallint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -496,14 +496,14 @@ PREHOOK: query: explain
 select *
 from alltypesorc a left outer join alltypesorc b
 on a.cint = b.cint or a.csmallint between 1 and 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from alltypesorc a left outer join alltypesorc b
 on a.cint = b.cint or a.csmallint between 1 and 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 Plan optimized by CBO.

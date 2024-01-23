@@ -157,13 +157,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 VAL_86
 PREHOOK: query: EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view0
 POSTHOOK: query: EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view0
@@ -180,13 +180,13 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@view2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@view2
 POSTHOOK: Output: hdfs://### HDFS PATH ###

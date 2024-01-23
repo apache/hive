@@ -16,12 +16,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smalltable
 Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smalltable
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smalltable
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -171,13 +171,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smalltable
 POSTHOOK: Output: default@smalltable
 PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smalltable
 PREHOOK: Input: default@smalltable2
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smalltable
 POSTHOOK: Input: default@smalltable2
 POSTHOOK: Input: default@src

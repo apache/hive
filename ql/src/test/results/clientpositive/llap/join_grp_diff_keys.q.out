@@ -37,7 +37,7 @@ SELECT foo.id, count(*) as factor from
  JOIN forecast ON (foo.id = forecast.id AND foo.line_id = forecast.line_id) 
  WHERE foo.orders != 'blah'  
  group by foo.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 PREHOOK: Input: default@forecast
@@ -50,7 +50,7 @@ SELECT foo.id, count(*) as factor from
  JOIN forecast ON (foo.id = forecast.id AND foo.line_id = forecast.line_id) 
  WHERE foo.orders != 'blah'  
  group by foo.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 POSTHOOK: Input: default@forecast

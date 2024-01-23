@@ -4,7 +4,7 @@ PREHOOK: query: explain
                                             select s2.key as key, s2.value as value from src1 s2
                                         UNION  ALL  
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -14,7 +14,7 @@ POSTHOOK: query: explain
                                             select s2.key as key, s2.value as value from src1 s2
                                         UNION  ALL  
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

@@ -41,13 +41,13 @@ POSTHOOK: Lineage: mv_1._c2 EXPRESSION [(sketch_input)sketch_input.FieldSchema(n
 POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, count(distinct id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -99,12 +99,12 @@ rewrite; mv matching	a	10
 rewrite; mv matching	b	10
 PREHOOK: query: explain
 select 'no rewrite; no mv usage', category, count(distinct id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'no rewrite; no mv usage', category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -204,12 +204,12 @@ POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
 select 'rewrite; but no mv usage', category, count(distinct id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; but no mv usage', category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -288,13 +288,13 @@ rewrite; but no mv usage	a	10
 rewrite; but no mv usage	b	10
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 alter materialized view mv_1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
@@ -492,13 +492,13 @@ POSTHOOK: Lineage: mv_1._c2 EXPRESSION [(sketch_input)sketch_input.FieldSchema(n
 POSTHOOK: Lineage: mv_1.category EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), (mv_1)default.mv_1.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, count(distinct id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -550,13 +550,13 @@ rewrite; mv matching	a	10
 rewrite; mv matching	b	10
 PREHOOK: query: explain
 select 'rewrite;mv matching with rollup',count(distinct id) from sketch_input
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite;mv matching with rollup',count(distinct id) from sketch_input
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####

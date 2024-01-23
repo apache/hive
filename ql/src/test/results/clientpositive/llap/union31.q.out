@@ -60,7 +60,7 @@ insert overwrite table t3_n6
   select key, count(1) group by key
 insert overwrite table t4_n2
   select value, count(1) group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n28
 PREHOOK: Input: default@t2_n19
 PREHOOK: Output: default@t3_n6
@@ -75,7 +75,7 @@ insert overwrite table t3_n6
   select key, count(1) group by key
 insert overwrite table t4_n2
   select value, count(1) group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n28
 POSTHOOK: Input: default@t2_n19
 POSTHOOK: Output: default@t3_n6
@@ -434,7 +434,7 @@ insert overwrite table t5_n0
   select c1, sum(cnt) group by c1
 insert overwrite table t6_n0
   select c1, sum(cnt) group by c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n28
 PREHOOK: Input: default@t2_n19
 PREHOOK: Output: default@t5_n0
@@ -450,7 +450,7 @@ insert overwrite table t5_n0
   select c1, sum(cnt) group by c1
 insert overwrite table t6_n0
   select c1, sum(cnt) group by c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n28
 POSTHOOK: Input: default@t2_n19
 POSTHOOK: Output: default@t5_n0
@@ -841,7 +841,7 @@ insert overwrite table t7_n1
   select c1, count(1) group by c1
 insert overwrite table t8_n0
   select c1, count(1) group by c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n28
 PREHOOK: Input: default@t2_n19
 PREHOOK: Output: default@t7_n1
@@ -857,7 +857,7 @@ insert overwrite table t7_n1
   select c1, count(1) group by c1
 insert overwrite table t8_n0
   select c1, count(1) group by c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n28
 POSTHOOK: Input: default@t2_n19
 POSTHOOK: Output: default@t7_n1

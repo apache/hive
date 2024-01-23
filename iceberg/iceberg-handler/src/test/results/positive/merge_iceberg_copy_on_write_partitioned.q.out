@@ -49,7 +49,7 @@ PREHOOK: query: explain
 merge into target_ice as t using source src ON t.a = src.a
 when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target_ice
 PREHOOK: Output: default@target_ice
@@ -57,7 +57,7 @@ POSTHOOK: query: explain
 merge into target_ice as t using source src ON t.a = src.a
 when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target_ice
 POSTHOOK: Output: default@target_ice
@@ -433,14 +433,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 merge into target_ice as t using source src ON t.a = src.a
 when not matched then insert values (src.a, src.b, src.c)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target_ice
 PREHOOK: Output: default@target_ice
 POSTHOOK: query: explain
 merge into target_ice as t using source src ON t.a = src.a
 when not matched then insert values (src.a, src.b, src.c)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target_ice
 POSTHOOK: Output: default@target_ice

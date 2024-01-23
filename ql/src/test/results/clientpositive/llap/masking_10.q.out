@@ -17,11 +17,11 @@ POSTHOOK: Output: default@masking_test
 POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select 2017 as a, value from masking_test group by 1, 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 2017 as a, value from masking_test group by 1, 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -112,7 +112,7 @@ select * from
   left join
   masking_test alias03
 on alias01.key = alias03.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -126,7 +126,7 @@ select * from
   left join
   masking_test alias03
 on alias01.key = alias03.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

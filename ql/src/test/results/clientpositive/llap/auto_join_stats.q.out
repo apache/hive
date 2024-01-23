@@ -23,12 +23,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Output: default@smalltable_n0
 PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smalltable_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -186,13 +186,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Output: default@smalltable_n0
 PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smalltable2_n0
 PREHOOK: Input: default@smalltable_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smalltable2_n0
 POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Input: default@src

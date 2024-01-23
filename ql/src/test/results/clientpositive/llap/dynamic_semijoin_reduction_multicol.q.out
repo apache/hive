@@ -10,7 +10,7 @@ from lineitem li
          inner join partsupp ps on li.l_partkey = ps.ps_partkey and li.l_suppkey = ps.ps_suppkey
 where ps.ps_availqty < 15
 order by li.l_orderkey, li.l_partkey, li.l_suppkey, ps.ps_availqty
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: tpch_0_001@lineitem
 PREHOOK: Input: tpch_0_001@partsupp
 #### A masked pattern was here ####
@@ -181,7 +181,7 @@ from lineitem li
          inner join partsupp ps on li.l_partkey = ps.ps_partkey and li.l_suppkey = ps.ps_suppkey
 where ps.ps_availqty < 15
 order by li.l_orderkey, li.l_partkey, li.l_suppkey, ps.ps_availqty
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: tpch_0_001@lineitem
 PREHOOK: Input: tpch_0_001@partsupp
 #### A masked pattern was here ####
@@ -388,7 +388,7 @@ from lineitem li
          inner join partsupp ps on li.l_partkey = ps.ps_partkey and li.l_suppkey = ps.ps_suppkey
 where ps.ps_availqty < 15
 order by li.l_orderkey, li.l_partkey, li.l_suppkey, ps.ps_availqty
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: tpch_0_001@lineitem
 PREHOOK: Input: tpch_0_001@partsupp
 #### A masked pattern was here ####
@@ -600,7 +600,7 @@ from lineitem li
          inner join partsupp ps on li.l_partkey = ps.ps_partkey and li.l_suppkey = ps.ps_suppkey
 where ps.ps_availqty < 15
 order by li.l_orderkey, li.l_partkey, li.l_suppkey, ps.ps_availqty
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: tpch_0_001@lineitem
 PREHOOK: Input: tpch_0_001@partsupp
 #### A masked pattern was here ####

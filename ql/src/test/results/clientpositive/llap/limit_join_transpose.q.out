@@ -3,7 +3,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -11,7 +11,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -117,7 +117,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -125,7 +125,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -231,7 +231,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -239,7 +239,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -357,7 +357,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -368,7 +368,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -532,7 +532,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -543,7 +543,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -721,7 +721,7 @@ from src src1 right outer join (
 on src1.key = src2.key
 order by src2.key
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -733,7 +733,7 @@ from src src1 right outer join (
 on src1.key = src2.key
 order by src2.key
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -941,7 +941,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -952,7 +952,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -990,7 +990,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1 offset 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -998,7 +998,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1 offset 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1122,7 +1122,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1 offset 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1130,7 +1130,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1 offset 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1254,7 +1254,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1 offset 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1262,7 +1262,7 @@ select *
 from src src1 left outer join src src2
 on src1.key = src2.key
 limit 1 offset 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1398,7 +1398,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1 offset 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1409,7 +1409,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1 offset 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1591,7 +1591,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1 offset 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1602,7 +1602,7 @@ from src src1 right outer join (
   on src2.value = src3.value) src2
 on src1.key = src2.key
 limit 1 offset 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1798,7 +1798,7 @@ from src src1 right outer join (
 on src1.key = src2.key
 order by src2.key
 limit 1 offset 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1810,7 +1810,7 @@ from src src1 right outer join (
 on src1.key = src2.key
 order by src2.key
 limit 1 offset 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

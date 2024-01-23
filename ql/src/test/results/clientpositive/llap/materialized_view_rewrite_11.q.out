@@ -30,14 +30,14 @@ PREHOOK: query: explain cbo
 select * from t1 where col0 = 1
 union
 select * from t1 where col0 = 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from t1 where col0 = 1
 union
 select * from t1 where col0 = 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -55,14 +55,14 @@ PREHOOK: query: explain
 select * from t1 where col0 = 1
 union
 select * from t1 where col0 = 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from t1 where col0 = 1
 union
 select * from t1 where col0 = 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

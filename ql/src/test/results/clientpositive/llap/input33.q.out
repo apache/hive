@@ -17,7 +17,7 @@ INSERT OVERWRITE TABLE dest1_n135
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS (key STRING, value STRING)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n135
 POSTHOOK: query: EXPLAIN
@@ -31,7 +31,7 @@ INSERT OVERWRITE TABLE dest1_n135
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS (key STRING, value STRING)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n135
 STAGE DEPENDENCIES:

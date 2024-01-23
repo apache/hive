@@ -1,9 +1,9 @@
 PREHOOK: query: explain create table src_orc_merge_test_part_n1(key int, value string) partitioned by (ds string, ts string) stored as orc
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_merge_test_part_n1
 POSTHOOK: query: explain create table src_orc_merge_test_part_n1(key int, value string) partitioned by (ds string, ts string) stored as orc
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test_part_n1
 Stage-0
@@ -42,11 +42,11 @@ ts                  	string
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain insert overwrite table src_orc_merge_test_part_n1 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 POSTHOOK: query: explain insert overwrite table src_orc_merge_test_part_n1 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 Plan optimized by CBO.
@@ -94,11 +94,11 @@ POSTHOOK: Output: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03
 POSTHOOK: Lineage: src_orc_merge_test_part_n1 PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_orc_merge_test_part_n1 PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain insert into table src_orc_merge_test_part_n1 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 POSTHOOK: query: explain insert into table src_orc_merge_test_part_n1 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 Plan optimized by CBO.
@@ -145,11 +145,11 @@ Stage-3
                            Please refer to the previous Select Operator [SEL_4]
 
 PREHOOK: query: explain select count(1) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_merge_test_part_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_merge_test_part_n1
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -159,12 +159,12 @@ Stage-0
     limit:1
 
 PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_merge_test_part_n1
 PREHOOK: Input: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_merge_test_part_n1
 POSTHOOK: Input: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
@@ -199,12 +199,12 @@ POSTHOOK: type: ALTER_PARTITION_MERGE
 POSTHOOK: Input: default@src_orc_merge_test_part_n1
 POSTHOOK: Output: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 PREHOOK: query: explain select count(1) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_merge_test_part_n1
 PREHOOK: Input: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_merge_test_part_n1
 POSTHOOK: Input: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
@@ -230,12 +230,12 @@ Stage-0
                   default@src_orc_merge_test_part_n1,src_orc_merge_test_part_n1,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_merge_test_part_n1
 PREHOOK: Input: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_merge_test_part_n1
 POSTHOOK: Input: default@src_orc_merge_test_part_n1@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
@@ -281,7 +281,7 @@ select src1.key as k1, src1.value as v1,
   (select * FROM src WHERE src.key < 10) src2
   SORT BY k1, v1, k2, v2
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(hash(a.k1,a.v1,a.k2, a.v2))
@@ -293,7 +293,7 @@ select src1.key as k1, src1.value as v1,
   (select * FROM src WHERE src.key < 10) src2
   SORT BY k1, v1, k2, v2
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -336,12 +336,12 @@ Stage-0
                           default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -371,12 +371,12 @@ Stage-0
                     default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -416,7 +416,7 @@ Stage-0
                             default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0) group by c_float, cbo_t1.c_int, key order by a) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key order by q/10 desc, r asc) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c order by cbo_t3.c_int+c desc, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -424,7 +424,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0) group by c_float, cbo_t1.c_int, key order by a) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key order by q/10 desc, r asc) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c order by cbo_t3.c_int+c desc, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -512,7 +512,7 @@ Stage-0
                                       default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc) cbo_t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key  having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p left outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c  having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by cbo_t3.c_int % c asc, cbo_t3.c_int desc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -520,7 +520,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc) cbo_t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key  having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p left outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c  having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by cbo_t3.c_int % c asc, cbo_t3.c_int desc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -608,7 +608,7 @@ Stage-0
                                       default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b+c, a desc) cbo_t1 right outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 2) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -616,7 +616,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b+c, a desc) cbo_t1 right outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 2) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -697,7 +697,7 @@ Stage-0
                                 default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by c+a desc) cbo_t1 full outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by p+q desc, r asc) cbo_t2 on cbo_t1.a=p full outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0 order by cbo_t3.c_int
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -705,7 +705,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by c+a desc) cbo_t1 full outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by p+q desc, r asc) cbo_t2 on cbo_t1.a=p full outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0 order by cbo_t3.c_int
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -791,7 +791,7 @@ Stage-0
                                     default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -799,7 +799,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -880,11 +880,11 @@ Stage-0
                                 default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -898,7 +898,7 @@ PREHOOK: query: explain select unionsrc.key FROM (select 'max' as key, max(c_int
     	select 'min' as key,  min(c_int) as value from cbo_t3 s2
     UNION ALL
         select 'avg' as key,  avg(c_int) as value from cbo_t3 s3) unionsrc order by unionsrc.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select unionsrc.key FROM (select 'max' as key, max(c_int) as value from cbo_t3 s1
@@ -906,7 +906,7 @@ POSTHOOK: query: explain select unionsrc.key FROM (select 'max' as key, max(c_in
     	select 'min' as key,  min(c_int) as value from cbo_t3 s2
     UNION ALL
         select 'avg' as key,  avg(c_int) as value from cbo_t3 s3) unionsrc order by unionsrc.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -974,7 +974,7 @@ PREHOOK: query: explain select unionsrc.key, count(1) FROM (select 'max' as key,
         select 'min' as key,  min(c_int) as value from cbo_t3 s2
     UNION ALL
         select 'avg' as key,  avg(c_int) as value from cbo_t3 s3) unionsrc group by unionsrc.key order by unionsrc.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select unionsrc.key, count(1) FROM (select 'max' as key, max(c_int) as value from cbo_t3 s1
@@ -982,7 +982,7 @@ POSTHOOK: query: explain select unionsrc.key, count(1) FROM (select 'max' as key
         select 'min' as key,  min(c_int) as value from cbo_t3 s2
     UNION ALL
         select 'avg' as key,  avg(c_int) as value from cbo_t3 s3) unionsrc group by unionsrc.key order by unionsrc.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -1060,13 +1060,13 @@ Stage-0
                                 default@cbo_t3,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: explain select cbo_t1.key from cbo_t1 join cbo_t3 where cbo_t1.key=cbo_t3.key and cbo_t1.key >= 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t1.key from cbo_t1 join cbo_t3 where cbo_t1.key=cbo_t3.key and cbo_t1.key >= 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t3
@@ -1104,14 +1104,14 @@ Stage-0
                   default@cbo_t3,cbo_t3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: explain select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 left outer join  cbo_t2 on cbo_t1.key=cbo_t2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 left outer join  cbo_t2 on cbo_t1.key=cbo_t2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1150,14 +1150,14 @@ Stage-0
                     default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int"]
 
 PREHOOK: query: explain select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 full outer join  cbo_t2 on cbo_t1.key=cbo_t2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 full outer join  cbo_t2 on cbo_t1.key=cbo_t2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1194,7 +1194,7 @@ Stage-0
                   default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int"]
 
 PREHOOK: query: explain select b, cbo_t1.c, cbo_t2.p, q, cbo_t3.c_int from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1) cbo_t1 join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -1202,7 +1202,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select b, cbo_t1.c, cbo_t2.p, q, cbo_t3.c_int from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1) cbo_t1 join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1259,7 +1259,7 @@ Stage-0
                         default@cbo_t3,cbo_t3,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int"]
 
 PREHOOK: query: explain select key, cbo_t1.c_int, cbo_t2.p, q from cbo_t1 join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p join (select key as a, c_int as b, cbo_t3.c_float as c from cbo_t3)cbo_t3 on cbo_t1.key=a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -1267,7 +1267,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, cbo_t1.c_int, cbo_t2.p, q from cbo_t1 join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2) cbo_t2 on cbo_t1.key=p join (select key as a, c_int as b, cbo_t3.c_float as c from cbo_t3)cbo_t3 on cbo_t1.key=a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1324,7 +1324,7 @@ Stage-0
                         default@cbo_t3,cbo_t3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: explain select * from (select q, b, cbo_t2.p, cbo_t1.c, cbo_t3.c_int from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1  where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)) cbo_t1 full outer join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2  where (cbo_t2.c_int + 1 == 2) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q == 2) and (b > 0 or c_int >= 0)) R where  (q + 1 = 2) and (R.b > 0 or c_int >= 0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -1332,7 +1332,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select q, b, cbo_t2.p, cbo_t1.c, cbo_t3.c_int from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1  where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)) cbo_t1 full outer join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2  where (cbo_t2.c_int + 1 == 2) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q == 2) and (b > 0 or c_int >= 0)) R where  (q + 1 = 2) and (R.b > 0 or c_int >= 0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1389,7 +1389,7 @@ Stage-0
                         default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select * from (select q, b, cbo_t2.p, cbo_t1.c, cbo_t3.c_int from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1  where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)) cbo_t1 right outer join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2  where (cbo_t2.c_int + 1 == 2) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q == 2) and (b > 0 or c_int >= 0)) R where  (q + 1 = 2) and (R.b > 0 or c_int >= 0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -1397,7 +1397,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select q, b, cbo_t2.p, cbo_t1.c, cbo_t3.c_int from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1  where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)) cbo_t1 right outer join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2  where (cbo_t2.c_int + 1 == 2) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q == 2) and (b > 0 or c_int >= 0)) R where  (q + 1 = 2) and (R.b > 0 or c_int >= 0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1454,12 +1454,12 @@ Stage-0
                         default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key order by x limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from cbo_t1 group by c_float, cbo_t1.c_int, key order by x limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -1498,12 +1498,12 @@ Stage-0
                             default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x order by x,y limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x order by x,y limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -1550,12 +1550,12 @@ Stage-0
                                   default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select key from(select key from (select key from cbo_t1 limit 5)cbo_t2  limit 5)cbo_t3  limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from(select key from (select key from cbo_t1 limit 5)cbo_t2  limit 5)cbo_t3  limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -1572,12 +1572,12 @@ Stage-0
           Output:["key"]
 
 PREHOOK: query: explain select key, c_int from(select key, c_int from (select key, c_int from cbo_t1 order by c_int limit 5)cbo_t1  order by c_int limit 5)cbo_t2  order by c_int limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, c_int from(select key, c_int from (select key, c_int from cbo_t1 order by c_int limit 5)cbo_t1  order by c_int limit 5)cbo_t2  order by c_int limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -1624,7 +1624,7 @@ Stage-0
                                     default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int"]
 
 PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0) group by c_float, cbo_t1.c_int, key order by a limit 5) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key order by q/10 desc, r asc limit 5) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c order by cbo_t3.c_int+c desc, c limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -1632,7 +1632,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0) group by c_float, cbo_t1.c_int, key order by a limit 5) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key order by q/10 desc, r asc limit 5) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c order by cbo_t3.c_int+c desc, c limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1746,14 +1746,14 @@ Stage-0
                                                         default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select cbo_t1.c_int           from cbo_t1 left semi join   cbo_t2 on cbo_t1.key=cbo_t2.key where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t1.c_int           from cbo_t1 left semi join   cbo_t2 on cbo_t1.key=cbo_t2.key where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1796,7 +1796,7 @@ Stage-0
                       default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: explain select * from (select c, b, a from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1  where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)) cbo_t1 left semi join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2  where (cbo_t2.c_int + 1 == 2) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)) cbo_t2 on cbo_t1.a=p left semi join cbo_t3 on cbo_t1.a=key where (b + 1 == 2) and (b > 0 or c >= 0)) R where  (b + 1 = 2) and (R.b > 0 or c >= 0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -1804,7 +1804,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select c, b, a from (select key as a, c_int as b, cbo_t1.c_float as c from cbo_t1  where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)) cbo_t1 left semi join (select cbo_t2.key as p, cbo_t2.c_int as q, c_float as r from cbo_t2  where (cbo_t2.c_int + 1 == 2) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)) cbo_t2 on cbo_t1.a=p left semi join cbo_t3 on cbo_t1.a=key where (b + 1 == 2) and (b > 0 or c >= 0)) R where  (b + 1 = 2) and (R.b > 0 or c >= 0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1865,7 +1865,7 @@ Stage-0
                           default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select a, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by a+b desc, c asc) cbo_t1 left semi join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by q+r/10 desc, p) cbo_t2 on cbo_t1.a=p left semi join cbo_t3 on cbo_t1.a=key where (b + 1  >= 0) and (b > 0 or a >= 0) group by a, c  having a > 0 and (a >=1 or c >= 1) and (a + c) >= 0 order by c, a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
@@ -1873,7 +1873,7 @@ PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by a+b desc, c asc) cbo_t1 left semi join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by q+r/10 desc, p) cbo_t2 on cbo_t1.a=p left semi join cbo_t3 on cbo_t1.a=key where (b + 1  >= 0) and (b > 0 or a >= 0) group by a, c  having a > 0 and (a >=1 or c >= 1) and (a + c) >= 0 order by c, a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -1967,12 +1967,12 @@ Stage-0
                                           default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select cbo_t1.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cbo_t1.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -1987,12 +1987,12 @@ Stage-0
         Output:["key","c_int","c_float"]
 
 PREHOOK: query: explain select null from cbo_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select null from cbo_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -2006,12 +2006,12 @@ Stage-0
       TableScan [TS_0]
 
 PREHOOK: query: explain select key from cbo_t1 where c_int = -6  or c_int = +6
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from cbo_t1 where c_int = -6  or c_int = +6
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -2028,14 +2028,14 @@ Stage-0
           Output:["key","c_int"]
 
 PREHOOK: query: explain select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
@@ -2079,7 +2079,7 @@ where not exists
   from src_cbo a 
   where b.value = a.value and a.value > 'val_2'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * 
@@ -2089,7 +2089,7 @@ where not exists
   from src_cbo a 
   where b.value = a.value and a.value > 'val_2'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2139,7 +2139,7 @@ having not exists
   from src_cbo a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * 
@@ -2150,7 +2150,7 @@ having not exists
   from src_cbo a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2217,12 +2217,12 @@ POSTHOOK: Output: default@cv1_n5
 POSTHOOK: Lineage: cv1_n5.key SIMPLE [(src_cbo)b.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cv1_n5.value SIMPLE [(src_cbo)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain select * from cv1_n5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cv1_n5
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from cv1_n5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cv1_n5
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
@@ -2268,7 +2268,7 @@ from (select *
           from src_cbo a 
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
      ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * 
@@ -2279,7 +2279,7 @@ from (select *
           from src_cbo a 
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
      ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2319,13 +2319,13 @@ Stage-0
 PREHOOK: query: explain select * 
 from src_cbo 
 where src_cbo.key in (select key from src_cbo s1 where s1.key > '9')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * 
 from src_cbo 
 where src_cbo.key in (select key from src_cbo s1 where s1.key > '9')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2366,14 +2366,14 @@ PREHOOK: query: explain select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2435,7 +2435,7 @@ from src_cbo b
 where b.key in (select key from src_cbo where src_cbo.key > '8')
 group by key, value
 having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by s1.key )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, value, count(*) 
@@ -2443,7 +2443,7 @@ from src_cbo b
 where b.key in (select key from src_cbo where src_cbo.key > '8')
 group by key, value
 having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by s1.key )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2523,7 +2523,7 @@ from part
 group by p_mfgr, p_name
 having p_name in 
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_mfgr, p_name, avg(p_size) 
@@ -2531,7 +2531,7 @@ from part
 group by p_mfgr, p_name
 having p_name in 
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2589,7 +2589,7 @@ where src_cbo.key not in
   ( select key  from src_cbo s1 
     where s1.key > '2'
   ) order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * 
@@ -2598,7 +2598,7 @@ where src_cbo.key not in
   ( select key  from src_cbo s1 
     where s1.key > '2'
   ) order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2671,7 +2671,7 @@ where b.p_name not in
   from (select p_mfgr, p_name, p_size as r from part) a 
   where r < 10 and b.p_mfgr = a.p_mfgr 
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_mfgr, b.p_name, p_size 
@@ -2681,7 +2681,7 @@ where b.p_name not in
   from (select p_mfgr, p_name, p_size as r from part) a 
   where r < 10 and b.p_mfgr = a.p_mfgr 
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2756,7 +2756,7 @@ part where part.p_size not in
   from (select p_size from part) a 
   where p_size < 10
   ) order by p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_name, p_size 
@@ -2766,7 +2766,7 @@ part where part.p_size not in
   from (select p_size from part) a 
   where p_size < 10
   ) order by p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2839,7 +2839,7 @@ having b.p_mfgr not in
   where min(p_retailprice) = l and r - l > 600
   )
   order by b.p_mfgr
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select b.p_mfgr, min(p_retailprice) 
@@ -2851,7 +2851,7 @@ having b.p_mfgr not in
   where min(p_retailprice) = l and r - l > 600
   )
   order by b.p_mfgr
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -2941,12 +2941,12 @@ Stage-0
                                  Please refer to the previous TableScan [TS_0]
 
 PREHOOK: query: explain select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -2974,12 +2974,12 @@ Stage-0
                   default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["c_float","c_int"]
 
 PREHOOK: query: explain select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1) cbo_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1) cbo_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -3007,12 +3007,12 @@ Stage-0
                   default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["c_float","c_int"]
 
 PREHOOK: query: explain select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from cbo_t1) cbo_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from cbo_t1) cbo_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -3040,11 +3040,11 @@ Stage-0
                   default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["c_float","c_int","key","value"]
 
 PREHOOK: query: explain select *, rank() over(partition by key order by value) as rr from src1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *, rank() over(partition by key order by value) as rr from src1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3075,7 +3075,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3084,7 +3084,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3142,7 +3142,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3151,7 +3151,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3209,7 +3209,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3218,7 +3218,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3273,7 +3273,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3282,7 +3282,7 @@ select SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3338,11 +3338,11 @@ Stage-0
                                   default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: explain create table abcd_n1 (a int, b int, c int, d int)
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@abcd_n1
 POSTHOOK: query: explain create table abcd_n1 (a int, b int, c int, d int)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@abcd_n1
 Stage-0
@@ -3365,11 +3365,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@abcd_n1
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n1 group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@abcd_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n1 group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@abcd_n1
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3396,11 +3396,11 @@ Stage-0
                   default@abcd_n1,abcd_n1,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
 
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n1 group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@abcd_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n1 group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@abcd_n1
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3425,11 +3425,11 @@ Stage-0
                 default@abcd_n1,abcd_n1,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
 
 PREHOOK: query: explain create table src_rc_merge_test_n0(key int, value string) stored as rcfile
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_rc_merge_test_n0
 POSTHOOK: query: explain create table src_rc_merge_test_n0(key int, value string) stored as rcfile
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_rc_merge_test_n0
 Stage-0
@@ -3452,11 +3452,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@src_rc_merge_test_n0
 PREHOOK: query: explain create table tgt_rc_merge_test_n0(key int, value string) stored as rcfile
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tgt_rc_merge_test_n0
 POSTHOOK: query: explain create table tgt_rc_merge_test_n0(key int, value string) stored as rcfile
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tgt_rc_merge_test_n0
 Stage-0
@@ -3498,11 +3498,11 @@ minFileSize:171
 #### A masked pattern was here ####
 
 PREHOOK: query: explain select count(1) from tgt_rc_merge_test_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from tgt_rc_merge_test_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3525,11 +3525,11 @@ Stage-0
                 default@tgt_rc_merge_test_n0,tgt_rc_merge_test_n0,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3578,11 +3578,11 @@ minFileSize:171
 #### A masked pattern was here ####
 
 PREHOOK: query: explain select count(1) from tgt_rc_merge_test_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from tgt_rc_merge_test_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3605,11 +3605,11 @@ Stage-0
                 default@tgt_rc_merge_test_n0,tgt_rc_merge_test_n0,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3653,11 +3653,11 @@ POSTHOOK: Input: default@tgt_rc_merge_test_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tgt_rc_merge_test_n0
 PREHOOK: query: explain select src.key from src cross join src src2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select src.key from src cross join src src2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3686,11 +3686,11 @@ Stage-0
                 default@src,src2,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain create table nzhang_Tmp_n1(a int, b string)
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_Tmp_n1
 POSTHOOK: query: explain create table nzhang_Tmp_n1(a int, b string)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_Tmp_n1
 Stage-0
@@ -3705,12 +3705,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_Tmp_n1
 PREHOOK: query: explain create table nzhang_CTAS1_n1 as select key k, value from src sort by k, value limit 10
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_CTAS1_n1
 POSTHOOK: query: explain create table nzhang_CTAS1_n1 as select key k, value from src sort by k, value limit 10
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_CTAS1_n1
@@ -3778,12 +3778,12 @@ POSTHOOK: Output: default@nzhang_CTAS1_n1
 POSTHOOK: Lineage: nzhang_ctas1_n1.k SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_ctas1_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain create table nzhang_ctas3_n1 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_ctas3_n1
 POSTHOOK: query: explain create table nzhang_ctas3_n1 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas3_n1
@@ -3851,20 +3851,20 @@ POSTHOOK: Output: default@nzhang_ctas3_n1
 POSTHOOK: Lineage: nzhang_ctas3_n1.conb EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_ctas3_n1.half_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain create table if not exists nzhang_ctas3_n1 as select key, value from src sort by key, value limit 2
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain create table if not exists nzhang_ctas3_n1 as select key, value from src sort by key, value limit 2
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 
 PREHOOK: query: create table if not exists nzhang_ctas3_n1 as select key, value from src sort by key, value limit 2
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: create table if not exists nzhang_ctas3_n1 as select key, value from src sort by key, value limit 2
 POSTHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: query: explain create temporary table acid_dtt(a int, b varchar(128)) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_dtt
 POSTHOOK: query: explain create temporary table acid_dtt(a int, b varchar(128)) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_dtt
 Stage-0
@@ -3885,7 +3885,7 @@ select src1.key as k1, src1.value as v1,
     JOIN 
   (select * FROM src WHERE src.key < 10) src2
   SORT BY k1, v1, k2, v2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -3895,7 +3895,7 @@ select src1.key as k1, src1.value as v1,
     JOIN 
   (select * FROM src WHERE src.key < 10) src2
   SORT BY k1, v1, k2, v2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -3950,11 +3950,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@myinput1_n7
 PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -3965,11 +3965,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[inner], algorithm=[
     HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4001,11 +4001,11 @@ Stage-0
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4022,11 +4022,11 @@ HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3]
       HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4076,11 +4076,11 @@ Stage-0
                         default@myinput1_n7,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4095,11 +4095,11 @@ HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3]
       HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4143,11 +4143,11 @@ Stage-0
                       default@myinput1_n7,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4164,11 +4164,11 @@ HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $4), =($1, $5))], joinType=[inn
       HiveTableScan(table=[[default, myinput1_n7]], table:alias=[c])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4214,11 +4214,11 @@ Stage-0
                       default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4233,11 +4233,11 @@ HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3]
       HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4281,11 +4281,11 @@ Stage-0
                       default@myinput1_n7,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4296,11 +4296,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[left], algorithm=[n
     HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4332,11 +4332,11 @@ Stage-0
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4347,11 +4347,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[right], algorithm=[
     HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4383,11 +4383,11 @@ Stage-0
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4398,11 +4398,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[full], algorithm=[n
     HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4434,11 +4434,11 @@ Stage-0
                 default@myinput1_n7,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4449,11 +4449,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[inner], algorithm=[
     HiveTableScan(table=[[default, myinput1_n7]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1_n7
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4551,11 +4551,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1_n2
 POSTHOOK: Output: default@smb_input1_n2
 PREHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4566,11 +4566,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[inner], algorithm=[
     HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4594,11 +4594,11 @@ Stage-0
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4609,11 +4609,11 @@ HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $2), IS NOT DISTINCT FROM($1, $
     HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4645,11 +4645,11 @@ Stage-0
                 default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4660,11 +4660,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[right], algorithm=[
     HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4688,11 +4688,11 @@ Stage-0
               default@smb_input1_n2,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4703,11 +4703,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[inner], algorithm=[
     HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4731,11 +4731,11 @@ Stage-0
               default@smb_input1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -4746,11 +4746,11 @@ HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[left], algorithm=[n
     HiveTableScan(table=[[default, smb_input1_n2]], table:alias=[b])
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smb_input1_n2
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -4832,14 +4832,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@things_n0
 POSTHOOK: Output: default@things_n0@ds=2011-10-24
 PREHOOK: query: explain select name,id FROM sales_n0 LEFT SEMI JOIN things_n0 ON (sales_n0.id = things_n0.id)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sales_n0
 PREHOOK: Input: default@things_n0
 PREHOOK: Input: default@things_n0@ds=2011-10-23
 PREHOOK: Input: default@things_n0@ds=2011-10-24
 #### A masked pattern was here ####
 POSTHOOK: query: explain select name,id FROM sales_n0 LEFT SEMI JOIN things_n0 ON (sales_n0.id = things_n0.id)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sales_n0
 POSTHOOK: Input: default@things_n0
 POSTHOOK: Input: default@things_n0@ds=2011-10-23
@@ -4900,7 +4900,7 @@ POSTHOOK: Input: default@things_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@things_n0
 PREHOOK: query: explain select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -4910,7 +4910,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -4960,7 +4960,7 @@ Stage-0
                   default@srcpart,srcpart,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -4970,7 +4970,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -5028,7 +5028,7 @@ from noop(on part
   partition by p_mfgr
   order by p_name
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5040,7 +5040,7 @@ from noop(on part
   partition by p_mfgr
   order by p_name
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5080,7 +5080,7 @@ p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name)
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5089,7 +5089,7 @@ p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name)
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5144,7 +5144,7 @@ from noop(on part
   partition by p_mfgr
   order by p_name
   ) abc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5156,7 +5156,7 @@ from noop(on part
   partition by p_mfgr
   order by p_name
   ) abc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5199,7 +5199,7 @@ from noop(on part
           partition by p_mfgr 
           order by p_name 
           )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5211,7 +5211,7 @@ from noop(on part
           partition by p_mfgr 
           order by p_name 
           )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5255,7 +5255,7 @@ from noop(on part
           order by p_name 
           ) 
 group by p_mfgr, p_name, p_size
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5268,7 +5268,7 @@ from noop(on part
           order by p_name 
           ) 
 group by p_mfgr, p_name, p_size
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5318,7 +5318,7 @@ from noop(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5327,7 +5327,7 @@ from noop(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5373,7 +5373,7 @@ rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part
 partition by p_mfgr
 order by p_name, p_size desc)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5382,7 +5382,7 @@ rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part
 partition by p_mfgr
 order by p_name, p_size desc)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5426,7 +5426,7 @@ sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unboun
 from noopwithmap(on part 
   partition by p_mfgr
   order by p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -5437,7 +5437,7 @@ sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unboun
 from noopwithmap(on part 
   partition by p_mfgr
   order by p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5481,7 +5481,7 @@ sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unboun
 from noop(on part
 partition by p_mfgr
 order by p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5492,7 +5492,7 @@ sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unboun
 from noop(on part
 partition by p_mfgr
 order by p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5535,7 +5535,7 @@ from noop(on noopwithmap(on noop(on part
 partition by p_mfgr 
 order by p_mfgr DESC, p_name
 )))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5547,7 +5547,7 @@ from noop(on noopwithmap(on noop(on part
 partition by p_mfgr 
 order by p_mfgr DESC, p_name
 )))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5603,7 +5603,7 @@ partition by p_mfgr
 order by p_name) 
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5618,7 +5618,7 @@ partition by p_mfgr
 order by p_name) 
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5663,7 +5663,7 @@ from noop(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5677,7 +5677,7 @@ from noop(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -5732,7 +5732,7 @@ select p_mfgr, p_brand,
 sum(p_retailprice) as s 
 from part 
 group by p_mfgr, p_brand
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mfgr_price_view_n3
@@ -5741,7 +5741,7 @@ select p_mfgr, p_brand,
 sum(p_retailprice) as s 
 from part 
 group by p_mfgr, p_brand
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_price_view_n3
@@ -5809,7 +5809,7 @@ dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr,
 cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud, 
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Output: default@part_4_n1
 PREHOOK: Output: default@part_5_n1
@@ -5828,7 +5828,7 @@ dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr,
 cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud, 
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Output: default@part_4_n1
 POSTHOOK: Output: default@part_5_n1
@@ -5948,7 +5948,7 @@ from noop(on
           order by p_mfgr,p_name) 
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -5967,7 +5967,7 @@ from noop(on
           order by p_mfgr,p_name) 
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -6027,7 +6027,7 @@ from noop(on
           order by p_mfgr,p_name) 
         partition by p_mfgr  
         order by p_mfgr )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -6046,7 +6046,7 @@ from noop(on
           order by p_mfgr,p_name) 
         partition by p_mfgr  
         order by p_mfgr )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -6110,7 +6110,7 @@ from noop(on
             ) 
           partition by p_mfgr 
           order by p_mfgr))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -6127,7 +6127,7 @@ from noop(on
             ) 
           partition by p_mfgr 
           order by p_mfgr))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO because the statement has PTF
@@ -6170,11 +6170,11 @@ Stage-0
                               default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_mfgr","p_name","p_size"]
 
 PREHOOK: query: explain select distinct src.* from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct src.* from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -6205,11 +6205,11 @@ Stage-0
                     default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain select explode(array('a', 'b'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select explode(array('a', 'b'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -6300,13 +6300,13 @@ POSTHOOK: Output: default@t4_n15
 PREHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1_n16 select src1.key, src2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest_j1_n16
 POSTHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1_n16 select src1.key, src2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_j1_n16
 Plan optimized by CBO.
@@ -6382,7 +6382,7 @@ select /*+ STREAMTABLE(a) */ *
 FROM T1_n119 a JOIN T2_n70 b ON a.key = b.key
           JOIN T3_n26 c ON b.key = c.key
           JOIN T4_n15 d ON c.key = d.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 PREHOOK: Input: default@t2_n70
 PREHOOK: Input: default@t3_n26
@@ -6393,7 +6393,7 @@ select /*+ STREAMTABLE(a) */ *
 FROM T1_n119 a JOIN T2_n70 b ON a.key = b.key
           JOIN T3_n26 c ON b.key = c.key
           JOIN T4_n15 d ON c.key = d.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 POSTHOOK: Input: default@t2_n70
 POSTHOOK: Input: default@t3_n26
@@ -6456,7 +6456,7 @@ select /*+ STREAMTABLE(a,c) */ *
 FROM T1_n119 a JOIN T2_n70 b ON a.key = b.key
           JOIN T3_n26 c ON b.key = c.key
           JOIN T4_n15 d ON c.key = d.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 PREHOOK: Input: default@t2_n70
 PREHOOK: Input: default@t3_n26
@@ -6467,7 +6467,7 @@ select /*+ STREAMTABLE(a,c) */ *
 FROM T1_n119 a JOIN T2_n70 b ON a.key = b.key
           JOIN T3_n26 c ON b.key = c.key
           JOIN T4_n15 d ON c.key = d.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 POSTHOOK: Input: default@t2_n70
 POSTHOOK: Input: default@t3_n26
@@ -6526,12 +6526,12 @@ Stage-0
                   default@t1_n119,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
 
 PREHOOK: query: explain FROM T1_n119 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 POSTHOOK: query: explain FROM T1_n119 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
@@ -6592,7 +6592,7 @@ select * FROM
 JOIN 
 (select src.* FROM src) Y
 ON (x.key = Y.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -6601,7 +6601,7 @@ select * FROM
 JOIN 
 (select src.* FROM src) Y
 ON (x.key = Y.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -6637,11 +6637,11 @@ Stage-0
                   default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k join T1_n119 v on k.key=v.val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k join T1_n119 v on k.key=v.val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -6685,11 +6685,11 @@ Stage-0
                         default@t1_n119,k,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: explain select sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k join T1_n119 v on k.key=v.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k join T1_n119 v on k.key=v.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -6733,11 +6733,11 @@ Stage-0
                         default@t1_n119,v,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
 
 PREHOOK: query: explain select count(1) from  T1_n119 a join T1_n119 b on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from  T1_n119 a join T1_n119 b on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -6781,12 +6781,12 @@ Stage-0
                         default@t1_n119,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: explain FROM T1_n119 a LEFT OUTER JOIN T2_n70 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 PREHOOK: Input: default@t2_n70
 #### A masked pattern was here ####
 POSTHOOK: query: explain FROM T1_n119 a LEFT OUTER JOIN T2_n70 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 POSTHOOK: Input: default@t2_n70
 #### A masked pattern was here ####
@@ -6831,12 +6831,12 @@ Stage-0
                         default@t1_n119,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
 
 PREHOOK: query: explain FROM T1_n119 a RIGHT OUTER JOIN T2_n70 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 PREHOOK: Input: default@t2_n70
 #### A masked pattern was here ####
 POSTHOOK: query: explain FROM T1_n119 a RIGHT OUTER JOIN T2_n70 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 POSTHOOK: Input: default@t2_n70
 #### A masked pattern was here ####
@@ -6881,12 +6881,12 @@ Stage-0
                         default@t2_n70,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: explain FROM T1_n119 a FULL OUTER JOIN T2_n70 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 PREHOOK: Input: default@t2_n70
 #### A masked pattern was here ####
 POSTHOOK: query: explain FROM T1_n119 a FULL OUTER JOIN T2_n70 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 POSTHOOK: Input: default@t2_n70
 #### A masked pattern was here ####
@@ -6932,11 +6932,11 @@ Stage-0
                           default@t2_n70,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k left outer join T1_n119 v on k.key+1=v.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k left outer join T1_n119 v on k.key+1=v.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n119
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -6986,7 +6986,7 @@ where not exists
   from src_cbo a
   where b.value = a.value and a.value > 'val_2'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -6996,7 +6996,7 @@ where not exists
   from src_cbo a
   where b.value = a.value and a.value > 'val_2'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -7064,7 +7064,7 @@ having not exists
   from src_cbo a
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -7075,7 +7075,7 @@ having not exists
   from src_cbo a
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -7156,12 +7156,12 @@ POSTHOOK: Output: default@cv1_n5_anti
 POSTHOOK: Lineage: cv1_n5_anti.key SIMPLE [(src_cbo)b.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: cv1_n5_anti.value SIMPLE [(src_cbo)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain select * from cv1_n5_anti
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cv1_n5_anti
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from cv1_n5_anti
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cv1_n5_anti
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
@@ -7216,7 +7216,7 @@ from (select *
           from src_cbo a
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
      ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -7227,7 +7227,7 @@ from (select *
           from src_cbo a
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
      ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 Plan optimized by CBO.

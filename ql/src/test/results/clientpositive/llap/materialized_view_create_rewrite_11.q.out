@@ -33,13 +33,13 @@ POSTHOOK: Lineage: mv1._c2 EXPRESSION [(t1)t1.FieldSchema(name:b, type:decimal(3
 POSTHOOK: Lineage: mv1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select a, avg(b) from t1 group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select a, avg(b) from t1 group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

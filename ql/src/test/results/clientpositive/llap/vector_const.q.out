@@ -17,12 +17,12 @@ POSTHOOK: Output: default@varchar_const_1
 POSTHOOK: Lineage: varchar_const_1.c1 SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_const_1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_const_1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -70,12 +70,12 @@ POSTHOOK: Input: default@varchar_const_1
 FF
 PREHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(200)), CAST('F' AS CHAR(200))) FROM VARCHAR_CONST_1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_const_1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(200)), CAST('F' AS CHAR(200))) FROM VARCHAR_CONST_1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_const_1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

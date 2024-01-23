@@ -166,13 +166,13 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@baz
 POSTHOOK: Lineage: baz.id SCRIPT []
 PREHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@baz
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@baz
 POSTHOOK: Input: default@foo
@@ -283,13 +283,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@baz
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, b.code, c.id from foo a left outer join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@baz
 POSTHOOK: Input: default@foo
@@ -456,13 +456,13 @@ POSTHOOK: Input: default@foo
 29999000052119	NULL	29999000052119
 29999000052120	NULL	29999000052120
 PREHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@baz
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@baz
 POSTHOOK: Input: default@foo
@@ -578,13 +578,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@baz
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, b.code, c.id from foo a inner join bar b on a.id = b.id and (a.code = '01AS' or b.code = '01BS') left outer join baz c on a.id = c.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@baz
 POSTHOOK: Input: default@foo

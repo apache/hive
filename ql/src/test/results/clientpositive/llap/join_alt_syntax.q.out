@@ -1,12 +1,12 @@
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select p1.p_name, p2.p_name
 from part p1 , part p2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p1.p_name, p2.p_name
 from part p1 , part p2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -81,13 +81,13 @@ STAGE PLANS:
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 ,part p2 ,part p3 
 where p1.p_name = p2.p_name and p2.p_name = p3.p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 ,part p2 ,part p3 
 where p1.p_name = p2.p_name and p2.p_name = p3.p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -197,13 +197,13 @@ STAGE PLANS:
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 , (select p_name from part) p2 ,part p3 
 where p1.p_name = p2.p_name and p2.p_name = p3.p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 , (select p_name from part) p2 ,part p3 
 where p1.p_name = p2.p_name and p2.p_name = p3.p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -314,13 +314,13 @@ Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Sta
 PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 , part p2 , part p3 
 where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name
 from part p1 , part p2 , part p3 
 where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -437,14 +437,14 @@ PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
 from part p1 , part p2 join part p3 on p2.p_name = p1.p_name join part p4 
 where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
 from part p1 , part p2 join part p3 on p2.p_name = p1.p_name join part p4 
 where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -594,14 +594,14 @@ PREHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
 from part p1 join part p2 on p2.p_name = p1.p_name , part p3  , part p4 
 where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p1.p_name, p2.p_name, p3.p_name, p4.p_name
 from part p1 join part p2 on p2.p_name = p1.p_name , part p3  , part p4 
 where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

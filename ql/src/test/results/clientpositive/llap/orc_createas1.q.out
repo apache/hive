@@ -53,14 +53,14 @@ POSTHOOK: Lineage: orc_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSc
 PREHOOK: query: EXPLAIN CREATE TABLE orc_createas1b
     STORED AS ORC AS
     SELECT * FROM src
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_createas1b
 POSTHOOK: query: EXPLAIN CREATE TABLE orc_createas1b
     STORED AS ORC AS
     SELECT * FROM src
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1b
@@ -175,11 +175,11 @@ POSTHOOK: Output: default@orc_createas1b
 POSTHOOK: Lineage: orc_createas1b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_createas1b
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_createas1b
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -259,7 +259,7 @@ PREHOOK: query: EXPLAIN
     STORED AS ORC AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM orc_createas1a
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_createas1a
 PREHOOK: Input: default@orc_createas1a@ds=1
 PREHOOK: Input: default@orc_createas1a@ds=2
@@ -270,7 +270,7 @@ POSTHOOK: query: EXPLAIN
     STORED AS ORC AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM orc_createas1a
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_createas1a
 POSTHOOK: Input: default@orc_createas1a@ds=1
 POSTHOOK: Input: default@orc_createas1a@ds=2

@@ -64,7 +64,7 @@ from char_2_n0
 group by value
 order by value asc
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@char_2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select value, sum(cast(key as int)), count(*) numrows
@@ -72,7 +72,7 @@ from char_2_n0
 group by value
 order by value asc
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@char_2_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -275,7 +275,7 @@ from char_2_n0
 group by value
 order by value desc
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@char_2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select value, sum(cast(key as int)), count(*) numrows
@@ -283,7 +283,7 @@ from char_2_n0
 group by value
 order by value desc
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@char_2_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

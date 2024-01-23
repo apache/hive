@@ -107,7 +107,7 @@ Sort Columns:       	[]
 PREHOOK: query: explain merge into t as t using upd_t as u ON t.a = u.a 
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Input: default@upd_t
 PREHOOK: Output: default@merge_tmp_table
@@ -116,7 +116,7 @@ PREHOOK: Output: default@t
 POSTHOOK: query: explain merge into t as t using upd_t as u ON t.a = u.a 
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Input: default@upd_t
 POSTHOOK: Output: default@merge_tmp_table
@@ -662,7 +662,7 @@ POSTHOOK: Lineage: upd_t2_4.b SCRIPT []
 PREHOOK: query: explain merge into t2 as t using upd_t2_1 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b, default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@upd_t2_1
 PREHOOK: Output: default@merge_tmp_table
@@ -671,7 +671,7 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: explain merge into t2 as t using upd_t2_1 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b, default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@upd_t2_1
 POSTHOOK: Output: default@merge_tmp_table
@@ -981,7 +981,7 @@ POSTHOOK: Lineage: t2.c SIMPLE []
 PREHOOK: query: explain merge into t2 as t using upd_t2_2 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 98
 WHEN NOT MATCHED THEN INSERT (a, b) VALUES(u.a, u.b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@upd_t2_2
 PREHOOK: Output: default@merge_tmp_table
@@ -990,7 +990,7 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: explain merge into t2 as t using upd_t2_2 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 98
 WHEN NOT MATCHED THEN INSERT (a, b) VALUES(u.a, u.b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@upd_t2_2
 POSTHOOK: Output: default@merge_tmp_table
@@ -1300,7 +1300,7 @@ POSTHOOK: Lineage: t2.c SIMPLE []
 PREHOOK: query: explain merge into t2 as t using upd_t2_3 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 97
 WHEN NOT MATCHED THEN INSERT (a, b, c) VALUES(u.a, u.b, default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@upd_t2_3
 PREHOOK: Output: default@merge_tmp_table
@@ -1309,7 +1309,7 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: explain merge into t2 as t using upd_t2_3 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 97
 WHEN NOT MATCHED THEN INSERT (a, b, c) VALUES(u.a, u.b, default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@upd_t2_3
 POSTHOOK: Output: default@merge_tmp_table
@@ -1619,7 +1619,7 @@ POSTHOOK: Lineage: t2.c SIMPLE []
 PREHOOK: query: explain merge into t2 as t using upd_t2_4 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 96
 WHEN NOT MATCHED THEN INSERT (b, c, a) VALUES(u.b, default, u.a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@upd_t2_4
 PREHOOK: Output: default@merge_tmp_table
@@ -1628,7 +1628,7 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: explain merge into t2 as t using upd_t2_4 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 96
 WHEN NOT MATCHED THEN INSERT (b, c, a) VALUES(u.b, default, u.a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@upd_t2_4
 POSTHOOK: Output: default@merge_tmp_table
@@ -1990,7 +1990,7 @@ POSTHOOK: Lineage: upd_t3.b SCRIPT []
 PREHOOK: query: explain merge into t3 as t using upd_t3 as u ON t.a = u.a
 WHEN MATCHED THEN DELETE
 WHEN NOT MATCHED THEN INSERT (b, a) VALUES(default, u.b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@upd_t3
 PREHOOK: Output: default@merge_tmp_table
@@ -1999,7 +1999,7 @@ PREHOOK: Output: default@t3
 POSTHOOK: query: explain merge into t3 as t using upd_t3 as u ON t.a = u.a
 WHEN MATCHED THEN DELETE
 WHEN NOT MATCHED THEN INSERT (b, a) VALUES(default, u.b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@upd_t3
 POSTHOOK: Output: default@merge_tmp_table
@@ -2298,7 +2298,7 @@ POSTHOOK: Lineage: upd_t4.b SCRIPT []
 PREHOOK: query: explain merge into t4 as t using upd_t4 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = default
 WHEN NOT MATCHED THEN INSERT (b, a) VALUES(default, u.b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t4
 PREHOOK: Input: default@upd_t4
 PREHOOK: Output: default@merge_tmp_table
@@ -2307,7 +2307,7 @@ PREHOOK: Output: default@t4
 POSTHOOK: query: explain merge into t4 as t using upd_t4 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = default
 WHEN NOT MATCHED THEN INSERT (b, a) VALUES(default, u.b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@upd_t4
 POSTHOOK: Output: default@merge_tmp_table

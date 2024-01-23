@@ -36,13 +36,13 @@ POSTHOOK: Lineage: tbl2_n10.key EXPRESSION [(src)src.FieldSchema(name:key, type:
 POSTHOOK: Lineage: tbl2_n10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select count(*) FROM tbl1_n11 a LEFT OUTER JOIN tbl2_n10 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n11
 PREHOOK: Input: default@tbl2_n10
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) FROM tbl1_n11 a LEFT OUTER JOIN tbl2_n10 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n11
 POSTHOOK: Input: default@tbl2_n10
 #### A masked pattern was here ####
@@ -123,13 +123,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select count(*) FROM tbl1_n11 a RIGHT OUTER JOIN tbl2_n10 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n11
 PREHOOK: Input: default@tbl2_n10
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) FROM tbl1_n11 a RIGHT OUTER JOIN tbl2_n10 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n11
 POSTHOOK: Input: default@tbl2_n10
 #### A masked pattern was here ####

@@ -177,14 +177,14 @@ POSTHOOK: Lineage: mv1_n3.salary SIMPLE [(emps_n5)emps_n5.FieldSchema(name:salar
 PREHOOK: query: explain
 select name, count(*) as c, sum(empid) as s
 from emps_n5 group by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n5
 PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select name, count(*) as c, sum(empid) as s
 from emps_n5 group by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
@@ -297,14 +297,14 @@ POSTHOOK: Lineage: mv1_n3.salary SIMPLE [(emps_n5)emps_n5.FieldSchema(name:salar
 PREHOOK: query: explain
 select salary, name, sum(empid) as s, count(*) as c
 from emps_n5 group by name, salary
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n5
 PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select salary, name, sum(empid) as s, count(*) as c
 from emps_n5 group by name, salary
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
@@ -373,7 +373,7 @@ PREHOOK: query: explain
 select depts_n4.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 group by depts_n4.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
 PREHOOK: Input: default@mv1_n3
@@ -382,7 +382,7 @@ POSTHOOK: query: explain
 select depts_n4.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 group by depts_n4.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n4
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
@@ -503,7 +503,7 @@ PREHOOK: query: explain
 select depts_n4.deptno, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where emps_n5.deptno > 10 group by depts_n4.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
 PREHOOK: Input: default@mv1_n3
@@ -512,7 +512,7 @@ POSTHOOK: query: explain
 select depts_n4.deptno, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where emps_n5.deptno > 10 group by depts_n4.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n4
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
@@ -628,7 +628,7 @@ PREHOOK: query: explain
 select depts_n4.deptno, sum(empid) + 1 as s
 from emps_n5 join depts_n4 using (deptno)
 where depts_n4.deptno > 10 group by depts_n4.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
 PREHOOK: Input: default@mv1_n3
@@ -637,7 +637,7 @@ POSTHOOK: query: explain
 select depts_n4.deptno, sum(empid) + 1 as s
 from emps_n5 join depts_n4 using (deptno)
 where depts_n4.deptno > 10 group by depts_n4.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n4
 POSTHOOK: Input: default@emps_n5
 POSTHOOK: Input: default@mv1_n3
@@ -763,7 +763,7 @@ from emps_n5
 join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
 join dependents_n3 on (depts_n4.name = dependents_n3.name)
 group by dependents_n3.empid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n3
 PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
@@ -775,7 +775,7 @@ from emps_n5
 join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
 join dependents_n3 on (depts_n4.name = dependents_n3.name)
 group by dependents_n3.empid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n3
 POSTHOOK: Input: default@depts_n4
 POSTHOOK: Input: default@emps_n5
@@ -944,7 +944,7 @@ select emps_n5.deptno, count(distinct salary) as s
 from emps_n5
 join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
 group by dependents_n3.empid, emps_n5.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n3
 PREHOOK: Input: default@emps_n5
 #### A masked pattern was here ####
@@ -953,7 +953,7 @@ select emps_n5.deptno, count(distinct salary) as s
 from emps_n5
 join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
 group by dependents_n3.empid, emps_n5.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n3
 POSTHOOK: Input: default@emps_n5
 #### A masked pattern was here ####

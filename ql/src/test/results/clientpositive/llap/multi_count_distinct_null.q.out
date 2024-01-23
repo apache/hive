@@ -14,12 +14,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@employee
 PREHOOK: query: explain cbo
 select count(distinct 0), count(distinct null) from employee
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain cbo
 select count(distinct 0), count(distinct null) from employee
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
@@ -59,11 +59,11 @@ POSTHOOK: Input: default@employee
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	0
 PREHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -208,12 +208,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4	2	3	9	9
 PREHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

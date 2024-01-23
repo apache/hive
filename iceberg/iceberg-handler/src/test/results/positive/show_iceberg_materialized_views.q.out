@@ -210,9 +210,9 @@ POSTHOOK: query: USE test1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test1
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 Stage-1
   Fetch Operator
     limit:-1
@@ -231,9 +231,9 @@ shtb_test1_view1    	No                  	Manual refresh      	Not available
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 shtb_view_on_native 	Yes                 	Manual refresh      	Available for insert operations only
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 Stage-1
   Fetch Operator
     limit:-1
@@ -275,9 +275,9 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 Stage-1
   Fetch Operator
     limit:-1
@@ -303,9 +303,9 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 shtb_test1_view1    	No                  	Manual refresh      	Not available       
 shtb_test2_view2    	No                  	Manual refresh      	Not available       
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 Stage-1
   Fetch Operator
     limit:-1
@@ -328,9 +328,9 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 Stage-1
   Fetch Operator
     limit:-1

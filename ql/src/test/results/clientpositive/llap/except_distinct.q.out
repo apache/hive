@@ -206,11 +206,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2
 2	20
 PREHOOK: query: explain select * from src except distinct select * from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from src except distinct select * from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -380,11 +380,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select * from src except distinct select * from src except distinct select * from src except distinct select * from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from src except distinct select * from src except distinct select * from src except distinct select * from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -726,12 +726,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select value from a_n16 group by value except distinct select key from b_n12 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n16
 PREHOOK: Input: default@b_n12
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select value from a_n16 group by value except distinct select key from b_n12 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n16
 POSTHOOK: Input: default@b_n12
 POSTHOOK: Output: hdfs://### HDFS PATH ###

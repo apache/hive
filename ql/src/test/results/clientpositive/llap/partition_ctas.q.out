@@ -1,7 +1,7 @@
 PREHOOK: query: EXPLAIN
 CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
 SELECT value, key FROM src where key > 200 and key < 300
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partition_ctas_1
@@ -9,7 +9,7 @@ PREHOOK: Output: default@partition_ctas_1
 POSTHOOK: query: EXPLAIN
 CREATE TABLE partition_ctas_1 PARTITIONED BY (key) AS
 SELECT value, key FROM src where key > 200 and key < 300
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_ctas_1
@@ -318,13 +318,13 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_1 where key = 238
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partition_ctas_1
 PREHOOK: Input: default@partition_ctas_1@key=238
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_1 where key = 238
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partition_ctas_1
 POSTHOOK: Input: default@partition_ctas_1@key=238
 #### A masked pattern was here ####
@@ -497,13 +497,13 @@ POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_296).key SIMPLE [(src)sr
 POSTHOOK: Lineage: partition_ctas_2 PARTITION(value=val_298).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_2 where value = 'val_238'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partition_ctas_2
 PREHOOK: Input: default@partition_ctas_2@value=val_238
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_2 where value = 'val_238'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partition_ctas_2
 POSTHOOK: Input: default@partition_ctas_2@value=val_238
 #### A masked pattern was here ####
@@ -537,7 +537,7 @@ POSTHOOK: Input: default@partition_ctas_2@value=val_238
 238	val_238
 PREHOOK: query: EXPLAIN
 SELECT value FROM partition_ctas_2 where key = 238
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partition_ctas_2
 PREHOOK: Input: default@partition_ctas_2@value=val_201
 PREHOOK: Input: default@partition_ctas_2@value=val_202
@@ -604,7 +604,7 @@ PREHOOK: Input: default@partition_ctas_2@value=val_298
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT value FROM partition_ctas_2 where key = 238
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partition_ctas_2
 POSTHOOK: Input: default@partition_ctas_2@value=val_201
 POSTHOOK: Input: default@partition_ctas_2@value=val_202
@@ -962,13 +962,13 @@ POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_296).key SIMPLE
 POSTHOOK: Lineage: partition_ctas_diff_order PARTITION(value=val_298).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_diff_order where value = 'val_238'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partition_ctas_diff_order
 PREHOOK: Input: default@partition_ctas_diff_order@value=val_238
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_diff_order where value = 'val_238'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partition_ctas_diff_order
 POSTHOOK: Input: default@partition_ctas_diff_order@value=val_238
 #### A masked pattern was here ####
@@ -1135,13 +1135,13 @@ POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_239_0,c4=val_23
 POSTHOOK: Lineage: partition_ctas_complex_order PARTITION(c0=val_239_0,c4=val_239_4,c1=val_239_1).c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partition_ctas_complex_order
 PREHOOK: Input: default@partition_ctas_complex_order@c0=val_238_0/c4=val_238_4/c1=val_238_1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM partition_ctas_complex_order where c0 = 'val_238_0'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partition_ctas_complex_order
 POSTHOOK: Input: default@partition_ctas_complex_order@c0=val_238_0/c4=val_238_4/c1=val_238_1
 #### A masked pattern was here ####

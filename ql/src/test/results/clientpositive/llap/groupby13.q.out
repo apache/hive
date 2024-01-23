@@ -19,7 +19,7 @@ int_col_7,
 int_col_7,
 LEAST(COALESCE(int_col_5, -279),
   COALESCE(int_col_7, 476))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@grpby_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -33,7 +33,7 @@ int_col_7,
 int_col_7,
 LEAST(COALESCE(int_col_5, -279),
   COALESCE(int_col_7, 476))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@grpby_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -119,11 +119,11 @@ POSTHOOK: Output: default@agby
 POSTHOOK: Lineage: agby.i SCRIPT []
 POSTHOOK: Lineage: agby.j SCRIPT []
 PREHOOK: query: explain cbo select min(j) from aGBY where j='a' group by j
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@agby
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select min(j) from aGBY where j='a' group by j
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@agby
 #### A masked pattern was here ####
 CBO PLAN:

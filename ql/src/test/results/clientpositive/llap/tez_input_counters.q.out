@@ -1841,7 +1841,7 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 148
    RAW_INPUT_SPLITS_Map_1: 148
 PREHOOK: query: explain select sum(hash(*)) from testpart t1 join testpart1 t2 on t1.v = t2.v
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testpart
 PREHOOK: Input: default@testpart1
 PREHOOK: Input: default@testpart1@v=val_0

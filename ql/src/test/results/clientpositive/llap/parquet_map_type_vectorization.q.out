@@ -100,12 +100,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1023
 PREHOOK: query: explain vectorization expression select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456],
 doubleMap[123.123], stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_map_type
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456],
 doubleMap[123.123], stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_map_type
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
@@ -193,12 +193,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"k1":"v10","k2":"v10-2"}	{123:19,456:20}	{123.123:10.1,456.456:10.2}	v10-2	20	10.1	v10	19	10.2
 PREHOOK: query: explain vectorization expression select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_map_type
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_map_type
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:

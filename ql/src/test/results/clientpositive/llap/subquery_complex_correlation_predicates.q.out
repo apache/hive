@@ -139,7 +139,7 @@ where exists
           (select a_authorkey
            from author a
            where coalesce(b.b_authorkey, 300) = a.a_authorkey)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@author
 PREHOOK: Input: default@book
 #### A masked pattern was here ####
@@ -150,7 +150,7 @@ where exists
           (select a_authorkey
            from author a
            where coalesce(b.b_authorkey, 300) = a.a_authorkey)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
@@ -193,7 +193,7 @@ where exists
           (select a_authorkey
            from author a
            where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@author
 PREHOOK: Input: default@book
 #### A masked pattern was here ####
@@ -204,7 +204,7 @@ where exists
           (select a_authorkey
            from author a
            where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
@@ -246,7 +246,7 @@ where not exists
           (select a_authorkey
            from author a
            where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@author
 PREHOOK: Input: default@book
 #### A masked pattern was here ####
@@ -257,7 +257,7 @@ where not exists
           (select a_authorkey
            from author a
            where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
@@ -319,14 +319,14 @@ PREHOOK: query: explain cbo
 select * from store_sales A where exists( 
 select 1 from store_sales B 
     where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from store_sales A where exists( 
 select 1 from store_sales B 
     where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:

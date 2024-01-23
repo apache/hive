@@ -80,10 +80,10 @@ POSTHOOK: Input: default@simple_to_mm
 98
 100
 PREHOOK: query: explain alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
-PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@simple_to_mm
 POSTHOOK: query: explain alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
-POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@simple_to_mm
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

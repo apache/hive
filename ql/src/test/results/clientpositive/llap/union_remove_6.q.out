@@ -38,7 +38,7 @@ FROM (
 ) a
 insert overwrite table outputTbl1_n14 select *
 insert overwrite table outputTbl2_n4 select *
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n10
 PREHOOK: Output: default@outputtbl1_n14
 PREHOOK: Output: default@outputtbl2_n4
@@ -50,7 +50,7 @@ FROM (
 ) a
 insert overwrite table outputTbl1_n14 select *
 insert overwrite table outputTbl2_n4 select *
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n10
 POSTHOOK: Output: default@outputtbl1_n14
 POSTHOOK: Output: default@outputtbl2_n4

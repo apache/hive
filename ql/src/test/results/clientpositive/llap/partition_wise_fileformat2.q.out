@@ -53,14 +53,14 @@ POSTHOOK: Output: default@partition_test_partitioned@dt=102
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from partition_test_partitioned where dt >=100 and dt <= 102
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from partition_test_partitioned where dt >=100 and dt <= 102
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
@@ -174,14 +174,14 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=102
 		102
 		102
 PREHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from partition_test_partitioned where dt >=100 and dt <= 102
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from partition_test_partitioned where dt >=100 and dt <= 102
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101

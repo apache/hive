@@ -261,13 +261,13 @@ POSTHOOK: Input: default@db1_ext_auth2
 40	50	-455.4543	330.767
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db2_ext_auth2 ON db1_ext_auth1.ikey = db2_ext_auth2.ikey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 PREHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db2_ext_auth2 ON db1_ext_auth1.ikey = db2_ext_auth2.ikey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
@@ -372,13 +372,13 @@ POSTHOOK: Input: default@db2_ext_auth2
 20	20	20.0	20.0	20	20	20.0	20.0
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db1_ext_auth2 ON db1_ext_auth1.ikey = db1_ext_auth2.ikey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 PREHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db1_ext_auth2 ON db1_ext_auth1.ikey = db1_ext_auth2.ikey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
@@ -423,12 +423,12 @@ POSTHOOK: Input: default@db1_ext_auth2
 Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -539,13 +539,13 @@ POSTHOOK: Input: default@db1_ext_auth1
 44	88
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 PREHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
@@ -627,13 +627,13 @@ POSTHOOK: Input: default@db2_ext_auth2
 44	53	-455.454	330.76
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 PREHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
@@ -688,7 +688,7 @@ WHERE
   NOT TRUE OR P.`ikey` IS NOT NULL
   AND (P.`bkey` = 10 AND P.`dkey` = 15.15
     OR P.`bkey` = 20 AND P.`dkey` = 25.25)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -699,7 +699,7 @@ WHERE
   NOT TRUE OR P.`ikey` IS NOT NULL
   AND (P.`bkey` = 10 AND P.`dkey` = 15.15
     OR P.`bkey` = 20 AND P.`dkey` = 25.25)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -753,7 +753,7 @@ WHERE
   AND (P.`bkey` = 10 AND P.`dkey` = 15.15
     OR P.`bkey` = 20 AND P.`dkey` = 25.25)
   AND fkey = null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -765,7 +765,7 @@ WHERE
   AND (P.`bkey` = 10 AND P.`dkey` = 15.15
     OR P.`bkey` = 20 AND P.`dkey` = 25.25)
   AND fkey = null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -802,13 +802,13 @@ POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 PREHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####

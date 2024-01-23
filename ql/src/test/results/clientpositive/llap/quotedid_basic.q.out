@@ -24,11 +24,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -47,11 +47,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -73,11 +73,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -147,12 +147,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -300,12 +300,12 @@ POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 #### A masked pattern was here ####
 PREHOOK: query: explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

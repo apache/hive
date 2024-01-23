@@ -70,7 +70,7 @@ merge into lineitem2 using
 	(select * from lineitem_stage) sub
 	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
 	when matched then delete
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem2
 PREHOOK: Input: default@lineitem_stage
 PREHOOK: Output: default@lineitem2
@@ -80,7 +80,7 @@ merge into lineitem2 using
 	(select * from lineitem_stage) sub
 	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
 	when matched then delete
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem2
 POSTHOOK: Input: default@lineitem_stage
 POSTHOOK: Output: default@lineitem2
@@ -91,7 +91,7 @@ merge into lineitem2 using
 	(select * from lineitem_stage) sub
 	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
 	when matched then delete
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem2
 PREHOOK: Input: default@lineitem_stage
 PREHOOK: Output: default@lineitem2
@@ -101,7 +101,7 @@ merge into lineitem2 using
 	(select * from lineitem_stage) sub
 	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
 	when matched then delete
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem2
 POSTHOOK: Input: default@lineitem_stage
 POSTHOOK: Output: default@lineitem2

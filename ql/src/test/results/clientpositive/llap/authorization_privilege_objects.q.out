@@ -54,11 +54,11 @@ HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: O
 inputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 PREHOOK: query: EXPLAIN SELECT * FROM test_auth_obj_db.test_privs
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: test_auth_obj_db@test_privs
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM test_auth_obj_db.test_privs
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: test_auth_obj_db@test_privs
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -79,11 +79,11 @@ STAGE PLANS:
 outputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: INSERT dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 PREHOOK: query: EXPLAIN INSERT INTO test_auth_obj_db.test_privs VALUES (1),(2),(3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: test_auth_obj_db@test_privs
 POSTHOOK: query: EXPLAIN INSERT INTO test_auth_obj_db.test_privs VALUES (1),(2),(3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: test_auth_obj_db@test_privs
 STAGE DEPENDENCIES:

@@ -16,12 +16,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@n
 POSTHOOK: Lineage: n.key EXPRESSION []
 PREHOOK: query: explain analyze table n compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@n
 PREHOOK: Output: default@n
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze table n compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@n
 POSTHOOK: Output: default@n
 #### A masked pattern was here ####
@@ -134,12 +134,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain analyze table i compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@i
 PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze table i compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@i
 POSTHOOK: Output: default@i
 #### A masked pattern was here ####

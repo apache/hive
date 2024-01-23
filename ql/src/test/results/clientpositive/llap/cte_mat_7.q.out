@@ -28,7 +28,7 @@ with cte as (select count(*) as small_count from t0 where col0 < 10)
 select t0.col0, (select small_count from cte)
 from t0
 order by t0.col0
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
@@ -38,7 +38,7 @@ with cte as (select count(*) as small_count from t0 where col0 < 10)
 select t0.col0, (select small_count from cte)
 from t0
 order by t0.col0
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1

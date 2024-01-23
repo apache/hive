@@ -152,12 +152,12 @@ POSTHOOK: Input: default@fact_daily_n0@ds=1
 484	val_484	val_484	1
 86	val_86	val_86	1
 PREHOOK: query: explain extended SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n0
 PREHOOK: Input: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n0
 POSTHOOK: Input: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####

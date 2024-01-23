@@ -149,7 +149,7 @@ PREHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ttest1
 PREHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -240,7 +240,7 @@ POSTHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ttest1
 POSTHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -499,7 +499,7 @@ PREHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ttest1
 PREHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -590,7 +590,7 @@ POSTHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ttest1
 POSTHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -855,7 +855,7 @@ PREHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ttest1
 PREHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -946,7 +946,7 @@ POSTHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ttest1
 POSTHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -1219,7 +1219,7 @@ PREHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ttest1
 PREHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -1310,7 +1310,7 @@ POSTHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ttest1
 POSTHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -1579,7 +1579,7 @@ PREHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ttest1
 PREHOOK: Input: default@ttest2
 #### A masked pattern was here ####
@@ -1670,7 +1670,7 @@ POSTHOOK: query: explain SELECT
        AND A1.khash IS NOT NULL
    ) A2
    where a2.flag <> 'RET'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ttest1
 POSTHOOK: Input: default@ttest2
 #### A masked pattern was here ####

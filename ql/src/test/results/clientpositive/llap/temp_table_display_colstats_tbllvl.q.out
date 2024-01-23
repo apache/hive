@@ -156,13 +156,13 @@ bit_vector
 comment             	from deserializer   
 PREHOOK: query: explain
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@uservisits_web_text_none
 PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
@@ -230,13 +230,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@uservisits_web_text_none
 PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
@@ -520,13 +520,13 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}
 PREHOOK: query: explain
 analyze table empty_tab compute statistics for columns a,b,c,d,e
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@empty_tab
 PREHOOK: Output: default@empty_tab
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 analyze table empty_tab compute statistics for columns a,b,c,d,e
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@empty_tab
 POSTHOOK: Output: default@empty_tab
 #### A masked pattern was here ####

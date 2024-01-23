@@ -50,14 +50,14 @@ PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orcfile_merge1@ds=1
 POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -193,14 +193,14 @@ PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orcfile_merge1b@ds=1
 POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -386,14 +386,14 @@ PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orcfile_merge1c@ds=1
 POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -632,11 +632,11 @@ POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: explain ALTER TABLE  orcfile_merge1 PARTITION (ds='1', part='0') CONCATENATE
-PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orcfile_merge1
 PREHOOK: Output: default@orcfile_merge1@ds=1/part=0
 POSTHOOK: query: explain ALTER TABLE  orcfile_merge1 PARTITION (ds='1', part='0') CONCATENATE
-POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orcfile_merge1
 POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
 STAGE DEPENDENCIES:

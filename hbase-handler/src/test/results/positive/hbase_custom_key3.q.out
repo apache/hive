@@ -53,12 +53,12 @@ POSTHOOK: Input: default@hbase_ck_5
 {"col1":"86","col2":"1086","col3":"2086"}	val_86
 PREHOOK: query: explain
 select * from hbase_ck_5 where key.col1 = '238' AND key.col2 = '1238'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from hbase_ck_5 where key.col1 = '238' AND key.col2 = '1238'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -93,12 +93,12 @@ POSTHOOK: Input: default@hbase_ck_5
 {"col1":"238","col2":"1238","col3":"2238"}	val_238
 PREHOOK: query: explain
 select * from hbase_ck_5 where key.col1 >= '165' AND key.col1 < '27'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from hbase_ck_5 where key.col1 >= '165' AND key.col1 < '27'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -133,12 +133,12 @@ POSTHOOK: Input: default@hbase_ck_5
 {"col1":"238","col2":"1238","col3":"2238"}	val_238
 PREHOOK: query: explain
 select * from hbase_ck_5 where key.col1 > '100' AND key.col2 >= '1238'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from hbase_ck_5 where key.col1 > '100' AND key.col2 >= '1238'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -173,12 +173,12 @@ POSTHOOK: Input: default@hbase_ck_5
 {"col1":"311","col2":"1311","col3":"2311"}	val_311
 PREHOOK: query: explain
 select * from hbase_ck_5 where key.col1 < '50' AND key.col2 >= '3238'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from hbase_ck_5 where key.col1 < '50' AND key.col2 >= '3238'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

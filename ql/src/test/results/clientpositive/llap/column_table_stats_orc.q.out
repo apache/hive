@@ -58,12 +58,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table s_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n0
 PREHOOK: Output: default@s_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended analyze table s_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n0
 POSTHOOK: Output: default@s_n0
 #### A masked pattern was here ####
@@ -316,7 +316,7 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@spart_n0
 PREHOOK: Input: default@spart_n0@ds=2008-04-08/hr=11
 PREHOOK: Input: default@spart_n0@ds=2008-04-08/hr=12
@@ -325,7 +325,7 @@ PREHOOK: Output: default@spart_n0@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart_n0@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended analyze table spart_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@spart_n0
 POSTHOOK: Input: default@spart_n0@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@spart_n0@ds=2008-04-08/hr=12
@@ -717,14 +717,14 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart_n0 partition(hr="11") compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@spart_n0
 PREHOOK: Input: default@spart_n0@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart_n0
 PREHOOK: Output: default@spart_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended analyze table spart_n0 partition(hr="11") compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@spart_n0
 POSTHOOK: Input: default@spart_n0@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@spart_n0

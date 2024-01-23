@@ -36,13 +36,13 @@ POSTHOOK: Lineage: px_n0.a SCRIPT []
 POSTHOOK: Lineage: px_n0.p SCRIPT []
 PREHOOK: query: explain
 select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@px_n0
 PREHOOK: Input: default@tx_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@px_n0
 POSTHOOK: Input: default@tx_n3
 #### A masked pattern was here ####
@@ -100,13 +100,13 @@ POSTHOOK: Input: default@tx_n3
 83
 PREHOOK: query: explain
 select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@px_n0
 PREHOOK: Input: default@tx_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@px_n0
 POSTHOOK: Input: default@tx_n3
 #### A masked pattern was here ####

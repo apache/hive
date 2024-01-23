@@ -25,11 +25,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_pushdown
 PREHOOK: query: explain select * from hbase_pushdown where key=90
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key=90
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -60,11 +60,11 @@ POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 90	val_90
 PREHOOK: query: explain select * from hbase_pushdown where key=90 and value like '%90%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key=90 and value like '%90%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -111,11 +111,11 @@ POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 90	val_90
 PREHOOK: query: explain select * from hbase_pushdown where key=90 and value like '%90%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key=90 and value like '%90%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -163,12 +163,12 @@ POSTHOOK: Input: default@hbase_pushdown
 90	val_90
 PREHOOK: query: explain select * from hbase_pushdown
 where key=90 and value like '%90%' and key=cast(value as int)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown
 where key=90 and value like '%90%' and key=cast(value as int)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -207,12 +207,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -236,11 +236,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from hbase_pushdown
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -262,12 +262,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from hbase_pushdown
 where (case when key=90 then 2 else 4 end) > 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown
 where (case when key=90 then 2 else 4 end) > 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -305,12 +305,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from hbase_pushdown
 where key=80 or value like '%90%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown
 where key=80 or value like '%90%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -347,11 +347,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from hbase_pushdown where key=90
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key=90
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

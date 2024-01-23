@@ -236,14 +236,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN
 SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@episodes_partitioned_n0
 PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
 PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@episodes_partitioned_n0
 POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
 POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
@@ -332,14 +332,14 @@ POSTHOOK: Input: default@episodes_partitioned_n0
 episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 PREHOOK: query: EXPLAIN
 SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@episodes_partitioned_n0
 PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
 PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@episodes_partitioned_n0
 POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
 POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9

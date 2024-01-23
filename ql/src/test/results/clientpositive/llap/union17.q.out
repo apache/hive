@@ -20,7 +20,7 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST1_n78 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
 INSERT OVERWRITE TABLE DEST2_n17 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n78
 PREHOOK: Output: default@dest2_n17
@@ -30,7 +30,7 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST1_n78 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
 INSERT OVERWRITE TABLE DEST2_n17 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n78
 POSTHOOK: Output: default@dest2_n17

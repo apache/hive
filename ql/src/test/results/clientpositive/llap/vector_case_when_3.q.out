@@ -17,11 +17,11 @@ POSTHOOK: Output: default@test_decimal
 POSTHOOK: Lineage: test_decimal.newclt_all SCRIPT []
 POSTHOOK: Lineage: test_decimal.rattag SCRIPT []
 PREHOOK: query: explain vectorization detail select sum(case when rattag='a' then newclt_all*0.3 else newclt_all end) from test_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_decimal
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(case when rattag='a' then newclt_all*0.3 else newclt_all end) from test_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_decimal
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -152,11 +152,11 @@ POSTHOOK: Input: default@test_decimal
 #### A masked pattern was here ####
 3.060
 PREHOOK: query: explain vectorization detail select sum(case when rattag='Y' then newclt_all*0.3 else newclt_all end) from test_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_decimal
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(case when rattag='Y' then newclt_all*0.3 else newclt_all end) from test_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_decimal
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

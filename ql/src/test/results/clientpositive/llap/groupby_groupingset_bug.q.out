@@ -179,7 +179,7 @@ select   count(*) cnt
  group by d.d_month_seq
  order by cnt 
  limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_item
 PREHOOK: Input: default@x1_store_sales
@@ -209,7 +209,7 @@ select   count(*) cnt
  group by d.d_month_seq
  order by cnt 
  limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_item
 POSTHOOK: Input: default@x1_store_sales

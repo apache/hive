@@ -35,11 +35,11 @@ POSTHOOK: Lineage: t1.c6 EXPRESSION []
 POSTHOOK: Lineage: t1.c7 EXPRESSION []
 POSTHOOK: Lineage: t1.c8 EXPRESSION []
 PREHOOK: query: explain select get_sql_schema('select * from t1')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select get_sql_schema('select * from t1')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -104,11 +104,11 @@ POSTHOOK: Lineage: t2.c6 EXPRESSION []
 POSTHOOK: Lineage: t2.c7 EXPRESSION []
 POSTHOOK: Lineage: t2.c8 EXPRESSION []
 PREHOOK: query: explain select get_sql_schema('select * from t2')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select get_sql_schema('select * from t2')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

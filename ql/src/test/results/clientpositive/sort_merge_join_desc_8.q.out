@@ -106,14 +106,14 @@ POSTHOOK: Lineage: table_desc4.value2 EXPRESSION [(src)src.FieldSchema(name:valu
 PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1_n2 a join table_desc2_n2 b
 on a.key=b.key where a.key < 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_desc1_n2
 PREHOOK: Input: default@table_desc2_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1_n2 a join table_desc2_n2 b
 on a.key=b.key where a.key < 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_desc1_n2
 POSTHOOK: Input: default@table_desc2_n2
 #### A masked pattern was here ####
@@ -186,14 +186,14 @@ POSTHOOK: Input: default@table_desc2_n2
 PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc3 a join table_desc4 b
 on a.key=b.key and a.value2=b.value2 where a.key < 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_desc3
 PREHOOK: Input: default@table_desc4
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc3 a join table_desc4 b
 on a.key=b.key and a.value2=b.value2 where a.key < 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_desc3
 POSTHOOK: Input: default@table_desc4
 #### A masked pattern was here ####

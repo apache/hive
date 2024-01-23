@@ -49,7 +49,7 @@ SELECT
       TRUNC('2016-02-03 10:30:45', 'MM'),
       TRUNC('2016-02-28 10:30:45', 'MM'),
       TRUNC('2016-02-29 10:30:45', 'MM')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -70,7 +70,7 @@ SELECT
       TRUNC('2016-02-03 10:30:45', 'MM'),
       TRUNC('2016-02-28 10:30:45', 'MM'),
       TRUNC('2016-02-29 10:30:45', 'MM')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -154,7 +154,7 @@ SELECT
       TRUNC('2016-05-11 10:30:45', 'Q'),
       TRUNC('2016-07-01 10:30:45', 'Q'),
       TRUNC('2016-12-31 10:30:45', 'Q')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -181,7 +181,7 @@ SELECT
       TRUNC('2016-05-11 10:30:45', 'Q'),
       TRUNC('2016-07-01 10:30:45', 'Q'),
       TRUNC('2016-12-31 10:30:45', 'Q')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -271,7 +271,7 @@ SELECT
       TRUNC('2016-02-03 10:30:45', 'YEAR'),
       TRUNC('2016-02-28 10:30:45', 'YEAR'),
       TRUNC('2016-02-29 10:30:45', 'YEAR')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -292,7 +292,7 @@ SELECT
       TRUNC('2016-02-03 10:30:45', 'YEAR'),
       TRUNC('2016-02-28 10:30:45', 'YEAR'),
       TRUNC('2016-02-29 10:30:45', 'YEAR')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -370,7 +370,7 @@ SELECT
       TRUNC(CAST('2016-02-03 10:30:45' AS TIMESTAMP), 'MM'),
       TRUNC(CAST('2016-02-28 10:30:45' AS TIMESTAMP), 'MM'),
       TRUNC(CAST('2016-02-29 10:30:45' AS TIMESTAMP), 'MM')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -391,7 +391,7 @@ SELECT
       TRUNC(CAST('2016-02-03 10:30:45' AS TIMESTAMP), 'MM'),
       TRUNC(CAST('2016-02-28 10:30:45' AS TIMESTAMP), 'MM'),
       TRUNC(CAST('2016-02-29 10:30:45' AS TIMESTAMP), 'MM')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -472,7 +472,7 @@ SELECT
       TRUNC(CAST('2016-05-11 10:30:45' AS TIMESTAMP), 'Q'),
       TRUNC(CAST('2016-07-01 10:30:45' AS TIMESTAMP), 'Q'),
       TRUNC(CAST('2016-12-31 10:30:45' AS TIMESTAMP), 'Q')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -496,7 +496,7 @@ SELECT
       TRUNC(CAST('2016-05-11 10:30:45' AS TIMESTAMP), 'Q'),
       TRUNC(CAST('2016-07-01 10:30:45' AS TIMESTAMP), 'Q'),
       TRUNC(CAST('2016-12-31 10:30:45' AS TIMESTAMP), 'Q')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -580,7 +580,7 @@ SELECT
       TRUNC(CAST('2016-02-03 10:30:45' AS TIMESTAMP), 'YEAR'),
       TRUNC(CAST('2016-02-28 10:30:45' AS TIMESTAMP), 'YEAR'),
       TRUNC(CAST('2016-02-29 10:30:45' AS TIMESTAMP), 'YEAR')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -601,7 +601,7 @@ SELECT
       TRUNC(CAST('2016-02-03 10:30:45' AS TIMESTAMP), 'YEAR'),
       TRUNC(CAST('2016-02-28 10:30:45' AS TIMESTAMP), 'YEAR'),
       TRUNC(CAST('2016-02-29 10:30:45' AS TIMESTAMP), 'YEAR')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -671,7 +671,7 @@ SELECT
       TRUNC(CAST('2016-02-03' AS DATE), 'MM'),
       TRUNC(CAST('2016-02-28' AS DATE), 'MM'),
       TRUNC(CAST('2016-02-29' AS DATE), 'MM')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -684,7 +684,7 @@ SELECT
       TRUNC(CAST('2016-02-03' AS DATE), 'MM'),
       TRUNC(CAST('2016-02-28' AS DATE), 'MM'),
       TRUNC(CAST('2016-02-29' AS DATE), 'MM')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -741,7 +741,7 @@ SELECT
       TRUNC(CAST('2016-05-11' AS DATE), 'Q'),
       TRUNC(CAST('2016-07-01' AS DATE), 'Q'),
       TRUNC(CAST('2016-12-31' AS DATE), 'Q')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -757,7 +757,7 @@ SELECT
       TRUNC(CAST('2016-05-11' AS DATE), 'Q'),
       TRUNC(CAST('2016-07-01' AS DATE), 'Q'),
       TRUNC(CAST('2016-12-31' AS DATE), 'Q')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -817,7 +817,7 @@ SELECT
       TRUNC(CAST('2016-02-03' AS DATE), 'YEAR'),
       TRUNC(CAST('2016-02-28' AS DATE), 'YEAR'),
       TRUNC(CAST('2016-02-29' AS DATE), 'YEAR')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -830,7 +830,7 @@ SELECT
       TRUNC(CAST('2016-02-03' AS DATE), 'YEAR'),
       TRUNC(CAST('2016-02-28' AS DATE), 'YEAR'),
       TRUNC(CAST('2016-02-29' AS DATE), 'YEAR')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -882,7 +882,7 @@ SELECT
       TRUNC(CAST(null AS TIMESTAMP), 'MM'),
       TRUNC('2014-01-01', 'M'),
       TRUNC('2014-01-01', CAST(null AS STRING))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -893,7 +893,7 @@ SELECT
       TRUNC(CAST(null AS TIMESTAMP), 'MM'),
       TRUNC('2014-01-01', 'M'),
       TRUNC('2014-01-01', CAST(null AS STRING))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -941,7 +941,7 @@ SELECT
       TRUNC(CAST(null AS TIMESTAMP), 'Q'),
       TRUNC('2014-01-01', 'Q'),
       TRUNC('2014-01-01', CAST(null AS STRING))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -952,7 +952,7 @@ SELECT
       TRUNC(CAST(null AS TIMESTAMP), 'Q'),
       TRUNC('2014-01-01', 'Q'),
       TRUNC('2014-01-01', CAST(null AS STRING))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1000,7 +1000,7 @@ SELECT
       TRUNC(CAST(null AS TIMESTAMP), 'YEAR'),
       TRUNC('2014-01-01', 'M'),
       TRUNC('2014-01-01', CAST(null AS STRING))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -1011,7 +1011,7 @@ SELECT
       TRUNC(CAST(null AS TIMESTAMP), 'YEAR'),
       TRUNC('2014-01-01', 'M'),
       TRUNC('2014-01-01', CAST(null AS STRING))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -84,7 +84,7 @@ POSTHOOK: Lineage: t1.d SCRIPT []
 POSTHOOK: Lineage: t1.e SCRIPT []
 PREHOOK: query: EXPLAIN CBO
 ALTER MATERIALIZED VIEW mat1 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@mat1@a=1/c=1/d=one
 PREHOOK: Input: default@mat1@a=2/c=2/d=two
@@ -94,7 +94,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: EXPLAIN CBO
 ALTER MATERIALIZED VIEW mat1 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@mat1@a=1/c=1/d=one
 POSTHOOK: Input: default@mat1@a=2/c=2/d=two
@@ -122,7 +122,7 @@ HiveProject(sumb=[$3], sume=[$4], a=[$0], c=[$1], d=[$2])
 
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW mat1 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@mat1@a=1/c=1/d=one
 PREHOOK: Input: default@mat1@a=2/c=2/d=two
@@ -132,7 +132,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW mat1 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@mat1@a=1/c=1/d=one
 POSTHOOK: Input: default@mat1@a=2/c=2/d=two

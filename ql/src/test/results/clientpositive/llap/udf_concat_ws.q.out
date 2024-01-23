@@ -37,7 +37,7 @@ SELECT concat_ws(dest1_n8.c1, dest1_n8.c2, dest1_n8.c3),
        concat_ws(',', dest1_n8.c1, dest1_n8.c2, dest1_n8.c3),
        concat_ws(NULL, dest1_n8.c1, dest1_n8.c2, dest1_n8.c3),
        concat_ws('**', dest1_n8.c1, NULL, dest1_n8.c3) FROM dest1_n8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n8
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -45,7 +45,7 @@ SELECT concat_ws(dest1_n8.c1, dest1_n8.c2, dest1_n8.c3),
        concat_ws(',', dest1_n8.c1, dest1_n8.c2, dest1_n8.c3),
        concat_ws(NULL, dest1_n8.c1, dest1_n8.c2, dest1_n8.c3),
        concat_ws('**', dest1_n8.c1, NULL, dest1_n8.c3) FROM dest1_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n8
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -86,7 +86,7 @@ SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('**', 'www', array('face'), array('book', 'com', '1234')),
        concat_ws('[]', array('www'), 'face', array('book', 'com', '1234')),
        concat_ws('AAA', array('www'), array('face', 'book', 'com'), '1234') FROM dest1_n8 tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n8
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -97,7 +97,7 @@ SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('**', 'www', array('face'), array('book', 'com', '1234')),
        concat_ws('[]', array('www'), 'face', array('book', 'com', '1234')),
        concat_ws('AAA', array('www'), array('face', 'book', 'com'), '1234') FROM dest1_n8 tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n8
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

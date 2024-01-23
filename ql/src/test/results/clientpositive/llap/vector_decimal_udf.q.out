@@ -64,12 +64,12 @@ POSTHOOK: Lineage: decimal_udf_n0.key EXPRESSION []
 POSTHOOK: Lineage: decimal_udf_n0.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -185,12 +185,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -306,12 +306,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -427,12 +427,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -548,12 +548,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -669,12 +669,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -790,12 +790,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -911,12 +911,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1032,12 +1032,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1153,12 +1153,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1265,12 +1265,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 3.1400000000	4
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1386,12 +1386,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1507,12 +1507,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1628,12 +1628,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1749,12 +1749,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1873,12 +1873,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 1.000000000000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1987,12 +1987,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 1.122000000000000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2101,12 +2101,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 2.244
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2222,12 +2222,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2343,12 +2343,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2549,12 +2549,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2670,12 +2670,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2745,11 +2745,11 @@ POSTHOOK: Input: default@decimal_udf_n0
 NULL
 NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2835,12 +2835,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2956,12 +2956,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3077,12 +3077,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3198,12 +3198,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3319,12 +3319,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3489,12 +3489,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3659,12 +3659,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3749,12 +3749,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 [{"x":-1.2345678901234567E9,"y":1.0},{"x":-144.50057142857142,"y":35.0},{"x":1.2345678901234567E9,"y":1.0}]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3885,12 +3885,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 -1234567890.1234567890
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4021,12 +4021,12 @@ POSTHOOK: Input: default@decimal_udf_n0
 1234567890.1234567800
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4189,12 +4189,12 @@ POSTHOOK: Lineage: decimal_udf_txt_small.key EXPRESSION []
 POSTHOOK: Lineage: decimal_udf_txt_small.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4310,12 +4310,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4431,12 +4431,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4552,12 +4552,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4673,12 +4673,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4794,12 +4794,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4915,12 +4915,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5036,12 +5036,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5157,12 +5157,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5278,12 +5278,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5390,12 +5390,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 3.140	4
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5511,12 +5511,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5632,12 +5632,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5753,12 +5753,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5874,12 +5874,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5998,12 +5998,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 1.0000000000000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6112,12 +6112,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 1.12200000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6226,12 +6226,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 2.244
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6347,12 +6347,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6468,12 +6468,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6674,12 +6674,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6795,12 +6795,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6870,11 +6870,11 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 NULL
 NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -6960,12 +6960,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -7081,12 +7081,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -7202,12 +7202,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -7323,12 +7323,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -7444,12 +7444,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -7614,12 +7614,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -7784,12 +7784,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -7874,12 +7874,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 [{"x":-1.234567890123E9,"y":1.0},{"x":-144.50057142857142,"y":35.0},{"x":1.234567890123E9,"y":1.0}]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -8010,12 +8010,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 -1234567890.123
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -8146,12 +8146,12 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 1234567890.123
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_txt_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_txt_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

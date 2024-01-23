@@ -1,9 +1,9 @@
 PREHOOK: query: explain CREATE TABLE CACHE (col STRING)
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@CACHE
 POSTHOOK: query: explain CREATE TABLE CACHE (col STRING)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@CACHE
 STAGE DEPENDENCIES:
@@ -19,11 +19,11 @@ STAGE PLANS:
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: explain CREATE TABLE DAYOFWEEK (col STRING)
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DAYOFWEEK
 POSTHOOK: query: explain CREATE TABLE DAYOFWEEK (col STRING)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DAYOFWEEK
 STAGE DEPENDENCIES:
@@ -39,11 +39,11 @@ STAGE PLANS:
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: explain CREATE TABLE VIEWS (col STRING)
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@VIEWS
 POSTHOOK: query: explain CREATE TABLE VIEWS (col STRING)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@VIEWS
 STAGE DEPENDENCIES:

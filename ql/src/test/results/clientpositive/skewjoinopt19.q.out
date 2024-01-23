@@ -36,13 +36,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2_n22
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n34 a JOIN T2_n22 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n34
 PREHOOK: Input: default@t2_n22
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n34 a JOIN T2_n22 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n34
 POSTHOOK: Input: default@t2_n22
 #### A masked pattern was here ####

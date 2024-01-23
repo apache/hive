@@ -25,11 +25,11 @@ POSTHOOK: Input: default@t1_n36
 POSTHOOK: Output: default@t1_n36
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(1) from t1_n36 group by 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n36
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from t1_n36 group by 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n36
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -112,11 +112,11 @@ POSTHOOK: Input: default@t1_n36
 #### A masked pattern was here ####
 0
 PREHOOK: query: explain select count(*) from t1_n36
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n36
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from t1_n36
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n36
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

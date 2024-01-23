@@ -13,12 +13,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@user_web_events
 PREHOOK: query: explain analyze table user_web_events compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@user_web_events
 PREHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze table user_web_events compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@user_web_events
 POSTHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
@@ -95,12 +95,12 @@ POSTHOOK: Input: default@user_web_events
 POSTHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze table user_web_events compute statistics for columns `user id`
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@user_web_events
 PREHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze table user_web_events compute statistics for columns `user id`
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@user_web_events
 POSTHOOK: Output: default@user_web_events
 #### A masked pattern was here ####

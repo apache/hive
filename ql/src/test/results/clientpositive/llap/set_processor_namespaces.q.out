@@ -4,11 +4,11 @@ system:yyy=5
 go=5
 raw=${hiveconf:zzz}
 PREHOOK: query: EXPLAIN SELECT * FROM src where key=5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM src where key=5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

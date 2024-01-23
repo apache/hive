@@ -48,12 +48,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@over10k_n1
 PREHOOK: query: explain vectorization detail
 select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -310,12 +310,12 @@ quinn laertes	81604380656
 rachel young	85899348171
 PREHOOK: query: explain vectorization detail
 select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -572,12 +572,12 @@ tom white	154.0
 rachel ellison	10.600000381469727
 PREHOOK: query: explain vectorization detail
 select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -800,12 +800,12 @@ jessica johnson	885.3000106811523
 priscilla garcia	805.8400115966797
 PREHOOK: query: explain vectorization detail
 select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -1026,12 +1026,12 @@ sarah falkner	59.53333377838135
 tom hernandez	63.331667264302574
 PREHOOK: query: explain vectorization detail
 select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -1252,12 +1252,12 @@ david laertes	28.00454545454545
 david miller	28.40090909090909
 PREHOOK: query: explain vectorization detail
 select s, sum(i) over(partition by ts order by s) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, sum(i) over(partition by ts order by s) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -1516,12 +1516,12 @@ sarah falkner	1511234
 tom hernandez	1576947
 PREHOOK: query: explain vectorization detail
 select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -1778,12 +1778,12 @@ f	sum_window_0
 80.02	882.1299904882908
 PREHOOK: query: explain vectorization detail
 select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n1 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n1 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -2004,12 +2004,12 @@ f	sum_window_0
 80.02	151.13999938964844
 PREHOOK: query: explain vectorization detail
 select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n1 limit 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n1 limit 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -2176,12 +2176,12 @@ alice allen	65670	2.88
 alice allen	65720	2.76
 PREHOOK: query: explain vectorization detail
 select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i) limit 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i) limit 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain
@@ -2348,12 +2348,12 @@ alice allen	65670	20.0
 alice allen	65720	20.0
 PREHOOK: query: explain vectorization detail
 select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i)) X limit 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i)) X limit 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 Explain

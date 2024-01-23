@@ -102,7 +102,7 @@ POSTHOOK: Lineage: srcpart_merge_dp_rc_temp PARTITION(ds=2008-04-08,hr=12).value
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_temp partition (ds = '2008-04-08', hr)
   select key, value, if(key % 100 == 0, 'a1', 'b1') as hr from srcpart_merge_dp_rc_temp where ds = '2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_merge_dp_rc_temp
 PREHOOK: Input: default@srcpart_merge_dp_rc_temp@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_merge_dp_rc_temp@ds=2008-04-08/hr=12
@@ -110,7 +110,7 @@ PREHOOK: Output: default@merge_dynamic_part_temp@ds=2008-04-08
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_temp partition (ds = '2008-04-08', hr)
   select key, value, if(key % 100 == 0, 'a1', 'b1') as hr from srcpart_merge_dp_rc_temp where ds = '2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_merge_dp_rc_temp
 POSTHOOK: Input: default@srcpart_merge_dp_rc_temp@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp_rc_temp@ds=2008-04-08/hr=12

@@ -47,11 +47,11 @@ POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 POSTHOOK: Output: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -119,11 +119,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -191,11 +191,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -323,11 +323,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -575,11 +575,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -647,11 +647,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -719,11 +719,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -851,11 +851,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1103,11 +1103,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1175,11 +1175,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1247,11 +1247,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1379,11 +1379,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1631,11 +1631,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1703,11 +1703,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1775,11 +1775,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1907,11 +1907,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2159,11 +2159,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2231,11 +2231,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2303,11 +2303,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2435,11 +2435,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2687,11 +2687,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2759,11 +2759,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2831,11 +2831,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2963,11 +2963,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@annotate_stats_lateral_view_join_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

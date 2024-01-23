@@ -16,12 +16,12 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower
 Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

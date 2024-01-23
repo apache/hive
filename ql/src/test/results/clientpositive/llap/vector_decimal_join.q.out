@@ -15,12 +15,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bar
 PREHOOK: query: explain vectorization detail select sum(foo.y) from foo, bar where foo.x = bar.x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(foo.y) from foo, bar where foo.x = bar.x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####

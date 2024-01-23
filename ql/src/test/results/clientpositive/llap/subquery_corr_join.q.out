@@ -121,7 +121,7 @@ where t1.id not in
     (select tt1.id
      from alltypestiny tt1 inner JOIN alltypesagg tt2
      on tt1.int_col = t1.int_col)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -131,7 +131,7 @@ where t1.id not in
     (select tt1.id
      from alltypestiny tt1 inner JOIN alltypesagg tt2
      on tt1.int_col = t1.int_col)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####

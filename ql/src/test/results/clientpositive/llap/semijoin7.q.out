@@ -36,13 +36,13 @@ POSTHOOK: Lineage: tx2.a SCRIPT []
 POSTHOOK: Lineage: tx2.b SCRIPT []
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx1
 PREHOOK: Input: default@tx2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx1
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
@@ -143,13 +143,13 @@ POSTHOOK: Input: default@tx2
 4	400
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <=> v.b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx1
 PREHOOK: Input: default@tx2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <=> v.b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx1
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
@@ -245,13 +245,13 @@ NULL	NULL
 Warning: Shuffle Join MERGEJOIN[10][tables = [u, v]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <> v.b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx1
 PREHOOK: Input: default@tx2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.b <> v.b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx1
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
@@ -349,13 +349,13 @@ POSTHOOK: Input: default@tx2
 NULL	400
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx1
 PREHOOK: Input: default@tx2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx1
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
@@ -462,13 +462,13 @@ POSTHOOK: Input: default@tx2
 Warning: Shuffle Join MERGEJOIN[10][tables = [u, v]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx1
 PREHOOK: Input: default@tx2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx1
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
@@ -566,12 +566,12 @@ POSTHOOK: Input: default@tx2
 NULL	400
 PREHOOK: query: explain
 select * from tx1 u left semi join tx1 v on u.a=v.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tx1 u left semi join tx1 v on u.a=v.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -674,7 +674,7 @@ on (u.a + v.b > 400)
   and ((case when u.a > 3 then true when v.b > 1900 then true else false end)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
   and u.a = v.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx1
 PREHOOK: Input: default@tx2
 #### A masked pattern was here ####
@@ -684,7 +684,7 @@ on (u.a + v.b > 400)
   and ((case when u.a > 3 then true when v.b > 1900 then true else false end)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
   and u.a = v.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx1
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####

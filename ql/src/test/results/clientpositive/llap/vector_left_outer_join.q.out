@@ -6,7 +6,7 @@ left outer join alltypesorc cd
 left outer join alltypesorc hd
   on hd.ctinyint = c.ctinyint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization 
@@ -17,7 +17,7 @@ left outer join alltypesorc cd
 left outer join alltypesorc hd
   on hd.ctinyint = c.ctinyint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

@@ -29,14 +29,14 @@ PREHOOK: query: explain cbo
 select a, b, c
   from t1
 qualify row_number() over (partition by b order by c) = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select a, b, c
   from t1
 qualify row_number() over (partition by b order by c) = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -63,14 +63,14 @@ PREHOOK: query: explain cbo
 select a, b, c, row_number() over (partition by b order by c) as row_num
   from t1
 qualify row_num = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select a, b, c, row_number() over (partition by b order by c) as row_num
   from t1
 qualify row_num = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -97,14 +97,14 @@ PREHOOK: query: explain cbo
 select a, b, c, row_number() over (partition by b order by c) as row_num
   from t1
 qualify row_num = 1 and row_number() over (order by c) = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select a, b, c, row_number() over (partition by b order by c) as row_num
   from t1
 qualify row_num = 1 and row_number() over (order by c) = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:

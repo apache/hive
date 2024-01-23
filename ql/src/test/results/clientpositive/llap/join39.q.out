@@ -10,14 +10,14 @@ PREHOOK: query: explain
 INSERT OVERWRITE TABLE dest_j1_n8
 SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest_j1_n8
 POSTHOOK: query: explain
 INSERT OVERWRITE TABLE dest_j1_n8
 SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_j1_n8
 STAGE DEPENDENCIES:

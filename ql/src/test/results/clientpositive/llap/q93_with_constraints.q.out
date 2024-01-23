@@ -204,7 +204,7 @@ select  ss_customer_sk
       group by ss_customer_sk
       order by sumsales, ss_customer_sk
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@reason
 PREHOOK: Input: default@store_returns
 PREHOOK: Input: default@store_sales
@@ -225,7 +225,7 @@ select  ss_customer_sk
       group by ss_customer_sk
       order by sumsales, ss_customer_sk
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@reason
 POSTHOOK: Input: default@store_returns
 POSTHOOK: Input: default@store_sales

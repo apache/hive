@@ -1,12 +1,12 @@
 PREHOOK: query: explain vectorization detail
 create table table_onestring as select cstring1 as val1 from alltypesorc
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_onestring
 POSTHOOK: query: explain vectorization detail
 create table table_onestring as select cstring1 as val1 from alltypesorc
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_onestring
@@ -243,12 +243,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
 PREHOOK: query: explain
 select distinct(val1) from table_onestring
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_onestring
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct(val1) from table_onestring
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_onestring
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -310,13 +310,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization detail
 create table table_onebigint as select cbigint as val1 from alltypesorc
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_onebigint
 POSTHOOK: query: explain vectorization detail
 create table table_onebigint as select cbigint as val1 from alltypesorc
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_onebigint
@@ -553,12 +553,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
 PREHOOK: query: explain
 select distinct(val1) from table_onebigint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_onebigint
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct(val1) from table_onebigint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_onebigint
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -620,13 +620,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization detail
 create table table_onedouble as select cdouble as val1 from alltypesorc
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_onedouble
 POSTHOOK: query: explain vectorization detail
 create table table_onedouble as select cdouble as val1 from alltypesorc
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_onedouble
@@ -863,12 +863,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
 PREHOOK: query: explain
 select distinct(val1) from table_onedouble
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_onedouble
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct(val1) from table_onedouble
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_onedouble
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -930,13 +930,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization detail
 create table table_onetimestamp as select ctimestamp1 as val1 from alltypesorc
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_onetimestamp
 POSTHOOK: query: explain vectorization detail
 create table table_onetimestamp as select ctimestamp1 as val1 from alltypesorc
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_onetimestamp
@@ -1173,12 +1173,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
 PREHOOK: query: explain
 select distinct(val1) from table_onetimestamp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_onetimestamp
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct(val1) from table_onetimestamp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_onetimestamp
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1240,13 +1240,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization detail
 create table table_onedecimal as select cast(cbigint as decimal(10,2)) as val1 from alltypesorc
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_onedecimal
 POSTHOOK: query: explain vectorization detail
 create table table_onedecimal as select cast(cbigint as decimal(10,2)) as val1 from alltypesorc
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_onedecimal
@@ -1484,12 +1484,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
 PREHOOK: query: explain
 select distinct(val1) from table_onedecimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_onedecimal
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct(val1) from table_onedecimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_onedecimal
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1551,13 +1551,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization detail
 create table table_onedate as select cast(L_COMMITDATE as date) as val1 from lineitem
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_onedate
 POSTHOOK: query: explain vectorization detail
 create table table_onedate as select cast(L_COMMITDATE as date) as val1 from lineitem
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_onedate
@@ -1795,12 +1795,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
 PREHOOK: query: explain
 select distinct(val1) from table_onedate
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_onedate
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct(val1) from table_onedate
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_onedate
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -1,11 +1,11 @@
 PREHOOK: query: explain cbo
 select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
@@ -15,12 +15,12 @@ HiveProject(_o__c0=[null:(INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE")
 
 PREHOOK: query: explain
 select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain

@@ -10,7 +10,7 @@ join (
   from src
   join src1 on src.key = src1.key
   where src1.value = "val_255") s2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -25,7 +25,7 @@ join (
   from src
   join src1 on src.key = src1.key
   where src1.value = "val_255") s2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

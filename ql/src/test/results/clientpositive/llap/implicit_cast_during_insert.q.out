@@ -12,14 +12,14 @@ PREHOOK: query: explain
 insert overwrite table implicit_cast_during_insert partition (p1)
   select key, value, key key1 from (select * from src where key in (0,1)) q
   distribute by key1 sort by key1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@implicit_cast_during_insert
 POSTHOOK: query: explain 
 insert overwrite table implicit_cast_during_insert partition (p1)
   select key, value, key key1 from (select * from src where key in (0,1)) q
   distribute by key1 sort by key1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@implicit_cast_during_insert
 STAGE DEPENDENCIES:

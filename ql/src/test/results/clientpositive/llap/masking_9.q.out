@@ -17,11 +17,11 @@ POSTHOOK: Output: default@masking_test
 POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select ROW__ID from masking_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select ROW__ID from masking_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

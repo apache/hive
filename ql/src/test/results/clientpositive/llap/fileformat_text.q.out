@@ -2,14 +2,14 @@ PREHOOK: query: EXPLAIN
 CREATE TABLE dest1_n107(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_n107
 POSTHOOK: query: EXPLAIN
 CREATE TABLE dest1_n107(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n107
 STAGE DEPENDENCIES:

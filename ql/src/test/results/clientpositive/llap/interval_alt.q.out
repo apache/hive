@@ -118,7 +118,7 @@ select
 	date '2012-01-01' + 1 day + '2' days,
 	date '2012-01-01' + interval (dt || '-1') year to month
 	from t_n18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n18
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -128,7 +128,7 @@ select
 	date '2012-01-01' + 1 day + '2' days,
 	date '2012-01-01' + interval (dt || '-1') year to month
 	from t_n18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n18
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

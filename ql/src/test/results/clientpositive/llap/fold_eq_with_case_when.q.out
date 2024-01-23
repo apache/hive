@@ -13,7 +13,7 @@ WHERE
 ((CASE WHEN ('RAIL' = l_shipmode) THEN 1 ELSE NULL END) = 1) AND (1 = 1) AND 
 ((CASE WHEN (1 = l_linenumber) THEN 1 ELSE 1 END) = 1) AND (1 = 1)) 
 GROUP BY l_orderkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -31,7 +31,7 @@ WHERE
 ((CASE WHEN ('RAIL' = l_shipmode) THEN 1 ELSE NULL END) = 1) AND (1 = 1) AND 
 ((CASE WHEN (1 = l_linenumber) THEN 1 ELSE 1 END) = 1) AND (1 = 1)) 
 GROUP BY l_orderkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -103,11 +103,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -129,11 +129,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1  when '94' then 1 else 3 end) = cast('1' as int)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1  when '94' then 1 else 3 end) = cast('1' as int)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -155,11 +155,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = (case when key != '238' then 1 else 1 end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1 else 2 end) = (case when key != '238' then 1 else 1 end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -181,11 +181,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select key from src where (case key when '238' then 1 end) = (case when key != '238' then 1 when key = '23' then 1 end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from src where (case key when '238' then 1 end) = (case when key != '238' then 1 when key = '23' then 1 end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

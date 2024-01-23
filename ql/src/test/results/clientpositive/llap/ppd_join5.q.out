@@ -37,7 +37,7 @@ PREHOOK: query: explain
 select a.*,b.d d1,c.d d2 from
   t1_n79 a join t2_n48 b on (a.id1 = b.id)
        join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n79
 PREHOOK: Input: default@t2_n48
 #### A masked pattern was here ####
@@ -45,7 +45,7 @@ POSTHOOK: query: explain
 select a.*,b.d d1,c.d d2 from
   t1_n79 a join t2_n48 b on (a.id1 = b.id)
        join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n79
 POSTHOOK: Input: default@t2_n48
 #### A masked pattern was here ####
@@ -169,7 +169,7 @@ select a.*,b.d d1,c.d d2 from
   t1_n79 a join t2_n48 b on (a.id1 = b.id)
        join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
 ) z where d1 > 1 or d2 > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n79
 PREHOOK: Input: default@t2_n48
 #### A masked pattern was here ####
@@ -179,7 +179,7 @@ select a.*,b.d d1,c.d d2 from
   t1_n79 a join t2_n48 b on (a.id1 = b.id)
        join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
 ) z where d1 > 1 or d2 > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n79
 POSTHOOK: Input: default@t2_n48
 #### A masked pattern was here ####

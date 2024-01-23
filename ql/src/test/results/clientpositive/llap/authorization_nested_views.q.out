@@ -63,13 +63,13 @@ POSTHOOK: query: grant select on table v3 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@v3
 PREHOOK: query: explain authorization select * from v2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_autho_test
 PREHOOK: Input: default@v1
 PREHOOK: Input: default@v2
 #### A masked pattern was here ####
 POSTHOOK: query: explain authorization select * from v2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v2
@@ -85,13 +85,13 @@ CURRENT_USER:
 OPERATION: 
   QUERY
 PREHOOK: query: explain authorization select * from v3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_autho_test
 PREHOOK: Input: default@v1
 PREHOOK: Input: default@v3
 #### A masked pattern was here ####
 POSTHOOK: query: explain authorization select * from v3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v3

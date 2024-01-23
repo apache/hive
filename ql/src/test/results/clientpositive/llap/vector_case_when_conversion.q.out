@@ -11,7 +11,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
@@ -27,7 +27,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -169,7 +169,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
@@ -185,7 +185,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -327,7 +327,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
@@ -343,7 +343,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -485,7 +485,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
@@ -501,7 +501,7 @@ FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

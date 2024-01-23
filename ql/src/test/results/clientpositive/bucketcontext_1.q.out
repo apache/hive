@@ -102,7 +102,7 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-09
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n14
 PREHOOK: Input: default@bucket_big_n14@ds=2008-04-08
 PREHOOK: Input: default@bucket_big_n14@ds=2008-04-09
@@ -110,7 +110,7 @@ PREHOOK: Input: default@bucket_small_n14
 PREHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n14
 POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-08
 POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-09
@@ -376,7 +376,7 @@ POSTHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 #### A masked pattern was here ####
 928
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n14
 PREHOOK: Input: default@bucket_big_n14@ds=2008-04-08
 PREHOOK: Input: default@bucket_big_n14@ds=2008-04-09
@@ -384,7 +384,7 @@ PREHOOK: Input: default@bucket_small_n14
 PREHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n14
 POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-08
 POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-09

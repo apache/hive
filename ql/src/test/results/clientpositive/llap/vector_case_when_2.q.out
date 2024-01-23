@@ -81,7 +81,7 @@ SELECT
    IF(cast(ctimestamp1 as double) % 500 > 100, DATE_ADD(cdate, 1), DATE_ADD(cdate, 365)) AS Field_5
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -115,7 +115,7 @@ SELECT
    IF(cast(ctimestamp1 as double) % 500 > 100, DATE_ADD(cdate, 1), DATE_ADD(cdate, 365)) AS Field_5
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 Explain
@@ -371,7 +371,7 @@ SELECT
    IF(cast(ctimestamp1 as double) % 500 > 100, DATE_ADD(cdate, 1), DATE_ADD(cdate, 365)) AS Field_5
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -405,7 +405,7 @@ SELECT
    IF(cast(ctimestamp1 as double) % 500 > 100, DATE_ADD(cdate, 1), DATE_ADD(cdate, 365)) AS Field_5
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 Explain
@@ -661,7 +661,7 @@ SELECT
    IF(cast(ctimestamp1 as double) % 500 > 100, DATE_ADD(cdate, 1), DATE_ADD(cdate, 365)) AS Field_5
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -695,7 +695,7 @@ SELECT
    IF(cast(ctimestamp1 as double) % 500 > 100, DATE_ADD(cdate, 1), DATE_ADD(cdate, 365)) AS Field_5
 FROM timestamps
 ORDER BY ctimestamp1, stimestamp1, ctimestamp2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@timestamps
 #### A masked pattern was here ####
 Explain
@@ -941,13 +941,13 @@ col1
 PREHOOK: query: explain vectorization detail select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
     WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
     THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
     WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
     THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 Explain
@@ -1086,12 +1086,12 @@ q548284	_c1
 1	0.2
 PREHOOK: query: explain vectorization detail select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8)
     WHEN ((q548284 = 5)) THEN (1) ELSE (8) END from foo order by q548284 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8)
     WHEN ((q548284 = 5)) THEN (1) ELSE (8) END from foo order by q548284 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 Explain
@@ -1229,13 +1229,13 @@ q548284	_c1
 PREHOOK: query: explain vectorization detail select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
     WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
     THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
     WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
     THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 Explain
@@ -1374,12 +1374,12 @@ q548284	_c1
 1	0.2
 PREHOOK: query: explain vectorization detail select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8)
     WHEN ((q548284 = 5)) THEN (1) ELSE (8) END from foo order by q548284 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8)
     WHEN ((q548284 = 5)) THEN (1) ELSE (8) END from foo order by q548284 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 Explain

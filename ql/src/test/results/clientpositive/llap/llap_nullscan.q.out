@@ -28,12 +28,12 @@ POSTHOOK: Lineage: src_orc_n1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key,
 POSTHOOK: Lineage: src_orc_n1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended
 select * from src_orc_n1 where 1=2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain extended
 select * from src_orc_n1 where 1=2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -140,12 +140,12 @@ POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -235,12 +235,12 @@ POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -350,12 +350,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: explain 
 select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain 
 select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

@@ -44,11 +44,11 @@ POSTHOOK: Input: default@abcd
 12	NULL	80	2
 NULL	35	23	6
 PREHOOK: query: explain vectorization expression select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@abcd
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@abcd
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -161,11 +161,11 @@ POSTHOOK: Input: default@abcd
 12	1	2	9
 NULL	1	1	6
 PREHOOK: query: explain vectorization expression select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@abcd
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@abcd
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -255,11 +255,11 @@ POSTHOOK: Input: default@abcd
 #### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
 PREHOOK: query: explain vectorization expression select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@abcd
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@abcd
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -357,11 +357,11 @@ POSTHOOK: Input: default@abcd
 12	1	2	9
 NULL	1	1	6
 PREHOOK: query: explain vectorization expression select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@abcd
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@abcd
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

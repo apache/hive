@@ -36,13 +36,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2_n64
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n101
 PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n101
 POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
@@ -211,13 +211,13 @@ POSTHOOK: Input: default@t2_n64
 8	28	8	18
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n101
 PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n101
 POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
@@ -387,13 +387,13 @@ NULL	NULL	4	14
 NULL	NULL	5	15
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n101
 PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n101
 POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
@@ -570,13 +570,13 @@ POSTHOOK: Input: default@t2_n64
 6
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n101
 PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n101
 POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####

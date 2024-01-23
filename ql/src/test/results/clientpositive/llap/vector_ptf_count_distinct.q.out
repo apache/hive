@@ -51,7 +51,7 @@ PREHOOK: query: explain SELECT
     count(distinct txt1) over(partition by txt1) as n,
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
@@ -60,7 +60,7 @@ POSTHOOK: query: explain SELECT
     count(distinct txt1) over(partition by txt1) as n,
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -181,7 +181,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt1) over(partition by txt1) as n,
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -190,7 +190,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt1) over(partition by txt1) as n,
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -447,7 +447,7 @@ PREHOOK: query: EXPLAIN SELECT
     count(distinct txt1) over(partition by txt1) as n,
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
@@ -456,7 +456,7 @@ POSTHOOK: query: EXPLAIN SELECT
     count(distinct txt1) over(partition by txt1) as n,
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -606,7 +606,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt1) over(partition by txt2) as n,
     count(distinct txt2) over(partition by txt1) as m
 FROM ptf_count_distinct
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -615,7 +615,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt1) over(partition by txt2) as n,
     count(distinct txt2) over(partition by txt1) as m
 FROM ptf_count_distinct
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -872,7 +872,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt1) over(partition by txt2) as n,
     count(distinct txt2) over(partition by txt1) as m
 FROM ptf_count_distinct
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -881,7 +881,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt1) over(partition by txt2) as n,
     count(distinct txt2) over(partition by txt1) as m
 FROM ptf_count_distinct
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1108,7 +1108,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt1) as distinct_txt2_over_txt1
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -1118,7 +1118,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt1) as distinct_txt2_over_txt1
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1415,7 +1415,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -1425,7 +1425,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt2) as m
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1722,7 +1722,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt1) as distinct_txt2_over_txt1
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -1732,7 +1732,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt1) as distinct_txt2_over_txt1
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1957,7 +1957,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt2) as distinct_txt2_over_txt1
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -1967,7 +1967,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct txt2) over(partition by txt2) as distinct_txt2_over_txt1
 FROM ptf_count_distinct_different_values
 ORDER BY txt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2230,7 +2230,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long1) as distinct_long2_over_long1
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -2240,7 +2240,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long1) as distinct_long2_over_long1
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2537,7 +2537,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long2) as distinct_long2_over_long2
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -2547,7 +2547,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long2) as distinct_long2_over_long2
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2844,7 +2844,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long1) as distinct_long2_over_long1
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -2854,7 +2854,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long1) as distinct_long2_over_long1
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3079,7 +3079,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long2) as distinct_long2_over_long2
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -3089,7 +3089,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct long2) over(partition by long2) as distinct_long2_over_long2
 FROM ptf_count_distinct_different_values_long
 ORDER BY long1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_long
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3352,7 +3352,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double1) as distinct_double2_over_double1
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -3362,7 +3362,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double1) as distinct_double2_over_double1
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3659,7 +3659,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double2) as distinct_double2_over_double2
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -3669,7 +3669,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double2) as distinct_double2_over_double2
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3966,7 +3966,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double1) as distinct_double2_over_double1
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -3976,7 +3976,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double1) as distinct_double2_over_double1
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4201,7 +4201,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double2) as distinct_double2_over_double2
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -4211,7 +4211,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct double2) over(partition by double2) as distinct_double2_over_double2
 FROM ptf_count_distinct_different_values_double
 ORDER BY double1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_double
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4474,7 +4474,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal1) as distinct_decimal2_over_decimal1
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -4484,7 +4484,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal1) as distinct_decimal2_over_decimal1
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4781,7 +4781,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal2) as distinct_decimal2_over_decimal2
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -4791,7 +4791,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal2) as distinct_decimal2_over_decimal2
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5088,7 +5088,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal1) as distinct_decimal2_over_decimal1
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -5098,7 +5098,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal1) as distinct_decimal2_over_decimal1
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5323,7 +5323,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal2) as distinct_decimal2_over_decimal2
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -5333,7 +5333,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct decimal2) over(partition by decimal2) as distinct_decimal2_over_decimal2
 FROM ptf_count_distinct_different_values_decimal
 ORDER BY decimal1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_decimal
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5596,7 +5596,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp1) as distinct_timestamp2_over_timestamp1
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -5606,7 +5606,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp1) as distinct_timestamp2_over_timestamp1
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -5903,7 +5903,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp2) as distinct_timestamp2_over_timestamp2
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -5913,7 +5913,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp2) as distinct_timestamp2_over_timestamp2
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6210,7 +6210,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp1) as distinct_timestamp2_over_timestamp1
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -6220,7 +6220,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp1) as distinct_timestamp2_over_timestamp1
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -6445,7 +6445,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp2) as distinct_timestamp2_over_timestamp2
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
@@ -6455,7 +6455,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT
     count(distinct timestamp2) over(partition by timestamp2) as distinct_timestamp2_over_timestamp2
 FROM ptf_count_distinct_different_values_timestamp
 ORDER BY timestamp1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ptf_count_distinct_different_values_timestamp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

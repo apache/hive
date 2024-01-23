@@ -18,12 +18,12 @@ POSTHOOK: Lineage: rct1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string
 POSTHOOK: Lineage: rct1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select count(*) from rct1_1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rct1_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from rct1_1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rct1_1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -48,12 +48,12 @@ POSTHOOK: Input: default@rct1_1
 test.comment="Query on transactional table should use cache"
 PREHOOK: query: explain
 select count(*) from rct1_1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rct1_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from rct1_1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rct1_1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -84,12 +84,12 @@ POSTHOOK: Output: default@rct1_1
 test.comment="Table truncated - query cache invalidated"
 PREHOOK: query: explain
 select count(*) from rct1_1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rct1_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from rct1_1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rct1_1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -141,12 +141,12 @@ POSTHOOK: Lineage: rct1_2 PARTITION(p1=part2).key SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: rct1_2 PARTITION(p1=part2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select count(*) from rct1_2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from rct1_2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -171,12 +171,12 @@ POSTHOOK: Input: default@rct1_2
 test.comment="Query on transactional table should use cache"
 PREHOOK: query: explain
 select count(*) from rct1_2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from rct1_2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -207,12 +207,12 @@ POSTHOOK: Output: default@rct1_2@p1=part1
 test.comment="Partition truncated - query cache invalidated"
 PREHOOK: query: explain
 select count(*) from rct1_2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from rct1_2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -245,12 +245,12 @@ POSTHOOK: Output: default@rct1_2@p1=part2
 test.comment="Table truncated - query cache invalidated"
 PREHOOK: query: explain
 select count(*) from rct1_2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from rct1_2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rct1_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

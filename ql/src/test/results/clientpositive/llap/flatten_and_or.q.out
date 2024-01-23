@@ -14,7 +14,7 @@ WHERE
    AND value = '1') OR (key = '9'
    AND value = '1') OR (key = '10'
    AND value = '3'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -33,7 +33,7 @@ WHERE
    AND value = '1') OR (key = '9'
    AND value = '1') OR (key = '10'
    AND value = '3'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

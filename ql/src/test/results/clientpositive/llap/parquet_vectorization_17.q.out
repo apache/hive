@@ -21,7 +21,7 @@ WHERE    (((cbigint > -23)
               OR ((csmallint >= cbigint)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -47,7 +47,7 @@ WHERE    (((cbigint > -23)
               OR ((csmallint >= cbigint)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

@@ -143,12 +143,12 @@ POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db2
 PREHOOK: query: explain ddl select  * FROM db1.v1_n17
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@v1_n17
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v1_n17
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v1_n17
 #### A masked pattern was here ####
@@ -204,12 +204,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select  * FROM db1.v2_n10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@v2_n10
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v2_n10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v2_n10
 #### A masked pattern was here ####
@@ -262,13 +262,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select  * FROM db1.v3_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@table2_n13
 PREHOOK: Input: db1@v3_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v3_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@table2_n13
 POSTHOOK: Input: db1@v3_n3
@@ -430,12 +430,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select  * FROM db1.v4_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@v4_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v4_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v4_n3
 #### A masked pattern was here ####
@@ -488,12 +488,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select  * FROM db1.v5_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@v5_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v5_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v5_n1
 #### A masked pattern was here ####
@@ -546,13 +546,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select  * FROM db1.v6
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@table2_n13
 PREHOOK: Input: db1@v6
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v6
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@table2_n13
 POSTHOOK: Input: db1@v6
@@ -714,12 +714,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain ddl select  * FROM db1.v7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@v7
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v7
 #### A masked pattern was here ####
@@ -772,12 +772,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain ddl select  * FROM db1.v8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@table1_n19
 PREHOOK: Input: db1@v8
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select  * FROM db1.v8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@table1_n19
 POSTHOOK: Input: db1@v8
 #### A masked pattern was here ####

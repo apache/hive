@@ -198,7 +198,7 @@ POSTHOOK: Input: default@orc_b
 2001	9	8151
 PREHOOK: query: explain
 select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_a
 PREHOOK: Input: default@orc_a@y=2000/q=0
 PREHOOK: Input: default@orc_a@y=2000/q=1
@@ -224,7 +224,7 @@ PREHOOK: Input: default@orc_b
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_a
 POSTHOOK: Input: default@orc_a@y=2000/q=0
 POSTHOOK: Input: default@orc_a@y=2000/q=1

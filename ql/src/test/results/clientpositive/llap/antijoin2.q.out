@@ -72,7 +72,7 @@ PREHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -81,7 +81,7 @@ POSTHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
@@ -220,7 +220,7 @@ PREHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -229,7 +229,7 @@ POSTHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
@@ -267,13 +267,13 @@ POSTHOOK: Input: default@tt3
 950.68
 PREHOOK: query: explain
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 #### A masked pattern was here ####
@@ -353,13 +353,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain cbo
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 #### A masked pattern was here ####
@@ -387,7 +387,7 @@ PREHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -396,7 +396,7 @@ POSTHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
@@ -535,7 +535,7 @@ PREHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -544,7 +544,7 @@ POSTHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
@@ -582,13 +582,13 @@ POSTHOOK: Input: default@tt3
 950.68
 PREHOOK: query: explain
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 #### A masked pattern was here ####
@@ -668,13 +668,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain cbo
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 #### A masked pattern was here ####
@@ -702,7 +702,7 @@ PREHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -711,7 +711,7 @@ POSTHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
@@ -843,7 +843,7 @@ PREHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -852,7 +852,7 @@ POSTHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
@@ -916,7 +916,7 @@ PREHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -925,7 +925,7 @@ POSTHOOK: query: explain
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
@@ -1071,7 +1071,7 @@ PREHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tt1
 PREHOOK: Input: default@tt2
 PREHOOK: Input: default@tt3
@@ -1080,7 +1080,7 @@ POSTHOOK: query: explain cbo
 select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
 and not exists(select * from tt3 wr1 where ws1.ws_order_number = wr1.wr_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3

@@ -29,12 +29,12 @@ POSTHOOK: Lineage: dsrv_small.key_str SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: dsrv_small.key_str2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dsrv_small.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -279,12 +279,12 @@ POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -529,12 +529,12 @@ POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -779,12 +779,12 @@ POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -1069,12 +1069,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 use MurmurHashStringColIntCol
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -1329,12 +1329,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 use MurmurHashStringColIntCol, regardless of key ordering on join clause
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_str = b.key_str)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_str = b.key_str)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -1589,12 +1589,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 use MurmurHashIntColIntCol
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_int2 = b.key_int2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int and a.key_int2 = b.key_int2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -1849,12 +1849,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 use MurmurHashStringColStringCol
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_str2 = b.key_str2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_str2 = b.key_str2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -2100,12 +2100,12 @@ POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
@@ -2368,12 +2368,12 @@ POSTHOOK: Input: default@dsrv_small
 POSTHOOK: Output: default@dsrv_small
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dsrv_big
 PREHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####

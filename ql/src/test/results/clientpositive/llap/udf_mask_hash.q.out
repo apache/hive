@@ -15,11 +15,11 @@ Examples:
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMaskHash
 Function type:BUILTIN
 PREHOOK: query: explain select mask_hash('TestString-123')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select mask_hash('TestString-123')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -212,7 +212,7 @@ join locations_n4 on (locations_n4.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 10
 group by dependents_n4.empid, depts_n6.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n4
 PREHOOK: Input: default@depts_n6
 PREHOOK: Input: default@emps_n8
@@ -227,7 +227,7 @@ join locations_n4 on (locations_n4.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 10
 group by dependents_n4.empid, depts_n6.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n4
 POSTHOOK: Input: default@depts_n6
 POSTHOOK: Input: default@emps_n8
@@ -540,7 +540,7 @@ join locations_n4 on (locations_n4.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 10 and depts_n6.deptno < 20
 group by dependents_n4.empid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n4
 PREHOOK: Input: default@depts_n6
 PREHOOK: Input: default@emps_n8
@@ -555,7 +555,7 @@ join locations_n4 on (locations_n4.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 10 and depts_n6.deptno < 20
 group by dependents_n4.empid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n4
 POSTHOOK: Input: default@depts_n6
 POSTHOOK: Input: default@emps_n8
@@ -899,7 +899,7 @@ from depts_n6
 join dependents_n4 on (depts_n6.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n4
 PREHOOK: Input: default@depts_n6
 PREHOOK: Input: default@emps_n8
@@ -911,7 +911,7 @@ from depts_n6
 join dependents_n4 on (depts_n6.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n4
 POSTHOOK: Input: default@depts_n6
 POSTHOOK: Input: default@emps_n8

@@ -31,13 +31,13 @@ POSTHOOK: Lineage: t1_n45 PARTITION(ds=1).key SIMPLE [(t1_n45)t1_n45.FieldSchema
 POSTHOOK: Lineage: t1_n45 PARTITION(ds=1).val SIMPLE [(t1_n45)t1_n45.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN
 select count(distinct key) from T1_n45
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n45
 PREHOOK: Input: default@t1_n45@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select count(distinct key) from T1_n45
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n45
 POSTHOOK: Input: default@t1_n45@ds=1
 #### A masked pattern was here ####

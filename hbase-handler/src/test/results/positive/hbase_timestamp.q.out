@@ -169,12 +169,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` < 200000000000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` < 200000000000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -222,12 +222,12 @@ POSTHOOK: Input: default@hbase_table
 396	val_396	1973-03-03 09:46:40
 PREHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` > 100000000000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` > 100000000000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -277,12 +277,12 @@ POSTHOOK: Input: default@hbase_table
 333	val_333	1976-05-03 19:33:20
 PREHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` <= 100000000000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` <= 100000000000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -330,12 +330,12 @@ POSTHOOK: Input: default@hbase_table
 396	val_396	1973-03-03 09:46:40
 PREHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` >= 200000000000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` >= 200000000000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

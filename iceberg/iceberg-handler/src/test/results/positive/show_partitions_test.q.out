@@ -89,10 +89,10 @@ current-spec-id=0/d_part=10/e_part=5
 current-spec-id=0/d_part=2/e_part=5
 current-spec-id=0/d_part=3/e_part=4
 PREHOOK: query: explain show partitions hiveT1
-PREHOOK: type: SHOWPARTITIONS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hivet1
 POSTHOOK: query: explain show partitions hiveT1
-POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hivet1
 Stage-1
   Fetch Operator
@@ -101,10 +101,10 @@ Stage-1
       Show Partitions{"limit:":"-1","table:":"hiveT1"}
 
 PREHOOK: query: explain show partitions ice1
-PREHOOK: type: SHOWPARTITIONS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice1
 POSTHOOK: query: explain show partitions ice1
-POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice1
 Stage-1
   Fetch Operator
@@ -113,11 +113,11 @@ Stage-1
       Show Partitions{"limit:":"-1","table:":"ice1"}
 
 PREHOOK: query: explain select * from default.ice1.partitions
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from default.ice1.partitions
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.

@@ -19,7 +19,7 @@ FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 WHERE ds='2008-04-08' and hr='11'
 ) a
 group by key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -45,7 +45,7 @@ FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 WHERE ds='2008-04-08' and hr='11'
 ) a
 group by key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

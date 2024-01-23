@@ -58,7 +58,7 @@ CREATE MATERIALIZED VIEW cmv_mat_view AS
   FROM cmv_basetable JOIN cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
   WHERE cmv_basetable_2.c > 10.0
   GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Output: database:default
@@ -69,7 +69,7 @@ CREATE MATERIALIZED VIEW cmv_mat_view AS
   FROM cmv_basetable JOIN cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
   WHERE cmv_basetable_2.c > 10.0
   GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Output: database:default
@@ -272,7 +272,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Input: default@cmv_mat_view
@@ -282,7 +282,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
@@ -344,7 +344,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
@@ -353,7 +353,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
@@ -483,14 +483,14 @@ POSTHOOK: Input: default@cmv_basetable_2
 1
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
@@ -721,7 +721,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Input: default@cmv_mat_view
@@ -731,7 +731,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
@@ -788,7 +788,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
@@ -797,7 +797,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
@@ -940,7 +940,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Input: default@cmv_mat_view
@@ -950,7 +950,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
@@ -1021,7 +1021,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Input: default@cmv_mat_view
@@ -1031,7 +1031,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
@@ -1086,7 +1086,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
@@ -1095,7 +1095,7 @@ SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
 WHERE cmv_basetable_2.c > 10.10
 GROUP BY cmv_basetable.a, cmv_basetable_2.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####

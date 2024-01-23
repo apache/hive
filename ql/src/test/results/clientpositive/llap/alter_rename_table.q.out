@@ -116,14 +116,14 @@ POSTHOOK: Input: source@srcpart@ds=2008-04-09/hr=12
 484	val_484	2008-04-08	11
 PREHOOK: query: explain
 ALTER TABLE source.src RENAME TO target.src
-PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: source@src
 PREHOOK: Output: database:target
 PREHOOK: Output: source@src
 PREHOOK: Output: target@src
 POSTHOOK: query: explain
 ALTER TABLE source.src RENAME TO target.src
-POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: source@src
 POSTHOOK: Output: database:target
 POSTHOOK: Output: source@src
@@ -169,14 +169,14 @@ POSTHOOK: Input: target@src
 484	val_484
 PREHOOK: query: explain
 ALTER TABLE source.srcpart RENAME TO target.srcpart
-PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: source@srcpart
 PREHOOK: Output: database:target
 PREHOOK: Output: source@srcpart
 PREHOOK: Output: target@srcpart
 POSTHOOK: query: explain
 ALTER TABLE source.srcpart RENAME TO target.srcpart
-POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: source@srcpart
 POSTHOOK: Output: database:target
 POSTHOOK: Output: source@srcpart

@@ -26,12 +26,12 @@ POSTHOOK: Output: default@dest1_n54
 POSTHOOK: Lineage: dest1_n54.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1_n54
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n54
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1_n54
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n54
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

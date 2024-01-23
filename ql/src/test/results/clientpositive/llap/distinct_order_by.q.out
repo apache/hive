@@ -28,14 +28,14 @@ PREHOOK: query: explain cbo
 select distinct b + 2 as alias_b, b
 from t1
 order by b + 2, b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select distinct b + 2 as alias_b, b
 from t1
 order by b + 2, b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:

@@ -50,12 +50,12 @@ POSTHOOK: Output: default@tbl_parquet
 POSTHOOK: Lineage: tbl_parquet.val SCRIPT []
 PREHOOK: query: explain vectorization expression
 select val, round(val, -1) from tbl_rc order by val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_rc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select val, round(val, -1) from tbl_rc order by val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_rc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -147,12 +147,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression
 select val, round(val, -1) from tbl_parquet order by val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_parquet
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select val, round(val, -1) from tbl_parquet order by val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_parquet
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

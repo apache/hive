@@ -83,7 +83,7 @@ POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=3).cint SIMPLE [(alltypesorc)
 PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_n1
 PREHOOK: Input: default@orc_llap_n1@csmallint=1
 PREHOOK: Input: default@orc_llap_n1@csmallint=2
@@ -92,7 +92,7 @@ PREHOOK: Input: default@orc_llap_n1@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_n1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=2
@@ -236,7 +236,7 @@ POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cfloat SCRIPT []
 POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cint SCRIPT []
 PREHOOK: query: explain vectorization only detail
 update orc_llap_n1 set cbigint = 2 where cint = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_n1
 PREHOOK: Input: default@orc_llap_n1@csmallint=1
 PREHOOK: Input: default@orc_llap_n1@csmallint=2
@@ -247,7 +247,7 @@ PREHOOK: Output: default@orc_llap_n1@csmallint=2
 PREHOOK: Output: default@orc_llap_n1@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 update orc_llap_n1 set cbigint = 2 where cint = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_n1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=2
@@ -415,7 +415,7 @@ POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cint SIMPLE []
 PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_n1
 PREHOOK: Input: default@orc_llap_n1@csmallint=1
 PREHOOK: Input: default@orc_llap_n1@csmallint=2
@@ -424,7 +424,7 @@ PREHOOK: Input: default@orc_llap_n1@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_n1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=2

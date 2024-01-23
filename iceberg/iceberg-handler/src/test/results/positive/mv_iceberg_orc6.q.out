@@ -69,13 +69,13 @@ POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@tbl_ice_v2
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_v2
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat1

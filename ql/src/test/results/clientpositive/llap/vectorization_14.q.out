@@ -30,7 +30,7 @@ WHERE    (((ctinyint <= cbigint)
                   OR (cfloat < cint))))
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
 ORDER BY cstring1, cfloat, cdouble, ctimestamp1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -65,7 +65,7 @@ WHERE    (((ctinyint <= cbigint)
                   OR (cfloat < cint))))
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
 ORDER BY cstring1, cfloat, cdouble, ctimestamp1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

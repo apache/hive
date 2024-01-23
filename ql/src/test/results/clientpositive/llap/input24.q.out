@@ -15,12 +15,12 @@ POSTHOOK: Output: default@tst_n1
 POSTHOOK: Output: default@tst_n1@d=2009-01-01
 PREHOOK: query: explain
 select count(1) from tst_n1 x where x.d='2009-01-01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tst_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from tst_n1 x where x.d='2009-01-01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tst_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

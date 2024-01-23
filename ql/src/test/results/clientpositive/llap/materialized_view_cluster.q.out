@@ -15,14 +15,14 @@ POSTHOOK: Lineage: src_txn.value SIMPLE [(src)src.FieldSchema(name:value, type:s
 PREHOOK: query: EXPLAIN
 CREATE MATERIALIZED VIEW cluster_mv_1 CLUSTERED ON (key) STORED AS TEXTFILE AS
 SELECT value, key FROM src_txn where key > 200 and key < 250
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cluster_mv_1
 POSTHOOK: query: EXPLAIN
 CREATE MATERIALIZED VIEW cluster_mv_1 CLUSTERED ON (key) STORED AS TEXTFILE AS
 SELECT value, key FROM src_txn where key > 200 and key < 250
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cluster_mv_1
@@ -265,12 +265,12 @@ val_244244
 val_249249
 PREHOOK: query: EXPLAIN
 SELECT * FROM cluster_mv_1 where key = 238
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cluster_mv_1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM cluster_mv_1 where key = 238
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cluster_mv_1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -374,12 +374,12 @@ Found 2 items
 249val_249
 PREHOOK: query: EXPLAIN
 SELECT * FROM cluster_mv_2 where value = 'val_238'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cluster_mv_2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM cluster_mv_2 where value = 'val_238'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cluster_mv_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -412,12 +412,12 @@ POSTHOOK: Input: default@cluster_mv_2
 238	val_238
 PREHOOK: query: EXPLAIN
 SELECT value FROM cluster_mv_2 where key = 238
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cluster_mv_2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT value FROM cluster_mv_2 where key = 238
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cluster_mv_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -460,12 +460,12 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@cluster_mv_1
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_1 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@cluster_mv_1
 STAGE DEPENDENCIES:
@@ -763,13 +763,13 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@cluster_mv_3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@cluster_mv_3
@@ -1019,13 +1019,13 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@cluster_mv_3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_3 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@cluster_mv_3
@@ -1219,12 +1219,12 @@ val_238_n2	238
 val_238_n2	238
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@cluster_mv_4
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cluster_mv_4 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@cluster_mv_4
 STAGE DEPENDENCIES:

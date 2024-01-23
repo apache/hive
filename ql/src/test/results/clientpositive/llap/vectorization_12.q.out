@@ -29,7 +29,7 @@ WHERE    (((ctimestamp1 IS NULL)
                   AND (cbigint >= csmallint))))
 GROUP BY cbigint, cboolean1, cstring1, ctimestamp1, cdouble
 ORDER BY ctimestamp1, cdouble, cbigint, cstring1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -63,7 +63,7 @@ WHERE    (((ctimestamp1 IS NULL)
                   AND (cbigint >= csmallint))))
 GROUP BY cbigint, cboolean1, cstring1, ctimestamp1, cdouble
 ORDER BY ctimestamp1, cdouble, cbigint, cstring1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

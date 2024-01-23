@@ -17,7 +17,7 @@ union all
 select * from a3
 union all
 select * from b2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@a2
 PREHOOK: Input: default@a3
@@ -42,7 +42,7 @@ union all
 select * from a3
 union all
 select * from b2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@a2
 POSTHOOK: Input: default@a3

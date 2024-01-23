@@ -7,12 +7,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@constant_prop
 PREHOOK: query: explain UPDATE constant_prop SET stop_dt = CURRENT_TIMESTAMP WHERE CAST(start_dt AS DATE) = CURRENT_DATE
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@constant_prop
 PREHOOK: Output: default@constant_prop
 PREHOOK: Output: default@constant_prop
 POSTHOOK: query: explain UPDATE constant_prop SET stop_dt = CURRENT_TIMESTAMP WHERE CAST(start_dt AS DATE) = CURRENT_DATE
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@constant_prop
 POSTHOOK: Output: default@constant_prop
 POSTHOOK: Output: default@constant_prop

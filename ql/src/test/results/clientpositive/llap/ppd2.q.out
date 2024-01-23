@@ -11,7 +11,7 @@ from (
   distribute by a.key
   sort by a.key,a.cc desc) b
 where b.cc>1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
@@ -28,7 +28,7 @@ from (
   distribute by a.key
   sort by a.key,a.cc desc) b
 where b.cc>1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
@@ -278,7 +278,7 @@ FROM (
   FROM srcpart
 ) sub
 WHERE sub.tag_student > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -296,7 +296,7 @@ FROM (
   FROM srcpart
 ) sub
 WHERE sub.tag_student > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -323,12 +323,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -435,7 +435,7 @@ from (
   distribute by a.key
   sort by a.key,a.cc desc) b
 where b.cc>1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
@@ -452,7 +452,7 @@ from (
   distribute by a.key
   sort by a.key,a.cc desc) b
 where b.cc>1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
@@ -768,7 +768,7 @@ PREHOOK: query: EXPLAIN
       view
     WHERE
       '2020'  between dt_from and dt_to
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@arc
 PREHOOK: Input: default@loc1
 PREHOOK: Input: default@view
@@ -780,7 +780,7 @@ POSTHOOK: query: EXPLAIN
       view
     WHERE
       '2020'  between dt_from and dt_to
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@arc
 POSTHOOK: Input: default@loc1
 POSTHOOK: Input: default@view

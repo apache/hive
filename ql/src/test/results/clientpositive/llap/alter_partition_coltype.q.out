@@ -67,11 +67,11 @@ POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 50
 PREHOOK: query: explain extended select count(*) from alter_coltype where dt = '100'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where dt = '100'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
@@ -121,11 +121,11 @@ POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 25
 PREHOOK: query: explain extended select count(*) from alter_coltype where ts = '6.30'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = '6.30'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
@@ -151,11 +151,11 @@ POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 25
 PREHOOK: query: explain extended select count(*) from alter_coltype where ts = 3.0 and dt=100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = 3.0 and dt=100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
@@ -234,13 +234,13 @@ POSTHOOK: Input: default@alter_coltype@dt=100/ts=6.30
 		100	6.3
 		100	6.3
 PREHOOK: query: explain extended select key, value, dt, ts from alter_coltype where dt is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=100/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100/ts=6.30
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, dt, ts from alter_coltype where dt is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=100/ts=3.0
 POSTHOOK: Input: default@alter_coltype@dt=100/ts=6.30
@@ -471,12 +471,12 @@ POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: pt@alterdynamic_part_table
 POSTHOOK: Output: pt@alterdynamic_part_table
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: pt@alterdynamic_part_table
 PREHOOK: Input: pt@alterdynamic_part_table@partcol1=1/partcol2=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: pt@alterdynamic_part_table
 POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=1/partcol2=1
 #### A masked pattern was here ####
@@ -537,12 +537,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: pt@alterdynamic_part_table
 PREHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: pt@alterdynamic_part_table
 POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
 #### A masked pattern was here ####

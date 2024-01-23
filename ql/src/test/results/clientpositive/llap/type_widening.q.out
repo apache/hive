@@ -1,9 +1,9 @@
 PREHOOK: query: EXPLAIN SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -33,11 +33,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0
 PREHOOK: query: EXPLAIN SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SELECT 9223372036854775807 AS numcol FROM src) a ORDER BY numcol
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SELECT 9223372036854775807 AS numcol FROM src) a ORDER BY numcol
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1126,11 +1126,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n114
 PREHOOK: query: explain select * from t1_n114 where a > 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n114 where a > 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1152,11 +1152,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from t1_n114 where b < 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n114 where b < 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1178,11 +1178,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from t1_n114 where a < 200
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n114 where a < 200
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1204,11 +1204,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from t1_n114 where b > 40000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n114 where b > 40000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n114
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

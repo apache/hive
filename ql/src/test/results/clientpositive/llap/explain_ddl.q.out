@@ -43,12 +43,12 @@ POSTHOOK: Input: default@m1
 #### A masked pattern was here ####
 497
 PREHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from src
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@M1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from src
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@M1
@@ -147,12 +147,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from M1
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@m1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@M1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from M1
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@M1
@@ -251,13 +251,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from V1_n0
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v1_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@M1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from V1_n0
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v1_n0
 POSTHOOK: Output: database:default
@@ -359,12 +359,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: EXPLAIN CREATE TABLE V1_n0 AS select * from M1
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@m1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@V1_n0
 POSTHOOK: query: EXPLAIN CREATE TABLE V1_n0 AS select * from M1
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V1_n0
@@ -463,12 +463,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: EXPLAIN CREATE VIEW V1_n0 AS select * from M1
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@m1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@V1_n0
 POSTHOOK: query: EXPLAIN CREATE VIEW V1_n0 AS select * from M1
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V1_n0
@@ -484,11 +484,11 @@ STAGE PLANS:
       name: default.V1_n0
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE src
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@M1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 LIKE src
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@M1
 STAGE DEPENDENCIES:
@@ -506,11 +506,11 @@ STAGE PLANS:
         bucketing_version 2
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE M1
-PREHOOK: type: CREATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:default
 PREHOOK: Output: default@M1
 POSTHOOK: query: EXPLAIN CREATE TABLE M1 LIKE M1
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@M1
 STAGE DEPENDENCIES:
@@ -528,12 +528,12 @@ STAGE PLANS:
         bucketing_version 2
 
 PREHOOK: query: EXPLAIN DROP TABLE M1
-PREHOOK: type: DROPTABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@m1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN DROP TABLE M1
-POSTHOOK: type: DROPTABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@m1
@@ -555,11 +555,11 @@ POSTHOOK: Input: default@m1
 #### A masked pattern was here ####
 497
 PREHOOK: query: EXPLAIN INSERT INTO M1 SELECT * FROM M1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@m1
 PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN INSERT INTO M1 SELECT * FROM M1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@m1
 POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
@@ -661,10 +661,10 @@ POSTHOOK: Input: default@m1
 #### A masked pattern was here ####
 497
 PREHOOK: query: EXPLAIN TRUNCATE TABLE M1
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN TRUNCATE TABLE M1
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

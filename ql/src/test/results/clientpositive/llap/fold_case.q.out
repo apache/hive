@@ -1,11 +1,11 @@
 PREHOOK: query: explain
 select count(1) from src where (case key when '238' then true else false end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src where (case key when '238' then true else false end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -68,12 +68,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select count(1) from src where (case key when '238' then 1=2 else 1=1 end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(1) from src where (case key when '238' then 1=2 else 1=1 end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -136,13 +136,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select count(1) from src where (case key when '238' then 1=2 else 1=31 end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(1) from src where (case key when '238' then 1=2 else 1=31 end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -206,12 +206,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select count(1) from src where (case key when '238' then true else 1=1 end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(1) from src where (case key when '238' then true else 1=1 end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -226,12 +226,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select count(1) from src where (case key when '238' then 1=1 else 1=null end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src where (case key when '238' then 1=1 else 1=null end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -294,13 +294,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select count(1) from src where (case key when '238' then 1=null  end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(1) from src where (case key when '238' then 1=null  end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -364,12 +364,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select count(1) from src where (case key when '238' then 2 = cast('2' as bigint) end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(1) from src where (case key when '238' then 2 = cast('2' as bigint) end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -432,12 +432,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select (case key when '238' then null else false end) from src where (case key when '238' then 2 = cast('1' as bigint)  else true end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select (case key when '238' then null else false end) from src where (case key when '238' then 2 = cast('1' as bigint)  else true end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -460,12 +460,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select (case key when '238' then null else null end) from src where (case key when '238' then 2 = null else 3 = null  end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select (case key when '238' then null else null end) from src where (case key when '238' then 2 = null else 3 = null  end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -480,12 +480,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select count(1) from src where (case key when '238' then null else 1=1 end)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(1) from src where (case key when '238' then null else 1=1 end)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -549,13 +549,13 @@ STAGE PLANS:
 PREHOOK: query: explain 
 select (CASE WHEN (-2) >= 0  THEN SUBSTRING(key, 1,CAST((-2) AS INT)) ELSE NULL END)
 from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select (CASE WHEN (-2) >= 0  THEN SUBSTRING(key, 1,CAST((-2) AS INT)) ELSE NULL END)
 from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -576,13 +576,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select (CASE WHEN key = value THEN '1' WHEN true THEN '0' ELSE NULL END)
 from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select (CASE WHEN key = value THEN '1' WHEN true THEN '0' ELSE NULL END)
 from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -602,12 +602,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select (case when true then key when not true then to_date(key) else null end) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select (case when true then key when not true then to_date(key) else null end) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

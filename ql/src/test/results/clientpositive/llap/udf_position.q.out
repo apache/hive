@@ -33,7 +33,7 @@ SELECT position('abc', 'abcd'),
        position('abc', 'abcd', null),
        position('abc', 'abcd', 'invalid number')
 FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -55,7 +55,7 @@ SELECT position('abc', 'abcd'),
        position('abc', 'abcd', null),
        position('abc', 'abcd', 'invalid number')
 FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

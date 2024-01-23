@@ -105,7 +105,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
   FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over1korc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT 
@@ -114,7 +114,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
   FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over1korc_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

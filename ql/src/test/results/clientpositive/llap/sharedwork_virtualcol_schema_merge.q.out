@@ -17,7 +17,7 @@ WITH t AS (
 select BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, a from t1 where NOT (a = 1) AND INPUT__FILE__NAME IN (select INPUT__FILE__NAME from t)
 union all
 select * from t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -31,7 +31,7 @@ WITH t AS (
 select BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, a from t1 where NOT (a = 1) AND INPUT__FILE__NAME IN (select INPUT__FILE__NAME from t)
 union all
 select * from t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -233,7 +233,7 @@ WITH t AS (
 select BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, a from t1 where NOT (a = 1) AND INPUT__FILE__NAME IN (select INPUT__FILE__NAME from t)
 union all
 select * from t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -247,7 +247,7 @@ WITH t AS (
 select BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, a from t1 where NOT (a = 1) AND INPUT__FILE__NAME IN (select INPUT__FILE__NAME from t)
 union all
 select * from t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

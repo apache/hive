@@ -63,12 +63,12 @@ POSTHOOK: Lineage: varchar_ctas_1.c2 EXPRESSION [(varchar_single_partition)varch
 POSTHOOK: Lineage: varchar_ctas_1.vs SIMPLE [(varchar_single_partition)varchar_single_partition.FieldSchema(name:vs, type:varchar(10), comment:null), ]
 PREHOOK: query: explain vectorization detail
 select * from varchar_ctas_1 order by vs, c1, c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_ctas_1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from varchar_ctas_1 order by vs, c1, c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_ctas_1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

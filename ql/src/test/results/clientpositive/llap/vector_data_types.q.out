@@ -119,11 +119,11 @@ POSTHOOK: Lineage: over1korc_n1.si EXPRESSION []
 POSTHOOK: Lineage: over1korc_n1.t EXPRESSION []
 POSTHOOK: Lineage: over1korc_n1.ts EXPRESSION []
 PREHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -225,11 +225,11 @@ POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 -17045922556
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -365,13 +365,13 @@ POSTHOOK: Input: default@over1korc_n1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION 
 SELECT SUM(HASH(*))
 FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION 
 SELECT SUM(HASH(*))
 FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

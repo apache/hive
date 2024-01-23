@@ -261,13 +261,13 @@ POSTHOOK: Input: default@db1_ext_auth2
 40	50	-455.4543	330.767
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db2_ext_auth2 ON db1_ext_auth1.ikey = db2_ext_auth2.ikey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 PREHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db2_ext_auth2 ON db1_ext_auth1.ikey = db2_ext_auth2.ikey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
@@ -372,13 +372,13 @@ POSTHOOK: Input: default@db2_ext_auth2
 20	20	20.0	20.0	20	20	20.0	20.0
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db1_ext_auth2 ON db1_ext_auth1.ikey = db1_ext_auth2.ikey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 PREHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db1_ext_auth2 ON db1_ext_auth1.ikey = db1_ext_auth2.ikey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
@@ -423,12 +423,12 @@ POSTHOOK: Input: default@db1_ext_auth2
 Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -539,12 +539,12 @@ POSTHOOK: Input: default@db1_ext_auth1
 44	88
 PREHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey FROM db1_ext_auth1 LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -619,11 +619,11 @@ POSTHOOK: Input: default@db1_ext_auth2
 20	20	20.0	20.0
 40	50	-455.4543	330.767
 PREHOOK: query: explain select * from db1_ext_auth1 limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from db1_ext_auth1 limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

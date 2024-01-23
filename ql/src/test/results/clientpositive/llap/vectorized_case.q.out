@@ -15,7 +15,7 @@ from alltypesorc
 where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -35,7 +35,7 @@ from alltypesorc
 where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -169,7 +169,7 @@ from alltypesorc
 where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -189,7 +189,7 @@ from alltypesorc
 where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -269,7 +269,7 @@ select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -277,7 +277,7 @@ select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -418,7 +418,7 @@ select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -426,7 +426,7 @@ select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -582,12 +582,12 @@ POSTHOOK: Lineage: test_1_n3.attr SCRIPT []
 POSTHOOK: Lineage: test_1_n3.member SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -667,12 +667,12 @@ POSTHOOK: Input: default@test_1_n3
 4
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -752,12 +752,12 @@ POSTHOOK: Input: default@test_1_n3
 1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -855,12 +855,12 @@ POSTHOOK: Lineage: test_2_n3.attr SCRIPT []
 POSTHOOK: Lineage: test_2_n3.member SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -940,12 +940,12 @@ POSTHOOK: Input: default@test_2_n3
 4
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1025,12 +1025,12 @@ POSTHOOK: Input: default@test_2_n3
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

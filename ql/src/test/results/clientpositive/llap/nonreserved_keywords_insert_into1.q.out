@@ -13,11 +13,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert
 PREHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@insert
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 STAGE DEPENDENCIES:
@@ -153,11 +153,11 @@ POSTHOOK: Input: default@insert
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 10226524244
 PREHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@insert
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 STAGE DEPENDENCIES:
@@ -302,11 +302,11 @@ POSTHOOK: Input: default@insert
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 200
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@insert
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 STAGE DEPENDENCIES:

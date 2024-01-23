@@ -13,7 +13,7 @@ FROM (
          USING 'cat'
 ) tmap
 INSERT OVERWRITE TABLE dest1_n91 SELECT tmap.key, tmap.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n91
 POSTHOOK: query: EXPLAIN
@@ -23,7 +23,7 @@ FROM (
          USING 'cat'
 ) tmap
 INSERT OVERWRITE TABLE dest1_n91 SELECT tmap.key, tmap.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n91
 STAGE DEPENDENCIES:

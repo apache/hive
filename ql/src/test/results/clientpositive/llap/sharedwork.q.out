@@ -70,7 +70,7 @@ WHERE 1=1
 AND  (cast(Table__323.col_7 AS DOUBLE) IS NOT NULL OR Table__323.col_7 IS NULL)
 AND CAST(Table__323.col_3 AS DATE)  BETWEEN  '2018-07-01'  AND  '2019-01-23'
 AND Table__323.col_20  IN  ('part1','part2','part3')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@my_table_0001
 PREHOOK: Input: default@my_table_0001_00
 PREHOOK: Input: default@my_table_0001_01
@@ -94,7 +94,7 @@ WHERE 1=1
 AND  (cast(Table__323.col_7 AS DOUBLE) IS NOT NULL OR Table__323.col_7 IS NULL)
 AND CAST(Table__323.col_3 AS DATE)  BETWEEN  '2018-07-01'  AND  '2019-01-23'
 AND Table__323.col_20  IN  ('part1','part2','part3')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@my_table_0001
 POSTHOOK: Input: default@my_table_0001_00
 POSTHOOK: Input: default@my_table_0001_01
@@ -555,7 +555,7 @@ WHERE (`t14`.`$f2` IS NULL OR `t6`.`c` = 0 OR `t6`.`c` IS NULL)
     AND (`t`.`p_type` IS NOT NULL OR `t6`.`c` = 0 OR `t6`.`c` IS NULL OR `t14`.`$f2` IS NOT NULL)
     AND (`t6`.`ck` < `t6`.`c` IS NOT TRUE OR `t6`.`c` = 0 OR `t6`.`c` IS NULL OR `t14`.`$f2` IS NOT NULL
     OR `t`.`p_type` IS NULL)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
@@ -584,7 +584,7 @@ WHERE (`t14`.`$f2` IS NULL OR `t6`.`c` = 0 OR `t6`.`c` IS NULL)
     AND (`t`.`p_type` IS NOT NULL OR `t6`.`c` = 0 OR `t6`.`c` IS NULL OR `t14`.`$f2` IS NOT NULL)
     AND (`t6`.`ck` < `t6`.`c` IS NOT TRUE OR `t6`.`c` = 0 OR `t6`.`c` IS NULL OR `t14`.`$f2` IS NOT NULL
     OR `t`.`p_type` IS NULL)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `p_name`

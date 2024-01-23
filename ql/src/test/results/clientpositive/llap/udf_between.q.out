@@ -11,11 +11,11 @@ between a [NOT] BETWEEN b AND c - evaluate if a is [not] in between b and c
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween
 Function type:BUILTIN
 PREHOOK: query: explain SELECT * FROM src where key + 100 between (150 + -50) AND (150 + 50) LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where key + 100 between (150 + -50) AND (150 + 50) LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -67,11 +67,11 @@ POSTHOOK: Input: default@src
 65	val_65
 83	val_83
 PREHOOK: query: explain SELECT * FROM src where key + 100 not between (150 + -50) AND (150 + 50) LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where key + 100 not between (150 + -50) AND (150 + 50) LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -123,11 +123,11 @@ POSTHOOK: Input: default@src
 429	val_429
 374	val_374
 PREHOOK: query: explain SELECT * FROM src where 'b' between 'a' AND 'c' LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where 'b' between 'a' AND 'c' LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -157,11 +157,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 238	val_238
 PREHOOK: query: explain SELECT * FROM src where 2 between 2 AND '3' LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT * FROM src where 2 between 2 AND '3' LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -223,13 +223,13 @@ POSTHOOK: Input: default@t
 PREHOOK: query: explain
 SELECT * FROM t	where	i between 8 and 9
 		or	i between 9 and 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM t	where	i between 8 and 9
 		or	i between 9 and 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -266,13 +266,13 @@ POSTHOOK: Input: default@t
 PREHOOK: query: explain
 SELECT * FROM t	where	i between 6 and 7
 		or	i between 9 and 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM t	where	i between 6 and 7
 		or	i between 9 and 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -310,13 +310,13 @@ POSTHOOK: Input: default@t
 PREHOOK: query: explain
 SELECT * FROM t	where	i not between 6 and 7 
 		and	i not between 9 and 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM t	where	i not between 6 and 7 
 		and	i not between 9 and 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

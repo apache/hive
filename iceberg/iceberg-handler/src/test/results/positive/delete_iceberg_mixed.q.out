@@ -60,11 +60,11 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain delete from ice01 where id>4 OR id=2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
 POSTHOOK: query: explain delete from ice01 where id>4 OR id=2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 Vertex dependency in root stage

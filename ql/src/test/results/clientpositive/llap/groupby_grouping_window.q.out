@@ -23,7 +23,7 @@ FROM t_n33
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -32,7 +32,7 @@ FROM t_n33
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

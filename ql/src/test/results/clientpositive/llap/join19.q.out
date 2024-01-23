@@ -61,7 +61,7 @@ WHERE
 t6.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL'
 ) t66
 ON (t66.subject=t55.object)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@triples
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -119,7 +119,7 @@ WHERE
 t6.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL'
 ) t66
 ON (t66.subject=t55.object)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@triples
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

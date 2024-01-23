@@ -3,7 +3,7 @@ SELECT f.key, g.value
 FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -11,7 +11,7 @@ SELECT f.key, g.value
 FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -120,7 +120,7 @@ FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.key, f.value
 ORDER BY f.value, g.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -129,7 +129,7 @@ FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.key, f.value
 ORDER BY f.value, g.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -245,7 +245,7 @@ JOIN (
   GROUP BY key, value) g
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -257,7 +257,7 @@ JOIN (
   GROUP BY key, value) g
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -378,7 +378,7 @@ JOIN (
   GROUP BY key, value) g
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -393,7 +393,7 @@ JOIN (
   GROUP BY key, value) g
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -525,7 +525,7 @@ JOIN (
   GROUP BY key) f
 GROUP BY g.value, f.key
 ORDER BY f.key desc, g.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -540,7 +540,7 @@ JOIN (
   GROUP BY key) f
 GROUP BY g.value, f.key
 ORDER BY f.key desc, g.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -688,7 +688,7 @@ UNION ALL
   GROUP BY f.key, g.value
 ) x
 ORDER BY x.value desc, x.key desc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -719,7 +719,7 @@ UNION ALL
   GROUP BY f.key, g.value
 ) x
 ORDER BY x.value desc, x.key desc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

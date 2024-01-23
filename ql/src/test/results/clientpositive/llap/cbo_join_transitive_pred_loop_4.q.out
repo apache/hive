@@ -28,7 +28,7 @@ FROM (
      WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
 ) b ON a.bd_id = b.bd_id
 WHERE a.bd_id = 8 OR a.bd_id <> 8
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tablea
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -47,7 +47,7 @@ FROM (
      WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
 ) b ON a.bd_id = b.bd_id
 WHERE a.bd_id = 8 OR a.bd_id <> 8
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tablea
 #### A masked pattern was here ####
 CBO PLAN:

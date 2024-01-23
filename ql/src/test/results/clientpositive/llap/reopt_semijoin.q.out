@@ -119,7 +119,7 @@ select   sum(s.ss_item_sk)
         1=1
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 #### A masked pattern was here ####
@@ -132,7 +132,7 @@ select   sum(s.ss_item_sk)
         1=1
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 #### A masked pattern was here ####
@@ -275,7 +275,7 @@ select   sum(s.ss_item_sk)
         1=1
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 #### A masked pattern was here ####
@@ -288,7 +288,7 @@ select   sum(s.ss_item_sk)
         1=1
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 #### A masked pattern was here ####
@@ -301,7 +301,7 @@ select   sum(s.ss_item_sk)
         1=1
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 #### A masked pattern was here ####
@@ -314,7 +314,7 @@ select   sum(s.ss_item_sk)
         1=1
         and s.ss_sold_date_sk=d.d_date_sk
 	and d.d_moy=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 #### A masked pattern was here ####

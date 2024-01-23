@@ -16,12 +16,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_out_2
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH ROLLUP
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table_out@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH ROLLUP
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out@part=1
 STAGE DEPENDENCIES:
@@ -1509,12 +1509,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH CUBE
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table_out@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH CUBE
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out@part=1
 STAGE DEPENDENCIES:
@@ -1748,12 +1748,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value GROUPING SETS (key, value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table_out@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value GROUPING SETS (key, value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out@part=1
 STAGE DEPENDENCIES:

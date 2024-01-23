@@ -54,12 +54,12 @@ POSTHOOK: Lineage: t_test.cint2 SCRIPT []
 POSTHOOK: Lineage: t_test.cvarchar SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cint1 FROM t_test GROUP BY cint1 ORDER BY cint1 LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

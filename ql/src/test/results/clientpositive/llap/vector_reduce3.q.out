@@ -103,12 +103,12 @@ POSTHOOK: Lineage: vectortab2korc_n2.ts SIMPLE [(vectortab2k_n2)vectortab2k_n2.F
 POSTHOOK: Lineage: vectortab2korc_n2.ts2 SIMPLE [(vectortab2k_n2)vectortab2k_n2.FieldSchema(name:ts2, type:timestamp, comment:null), ]
 PREHOOK: query: explain vectorization expression
 select s from vectortab2korc_n2 order by s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vectortab2korc_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select s from vectortab2korc_n2 order by s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vectortab2korc_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

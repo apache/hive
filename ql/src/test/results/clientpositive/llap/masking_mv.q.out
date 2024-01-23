@@ -15,14 +15,14 @@ POSTHOOK: Lineage: masking_test_n_mv.value SIMPLE [(src)src.FieldSchema(name:val
 PREHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_view_n_mv
 POSTHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv
@@ -183,13 +183,13 @@ Table name          	Snapshot
 default.masking_test_n_mv	:1:9223372036854775807::	 
 PREHOOK: query: explain
 select key from `masking_test_n_mv`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Input: default@masking_test_view_n_mv
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_n_mv`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv
 #### A masked pattern was here ####
@@ -243,13 +243,13 @@ POSTHOOK: Lineage: masking_test_view_n_mv_3._c1 EXPRESSION [(masking_test_n_mv)m
 POSTHOOK: Lineage: masking_test_view_n_mv_3.value SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select key from `masking_test_n_mv` group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Input: default@masking_test_view_n_mv
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_n_mv` group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv
 #### A masked pattern was here ####
@@ -326,13 +326,13 @@ POSTHOOK: Input: default@masking_test_view_n_mv
 8
 PREHOOK: query: explain
 select value from `masking_test_n_mv` group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Input: default@masking_test_view_n_mv_3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value from `masking_test_n_mv` group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv_3
 #### A masked pattern was here ####
@@ -413,13 +413,13 @@ POSTHOOK: Input: default@masking_test_view_n_mv_3
 8_lav
 PREHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Input: default@masking_test_view_n_mv_3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv_3
 #### A masked pattern was here ####
@@ -517,14 +517,14 @@ POSTHOOK: Lineage: masking_test_view_n_mv_4.key SIMPLE [(masking_test_n_mv)maski
 POSTHOOK: Lineage: masking_test_view_n_mv_4.value SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select value from `masking_test_n_mv` group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Input: default@masking_test_view_n_mv_3
 PREHOOK: Input: default@masking_test_view_n_mv_4
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value from `masking_test_n_mv` group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv_3
 POSTHOOK: Input: default@masking_test_view_n_mv_4
@@ -608,14 +608,14 @@ POSTHOOK: Input: default@masking_test_view_n_mv_4
 8_lav
 PREHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Input: default@masking_test_view_n_mv_3
 PREHOOK: Input: default@masking_test_view_n_mv_4
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key) from `masking_test_n_mv` group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv_3
 POSTHOOK: Input: default@masking_test_view_n_mv_4
@@ -717,14 +717,14 @@ POSTHOOK: Lineage: srctnx.value SIMPLE [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: explain
 create materialized view `masking_test_view_n_mv_2` as
 select key from `srcTnx`
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srctnx
 PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_view_n_mv_2
 POSTHOOK: query: explain
 create materialized view `masking_test_view_n_mv_2` as
 select key from `srcTnx`
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srctnx
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv_2
@@ -885,12 +885,12 @@ Table name          	Snapshot
 default.srctnx      	:1:9223372036854775807::	 
 PREHOOK: query: explain
 select key from `masking_test_view_n_mv_2` order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_view_n_mv_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_view_n_mv_2` order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_view_n_mv_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

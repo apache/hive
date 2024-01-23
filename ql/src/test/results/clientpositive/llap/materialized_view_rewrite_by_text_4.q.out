@@ -32,13 +32,13 @@ POSTHOOK: Output: default@mat1
 POSTHOOK: Lineage: mat1.col0 SIMPLE []
 PREHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -56,12 +56,12 @@ POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.col0 SCRIPT []
 PREHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -80,13 +80,13 @@ POSTHOOK: Output: default@mat1
 POSTHOOK: Lineage: mat1.col0 SIMPLE []
 PREHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

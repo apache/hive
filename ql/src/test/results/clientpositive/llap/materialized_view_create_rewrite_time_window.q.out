@@ -58,7 +58,7 @@ CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewritin
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
   GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Output: database:default
@@ -69,7 +69,7 @@ CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewritin
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
   GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Input: default@cmv_basetable_n3
 POSTHOOK: Output: database:default
@@ -323,7 +323,7 @@ SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 #### A masked pattern was here ####
@@ -332,7 +332,7 @@ SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Input: default@cmv_basetable_n3
 #### A masked pattern was here ####
@@ -475,12 +475,12 @@ POSTHOOK: Lineage: cmv_basetable_2_n1.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n1.d SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_mat_view_n3
 PREHOOK: Output: default@cmv_mat_view_n3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_mat_view_n3
 POSTHOOK: Output: default@cmv_mat_view_n3
 STAGE DEPENDENCIES:
@@ -562,7 +562,7 @@ SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Input: default@cmv_mat_view_n3
@@ -572,7 +572,7 @@ SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Input: default@cmv_basetable_n3
 POSTHOOK: Input: default@cmv_mat_view_n3
@@ -617,14 +617,14 @@ POSTHOOK: Input: default@cmv_mat_view_n3
 1
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Input: default@cmv_mat_view_n3
 PREHOOK: Output: default@cmv_mat_view_n3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Input: default@cmv_basetable_n3
 POSTHOOK: Input: default@cmv_mat_view_n3
@@ -906,7 +906,7 @@ SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Input: default@cmv_mat_view_n3
@@ -916,7 +916,7 @@ SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Input: default@cmv_basetable_n3
 POSTHOOK: Input: default@cmv_mat_view_n3

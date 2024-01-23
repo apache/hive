@@ -3,7 +3,7 @@ select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -12,7 +12,7 @@ select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -123,7 +123,7 @@ select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -132,7 +132,7 @@ select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -234,7 +234,7 @@ select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int)
 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -243,7 +243,7 @@ select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int)
 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

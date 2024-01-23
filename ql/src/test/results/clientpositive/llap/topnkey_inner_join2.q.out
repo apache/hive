@@ -98,7 +98,7 @@ PREHOOK: query: explain select name, city
   and city = 'Hopewell'
  order by customer.id
  limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@address
 PREHOOK: Input: default@customer
 #### A masked pattern was here ####
@@ -108,7 +108,7 @@ POSTHOOK: query: explain select name, city
   and city = 'Hopewell'
  order by customer.id
  limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@address
 POSTHOOK: Input: default@customer
 #### A masked pattern was here ####
@@ -261,7 +261,7 @@ PREHOOK: query: explain select name, city
    and name in ('Joe', 'Robert','Heisenberg')
   order by customer.address_id
   limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@address
 PREHOOK: Input: default@customer
 #### A masked pattern was here ####
@@ -271,7 +271,7 @@ POSTHOOK: query: explain select name, city
    and name in ('Joe', 'Robert','Heisenberg')
   order by customer.address_id
   limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@address
 POSTHOOK: Input: default@customer
 #### A masked pattern was here ####

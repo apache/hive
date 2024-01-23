@@ -1,9 +1,9 @@
 PREHOOK: query: explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -31,7 +31,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
       ) tmp4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -43,7 +43,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
       ) tmp4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -184,7 +184,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
       ) tmp4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -196,7 +196,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
       ) tmp4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

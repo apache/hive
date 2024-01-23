@@ -2,12 +2,12 @@ Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -99,12 +99,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -212,12 +212,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3 where src1.key=src2.key and src1.key=src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 join src src3 where src1.key=src2.key and src1.key=src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -326,12 +326,12 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select src1.key from src src1 join src src2 on 5 = src2.key join src src3 on src1.key=src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 join src src2 on 5 = src2.key join src src3 on src1.key=src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -443,12 +443,12 @@ Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select src1.key from src src1 left outer join src src2 join src src3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 left outer join src src2 join src src3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -540,12 +540,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select src1.key from src src1 left outer join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select src1.key from src src1 left outer join src src2 on src1.key=src2.key join src src3 on src1.key=src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

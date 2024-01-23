@@ -41,13 +41,13 @@ POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -201,12 +201,12 @@ rewrite; mv matching	14	0.9090909090909091
 rewrite; mv matching	15	0.9545454545454546
 PREHOOK: query: explain
 select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -341,12 +341,12 @@ POSTHOOK: Lineage: sketch_input.id SCRIPT []
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -512,13 +512,13 @@ rewrite; no mv matching	15	0.9545454545454546
 rewrite; no mv matching	15	0.9545454545454546
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 alter materialized view mv_1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
@@ -712,13 +712,13 @@ POSTHOOK: Lineage: mv_1.category EXPRESSION [(sketch_input)sketch_input.FieldSch
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', id, cume_dist() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -894,13 +894,13 @@ rewrite; mv matching	15	0.9545454545454546
 rewrite; mv matching	15	0.9545454545454546
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####

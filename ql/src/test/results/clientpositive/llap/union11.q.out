@@ -4,7 +4,7 @@ PREHOOK: query: explain
                                             select 'tst2' as key, count(1) as value from src s2
                                         UNION ALL
                                             select 'tst3' as key, count(1) as value from src s3) unionsrc group by unionsrc.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -13,7 +13,7 @@ POSTHOOK: query: explain
                                             select 'tst2' as key, count(1) as value from src s2
                                         UNION ALL
                                             select 'tst3' as key, count(1) as value from src s3) unionsrc group by unionsrc.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

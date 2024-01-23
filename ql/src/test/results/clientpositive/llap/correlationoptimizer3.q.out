@@ -4,7 +4,7 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       FROM (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) b
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -14,7 +14,7 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       FROM (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) b
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -225,7 +225,7 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       FROM (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) b
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -235,7 +235,7 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       FROM (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) b
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -446,7 +446,7 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       FROM (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) b
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -456,7 +456,7 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       FROM (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) b
       JOIN (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) d
       ON b.key = d.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -660,7 +660,7 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -670,7 +670,7 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -881,7 +881,7 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -891,7 +891,7 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1102,7 +1102,7 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1112,7 +1112,7 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

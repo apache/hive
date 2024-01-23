@@ -17,12 +17,12 @@ POSTHOOK: Output: default@results_cache_with_auth_t1
 POSTHOOK: Lineage: results_cache_with_auth_t1.c1 SCRIPT []
 PREHOOK: query: explain
 select count(*) from results_cache_with_auth_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@results_cache_with_auth_t1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select count(*) from results_cache_with_auth_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@results_cache_with_auth_t1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -91,12 +91,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 test.comment="Cache should be used for this query"
 PREHOOK: query: explain
 select count(*) from results_cache_with_auth_t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@results_cache_with_auth_t1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select count(*) from results_cache_with_auth_t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@results_cache_with_auth_t1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

@@ -11,12 +11,12 @@ POSTHOOK: Output: default@t_n25
 POSTHOOK: Lineage: t_n25.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t_n25.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain analyze table t_n25 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n25
 PREHOOK: Output: default@t_n25
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze table t_n25 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n25
 POSTHOOK: Output: default@t_n25
 #### A masked pattern was here ####

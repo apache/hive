@@ -115,11 +115,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t_n17
 POSTHOOK: Lineage: t_n17.s SCRIPT []
 PREHOOK: query: explain select s,cast(s as boolean) from t_n17 order by s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n17
 #### A masked pattern was here ####
 POSTHOOK: query: explain select s,cast(s as boolean) from t_n17 order by s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n17
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

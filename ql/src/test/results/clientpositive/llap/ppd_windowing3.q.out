@@ -94,7 +94,7 @@ on su.confirmation_num=t1.order_num
 where su.cancellation_dt is null
 ) tt
 where tt.vin_id='DEADBEAF'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@package_order
 PREHOOK: Input: default@package_order_gsp
 #### A masked pattern was here ####
@@ -107,7 +107,7 @@ on su.confirmation_num=t1.order_num
 where su.cancellation_dt is null
 ) tt
 where tt.vin_id='DEADBEAF'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@package_order
 POSTHOOK: Input: default@package_order_gsp
 #### A masked pattern was here ####
@@ -261,7 +261,7 @@ on su.confirmation_num=t1.order_num
 where su.cancellation_dt is null
 ) tt
 where tt.vin_id='DEADBEAF'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@package_order
 PREHOOK: Input: default@package_order_gsp
 #### A masked pattern was here ####
@@ -274,7 +274,7 @@ on su.confirmation_num=t1.order_num
 where su.cancellation_dt is null
 ) tt
 where tt.vin_id='DEADBEAF'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@package_order
 POSTHOOK: Input: default@package_order_gsp
 #### A masked pattern was here ####

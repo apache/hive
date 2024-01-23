@@ -31,12 +31,12 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@foo_n5@s=bar
 POSTHOOK: Lineage: foo_n5 PARTITION(s=bar).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: explain select * from foo_n5 where s not in ('bar')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo_n5
 PREHOOK: Input: default@foo_n5@s=foo_n5
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from foo_n5 where s not in ('bar')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo_n5
 POSTHOOK: Input: default@foo_n5@s=foo_n5
 #### A masked pattern was here ####

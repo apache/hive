@@ -22,7 +22,7 @@ SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((), (a), (b), (a, b))
 ) t WHERE a IS NOT NULL
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM (
@@ -30,7 +30,7 @@ SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((), (a), (b), (a, b))
 ) t WHERE a IS NOT NULL
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -168,7 +168,7 @@ SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 ) t WHERE a IS NOT NULL
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM (
@@ -176,7 +176,7 @@ SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 ) t WHERE a IS NOT NULL
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -312,7 +312,7 @@ FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 HAVING sum(s) > 100
 ) t WHERE a IS NOT NULL AND b IS NOT NULL
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM (
@@ -321,7 +321,7 @@ FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 HAVING sum(s) > 100
 ) t WHERE a IS NOT NULL AND b IS NOT NULL
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -465,7 +465,7 @@ FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 HAVING sum(s) > 100
 ) t WHERE a IS NOT NULL OR b IS NOT NULL
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM (
@@ -474,7 +474,7 @@ FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 HAVING sum(s) > 100
 ) t WHERE a IS NOT NULL OR b IS NOT NULL
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -652,7 +652,7 @@ SELECT upper(a) x, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 ) t WHERE x in ("AAA", "BBB")
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM (
@@ -660,7 +660,7 @@ SELECT upper(a) x, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 ) t WHERE x in ("AAA", "BBB")
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -812,14 +812,14 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 HAVING upper(a) = 'AAA' AND 1 != 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((a), (a, b))
 HAVING upper(a) = 'AAA' AND 1 != 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -965,14 +965,14 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((), (a), (a, b))
 HAVING upper(a) = 'AAA' AND sum(s) > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((), (a), (a, b))
 HAVING upper(a) = 'AAA' AND sum(s) > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1129,14 +1129,14 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT upper(a), b, sum(s)
 FROM T1
 GROUP BY upper(a), b GROUPING SETS ((upper(a)), (upper(a), b))
 HAVING upper(a) = 'AAA' AND sum(s) > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT upper(a), b, sum(s)
 FROM T1
 GROUP BY upper(a), b GROUPING SETS ((upper(a)), (upper(a), b))
 HAVING upper(a) = 'AAA' AND sum(s) > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1294,14 +1294,14 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((b), (a, b))
 HAVING sum(s) > 100 and a IS NOT NULL AND upper(b) = 'BBB'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
 FROM T1
 GROUP BY a, b GROUPING SETS ((b), (a, b))
 HAVING sum(s) > 100 and a IS NOT NULL AND upper(b) = 'BBB'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

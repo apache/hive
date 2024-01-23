@@ -2,13 +2,13 @@ Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Sta
 PREHOOK: query: explain SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -181,13 +181,13 @@ POSTHOOK: Input: default@part
 PREHOOK: query: EXPLAIN SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -368,13 +368,13 @@ Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Sta
 PREHOOK: query: explain SELECT p_size, p_size NOT IN (
         SELECT MAX(p_size) FROM part)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, p_size NOT IN (
         SELECT MAX(p_size) FROM part)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -547,13 +547,13 @@ POSTHOOK: Input: default@part
 PREHOOK: query: EXPLAIN SELECT p_size, p_size NOT IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT p_size, p_size NOT IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -793,12 +793,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain SELECT p_size, EXISTS(SELECT p_size FROM part)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, EXISTS(SELECT p_size FROM part)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -929,12 +929,12 @@ POSTHOOK: Input: default@part
 7	true
 PREHOOK: query: explain SELECT p_size, EXISTS(SELECT p_size FROM part pp where pp.p_type = part.p_type)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, EXISTS(SELECT p_size FROM part pp where pp.p_type = part.p_type)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1070,12 +1070,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1206,12 +1206,12 @@ POSTHOOK: Input: default@part
 7	false
 PREHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part pp where pp.p_type = part.p_type)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part pp where pp.p_type = part.p_type)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1345,11 +1345,11 @@ POSTHOOK: Input: default@part
 6	false
 7	false
 PREHOOK: query: explain select p_size, (select count(p_name) from part p where p.p_type = part.p_name) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_size, (select count(p_name) from part p where p.p_type = part.p_name) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1484,11 +1484,11 @@ POSTHOOK: Input: default@part
 6	0
 7	0
 PREHOOK: query: explain select p_size, (select max(p_name) from part p where p.p_type = part.p_name) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_size, (select max(p_name) from part p where p.p_type = part.p_name) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1621,12 +1621,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain SELECT p_size, (SELECT max(p_size) FROM part)
     FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, (SELECT max(p_size) FROM part)
     FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1757,7 +1757,7 @@ where b.key in
          from src a
          where b.value = a.value and a.key > '9'
         )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1768,7 +1768,7 @@ where b.key in
          from src a
          where b.value = a.value and a.key > '9'
         )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1927,7 +1927,7 @@ where b.key in
          from src a
          where b.value = a.value and a.key > '9'
         )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1938,7 +1938,7 @@ where b.key in
          from src a
          where b.value = a.value and a.key > '9'
         )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2125,12 +2125,12 @@ POSTHOOK: Output: default@tnull_n3
 POSTHOOK: Lineage: tnull_n3.i EXPRESSION []
 Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select p_size, p_size IN (select i from tnull_n3) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@tnull_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_size, p_size IN (select i from tnull_n3) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@tnull_n3
 #### A masked pattern was here ####
@@ -2332,12 +2332,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty_n3
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select p_size, (select count(*) from tempty_n3) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_size, (select count(*) from tempty_n3) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
@@ -2467,12 +2467,12 @@ POSTHOOK: Input: default@tempty_n3
 7	0
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select p_size, (select max(i) from tempty_n3) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_size, (select max(i) from tempty_n3) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
@@ -2624,12 +2624,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull_n3
 PREHOOK: query: explain SELECT p_size, 1+(SELECT max(p_size) FROM part p
     WHERE p.p_type = part.p_type) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, 1+(SELECT max(p_size) FROM part p
     WHERE p.p_type = part.p_type) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2767,12 +2767,12 @@ POSTHOOK: Input: default@part
 7	8
 PREHOOK: query: explain SELECT p_size, (SELECT count(p_size) FROM part p
     WHERE p.p_type = part.p_type) IS NULL from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, (SELECT count(p_size) FROM part p
     WHERE p.p_type = part.p_type) IS NULL from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2910,11 +2910,11 @@ POSTHOOK: Input: default@part
 7	false
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3059,14 +3059,14 @@ PREHOOK: query: EXPLAIN SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type) AND
         p_name IN (SELECT min(p_name) from part)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type) AND
         p_name IN (SELECT min(p_name) from part)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3336,12 +3336,12 @@ POSTHOOK: Input: default@part
 7	false
 PREHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part pp where pp.p_type = part.p_type)
 FROM part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part pp where pp.p_type = part.p_type)
 FROM part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3479,13 +3479,13 @@ Warning: Shuffle Join MERGEJOIN[57][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Sta
 PREHOOK: query: explain select p_size, (p_size IN
     (select (select max(p_size) from part) as sb from part order by sb limit 1)) = true
    from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_size, (p_size IN
     (select (select max(p_size) from part) as sb from part order by sb limit 1)) = true
    from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3759,7 +3759,7 @@ PREHOOK: query: explain select case when (select count(*)
                   from part
                   where p_partkey between 10000 and 20000) end sq
 from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select case when (select count(*)
@@ -3772,7 +3772,7 @@ POSTHOOK: query: explain select case when (select count(*)
                   from part
                   where p_partkey between 10000 and 20000) end sq
 from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4022,11 +4022,11 @@ POSTHOOK: Input: default@part
 46.0
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select max(p_size) > ( select count(*)-1 from part) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(p_size) > ( select count(*)-1 from part) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4154,12 +4154,12 @@ true
 Warning: Shuffle Join MERGEJOIN[55][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select o.p_size, (select count(distinct p_type) from part p where p.p_partkey = o.p_partkey) tmp
     FROM part o right join (select * from part where p_size > (select avg(p_size) from part)) t on t.p_partkey = o.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select o.p_size, (select count(distinct p_type) from part p where p.p_partkey = o.p_partkey) tmp
     FROM part o right join (select * from part where p_size > (select avg(p_size) from part)) t on t.p_partkey = o.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4377,13 +4377,13 @@ Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3
 PREHOOK: query: explain select (select max(p_size) from part), (select min(p_size) from part),
     (select avg(p_size) from part), (select sum(p_size) from part)
      from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select (select max(p_size) from part), (select min(p_size) from part),
     (select avg(p_size) from part), (select sum(p_size) from part)
      from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4645,13 +4645,13 @@ Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain select t1.p_size,
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type)
     from part t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t1.p_size,
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type)
     from part t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4822,7 +4822,7 @@ PREHOOK: query: explain select t1.p_size,
                                               and (select sum(p_size) from part a1 where a1.p_partkey = p.p_partkey
                                                                         group by a1.p_partkey) > 0)
     from part t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t1.p_size,
@@ -4830,7 +4830,7 @@ POSTHOOK: query: explain select t1.p_size,
                                               and (select sum(p_size) from part a1 where a1.p_partkey = p.p_partkey
                                                                         group by a1.p_partkey) > 0)
     from part t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -5120,7 +5120,7 @@ PREHOOK: query: explain select t1.p_size,
                                               and (select sum(p_size) from part a1 where a1.p_partkey = p.p_partkey
                                                                         group by a1.p_partkey) > 0)
     from part t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t1.p_size,
@@ -5129,7 +5129,7 @@ POSTHOOK: query: explain select t1.p_size,
                                               and (select sum(p_size) from part a1 where a1.p_partkey = p.p_partkey
                                                                         group by a1.p_partkey) > 0)
     from part t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -5498,11 +5498,11 @@ POSTHOOK: Input: default@part
 6	1	28
 7	1	28
 PREHOOK: query: explain SELECT p_size, exp((SELECT max(p_size) FROM part p WHERE p.p_type = part.p_type)) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p_size, exp((SELECT max(p_size) FROM part p WHERE p.p_type = part.p_type)) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -188,11 +188,11 @@ POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=old_part
 5	old_part1:	old_part2:
 6	old_part1:	old_part2:
 PREHOOK: query: EXPLAIN ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:')
-PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: alter_rename_partition_db@alter_rename_partition
 PREHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
 POSTHOOK: query: EXPLAIN ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:')
-POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition
 POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
 STAGE DEPENDENCIES:

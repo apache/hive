@@ -68,7 +68,7 @@ select ss_net_paid_inc_tax,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
@@ -81,7 +81,7 @@ select ss_net_paid_inc_tax,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part
 STAGE DEPENDENCIES:
@@ -347,7 +347,7 @@ select ss_net_paid_inc_tax,
   from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
@@ -357,7 +357,7 @@ select ss_net_paid_inc_tax,
   from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part
 STAGE DEPENDENCIES:
@@ -614,7 +614,7 @@ select ss_net_paid_inc_tax,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
@@ -627,7 +627,7 @@ select ss_net_paid_inc_tax,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part
 STAGE DEPENDENCIES:
@@ -889,7 +889,7 @@ select ss_net_paid_inc_tax,
   from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ss_n0
 PREHOOK: Output: default@ss_part
 POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
@@ -899,7 +899,7 @@ select ss_net_paid_inc_tax,
   from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ss_n0
 POSTHOOK: Output: default@ss_part
 STAGE DEPENDENCIES:
@@ -1211,7 +1211,7 @@ select ss_net_paid_inc_tax,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ss_orc
 PREHOOK: Output: default@ss_part_orc
 POSTHOOK: query: explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)
@@ -1224,7 +1224,7 @@ select ss_net_paid_inc_tax,
     ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ss_orc
 POSTHOOK: Output: default@ss_part_orc
 STAGE DEPENDENCIES:
@@ -1486,7 +1486,7 @@ select ss_net_paid_inc_tax,
   from ss_orc
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ss_orc
 PREHOOK: Output: default@ss_part_orc
 POSTHOOK: query: explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)
@@ -1496,7 +1496,7 @@ select ss_net_paid_inc_tax,
   from ss_orc
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ss_orc
 POSTHOOK: Output: default@ss_part_orc
 STAGE DEPENDENCIES:
@@ -1790,7 +1790,7 @@ select
     "day" `day`
 from src
 group by "day", key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hive13_dp1
 POSTHOOK: query: explain insert overwrite table `hive13_dp1` partition(`day`)
@@ -1800,7 +1800,7 @@ select
     "day" `day`
 from src
 group by "day", key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hive13_dp1
 STAGE DEPENDENCIES:
@@ -1971,7 +1971,7 @@ select
     "day" `day`
 from src
 group by "day", key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hive13_dp1
 POSTHOOK: query: explain insert overwrite table `hive13_dp1` partition(`day`)
@@ -1981,7 +1981,7 @@ select
     "day" `day`
 from src
 group by "day", key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hive13_dp1
 STAGE DEPENDENCIES:

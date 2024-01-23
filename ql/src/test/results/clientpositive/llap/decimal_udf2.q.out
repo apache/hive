@@ -29,13 +29,13 @@ POSTHOOK: Output: default@decimal_udf2
 PREHOOK: query: EXPLAIN
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2 WHERE key = 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2 WHERE key = 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -73,7 +73,7 @@ SELECT
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2 WHERE key = 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -82,7 +82,7 @@ SELECT
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2 WHERE key = 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

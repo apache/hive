@@ -75,7 +75,7 @@ FROM (
     rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -85,7 +85,7 @@ FROM (
     rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -204,7 +204,7 @@ FROM (
     rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -214,7 +214,7 @@ FROM (
     rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -361,7 +361,7 @@ FROM (
     rank() OVER (ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN extended
@@ -371,7 +371,7 @@ FROM (
     rank() OVER (ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
@@ -548,7 +548,7 @@ FROM (
     rank() OVER (ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN extended
@@ -558,7 +558,7 @@ FROM (
     rank() OVER (ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT *
@@ -756,7 +756,7 @@ FROM (
     dense_rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -766,7 +766,7 @@ FROM (
     dense_rank() OVER (PARTITION BY tw_code ORDER BY tw_value) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

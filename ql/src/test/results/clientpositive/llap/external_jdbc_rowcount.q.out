@@ -236,7 +236,7 @@ from t1 left join t2
 on t1.ikey = t2.ikey AND t1.fkey = t2.fkey
 where t2.fkey is null
 group by t2.datekey, t1.fkey, t2.ikey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ext_simple_derby_table1
 PREHOOK: Input: default@ext_simple_derby_table2
 PREHOOK: Input: default@ext_simple_derby_table3
@@ -258,7 +258,7 @@ from t1 left join t2
 on t1.ikey = t2.ikey AND t1.fkey = t2.fkey
 where t2.fkey is null
 group by t2.datekey, t1.fkey, t2.ikey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ext_simple_derby_table1
 POSTHOOK: Input: default@ext_simple_derby_table2
 POSTHOOK: Input: default@ext_simple_derby_table3

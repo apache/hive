@@ -43,14 +43,14 @@ POSTHOOK: Lineage: t1_n96 PARTITION(ds=2).key SIMPLE [(t1_n96)t1_n96.FieldSchema
 POSTHOOK: Lineage: t1_n96 PARTITION(ds=2).val SIMPLE [(t1_n96)t1_n96.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN
 select key, count(1) from T1_n96 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n96
 PREHOOK: Input: default@t1_n96@ds=1
 PREHOOK: Input: default@t1_n96@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select key, count(1) from T1_n96 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n96
 POSTHOOK: Input: default@t1_n96@ds=1
 POSTHOOK: Input: default@t1_n96@ds=2

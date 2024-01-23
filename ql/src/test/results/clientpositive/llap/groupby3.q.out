@@ -18,7 +18,7 @@ INSERT OVERWRITE TABLE dest1_n119 SELECT
   stddev_samp(substr(src.value,5)),
   variance(substr(src.value,5)),
   var_samp(substr(src.value,5))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n119
 POSTHOOK: query: EXPLAIN
@@ -33,7 +33,7 @@ INSERT OVERWRITE TABLE dest1_n119 SELECT
   stddev_samp(substr(src.value,5)),
   variance(substr(src.value,5)),
   var_samp(substr(src.value,5))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n119
 STAGE DEPENDENCIES:

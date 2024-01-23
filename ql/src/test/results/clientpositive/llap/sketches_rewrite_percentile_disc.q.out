@@ -35,12 +35,12 @@ POSTHOOK: Input: default@sketch_input
 6.0
 PREHOOK: query: explain
 select percentile_disc(0.3) within group(order by id) from sketch_input
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select percentile_disc(0.3) within group(order by id) from sketch_input
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

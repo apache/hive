@@ -14,7 +14,7 @@ FROM (
   AS (tkey, tvalue) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\003'
 ) tmap
 INSERT OVERWRITE TABLE dest1_n70 SELECT tkey, tvalue
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n70
 POSTHOOK: query: EXPLAIN
@@ -25,7 +25,7 @@ FROM (
   AS (tkey, tvalue) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\003'
 ) tmap
 INSERT OVERWRITE TABLE dest1_n70 SELECT tkey, tvalue
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n70
 STAGE DEPENDENCIES:

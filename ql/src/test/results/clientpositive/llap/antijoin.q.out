@@ -105,12 +105,12 @@ POSTHOOK: Input: default@t3_n12
 8	val_8
 9	val_9
 PREHOOK: query: explain select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -210,12 +210,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain cbo select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -245,12 +245,12 @@ POSTHOOK: Input: default@t2_n33
 5	val_5
 9	val_9
 PREHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -337,12 +337,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -370,13 +370,13 @@ POSTHOOK: Input: default@t2_n33
 5	val_5
 9	val_9
 PREHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -521,13 +521,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -571,12 +571,12 @@ POSTHOOK: Input: default@t3_n12
 5	val_5
 9	val_9
 PREHOOK: query: explain select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -668,12 +668,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain cbo select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select a.key, a.value from t1_n55 a where not exists (select 1 from  t2_n33 b where a.key=b.key) sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -703,12 +703,12 @@ POSTHOOK: Input: default@t2_n33
 5	val_5
 9	val_9
 PREHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -787,12 +787,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -820,13 +820,13 @@ POSTHOOK: Input: default@t2_n33
 5	val_5
 9	val_9
 PREHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -957,13 +957,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -1007,12 +1007,12 @@ POSTHOOK: Input: default@t3_n12
 5	val_5
 9	val_9
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and b.value is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and b.value is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1091,12 +1091,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and a.key > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and a.key > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1179,12 +1179,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(length(b.value)) > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(length(b.value)) > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1265,12 +1265,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(a.key) > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(a.key) > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1352,12 +1352,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(length(b.value)) < 100 and rand(length(b.value)) > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(length(b.value)) < 100 and rand(length(b.value)) > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1438,12 +1438,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(a.key) > 100 and rand(length(a.value)) > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and rand(a.key) > 100 and rand(length(a.value)) > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1529,12 +1529,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null or b.value is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null or b.value is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1615,12 +1615,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null or b.value = 'val_1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null or b.value = 'val_1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####

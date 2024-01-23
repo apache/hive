@@ -57,11 +57,11 @@ POSTHOOK: Input: default@src
 100
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.value from src a join src b on a.key = b.key where a.key=100 limit 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from src a join src b on a.key = b.key where a.key=100 limit 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

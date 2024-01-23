@@ -3,7 +3,7 @@ SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as 
 from src
 WHERE 1=1
 group by round(year(to_date(current_date())),-3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -11,7 +11,7 @@ SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as 
 from src
 WHERE 1=1
 group by round(year(to_date(current_date())),-3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

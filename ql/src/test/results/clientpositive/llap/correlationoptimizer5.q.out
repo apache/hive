@@ -94,7 +94,7 @@ FROM
 JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n19
 PREHOOK: Input: default@t2_n11
 PREHOOK: Input: default@t3_n5
@@ -108,7 +108,7 @@ FROM
 JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n19
 POSTHOOK: Input: default@t2_n11
 POSTHOOK: Input: default@t3_n5
@@ -327,7 +327,7 @@ FROM
 JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n19
 PREHOOK: Input: default@t2_n11
 PREHOOK: Input: default@t3_n5
@@ -341,7 +341,7 @@ FROM
 JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n19
 POSTHOOK: Input: default@t2_n11
 POSTHOOK: Input: default@t3_n5
@@ -560,7 +560,7 @@ FROM
 JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n19
 PREHOOK: Input: default@t2_n11
 PREHOOK: Input: default@t3_n5
@@ -574,7 +574,7 @@ FROM
 JOIN
 (SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n19
 POSTHOOK: Input: default@t2_n11
 POSTHOOK: Input: default@t3_n5

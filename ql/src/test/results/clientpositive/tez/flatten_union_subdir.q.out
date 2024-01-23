@@ -24,13 +24,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_nonacid_directinsert_flattened
 PREHOOK: query: explain insert overwrite table union_target_nonacid_directinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_nonacid_directinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_nonacid_directinsert_flattened
 PREHOOK: Output: default@union_target_nonacid_directinsert_flattened@dt=20230817
 POSTHOOK: query: explain insert overwrite table union_target_nonacid_directinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_nonacid_directinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_nonacid_directinsert_flattened
@@ -135,13 +135,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_mm_directinsert_flattened
 PREHOOK: query: explain insert overwrite table union_target_mm_directinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_mm_directinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_mm_directinsert_flattened
 PREHOOK: Output: default@union_target_mm_directinsert_flattened@dt=20230817
 POSTHOOK: query: explain insert overwrite table union_target_mm_directinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_mm_directinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_directinsert_flattened
@@ -247,13 +247,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_acid_directinsert_flattened
 PREHOOK: query: explain insert into table union_target_acid_directinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_acid_directinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_acid_directinsert_flattened
 PREHOOK: Output: default@union_target_acid_directinsert_flattened@dt=20230817
 POSTHOOK: query: explain insert into table union_target_acid_directinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_acid_directinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_directinsert_flattened
@@ -360,13 +360,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_mm_flattened
 PREHOOK: query: explain insert overwrite table union_target_mm_flattened partition (dt='20230817') select ful.* from (select val from union_target_mm_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_mm_flattened
 PREHOOK: Output: default@union_target_mm_flattened@dt=20230817
 POSTHOOK: query: explain insert overwrite table union_target_mm_flattened partition (dt='20230817') select ful.* from (select val from union_target_mm_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_flattened
@@ -472,13 +472,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_acid_flattened
 PREHOOK: query: explain insert into table union_target_acid_flattened partition (dt='20230817') select ful.* from (select val from union_target_acid_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_acid_flattened
 PREHOOK: Output: default@union_target_acid_flattened@dt=20230817
 POSTHOOK: query: explain insert into table union_target_acid_flattened partition (dt='20230817') select ful.* from (select val from union_target_acid_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_flattened
@@ -585,13 +585,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_mm_unflattened
 PREHOOK: query: explain insert overwrite table union_target_mm_unflattened partition (dt='20230817') select ful.* from (select val from union_target_mm_unflattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_mm_unflattened
 PREHOOK: Output: default@union_target_mm_unflattened@dt=20230817
 POSTHOOK: query: explain insert overwrite table union_target_mm_unflattened partition (dt='20230817') select ful.* from (select val from union_target_mm_unflattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_unflattened
@@ -698,13 +698,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_acid_unflattened
 PREHOOK: query: explain insert into table union_target_acid_unflattened partition (dt='20230817') select ful.* from (select val from union_target_acid_unflattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_acid_unflattened
 PREHOOK: Output: default@union_target_acid_unflattened@dt=20230817
 POSTHOOK: query: explain insert into table union_target_acid_unflattened partition (dt='20230817') select ful.* from (select val from union_target_acid_unflattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_unflattened
@@ -811,13 +811,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_mm_directinsert_unflattened
 PREHOOK: query: explain insert overwrite table union_target_mm_directinsert_unflattened partition (dt='20230817') select ful.* from (select val from union_target_mm_directinsert_unflattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_mm_directinsert_unflattened
 PREHOOK: Output: default@union_target_mm_directinsert_unflattened@dt=20230817
 POSTHOOK: query: explain insert overwrite table union_target_mm_directinsert_unflattened partition (dt='20230817') select ful.* from (select val from union_target_mm_directinsert_unflattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_directinsert_unflattened
@@ -924,13 +924,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_target_acid_nondirectinsert_flattened
 PREHOOK: query: explain insert into table union_target_acid_nondirectinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_acid_nondirectinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@dt=20230817
 PREHOOK: Input: default@union_target_acid_nondirectinsert_flattened
 PREHOOK: Output: default@union_target_acid_nondirectinsert_flattened@dt=20230817
 POSTHOOK: query: explain insert into table union_target_acid_nondirectinsert_flattened partition (dt='20230817') select ful.* from (select val from union_target_acid_nondirectinsert_flattened where dt='20230816') ful left join (select val from test1 where dt='20230817') inc on ful.val=inc.val union all select test1.val from test1 where dt='20230817'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_nondirectinsert_flattened

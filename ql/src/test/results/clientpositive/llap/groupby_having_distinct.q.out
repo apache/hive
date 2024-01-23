@@ -125,7 +125,7 @@ FROM
       FROM tmp_src1
       GROUP BY `npp`) `a`
 WHERE `nb_nsoc` > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tmp_src1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -137,7 +137,7 @@ FROM
       FROM tmp_src1
       GROUP BY `npp`) `a`
 WHERE `nb_nsoc` > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tmp_src1
 #### A masked pattern was here ####
 CBO PLAN:

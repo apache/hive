@@ -43,7 +43,7 @@ select * from (
    select key, value, '33'
    from src 
    where key > 20 and key < 40) s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part13@ds=2010-03-03
 POSTHOOK: query: explain
@@ -56,7 +56,7 @@ select * from (
    select key, value, '33'
    from src 
    where key > 20 and key < 40) s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

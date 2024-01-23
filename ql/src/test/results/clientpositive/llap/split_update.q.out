@@ -13,12 +13,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uami_n0
 PREHOOK: query: explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_uami_n0
 PREHOOK: Output: default@acid_uami_n0
 PREHOOK: Output: default@acid_uami_n0
 POSTHOOK: query: explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_uami_n0
 POSTHOOK: Output: default@acid_uami_n0
 POSTHOOK: Output: default@acid_uami_n0
@@ -145,11 +145,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_uami_n0
 PREHOOK: Output: default@acid_uami_n0
 POSTHOOK: query: explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_uami_n0
 POSTHOOK: Output: default@acid_uami_n0
 STAGE DEPENDENCIES:

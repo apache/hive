@@ -115,12 +115,12 @@ POSTHOOK: Input: default@emps_n7
 2	5	22
 PREHOOK: query: explain
 select * from emps_n7 where (empno+1,deptno) in ((3,2))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from emps_n7 where (empno+1,deptno) in ((3,2))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -143,12 +143,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain 
 select * from emps_n7 where (empno+1,deptno) not in ((3,2))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select * from emps_n7 where (empno+1,deptno) not in ((3,2))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -170,11 +170,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from emps_n7 where ((empno*2)|1,deptno) in ((empno+2,2))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from emps_n7 where ((empno*2)|1,deptno) in ((empno+2,2))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n7
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

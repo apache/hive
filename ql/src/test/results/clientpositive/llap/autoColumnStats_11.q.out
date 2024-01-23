@@ -7,11 +7,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acs_t11
 PREHOOK: query: explain insert into acs_t11 values(1,1,'2011-11-11')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acs_t11
 POSTHOOK: query: explain insert into acs_t11 values(1,1,'2011-11-11')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acs_t11
 STAGE DEPENDENCIES:
@@ -262,12 +262,12 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}
 PREHOOK: query: explain analyze table acs_t11 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acs_t11
 PREHOOK: Output: default@acs_t11
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze table acs_t11 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acs_t11
 POSTHOOK: Output: default@acs_t11
 #### A masked pattern was here ####

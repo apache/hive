@@ -156,12 +156,12 @@ POSTHOOK: Input: default@t_test2
 1	1	2009	1
 10	0	2009	1
 PREHOOK: query: explain cbo select id, int_col, year, month from t_test1 s where s.int_col = (select count(*) from t_test2 t where s.id = t.id) order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test1
 PREHOOK: Input: default@t_test2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select id, int_col, year, month from t_test1 s where s.int_col = (select count(*) from t_test2 t where s.id = t.id) order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test1
 POSTHOOK: Input: default@t_test2
 #### A masked pattern was here ####
@@ -182,7 +182,7 @@ select id, int_col, year, month from t_test2 s where not (
   s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
   s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test2
 PREHOOK: Input: default@t_test3
 PREHOOK: Input: default@t_test4
@@ -192,7 +192,7 @@ select id, int_col, year, month from t_test2 s where not (
   s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
   s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test2
 POSTHOOK: Input: default@t_test3
 POSTHOOK: Input: default@t_test4

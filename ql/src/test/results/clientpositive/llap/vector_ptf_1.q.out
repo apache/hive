@@ -39,14 +39,14 @@ PREHOOK: query: explain vectorization detail
 select age, name, avg(gpa), sum(age) over (partition by name)
 from studentnull100
 group by age, name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@studentnull100
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select age, name, avg(gpa), sum(age) over (partition by name)
 from studentnull100
 group by age, name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@studentnull100
 #### A masked pattern was here ####
 Explain
@@ -298,12 +298,12 @@ NULL	sarah ovid	1.62	NULL
 56	zach robinson	0.86	56
 PREHOOK: query: EXPLAIN VECTORIZATION ONLY
 SELECT ROW_NUMBER() OVER(order by age) AS rn FROM studentnull100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@studentnull100
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION ONLY
 SELECT ROW_NUMBER() OVER(order by age) AS rn FROM studentnull100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@studentnull100
 #### A masked pattern was here ####
 Explain

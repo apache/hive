@@ -46,12 +46,12 @@ POSTHOOK: Lineage: decimal_3_n0.key SIMPLE [(decimal_3_txt)decimal_3_txt.FieldSc
 POSTHOOK: Lineage: decimal_3_n0.value SIMPLE [(decimal_3_txt)decimal_3_txt.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_3_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -223,12 +223,12 @@ POSTHOOK: Input: default@decimal_3_n0
 1234567890.123456780000000000	1234567890	1234567890.123456780000000000	1234567890
 PREHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_3_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

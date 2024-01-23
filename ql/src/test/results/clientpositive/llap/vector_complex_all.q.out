@@ -68,12 +68,12 @@ POSTHOOK: Lineage: orc_create_complex_n0.val SIMPLE []
 orc_create_staging_n0.str	orc_create_staging_n0.mp	orc_create_staging_n0.lst	orc_create_staging_n0.strct	_c1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -154,12 +154,12 @@ line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"a"
 line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"a":"five","b":"six"}	0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT str FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT str FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -240,12 +240,12 @@ line2
 line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct, mp, lst FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct, mp, lst FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -326,12 +326,12 @@ strct	mp	lst
 {"a":"five","b":"six"}	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT lst, str FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT lst, str FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -412,12 +412,12 @@ lst	str
 ["g","h","i"]	line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT mp, str FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT mp, str FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -498,12 +498,12 @@ mp	str
 {"key31":"value31","key32":"value32","key33":"value33"}	line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct, str FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct, str FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -584,12 +584,12 @@ strct	str
 {"a":"five","b":"six"}	line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct.B, str FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct.B, str FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -676,14 +676,14 @@ Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Map 4' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 INSERT INTO TABLE orc_create_complex_n0
 SELECT orc_create_staging_n0.*, src1.key FROM orc_create_staging_n0 cross join src src1 cross join orc_create_staging_n0 spam1 cross join orc_create_staging_n0 spam2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_staging_n0
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orc_create_complex_n0
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 INSERT INTO TABLE orc_create_complex_n0
 SELECT orc_create_staging_n0.*, src1.key FROM orc_create_staging_n0 cross join src src1 cross join orc_create_staging_n0 spam1 cross join orc_create_staging_n0 spam2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_staging_n0
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@orc_create_complex_n0
@@ -968,12 +968,12 @@ POSTHOOK: Lineage: orc_create_complex_n0.val SIMPLE [(src)src1.FieldSchema(name:
 orc_create_staging_n0.str	orc_create_staging_n0.mp	orc_create_staging_n0.lst	orc_create_staging_n0.strct	src1.key
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(*) from orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(*) from orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -1103,12 +1103,12 @@ _c0
 13503
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT distinct lst, strct FROM orc_create_complex_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT distinct lst, strct FROM orc_create_complex_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -1198,12 +1198,12 @@ lst	strct
 ["d","e","f"]	{"a":"three","b":"four"}
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT str, count(val)  FROM orc_create_complex_n0 GROUP BY str
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT str, count(val)  FROM orc_create_complex_n0 GROUP BY str
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -1345,12 +1345,12 @@ line1	4501
 line2	4501
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain
@@ -1494,12 +1494,12 @@ six	4501
 two	4501
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct, mp, lst, str, count(val) FROM orc_create_complex_n0 GROUP BY strct, mp, lst, str
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT strct, mp, lst, str, count(val) FROM orc_create_complex_n0 GROUP BY strct, mp, lst, str
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 Explain

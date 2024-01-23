@@ -91,13 +91,13 @@ POSTHOOK: Output: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Output: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select key, value, ds from pcs_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from pcs_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -275,13 +275,13 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 2	val_2	2000-04-09
 PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -392,13 +392,13 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 2000-04-09
 PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+2) in (struct('2000-04-08',3), struct('2000-04-09',4))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+2) in (struct('2000-04-08',3), struct('2000-04-09',4))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -509,13 +509,13 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 2000-04-09
 PREHOOK: query: explain extended select /*+ MAPJOIN(pcs_t1) */ a.ds, b.key from pcs_t1 a join pcs_t1 b  on a.ds=b.ds where struct(a.ds, a.key, b.ds) in (struct('2000-04-08',1, '2000-04-09'), struct('2000-04-09',2, '2000-04-08'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(pcs_t1) */ a.ds, b.key from pcs_t1 a join pcs_t1 b  on a.ds=b.ds where struct(a.ds, a.key, b.ds) in (struct('2000-04-08',1, '2000-04-09'), struct('2000-04-09',2, '2000-04-08'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -818,13 +818,13 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+key) in (struct('2000-04-08',1), struct('2000-04-09',2))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+key) in (struct('2000-04-08',1), struct('2000-04-09',2))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -935,14 +935,14 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 PREHOOK: query: explain select lag(key) over (partition by key) as c1
 from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: explain select lag(key) over (partition by key) as c1
 from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -1045,7 +1045,7 @@ SELECT * FROM (
 ) A
 WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
@@ -1056,7 +1056,7 @@ SELECT * FROM (
 ) A
 WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1187,12 +1187,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcs_t1
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 #### A masked pattern was here ####
@@ -1282,13 +1282,13 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 2000-04-08
 2000-04-08
 PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key, rand(100)) in (struct('2000-04-08',1,0.2), struct('2000-04-09',2,0.3))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key, rand(100)) in (struct('2000-04-08',1,0.2), struct('2000-04-09',2,0.3))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -1385,14 +1385,14 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 PREHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -1542,14 +1542,14 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 2000-04-09
 2000-04-10
 PREHOOK: query: explain extended select ds from pcs_t1 where key = 3 or (struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3)) and key+5 > 0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 PREHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select ds from pcs_t1 where key = 3 or (struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3)) and key+5 > 0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09

@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN
 SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -119,12 +119,12 @@ POSTHOOK: Input: default@src
 104	208
 PREHOOK: query: EXPLAIN
 SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key LIMIT 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -281,12 +281,12 @@ POSTHOOK: Input: default@src
 104	val_104
 PREHOOK: query: EXPLAIN
 SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key NULLS FIRST LIMIT 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) GROUP BY src1.key, src2.value ORDER BY src1.key NULLS FIRST LIMIT 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -472,12 +472,12 @@ POSTHOOK: Lineage: t_test.b SCRIPT []
 POSTHOOK: Lineage: t_test.c SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test ORDER BY a, b LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b FROM t_test ORDER BY a, b LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -562,12 +562,12 @@ POSTHOOK: Input: default@t_test
 5	1
 PREHOOK: query: EXPLAIN
 SELECT a, b FROM t_test GROUP BY a, b ORDER BY a, b LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b FROM t_test GROUP BY a, b ORDER BY a, b LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -673,12 +673,12 @@ POSTHOOK: Input: default@t_test
 6	2
 PREHOOK: query: EXPLAIN
 SELECT a, count(distinct b), min(c) FROM t_test GROUP BY a ORDER BY a LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, count(distinct b), min(c) FROM t_test GROUP BY a ORDER BY a LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

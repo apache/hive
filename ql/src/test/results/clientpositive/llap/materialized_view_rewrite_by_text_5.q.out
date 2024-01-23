@@ -35,12 +35,12 @@ POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: db1@t1
 PREHOOK: query: explain cbo
 SELECT * FROM db1.t1 WHERE col0 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM db1.t1 WHERE col0 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -56,13 +56,13 @@ POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: db1@mat1
 PREHOOK: query: explain cbo
 SELECT * FROM db1.t1 WHERE col0 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@mat1
 PREHOOK: Input: db1@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM db1.t1 WHERE col0 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@mat1
 POSTHOOK: Input: db1@t1
 #### A masked pattern was here ####

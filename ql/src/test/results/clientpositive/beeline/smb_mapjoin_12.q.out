@@ -54,7 +54,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table3_n4
 PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n6 a JOIN test_table2_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n6
 PREHOOK: Input: default@test_table1_n6@ds=1
 PREHOOK: Input: default@test_table2_n6
@@ -64,7 +64,7 @@ PREHOOK: Input: default@test_table2_n6@ds=3
 PREHOOK: Output: default@test_table3_n4@ds=1
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n6 a JOIN test_table2_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n6
 POSTHOOK: Input: default@test_table1_n6@ds=1
 POSTHOOK: Input: default@test_table2_n6
@@ -259,7 +259,7 @@ POSTHOOK: Input: default@test_table3_n4@ds=1
 PREHOOK: query: explain extended
 INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '2') 
 SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3_n4 a JOIN test_table1_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n6
 PREHOOK: Input: default@test_table1_n6@ds=1
 PREHOOK: Input: default@test_table3_n4
@@ -268,7 +268,7 @@ PREHOOK: Output: default@test_table3_n4@ds=2
 POSTHOOK: query: explain extended
 INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '2') 
 SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3_n4 a JOIN test_table1_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n6
 POSTHOOK: Input: default@test_table1_n6@ds=1
 POSTHOOK: Input: default@test_table3_n4

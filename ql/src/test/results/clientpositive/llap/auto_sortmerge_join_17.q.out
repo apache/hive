@@ -30,7 +30,7 @@ SELECT t1.key from
 join
 ( SELECT key,count(distinct value) as cp_count from tbl1_n5 group by key) t2
 on t1.key = t2.key where rk = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n5
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -39,7 +39,7 @@ SELECT t1.key from
 join
 ( SELECT key,count(distinct value) as cp_count from tbl1_n5 group by key) t2
 on t1.key = t2.key where rk = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n5
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

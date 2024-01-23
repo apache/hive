@@ -14,7 +14,7 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
@@ -24,7 +24,7 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -142,7 +142,7 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
@@ -152,7 +152,7 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -270,7 +270,7 @@ select count(*) from
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
@@ -279,7 +279,7 @@ select count(*) from
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -394,7 +394,7 @@ select count(*) from
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
@@ -403,7 +403,7 @@ select count(*) from
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -519,7 +519,7 @@ select count(*) from
  from alltypesorc c
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
@@ -528,7 +528,7 @@ select count(*) from
  from alltypesorc c
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -639,7 +639,7 @@ select count(*) from
  from alltypesorc c
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
@@ -648,7 +648,7 @@ select count(*) from
  from alltypesorc c
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -792,7 +792,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parttbl
 PREHOOK: Input: default@parttbl@dt=2000-01-01
 PREHOOK: Input: default@parttbl@dt=2000-01-02
@@ -803,7 +803,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parttbl
 POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
@@ -924,7 +924,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parttbl
 PREHOOK: Input: default@parttbl@dt=2000-01-01
 PREHOOK: Input: default@parttbl@dt=2000-01-02
@@ -935,7 +935,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parttbl
 POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
@@ -1057,7 +1057,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parttbl
 PREHOOK: Input: default@parttbl@dt=2000-01-01
 PREHOOK: Input: default@parttbl@dt=2000-01-02
@@ -1068,7 +1068,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parttbl
 POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
@@ -1195,7 +1195,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parttbl
 PREHOOK: Input: default@parttbl@dt=2000-01-01
 PREHOOK: Input: default@parttbl@dt=2000-01-02
@@ -1206,7 +1206,7 @@ select count(*) from
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parttbl
 POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
@@ -1364,14 +1364,14 @@ PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_mapjoin
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_mapjoin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -1572,14 +1572,14 @@ PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_mapjoin
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_mapjoin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

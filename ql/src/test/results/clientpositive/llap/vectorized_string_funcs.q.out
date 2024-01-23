@@ -19,7 +19,7 @@ where cbigint % 237 = 0
 
 and length(substr(cstring1, 1, 2)) <= 2
 and cstring1 like '%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization 
@@ -43,7 +43,7 @@ where cbigint % 237 = 0
 
 and length(substr(cstring1, 1, 2)) <= 2
 and cstring1 like '%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

@@ -1,13 +1,13 @@
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT (ctinyint % 2) + 1, cstring1, cint, elt((ctinyint % 2) + 1, cstring1, cint) 
 FROM alltypesorc
 WHERE ctinyint > 0 LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT (ctinyint % 2) + 1, cstring1, cint, elt((ctinyint % 2) + 1, cstring1, cint) 
 FROM alltypesorc
 WHERE ctinyint > 0 LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -115,7 +115,7 @@ SELECT elt(2, 'abc', 'defg'),
        elt(0, 'abc', 'defg'),
        elt(3, 'abc', 'defg')
 FROM alltypesorc LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -130,7 +130,7 @@ SELECT elt(2, 'abc', 'defg'),
        elt(0, 'abc', 'defg'),
        elt(3, 'abc', 'defg')
 FROM alltypesorc LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

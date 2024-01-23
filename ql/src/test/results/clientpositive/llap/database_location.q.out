@@ -145,13 +145,13 @@ table_db2
 PREHOOK: query: EXPLAIN
 CREATE DATABASE db3
 #### A masked pattern was here ####
-PREHOOK: type: CREATEDATABASE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:db3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 CREATE DATABASE db3
 #### A masked pattern was here ####
-POSTHOOK: type: CREATEDATABASE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:db3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -194,12 +194,12 @@ POSTHOOK: Input: database:db3
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 #### A masked pattern was here ####
-PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:db3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
-POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:db3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -227,12 +227,12 @@ POSTHOOK: Input: database:db3
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 #### A masked pattern was here ####
-PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: database:db3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
-POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: database:db3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

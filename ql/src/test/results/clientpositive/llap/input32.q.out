@@ -17,13 +17,13 @@ POSTHOOK: Output: default@tst_dest32
 PREHOOK: query: explain 
 insert overwrite table dest32
 select count(1) from srcbucket
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 PREHOOK: Output: default@tst_dest32
 POSTHOOK: query: explain 
 insert overwrite table dest32
 select count(1) from srcbucket
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: default@tst_dest32
 STAGE DEPENDENCIES:

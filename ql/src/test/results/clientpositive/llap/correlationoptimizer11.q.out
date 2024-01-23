@@ -36,7 +36,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_table_n1
 PREHOOK: Input: default@part_table_n1@partitionid=1
 PREHOOK: Input: default@part_table_n1@partitionid=2
@@ -47,7 +47,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_table_n1
 POSTHOOK: Input: default@part_table_n1@partitionid=1
 POSTHOOK: Input: default@part_table_n1@partitionid=2
@@ -184,7 +184,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_table_n1
 PREHOOK: Input: default@part_table_n1@partitionid=1
 PREHOOK: Input: default@part_table_n1@partitionid=2
@@ -195,7 +195,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_table_n1
 POSTHOOK: Input: default@part_table_n1@partitionid=1
 POSTHOOK: Input: default@part_table_n1@partitionid=2
@@ -332,7 +332,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_table_n1
 PREHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
@@ -342,7 +342,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_table_n1
 POSTHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
@@ -489,7 +489,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_table_n1
 PREHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####
@@ -499,7 +499,7 @@ FROM part_table_n1 x JOIN part_table_n1 y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_table_n1
 POSTHOOK: Input: default@part_table_n1@partitionid=2
 #### A masked pattern was here ####

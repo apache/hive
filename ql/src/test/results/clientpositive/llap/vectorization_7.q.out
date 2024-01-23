@@ -24,7 +24,7 @@ WHERE  ((ctinyint != 0)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -53,7 +53,7 @@ WHERE  ((ctinyint != 0)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -288,7 +288,7 @@ WHERE  ((ctinyint != 0)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -317,7 +317,7 @@ WHERE  ((ctinyint != 0)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

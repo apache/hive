@@ -9,7 +9,7 @@ where
   a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -24,7 +24,7 @@ where
   a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -219,7 +219,7 @@ where
   a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -234,7 +234,7 @@ where
   a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -429,7 +429,7 @@ where
   a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -444,7 +444,7 @@ where
   a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

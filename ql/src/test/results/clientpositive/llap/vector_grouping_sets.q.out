@@ -127,14 +127,14 @@ PREHOOK: query: explain vectorization expression
 select s_store_id
  from store_n1
  group by s_store_id with rollup
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select s_store_id
  from store_n1
  group by s_store_id with rollup
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -265,14 +265,14 @@ PREHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
  from store_n1
  group by s_store_id with rollup
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
  from store_n1
  group by s_store_id with rollup
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -410,14 +410,14 @@ PREHOOK: query: explain
 select s_store_id, GROUPING__ID
  from store_n1
  group by rollup(s_store_id)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select s_store_id, GROUPING__ID
  from store_n1
  group by rollup(s_store_id)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -4,7 +4,7 @@ JOIN
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 SELECT Y.*
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM 
@@ -13,7 +13,7 @@ JOIN
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 SELECT Y.*
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

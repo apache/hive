@@ -20,7 +20,7 @@ INSERT OVERWRITE TABLE e1
     SELECT COUNT(*)
 INSERT OVERWRITE TABLE e2_n0
     SELECT percentile_approx(value, 0.5)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@e1
 PREHOOK: Output: default@e2_n0
@@ -30,7 +30,7 @@ INSERT OVERWRITE TABLE e1
     SELECT COUNT(*)
 INSERT OVERWRITE TABLE e2_n0
     SELECT percentile_approx(value, 0.5)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1
 POSTHOOK: Output: default@e2_n0

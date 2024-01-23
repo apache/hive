@@ -137,11 +137,11 @@ POSTHOOK: Output: default@char_join1_str_orc
 POSTHOOK: Lineage: char_join1_str_orc.c1 SIMPLE [(char_join1_str)char_join1_str.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: char_join1_str_orc.c2 SIMPLE [(char_join1_str)char_join1_str.FieldSchema(name:c2, type:string, comment:null), ]
 PREHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -314,12 +314,12 @@ POSTHOOK: Input: default@char_join1_vc1_orc
 2	abc       	2	abc       
 3	 abc      	3	 abc      
 PREHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@char_join1_vc1_orc
 PREHOOK: Input: default@char_join1_vc2_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@char_join1_vc1_orc
 POSTHOOK: Input: default@char_join1_vc2_orc
 #### A masked pattern was here ####
@@ -495,12 +495,12 @@ POSTHOOK: Input: default@char_join1_vc2_orc
 2	abc       	2	abc                 
 3	 abc      	3	 abc                
 PREHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@char_join1_str_orc
 PREHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@char_join1_str_orc
 POSTHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####

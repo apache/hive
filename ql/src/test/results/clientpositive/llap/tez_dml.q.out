@@ -1,10 +1,10 @@
 PREHOOK: query: EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_src
 POSTHOOK: query: EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src
@@ -463,11 +463,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src_part
 PREHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tmp_src
 PREHOOK: Output: default@tmp_src_part
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tmp_src
 POSTHOOK: Output: default@tmp_src_part
 STAGE DEPENDENCIES:
@@ -930,7 +930,7 @@ PREHOOK: query: EXPLAIN
 FROM src
 INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
 INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@even
 PREHOOK: Output: default@odd
@@ -938,7 +938,7 @@ POSTHOOK: query: EXPLAIN
 FROM src
 INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
 INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@even
 POSTHOOK: Output: default@odd

@@ -130,12 +130,12 @@ POSTHOOK: Lineage: orc_llap_small.ctinyint SIMPLE [(alltypesorc)alltypesorc.Fiel
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -250,12 +250,12 @@ POSTHOOK: Input: default@orc_llap_small
 0
 PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -329,12 +329,12 @@ POSTHOOK: Input: default@orc_llap
 -558222259686
 PREHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -408,12 +408,12 @@ POSTHOOK: Input: default@orc_llap
 -197609091139
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -487,12 +487,12 @@ POSTHOOK: Input: default@orc_llap
 NULL
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -590,12 +590,12 @@ POSTHOOK: Input: default@orc_llap
 -201218541193
 PREHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -742,12 +742,12 @@ POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: default@orc_llap
 PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -821,12 +821,12 @@ POSTHOOK: Input: default@orc_llap
 -1116444519372
 PREHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -900,12 +900,12 @@ POSTHOOK: Input: default@orc_llap
 -395218182278
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -979,12 +979,12 @@ POSTHOOK: Input: default@orc_llap
 NULL
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1082,12 +1082,12 @@ POSTHOOK: Input: default@orc_llap
 -201218418313
 PREHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

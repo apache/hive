@@ -72,14 +72,14 @@ Found 1 items
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       2539 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b
     SELECT key, value FROM orcfile_merge3a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orcfile_merge3a
 PREHOOK: Input: default@orcfile_merge3a@ds=1
 PREHOOK: Input: default@orcfile_merge3a@ds=2
 PREHOOK: Output: default@orcfile_merge3b
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b
     SELECT key, value FROM orcfile_merge3a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orcfile_merge3a
 POSTHOOK: Input: default@orcfile_merge3a@ds=1
 POSTHOOK: Input: default@orcfile_merge3a@ds=2

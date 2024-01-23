@@ -1,9 +1,9 @@
 PREHOOK: query: explain select count('1') from src group by '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count('1') from src group by '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -27,7 +27,7 @@ POSTHOOK: Input: default@src
 500
 PREHOOK: query: explain 
 analyze table srcpart partition (ds='2008-04-08',hr=11) compute statistics for columns key, value
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@srcpart
@@ -35,7 +35,7 @@ PREHOOK: Output: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table srcpart partition (ds='2008-04-08',hr=11) compute statistics for columns key, value
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart

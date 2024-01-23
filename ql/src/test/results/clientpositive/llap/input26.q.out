@@ -4,7 +4,7 @@ select * from (
     union all
   select * from (select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5)pb
 )subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
@@ -14,7 +14,7 @@ select * from (
     union all
   select * from (select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5)pb
 )subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####

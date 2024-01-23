@@ -15,11 +15,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -162,11 +162,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -309,11 +309,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -457,11 +457,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -604,11 +604,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -771,11 +771,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -928,11 +928,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1_n1
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n1 values(default, DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n1
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n1 values(default, DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n1
 STAGE DEPENDENCIES:
@@ -1075,11 +1075,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n1
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n1
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -1222,11 +1222,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -1370,11 +1370,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -1517,11 +1517,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -1664,11 +1664,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(value, key) values(2,default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(value, key) values(2,default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -1811,11 +1811,11 @@ POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default),(DEFAULT, default)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default),(DEFAULT, default)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into1_n0
 STAGE DEPENDENCIES:
@@ -1990,12 +1990,12 @@ POSTHOOK: Lineage: insert_into1_n0.i SCRIPT []
 POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
 POSTHOOK: Lineage: insert_into1_n0.value SCRIPT []
 PREHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT where value=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@insert_into1_n0
 PREHOOK: Output: default@insert_into1_n0
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT where value=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@insert_into1_n0
 POSTHOOK: Output: default@insert_into1_n0
 POSTHOOK: Output: default@insert_into1_n0
@@ -2158,12 +2158,12 @@ POSTHOOK: Lineage: insert_into1_n0.i SCRIPT []
 POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
 POSTHOOK: Lineage: insert_into1_n0.value SCRIPT []
 PREHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT, value=DEFAULT where value=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@insert_into1_n0
 PREHOOK: Output: default@insert_into1_n0
 PREHOOK: Output: default@insert_into1_n0
 POSTHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT, value=DEFAULT where value=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@insert_into1_n0
 POSTHOOK: Output: default@insert_into1_n0
 POSTHOOK: Output: default@insert_into1_n0
@@ -2333,11 +2333,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tpart
 PREHOOK: query: EXPLAIN INSERT INTO tpart partition(ds='1') values(DEFAULT, DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tpart@ds=1
 POSTHOOK: query: EXPLAIN INSERT INTO tpart partition(ds='1') values(DEFAULT, DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tpart@ds=1
 STAGE DEPENDENCIES:
@@ -2471,11 +2471,11 @@ POSTHOOK: query: TRUNCATE table tpart
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@tpart@ds=1
 PREHOOK: query: EXPLAIN INSERT INTO tpart partition(ds='1')(i) values(DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tpart@ds=1
 POSTHOOK: query: EXPLAIN INSERT INTO tpart partition(ds='1')(i) values(DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tpart@ds=1
 STAGE DEPENDENCIES:
@@ -2592,11 +2592,11 @@ POSTHOOK: Output: default@tpart@ds=1
 POSTHOOK: Lineage: tpart PARTITION(ds=1).i EXPRESSION []
 POSTHOOK: Lineage: tpart PARTITION(ds=1).j SIMPLE []
 PREHOOK: query: EXPLAIN INSERT INTO tpart partition(ds='1')(i,j) values(10, DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tpart@ds=1
 POSTHOOK: query: EXPLAIN INSERT INTO tpart partition(ds='1')(i,j) values(10, DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tpart@ds=1
 STAGE DEPENDENCIES:
@@ -2795,13 +2795,13 @@ POSTHOOK: Lineage: acidtable.key SCRIPT []
 POSTHOOK: Lineage: acidtable.value SCRIPT []
 PREHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acidtable
 PREHOOK: Input: default@nonacid_n1
 PREHOOK: Output: default@acidtable
 POSTHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acidtable
 POSTHOOK: Input: default@nonacid_n1
 POSTHOOK: Output: default@acidtable
@@ -3002,7 +3002,7 @@ PREHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.key
 WHEN MATCHED AND s.key < 3 THEN DELETE
 WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acidtable
 PREHOOK: Input: default@nonacid_n1
 PREHOOK: Output: default@acidtable
@@ -3012,7 +3012,7 @@ POSTHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.ke
 WHEN MATCHED AND s.key < 3 THEN DELETE
 WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acidtable
 POSTHOOK: Input: default@nonacid_n1
 POSTHOOK: Output: default@acidtable
@@ -3397,13 +3397,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidTable2
 PREHOOK: query: explain MERGE INTO acidTable2 as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acidtable2
 PREHOOK: Input: default@nonacid_n1
 PREHOOK: Output: default@acidtable2
 POSTHOOK: query: explain MERGE INTO acidTable2 as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acidtable2
 POSTHOOK: Input: default@nonacid_n1
 POSTHOOK: Output: default@acidtable2

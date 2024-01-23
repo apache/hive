@@ -28,7 +28,7 @@ WHERE    (((cstring2 LIKE '%ss%')
                    AND (cdouble >= -3728))))
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -61,7 +61,7 @@ WHERE    (((cstring2 LIKE '%ss%')
                    AND (cdouble >= -3728))))
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

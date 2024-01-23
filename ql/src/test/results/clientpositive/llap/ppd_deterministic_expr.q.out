@@ -350,7 +350,7 @@ and a.vpart3 = b.vpart3
 and a.vpart1 = 'US'
 and a.vpart2 = 'DEF'
 and a.vpart3 = '200'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testa
 PREHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 PREHOOK: Input: default@testb
@@ -367,7 +367,7 @@ and a.vpart3 = b.vpart3
 and a.vpart1 = 'US'
 and a.vpart2 = 'DEF'
 and a.vpart3 = '200'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testa
 POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 POSTHOOK: Input: default@testb
@@ -497,7 +497,7 @@ and a.part3 = b.part3
 and a.part1 = 'US'
 and a.part2 = 'DEF'
 and a.part3 = '200'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testa
 PREHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 PREHOOK: Input: default@testb
@@ -514,7 +514,7 @@ and a.part3 = b.part3
 and a.part1 = 'US'
 and a.part2 = 'DEF'
 and a.part3 = '200'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testa
 POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 POSTHOOK: Input: default@testb

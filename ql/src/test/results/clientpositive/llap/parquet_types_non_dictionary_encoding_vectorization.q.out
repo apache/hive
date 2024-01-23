@@ -445,7 +445,7 @@ PREHOOK: query: EXPLAIN SELECT ctinyint,
 FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT ctinyint,
@@ -457,7 +457,7 @@ POSTHOOK: query: EXPLAIN SELECT ctinyint,
 FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -819,11 +819,11 @@ POSTHOOK: Input: default@parquet_types_n1
 126	1254	254	1	76.2	0.0
 127	1255	255	1	76.5	0.0
 PREHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1209,11 +1209,11 @@ POSTHOOK: Input: default@parquet_types_n1
 89.4	1
 89.7	1
 PREHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1599,11 +1599,11 @@ x    	1
 y    	1
 z    	1
 PREHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1989,11 +1989,11 @@ x	1
 y	1
 z	1
 PREHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2379,11 +2379,11 @@ x	1
 y	1
 z	1
 PREHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary ORDER BY cbinary
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary ORDER BY cbinary
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

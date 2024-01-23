@@ -31,7 +31,7 @@ select key, value from (
   union all 
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part14_n0
 POSTHOOK: query: explain
@@ -43,7 +43,7 @@ select key, value from (
   union all 
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@nzhang_part14_n0
 STAGE DEPENDENCIES:

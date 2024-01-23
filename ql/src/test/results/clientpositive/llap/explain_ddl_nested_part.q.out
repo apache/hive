@@ -46,7 +46,7 @@ POSTHOOK: Lineage: test PARTITION(i=4,j=4).foo SIMPLE [(temp)temp.FieldSchema(na
 POSTHOOK: Lineage: test PARTITION(i=5,j=5).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: test PARTITION(i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__).foo SIMPLE [(temp)temp.FieldSchema(name:i, type:int, comment:null), ]
 PREHOOK: query: explain ddl select * from test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 PREHOOK: Input: default@test@i=1/j=1
 PREHOOK: Input: default@test@i=2/j=2
@@ -56,7 +56,7 @@ PREHOOK: Input: default@test@i=5/j=5
 PREHOOK: Input: default@test@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 POSTHOOK: Input: default@test@i=1/j=1
 POSTHOOK: Input: default@test@i=2/j=2
@@ -265,7 +265,7 @@ POSTHOOK: Lineage: test2 PARTITION(i=9805326,j=9805326,s=9805326,t=9805326).foo 
 POSTHOOK: Lineage: test2 PARTITION(i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s=3,t=3).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: test2 PARTITION(i=__HIVE_DEFAULT_PARTITION__,j=__HIVE_DEFAULT_PARTITION__,s=__HIVE_DEFAULT_PARTITION__,t=__HIVE_DEFAULT_PARTITION__).foo SIMPLE [(temp2)temp2.FieldSchema(name:i, type:int, comment:null), ]
 PREHOOK: query: explain ddl select * from test2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test2
 PREHOOK: Input: default@test2@i=1/j=1/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Input: default@test2@i=1522484/j=1522484/s=1522484/t=1522484
@@ -309,7 +309,7 @@ PREHOOK: Input: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PART
 PREHOOK: Input: default@test2@i=__HIVE_DEFAULT_PARTITION__/j=__HIVE_DEFAULT_PARTITION__/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain ddl select * from test2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test2
 POSTHOOK: Input: default@test2@i=1/j=1/s=__HIVE_DEFAULT_PARTITION__/t=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@test2@i=1522484/j=1522484/s=1522484/t=1522484

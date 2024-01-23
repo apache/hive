@@ -65,12 +65,12 @@ NULL	2
 NULL	0
 PREHOOK: query: explain
 select grouping(a),count(distinct a) from t group by a with rollup
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select grouping(a),count(distinct a) from t group by a with rollup
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -151,12 +151,12 @@ POSTHOOK: Input: default@t
 1	0
 PREHOOK: query: explain
 SELECT grouping(key) gk, grouping(value) gv, key, value, count(key) FROM src where key<10 GROUP BY key, value with rollup order by gk,gv,key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT grouping(key) gk, grouping(value) gv, key, value, count(key) FROM src where key<10 GROUP BY key, value with rollup order by gk,gv,key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

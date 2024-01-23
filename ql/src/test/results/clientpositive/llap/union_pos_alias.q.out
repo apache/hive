@@ -3,7 +3,7 @@ select 'tst1' as key, count(1) as value from src s1
 UNION ALL
 select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
 order by 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -11,7 +11,7 @@ select 'tst1' as key, count(1) as value from src s1
 UNION ALL
 select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
 order by 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -206,7 +206,7 @@ select key as value, value as key from src_10
 UNION ALL
 select 'test', value from src_10 s3
 order by 2, 1 desc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_10
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -214,7 +214,7 @@ select key as value, value as key from src_10
 UNION ALL
 select 'test', value from src_10 s3
 order by 2, 1 desc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_10
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -389,12 +389,12 @@ POSTHOOK: Lineage: masking_test_n9.key EXPRESSION [(src)src.FieldSchema(name:key
 POSTHOOK: Lineage: masking_test_n9.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select * from masking_test_n9  union all select * from masking_test_n9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n9
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from masking_test_n9  union all select * from masking_test_n9
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n9
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1465,12 +1465,12 @@ POSTHOOK: Input: default@masking_test_n9
 98	val_98
 PREHOOK: query: explain
 select key as k1, value as v1 from masking_test_n9 where key > 0 intersect all select key as k2, value as v2 from masking_test_n9 where key > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n9
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key as k1, value as v1 from masking_test_n9 where key > 0 intersect all select key as k2, value as v2 from masking_test_n9 where key > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n9
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -72,13 +72,13 @@ POSTHOOK: Lineage: t1.c SCRIPT []
 PREHOOK: query: explain cbo
 select t1.a, count(*) from t1
 group by t1.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select t1.a, count(*) from t1
 group by t1.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -87,14 +87,14 @@ HiveAggregate(group=[{0}], agg#0=[count()])
 
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mat1
@@ -112,14 +112,14 @@ HiveProject($f0=[$3], $f1=[CASE(IS NULL($1), $4, IS NULL($4), $1, +($4, $1))])
 
 PREHOOK: query: explain
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mat1
@@ -429,7 +429,7 @@ PREHOOK: query: explain cbo
 select t1.a, count(*) from t1
 group by t1.a
 order by t1.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -437,7 +437,7 @@ POSTHOOK: query: explain cbo
 select t1.a, count(*) from t1
 group by t1.a
 order by t1.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

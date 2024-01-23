@@ -1,6 +1,6 @@
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -9,7 +9,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -283,7 +283,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 190	190	2008-04-08	12
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -292,7 +292,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -566,7 +566,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 203	203	2008-04-08	12
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -575,7 +575,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -859,7 +859,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 205	205	2008-04-09	11
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -868,7 +868,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -1732,7 +1732,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 341	341	2008-04-08	12
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -1741,7 +1741,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 400,10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -2010,7 +2010,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 190	190	2008-04-08	12
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -2019,7 +2019,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -2288,7 +2288,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 203	203	2008-04-08	12
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -2297,7 +2297,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -2576,7 +2576,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 205	205	2008-04-09	11
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -2585,7 +2585,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5) as csubstr, ds, hr FROM srcpart ORDER BY srcpart.key, csubstr, ds, hr LIMIT 490,600
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

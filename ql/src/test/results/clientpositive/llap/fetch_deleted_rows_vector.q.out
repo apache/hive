@@ -36,12 +36,12 @@ POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
 PREHOOK: query: explain vectorization
 select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true') order by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
 select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true') order by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -251,7 +251,7 @@ PREHOOK: query: explain vectorization
 select t1.ROW__IS__DELETED, t1.ROW__ID.writeId, t1.*, t2.ROW__IS__DELETED, t2.ROW__ID.writeId, t2.* from t1('acid.fetch.deleted.rows'='true')
 join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
 order by t1.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -259,7 +259,7 @@ POSTHOOK: query: explain vectorization
 select t1.ROW__IS__DELETED, t1.ROW__ID.writeId, t1.*, t2.ROW__IS__DELETED, t2.ROW__ID.writeId, t2.* from t1('acid.fetch.deleted.rows'='true')
 join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
 order by t1.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

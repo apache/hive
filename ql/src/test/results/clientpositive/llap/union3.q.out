@@ -14,7 +14,7 @@ FROM (
   FROM (SELECT * FROM src LIMIT 1) s2
   CLUSTER BY id
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -33,7 +33,7 @@ FROM (
   FROM (SELECT * FROM src LIMIT 1) s2
   CLUSTER BY id
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

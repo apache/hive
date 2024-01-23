@@ -7,7 +7,7 @@ from noopstreaming(on part
   partition by p_mfgr
   order by p_name
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -19,7 +19,7 @@ from noopstreaming(on part
   partition by p_mfgr
   order by p_name
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -190,7 +190,7 @@ p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name)
 from noopstreaming (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -199,7 +199,7 @@ p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name)
 from noopstreaming (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -393,7 +393,7 @@ from noopstreaming(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -402,7 +402,7 @@ from noopstreaming(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -547,7 +547,7 @@ rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmapstreaming(on part
 partition by p_mfgr
 order by p_name, p_size desc)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -556,7 +556,7 @@ rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmapstreaming(on part
 partition by p_mfgr
 order by p_name, p_size desc)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -725,7 +725,7 @@ sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unboun
 from noopwithmapstreaming(on part 
   partition by p_mfgr
   order by p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -736,7 +736,7 @@ sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unboun
 from noopwithmapstreaming(on part 
   partition by p_mfgr
   order by p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -925,7 +925,7 @@ from noopstreaming(on noopwithmapstreaming(on noopstreaming(on part
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -937,7 +937,7 @@ from noopstreaming(on noopwithmapstreaming(on noopstreaming(on part
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1171,7 +1171,7 @@ from noopstreaming(on noopwithmap(on noopstreaming(on part
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1183,7 +1183,7 @@ from noopstreaming(on noopwithmap(on noopstreaming(on part
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1417,7 +1417,7 @@ from noop(on noopwithmapstreaming(on noopstreaming(on part
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1429,7 +1429,7 @@ from noop(on noopwithmapstreaming(on noopstreaming(on part
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1665,7 +1665,7 @@ from noopstreaming(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1679,7 +1679,7 @@ from noopstreaming(on part
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1910,7 +1910,7 @@ from noopstreaming(on
           order by p_mfgr,p_name) 
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1929,7 +1929,7 @@ from noopstreaming(on
           order by p_mfgr,p_name) 
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2191,7 +2191,7 @@ from noop(on
           order by p_mfgr,p_name) 
         partition by p_mfgr  
         order by p_mfgr )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -2210,7 +2210,7 @@ from noop(on
           order by p_mfgr,p_name) 
         partition by p_mfgr  
         order by p_mfgr )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2467,7 +2467,7 @@ from noopwithmapstreaming(on
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           ))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -2483,7 +2483,7 @@ from noopwithmapstreaming(on
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           ))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

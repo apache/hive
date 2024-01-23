@@ -29,7 +29,7 @@ WHERE (t2.smallint_col_19) IN (SELECT
     FROM table_1_n1 tt1
     INNER JOIN table_18_n1 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
     WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_18_n1
 PREHOOK: Input: default@table_1_n1
 #### A masked pattern was here ####
@@ -48,7 +48,7 @@ WHERE (t2.smallint_col_19) IN (SELECT
     FROM table_1_n1 tt1
     INNER JOIN table_18_n1 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
     WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_18_n1
 POSTHOOK: Input: default@table_1_n1
 #### A masked pattern was here ####

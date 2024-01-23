@@ -29,7 +29,7 @@ select
   interval '2-2' year to month + dateval
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -43,7 +43,7 @@ select
   interval '2-2' year to month + dateval
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -99,7 +99,7 @@ select
   dateval - dateval
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -110,7 +110,7 @@ select
   dateval - dateval
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -163,7 +163,7 @@ select
   interval '2-2' year to month + tsval
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -177,7 +177,7 @@ select
   interval '2-2' year to month + tsval
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -231,7 +231,7 @@ select
   interval '2-2' year to month - interval '3-3' year to month
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -240,7 +240,7 @@ select
   interval '2-2' year to month - interval '3-3' year to month
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -289,7 +289,7 @@ select
   interval '99 11:22:33.123456789' day to second + dateval
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -303,7 +303,7 @@ select
   interval '99 11:22:33.123456789' day to second + dateval
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -360,7 +360,7 @@ select
   tsval - tsval
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -372,7 +372,7 @@ select
   tsval - tsval
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -427,7 +427,7 @@ select
   interval '99 11:22:33.123456789' day to second + tsval
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -441,7 +441,7 @@ select
   interval '99 11:22:33.123456789' day to second + tsval
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -495,7 +495,7 @@ select
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
 from interval_arithmetic_1_n0
 limit 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -504,7 +504,7 @@ select
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
 from interval_arithmetic_1_n0
 limit 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -544,12 +544,12 @@ POSTHOOK: Input: default@interval_arithmetic_1_n0
 109 20:30:40.246913578	89 02:14:26.000000000
 PREHOOK: query: explain
 select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1_n0 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1_n0 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

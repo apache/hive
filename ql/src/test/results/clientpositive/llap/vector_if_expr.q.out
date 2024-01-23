@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

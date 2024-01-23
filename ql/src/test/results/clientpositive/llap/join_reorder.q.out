@@ -48,13 +48,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3_n8
 PREHOOK: query: EXPLAIN FROM T1_n37 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1_n37
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM T1_n37 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_n37
 #### A masked pattern was here ####
@@ -137,13 +137,13 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN FROM T1_n37 a JOIN src c ON c.key+1=a.key
 SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1_n37
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM T1_n37 a JOIN src c ON c.key+1=a.key
 SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_n37
 #### A masked pattern was here ####
@@ -260,7 +260,7 @@ PREHOOK: query: EXPLAIN FROM T1_n37 a
   LEFT OUTER JOIN T2_n24 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3_n8 c ON (c.val = a.val)
 SELECT a.key, b.key, a.val, c.val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n37
 PREHOOK: Input: default@t2_n24
 PREHOOK: Input: default@t3_n8
@@ -269,7 +269,7 @@ POSTHOOK: query: EXPLAIN FROM T1_n37 a
   LEFT OUTER JOIN T2_n24 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3_n8 c ON (c.val = a.val)
 SELECT a.key, b.key, a.val, c.val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n37
 POSTHOOK: Input: default@t2_n24
 POSTHOOK: Input: default@t3_n8
@@ -378,7 +378,7 @@ PREHOOK: query: EXPLAIN FROM T1_n37 a
   LEFT OUTER JOIN T2_n24 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3_n8 c ON (c.val = a.val)
 SELECT /*+ STREAMTABLE(a) */ a.key, b.key, a.val, c.val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n37
 PREHOOK: Input: default@t2_n24
 PREHOOK: Input: default@t3_n8
@@ -387,7 +387,7 @@ POSTHOOK: query: EXPLAIN FROM T1_n37 a
   LEFT OUTER JOIN T2_n24 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3_n8 c ON (c.val = a.val)
 SELECT /*+ STREAMTABLE(a) */ a.key, b.key, a.val, c.val
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n37
 POSTHOOK: Input: default@t2_n24
 POSTHOOK: Input: default@t3_n8
@@ -541,7 +541,7 @@ PREHOOK: query: EXPLAIN FROM UNIQUEJOIN
   PRESERVE T2_n24 b (b.key, b.val),
   PRESERVE T3_n8 c (c.key, c.val)
 SELECT a.key, b.key, c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n37
 PREHOOK: Input: default@t2_n24
 PREHOOK: Input: default@t3_n8
@@ -551,7 +551,7 @@ POSTHOOK: query: EXPLAIN FROM UNIQUEJOIN
   PRESERVE T2_n24 b (b.key, b.val),
   PRESERVE T3_n8 c (c.key, c.val)
 SELECT a.key, b.key, c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n37
 POSTHOOK: Input: default@t2_n24
 POSTHOOK: Input: default@t3_n8
@@ -644,7 +644,7 @@ PREHOOK: query: EXPLAIN FROM UNIQUEJOIN
   PRESERVE T2_n24 b (b.key, b.val),
   PRESERVE T3_n8 c (c.key, c.val)
 SELECT /*+ STREAMTABLE(b) */ a.key, b.key, c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n37
 PREHOOK: Input: default@t2_n24
 PREHOOK: Input: default@t3_n8
@@ -654,7 +654,7 @@ POSTHOOK: query: EXPLAIN FROM UNIQUEJOIN
   PRESERVE T2_n24 b (b.key, b.val),
   PRESERVE T3_n8 c (c.key, c.val)
 SELECT /*+ STREAMTABLE(b) */ a.key, b.key, c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n37
 POSTHOOK: Input: default@t2_n24
 POSTHOOK: Input: default@t3_n8

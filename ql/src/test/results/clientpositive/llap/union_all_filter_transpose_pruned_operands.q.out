@@ -108,7 +108,7 @@ SELECT * FROM (
    FROM t
    WHERE a = '1002') AS t2
 WHERE a = '1000'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -130,7 +130,7 @@ SELECT * FROM (
    FROM t
    WHERE a = '1002') AS t2
 WHERE a = '1000'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:

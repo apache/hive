@@ -29,11 +29,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_puffin
 PREHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_puffin
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -122,11 +122,11 @@ POSTHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: Output: default@tbl_ice_puffin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_puffin
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -230,11 +230,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_puffin
 PREHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_puffin
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -284,11 +284,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_puffin
 PREHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_puffin
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from tbl_ice_puffin order by a, b, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -379,11 +379,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: explain select * from tbl_ice order by a, b, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from tbl_ice order by a, b, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -441,11 +441,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: Output: default@tbl_ice_puffin
 PREHOOK: query: explain select * from tbl_ice order by a, b, c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from tbl_ice order by a, b, c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -582,12 +582,12 @@ OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain select * from t1 join t2 on t1.a = t2.b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from t1 join t2 on t1.a = t2.b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: hdfs://### HDFS PATH ###

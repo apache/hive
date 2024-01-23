@@ -132,12 +132,12 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 484	val_484	1
 495	val_484	1
 PREHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n5
 PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
@@ -212,12 +212,12 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 484
 PREHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n5
 PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
@@ -292,12 +292,12 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 484	val_484
 PREHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n5
 PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
@@ -447,12 +447,12 @@ POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 val_484	1
 PREHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n5
 PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####

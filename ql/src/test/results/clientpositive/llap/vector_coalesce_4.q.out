@@ -28,12 +28,12 @@ POSTHOOK: Lineage: coalesce_test.a EXPRESSION []
 POSTHOOK: Lineage: coalesce_test.b EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select coalesce(a, b) from coalesce_test order by a, b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@coalesce_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select coalesce(a, b) from coalesce_test order by a, b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@coalesce_test
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

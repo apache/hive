@@ -76,13 +76,13 @@ POSTHOOK: Lineage: dup_test_target.sample SIMPLE [(dup_test)dup_test.FieldSchema
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(dup_test_target)dup_test_target.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 PREHOOK: query: explain vectorization detail select * from DUP_TEST_TARGET T join (SELECT id , in_date , sample FROM (SELECT id , in_date , sample ,ROW_NUMBER()
 OVER(PARTITION BY id ORDER BY in_date DESC ) AS ROW_NUMB  FROM DUP_TEST) OUTQUERY WHERE ROW_NUMB =1) as S ON T.id = S.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dup_test
 PREHOOK: Input: default@dup_test_target
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization detail select * from DUP_TEST_TARGET T join (SELECT id , in_date , sample FROM (SELECT id , in_date , sample ,ROW_NUMBER()
 OVER(PARTITION BY id ORDER BY in_date DESC ) AS ROW_NUMB  FROM DUP_TEST) OUTQUERY WHERE ROW_NUMB =1) as S ON T.id = S.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dup_test
 POSTHOOK: Input: default@dup_test_target
 POSTHOOK: Output: hdfs://### HDFS PATH ###

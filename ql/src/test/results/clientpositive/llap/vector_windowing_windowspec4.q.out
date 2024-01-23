@@ -38,7 +38,7 @@ sum(i) over (partition by type order by i rows between 1 preceding and 7 followi
 collect_set(i) over (partition by type order by i rows between 1 preceding and 7 following),
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
 from smalltable_windowing_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@smalltable_windowing_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -52,7 +52,7 @@ sum(i) over (partition by type order by i rows between 1 preceding and 7 followi
 collect_set(i) over (partition by type order by i rows between 1 preceding and 7 following),
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
 from smalltable_windowing_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@smalltable_windowing_n0
 #### A masked pattern was here ####
 Explain

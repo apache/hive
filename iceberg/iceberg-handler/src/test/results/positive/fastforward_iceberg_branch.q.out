@@ -75,10 +75,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4
 41
 PREHOOK: query: explain alter table ice01 execute fast-forward 'test1'
-PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 POSTHOOK: query: explain alter table ice01 execute fast-forward 'test1'
-POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -112,10 +112,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4
 41
 PREHOOK: query: explain alter table ice01 execute fast-forward 'test01' 'test1'
-PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 POSTHOOK: query: explain alter table ice01 execute fast-forward 'test01' 'test1'
-POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

@@ -108,7 +108,7 @@ where
   cs1.item_sk = cs2.item_sk and
   cs1.year = 2000 and
   cs2.year = 2001
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x_date_dim
 PREHOOK: Input: default@x_item
 PREHOOK: Input: default@x_store_sales
@@ -131,7 +131,7 @@ where
   cs1.item_sk = cs2.item_sk and
   cs1.year = 2000 and
   cs2.year = 2001
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x_date_dim
 POSTHOOK: Input: default@x_item
 POSTHOOK: Input: default@x_store_sales

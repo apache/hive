@@ -27,11 +27,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@country_0
 PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@country_0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@country_0
 #### A masked pattern was here ####
 CBO PLAN:
@@ -75,11 +75,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@country_1
 PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@country_1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@country_1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -125,11 +125,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@country_2
 PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@country_2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@country_2
 #### A masked pattern was here ####
 CBO PLAN:

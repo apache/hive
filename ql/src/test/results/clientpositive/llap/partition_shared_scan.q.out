@@ -36,7 +36,7 @@ from foo_n1 f1
 join part p1 on (p1.p_partkey = f1.i)
 join foo_n1 f2 on (f1.i = f2.i)
 where f1.s='foo_n1' and f2.s='bar'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo_n1
 PREHOOK: Input: default@foo_n1@s=bar
 PREHOOK: Input: default@foo_n1@s=foo_n1
@@ -48,7 +48,7 @@ from foo_n1 f1
 join part p1 on (p1.p_partkey = f1.i)
 join foo_n1 f2 on (f1.i = f2.i)
 where f1.s='foo_n1' and f2.s='bar'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo_n1
 POSTHOOK: Input: default@foo_n1@s=bar
 POSTHOOK: Input: default@foo_n1@s=foo_n1
@@ -184,7 +184,7 @@ from foo_n1 f1
 join part p1 on (p1.p_partkey = f1.i)
 join foo_n1 f2 on (f1.i = f2.i)
 where f1.s='foo_n1' and f2.s='foo_n1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo_n1
 PREHOOK: Input: default@foo_n1@s=foo_n1
 PREHOOK: Input: default@part
@@ -195,7 +195,7 @@ from foo_n1 f1
 join part p1 on (p1.p_partkey = f1.i)
 join foo_n1 f2 on (f1.i = f2.i)
 where f1.s='foo_n1' and f2.s='foo_n1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo_n1
 POSTHOOK: Input: default@foo_n1@s=foo_n1
 POSTHOOK: Input: default@part

@@ -238,11 +238,11 @@ POSTHOOK: query: grant all on table db1.testmvtable to user user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: db1@testmvtable
 PREHOOK: query: explain select * from db1.testmvtable where year=2020
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@testmvtable
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from db1.testmvtable where year=2020
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@testmvtable
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

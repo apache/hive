@@ -1,11 +1,11 @@
 PREHOOK: query: explain
 select timestamp '2011-01-01 01:01:01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select timestamp '2011-01-01 01:01:01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -35,12 +35,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 2011-01-01 01:01:01
 PREHOOK: query: explain
 select '2011-01-01 01:01:01.101' <> timestamp '2011-01-01 01:01:01.100'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select '2011-01-01 01:01:01.101' <> timestamp '2011-01-01 01:01:01.100'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -70,12 +70,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 true
 PREHOOK: query: explain
 select 1 where timestamp '2011-01-01 01:01:01.101' <> timestamp '2011-01-01 01:01:01.100'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 1 where timestamp '2011-01-01 01:01:01.101' <> timestamp '2011-01-01 01:01:01.100'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

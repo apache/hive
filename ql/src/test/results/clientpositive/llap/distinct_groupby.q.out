@@ -1,9 +1,9 @@
 PREHOOK: query: explain select distinct key from src1 group by key,value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct key from src1 group by key,value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -97,11 +97,11 @@ POSTHOOK: Input: default@src1
 66
 98
 PREHOOK: query: explain select distinct count(value) from src group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct count(value) from src group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -203,11 +203,11 @@ POSTHOOK: Input: default@src
 1
 4
 PREHOOK: query: explain select distinct count(*) from src1 where key in (128,146,150)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct count(*) from src1 where key in (128,146,150)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -278,11 +278,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 3
 PREHOOK: query: explain select distinct * from (select distinct count(*) from src1 where key in (128,146,150)) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from (select distinct count(*) from src1 where key in (128,146,150)) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -353,11 +353,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 3
 PREHOOK: query: explain select distinct count(*)+1 from src1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct count(*)+1 from src1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -428,12 +428,12 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 26
 PREHOOK: query: explain select distinct count(a.value), count(b.value) from src a join src1 b on a.key=b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct count(a.value), count(b.value) from src a join src1 b on a.key=b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -550,11 +550,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 37	37
 PREHOOK: query: explain select distinct c from (select distinct key, count(*) as c from src1 where key in (128,146,150) group by key) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct c from (select distinct key, count(*) as c from src1 where key in (128,146,150) group by key) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -652,11 +652,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 1
 PREHOOK: query: explain select distinct key from src1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct key from src1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -741,11 +741,11 @@ POSTHOOK: Input: default@src1
 278
 401
 PREHOOK: query: explain select distinct * from src1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from src1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -836,11 +836,11 @@ POSTHOOK: Input: default@src1
 369	
 66	val_66
 PREHOOK: query: explain select distinct count(*) from src1 where key in (128,146,150) group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct count(*) from src1 where key in (128,146,150) group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -938,11 +938,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 1
 PREHOOK: query: explain select distinct key, count(*) from src1 where key in (128,146,150) group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct key, count(*) from src1 where key in (128,146,150) group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1017,11 +1017,11 @@ POSTHOOK: Input: default@src1
 128	1
 150	1
 PREHOOK: query: explain select distinct * from (select * from src1) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from (select * from src1) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1112,11 +1112,11 @@ POSTHOOK: Input: default@src1
 369	
 66	val_66
 PREHOOK: query: explain select distinct * from (select count(*) from src1) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from (select count(*) from src1) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1139,11 +1139,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 25
 PREHOOK: query: explain select distinct * from (select * from src1 where key in (128,146,150)) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from (select * from src1 where key in (128,146,150)) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1215,11 +1215,11 @@ POSTHOOK: Input: default@src1
 150	val_150
 146	val_146
 PREHOOK: query: explain select distinct key from (select * from src1 where key in (128,146,150)) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct key from (select * from src1 where key in (128,146,150)) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1291,11 +1291,11 @@ POSTHOOK: Input: default@src1
 128
 150
 PREHOOK: query: explain select distinct * from (select count(*) from src1 where key in (128,146,150)) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from (select count(*) from src1 where key in (128,146,150)) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1366,11 +1366,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 3
 PREHOOK: query: explain select distinct sum(key) over () from src1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct sum(key) over () from src1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1475,11 +1475,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 3556.0
 PREHOOK: query: explain select distinct * from (select sum(key) over () from src1) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from (select sum(key) over () from src1) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1584,11 +1584,11 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 3556.0
 PREHOOK: query: explain select distinct value, key, count(1) over (partition by value) from src1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct value, key, count(1) over (partition by value) from src1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1714,11 +1714,11 @@ val_27		1
 val_406	406	1
 val_409		1
 PREHOOK: query: explain select value, key, count(1) over (partition by value) from src1 group by value, key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select value, key, count(1) over (partition by value) from src1 group by value, key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1848,11 +1848,11 @@ val_401	401	1
 val_484		1
 val_98	98	1
 PREHOOK: query: explain select value, key, count(1) over (partition by value) from src1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select value, key, count(1) over (partition by value) from src1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1960,11 +1960,11 @@ val_401	401	1
 val_484		1
 val_98	98	1
 PREHOOK: query: explain select distinct count(*)+key from src1 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct count(*)+key from src1 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2077,12 +2077,12 @@ POSTHOOK: Input: default@src1
 370.0
 NULL
 PREHOOK: query: explain select distinct count(a.value), count(b.value) from src a join src1 b on a.key=b.key group by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct count(a.value), count(b.value) from src a join src1 b on a.key=b.key group by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2232,11 +2232,11 @@ POSTHOOK: Input: default@src1
 4	4
 5	5
 PREHOOK: query: explain select distinct * from (select distinct * from src1) as T
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select distinct * from (select distinct * from src1) as T
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

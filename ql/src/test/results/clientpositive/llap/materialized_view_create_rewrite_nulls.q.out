@@ -102,14 +102,14 @@ POSTHOOK: Lineage: t1.d SCRIPT []
 _col0	_col1	_col2	_col3
 PREHOOK: query: explain cbo
 ALTER MATERIALIZED VIEW mat1 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain cbo
 ALTER MATERIALIZED VIEW mat1 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mat1
@@ -128,14 +128,14 @@ HiveProject($f0=[$6], $f1=[$7], $f2=[CASE(IS NULL($2), $8, IS NULL($8), $2, +($8
 
 PREHOOK: query: explain
 ALTER MATERIALIZED VIEW mat1 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain
 ALTER MATERIALIZED VIEW mat1 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mat1
@@ -455,7 +455,7 @@ FROM t1
 WHERE c > 10.0
 GROUP BY a, b
 ORDER BY a, b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -465,7 +465,7 @@ FROM t1
 WHERE c > 10.0
 GROUP BY a, b
 ORDER BY a, b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -543,7 +543,7 @@ FROM t1
 WHERE c > 10.0
 GROUP BY a, b
 ORDER BY a, b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -552,7 +552,7 @@ FROM t1
 WHERE c > 10.0
 GROUP BY a, b
 ORDER BY a, b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 Explain

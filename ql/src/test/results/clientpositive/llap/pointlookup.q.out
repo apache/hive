@@ -13,7 +13,7 @@ WHERE
     (key = '8'  AND value = 'val_8') OR
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -31,7 +31,7 @@ WHERE
     (key = '8'  AND value = 'val_8') OR
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -106,7 +106,7 @@ WHERE
     (key = '8'  AND value = 'val_8') OR
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -124,7 +124,7 @@ WHERE
     (key = '8'  AND value = 'val_8') OR
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -199,7 +199,7 @@ WHERE
     (key = '8'  AND value = 'val_8') OR
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -217,7 +217,7 @@ WHERE
     (key = '8'  AND value = 'val_8') OR
     (key = '9'  AND value = 'val_9') OR
     (key = '10' AND value = 'val_10'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

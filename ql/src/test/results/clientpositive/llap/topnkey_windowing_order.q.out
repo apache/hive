@@ -77,7 +77,7 @@ FROM (
     rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -87,7 +87,7 @@ FROM (
     rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -236,7 +236,7 @@ FROM (
     rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -246,7 +246,7 @@ FROM (
     rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -393,7 +393,7 @@ FROM (
     rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -403,7 +403,7 @@ FROM (
     rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
   FROM topnkey_windowing) tmp1
   WHERE ranking <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -55,10 +55,10 @@ POSTHOOK: query: delete from ice01
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain analyze delete from ice01
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@ice01
 POSTHOOK: query: explain analyze delete from ice01
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@ice01
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

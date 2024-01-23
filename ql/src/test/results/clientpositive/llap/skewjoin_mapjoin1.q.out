@@ -36,13 +36,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2_n40
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n67 a JOIN T2_n40 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n67
 PREHOOK: Input: default@t2_n40
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n67 a JOIN T2_n40 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n67
 POSTHOOK: Input: default@t2_n40
 #### A masked pattern was here ####
@@ -140,13 +140,13 @@ POSTHOOK: Input: default@t2_n40
 8	28	8	18
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n67 a RIGHT OUTER JOIN T2_n40 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n67
 PREHOOK: Input: default@t2_n40
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n67 a RIGHT OUTER JOIN T2_n40 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n67
 POSTHOOK: Input: default@t2_n40
 #### A masked pattern was here ####
@@ -241,13 +241,13 @@ NULL	NULL	4	14
 NULL	NULL	5	15
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n67 a JOIN T2_n40 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n67
 PREHOOK: Input: default@t2_n40
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n67 a JOIN T2_n40 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n67
 POSTHOOK: Input: default@t2_n40
 #### A masked pattern was here ####
@@ -356,13 +356,13 @@ POSTHOOK: Input: default@t2_n40
 6
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n67 a RIGHT OUTER JOIN T2_n40 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n67
 PREHOOK: Input: default@t2_n40
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM T1_n67 a RIGHT OUTER JOIN T2_n40 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n67
 POSTHOOK: Input: default@t2_n40
 #### A masked pattern was here ####

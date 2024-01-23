@@ -22,14 +22,14 @@ PREHOOK: query: EXPLAIN
 INSERT INTO mytbl_n1(key,value)
 SELECT a,b as c FROM TABLE(VALUES(1,2),(3,4)) AS vc(a,b)
 WHERE b = 9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@mytbl_n1
 POSTHOOK: query: EXPLAIN
 INSERT INTO mytbl_n1(key,value)
 SELECT a,b as c FROM TABLE(VALUES(1,2),(3,4)) AS vc(a,b)
 WHERE b = 9
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mytbl_n1
 STAGE DEPENDENCIES:
@@ -152,7 +152,7 @@ FROM
   (SELECT key, value FROM mytbl_n1) t
   LATERAL VIEW
   INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -161,7 +161,7 @@ FROM
   (SELECT key, value FROM mytbl_n1) t
   LATERAL VIEW
   INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -212,12 +212,12 @@ B	20	10
 B	20	100
 PREHOOK: query: EXPLAIN
 SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT INLINE(array(struct('A', 10, 30),struct('B', 20, 30))) AS (col1, col2, col3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -255,14 +255,14 @@ PREHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30.0),('B', 20, 30.0)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30.0),('B', 20, 30.0)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -306,7 +306,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
   (SELECT key, value FROM mytbl_n1) t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
@@ -315,7 +315,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
   (SELECT key, value FROM mytbl_n1) t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
@@ -422,7 +422,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
   TABLE(VALUES('A', 10),('B', 20)) AS tf2(col1, col2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -430,7 +430,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
   TABLE(VALUES('A', 10),('B', 20)) AS tf2(col1, col2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -536,7 +536,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
@@ -545,7 +545,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
@@ -655,7 +655,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -663,7 +663,7 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -715,7 +715,7 @@ SELECT t.key
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -723,7 +723,7 @@ SELECT t.key
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -775,7 +775,7 @@ SELECT tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -783,7 +783,7 @@ SELECT tf.col3
 FROM
   (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -835,7 +835,7 @@ SELECT tf.col3
 FROM
   (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -843,7 +843,7 @@ SELECT tf.col3
 FROM
   (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

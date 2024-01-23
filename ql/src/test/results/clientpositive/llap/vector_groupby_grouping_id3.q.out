@@ -33,7 +33,7 @@ FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -42,7 +42,7 @@ FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 Explain
@@ -216,7 +216,7 @@ FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -225,7 +225,7 @@ FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 Explain

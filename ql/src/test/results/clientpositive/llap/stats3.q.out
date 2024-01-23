@@ -20,12 +20,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test_src_n3
 PREHOOK: query: explain extended
 load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n3
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 #### A masked pattern was here ####
 PREHOOK: Output: default@hive_test_src_n3
 POSTHOOK: query: explain extended
 load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n3
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: Output: default@hive_test_src_n3
 STAGE DEPENDENCIES:

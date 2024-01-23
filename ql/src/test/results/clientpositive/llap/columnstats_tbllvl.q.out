@@ -42,13 +42,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@uservisits_web_text_none
 PREHOOK: query: explain 
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@uservisits_web_text_none
 PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
@@ -116,13 +116,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@uservisits_web_text_none
 PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
@@ -265,13 +265,13 @@ POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 PREHOOK: query: explain 
 analyze table default.UserVisits_web_text_none compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@uservisits_web_text_none
 PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table default.UserVisits_web_text_none compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
@@ -426,13 +426,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty_tab
 PREHOOK: query: explain 
 analyze table empty_tab compute statistics for columns a,b,c,d,e
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@empty_tab
 PREHOOK: Output: default@empty_tab
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table empty_tab compute statistics for columns a,b,c,d,e
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@empty_tab
 POSTHOOK: Output: default@empty_tab
 #### A masked pattern was here ####
@@ -593,13 +593,13 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: explain 
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 PREHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
@@ -667,13 +667,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 PREHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
@@ -816,13 +816,13 @@ POSTHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 PREHOOK: query: explain 
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 PREHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####

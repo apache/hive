@@ -40,11 +40,11 @@ POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 10
 PREHOOK: query: explain cbo select 1 from (select count(distinct a) from t_test) x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select 1 from (select count(distinct a) from t_test) x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 CBO PLAN:
@@ -56,11 +56,11 @@ HiveProject(_o__c0=[1])
           HiveTableScan(table=[[default, t_test]], table:alias=[t_test])
 
 PREHOOK: query: explain cbo select b from (select count(distinct a) b from t_test) x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select b from (select count(distinct a) b from t_test) x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 CBO PLAN:
@@ -70,11 +70,11 @@ HiveAggregate(group=[{}], agg#0=[count($0)])
       HiveTableScan(table=[[default, t_test]], table:alias=[t_test])
 
 PREHOOK: query: explain select 1 from (select count(distinct a) from t_test) x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 1 from (select count(distinct a) from t_test) x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -159,11 +159,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select b from (select count(distinct a) b from t_test) x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select b from (select count(distinct a) b from t_test) x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

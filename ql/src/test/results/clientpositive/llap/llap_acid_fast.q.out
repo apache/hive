@@ -77,7 +77,7 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=3).cint SIMPLE [(allty
 PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_acid_fast
 PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
@@ -86,7 +86,7 @@ PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_acid_fast
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
@@ -230,7 +230,7 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cfloat SCRIPT []
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint SCRIPT []
 PREHOOK: query: explain vectorization only detail
 update orc_llap_acid_fast set cbigint = 2 where cint = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_acid_fast
 PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
@@ -241,7 +241,7 @@ PREHOOK: Output: default@orc_llap_acid_fast@csmallint=2
 PREHOOK: Output: default@orc_llap_acid_fast@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 update orc_llap_acid_fast set cbigint = 2 where cint = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_acid_fast
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
@@ -409,7 +409,7 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint SIMPLE []
 PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_acid_fast
 PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
@@ -418,7 +418,7 @@ PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_acid_fast
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2

@@ -38,7 +38,7 @@ PREHOOK: query: explain
 from src_10_n0
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
 insert overwrite table src_lv2 select key, C lateral view explode(array(key+3, key+4)) A as C
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
@@ -46,7 +46,7 @@ POSTHOOK: query: explain
 from src_10_n0
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
 insert overwrite table src_lv2 select key, C lateral view explode(array(key+3, key+4)) A as C
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
@@ -376,7 +376,7 @@ PREHOOK: query: explain
 from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(C) lateral view explode(array(key+3, key+4)) A as C group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
@@ -384,7 +384,7 @@ POSTHOOK: query: explain
 from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(C) lateral view explode(array(key+3, key+4)) A as C group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
@@ -717,7 +717,7 @@ from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, count(value) where key > 200 group by key
 insert overwrite table src_lv3 select key, count(value) where key < 200 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
@@ -727,7 +727,7 @@ from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, count(value) where key > 200 group by key
 insert overwrite table src_lv3 select key, count(value) where key < 200 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
@@ -1119,7 +1119,7 @@ from src_10_n0
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
 insert overwrite table src_lv2 select C, sum(distinct key) lateral view explode(array(key+3, key+4)) A as C group by C
 insert overwrite table src_lv3 select value, sum(distinct key) group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
@@ -1129,7 +1129,7 @@ from src_10_n0
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
 insert overwrite table src_lv2 select C, sum(distinct key) lateral view explode(array(key+3, key+4)) A as C group by C
 insert overwrite table src_lv3 select value, sum(distinct key) group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
@@ -1606,7 +1606,7 @@ insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(
 insert overwrite table src_lv2 select key, sum(distinct C) lateral view explode(array(key+3, key+4)) A as C group by key
 insert overwrite table src_lv3 select value, sum(distinct key) where key > 200 group by value
 insert overwrite table src_lv4 select value, sum(distinct key) where key < 200 group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
@@ -1618,7 +1618,7 @@ insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(
 insert overwrite table src_lv2 select key, sum(distinct C) lateral view explode(array(key+3, key+4)) A as C group by key
 insert overwrite table src_lv3 select value, sum(distinct key) where key > 200 group by value
 insert overwrite table src_lv4 select value, sum(distinct key) where key < 200 group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2

@@ -101,11 +101,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select count(1) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -119,11 +119,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select max(year) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -246,11 +246,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -318,11 +318,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -391,11 +391,11 @@ POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 2015
 PREHOOK: query: explain select max(month) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(month) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -509,11 +509,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -536,11 +536,11 @@ POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 2015
 PREHOOK: query: explain select max(month) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(month) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -654,11 +654,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select max(month) from calendar_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(month) from calendar_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -734,12 +734,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendarp where p=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendarp
 PREHOOK: Input: default@calendarp@p=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendarp where p=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendarp
 POSTHOOK: Input: default@calendarp@p=1
 #### A masked pattern was here ####
@@ -862,11 +862,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendarp where p=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendarp
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendarp where p=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendarp
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -925,12 +925,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select max(year) from calendarp where p=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calendarp
 PREHOOK: Input: default@calendarp@p=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(year) from calendarp where p=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calendarp
 POSTHOOK: Input: default@calendarp@p=1
 #### A masked pattern was here ####

@@ -24,7 +24,7 @@ FROM (
 ) d
 LEFT OUTER JOIN src b
 ON d.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -47,7 +47,7 @@ FROM (
 ) d
 LEFT OUTER JOIN src b
 ON d.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

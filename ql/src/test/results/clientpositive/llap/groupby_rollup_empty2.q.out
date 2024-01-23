@@ -68,14 +68,14 @@ POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=39).payload2 SCRIPT []
 POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=39).payload3 SCRIPT []
 POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=39).ss_item_sk SCRIPT []
 PREHOOK: query: explain select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store_s0
 PREHOOK: Input: default@store_sales_s0
 PREHOOK: Input: default@store_sales_s0@ss_store_sk=39
 PREHOOK: Input: default@store_sales_s0@ss_store_sk=9
 #### A masked pattern was here ####
 POSTHOOK: query: explain select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store_s0
 POSTHOOK: Input: default@store_sales_s0
 POSTHOOK: Input: default@store_sales_s0@ss_store_sk=39

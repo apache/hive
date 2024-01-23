@@ -23,12 +23,12 @@ POSTHOOK: Output: default@test_n2
 POSTHOOK: Lineage: test_n2.ts SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -109,12 +109,12 @@ POSTHOOK: Input: default@test_n2
 9999-12-31 23:59:59.999999999
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -254,12 +254,12 @@ POSTHOOK: Input: default@test_n2
 0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652058 23:59:59.999999999
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -344,12 +344,12 @@ POSTHOOK: Input: default@test_n2
 0001-01-01 00:00:00
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -489,12 +489,12 @@ POSTHOOK: Input: default@test_n2
 9.5633352E10	5000-07-02 12:00:00
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

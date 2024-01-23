@@ -16,11 +16,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t_n34
 POSTHOOK: Lineage: t_n34.a SCRIPT []
 PREHOOK: query: explain select count(*) from t_n34 group by ()
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n34
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from t_n34 group by ()
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n34
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

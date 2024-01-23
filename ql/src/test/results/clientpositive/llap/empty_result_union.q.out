@@ -40,7 +40,7 @@ PREHOOK: query: explain cbo
 select a2, b2 from t2 where 1=0
 union
 select a1, b1 from t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -48,7 +48,7 @@ POSTHOOK: query: explain cbo
 select a2, b2 from t2 where 1=0
 union
 select a1, b1 from t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -61,7 +61,7 @@ PREHOOK: query: explain cbo
 select a1, b1 from t1
 union
 select a2, b2 from t2 where 1=0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -69,7 +69,7 @@ POSTHOOK: query: explain cbo
 select a1, b1 from t1
 union
 select a2, b2 from t2 where 1=0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -82,7 +82,7 @@ PREHOOK: query: explain
 select a1, b1 from t1
 union
 select a2, b2 from t2 where 1=0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -90,7 +90,7 @@ POSTHOOK: query: explain
 select a1, b1 from t1
 union
 select a2, b2 from t2 where 1=0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

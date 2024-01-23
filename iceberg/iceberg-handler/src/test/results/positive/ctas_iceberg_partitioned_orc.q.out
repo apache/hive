@@ -31,7 +31,7 @@ POSTHOOK: Lineage: source.c SCRIPT []
 PREHOOK: query: explain extended
 create external table tbl_ice partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2') as
 select a, b, c from source
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice
@@ -39,7 +39,7 @@ PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain extended
 create external table tbl_ice partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2') as
 select a, b, c from source
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice

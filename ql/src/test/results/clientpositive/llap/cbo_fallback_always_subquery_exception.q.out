@@ -1,9 +1,9 @@
 PREHOOK: query: explain select * from part where p_type = ALL(select max(p_type) from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_type = ALL(select max(p_type) from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Plan not optimized by CBO.

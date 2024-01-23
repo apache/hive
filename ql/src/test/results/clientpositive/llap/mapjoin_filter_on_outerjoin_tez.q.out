@@ -41,7 +41,7 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -50,7 +50,7 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -220,7 +220,7 @@ SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -229,7 +229,7 @@ SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -395,12 +395,12 @@ NULL	NULL	98	val_98	98	val_98
 NULL	NULL	98	val_98	98	val_98
 PREHOOK: query: explain
 SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -543,12 +543,12 @@ NULL	NULL	66	val_66
 NULL	NULL	98	val_98
 PREHOOK: query: explain
 SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM src1 FULL OUTER JOIN src1 src2 ON (src1.key = src2.key AND src2.key < 10)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -735,13 +735,13 @@ POSTHOOK: Lineage: d.key SCRIPT []
 POSTHOOK: Lineage: d.value SCRIPT []
 PREHOOK: query: explain
 SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@c
 PREHOOK: Input: default@d
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@c
 POSTHOOK: Input: default@d
 #### A masked pattern was here ####
@@ -843,13 +843,13 @@ POSTHOOK: Input: default@d
 NULL	NULL	1	1
 PREHOOK: query: explain
 SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@c
 PREHOOK: Input: default@d
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * from c FULL OUTER JOIN d on c.key = d.key AND c.key > 0 AND d.key > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@c
 POSTHOOK: Input: default@d
 #### A masked pattern was here ####

@@ -18,12 +18,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lv_view
 POSTHOOK: Lineage: lv_view.c1 SIMPLE [(lv_table)lv_table.FieldSchema(name:c1, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT * FROM lv_view
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@lv_table
 PREHOOK: Input: default@lv_view
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM lv_view
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@lv_table
 POSTHOOK: Input: default@lv_view
 #### A masked pattern was here ####

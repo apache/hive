@@ -17,12 +17,12 @@ POSTHOOK: Output: default@repro
 POSTHOOK: Lineage: repro.i EXPRESSION []
 PREHOOK: query: EXPLAIN
 SELECT * FROM (SELECT * FROM repro) a, (SELECT * FROM repro) b, (SELECT * FROM repro) c  WHERE a.i IS NOT NULL AND b.i IS NOT NULL AND b.i = a.i AND a.i = c.i
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@repro
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (SELECT * FROM repro) a, (SELECT * FROM repro) b, (SELECT * FROM repro) c  WHERE a.i IS NOT NULL AND b.i IS NOT NULL AND b.i = a.i AND a.i = c.i
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@repro
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -149,12 +149,12 @@ WARNING: Invalid statistics: Number of null values > number of tuples. Consider 
 WARNING: Invalid statistics: Number of null values > number of tuples. Consider recomputing statistics for table: default.repro
 PREHOOK: query: EXPLAIN
 SELECT * FROM (SELECT * FROM repro) a, (SELECT * FROM repro) b, (SELECT * FROM repro) c  WHERE a.i IS NOT NULL AND b.i IS NOT NULL AND b.i = a.i AND a.i = c.i
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@repro
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (SELECT * FROM repro) a, (SELECT * FROM repro) b, (SELECT * FROM repro) c  WHERE a.i IS NOT NULL AND b.i IS NOT NULL AND b.i = a.i AND a.i = c.i
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@repro
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

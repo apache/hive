@@ -60,7 +60,7 @@ SELECT  null as first_login_did
 UNION ALL
    SELECT did AS first_login_did
    FROM tez_test_t2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tez_test_t1
 PREHOOK: Input: default@tez_test_t2
 PREHOOK: Input: default@tez_test_t5
@@ -75,7 +75,7 @@ SELECT  null as first_login_did
 UNION ALL
    SELECT did AS first_login_did
    FROM tez_test_t2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tez_test_t1
 POSTHOOK: Input: default@tez_test_t2
 POSTHOOK: Input: default@tez_test_t5

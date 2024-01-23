@@ -91,7 +91,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 -17	31	4963
 -17	29	7021
 PREHOOK: query: explain analyze table llap_stats partition (cint) compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@llap_stats
 PREHOOK: Input: default@llap_stats@cint=-13326
 PREHOOK: Input: default@llap_stats@cint=-15431
@@ -116,7 +116,7 @@ PREHOOK: Output: default@llap_stats@cint=4963
 PREHOOK: Output: default@llap_stats@cint=7021
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze table llap_stats partition (cint) compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@llap_stats
 POSTHOOK: Input: default@llap_stats@cint=-13326
 POSTHOOK: Input: default@llap_stats@cint=-15431

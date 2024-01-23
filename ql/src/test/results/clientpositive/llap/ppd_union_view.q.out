@@ -132,7 +132,7 @@ POSTHOOK: Lineage: t1_n113.key EXPRESSION [(t1_new_n0)t1_new_n0.FieldSchema(name
 POSTHOOK: Lineage: t1_n113.value EXPRESSION [(t1_new_n0)t1_new_n0.FieldSchema(name:value, type:string, comment:null), (t1_old)t1_old.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-13'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_mapping
 PREHOOK: Input: default@t1_mapping@ds=2011-10-13
 PREHOOK: Input: default@t1_n113
@@ -142,7 +142,7 @@ PREHOOK: Input: default@t1_old@ds=2011-10-13
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-13'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_mapping
 POSTHOOK: Input: default@t1_mapping@ds=2011-10-13
 POSTHOOK: Input: default@t1_n113
@@ -460,7 +460,7 @@ POSTHOOK: Input: default@t1_old@ds=2011-10-14
 key4	value4	2011-10-14
 PREHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-15'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_mapping
 PREHOOK: Input: default@t1_n113
 PREHOOK: Input: default@t1_new_n0
@@ -469,7 +469,7 @@ PREHOOK: Input: default@t1_old
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-15'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_mapping
 POSTHOOK: Input: default@t1_n113
 POSTHOOK: Input: default@t1_new_n0

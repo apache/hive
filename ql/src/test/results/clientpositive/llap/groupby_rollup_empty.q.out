@@ -144,7 +144,7 @@ select  sum(c),
 from    tx2_n1
 where	a<0
 group by a,b grouping sets ((), b, a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -154,7 +154,7 @@ select  sum(c),
 from    tx2_n1
 where	a<0
 group by a,b grouping sets ((), b, a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

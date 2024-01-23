@@ -3,7 +3,7 @@ PREHOOK: query: explain
                                         UNION  ALL  
                                       select 'tst1' as key, cast(count(1) as string) as value from src s1) 
   unionsrc group by unionsrc.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -12,7 +12,7 @@ POSTHOOK: query: explain
                                         UNION  ALL  
                                       select 'tst1' as key, cast(count(1) as string) as value from src s1) 
   unionsrc group by unionsrc.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

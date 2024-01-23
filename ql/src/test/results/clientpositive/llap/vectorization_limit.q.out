@@ -1,12 +1,12 @@
 WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain vectorization
 SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 order by cbigint, cdouble limit 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
 SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 order by cbigint, cdouble limit 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -108,12 +108,12 @@ POSTHOOK: Input: default@alltypesorc
 -1887561756	-16296.0
 PREHOOK: query: explain vectorization detail
 select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble,csmallint limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble,csmallint limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -270,12 +270,12 @@ POSTHOOK: Input: default@alltypesorc
 -64	-9842.0	-9842
 PREHOOK: query: explain vectorization detail
 select ctinyint,avg(cdouble + 1) as cavg from alltypesorc group by ctinyint order by ctinyint, cavg limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select ctinyint,avg(cdouble + 1) as cavg from alltypesorc group by ctinyint order by ctinyint, cavg limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -503,12 +503,12 @@ POSTHOOK: Input: default@alltypesorc
 -64	373.52941176470586
 PREHOOK: query: explain vectorization detail
 select distinct(ctinyint) as cdistinct from alltypesorc order by cdistinct limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select distinct(ctinyint) as cdistinct from alltypesorc order by cdistinct limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -683,12 +683,12 @@ POSTHOOK: Input: default@alltypesorc
 -64
 PREHOOK: query: explain vectorization detail
 select ctinyint, count(distinct(cdouble)) as count_distinct from alltypesorc group by ctinyint order by ctinyint, count_distinct limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select ctinyint, count(distinct(cdouble)) as count_distinct from alltypesorc group by ctinyint order by ctinyint, count_distinct limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -915,12 +915,12 @@ POSTHOOK: Input: default@alltypesorc
 -64	24
 PREHOOK: query: explain vectorization detail
 select ctinyint,cdouble from alltypesorc order by ctinyint,cdouble limit 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select ctinyint,cdouble from alltypesorc order by ctinyint,cdouble limit 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -947,12 +947,12 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PREHOOK: query: explain vectorization detail
 select cdouble, sum(ctinyint) as csum from alltypesorc where ctinyint is not null group by cdouble order by csum, cdouble limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select cdouble, sum(ctinyint) as csum from alltypesorc where ctinyint is not null group by cdouble order by csum, cdouble limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

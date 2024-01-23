@@ -23,7 +23,7 @@ WHERE  (((cint <= cfloat)
         OR ((cbigint > cdouble)
             AND ((79.553 <= csmallint)
                  AND (ctimestamp1 > ctimestamp2))))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -50,7 +50,7 @@ WHERE  (((cint <= cfloat)
         OR ((cbigint > cdouble)
             AND ((79.553 <= csmallint)
                  AND (ctimestamp1 > ctimestamp2))))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

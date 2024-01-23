@@ -10,7 +10,7 @@ FROM
 GROUP BY constant_col, key
 ORDER BY constant_col, key
 LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -25,7 +25,7 @@ FROM
 GROUP BY constant_col, key
 ORDER BY constant_col, key
 LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

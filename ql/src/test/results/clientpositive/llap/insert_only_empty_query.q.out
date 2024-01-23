@@ -36,12 +36,12 @@ POSTHOOK: Lineage: source_table.age SCRIPT []
 POSTHOOK: Lineage: source_table.gpa SCRIPT []
 POSTHOOK: Lineage: source_table.name SCRIPT []
 PREHOOK: query: explain insert into table src_emptybucket_partitioned_1 partition(year=2015) select * from source_table limit 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@source_table
 PREHOOK: Output: default@src_emptybucket_partitioned_1@year=2015
 POSTHOOK: query: explain insert into table src_emptybucket_partitioned_1 partition(year=2015) select * from source_table limit 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@source_table
 POSTHOOK: Output: default@src_emptybucket_partitioned_1@year=2015

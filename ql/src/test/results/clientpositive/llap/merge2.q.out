@@ -9,13 +9,13 @@ POSTHOOK: Output: default@test1_n10
 PREHOOK: query: explain
 insert overwrite table test1_n10
 select key, count(1) from src group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test1_n10
 POSTHOOK: query: explain
 insert overwrite table test1_n10
 select key, count(1) from src group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test1_n10
 STAGE DEPENDENCIES:
@@ -512,14 +512,14 @@ POSTHOOK: Lineage: test_src_n0 PARTITION(ds=102).key SIMPLE [(src)src.FieldSchem
 POSTHOOK: Lineage: test_src_n0 PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain 
 insert overwrite table test1_n10 select key from test_src_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_src_n0
 PREHOOK: Input: default@test_src_n0@ds=101
 PREHOOK: Input: default@test_src_n0@ds=102
 PREHOOK: Output: default@test1_n10
 POSTHOOK: query: explain 
 insert overwrite table test1_n10 select key from test_src_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_src_n0
 POSTHOOK: Input: default@test_src_n0@ds=101
 POSTHOOK: Input: default@test_src_n0@ds=102
@@ -628,14 +628,14 @@ POSTHOOK: Output: default@test1_n10
 POSTHOOK: Lineage: test1_n10.key SIMPLE [(test_src_n0)test_src_n0.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: explain
 insert overwrite table test1_n10 select key from test_src_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_src_n0
 PREHOOK: Input: default@test_src_n0@ds=101
 PREHOOK: Input: default@test_src_n0@ds=102
 PREHOOK: Output: default@test1_n10
 POSTHOOK: query: explain
 insert overwrite table test1_n10 select key from test_src_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_src_n0
 POSTHOOK: Input: default@test_src_n0@ds=101
 POSTHOOK: Input: default@test_src_n0@ds=102

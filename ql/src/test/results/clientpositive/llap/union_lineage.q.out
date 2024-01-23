@@ -251,7 +251,7 @@ WHEN lc.leaf_level = 12 THEN h.level12
 WHEN lc.leaf_level = 13 THEN h.level13
 END
 AND h.level14 <> lc.leaf_code) hh) hhh
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: db1@table1
 PREHOOK: Output: database:db1
@@ -423,7 +423,7 @@ WHEN lc.leaf_level = 12 THEN h.level12
 WHEN lc.leaf_level = 13 THEN h.level13
 END
 AND h.level14 <> lc.leaf_code) hh) hhh
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: db1@table1
 POSTHOOK: Output: database:db1

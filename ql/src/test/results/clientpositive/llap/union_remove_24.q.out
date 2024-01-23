@@ -30,7 +30,7 @@ SELECT * FROM
   UNION ALL
   SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1_n20 group by key
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n20
 PREHOOK: Output: default@outputtbl1_n28
 POSTHOOK: query: EXPLAIN
@@ -41,7 +41,7 @@ SELECT * FROM
   UNION ALL
   SELECT CAST(key AS BIGINT) AS key, count(1) as `values` FROM inputTbl1_n20 group by key
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n20
 POSTHOOK: Output: default@outputtbl1_n28
 STAGE DEPENDENCIES:

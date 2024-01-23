@@ -1,10 +1,10 @@
 WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

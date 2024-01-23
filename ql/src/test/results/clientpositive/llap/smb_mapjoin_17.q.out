@@ -166,7 +166,7 @@ JOIN test_table4_n1 d ON a.key = d.key
 JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n15
 PREHOOK: Input: default@test_table2_n14
 PREHOOK: Input: default@test_table3_n7
@@ -183,7 +183,7 @@ JOIN test_table4_n1 d ON a.key = d.key
 JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n15
 POSTHOOK: Input: default@test_table2_n14
 POSTHOOK: Input: default@test_table3_n7
@@ -526,7 +526,7 @@ LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n15
 PREHOOK: Input: default@test_table2_n14
 PREHOOK: Input: default@test_table3_n7
@@ -543,7 +543,7 @@ LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n15
 POSTHOOK: Input: default@test_table2_n14
 POSTHOOK: Input: default@test_table3_n7
@@ -836,7 +836,7 @@ LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n15
 PREHOOK: Input: default@test_table2_n14
 PREHOOK: Input: default@test_table3_n7
@@ -855,7 +855,7 @@ LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n15
 POSTHOOK: Input: default@test_table2_n14
 POSTHOOK: Input: default@test_table3_n7
@@ -1197,7 +1197,7 @@ LEFT OUTER JOIN test_table5 q ON a.key = q.key
 LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key
 LEFT OUTER JOIN test_table8 t ON a.key = t.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n15
 PREHOOK: Input: default@test_table2_n14
 PREHOOK: Input: default@test_table3_n7
@@ -1229,7 +1229,7 @@ LEFT OUTER JOIN test_table5 q ON a.key = q.key
 LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key
 LEFT OUTER JOIN test_table8 t ON a.key = t.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n15
 POSTHOOK: Input: default@test_table2_n14
 POSTHOOK: Input: default@test_table3_n7

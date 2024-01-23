@@ -37,11 +37,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hbase_table_1
 POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table_1
 STAGE DEPENDENCIES:
@@ -119,7 +119,7 @@ JOIN
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 ORDER BY key, value LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -131,7 +131,7 @@ JOIN
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 ORDER BY key, value LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -281,7 +281,7 @@ JOIN
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@hbase_table_2
 #### A masked pattern was here ####
@@ -293,7 +293,7 @@ JOIN
 (SELECT hbase_table_2.* FROM hbase_table_2 WHERE hbase_table_2.key < 120) Y
 ON (x.key = Y.key)
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@hbase_table_2
 #### A masked pattern was here ####
@@ -522,7 +522,7 @@ FROM
 JOIN 
 (SELECT src.key, count(src.key) as count FROM src GROUP BY src.key) Y
 ON (x.key = Y.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hbase_table_3
@@ -534,7 +534,7 @@ FROM
 JOIN 
 (SELECT src.key, count(src.key) as count FROM src GROUP BY src.key) Y
 ON (x.key = Y.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table_3

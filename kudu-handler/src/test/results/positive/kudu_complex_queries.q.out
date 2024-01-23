@@ -52,7 +52,7 @@ JOIN
 (SELECT src.* FROM src) y
 ON (x.key = y.key)
 ORDER BY key, value LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@kv_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -64,7 +64,7 @@ JOIN
 (SELECT src.* FROM src) y
 ON (x.key = y.key)
 ORDER BY key, value LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@kv_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -210,7 +210,7 @@ WHERE k.key > 100 and k.key % 2 = 0
 GROUP BY k.key
 ORDER BY min
 LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@kv_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -221,7 +221,7 @@ WHERE k.key > 100 and k.key % 2 = 0
 GROUP BY k.key
 ORDER BY min
 LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@kv_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

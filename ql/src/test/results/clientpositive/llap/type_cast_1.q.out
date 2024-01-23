@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN
 SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

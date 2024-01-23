@@ -94,7 +94,7 @@ insert overwrite table insert_a_adaptor
       IF(age>40, LENGTH(name), NULL),
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@student_10_lines
 PREHOOK: Output: default@insert_a_adaptor
 POSTHOOK: query: explain vectorization detail
@@ -110,7 +110,7 @@ insert overwrite table insert_a_adaptor
       IF(age>40, LENGTH(name), NULL),
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@student_10_lines
 POSTHOOK: Output: default@insert_a_adaptor
 Explain
@@ -274,7 +274,7 @@ insert overwrite table insert_a_good
       IF(age>40, LENGTH(name), NULL),
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@student_10_lines
 PREHOOK: Output: default@insert_a_good
 POSTHOOK: query: explain vectorization detail
@@ -290,7 +290,7 @@ insert overwrite table insert_a_good
       IF(age>40, LENGTH(name), NULL),
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@student_10_lines
 POSTHOOK: Output: default@insert_a_good
 Explain
@@ -454,7 +454,7 @@ insert overwrite table insert_a_better
       IF(age>40, LENGTH(name), NULL),
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@student_10_lines
 PREHOOK: Output: default@insert_a_better
 POSTHOOK: query: explain vectorization detail
@@ -470,7 +470,7 @@ insert overwrite table insert_a_better
       IF(age>40, LENGTH(name), NULL),
       IF(LENGTH(name)> 10, 2 * gpa, NULL)
     from student_10_lines
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@student_10_lines
 POSTHOOK: Output: default@insert_a_better
 Explain
@@ -634,7 +634,7 @@ insert overwrite table insert_b_adaptor
       IF(age>40, NULL, LENGTH(name)),
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@student_10_lines
 PREHOOK: Output: default@insert_b_adaptor
 POSTHOOK: query: explain vectorization detail
@@ -650,7 +650,7 @@ insert overwrite table insert_b_adaptor
       IF(age>40, NULL, LENGTH(name)),
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@student_10_lines
 POSTHOOK: Output: default@insert_b_adaptor
 Explain
@@ -814,7 +814,7 @@ insert overwrite table insert_b_good
       IF(age>40, NULL, LENGTH(name)),
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@student_10_lines
 PREHOOK: Output: default@insert_b_good
 POSTHOOK: query: explain vectorization detail
@@ -830,7 +830,7 @@ insert overwrite table insert_b_good
       IF(age>40, NULL, LENGTH(name)),
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@student_10_lines
 POSTHOOK: Output: default@insert_b_good
 Explain
@@ -994,7 +994,7 @@ insert overwrite table insert_b_better
       IF(age>40, NULL, LENGTH(name)),
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@student_10_lines
 PREHOOK: Output: default@insert_b_better
 POSTHOOK: query: explain vectorization detail
@@ -1010,7 +1010,7 @@ insert overwrite table insert_b_better
       IF(age>40, NULL, LENGTH(name)),
       IF(LENGTH(name)> 10, NULL, 2 * gpa)
     from student_10_lines
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@student_10_lines
 POSTHOOK: Output: default@insert_b_better
 Explain

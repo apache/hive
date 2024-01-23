@@ -189,13 +189,13 @@ POSTHOOK: Lineage: mv1_n1.name SIMPLE [(emps_n2)emps_n2.FieldSchema(name:name, t
 POSTHOOK: Lineage: mv1_n1.salary SIMPLE [(emps_n2)emps_n2.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name from emps_n2 where deptno >= 20 group by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select name from emps_n2 where deptno >= 20 group by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
@@ -301,14 +301,14 @@ POSTHOOK: Lineage: mv1_n1.salary SIMPLE [(emps_n2)emps_n2.FieldSchema(name:salar
 PREHOOK: query: explain
 select name, sum(empid) as s
 from emps_n2 where deptno > 15 group by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select name, sum(empid) as s
 from emps_n2 where deptno > 15 group by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
@@ -437,7 +437,7 @@ join locations_n1 on (locations_n1.name = dependents_n1.name)
 join emps_n2 on (emps_n2.deptno = depts_n1.deptno)
 where depts_n1.deptno > 11 and depts_n1.deptno < 19
 group by dependents_n1.empid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
@@ -452,7 +452,7 @@ join locations_n1 on (locations_n1.name = dependents_n1.name)
 join emps_n2 on (emps_n2.deptno = depts_n1.deptno)
 where depts_n1.deptno > 11 and depts_n1.deptno < 19
 group by dependents_n1.empid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@depts_n1
 POSTHOOK: Input: default@emps_n2
@@ -580,13 +580,13 @@ POSTHOOK: Lineage: mv1_n1.empid SIMPLE [(emps_n2)emps_n2.FieldSchema(name:empid,
 POSTHOOK: Lineage: mv1_n1.s EXPRESSION [(emps_n2)emps_n2.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select deptno from emps_n2 group by deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select deptno from emps_n2 group by deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
@@ -692,14 +692,14 @@ POSTHOOK: Lineage: mv1_n1.s EXPRESSION [(emps_n2)emps_n2.FieldSchema(name:empid,
 PREHOOK: query: explain
 select deptno, empid, sum(empid) as s, count(*) as c
 from emps_n2 group by empid, deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select deptno, empid, sum(empid) as s, count(*) as c
 from emps_n2 group by empid, deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
@@ -772,7 +772,7 @@ from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 group by dependents_n1.empid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
@@ -784,7 +784,7 @@ from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 group by dependents_n1.empid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@depts_n1
 POSTHOOK: Input: default@emps_n2
@@ -909,7 +909,7 @@ from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 group by depts_n1.name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
@@ -921,7 +921,7 @@ from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 group by depts_n1.name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@depts_n1
 POSTHOOK: Input: default@emps_n2
@@ -1082,7 +1082,7 @@ PREHOOK: query: explain
 select a.empid from 
 (select * from emps_n2 where empid = 1) a
 join dependents_n1 on (a.empid = dependents_n1.empid)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
@@ -1091,7 +1091,7 @@ POSTHOOK: query: explain
 select a.empid from 
 (select * from emps_n2 where empid = 1) a
 join dependents_n1 on (a.empid = dependents_n1.empid)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
@@ -1164,7 +1164,7 @@ PREHOOK: query: explain
 select a.empid from 
 (select * from emps_n2 where empid = 1) a
 join dependents_n1 on (a.empid = dependents_n1.empid)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
@@ -1173,7 +1173,7 @@ POSTHOOK: query: explain
 select a.empid from 
 (select * from emps_n2 where empid = 1) a
 join dependents_n1 on (a.empid = dependents_n1.empid)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
@@ -1238,13 +1238,13 @@ POSTHOOK: Output: default@mv1_n1
 POSTHOOK: Lineage: mv1_n1.deptno SIMPLE []
 PREHOOK: query: explain
 select empid from emps_n2 where empid = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid from emps_n2 where empid = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
 #### A masked pattern was here ####
@@ -1310,7 +1310,7 @@ PREHOOK: query: explain
 select emps_n2.empid from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 where emps_n2.empid = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
@@ -1319,7 +1319,7 @@ POSTHOOK: query: explain
 select emps_n2.empid from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 where emps_n2.empid = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
@@ -1394,7 +1394,7 @@ PREHOOK: query: explain
 select emps_n2.empid from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 where emps_n2.empid = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
@@ -1403,7 +1403,7 @@ POSTHOOK: query: explain
 select emps_n2.empid from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 where emps_n2.empid = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1
@@ -1477,7 +1477,7 @@ PREHOOK: query: explain
 select emps_n2.empid from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 where emps_n2.name = 'Sebastian'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@mv1_n1
@@ -1486,7 +1486,7 @@ POSTHOOK: query: explain
 select emps_n2.empid from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
 where emps_n2.name = 'Sebastian'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n1
 POSTHOOK: Input: default@emps_n2
 POSTHOOK: Input: default@mv1_n1

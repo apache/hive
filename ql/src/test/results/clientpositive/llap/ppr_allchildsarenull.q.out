@@ -6,7 +6,7 @@ SELECT
   ( CASE WHEN (value LIKE 'aaa%' OR value LIKE 'vvv%')
    THEN 1
    ELSE 0  end ) > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -19,7 +19,7 @@ SELECT
   ( CASE WHEN (value LIKE 'aaa%' OR value LIKE 'vvv%')
    THEN 1
    ELSE 0  end ) > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -150,7 +150,7 @@ SELECT
   ( CASE WHEN (value LIKE 'aaa%' OR value LIKE 'vvv%')
    THEN 1
    ELSE 0  end ) > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -165,7 +165,7 @@ SELECT
   ( CASE WHEN (value LIKE 'aaa%' OR value LIKE 'vvv%')
    THEN 1
    ELSE 0  end ) > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

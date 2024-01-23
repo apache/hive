@@ -79,11 +79,11 @@ POSTHOOK: Lineage: part_null_n1.p_retailprice EXPRESSION []
 POSTHOOK: Lineage: part_null_n1.p_size EXPRESSION []
 POSTHOOK: Lineage: part_null_n1.p_type EXPRESSION []
 PREHOOK: query: explain cbo select count(*) from part where p_partkey = ANY (select p_partkey from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey = ANY (select p_partkey from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -107,11 +107,11 @@ POSTHOOK: Input: default@part
 26
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey > ANY (select p_partkey from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey > ANY (select p_partkey from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -135,11 +135,11 @@ POSTHOOK: Input: default@part
 25
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey < ANY (select p_partkey from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey < ANY (select p_partkey from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -163,11 +163,11 @@ POSTHOOK: Input: default@part
 25
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -191,11 +191,11 @@ POSTHOOK: Input: default@part
 26
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey <= ANY (select p_partkey from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey <= ANY (select p_partkey from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -218,11 +218,11 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
 PREHOOK: query: explain cbo select count(*) from part where p_partkey = SOME(select min(p_partkey) from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey = SOME(select min(p_partkey) from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -248,11 +248,11 @@ POSTHOOK: Input: default@part
 1
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -346,11 +346,11 @@ POSTHOOK: Input: default@part_null_n0
 0
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -378,12 +378,12 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -416,13 +416,13 @@ Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reduc
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey 
 	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) from part where p_partkey 
 	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
@@ -603,11 +603,11 @@ POSTHOOK: Input: default@tempty
 90681	false
 NULL	false
 PREHOOK: query: explain select * from part where p_partkey > ANY (select p_partkey from part p where p.p_type = part.p_type)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_partkey > ANY (select p_partkey from part p where p.p_type = part.p_type)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -720,11 +720,11 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 PREHOOK: query: explain select p_partkey, (p_partkey >= ANY (select p_partkey from part pp where pp.p_type = part.p_name)) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey, (p_partkey >= ANY (select p_partkey from part pp where pp.p_type = part.p_name)) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -859,11 +859,11 @@ POSTHOOK: Input: default@part
 86428	false
 90681	false
 PREHOOK: query: explain select p_partkey, (p_partkey >= ANY (select p_partkey from part pp where pp.p_type = part.p_type and p_partkey < 0)) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey, (p_partkey >= ANY (select p_partkey from part pp where pp.p_type = part.p_type and p_partkey < 0)) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -998,11 +998,11 @@ POSTHOOK: Input: default@part
 86428	false
 90681	false
 PREHOOK: query: explain select p_partkey, (p_partkey >= ANY (select p_partkey from part pp where pp.p_type = part.p_type)) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey, (p_partkey >= ANY (select p_partkey from part pp where pp.p_type = part.p_type)) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1137,12 +1137,12 @@ POSTHOOK: Input: default@part
 86428	true
 90681	true
 PREHOOK: query: explain select p_partkey, (p_size >= ANY (select 3*p_size from part_null_n1 pp where pp.p_partkey = part.p_partkey)) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part_null_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey, (p_size >= ANY (select 3*p_size from part_null_n1 pp where pp.p_partkey = part.p_partkey)) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n1
 #### A masked pattern was here ####
@@ -1292,11 +1292,11 @@ POSTHOOK: Input: default@part_null_n1
 86428	false
 90681	false
 PREHOOK: query: explain select p_partkey, (p_partkey >= ANY (select min(p_partkey) from part pp where pp.p_type = part.p_name group by p_partkey)) from part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_partkey, (p_partkey >= ANY (select min(p_partkey) from part pp where pp.p_type = part.p_name group by p_partkey)) from part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1442,13 +1442,13 @@ POSTHOOK: Input: default@part
 90681	false
 PREHOOK: query: explain select * from part_null_n1 where p_name IN (select p_name from part where part.p_type = part_null_n1.p_type
                     AND p_size >= ANY(select p_size from part pp where part.p_type = pp.p_type))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part_null_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part_null_n1 where p_name IN (select p_name from part where part.p_type = part_null_n1.p_type
                     AND p_size >= ANY(select p_size from part pp where part.p_type = pp.p_type))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n1
 #### A masked pattern was here ####
@@ -1642,13 +1642,13 @@ POSTHOOK: Input: default@part_null_n1
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part_null_n1 where p_name IN (select p_name from part where part.p_type = part_null_n1.p_type)
                     AND p_size >= ANY(select p_size from part pp where part_null_n1.p_type = pp.p_type)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part_null_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part_null_n1 where p_name IN (select p_name from part where part.p_type = part_null_n1.p_type)
                     AND p_size >= ANY(select p_size from part pp where part_null_n1.p_type = pp.p_type)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n1
 #### A masked pattern was here ####

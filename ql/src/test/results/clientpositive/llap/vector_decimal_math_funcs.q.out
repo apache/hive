@@ -60,7 +60,7 @@ from decimal_test_n0
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_test_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -99,7 +99,7 @@ from decimal_test_n0
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_test_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -313,7 +313,7 @@ from decimal_test_small
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_test_small
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -352,7 +352,7 @@ from decimal_test_small
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_test_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

@@ -129,12 +129,12 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 484	1
 495	1
 PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=484
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n4
 PREHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=484
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n4
 POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
@@ -209,12 +209,12 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 484
 PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=495
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n4
 PREHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=495
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n4
 POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
@@ -289,12 +289,12 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 495
 PREHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n4
 PREHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT x FROM fact_daily_n4 WHERE ds='1' and x=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n4
 POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####

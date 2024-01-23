@@ -79,7 +79,7 @@ FROM
 test_1 
 ) t1 
 ON t2.member = t1.member
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_1
 PREHOOK: Input: default@test_2
 #### A masked pattern was here ####
@@ -99,7 +99,7 @@ FROM
 test_1 
 ) t1 
 ON t2.member = t1.member
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_1
 POSTHOOK: Input: default@test_2
 #### A masked pattern was here ####

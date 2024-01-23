@@ -6,7 +6,7 @@ from (
   union all 
   select key as key2, value as value2 from src) s
 order by s.key2, s.value2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
@@ -17,7 +17,7 @@ from (
   union all 
   select key as key2, value as value2 from src) s
 order by s.key2, s.value2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

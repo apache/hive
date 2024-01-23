@@ -9,13 +9,13 @@ POSTHOOK: Output: default@dest1_n19
 PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n19 SELECT DISTINCT substr(src.value,5,1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n19
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n19 SELECT DISTINCT substr(src.value,5,1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n19
 STAGE DEPENDENCIES:

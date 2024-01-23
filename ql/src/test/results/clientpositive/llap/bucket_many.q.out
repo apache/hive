@@ -9,13 +9,13 @@ POSTHOOK: Output: default@bucket_many
 PREHOOK: query: explain extended
 insert overwrite table bucket_many
 select * from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@bucket_many
 POSTHOOK: query: explain extended
 insert overwrite table bucket_many
 select * from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bucket_many
 OPTIMIZED SQL: SELECT `key`, `value`
@@ -238,12 +238,12 @@ POSTHOOK: Lineage: bucket_many.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: bucket_many.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select * from bucket_many tablesample (bucket 2 out of 256) s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_many
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from bucket_many tablesample (bucket 2 out of 256) s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_many
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

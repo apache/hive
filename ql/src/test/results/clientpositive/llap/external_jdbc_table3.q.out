@@ -176,13 +176,13 @@ POSTHOOK: Input: default@db1_ext_auth3_2
 40	50	-455.4543	330.767
 PREHOOK: query: EXPLAIN
 SELECT db1_ext_auth3_1.fkey, db1_ext_auth3_2.bkey FROM db1_ext_auth3_1 JOIN db1_ext_auth3_2 WHERE db1_ext_auth3_1.ikey = db1_ext_auth3_2.ikey AND db1_ext_auth3_1.ikey > 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth3_1
 PREHOOK: Input: default@db1_ext_auth3_2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT db1_ext_auth3_1.fkey, db1_ext_auth3_2.bkey FROM db1_ext_auth3_1 JOIN db1_ext_auth3_2 WHERE db1_ext_auth3_1.ikey = db1_ext_auth3_2.ikey AND db1_ext_auth3_1.ikey > 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth3_1
 POSTHOOK: Input: default@db1_ext_auth3_2
 #### A masked pattern was here ####
@@ -289,13 +289,13 @@ POSTHOOK: Input: default@db1_ext_auth3_2
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 SELECT bkey, fkey FROM db1_ext_auth3_1 WHERE ikey > 20 UNION ALL SELECT bkey, fkey FROM db1_ext_auth3_2 WHERE ikey > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@db1_ext_auth3_1
 PREHOOK: Input: default@db1_ext_auth3_2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT bkey, fkey FROM db1_ext_auth3_1 WHERE ikey > 20 UNION ALL SELECT bkey, fkey FROM db1_ext_auth3_2 WHERE ikey > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@db1_ext_auth3_1
 POSTHOOK: Input: default@db1_ext_auth3_2
 #### A masked pattern was here ####

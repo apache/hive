@@ -9,13 +9,13 @@ POSTHOOK: Output: default@dest_j1_n15
 PREHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1_n15 SELECT src1.key, src2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest_j1_n15
 POSTHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1_n15 SELECT src1.key, src2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_j1_n15
 STAGE DEPENDENCIES:

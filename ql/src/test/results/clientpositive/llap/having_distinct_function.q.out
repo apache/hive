@@ -32,14 +32,14 @@ PREHOOK: query: explain cbo
 select col0, count(distinct col1) from t
 group by col0
 having count(distinct col1) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select col0, count(distinct col1) from t
 group by col0
 having count(distinct col1) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:

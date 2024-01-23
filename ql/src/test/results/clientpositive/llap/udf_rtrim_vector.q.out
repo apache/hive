@@ -17,12 +17,12 @@ POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.col0 SCRIPT []
 PREHOOK: query: explain vectorization expression
 select rtrim(col0) from t1 group by col0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select rtrim(col0) from t1 group by col0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -149,12 +149,12 @@ POSTHOOK: Input: default@t1
 xyfacebookyyx
 PREHOOK: query: explain vectorization expression
 select rtrim(col0, 'xy') from t1 group by col0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select rtrim(col0, 'xy') from t1 group by col0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

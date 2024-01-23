@@ -70,7 +70,7 @@ PREHOOK: query: explain
  from daily
  left join weekly on daily.dateid = weekly.dateid
  left join monthly on daily.dateid = monthly.dateid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dimension_date
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -99,7 +99,7 @@ POSTHOOK: query: explain
  from daily
  left join weekly on daily.dateid = weekly.dateid
  left join monthly on daily.dateid = monthly.dateid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dimension_date
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

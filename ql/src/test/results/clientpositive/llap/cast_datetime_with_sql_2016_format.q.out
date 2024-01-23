@@ -246,11 +246,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: explain from strings    select cast (s as timestamp   format "yyy.mm.dd")
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@strings
 #### A masked pattern was here ####
 POSTHOOK: query: explain from strings    select cast (s as timestamp   format "yyy.mm.dd")
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@strings
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -269,11 +269,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain from strings    select cast (s as date        format "yyy.mm.dd")
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@strings
 #### A masked pattern was here ####
 POSTHOOK: query: explain from strings    select cast (s as date        format "yyy.mm.dd")
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@strings
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -292,11 +292,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain from timestamp1 select cast (t as string      format "yyyy")
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@timestamp1
 #### A masked pattern was here ####
 POSTHOOK: query: explain from timestamp1 select cast (t as string      format "yyyy")
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@timestamp1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -315,11 +315,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain from timestamp1 select cast (t as varchar(12) format "yyyy")
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@timestamp1
 #### A masked pattern was here ####
 POSTHOOK: query: explain from timestamp1 select cast (t as varchar(12) format "yyyy")
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@timestamp1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

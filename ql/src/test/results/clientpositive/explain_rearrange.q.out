@@ -31,7 +31,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n9
 PREHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####
@@ -52,7 +52,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n9
 POSTHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####
@@ -337,7 +337,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n9
 PREHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####
@@ -358,7 +358,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n9
 POSTHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####
@@ -643,7 +643,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n9
 PREHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####
@@ -664,7 +664,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n9
 POSTHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####
@@ -949,7 +949,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n9
 PREHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####
@@ -970,7 +970,7 @@ join
 ) src2
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n9
 POSTHOOK: Input: default@tbl2_n8
 #### A masked pattern was here ####

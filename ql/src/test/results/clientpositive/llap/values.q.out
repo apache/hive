@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN CBO
 VALUES(1,2,3),(4,5,6)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
 VALUES(1,2,3),(4,5,6)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
@@ -26,12 +26,12 @@ col1	col2	col3
 4	5	6
 PREHOOK: query: EXPLAIN CBO
 SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
 SELECT * FROM (VALUES(1,2,3),(4,5,6)) as foo
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
@@ -55,7 +55,7 @@ WITH t1 AS (VALUES('a', 'b'), ('b', 'c'))
 SELECT * FROM t1 WHERE col1 = 'a'
 UNION ALL
 SELECT * from t1 WHERE col1 = 'b'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -63,7 +63,7 @@ WITH t1 AS (VALUES('a', 'b'), ('b', 'c'))
 SELECT * FROM t1 WHERE col1 = 'a'
 UNION ALL
 SELECT * from t1 WHERE col1 = 'b'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
@@ -101,7 +101,7 @@ UNION ALL
 VALUES(2, 'b', NULL, 20.0)
 UNION ALL
 VALUES(3, 'c', NULL, 30.0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -110,7 +110,7 @@ UNION ALL
 VALUES(2, 'b', NULL, 20.0)
 UNION ALL
 VALUES(3, 'c', NULL, 30.0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain

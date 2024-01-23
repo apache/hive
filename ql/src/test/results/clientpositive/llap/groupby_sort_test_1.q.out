@@ -37,13 +37,13 @@ POSTHOOK: Output: default@outputTbl1_n35
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n35
 SELECT key, count(1) FROM T1_n164 GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n164
 PREHOOK: Output: default@outputtbl1_n35
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE outputTbl1_n35
 SELECT key, count(1) FROM T1_n164 GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n164
 POSTHOOK: Output: default@outputtbl1_n35
 STAGE DEPENDENCIES:

@@ -1,9 +1,9 @@
 PREHOOK: query: explain select cast('2011-01-01 01:01:01' as timestamp) as c from src union select cast('2011-01-01 01:01:01' as timestamp) as c from src limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cast('2011-01-01 01:01:01' as timestamp) as c from src union select cast('2011-01-01 01:01:01' as timestamp) as c from src limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -95,11 +95,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain extended select cast('2011-01-01 01:01:01' as timestamp) as c from src union select cast('2011-01-01 01:01:01' as timestamp) as c from src limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select cast('2011-01-01 01:01:01' as timestamp) as c from src union select cast('2011-01-01 01:01:01' as timestamp) as c from src limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(TIMESTAMP '2011-01-01 01:01:01.000000000' AS TIMESTAMP) AS `c`
@@ -309,11 +309,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2011-01-01 01:01:01
 PREHOOK: query: explain select cast('2011-01-01 01:01:01.123' as timestamp) as c from src union select cast('2011-01-01 01:01:01.123' as timestamp) as c from src limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cast('2011-01-01 01:01:01.123' as timestamp) as c from src union select cast('2011-01-01 01:01:01.123' as timestamp) as c from src limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

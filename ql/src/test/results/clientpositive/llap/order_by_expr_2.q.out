@@ -124,7 +124,7 @@ select store.store_name as c0, case store_name when 'HQ' then null else store_na
   from store as store
 group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
 order by case store_name when 'HQ' then null else store_name end ASC
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -133,7 +133,7 @@ select store.store_name as c0, case store_name when 'HQ' then null else store_na
   from store as store
 group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
 order by case store_name when 'HQ' then null else store_name end ASC
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store
 #### A masked pattern was here ####
 CBO PLAN:
@@ -168,7 +168,7 @@ select store.store_name as c0, case store_name when 'HQ' then null else store_na
   from store as store
 group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
 order by case store_name when 'hq' then null else store_name end ASC
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -177,7 +177,7 @@ select store.store_name as c0, case store_name when 'HQ' then null else store_na
   from store as store
 group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
 order by case store_name when 'hq' then null else store_name end ASC
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store
 #### A masked pattern was here ####
 CBO PLAN:
@@ -212,7 +212,7 @@ select store.store_name as c0, case store_name when 'HQ' then null else store_na
   from store as store
 group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
 order by c1 ASC
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -221,7 +221,7 @@ select store.store_name as c0, case store_name when 'HQ' then null else store_na
   from store as store
 group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
 order by c1 ASC
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store
 #### A masked pattern was here ####
 CBO PLAN:

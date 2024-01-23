@@ -17,11 +17,11 @@ POSTHOOK: Output: default@ccn_table
 POSTHOOK: Lineage: ccn_table.key SCRIPT []
 POSTHOOK: Lineage: ccn_table.value SCRIPT []
 PREHOOK: query: explain select * from ccn_table where key > '123a'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from ccn_table where key > '123a'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -51,11 +51,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from ccn_table where key <=> '123a'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from ccn_table where key <=> '123a'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -85,11 +85,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 PREHOOK: query: explain cbo select * from ccn_table where key > '123a'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from ccn_table where key > '123a'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 CBO PLAN:
@@ -104,11 +104,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 PREHOOK: query: explain cbo select * from ccn_table where key <=> '123a'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from ccn_table where key <=> '123a'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 CBO PLAN:

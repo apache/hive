@@ -108,7 +108,7 @@ PREHOOK: query: explain
 select empid from emps_n6
 join depts_n5 using (deptno) where depts_n5.deptno >= 20
 group by empid, depts_n5.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n5
 PREHOOK: Input: default@emps_n6
 #### A masked pattern was here ####
@@ -116,7 +116,7 @@ POSTHOOK: query: explain
 select empid from emps_n6
 join depts_n5 using (deptno) where depts_n5.deptno >= 20
 group by empid, depts_n5.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n5
 POSTHOOK: Input: default@emps_n6
 #### A masked pattern was here ####

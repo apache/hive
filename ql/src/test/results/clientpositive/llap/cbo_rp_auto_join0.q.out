@@ -9,7 +9,7 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
   SORT BY k1, v1, k2, v2
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -22,7 +22,7 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
   SORT BY k1, v1, k2, v2
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -137,7 +137,7 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
   SORT BY k1, v1, k2, v2
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -150,7 +150,7 @@ SELECT cbo_t1.key as k1, cbo_t1.value as v1,
   (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
   SORT BY k1, v1, k2, v2
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

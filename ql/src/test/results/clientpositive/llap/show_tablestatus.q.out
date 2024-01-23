@@ -1,9 +1,9 @@
 PREHOOK: query: EXPLAIN 
 SHOW TABLE EXTENDED IN default LIKE `src`
-PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN 
 SHOW TABLE EXTENDED IN default LIKE `src`
-POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

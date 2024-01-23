@@ -31,11 +31,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hive_20262
 POSTHOOK: Lineage: hive_20262.a EXPRESSION []
 PREHOOK: query: explain select explode(array(1,2,3,4,5)) as col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select explode(array(1,2,3,4,5)) as col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -60,11 +60,11 @@ STAGE PLANS:
                 ListSink
 
 PREHOOK: query: explain select explode(a) from HIVE_20262
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_20262
 #### A masked pattern was here ####
 POSTHOOK: query: explain select explode(a) from HIVE_20262
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_20262
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -89,12 +89,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select 1, r from HIVE_20262
       lateral view explode(a) t as r
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_20262
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 1, r from HIVE_20262
       lateral view explode(a) t as r
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_20262
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -128,11 +128,11 @@ STAGE PLANS:
                     ListSink
 
 PREHOOK: query: explain select explode(array(1,2,3,4,5)) as col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select explode(array(1,2,3,4,5)) as col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -157,11 +157,11 @@ STAGE PLANS:
                 ListSink
 
 PREHOOK: query: explain select explode(a) from HIVE_20262
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_20262
 #### A masked pattern was here ####
 POSTHOOK: query: explain select explode(a) from HIVE_20262
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_20262
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

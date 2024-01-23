@@ -29,7 +29,7 @@ PREHOOK: query: explain
 select count(*) from srcpart where ds = '2008-04-08' and hr = 11
 union 
 select count(*) from srcpart where key > '3'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -40,7 +40,7 @@ POSTHOOK: query: explain
 select count(*) from srcpart where ds = '2008-04-08' and hr = 11
 union 
 select count(*) from srcpart where key > '3'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -184,7 +184,7 @@ select count(*) from srcpart
   join t on (srcpart.ds = t.ds and srcpart.hr = t.hr)
 union 
 select count(*) from srcpart where key > '3'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -197,7 +197,7 @@ select count(*) from srcpart
   join t on (srcpart.ds = t.ds and srcpart.hr = t.hr)
 union 
 select count(*) from srcpart where key > '3'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

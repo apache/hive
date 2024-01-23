@@ -9,13 +9,13 @@ POSTHOOK: Output: default@dest4_sequencefile
 PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest4_sequencefile
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest4_sequencefile
 STAGE DEPENDENCIES:

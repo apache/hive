@@ -186,13 +186,13 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain extended
 select * from fact_daily_n3 where ds = '1' and  hr='1' and key='145'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n3
 PREHOOK: Input: default@fact_daily_n3@ds=1/hr=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from fact_daily_n3 where ds = '1' and  hr='1' and key='145'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=1
 #### A masked pattern was here ####
@@ -268,12 +268,12 @@ POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=1
 145	val_145	1	1
 PREHOOK: query: explain extended
 select count(*) from fact_daily_n3 where ds = '1' and  hr='1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select count(*) from fact_daily_n3 where ds = '1' and  hr='1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n3
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
@@ -300,13 +300,13 @@ POSTHOOK: Input: default@fact_daily_n3
 500
 PREHOOK: query: explain extended
 SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='2' and (key='484' and value='val_484')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n3
 PREHOOK: Input: default@fact_daily_n3@ds=1/hr=2
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='2' and (key='484' and value='val_484')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=2
 #### A masked pattern was here ####
@@ -382,13 +382,13 @@ POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=2
 484	val_484	1	2
 PREHOOK: query: explain extended
 SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='3' and (key='327' and value='val_327')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fact_daily_n3
 PREHOOK: Input: default@fact_daily_n3@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='3' and (key='327' and value='val_327')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=3
 #### A masked pattern was here ####

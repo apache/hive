@@ -35,11 +35,11 @@ POSTHOOK: Output: default@text_test
 POSTHOOK: Lineage: text_test.col1 SIMPLE [(orc_test_n0)orc_test_n0.FieldSchema(name:col1, type:varchar(15), comment:null), ]
 POSTHOOK: Lineage: text_test.col2 SIMPLE [(orc_test_n0)orc_test_n0.FieldSchema(name:col2, type:char(10), comment:null), ]
 PREHOOK: query: explain select * from text_test where col2='1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@text_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from text_test where col2='1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@text_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

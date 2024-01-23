@@ -34,7 +34,7 @@ WHERE  ((762 = cbigint)
                AND ((cstring2 != 'a')
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -73,7 +73,7 @@ WHERE  ((762 = cbigint)
                AND ((cstring2 != 'a')
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -315,7 +315,7 @@ WHERE  (((cbigint <= 197)
             AND (cstring1 RLIKE '.*ss.*'))
            OR ((cfloat > 79.553)
                AND (cstring2 LIKE '10%')))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -351,7 +351,7 @@ WHERE  (((cbigint <= 197)
             AND (cstring1 RLIKE '.*ss.*'))
            OR ((cfloat > 79.553)
                AND (cstring2 LIKE '10%')))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -577,7 +577,7 @@ WHERE  ((ctimestamp1 = ctimestamp2)
               OR ((cboolean1 IS NOT NULL)
                   AND ((ctimestamp2 IS NOT NULL)
                        AND (cstring2 > 'a'))))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -612,7 +612,7 @@ WHERE  ((ctimestamp1 = ctimestamp2)
               OR ((cboolean1 IS NOT NULL)
                   AND ((ctimestamp2 IS NOT NULL)
                        AND (cstring2 > 'a'))))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -827,7 +827,7 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
         OR ((csmallint < ctinyint)
             AND (ctimestamp1 >= 0))
            OR (cfloat = 17))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -852,7 +852,7 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
         OR ((csmallint < ctinyint)
             AND (ctimestamp1 >= 0))
            OR (cfloat = 17))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1061,7 +1061,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
                AND (ctinyint > cbigint)))
 ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 50
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -1100,7 +1100,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
                AND (ctinyint > cbigint)))
 ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 50
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1374,7 +1374,7 @@ WHERE  (((197 > ctinyint)
                AND (cfloat <= ctinyint)))
 ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15
 LIMIT 25
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -1412,7 +1412,7 @@ WHERE  (((197 > ctinyint)
                AND (cfloat <= ctinyint)))
 ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15
 LIMIT 25
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1636,7 +1636,7 @@ WHERE    (((csmallint > -26.28)
                  AND (-26.28 <= csmallint)))
 ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 75
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -1673,7 +1673,7 @@ WHERE    (((csmallint > -26.28)
                  AND (-26.28 <= csmallint)))
 ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 75
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1962,7 +1962,7 @@ WHERE    (((-1.389 >= cint)
                  AND (10.175 > cbigint)))
 ORDER BY csmallint, cstring2, cdouble, cfloat, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 45
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -1992,7 +1992,7 @@ WHERE    (((-1.389 >= cint)
                  AND (10.175 > cbigint)))
 ORDER BY csmallint, cstring2, cdouble, cfloat, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 45
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2229,7 +2229,7 @@ WHERE    (((csmallint >= -257))
 GROUP BY csmallint
 ORDER BY csmallint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -2252,7 +2252,7 @@ WHERE    (((csmallint >= -257))
 GROUP BY csmallint
 ORDER BY csmallint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2526,7 +2526,7 @@ WHERE    (((cdouble > 2563.58))
                       AND (-5638.15 > cbigint))))
 GROUP BY cdouble
 ORDER BY cdouble
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -2556,7 +2556,7 @@ WHERE    (((cdouble > 2563.58))
                       AND (-5638.15 > cbigint))))
 GROUP BY cdouble
 ORDER BY cdouble
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2827,7 +2827,7 @@ WHERE    (((ctimestamp1 != 0))
 GROUP BY ctimestamp1, cstring1
 ORDER BY ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37
 LIMIT 50
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -2885,7 +2885,7 @@ WHERE    (((ctimestamp1 != 0))
 GROUP BY ctimestamp1, cstring1
 ORDER BY ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37
 LIMIT 50
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3270,7 +3270,7 @@ WHERE    (((cboolean1 IS NOT NULL))
                       AND (ctimestamp2 IS NULL))))
 GROUP BY cboolean1
 ORDER BY cboolean1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -3313,7 +3313,7 @@ WHERE    (((cboolean1 IS NOT NULL))
                       AND (ctimestamp2 IS NULL))))
 GROUP BY cboolean1
 ORDER BY cboolean1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3566,12 +3566,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_count
 PREHOOK: query: explain vectorization expression
 select count(*) from test_count
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_count
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from test_count
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_count
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3685,12 +3685,12 @@ POSTHOOK: Input: default@test_count
 0
 PREHOOK: query: explain vectorization expression
 select count(i) from test_count
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_count
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(i) from test_count
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_count
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3880,12 +3880,12 @@ POSTHOOK: Lineage: alltypesnullorc.ctimestamp2 SIMPLE [(alltypesnull)alltypesnul
 POSTHOOK: Lineage: alltypesnullorc.ctinyint SIMPLE [(alltypesnull)alltypesnull.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: explain vectorization expression
 select count(*) from alltypesnullorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from alltypesnullorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -3999,12 +3999,12 @@ POSTHOOK: Input: default@alltypesnullorc
 12288
 PREHOOK: query: explain vectorization expression
 select count(ctinyint) from alltypesnullorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(ctinyint) from alltypesnullorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4120,12 +4120,12 @@ POSTHOOK: Input: default@alltypesnullorc
 0
 PREHOOK: query: explain vectorization expression
 select count(cint) from alltypesnullorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cint) from alltypesnullorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4241,12 +4241,12 @@ POSTHOOK: Input: default@alltypesnullorc
 0
 PREHOOK: query: explain vectorization expression
 select count(cfloat) from alltypesnullorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cfloat) from alltypesnullorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4362,12 +4362,12 @@ POSTHOOK: Input: default@alltypesnullorc
 0
 PREHOOK: query: explain vectorization expression
 select count(cstring1) from alltypesnullorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cstring1) from alltypesnullorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -4483,12 +4483,12 @@ POSTHOOK: Input: default@alltypesnullorc
 0
 PREHOOK: query: explain vectorization expression
 select count(cboolean1) from alltypesnullorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(cboolean1) from alltypesnullorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesnullorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

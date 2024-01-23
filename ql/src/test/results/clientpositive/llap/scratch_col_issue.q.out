@@ -97,7 +97,7 @@ WHERE
           SPLIT('8800', ',')
         )
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@scratch_col_issue
 #### A masked pattern was here ####
@@ -125,7 +125,7 @@ WHERE
           SPLIT('8800', ',')
         )
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@scratch_col_issue
 #### A masked pattern was here ####

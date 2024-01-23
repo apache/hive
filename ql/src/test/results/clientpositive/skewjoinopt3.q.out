@@ -36,13 +36,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2_n7
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n12 a JOIN T2_n7 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n12
 PREHOOK: Input: default@t2_n7
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n12 a JOIN T2_n7 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n12
 POSTHOOK: Input: default@t2_n7
 #### A masked pattern was here ####
@@ -211,13 +211,13 @@ POSTHOOK: Input: default@t2_n7
 8	28	8	18
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n12 a FULL OUTER JOIN T2_n7 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n12
 PREHOOK: Input: default@t2_n7
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n12 a FULL OUTER JOIN T2_n7 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n12
 POSTHOOK: Input: default@t2_n7
 #### A masked pattern was here ####

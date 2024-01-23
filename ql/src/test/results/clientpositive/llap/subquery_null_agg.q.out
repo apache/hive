@@ -25,7 +25,7 @@ FROM table_7
 ) tt1
 WHERE
 (t1.int_col) = (tt1.int_col))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@table_7
 #### A masked pattern was here ####
@@ -47,7 +47,7 @@ FROM table_7
 ) tt1
 WHERE
 (t1.int_col) = (tt1.int_col))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@table_7
 #### A masked pattern was here ####

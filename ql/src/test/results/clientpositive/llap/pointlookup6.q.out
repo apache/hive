@@ -43,14 +43,14 @@ POSTHOOK: Lineage: l_table.string_col SCRIPT []
 PREHOOK: query: explain cbo
 SELECT l_table.string_col from l_table, r_table
 WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111', 'BBB222') AND r_table.string_col IN ('AAA111', 'BBB222')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@l_table
 PREHOOK: Input: default@r_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT l_table.string_col from l_table, r_table
 WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111', 'BBB222') AND r_table.string_col IN ('AAA111', 'BBB222')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@l_table
 POSTHOOK: Input: default@r_table
 #### A masked pattern was here ####

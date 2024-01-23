@@ -57,7 +57,7 @@ INSERT OVERWRITE TABLE test_table3_n5 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n8 a JOIN test_table2_n8 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n8
 PREHOOK: Input: default@test_table1_n8@ds=1
 PREHOOK: Input: default@test_table2_n8
@@ -68,7 +68,7 @@ INSERT OVERWRITE TABLE test_table3_n5 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n8 a JOIN test_table2_n8 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n8
 POSTHOOK: Input: default@test_table1_n8@ds=1
 POSTHOOK: Input: default@test_table2_n8
@@ -298,7 +298,7 @@ FROM
 JOIN 
 (select key, value from test_table2_n8 where ds = '1') b 
 ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n8
 PREHOOK: Input: default@test_table1_n8@ds=1
 PREHOOK: Input: default@test_table2_n8
@@ -312,7 +312,7 @@ FROM
 JOIN 
 (select key, value from test_table2_n8 where ds = '1') b 
 ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n8
 POSTHOOK: Input: default@test_table1_n8@ds=1
 POSTHOOK: Input: default@test_table2_n8

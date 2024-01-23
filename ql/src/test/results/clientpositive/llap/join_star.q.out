@@ -127,12 +127,12 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@dim7
 PREHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dim1
 PREHOOK: Input: default@fact
 #### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dim1
 POSTHOOK: Input: default@fact
 #### A masked pattern was here ####
@@ -235,13 +235,13 @@ POSTHOOK: Input: default@fact
 81	82	3
 91	92	3
 PREHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dim1
 PREHOOK: Input: default@dim2
 PREHOOK: Input: default@fact
 #### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dim1
 POSTHOOK: Input: default@dim2
 POSTHOOK: Input: default@fact
@@ -379,13 +379,13 @@ POSTHOOK: Input: default@fact
 81	82	3	4
 91	92	3	4
 PREHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dim1
 PREHOOK: Input: default@dim2
 PREHOOK: Input: default@fact
 #### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dim1
 POSTHOOK: Input: default@dim2
 POSTHOOK: Input: default@fact
@@ -523,13 +523,13 @@ POSTHOOK: Input: default@fact
 81	82	3	3
 91	92	3	3
 PREHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dim1
 PREHOOK: Input: default@dim2
 PREHOOK: Input: default@fact
 #### A masked pattern was here ####
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dim1
 POSTHOOK: Input: default@dim2
 POSTHOOK: Input: default@fact
@@ -670,7 +670,7 @@ PREHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
  Left outer join dim5 on  dim4.f8= dim5.f9
  Left outer Join dim6 on  dim3.f6= dim6.f11
  Left outer Join dim7 on  dim6.f12 = dim7.f13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dim1
 PREHOOK: Input: default@dim2
 PREHOOK: Input: default@dim3
@@ -689,7 +689,7 @@ POSTHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
  Left outer join dim5 on  dim4.f8= dim5.f9
  Left outer Join dim6 on  dim3.f6= dim6.f11
  Left outer Join dim7 on  dim6.f12 = dim7.f13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dim1
 POSTHOOK: Input: default@dim2
 POSTHOOK: Input: default@dim3

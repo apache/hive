@@ -56,7 +56,7 @@ f1
 from union_all_bug_test_2
 ) A
 WHERE (filter = 1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@union_all_bug_test_1
 PREHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####
@@ -76,7 +76,7 @@ f1
 from union_all_bug_test_2
 ) A
 WHERE (filter = 1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@union_all_bug_test_1
 POSTHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####
@@ -322,7 +322,7 @@ f1
 from union_all_bug_test_2
 ) A
 WHERE (f1 = 1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@union_all_bug_test_1
 PREHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####
@@ -344,7 +344,7 @@ f1
 from union_all_bug_test_2
 ) A
 WHERE (f1 = 1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@union_all_bug_test_1
 POSTHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####

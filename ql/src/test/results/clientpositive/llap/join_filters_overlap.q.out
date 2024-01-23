@@ -11,11 +11,11 @@ POSTHOOK: Output: default@a_n4
 POSTHOOK: Lineage: a_n4.key SIMPLE []
 POSTHOOK: Lineage: a_n4.value SCRIPT []
 PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
@@ -289,11 +289,11 @@ POSTHOOK: Input: default@a_n4
 100	50	100	50	NULL	NULL
 100	60	NULL	NULL	100	60
 PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
@@ -567,11 +567,11 @@ POSTHOOK: Input: default@a_n4
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
 PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
@@ -845,11 +845,11 @@ POSTHOOK: Input: default@a_n4
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
 PREHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t0`.`key` AS `key1`, `t0`.`value` AS `value1`, `t2`.`key` AS `key2`, `t2`.`value` AS `value2`, `t4`.`key` AS `key3`, `t4`.`value` AS `value3`
@@ -1161,11 +1161,11 @@ POSTHOOK: Input: default@a_n4
 NULL	NULL	100	40	NULL	NULL	NULL	NULL
 NULL	NULL	100	60	100	60	NULL	NULL
 PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`, `t5`.`key` AS `key3`, `t5`.`value` AS `value3`

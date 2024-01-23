@@ -41,11 +41,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@explain_npe_struct
 PREHOOK: query: explain select c1 from explain_npe_map where c1 is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@explain_npe_map
 #### A masked pattern was here ####
 POSTHOOK: query: explain select c1 from explain_npe_map where c1 is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@explain_npe_map
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -67,11 +67,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select c1 from explain_npe_array where c1 is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@explain_npe_array
 #### A masked pattern was here ####
 POSTHOOK: query: explain select c1 from explain_npe_array where c1 is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@explain_npe_array
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -93,11 +93,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select c1 from explain_npe_struct where c1 is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@explain_npe_struct
 #### A masked pattern was here ####
 POSTHOOK: query: explain select c1 from explain_npe_struct where c1 is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@explain_npe_struct
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -119,11 +119,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select c1 from explain_npe_map where c1 is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@explain_npe_map
 #### A masked pattern was here ####
 POSTHOOK: query: explain select c1 from explain_npe_map where c1 is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@explain_npe_map
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -145,11 +145,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select c1 from explain_npe_array where c1 is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@explain_npe_array
 #### A masked pattern was here ####
 POSTHOOK: query: explain select c1 from explain_npe_array where c1 is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@explain_npe_array
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -171,11 +171,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select c1 from explain_npe_struct where c1 is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@explain_npe_struct
 #### A masked pattern was here ####
 POSTHOOK: query: explain select c1 from explain_npe_struct where c1 is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@explain_npe_struct
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

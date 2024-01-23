@@ -6,7 +6,7 @@ where src.key not in
   ( select key  from src s1 
     where s1.key > '2'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -16,7 +16,7 @@ where src.key not in
   ( select key  from src s1 
     where s1.key > '2'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -304,7 +304,7 @@ where b.p_name not in
   from (select p_mfgr, p_name, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
   where r <= 2 and b.p_mfgr = a.p_mfgr 
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -315,7 +315,7 @@ where b.p_name not in
   from (select p_mfgr, p_name, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
   where r <= 2 and b.p_mfgr = a.p_mfgr 
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -590,7 +590,7 @@ part where part.p_size not in
   from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
   where r <= 2
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -601,7 +601,7 @@ part where part.p_size not in
   from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
   where r <= 2
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -886,7 +886,7 @@ from part b where b.p_size not in
   from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a
   where r <= 2 and b.p_mfgr = a.p_mfgr
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -896,7 +896,7 @@ from part b where b.p_size not in
   from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a
   where r <= 2 and b.p_mfgr = a.p_mfgr
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1460,7 +1460,7 @@ Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Sta
 PREHOOK: query: explain
 select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1_v
 PREHOOK: Input: default@t2_v
@@ -1468,7 +1468,7 @@ PREHOOK: Input: default@t2_v
 POSTHOOK: query: explain
 select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_v
 POSTHOOK: Input: default@t2_v
@@ -1645,11 +1645,11 @@ POSTHOOK: Input: default@t1_v
 POSTHOOK: Input: default@t2_v
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select (p_size*p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select (p_size*p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1847,11 +1847,11 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2070,11 +2070,11 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey) from part group by p_type)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey) from part group by p_type)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2287,11 +2287,11 @@ POSTHOOK: Input: default@part
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain cbo select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -2312,11 +2312,11 @@ HiveAggregate(group=[{}], agg#0=[count()])
               HiveTableScan(table=[[default, part]], table:alias=[part])
 
 PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2502,11 +2502,11 @@ POSTHOOK: Input: default@part
 26
 Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2703,11 +2703,11 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 PREHOOK: query: explain cbo select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -2728,11 +2728,11 @@ HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4],
               HiveTableScan(table=[[default, part]], table:alias=[p])
 
 PREHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2922,11 +2922,11 @@ POSTHOOK: Input: default@part
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3088,11 +3088,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 PREHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type+2 from part where part.p_brand = fpart.brand)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type+2 from part where part.p_brand = fpart.brand)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3262,11 +3262,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 PREHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3463,11 +3463,11 @@ almond azure aquamarine papaya violet
 almond azure blanched chiffon midnight
 Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select key, count(*) from src where value NOT IN (select key from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, count(*) from src where value NOT IN (select key from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3756,11 +3756,11 @@ POSTHOOK: Input: default@src
 70	3
 90	3
 PREHOOK: query: explain select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4060,11 +4060,11 @@ POSTHOOK: Input: default@src
 90	3
 Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4283,11 +4283,11 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand, p_partkey limit 4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand, p_partkey limit 4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4503,12 +4503,12 @@ POSTHOOK: Input: default@part
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -5247,11 +5247,11 @@ POSTHOOK: Input: default@src
 98	val_98
 98	val_98
 PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 not in ( select p_type from part where p_brand = e.p_brand)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) as c from part as e where p_size + 100 not in ( select p_type from part where p_brand = e.p_brand)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -5472,12 +5472,12 @@ POSTHOOK: Output: default@t2_n0
 POSTHOOK: Lineage: t2_n0.c1 SCRIPT []
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n0
 PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n0
 POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
@@ -5646,12 +5646,12 @@ POSTHOOK: Input: default@t1_n0
 POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain cbo SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n0
 PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n0
 POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
@@ -5675,12 +5675,12 @@ HiveProject(c1=[$0])
                 HiveTableScan(table=[[default, t2_n0]], table:alias=[t2_n0])
 
 PREHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n0
 PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n0
 POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
@@ -5925,12 +5925,12 @@ POSTHOOK: Output: default@t2_n0
 POSTHOOK: Lineage: t2_n0.a SCRIPT []
 POSTHOOK: Lineage: t2_n0.b SCRIPT []
 PREHOOK: query: explain select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n0
 PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n0
 POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
@@ -6159,12 +6159,12 @@ POSTHOOK: Output: default@fixob
 POSTHOOK: Lineage: fixob.i SCRIPT []
 POSTHOOK: Lineage: fixob.j SCRIPT []
 PREHOOK: query: explain select * from fixOb where j NOT IN (select i from t7 where t7.j=fixOb.j)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@fixob
 PREHOOK: Input: default@t7
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from fixOb where j NOT IN (select i from t7 where t7.j=fixOb.j)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@fixob
 POSTHOOK: Input: default@t7
 #### A masked pattern was here ####
@@ -6376,11 +6376,11 @@ POSTHOOK: Output: default@t_n0
 POSTHOOK: Lineage: t_n0.i SCRIPT []
 POSTHOOK: Lineage: t_n0.j SCRIPT []
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -6545,11 +6545,11 @@ POSTHOOK: Input: default@t_n0
 4
 7
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -6713,11 +6713,11 @@ POSTHOOK: Input: default@t_n0
 7
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -6880,11 +6880,11 @@ POSTHOOK: Input: default@t_n0
 4
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -7056,7 +7056,7 @@ where b.key not in
          from src a
          where b.value > a.value and a.key > '9'
         )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -7066,7 +7066,7 @@ where b.key not in
          from src a
          where b.value > a.value and a.key > '9'
         )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
