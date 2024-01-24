@@ -100,7 +100,7 @@ Stage-3
             Select Operator [SEL_25] (rows=1 width=4)
               Output:["_col0"]
               Filter Operator [FIL_24] (rows=1 width=4)
-                predicate:colnum is not null
+                predicate:UDFToDouble(colnum) is not null
                 TableScan [TS_8] (rows=1 width=4)
                   mydb@q1,a,Tbl:COMPLETE,Col:COMPLETE,Output:["colnum"]
         <-Map 4 [SIMPLE_EDGE] vectorized, llap
@@ -109,7 +109,7 @@ Stage-3
             Select Operator [SEL_28] (rows=1 width=184)
               Output:["_col0"]
               Filter Operator [FIL_27] (rows=1 width=184)
-                predicate:key is not null
+                predicate:UDFToDouble(key) is not null
                 TableScan [TS_11] (rows=1 width=184)
                   default@q1,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
         Stage-2

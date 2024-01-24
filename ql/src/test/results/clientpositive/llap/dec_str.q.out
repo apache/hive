@@ -100,9 +100,9 @@ STAGE PLANS:
         TableScan
           alias: t1
           Filter Operator
-            predicate: (a = null) (type: boolean)
+            predicate: false (type: boolean)
             Select Operator
-              expressions: null (type: decimal(3,1))
+              expressions: a (type: decimal(3,1))
               outputColumnNames: _col0
               ListSink
 
@@ -125,9 +125,9 @@ STAGE PLANS:
         TableScan
           alias: t1
           Filter Operator
-            predicate: (a = null) (type: boolean)
+            predicate: false (type: boolean)
             Select Operator
-              expressions: null (type: decimal(3,1))
+              expressions: a (type: decimal(3,1))
               outputColumnNames: _col0
               ListSink
 
