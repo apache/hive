@@ -22,4 +22,4 @@ where col2 = "Абвгде"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@non_ascii_literal2
 #### A masked pattern was here ####
-谢谢	Абвгде
+谢谢	??????

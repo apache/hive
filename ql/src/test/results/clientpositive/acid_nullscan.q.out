@@ -49,12 +49,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid_vectorized_n1
-            Statistics: Num rows: 11 Data size: 25960 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 26020 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(a)
                 mode: hash
