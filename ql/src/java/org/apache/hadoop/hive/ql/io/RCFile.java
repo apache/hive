@@ -72,7 +72,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * data of a row split, as the key part of a record, and all the data of a row
  * split as the value part. When writing, RCFile.Writer first holds records'
  * value bytes in memory, and determines a row split if the raw bytes size of
- * buffered records overflow a given parameter<tt>Writer.columnsBufferSize</tt>,
+ * buffered records overflow a given parameter<code>Writer.columnsBufferSize</code>,
  * which can be set like: <code>conf.setInt(COLUMNS_BUFFER_SIZE_CONF_STR,
           4 * 1024 * 1024)</code> .
  * <p>

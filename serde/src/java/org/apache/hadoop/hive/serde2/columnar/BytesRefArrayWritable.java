@@ -28,13 +28,13 @@ import org.apache.hadoop.io.WritableFactories;
 import org.apache.hadoop.io.WritableFactory;
 
 /**
- * <tt>BytesRefArrayWritable</tt> holds an array reference to BytesRefWritable,
+ * <code>BytesRefArrayWritable</code> holds an array reference to BytesRefWritable,
  * and is able to resize without recreating new array if not necessary.
  * <p>
  *
- * Each <tt>BytesRefArrayWritable holds</tt> instance has a <i>valid</i> field,
- * which is the desired valid number of <tt>BytesRefWritable</tt> it holds.
- * <tt>resetValid</tt> can reset the valid, but it will not care the underlying
+ * Each <code>BytesRefArrayWritable holds</code> instance has a <i>valid</i> field,
+ * which is the desired valid number of <code>BytesRefWritable</code> it holds.
+ * <code>resetValid</code> can reset the valid, but it will not care the underlying
  * BytesRefWritable.
  */
 

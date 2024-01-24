@@ -204,7 +204,7 @@ public class ColumnType {
 
   /**
    * Given a type string return the type name.  For example, passing in the type string
-   * <tt>varchar(256)</tt> will return <tt>varchar</tt>.
+   * <code>varchar(256)</code> will return <code>varchar</code>.
    * @param typeString Type string
    * @return type name, guaranteed to be in lower case
    */

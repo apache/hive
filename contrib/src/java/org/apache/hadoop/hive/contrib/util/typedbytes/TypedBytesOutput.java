@@ -342,7 +342,7 @@ public class TypedBytesOutput {
   }
 
   /**
-   * Writes a <tt>NULL</tt> type marker to the output.
+   * Writes a <code>NULL</code> type marker to the output.
    *
    * @throws IOException
    */

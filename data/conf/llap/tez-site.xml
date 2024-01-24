@@ -7,7 +7,7 @@
 
   <property>
     <name>tez.am.resource.memory.mb</name>
-    <value>128</value>
+    <value>512</value>
   </property>
   <property>
     <name>tez.runtime.io.sort.mb</name>
@@ -20,6 +20,11 @@
   <property>
     <name>tez.runtime.shuffle.fetch.buffer.percent</name>
     <value>0.4</value>
+  </property>
+
+  <property>
+    <name>hive.tez.container.size</name>
+    <value>1024</value>
   </property>
 
   <!-- Fail fast during tests -->

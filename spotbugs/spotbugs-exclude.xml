@@ -41,6 +41,11 @@
     <Package name="org.apache.hadoop.hive.ql.exec.vector.expressions.gen" />
   </Match>
   <Match>
+    <Class name="org.apache.hadoop.hive.common.AcidMetaDataFile"/>
+    <Method name="writeToFile"/>
+    <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+  </Match>
+  <Match>
     <Class name="~org.apache.hadoop.hive.ql.plan.api.*" />
   </Match>
 </FindBugsFilter>

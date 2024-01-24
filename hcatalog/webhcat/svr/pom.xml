@@ -265,6 +265,17 @@
                   <artifactId>xercesImpl</artifactId>
                   <version>${xerces.version}</version>
                 </docletArtifact>
+                <!--JDK-11 doesn't have these now, so need to be explicitly added-->
+                <docletArtifact>
+                  <groupId>jakarta.xml.bind</groupId>
+                  <artifactId>jakarta.xml.bind-api</artifactId>
+                  <version>2.3.2</version>
+                </docletArtifact>
+                <docletArtifact>
+                  <groupId>org.glassfish.jaxb</groupId>
+                  <artifactId>jaxb-runtime</artifactId>
+                  <version>2.3.2</version>
+                </docletArtifact>
               </docletArtifacts>
               <additionalOptions>
                 <additionalOption>-output ${project.build.outputDirectory}/resourcedoc.xml</additionalOption>
