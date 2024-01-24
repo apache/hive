@@ -410,6 +410,27 @@ final class HMSBenchmarks {
     }
   }
 
+  static DescriptiveStatistics benchmarkGetPartitionsByFilter(@NotNull MicroBenchmark bench,
+                                                              @NotNull BenchData data,
+                                                              int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+    try {
+      addManyPartitionsNoException(client, dbName, tableName, null,
+              Collections.singletonList("d"), count);
+      return bench.measure(
+          () ->
+              throwingSupplierWrapper(() ->
+                  client.getPartitionsByFilter(dbName, tableName, "`date`='d0'"))
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
   static DescriptiveStatistics benchmarkRenameTable(@NotNull MicroBenchmark bench,
                                                     @NotNull BenchData data,
                                                     int count) {

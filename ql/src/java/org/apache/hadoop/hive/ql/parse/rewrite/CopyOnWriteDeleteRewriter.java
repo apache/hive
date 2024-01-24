@@ -65,7 +65,8 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
     sqlGenerator.append(sqlGenerator.getTargetTableFullName());
 
     // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.
-    sqlGenerator.append("\nwhere NOT (").append(whereClause).append(")");
+    sqlGenerator.append("\nwhere ");
+    sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", whereClause));
     sqlGenerator.append("\n");
     // Add the file path filter that matches the delete condition.
     sqlGenerator.append("AND ").append(filePathCol);
