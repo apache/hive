@@ -700,7 +700,8 @@ public class TestHive {
       hm.createPartition(table, partitionSpec);
     }
 
-    assertEquals(3, hm.getPartitions(table).size());
+    List<Partition> partitions = hm.getPartitions(table);
+    assertEquals(3, partitions.size());
 
     // drop partitions by filter with missing predicate
     try {
@@ -722,43 +723,6 @@ public class TestHive {
     } finally {
       cleanUpTableQuietly(dbName, tableName);
     }
-  }
-
-  @Test
-  public void testDropPartitionsByNames() throws Throwable {
-    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
-    String tableName = "table_for_testDropPartitionsByNames";
-
-    Table table = createPartitionedTable(dbName, tableName);
-    for (int i = 10; i <= 12; i++) {
-      Map<String, String> partitionSpec = new ImmutableMap.Builder<String, String>()
-          .put("ds", "20231129")
-          .put("hr", String.valueOf(i))
-          .build();
-      hm.createPartition(table, partitionSpec);
-    }
-
-    List<Partition> partitions = hm.getPartitions(table);
-    assertEquals(3, partitions.size());
-
-    List<String> names = Arrays.asList("ds=20231129/hr=10");
-    hm.dropPartitionsByNames(dbName, tableName, names, PartitionDropOptions.instance());
-    assertEquals(2, hm.getPartitions(table).size());
-
-    try {
-      // drop missing partition name
-      names = Arrays.asList("ds=20231129/hr=10", "ds=20231129/hr=11");
-      hm.dropPartitionsByNames(dbName, tableName, names, PartitionDropOptions.instance());
-      fail("Expected exception");
-    } catch (HiveException e) {
-      // expected
-      assertEquals("Some partitions to drop are missing", e.getCause().getMessage());
-      assertEquals(2, hm.getPartitions(table).size());
-    }
-
-    names = Arrays.asList("ds=20231129/hr=12", "ds=20231129/hr=11");
-    hm.dropPartitionsByNames(dbName, tableName, names, PartitionDropOptions.instance());
-    assertEquals(0, hm.getPartitions(table).size());
   }
 
   /**

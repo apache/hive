@@ -3626,37 +3626,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      RequestPartsSpec partsSpec, PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<Partition> dropPartitionsByNames(String dbName, String tblName,
-      List<String> partitionNames, PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException {
-    RequestPartsSpec rps = new RequestPartsSpec();
-    rps.setNames(partitionNames);
-    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
-    req.setDeleteData(options.deleteData);
-    req.setNeedResult(options.returnResults);
-    req.setIfExists(options.ifExists);
-    if (options.purgeData) {
-      LOG.info("Dropped partitions will be purged!");
-      req.setEnvironmentContext(getEnvironmentContextWithIfPurgeSet());
-    }
-    return client.drop_partitions_req(req).getPartitions();
-  }
-
-  @Override
-  public List<Partition> dropPartitionsByNames(String catName, String dbName, String tblName,
-      List<String> partitionNames, PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public boolean dropPartition(String catName, String db_name, String tbl_name, String name,
                                boolean deleteData) throws NoSuchObjectException, MetaException,
       TException {
