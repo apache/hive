@@ -33,6 +33,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LatestTxnIdInConflictHandler implements QueryHandler<Long> {
+
+  private static final List<String> OPERATION_TYPES;
+  
+  static {
+    OPERATION_TYPES = new ArrayList<>(2);
+    OPERATION_TYPES.add(OperationType.UPDATE.getSqlConst());
+    OPERATION_TYPES.add(OperationType.DELETE.getSqlConst());
+  }
   
   private final long txnId;
 
@@ -66,12 +74,9 @@ public class LatestTxnIdInConflictHandler implements QueryHandler<Long> {
 
   @Override
   public SqlParameterSource getQueryParameters() {
-    List<String> types = new ArrayList<>(2);
-    types.add(OperationType.UPDATE.getSqlConst());
-    types.add(OperationType.DELETE.getSqlConst());
     return new MapSqlParameterSource()
         .addValue("txnId", txnId)
-        .addValue("types", types, Types.CHAR)
+        .addValue("types", OPERATION_TYPES, Types.CHAR)
         .addValue("wsType", OperationType.INSERT.getSqlConst(), Types.CHAR);        
   }
 

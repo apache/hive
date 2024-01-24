@@ -107,12 +107,12 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
   public OnRenameFunction(String oldCatName, String oldDbName, String oldTabName, String oldPartName, 
                           String newCatName, String newDbName, String newTabName, String newPartName) {
     this.oldCatName = oldCatName;
-    this.oldDbName = oldDbName;
-    this.oldTabName = oldTabName;
+    this.oldDbName = StringUtils.lowerCase(oldDbName);
+    this.oldTabName = StringUtils.lowerCase(oldTabName);
     this.oldPartName = oldPartName;
     this.newCatName = newCatName;
-    this.newDbName = newDbName;
-    this.newTabName = newTabName;
+    this.newDbName = StringUtils.lowerCase(newDbName);
+    this.newTabName = StringUtils.lowerCase(newTabName);
     this.newPartName = newPartName;
   }
 
@@ -134,10 +134,10 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
     }
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource()
-        .addValue("oldDbName", StringUtils.lowerCase(oldDbName), Types.VARCHAR)
-        .addValue("newDbName", StringUtils.lowerCase(newDbName), Types.VARCHAR)
-        .addValue("oldTableName", StringUtils.lowerCase(oldTabName), Types.VARCHAR)
-        .addValue("newTableName", StringUtils.lowerCase(newTabName), Types.VARCHAR)
+        .addValue("oldDbName", oldDbName, Types.VARCHAR)
+        .addValue("newDbName", newDbName, Types.VARCHAR)
+        .addValue("oldTableName", oldTabName, Types.VARCHAR)
+        .addValue("newTableName", newTabName, Types.VARCHAR)
         .addValue("oldPartName", oldPartName, Types.VARCHAR)
         .addValue("newPartName", newPartName, Types.VARCHAR);
     try {
