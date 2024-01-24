@@ -264,6 +264,22 @@ sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	replication_failover_failback_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_failover_failback_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_failover_failback_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -781,6 +797,45 @@ partitions	part_id
 partitions	part_name
 partitions	sd_id
 partitions	tbl_id
+proto_hive_query_data	eventtype
+proto_hive_query_data	executionmode
+proto_hive_query_data	hivequeryid
+proto_hive_query_data	operationid
+proto_hive_query_data	otherinfo
+proto_hive_query_data	queue
+proto_hive_query_data	requestuser
+proto_hive_query_data	tablesread
+proto_hive_query_data	tableswritten
+proto_hive_query_data	timestamp
+proto_hive_query_data	user
+proto_tez_app_data	app_attempt_id
+proto_tez_app_data	app_id
+proto_tez_app_data	dag_id
+proto_tez_app_data	event_data
+proto_tez_app_data	event_time
+proto_tez_app_data	event_type
+proto_tez_app_data	task_attempt_id
+proto_tez_app_data	task_id
+proto_tez_app_data	user
+proto_tez_app_data	vertex_id
+proto_tez_dag_data	app_attempt_id
+proto_tez_dag_data	app_id
+proto_tez_dag_data	dag_id
+proto_tez_dag_data	event_data
+proto_tez_dag_data	event_time
+proto_tez_dag_data	event_type
+proto_tez_dag_data	task_attempt_id
+proto_tez_dag_data	task_id
+proto_tez_dag_data	user
+proto_tez_dag_data	vertex_id
+proto_tez_dag_meta	app_file_path
+proto_tez_dag_meta	app_id
+proto_tez_dag_meta	app_launched_event_offset
+proto_tez_dag_meta	dag_file_path
+proto_tez_dag_meta	dag_finished_event_offset
+proto_tez_dag_meta	dag_id
+proto_tez_dag_meta	dag_submitted_event_offset
+proto_tez_dag_meta	writetime
 replication_failover_failback_metrics	db_name
 replication_failover_failback_metrics	db_repl_metrics_name
 replication_failover_failback_metrics	db_repl_metrics_value
@@ -1124,6 +1179,10 @@ POSTHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_keys
 #### A masked pattern was here ####
+date	string
+date	string
+date	string
+date	string
 PREHOOK: query: select part_key_val, integer_idx from partition_key_vals order by part_key_val, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_key_vals
@@ -1308,7 +1367,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-79
+83
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1327,9 +1386,9 @@ POSTHOOK: Input: sys@serdes
 #### A masked pattern was here ####
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
-NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+NULL	org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe
+NULL	org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe
+NULL	org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe
 PREHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serde_params
@@ -1732,6 +1791,10 @@ default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	proto_hive_query_data	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	proto_tez_app_data	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	proto_tez_dag_data	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	proto_tez_dag_meta	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	replication_failover_failback_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	replication_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	replication_metrics_orig	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
