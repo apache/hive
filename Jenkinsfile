@@ -86,7 +86,7 @@ set -x
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx4G"
 export -n HIVE_CONF_DIR
-sw java 17
+sw java 17 && . /etc/profile.d/java.sh
 cp $SETTINGS .git/settings.xml
 OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
 OPTS+=" -Pitests,qsplits,dist,iceberg"
