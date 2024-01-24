@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.llap.security;
 
 import java.io.IOException;
 import java.security.MessageDigest;
-import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
