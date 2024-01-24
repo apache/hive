@@ -249,7 +249,6 @@
         <configuration>
           <skip>${validate.skip}</skip>
           <java>
-            <removeUnusedImports/>
             <importOrder>
               <!-- normal imports, static imports -->
               <order>,\# </order>
