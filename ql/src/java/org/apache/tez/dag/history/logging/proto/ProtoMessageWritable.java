@@ -96,6 +96,9 @@ public class ProtoMessageWritable<T extends MessageLite> implements Writable {
       cin = CodedInputStream.newInstance(din);
       cin.setSizeLimit(Integer.MAX_VALUE);
     }
+    if (din.in != in) {
+      cin.resetSizeCounter();
+    }
     din.in = in;
     message = cin.readMessage(parser, ExtensionRegistryLite.newInstance());
   }
