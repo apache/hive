@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.security;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
@@ -58,7 +59,9 @@ public class LlapSignerImpl implements LlapSigner {
   public void checkSignature(byte[] message, byte[] signature, int keyId)
       throws SecurityException {
     byte[] expectedSignature = secretManager.signWithKey(message, keyId);
-    if (Arrays.equals(signature, expectedSignature)) return;
+    if (MessageDigest.isEqual(signature, expectedSignature)) {
+      return;
+    }
     throw new SecurityException("Message signature does not match");
   }
 
