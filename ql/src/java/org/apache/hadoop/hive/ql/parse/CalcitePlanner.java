@@ -204,6 +204,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
@@ -589,7 +590,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             // 1. Convert Plan to AST
             ASTNode newAST = getOptimizedAST(newPlan);
-
+            LOG.info("NEW AST {}", newAST.dump());
             // 1.1. Fix up the query for insert/ctas/materialized views
             newAST = fixUpAfterCbo(ast, newAST, cboCtx);
 
@@ -632,7 +633,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // unfortunately making prunedPartitions immutable is not possible
             // here with SemiJoins not all tables are costed in CBO, so their
             // PartitionList is not evaluated until the run phase.
-            getMetaData(getQB());
+            getMetaData(getQB(), true);
 
             disableJoinMerge = defaultJoinMerge;
             sinkOp = genPlan(getQB());
@@ -1744,6 +1745,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.HIVE_SORT_PREDICATES);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
+      }
+      if (System.getProperty("cte.rewrite.disable") == null) {
+        conf.setIntVar(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, 0);
+        calcitePlan = CteRewriteRule.rewrite(calcitePlan);
       }
       return calcitePlan;
     }
