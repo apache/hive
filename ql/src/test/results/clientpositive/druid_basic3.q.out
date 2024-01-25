@@ -229,7 +229,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames language,a
             druid.fieldTypes string,double
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" + CAST(100, 'DOUBLE'))"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" + 100)"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -429,7 +429,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames language,a,c
             druid.fieldTypes string,double,double
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" + CAST(100, 'DOUBLE'))"},{"type":"expression","name":"c","expression":"((\"$f1\" + CAST(100, 'DOUBLE')) - \"$f2\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"}],"limitSpec":{"type":"default","columns":[{"dimension":"a","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"a","expression":"(\"$f1\" + 100)"},{"type":"expression","name":"c","expression":"((\"$f1\" + 100) - \"$f2\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
