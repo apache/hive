@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -199,29 +200,53 @@ public class PlanMapper {
   }
 
   private void link(Object o1, Object o2, boolean mayMerge) {
-    final EquivGroup group1 = objectMap.get(o1);
-    final EquivGroup group2 = objectMap.get(o2);
-    if (group1 != null && group2 != null && group1 != group2) {
+
+    Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
+    keySet.add(o1);
+    keySet.add(o2);
+    keySet.add(getKeyFor(o1));
+    keySet.add(getKeyFor(o2));
+
+    Set<EquivGroup> mGroups = Collections.newSetFromMap(new IdentityHashMap<EquivGroup, Boolean>());
+
+    for (Object object : keySet) {
+      EquivGroup group = objectMap.get(object);
+      if (group != null) {
+        mGroups.add(group);
+      }
+    }
+    if (mGroups.size() > 1) {
       if (!mayMerge) {
         throw new RuntimeException("equivalence mapping violation");
       }
       EquivGroup newGrp = new EquivGroup();
       newGrp.add(o1);
       newGrp.add(o2);
-      group1.members.forEach(newGrp::add);
-      group2.members.forEach(newGrp::add);
+      for (EquivGroup g : mGroups) {
+        for (Object o : g.members) {
+          newGrp.add(o);
+        }
+      }
       groups.add(newGrp);
-      groups.remove(group1);
-      groups.remove(group2);
+      groups.removeAll(mGroups);
     } else {
-      EquivGroup targetGroup = group1 != null ? group1 : (group2 != null ? group2 : new EquivGroup());
+      EquivGroup targetGroup = mGroups.isEmpty() ? new EquivGroup() : mGroups.iterator().next();
       groups.add(targetGroup);
       targetGroup.add(o1);
       targetGroup.add(o2);
     }
+
   }
 
   private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
+
+  private Object getKeyFor(Object o) {
+    if (o instanceof Operator) {
+      Operator<?> operator = (Operator<?>) o;
+      return signatureCache.getSignature(operator);
+    }
+    return o;
+  }
 
   public <T> List<T> getAll(Class<T> clazz) {
     List<T> ret = new ArrayList<>();
@@ -229,6 +254,12 @@ public class PlanMapper {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
+  }
+
+  public void runMapper(GroupTransformer mapper) {
+    for (EquivGroup equivGroup : groups) {
+      mapper.map(equivGroup);
+    }
   }
 
   public <T> List<T> lookupAll(Class<T> clazz, Object key) {
