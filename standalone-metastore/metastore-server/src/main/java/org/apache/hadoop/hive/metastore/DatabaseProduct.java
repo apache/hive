@@ -789,13 +789,13 @@ public class DatabaseProduct implements Configurable {
    * with Derby database.  See more notes at class level.
    */
   public void lockInternal() {
-    if(isDERBY()) {
+    if (isDERBY()) {
       derbyLock.lock();
     }
   }
 
   public void unlockInternal() {
-    if(isDERBY()) {
+    if (isDERBY()) {
       derbyLock.unlock();
     }
   }

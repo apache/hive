@@ -139,12 +139,13 @@ class DirectSqlUpdatePart {
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
             partIdList, "\"PART_ID\"", true, false);
 
-    for (String query : queries) {
-      LOG.debug("Going to execute query " + query);
-      try (Statement statement = dbConn.createStatement();
-           ResultSet rs = statement.executeQuery(query)) {
-        while (rs.next()) {
-          selectedParts.add(new PartColNameInfo(rs.getLong(1), rs.getString(2), rs.getString(3)));
+    try (Statement statement = dbConn.createStatement()) {
+      for (String query : queries) {
+        LOG.debug("Execute query: " + query);
+        try (ResultSet rs = statement.executeQuery(query)) {
+          while (rs.next()) {
+            selectedParts.add(new PartColNameInfo(rs.getLong(1), rs.getString(2), rs.getString(3)));
+          }
         }
       }
     }
@@ -196,13 +197,13 @@ class DirectSqlUpdatePart {
           partIds.add(partColNameInfo.partitionId);
           pst.addBatch();
           if (partIds.size() == maxBatchSize) {
-            LOG.debug("Going to execute updates on part: {}", partIds);
+            LOG.debug("Execute updates on part: {}", partIds);
             verifyUpdates(pst.executeBatch(), partIds);
             partIds = new ArrayList<>();
           }
         }
         if (!partIds.isEmpty()) {
-          LOG.debug("Going to execute updates on part: {}", partIds);
+          LOG.debug("Execute updates on part: {}", partIds);
           verifyUpdates(pst.executeBatch(), partIds);
         }
       }
@@ -287,15 +288,17 @@ class DirectSqlUpdatePart {
             partIdList, "\"PART_ID\"", true, false);
 
     Map<Long, String> partIdToParaMap = new HashMap<>();
-    for (String query : queries) {
-      LOG.debug("Going to execute query " + query);
-      try (Statement statement = dbConn.createStatement();
-           ResultSet rs = statement.executeQuery(query)) {
-        while (rs.next()) {
-          partIdToParaMap.put(rs.getLong(1), rs.getString(2));
+    try (Statement statement = dbConn.createStatement()) {
+      for (String query : queries) {
+        LOG.debug("Execute query: " + query);
+        try (ResultSet rs = statement.executeQuery(query)) {
+          while (rs.next()) {
+            partIdToParaMap.put(rs.getLong(1), rs.getString(2));
+          }
         }
       }
     }
+
     return partIdToParaMap;
   }
 
@@ -308,9 +311,9 @@ class DirectSqlUpdatePart {
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
             partIdList, "\"PART_ID\"", false, false);
 
-    for (String query : queries) {
-      LOG.debug("Going to execute update " + query);
-      try (Statement statement = dbConn.createStatement()) {
+    try (Statement statement = dbConn.createStatement()) {
+      for (String query : queries) {
+        LOG.debug("Execute update: " + query);
         statement.executeUpdate(query);
       }
     }
@@ -451,16 +454,17 @@ class DirectSqlUpdatePart {
     TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
             partKeys, "\"PART_NAME\"", true, false);
 
-    for (String query : queries) {
-      // Select for update makes sure that the partitions are not modified while the stats are getting updated.
-      query = sqlGenerator.addForUpdateClause(query);
-      LOG.debug("Going to execute query <" + query + ">");
-      try (Statement statement = dbConn.createStatement();
-           ResultSet rs = statement.executeQuery(query)) {
-        while (rs.next()) {
-          PartitionInfo partitionInfo = new PartitionInfo(rs.getLong(1),
-                  rs.getLong(2), rs.getString(3));
-          partitionInfoMap.put(partitionInfo, partColStatsMap.get(rs.getString(3)));
+    try (Statement statement = dbConn.createStatement()) {
+      for (String query : queries) {
+        // Select for update makes sure that the partitions are not modified while the stats are getting updated.
+        query = sqlGenerator.addForUpdateClause(query);
+        LOG.debug("Execute query: " + query);
+        try (ResultSet rs = statement.executeQuery(query)) {
+          while (rs.next()) {
+            PartitionInfo partitionInfo = new PartitionInfo(rs.getLong(1),
+                rs.getLong(2), rs.getString(3));
+            partitionInfoMap.put(partitionInfo, partColStatsMap.get(rs.getString(3)));
+          }
         }
       }
     }
@@ -552,7 +556,7 @@ class DirectSqlUpdatePart {
     Connection dbConn = null;
     JDOConnection jdoConn = null;
 
-    try {
+    try (Statement statement = dbConn.createStatement()) {
       dbType.lockInternal();
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
@@ -567,9 +571,8 @@ class DirectSqlUpdatePart {
         String query = sqlGenerator.addForUpdateClause("SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" "
                 + "WHERE \"SEQUENCE_NAME\"= "
                 + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics"));
-        LOG.debug("Going to execute query " + query);
-        try (Statement statement = dbConn.createStatement();
-             ResultSet rs = statement.executeQuery(query)) {
+        LOG.debug("Execute query: " + query);
+        try (ResultSet rs = statement.executeQuery(query)) {
           if (rs.next()) {
             maxCsId = rs.getLong(1);
           } else if (insertDone) {
@@ -579,8 +582,8 @@ class DirectSqlUpdatePart {
             query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
                     + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1
                     + ")";
-            try (Statement stmt = dbConn.createStatement()) {
-              stmt.executeUpdate(query);
+            try {
+              statement.executeUpdate(query);
             } catch (SQLException e) {
               // If the record is already inserted by some other thread continue to select.
               if (dbType.isDuplicateKeyError(e)) {
@@ -594,13 +597,11 @@ class DirectSqlUpdatePart {
       }
 
       long nextMaxCsId = maxCsId + numStats + 1;
-      try (Statement statement = dbConn.createStatement()) {
-        String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
-                + nextMaxCsId
-                + " WHERE \"SEQUENCE_NAME\" = "
-                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
-        statement.executeUpdate(query);
-      }
+      String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
+              + nextMaxCsId
+              + " WHERE \"SEQUENCE_NAME\" = "
+              + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
+      statement.executeUpdate(query);
       dbConn.commit();
       committed = true;
       return maxCsId;
