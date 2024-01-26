@@ -5094,26 +5094,22 @@ public class ObjectStore implements RawStore, Configurable {
     if (validWriteIds != null && writeId > 0) {
       return null; // We have txn context.
     }
-    String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
-    String newVal = newP == null ? null : newP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
-    // We don't need txn context is that stats state is not being changed.
-    if (StringUtils.isEmpty(oldVal) && StringUtils.isEmpty(newVal)) {
+
+    if (!StatsSetupConst.areBasicStatsUptoDate(newP)) {
+      // The validWriteIds can be absent, for example, in case of Impala alter.
+      // If the new value is invalid, then we don't care, let the alter operation go ahead.
       return null;
     }
+
+    String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+    String newVal = newP == null ? null : newP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
     if (StringUtils.equalsIgnoreCase(oldVal, newVal)) {
       if (!isColStatsChange) {
         return null; // No change in col stats or parameters => assume no change.
       }
-      // Col stats change while json stays "valid" implies stats change. If the new value is invalid,
-      // then we don't care. This is super ugly and idiotic.
-      // It will all become better when we get rid of JSON and store a flag and write ID per stats.
-      if (!StatsSetupConst.areBasicStatsUptoDate(newP)) {
-        return null;
-      }
     }
+
     // Some change to the stats state is being made; it can only be made with a write ID.
-    // Note - we could do this:  if (writeId > 0 && (validWriteIds != null || !StatsSetupConst.areBasicStatsUptoDate(newP))) { return null;
-    //       However the only way ID list can be absent is if WriteEntity wasn't generated for the alter, which is a separate bug.
     return "Cannot change stats state for a transactional table " + fullTableName + " without " +
             "providing the transactional write state for verification (new write ID " +
             writeId + ", valid write IDs " + validWriteIds + "; current state " + oldVal + "; new" +
