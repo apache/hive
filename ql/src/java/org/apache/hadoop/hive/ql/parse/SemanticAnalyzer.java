@@ -3769,11 +3769,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new FilterDesc(filterCond, false), new RowSchema(
             inputRR.getColumnInfos()), input), inputRR);
 
-    // This could be already linked to two groups.
-    // - The `condn` is always linked to a group with the equivalent RelNode
-    // - The `output` could be linked to a group of another Operator based on its signature
-    //     - This case happens when CTEs are materialized and `CalcitePlanner#analyzeInternal` is invoked multiple times
-    ctx.getPlanMapper().merge(condn, output);
+    ctx.getPlanMapper().link(condn, output);
 
     LOG.debug("Created Filter Plan for {} row schema: {}", qb.getId(), inputRR.toString());
     return output;
