@@ -3273,7 +3273,7 @@ public class StatsRulesProcFactory {
 
     PlanMapper pm = context.getPlanMapper();
     OpTreeSignature treeSig = pm.getSignatureOf(op);
-    pm.merge(op, treeSig);
+    pm.link(op, treeSig);
 
     StatsSource statsSource = context.getStatsSource();
     if (!statsSource.canProvideStatsFor(op.getClass())) {
