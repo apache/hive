@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -200,53 +199,45 @@ public class PlanMapper {
   }
 
   private void link(Object o1, Object o2, boolean mayMerge) {
+    // Caches signatures on the first access. A signature of an Operator could change as optimizers could mutate it,
+    // keeping its semantics. The current implementation caches the signature before optimizations so that we can
+    // link Operators with their signatures at consistent timing.
+    registerSignature(o1);
+    registerSignature(o2);
+    final EquivGroup linkedGroup1 = objectMap.get(o1);
+    final EquivGroup linkedGroup2 = objectMap.get(o2);
 
-    Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
-    keySet.add(o1);
-    keySet.add(o2);
-    keySet.add(getKeyFor(o1));
-    keySet.add(getKeyFor(o2));
-
-    Set<EquivGroup> mGroups = Collections.newSetFromMap(new IdentityHashMap<EquivGroup, Boolean>());
-
-    for (Object object : keySet) {
-      EquivGroup group = objectMap.get(object);
-      if (group != null) {
-        mGroups.add(group);
-      }
+    if (linkedGroup1 == null && linkedGroup2 == null) {
+      final EquivGroup group = new EquivGroup();
+      group.add(o1);
+      group.add(o2);
+      groups.add(group);
+      return;
     }
-    if (mGroups.size() > 1) {
-      if (!mayMerge) {
-        throw new RuntimeException("equivalence mapping violation");
-      }
-      EquivGroup newGrp = new EquivGroup();
-      newGrp.add(o1);
-      newGrp.add(o2);
-      for (EquivGroup g : mGroups) {
-        for (Object o : g.members) {
-          newGrp.add(o);
-        }
-      }
-      groups.add(newGrp);
-      groups.removeAll(mGroups);
-    } else {
-      EquivGroup targetGroup = mGroups.isEmpty() ? new EquivGroup() : mGroups.iterator().next();
-      groups.add(targetGroup);
-      targetGroup.add(o1);
-      targetGroup.add(o2);
+    if (linkedGroup1 == null || linkedGroup2 == null || linkedGroup1 == linkedGroup2) {
+      final EquivGroup group = linkedGroup1 != null ? linkedGroup1 : linkedGroup2;
+      group.add(o1);
+      group.add(o2);
+      return;
     }
 
+    if (!mayMerge) {
+      throw new RuntimeException(String.format(
+          "Failed to link %s and %s. This error mostly means a bug of Hive",
+          o1, o2
+      ));
+    }
+    EquivGroup newGrp = new EquivGroup();
+    newGrp.add(o1);
+    newGrp.add(o2);
+    linkedGroup1.members.forEach(newGrp::add);
+    linkedGroup2.members.forEach(newGrp::add);
+    groups.add(newGrp);
+    groups.remove(linkedGroup1);
+    groups.remove(linkedGroup2);
   }
 
   private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
-
-  private Object getKeyFor(Object o) {
-    if (o instanceof Operator) {
-      Operator<?> operator = (Operator<?>) o;
-      return signatureCache.getSignature(operator);
-    }
-    return o;
-  }
 
   public <T> List<T> getAll(Class<T> clazz) {
     List<T> ret = new ArrayList<>();
@@ -254,12 +245,6 @@ public class PlanMapper {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
-  }
-
-  public void runMapper(GroupTransformer mapper) {
-    for (EquivGroup equivGroup : groups) {
-      mapper.map(equivGroup);
-    }
   }
 
   public <T> List<T> lookupAll(Class<T> clazz, Object key) {
@@ -286,8 +271,13 @@ public class PlanMapper {
   }
 
   public OpTreeSignature getSignatureOf(Operator<?> op) {
-    OpTreeSignature sig = signatureCache.getSignature(op);
-    return sig;
+    return signatureCache.getSignature(op);
+  }
+
+  private void registerSignature(Object o) {
+    if (o instanceof Operator) {
+      getSignatureOf((Operator<?>) o);
+    }
   }
 
   public void clearSignatureCache() {
