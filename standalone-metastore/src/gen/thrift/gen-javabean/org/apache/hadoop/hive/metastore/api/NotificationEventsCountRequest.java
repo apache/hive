@@ -23,10 +23,7 @@ package org.apache.hadoop.hive.metastore.api;
   private long fromEventId; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
-  private static final int __TOEVENTID_ISSET_ID = 1;
-  private static final int __LIMIT_ISSET_ID = 2;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.TO_EVENT_ID,_Fields.LIMIT};
-
+  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   // isset id assignments
   private static final int __FROMEVENTID_ISSET_ID = 0;
 
@@ -47,9 +44,28 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   private long toEventId; // optional
-  private byte __isset_bitfield = 0;
+  private static final int __TOEVENTID_ISSET_ID = 1;
+  private static final int __LIMIT_ISSET_ID = 2;
   private long limit; // optional
-  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.TO_EVENT_ID,_Fields.LIMIT};
+  private byte __isset_bitfield = 0;
+  public NotificationEventsCountRequest() {
+  }
+
+  public NotificationEventsCountRequest(
+    long fromEventId,
+    java.lang.String dbName)
+  {
+    this();
+    this.fromEventId = fromEventId;
+    setFromEventIdIsSet(true);
+    this.dbName = dbName;
+  }
+
+  public NotificationEventsCountRequest deepCopy() {
+    return new NotificationEventsCountRequest(this);
+  }
+
   /**
    * Performs a deep copy on <i>other</i>.
    */
@@ -66,17 +82,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.limit = other.limit;
   }
 
-  public NotificationEventsCountRequest() {
-  }
-
-  public NotificationEventsCountRequest(
-    long fromEventId,
-    java.lang.String dbName)
-  {
-    this();
-    this.fromEventId = fromEventId;
-    setFromEventIdIsSet(true);
-    this.dbName = dbName;
+  public long getToEventId() {
+    return this.toEventId;
   }
 
   @Override
@@ -89,14 +96,6 @@ package org.apache.hadoop.hive.metastore.api;
     this.toEventId = 0;
     setLimitIsSet(false);
     this.limit = 0;
-  }
-
-  public NotificationEventsCountRequest deepCopy() {
-    return new NotificationEventsCountRequest(this);
-  }
-
-  public long getToEventId() {
-    return this.toEventId;
   }
 
   public long getFromEventId() {
@@ -167,6 +166,15 @@ package org.apache.hadoop.hive.metastore.api;
     if (!value) {
       this.catName = null;
     }
+  }
+
+  @Override
+  public boolean equals(java.lang.Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof NotificationEventsCountRequest)
+      return this.equals((NotificationEventsCountRequest)that);
+    return false;
   }
 
   public void setToEventId(long toEventId) {
@@ -297,6 +305,11 @@ package org.apache.hadoop.hive.metastore.api;
     throw new java.lang.IllegalStateException();
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
+  }
+
   public boolean equals(NotificationEventsCountRequest that) {
     if (that == null)
       return false;
@@ -349,15 +362,6 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     return true;
-  }
-
-  @Override
-  public boolean equals(java.lang.Object that) {
-    if (that == null)
-      return false;
-    if (that instanceof NotificationEventsCountRequest)
-      return this.equals((NotificationEventsCountRequest)that);
-    return false;
   }
 
   @Override
@@ -446,53 +450,6 @@ package org.apache.hadoop.hive.metastore.api;
     return 0;
   }
 
-  @Override
-  public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("NotificationEventsCountRequest(");
-    boolean first = true;
-
-    sb.append("fromEventId:");
-    sb.append(this.fromEventId);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("dbName:");
-    if (this.dbName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.dbName);
-    }
-    first = false;
-    if (isSetCatName()) {
-      if (!first) sb.append(", ");
-      sb.append("catName:");
-      if (this.catName == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.catName);
-      }
-      first = false;
-    }
-    if (isSetToEventId()) {
-      if (!first) sb.append(", ");
-      sb.append("toEventId:");
-      sb.append(this.toEventId);
-      first = false;
-    }
-    if (isSetLimit()) {
-      if (!first) sb.append(", ");
-      sb.append("limit:");
-      sb.append(this.limit);
-      first = false;
-    }
-    sb.append(")");
-    return sb.toString();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public _Fields fieldForId(int fieldId) {
-    return _Fields.findByThriftId(fieldId);
-  }
-
   public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
     scheme(iprot).read(iprot, this);
   }
@@ -515,6 +472,14 @@ package org.apache.hadoop.hive.metastore.api;
       for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
         byName.put(field.getFieldName(), field);
       }
+    }
+
+    private final short _thriftId;
+    private final java.lang.String _fieldName;
+
+    _Fields(short thriftId, java.lang.String fieldName) {
+      _thriftId = thriftId;
+      _fieldName = fieldName;
     }
 
     /**
@@ -556,14 +521,6 @@ package org.apache.hadoop.hive.metastore.api;
       return byName.get(name);
     }
 
-    private final short _thriftId;
-    private final java.lang.String _fieldName;
-
-    _Fields(short thriftId, java.lang.String fieldName) {
-      _thriftId = thriftId;
-      _fieldName = fieldName;
-    }
-
     public short getThriftFieldId() {
       return _thriftId;
     }
@@ -571,6 +528,48 @@ package org.apache.hadoop.hive.metastore.api;
     public java.lang.String getFieldName() {
       return _fieldName;
     }
+  }
+
+  @Override
+  public java.lang.String toString() {
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("NotificationEventsCountRequest(");
+    boolean first = true;
+
+    sb.append("fromEventId:");
+    sb.append(this.fromEventId);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("dbName:");
+    if (this.dbName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.dbName);
+    }
+    first = false;
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
+    if (isSetToEventId()) {
+      if (!first) sb.append(", ");
+      sb.append("toEventId:");
+      sb.append(this.toEventId);
+      first = false;
+    }
+    if (isSetLimit()) {
+      if (!first) sb.append(", ");
+      sb.append("limit:");
+      sb.append(this.limit);
+      first = false;
+    }
+    sb.append(")");
+    return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {

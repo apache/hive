@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetValidWriteIdsRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> fullTableNames; // required
-  // isset id assignments
-  private static final int __WRITEID_ISSET_ID = 0;
-  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.WRITE_ID};
+  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -37,9 +35,12 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   private @org.apache.thrift.annotation.Nullable java.lang.String validTxnList; // optional
+
+  // isset id assignments
+  private static final int __WRITEID_ISSET_ID = 0;
   private long writeId; // optional
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.WRITE_ID};
   private byte __isset_bitfield = 0;
-  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 
   public GetValidWriteIdsRequest deepCopy() {
     return new GetValidWriteIdsRequest(this);
