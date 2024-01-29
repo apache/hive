@@ -508,8 +508,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 1:char(10))
-                    predicate: c2 is not null (type: boolean)
+                        predicateExpression: SelectColumnIsNotNull(col 3:string)(children: CastStringGroupToString(col 1:char(10)) -> 3:string)
+                    predicate: UDFToString(c2) is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c1 (type: int), c2 (type: char(10))

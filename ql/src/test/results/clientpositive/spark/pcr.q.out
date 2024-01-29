@@ -1999,7 +1999,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`pcr_t1`
-WHERE `ds` >= '2000-04-08' OR `ds` IS NOT NULL
+WHERE `ds` >= '2000-04-08' OR `ds` < '2000-04-10'
 ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2503,12 +2503,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
-FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
@@ -2798,12 +2798,12 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds1`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
-FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
@@ -4426,7 +4426,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS VARCHAR(65536)) AS `ds`, `hr`
 FROM (SELECT `key`, `value`, `hr`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND (`hr` = '11' OR `hr` = '12') AND `key` = 11
@@ -4632,7 +4632,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS VARCHAR(65536)) AS `hr`
 FROM (SELECT `key`, `value`, `ds`
 FROM `default`.`srcpart`
 WHERE `hr` = '11' AND `key` = 11

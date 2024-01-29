@@ -83,6 +83,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         HiveRelFactories.HIVE_BUILDER, "SubQueryRemoveRule:Filter");
     this.conf = conf;
   }
+  @Override
   public void onMatch(RelOptRuleCall call) {
     final RelNode relNode = call.rel(0);
     final HiveSubQRemoveRelBuilder builder =
@@ -113,7 +114,8 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
       builder.filter(shuttle.apply(filter.getCondition()));
       builder.project(fields(builder, filter.getRowType().getFieldCount()));
-      call.transformTo(builder.build());
+      RelNode newRel = builder.build();
+      call.transformTo(newRel);
     } else if(relNode instanceof Project) {
       // if subquery is in PROJECT
       final Project project = call.rel(0);
@@ -507,6 +509,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     /** Returns whether a {@link Project} contains a sub-query. */
     public static final Predicate<RelNode> RELNODE_PREDICATE=
         new Predicate<RelNode>() {
+          @Override
           public boolean apply(RelNode relNode) {
             if (relNode instanceof Project) {
               Project project = (Project)relNode;

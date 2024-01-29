@@ -213,8 +213,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 10:timestamp), SelectColumnIsNotNull(col 8:string))
-                    predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date), SelectColumnIsNotNull(col 8:string))
+                    predicate: (CAST( ts AS DATE) is not null and dt is not null and s is not null) (type: boolean)
                     Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -279,8 +279,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 10:timestamp), SelectColumnIsNotNull(col 8:string))
-                    predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date), SelectColumnIsNotNull(col 8:string))
+                    predicate: (CAST( ts AS DATE) is not null and dt is not null and s is not null) (type: boolean)
                     Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)

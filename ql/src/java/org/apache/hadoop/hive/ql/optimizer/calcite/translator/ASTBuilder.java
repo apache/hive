@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -223,10 +222,6 @@ public class ASTBuilder {
   }
 
   public static ASTNode literal(RexLiteral literal) {
-    return literal(literal, false);
-  }
-
-  public static ASTNode literal(RexLiteral literal, boolean useTypeQualInLiteral) {
     Object val = null;
     int type = 0;
     SqlTypeName sqlType = literal.getType().getSqlTypeName();
@@ -272,30 +267,28 @@ public class ASTBuilder {
 
     switch (sqlType) {
     case TINYINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "Y";
-      } else {
-        val = literal.getValue3();
-      }
-      type = HiveParser.IntegralLiteral;
-      break;
     case SMALLINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "S";
-      } else {
-        val = literal.getValue3();
-      }
-      type = HiveParser.IntegralLiteral;
-      break;
     case INTEGER:
-      val = literal.getValue3();
-      type = HiveParser.IntegralLiteral;
-      break;
     case BIGINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "L";
-      } else {
-        val = literal.getValue3();
+      val = literal.getValue3();
+      // Calcite considers all numeric literals as bigdecimal values
+      // Hive makes a distinction between them most importantly IntegralLiteral
+      if (val instanceof BigDecimal) {
+        val = ((BigDecimal) val).longValue();
+      }
+      switch (sqlType) {
+      case TINYINT:
+        val += "Y";
+        break;
+      case SMALLINT:
+        val += "S";
+        break;
+      case INTEGER:
+        val += "";
+        break;
+      case BIGINT:
+        val += "L";
+        break;
       }
       type = HiveParser.IntegralLiteral;
       break;
@@ -309,7 +302,7 @@ public class ASTBuilder {
       break;
     case FLOAT:
     case REAL:
-      val = literal.getValue3();
+      val = literal.getValue3() + "F";
       type = HiveParser.Number;
       break;
     case VARCHAR:

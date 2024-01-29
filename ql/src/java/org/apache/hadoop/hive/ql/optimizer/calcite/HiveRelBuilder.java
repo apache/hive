@@ -41,9 +41,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFuncti
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * Builder for relational expressions in Hive.
@@ -66,6 +63,7 @@ public class HiveRelBuilder extends RelBuilder {
     final RelOptSchema[] relOptSchemas = {null};
     Frameworks.withPrepare(
         new Frameworks.PrepareAction<Void>(config) {
+          @Override
           public Void apply(RelOptCluster cluster, RelOptSchema relOptSchema,
               SchemaPlus rootSchema, CalciteServerStatement statement) {
             clusters[0] = cluster;
@@ -80,6 +78,7 @@ public class HiveRelBuilder extends RelBuilder {
    * Just add a {@link RelOptCluster} and a {@link RelOptSchema} */
   public static RelBuilderFactory proto(final Context context) {
     return new RelBuilderFactory() {
+      @Override
       public RelBuilder create(RelOptCluster cluster, RelOptSchema schema) {
         return new HiveRelBuilder(context, cluster, schema);
       }
@@ -151,6 +150,14 @@ public class HiveRelBuilder extends RelBuilder {
           countAgg.getOperandTypeInference(), countAgg.getOperandTypeChecker());
     }
     return null;
+  }
+
+  @Override
+  protected boolean shouldMergeProject() {
+    /* CALCITE-2470 added ability to merge Project-s together.
+     * The problem with it is that it may merge 2 windowing expressions.
+     */
+    return false;
   }
 
 }
