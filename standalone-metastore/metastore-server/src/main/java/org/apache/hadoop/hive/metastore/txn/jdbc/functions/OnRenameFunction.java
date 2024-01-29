@@ -123,13 +123,13 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
         oldCatName + "," + oldDbName + "," + oldTabName + "," + oldPartName + "," +
         newCatName + "," + newDbName + "," + newTabName + "," + newPartName + ")";
 
-    if(newPartName != null) {
+    if (newPartName != null) {
       assert oldPartName != null && oldTabName != null && oldDbName != null && oldCatName != null : callSig;
     }
-    if(newTabName != null) {
+    if (newTabName != null) {
       assert oldTabName != null && oldDbName != null && oldCatName != null : callSig;
     }
-    if(newDbName != null) {
+    if (newDbName != null) {
       assert oldDbName != null && oldCatName != null : callSig;
     }
 

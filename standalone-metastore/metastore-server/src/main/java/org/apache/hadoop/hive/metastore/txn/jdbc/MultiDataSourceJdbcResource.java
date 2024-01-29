@@ -173,9 +173,9 @@ public class MultiDataSourceJdbcResource {
    * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} or
    *                       thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
    */
-  public Integer execute(ParameterizedCommand command) throws MetaException {
+  public int execute(ParameterizedCommand command) throws MetaException {
     if (!shouldExecute(command)) {
-      return null;
+      return -1;
     }
      try {
        return execute(command.getParameterizedQueryString(getDatabaseProduct()),
@@ -196,13 +196,13 @@ public class MultiDataSourceJdbcResource {
    *
    * @param command The {@link ParameterizedBatchCommand} to execute.
    */
-  public <T> void execute(ParameterizedBatchCommand<T> command) throws MetaException {
+  public <T> int[][] execute(ParameterizedBatchCommand<T> command) throws MetaException {
     if (!shouldExecute(command)) {
-      return;
+      return null;
     }
     try {      
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
-      getJdbcTemplate().getJdbcTemplate().batchUpdate(
+      return getJdbcTemplate().getJdbcTemplate().batchUpdate(
           command.getParameterizedQueryString(databaseProduct),
           command.getQueryParameters(),
           maxBatchSize,
@@ -291,7 +291,7 @@ public class MultiDataSourceJdbcResource {
    * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} or
    *                       thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
    */
-  public Integer execute(String query, SqlParameterSource params,
+  public int execute(String query, SqlParameterSource params,
                          Function<Integer, Boolean> resultPolicy) throws MetaException {
     LOG.debug("Going to execute command <{}>", query);
     int count = getJdbcTemplate().update(query, params);
@@ -313,7 +313,7 @@ public class MultiDataSourceJdbcResource {
    * @return Returns with the object(s) constructed from the result of the executed query.
    * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)}.
    */
-  public <Result> Result execute(QueryHandler<Result> queryHandler) throws MetaException {
+  public <T> T execute(QueryHandler<T> queryHandler) throws MetaException {
     String queryStr = queryHandler.getParameterizedQueryString(getDatabaseProduct());
     LOG.debug("Going to execute query <{}>", queryStr);
     SqlParameterSource params = queryHandler.getQueryParameters();
