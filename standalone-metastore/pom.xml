@@ -99,7 +99,7 @@
     <beanutils.version>1.9.4</beanutils.version>
     <hamcrest.version>1.3</hamcrest.version>
     <curator.version>5.2.0</curator.version>
-    <zookeeper.version>3.7.2</zookeeper.version>
+    <zookeeper.version>3.9.1</zookeeper.version>
     <cron-utils.version>9.1.6</cron-utils.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
