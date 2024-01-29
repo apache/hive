@@ -60,6 +60,19 @@ import java.util.concurrent.TimeUnit;
         tokenRenewInterval, tokenGcInterval, tokenStore);
   }
 
+  private TokenStoreDelegationTokenSecretManager createTokenMgr(DelegationTokenStore tokenStore,
+      long renewSecs, long gcTime, long maxLifeTime) {
+    long secretKeyInterval =
+            MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.DELEGATION_KEY_UPDATE_INTERVAL,
+                    TimeUnit.MILLISECONDS);
+    long tokenMaxLifetime = maxLifeTime * 1000;
+    long tokenRenewInterval = renewSecs * 1000;
+    long tokenGcInterval = gcTime * 1000;
+    return new TokenStoreDelegationTokenSecretManager(secretKeyInterval, tokenMaxLifetime,
+            tokenRenewInterval, tokenGcInterval, tokenStore);
+  }
+
+
   private DelegationTokenIdentifier getID(String tokenStr) throws IOException {
     DelegationTokenIdentifier id = new DelegationTokenIdentifier();
     Token<DelegationTokenIdentifier> token = new Token<>();
@@ -99,7 +112,7 @@ import java.util.concurrent.TimeUnit;
 
   @Test public void testExpiry() throws IOException, InterruptedException {
     DelegationTokenStore tokenStore = new MemoryTokenStore();
-    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 1);
+    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 1, 8, 2);
     try {
       mgr.startThreads();
       String tokenStr =
@@ -107,11 +120,38 @@ import java.util.concurrent.TimeUnit;
               UserGroupInformation.getCurrentUser().getShortUserName());
       DelegationTokenIdentifier id = getID(tokenStr);
       Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr));
-      // Sleep for the renewal duration
-      Thread.sleep(1000);
-      SecretManager.InvalidToken ex = Assert.assertThrows(SecretManager.InvalidToken.class,
+      // Sleep for the expiration/maxlife duration duration
+      Thread.sleep(6000);
+      IllegalStateException ex = Assert.assertThrows(IllegalStateException.class,
           () -> mgr.verifyDelegationToken(tokenStr));
-      Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("has expired"));
+      Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("Expiration time passed"));
+      Thread.sleep(6000);
+      //Expiry thread will remove the token as it has crossed the maxLifeTime.
+      Assert.assertEquals(tokenStore.getAllDelegationTokenIdentifiers().size(), 0);
+    } finally {
+      mgr.stopThreads();
+    }
+  }
+
+  @Test
+  public void testExpiryThreadRenewingAndRemovingToken() throws IOException, InterruptedException {
+    DelegationTokenStore tokenStore = new MemoryTokenStore();
+    // the idea is to make sure that Expiry thread actually does not remove the token up for renewal
+    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 3, 1, 11);
+    try {
+      mgr.startThreads();
+      String tokenStr =
+              mgr.getDelegationToken(UserGroupInformation.getCurrentUser().getShortUserName(),
+                      UserGroupInformation.getCurrentUser().getShortUserName());
+      Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr));
+      DelegationTokenIdentifier id = getID(tokenStr);
+      long initialExpiry = tokenStore.getToken(id).getRenewDate();
+      Thread.sleep(10000);
+      // Token should automatically get renewed by the Thread as the current time is > renew time.
+      Assert.assertTrue(tokenStore.getToken(id).getRenewDate() > initialExpiry);
+      Thread.sleep(10000);
+      // Token should be automatically removed by the thread as it is expired now.
+      Assert.assertEquals(tokenStore.getAllDelegationTokenIdentifiers().size(), 0);
     } finally {
       mgr.stopThreads();
     }

@@ -733,7 +733,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return httpClientBuilder;
   }
 
-  private TTransport createBinaryClient(URI store, boolean useSSL) throws TTransportException,
+  private TTransport createBinaryClient(URI store, boolean useSSL, boolean fallbackToKerberos) throws TTransportException,
       MetaException {
     TTransport binaryTransport = null;
     try {
@@ -759,7 +759,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout, connectionTimeout);
       }
-      binaryTransport = createAuthBinaryTransport(store, binaryTransport);
+      binaryTransport = createAuthBinaryTransport(store, binaryTransport, fallbackToKerberos);
     } catch (Exception e) {
       if (e instanceof TTransportException) {
         throw (TTransportException)e;
@@ -770,6 +770,35 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     LOG.debug("Created thrift binary client for URI: " + store);
     return configureThriftMaxMessageSize(binaryTransport);
+  }
+
+  private void logConnectionAndCount(boolean useSSL, int newCount, URI store) {
+    if (useSSL) {
+      LOG.info(
+              "Opened an SSL connection to metastore, current connections: {}",
+              newCount);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
+                System.identityHashCode(this), new Exception());
+      }
+    } else {
+      LOG.info("Opened a connection to metastore, URI ({}) "
+              + "current connections: {}", store, newCount);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
+                System.identityHashCode(this), new Exception());
+      }
+    }
+  }
+
+  private void createThriftHMSClient(boolean useCompactProtocol) {
+    final TProtocol protocol;
+    if (useCompactProtocol) {
+      protocol = new TCompactProtocol(transport);
+    } else {
+      protocol = new TBinaryProtocol(transport);
+    }
+    client = new ThriftHiveMetastore.Client(protocol);
   }
 
   private void open() throws MetaException {
@@ -787,7 +816,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (clientAuthMode != null) {
       usePasswordAuth = "PLAIN".equalsIgnoreCase(clientAuthMode);
     }
-
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
         LOG.info("Trying to connect to metastore with URI ({}) in {} transport mode", store,
@@ -797,40 +825,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             if (isHttpTransportMode) {
               transport = createHttpClient(store, useSSL);
             } else {
-              transport = createBinaryClient(store, useSSL);
+              transport = createBinaryClient(store, useSSL, false);
             }
           } catch (TTransportException te) {
             tte = te;
             throw new MetaException(te.toString());
           }
-
-          final TProtocol protocol;
-          if (useCompactProtocol) {
-            protocol = new TCompactProtocol(transport);
-          } else {
-            protocol = new TBinaryProtocol(transport);
-          }
-          client = new ThriftHiveMetastore.Client(protocol);
+          createThriftHMSClient(useCompactProtocol);
           try {
             if (!transport.isOpen()) {
               transport.open();
-              final int newCount = connCount.incrementAndGet();
-              if (useSSL) {
-                LOG.info(
-                    "Opened an SSL connection to metastore, current connections: {}",
-                    newCount);
-                if (LOG.isTraceEnabled()) {
-                  LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
-                      System.identityHashCode(this), new Exception());
-                }
-              } else {
-                LOG.info("Opened a connection to metastore, URI ({}) "
-                    + "current connections: {}", store, newCount);
-                if (LOG.isTraceEnabled()) {
-                  LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
-                      System.identityHashCode(this), new Exception());
-                }
-              }
+              logConnectionAndCount(useSSL, connCount.incrementAndGet(), store);
             }
             isConnected = true;
           } catch (TTransportException e) {
@@ -839,6 +844,31 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                     + "transport mode",   store, transportMode);
             LOG.warn(errMsg);
             LOG.debug(errMsg, e);
+          }
+
+          if (!transport.isOpen() && !isConnected && useSasl && tokenStrForm != null && !isHttpTransportMode) {
+            // only if it did not get connected using Sasl, Digest MD5 auth, fallback to kerberos based
+            // thrift connection.
+            LOG.info("HMSC::open(): Could not conect with Digest based thrift connection. Falling back" +
+                    " to KERBEROS-based thrift connection.");
+            try {
+              transport = createBinaryClient(store, useSSL, true);
+            } catch (TTransportException te) {
+              tte = te;
+              throw new MetaException(te.toString());
+            }
+            createThriftHMSClient(useCompactProtocol);
+            try {
+              transport.open();
+              logConnectionAndCount(useSSL, connCount.incrementAndGet(), store);
+              isConnected = true;
+            } catch (TTransportException e) {
+              tte = e;
+              String errMsg = String.format("Failed to connect to the MetaStore Server URI (%s) in %s "
+                      + "transport mode",   store, transportMode);
+              LOG.warn(errMsg);
+              LOG.debug(errMsg, e);
+            }
           }
 
           if (isConnected && !useSasl && !usePasswordAuth && !isHttpTransportMode &&
@@ -895,7 +925,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   // wraps the underlyingTransport in the appropriate transport based on mode of authentication
-  private TTransport createAuthBinaryTransport(URI store, TTransport underlyingTransport)
+  private TTransport createAuthBinaryTransport(URI store, TTransport underlyingTransport, boolean fallbackToKerberos)
       throws MetaException {
     boolean isHttpTransportMode =
         MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE).
@@ -956,14 +986,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         // tokenSig could be null
         tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
 
-        if (tokenStrForm != null) {
+        if (tokenStrForm != null && !fallbackToKerberos) {
           LOG.debug("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
           // authenticate using delegation tokens via the "DIGEST" mechanism
           transport = authBridge.createClientTransport(null, store.getHost(),
               "DIGEST", tokenStrForm, underlyingTransport,
               MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
         } else {
-          LOG.debug("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
+          if (!fallbackToKerberos) {
+            LOG.debug("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
+          }
           String principalConfig =
               MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
           transport = authBridge.createClientTransport(
