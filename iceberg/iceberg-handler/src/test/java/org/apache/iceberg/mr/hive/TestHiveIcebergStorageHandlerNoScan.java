@@ -75,6 +75,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.MoreExecutors;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
@@ -2052,6 +2053,61 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), hmsProps.get(TableProperties.DELETE_MODE));
     Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), hmsProps.get(TableProperties.UPDATE_MODE));
     Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), hmsProps.get(TableProperties.MERGE_MODE));
+  }
+
+  @Test
+  public void testCreateTableWithIdentifierField() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (" +
+                    "customer_id BIGINT primary key disable novalidate, " +
+                    "first_name STRING, " +
+                    "last_name STRING) " +
+                    "STORED BY iceBerg %s TBLPROPERTIES ('%s'='%s')",
+            testTables.locationForCreateTableSQL(identifier),
+            InputFormatConfig.CATALOG_NAME,
+            testTables.catalogName());
+    shell.executeStatement(query);
+    org.apache.iceberg.Table table = testTables.loadTable(identifier);
+    Assert.assertEquals("Should have new identifier field",
+            Sets.newHashSet(table.schema().findField("customer_id").fieldId()), table.schema().identifierFieldIds());
+  }
+
+  @Test
+  public void testCreateTableWithMultiIdentifierFields() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (" +
+                    "customer_id BIGINT," +
+                    "first_name STRING, " +
+                    "last_name STRING," +
+                    "primary key (customer_id, first_name) disable novalidate) " +
+                    "STORED BY iceBerg %s TBLPROPERTIES ('%s'='%s')",
+            testTables.locationForCreateTableSQL(identifier),
+            InputFormatConfig.CATALOG_NAME,
+            testTables.catalogName());
+    shell.executeStatement(query);
+    org.apache.iceberg.Table table = testTables.loadTable(identifier);
+    Assert.assertEquals("Should have new two identifier fields",
+            Sets.newHashSet(table.schema().findField("customer_id").fieldId(),
+                    table.schema().findField("first_name").fieldId()), table.schema().identifierFieldIds());
+  }
+
+  @Test
+  public void testCreateTableFailedWithNestedIdentifierField() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers_with_nested_column (" +
+                    "customer_id BIGINT," +
+                    "first_name STRING, " +
+                    "last_name STRING, " +
+                    "user_info STRUCT<address: STRING, phone: STRING> primary key disable novalidate) " +
+                    "STORED BY iceBerg %s TBLPROPERTIES ('%s'='%s')",
+            testTables.locationForCreateTableSQL(identifier),
+            InputFormatConfig.CATALOG_NAME,
+            testTables.catalogName());
+
+    // Iceberg table doesn't support nested column as identifier field.
+    Assert.assertThrows(
+            "Cannot add field user_info as an identifier field: not a primitive type field",
+            IllegalArgumentException.class, () -> shell.executeStatement(query));
   }
 
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {
