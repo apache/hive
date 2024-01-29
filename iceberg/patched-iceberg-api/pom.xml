@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.hive</groupId>
   <artifactId>patched-iceberg-api</artifactId>
-  <version>patched-${iceberg.version}-${project.parent.version}</version>
+  <version>${revision}</version>
   <name>Patched Iceberg API</name>
   <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
   <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->
@@ -17,6 +17,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <path.to.iceberg.root>..</path.to.iceberg.root>
+    <revision>patched-${iceberg.version}-${project.parent.version}</revision>
   </properties>
   <dependencies>
     <dependency>

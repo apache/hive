@@ -47,6 +47,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -57,6 +58,7 @@ import java.util.UUID;
 
 import static org.apache.iceberg.NullOrder.NULLS_FIRST;
 import static org.apache.iceberg.SortDirection.ASC;
+import org.apache.iceberg.hadoop.HadoopTables;
 import static org.apache.iceberg.TableProperties.CURRENT_SCHEMA;
 import static org.apache.iceberg.TableProperties.CURRENT_SNAPSHOT_ID;
 import static org.apache.iceberg.TableProperties.CURRENT_SNAPSHOT_SUMMARY;
@@ -71,6 +73,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TestHMSCatalog extends HMSTestBase {
+    public TestHMSCatalog() {
+        super();
+    }
+
   private static ImmutableMap meta = ImmutableMap.of(
       "owner", "apache",
       "group", "iceberg",
@@ -101,6 +107,31 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertEquals(location, table.location());
       Assert.assertEquals(2, table.schema().columns().size());
       Assert.assertEquals(1, table.spec().fields().size());
+      Assert.assertEquals("value1", table.properties().get("key1"));
+      Assert.assertEquals("value2", table.properties().get("key2"));
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testRegisterTableHttp() throws Exception {
+    HadoopTables hadoopTables = new HadoopTables(this.conf);
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+    File path = temp.newFolder("tbl");
+    Table table = hadoopTables.buildTable(path.toString(), schema)
+        .withPartitionSpec(spec)
+        .withProperty("key1", "value1")
+        .withProperty("key2", "value2")
+        .create();
+    Assert.assertFalse(catalog.tableExists(tableIdent));
+    String location = java.nio.file.Paths.get(path.toString(), "metadata", "v1.metadata.json").toString();
+
+    try {
+      Table registered = catalog.registerTable(tableIdent, location);
+      Assert.assertEquals(table.location(), registered.location());
       Assert.assertEquals("value1", table.properties().get("key1"));
       Assert.assertEquals("value2", table.properties().get("key2"));
     } finally {
@@ -159,10 +190,43 @@ public class TestHMSCatalog extends HMSTestBase {
   }
 
   @Test
+  public void testCreateNamespaceHttp() throws Exception {
+    String ns = "nstesthttp";
+    // list namespaces
+    URL url = new URL("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
+    String jwt = generateJWT();
+    // succeed
+    Object response = clientCall(jwt, url, "POST", false, "{ \"namespace\" : [ \""+ns+"\" ], "+
+        "\"properties\":{ \"owner\": \"apache\", \"group\" : \"iceberg\" }"
+        +"}");
+    Assert.assertNotNull(response);
+    Database database1 = metastoreClient.getDatabase(ns);
+    Assert.assertTrue(database1.getParameters().get("owner").equals("apache"));
+    Assert.assertTrue(database1.getParameters().get("group").equals("iceberg"));
+
+    List<TableIdentifier> tis = catalog.listTables(Namespace.of(ns));
+    Assert.assertTrue(tis.isEmpty());
+
+    // list tables in hivedb
+    url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + ns + "/tables");
+    //String jwt = generateJWT();
+    // succeed
+    response = clientCall(jwt, url, "GET", null);
+    Assert.assertNotNull(response);
+
+    // quick check on metrics
+    Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables");
+    counters.entrySet().forEach(m->{
+      Assert.assertTrue(m.getKey(), m.getValue() > 0);
+    });
+  }
+
+  @Test
   public void testCreateTableTxnBuilder() throws Exception {
     Schema schema = getTestSchema();
-    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
-    String location = temp.newFolder("tbl").toString();
+    String tblName = "tbl" + Integer.toHexString(RND.nextInt(65536));
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, tblName);
+    String location = temp.newFolder(tblName).toString();
 
     try {
       Transaction txn = catalog.buildTable(tableIdent, schema)
@@ -179,24 +243,29 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertFalse(tis.isEmpty());
 
       // list namespaces
-      URL url = new URL("http://localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
+      URL url = new URL("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
       String jwt = generateJWT();
       // succeed
       Object response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
 
       // list tables in hivedb
-      url = new URL("http://localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables");
-      //String jwt = generateJWT();
+      url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables");
       // succeed
       response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
 
       // load table
-      url = new URL("http://localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables/" + "tbl");
+      url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables/" + tblName);
       // succeed
       response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
+
+      // quick check on metrics
+      Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables", "load_table");
+      counters.entrySet().forEach(m->{
+        Assert.assertTrue(m.getKey(), m.getValue() > 0);
+      });
     } finally {
       catalog.dropTable(tableIdent);
     }
@@ -235,8 +304,8 @@ public class TestHMSCatalog extends HMSTestBase {
           .alwaysNull("data", "data_bucket")
           .withSpecId(1)
           .build();
-         Assert.assertNotEquals("Table should have a spec with one void field",
-      v0Expected, spec0);
+      Assert.assertNotEquals("Table should have a spec with one void field",
+          v0Expected, spec0);
 
       String newLocation = temp.newFolder("tbl-2").toString();
       Transaction replaceTxn = catalog.buildTable(tableIdent, schema)
@@ -313,7 +382,7 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertTrue("Order must unsorted", table.sortOrder().isUnsorted());
 
       Assert.assertFalse("Must not have default sort order in catalog",
-              hmsTableParameters().containsKey(DEFAULT_SORT_ORDER));
+          hmsTableParameters().containsKey(DEFAULT_SORT_ORDER));
     } finally {
       catalog.dropTable(tableIdent);
     }
@@ -348,16 +417,16 @@ public class TestHMSCatalog extends HMSTestBase {
   @Test
   public void testCreateNamespace() throws Exception {
     Namespace namespace1 = Namespace.of("noLocation");
-    catalog.createNamespace(namespace1, meta);
+    nsCatalog.createNamespace(namespace1, meta);
     Database database1 = metastoreClient.getDatabase(namespace1.toString());
 
     Assert.assertTrue(database1.getParameters().get("owner").equals("apache"));
     Assert.assertTrue(database1.getParameters().get("group").equals("iceberg"));
 
-    Assert.assertEquals("There no same location for db and namespace",
+    Assert.assertEquals("Mismatch in location for db and namespace",
         database1.getLocationUri(), defaultUri(namespace1));
 
-    assertThatThrownBy(() -> catalog.createNamespace(namespace1))
+    assertThatThrownBy(() -> nsCatalog.createNamespace(namespace1))
         .isInstanceOf(AlreadyExistsException.class)
         .hasMessage("Namespace '" + namespace1 + "' already exists!");
     String hiveLocalDir = temp.newFolder().toURI().toString();
@@ -369,7 +438,7 @@ public class TestHMSCatalog extends HMSTestBase {
         .build();
     Namespace namespace2 = Namespace.of("haveLocation");
 
-    catalog.createNamespace(namespace2, newMeta);
+    nsCatalog.createNamespace(namespace2, newMeta);
     Database database2 = metastoreClient.getDatabase(namespace2.toString());
     Assert.assertEquals("There no same location for db and namespace",
         database2.getLocationUri(), hiveLocalDir);
@@ -448,7 +517,7 @@ public class TestHMSCatalog extends HMSTestBase {
       throws TException {
     Namespace namespace = Namespace.of(name);
 
-    catalog.createNamespace(namespace, prop);
+    nsCatalog.createNamespace(namespace, prop);
     Database db = metastoreClient.getDatabase(namespace.toString());
 
     Assert.assertEquals(expectedOwner, db.getOwnerName());
@@ -459,13 +528,13 @@ public class TestHMSCatalog extends HMSTestBase {
   public void testListNamespace() throws TException {
     List<Namespace> namespaces;
     Namespace namespace1 = Namespace.of("dbname1");
-    catalog.createNamespace(namespace1, meta);
-    namespaces = catalog.listNamespaces(namespace1);
+    nsCatalog.createNamespace(namespace1, meta);
+    namespaces = nsCatalog.listNamespaces(namespace1);
     Assert.assertTrue("Hive db not hive the namespace 'dbname1'", namespaces.isEmpty());
 
     Namespace namespace2 = Namespace.of("dbname2");
-    catalog.createNamespace(namespace2, meta);
-    namespaces = catalog.listNamespaces();
+    nsCatalog.createNamespace(namespace2, meta);
+    namespaces = nsCatalog.listNamespaces();
 
     Assert.assertTrue("Hive db not hive the namespace 'dbname2'", namespaces.contains(namespace2));
   }
@@ -483,33 +552,36 @@ public class TestHMSCatalog extends HMSTestBase {
   public void testLoadNamespaceMeta() throws TException {
     Namespace namespace = Namespace.of("dbname_load");
 
-    catalog.createNamespace(namespace, meta);
+    nsCatalog.createNamespace(namespace, meta);
 
-    Map<String, String> nameMata = catalog.loadNamespaceMetadata(namespace);
+    Map<String, String> nameMata = nsCatalog.loadNamespaceMetadata(namespace);
     Assert.assertTrue(nameMata.get("owner").equals("apache"));
     Assert.assertTrue(nameMata.get("group").equals("iceberg"));
+    String uri = catalog instanceof HMSCatalog
+        ? "file:"+ ((HMSCatalog) catalog).convertToDatabase(namespace, meta).getLocationUri()
+        : catalog.toString();
     Assert.assertEquals("There no same location for db and namespace",
-        nameMata.get("location"), "file:"+ catalog.convertToDatabase(namespace, meta).getLocationUri());
+        nameMata.get("location"), uri);
   }
 
   @Test
   public void testNamespaceExists() throws TException {
     Namespace namespace = Namespace.of("dbname_exists");
 
-    catalog.createNamespace(namespace, meta);
+    nsCatalog.createNamespace(namespace, meta);
 
     Assert.assertTrue("Should true to namespace exist",
-        catalog.namespaceExists(namespace));
+        nsCatalog.namespaceExists(namespace));
     Assert.assertTrue("Should false to namespace doesn't exist",
-        !catalog.namespaceExists(Namespace.of("db2", "db2", "ns2")));
+        !nsCatalog.namespaceExists(Namespace.of("db2", "db2", "ns2")));
   }
 
   @Test
   public void testSetNamespaceProperties() throws TException {
     Namespace namespace = Namespace.of("dbname_set");
 
-    catalog.createNamespace(namespace, meta);
-    catalog.setProperties(namespace,
+    nsCatalog.createNamespace(namespace, meta);
+    nsCatalog.setProperties(namespace,
         ImmutableMap.of(
             "owner", "alter_apache",
             "test", "test",
@@ -522,7 +594,7 @@ public class TestHMSCatalog extends HMSTestBase {
     Assert.assertEquals(database.getParameters().get("test"), "test");
     Assert.assertEquals(database.getParameters().get("group"), "iceberg");
     assertThatThrownBy(
-        () -> catalog.setProperties(Namespace.of("db2", "db2", "ns2"), ImmutableMap.of()))
+        () -> nsCatalog.setProperties(Namespace.of("db2", "db2", "ns2"), ImmutableMap.of()))
         .isInstanceOf(NoSuchNamespaceException.class)
         .hasMessage("Namespace does not exist: db2.db2.ns2");
   }
@@ -701,7 +773,7 @@ public class TestHMSCatalog extends HMSTestBase {
     createNamespaceAndVerifyOwnership(
         name, propToCreate, expectedOwnerPostCreate, expectedOwnerTypePostCreate);
 
-    catalog.setProperties(Namespace.of(name), propToSet);
+    nsCatalog.setProperties(Namespace.of(name), propToSet);
     Database database = metastoreClient.getDatabase(name);
 
     Assert.assertEquals(expectedOwnerPostSet, database.getOwnerName());
@@ -711,19 +783,15 @@ public class TestHMSCatalog extends HMSTestBase {
   @Test
   public void testRemoveNamespaceProperties() throws TException {
     Namespace namespace = Namespace.of("dbname_remove");
-
-    catalog.createNamespace(namespace, meta);
-
-    catalog.removeProperties(namespace, ImmutableSet.of("comment", "owner"));
-
+    nsCatalog.createNamespace(namespace, meta);
+    nsCatalog.removeProperties(namespace, ImmutableSet.of("comment", "owner"));
     Database database = metastoreClient.getDatabase(namespace.level(0));
-
     Assert.assertEquals(database.getParameters().get("owner"), null);
     Assert.assertEquals(database.getParameters().get("group"), "iceberg");
 
     assertThatThrownBy(
         () ->
-            catalog.removeProperties(
+            nsCatalog.removeProperties(
                 Namespace.of("db2", "db2", "ns2"), ImmutableSet.of("comment", "owner")))
         .isInstanceOf(NoSuchNamespaceException.class)
         .hasMessage("Namespace does not exist: db2.db2.ns2");
@@ -846,7 +914,7 @@ public class TestHMSCatalog extends HMSTestBase {
     createNamespaceAndVerifyOwnership(
         name, propToCreate, expectedOwnerPostCreate, expectedOwnerTypePostCreate);
 
-    catalog.removeProperties(Namespace.of(name), propToRemove);
+    nsCatalog.removeProperties(Namespace.of(name), propToRemove);
 
     Database database = metastoreClient.getDatabase(name);
 
@@ -860,38 +928,41 @@ public class TestHMSCatalog extends HMSTestBase {
     TableIdentifier identifier = TableIdentifier.of(namespace, "table");
     Schema schema = getTestSchema();
 
-    catalog.createNamespace(namespace, meta);
+    nsCatalog.createNamespace(namespace, meta);
     catalog.createTable(identifier, schema);
-    Map<String, String> nameMata = catalog.loadNamespaceMetadata(namespace);
+    Map<String, String> nameMata = nsCatalog.loadNamespaceMetadata(namespace);
     Assert.assertTrue(nameMata.get("owner").equals("apache"));
     Assert.assertTrue(nameMata.get("group").equals("iceberg"));
 
-    assertThatThrownBy(() -> catalog.dropNamespace(namespace))
+    assertThatThrownBy(() -> nsCatalog.dropNamespace(namespace))
         .isInstanceOf(NamespaceNotEmptyException.class)
         .hasMessage("Namespace dbname_drop is not empty. One or more tables exist.");
     Assert.assertTrue(catalog.dropTable(identifier, true));
     Assert.assertTrue("Should fail to drop namespace if it is not empty",
-        catalog.dropNamespace(namespace));
+        nsCatalog.dropNamespace(namespace));
     Assert.assertFalse("Should fail to drop when namespace doesn't exist",
-        catalog.dropNamespace(Namespace.of("db.ns1")));
-    assertThatThrownBy(() -> catalog.loadNamespaceMetadata(namespace))
+        nsCatalog.dropNamespace(Namespace.of("db.ns1")));
+    assertThatThrownBy(() -> nsCatalog.loadNamespaceMetadata(namespace))
         .isInstanceOf(NoSuchNamespaceException.class)
         .hasMessage("Namespace does not exist: dbname_drop");
   }
 
   @Test
   public void testDropTableWithoutMetadataFile() {
-    TableIdentifier identifier = TableIdentifier.of(DB_NAME, "tbl");
-    Schema tableSchema = getTestSchema();
-    catalog.createTable(identifier, tableSchema);
-    String metadataFileLocation = catalog.newTableOps(identifier).current().metadataFileLocation();
-    TableOperations ops = catalog.newTableOps(identifier);
-    ops.io().deleteFile(metadataFileLocation);
-    Assert.assertTrue(catalog.dropTable(identifier));
+    if (catalog instanceof HMSCatalog) {
+      HMSCatalog hmsCatalog = (HMSCatalog) catalog;
+      TableIdentifier identifier = TableIdentifier.of(DB_NAME, "tbl");
+      Schema tableSchema = getTestSchema();
+      catalog.createTable(identifier, tableSchema);
+      String metadataFileLocation = hmsCatalog.newTableOps(identifier).current().metadataFileLocation();
+      TableOperations ops = hmsCatalog.newTableOps(identifier);
+      ops.io().deleteFile(metadataFileLocation);
+      Assert.assertTrue(catalog.dropTable(identifier));
 
-    org.assertj.core.api.Assertions.assertThatThrownBy(() -> catalog.loadTable(identifier))
-        .isInstanceOf(NoSuchTableException.class)
-        .hasMessageContaining("Table does not exist:");
+      org.assertj.core.api.Assertions.assertThatThrownBy(() -> catalog.loadTable(identifier))
+          .isInstanceOf(NoSuchTableException.class)
+          .hasMessageContaining("Table does not exist:");
+    }
   }
 
   @Test
@@ -988,6 +1059,7 @@ public class TestHMSCatalog extends HMSTestBase {
   @Test
   public void testSetSnapshotSummary() throws Exception {
     Configuration conf = new Configuration();
+    conf.addResource(this.conf);
     conf.set("iceberg.hive.table-property-max-size", "4000");
     RawStore store = HMSHandler.getMSForConf(conf);
     HMSTableOperations ops = new HMSTableOperations(conf, store, null, catalog.name(), DB_NAME, "tbl");
@@ -1019,6 +1091,7 @@ public class TestHMSCatalog extends HMSTestBase {
   @Test
   public void testNotExposeTableProperties() throws Exception {
     Configuration conf = new Configuration();
+    conf.addResource(this.conf);
     conf.set("iceberg.hive.table-property-max-size", "0");
     RawStore store = HMSHandler.getMSForConf(conf);
     HMSTableOperations ops = new HMSTableOperations(conf, store, null, catalog.name(), DB_NAME, "tbl");
@@ -1103,7 +1176,7 @@ public class TestHMSCatalog extends HMSTestBase {
     Assert.assertEquals(
         "Should have trailing slash stripped",
         wareHousePath,
-        catalogWithSlash.getConf().get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname));
+        catalogWithSlash.getConf().get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname));
   }
 
   HMSCatalog newHMSCatalog(ImmutableMap<String, String> catalogProps) {
@@ -1155,7 +1228,7 @@ public class TestHMSCatalog extends HMSTestBase {
           table.properties().get("key4"));
       Assert.assertEquals(
           "Table properties without any catalog level default or override should be added to table" +
-                  " properties.",
+              " properties.",
           "table-key5",
           table.properties().get("key5"));
     } finally {

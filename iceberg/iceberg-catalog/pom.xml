@@ -19,6 +19,23 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-iceberg-shading</artifactId>
     </dependency>
+
+    <!-- Intellij dislikes shaded Iceberg: uncomment the following block helps when coding/debugging -->
+    <!--
+    <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-api</artifactId>
+      <version>${iceberg.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-core</artifactId>
+      <version>${iceberg.version}</version>
+      <optional>true</optional>
+    </dependency>
+    -->
+
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>

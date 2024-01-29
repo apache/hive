@@ -59,9 +59,7 @@
     <module>packaging</module>
     <module>standalone-metastore</module>
     <module>kafka-handler</module>
-<!--
     <module>hms-catalog</module>
--->
   </modules>
   <properties>
     <standalone-metastore.version>4.0.0-beta-2-SNAPSHOT</standalone-metastore.version>
@@ -153,6 +151,7 @@
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
+    <iceberg.version>1.4.2</iceberg.version>
     <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.13.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>

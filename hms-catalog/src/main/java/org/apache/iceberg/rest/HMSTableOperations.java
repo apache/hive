@@ -75,6 +75,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.apache.iceberg.TableProperties.GC_ENABLED;
@@ -453,9 +454,9 @@ public class HMSTableOperations extends BaseMetastoreTableOperations {
         LOG.warn("Not exposing the current snapshot({}) summary in HMS since it exceeds {} characters",
             currentSnapshot.snapshotId(), maxHiveTablePropertySize);
       }
-    } catch (JsonProcessingException e) {
-      LOG.warn("Failed to convert current snapshot({}) summary to a json string", currentSnapshot.snapshotId(), e);
-    }
+    } catch (org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException ex) {
+      LOG.warn("Failed to convert current snapshot({}) summary to a json string", currentSnapshot.snapshotId(), ex);
+      }
   }
 
   @VisibleForTesting

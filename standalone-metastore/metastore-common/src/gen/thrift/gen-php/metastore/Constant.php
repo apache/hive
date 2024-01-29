@@ -58,6 +58,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $NO_CLEANUP;
     static protected $CTAS_LEGACY_CONFIG;
     static protected $DEFAULT_TABLE_TYPE;
+    static protected $DEFAULT_TABLE_LOCATION;
     static protected $TXN_ID;
     static protected $WRITE_ID;
     static protected $EXPECTED_PARAMETER_KEY;
@@ -261,6 +262,11 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_DEFAULT_TABLE_TYPE()
     {
         return "defaultTableType";
+    }
+
+    protected static function init_DEFAULT_TABLE_LOCATION()
+    {
+        return "defaultLocation";
     }
 
     protected static function init_TXN_ID()

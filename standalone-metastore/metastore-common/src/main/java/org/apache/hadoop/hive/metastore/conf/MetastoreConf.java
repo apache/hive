@@ -1808,6 +1808,10 @@ public class MetastoreConf {
         "hive.metastore.properties.servlet.auth", "jwt",
         "Property-maps servlet authentication method (simple or jwt)."
     ),
+    PROPERTIES_NS("hive.metastore.properties.namespaces",
+        "hive.metastore.properties.namespaces", "",
+        "Property-maps namespace map; a JSON map where keys are namespace names, values namespace" +
+            "class and/or static factory method"),
     CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
         "hive.metastore.catalog.servlet.path", "icecli",
         "Catalog servlet path component of URL endpoint."
@@ -1822,6 +1826,9 @@ public class MetastoreConf {
         "hive.metastore.catalog.servlet.auth", "jwt",
         "Catalog servlet authentication method (simple or jwt)."
     ),
+    CATALOG_CLASS("hive.metastore.catalog.class",
+        "hive.metastore.catalog.class", "HiveCatalog",
+        "Catalog implementation class. (HiveCatalog or HMSCatalog)"),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

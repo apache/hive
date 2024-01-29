@@ -19,6 +19,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg-shading</artifactId>
+  <groupId>org.apache.hive</groupId>
   <packaging>jar</packaging>
   <name>Hive Iceberg Shading</name>
   <description>
@@ -37,8 +38,8 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>patched-iceberg-core</artifactId>
-      <optional>true</optional>
-    </dependency>
+      <version>patched-${iceberg.version}-${project.parent.version}</version>
+  </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-data</artifactId>
@@ -109,9 +110,11 @@
                       <include>com.fasterxml*:*</include>
                       <include>com.github.ben-manes*:*</include>
                       <include>org.apache.hive:patched-iceberg-core</include>
+                      <include>org.apache.hive:patched-iceberg-api</include>
                     </includes>
                     <excludes>
                       <exclude>org.apache.iceberg:iceberg-core</exclude>
+                      <exclude>org.apache.iceberg:iceberg-api</exclude>
                     </excludes>
                   </artifactSet>
                   <filters>

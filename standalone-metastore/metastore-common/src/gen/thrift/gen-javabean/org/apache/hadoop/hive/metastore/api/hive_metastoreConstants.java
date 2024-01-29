@@ -89,6 +89,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String DEFAULT_TABLE_TYPE = "defaultTableType";
 
+  public static final java.lang.String DEFAULT_TABLE_LOCATION = "defaultLocation";
+
   public static final java.lang.String TXN_ID = "txnId";
 
   public static final java.lang.String WRITE_ID = "writeId";

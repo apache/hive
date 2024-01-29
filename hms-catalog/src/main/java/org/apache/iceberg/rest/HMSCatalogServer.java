@@ -19,23 +19,28 @@
 
 package org.apache.iceberg.rest;
 
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.SecureServletCaller;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.catalog.Catalog;
+import org.apache.iceberg.hive.HiveCatalog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.Collections;
 
 public class HMSCatalogServer {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServer.class);
   private static Reference<Catalog> catalogRef;
   static Catalog getLastCatalog() {
     return catalogRef != null? catalogRef.get() :  null;
@@ -51,16 +56,30 @@ public class HMSCatalogServer {
     }
   }
 
+  public static Catalog createCatalog(Configuration configuration) {
+    String clazz = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_CLASS);
+    Catalog catalog;
+    if ("HMSCatalog".equals(clazz)) {
+      catalog = new HMSCatalog(configuration);
+    } else {
+      catalog = new org.apache.iceberg.hive.HiveCatalog();
+      if (catalog instanceof Configurable) {
+        ((HiveCatalog) catalog).setConf(configuration);
+      }
+    }
+    return catalog;
+  }
+
   public static HttpServlet createServlet(Configuration configuration, Catalog catalog) throws IOException {
     String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH);
     boolean jwt = "jwt".equalsIgnoreCase(auth);
     SecureServletCaller security = new ServletSecurity(configuration, jwt);
     Catalog actualCatalog = catalog;
     if (actualCatalog == null) {
-      actualCatalog = new HMSCatalog(configuration);
+      actualCatalog = createCatalog(configuration);
       actualCatalog.initialize("hive", Collections.emptyMap());
     }
-    catalogRef = new WeakReference<>(actualCatalog);
+    catalogRef = new SoftReference<>(actualCatalog);
     return createServlet(security, actualCatalog);
   }
 
@@ -88,6 +107,7 @@ public class HMSCatalogServer {
 
     final Server httpServer = new Server(port);
     httpServer.setHandler(context);
+    LOG.info("Starting HMS REST Catalog Server with context path:/{}/ on port:{}", cli, port);
     httpServer.start();
     return httpServer;
   }

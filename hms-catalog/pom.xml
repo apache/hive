@@ -18,80 +18,68 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <thrift.home>/usr/local</thrift.home>
     <log4j2.debug>false</log4j2.debug>
-    <iceberg.version>1.4.2</iceberg.version>
+    <hive.version>${project.parent.version}</hive.version>
+    <revision>${hive.version}</revision>
   </properties>
   <dependencies>
 
     <dependency>
-      <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-api</artifactId>
-      <version>${iceberg.version}</version>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${revision}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-core</artifactId>
-      <version>${iceberg.version}</version>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>${revision}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-data</artifactId>
-      <version>${iceberg.version}</version>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-shading</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-handler</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-catalog</artifactId>
+      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-bundled-guava</artifactId>
       <version>${iceberg.version}</version>
     </dependency>
+
+    <!-- Intellij dislikes shaded Iceberg: uncomment the following block helps when coding/debugging -->
+    <!--
     <dependency>
       <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-hive-runtime</artifactId>
+      <artifactId>iceberg-api</artifactId>
       <version>${iceberg.version}</version>
+      <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-core</artifactId>
+      <version>${iceberg.version}</version>
+      <optional>true</optional>
+    </dependency>
+    -->
 
     <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5</artifactId>
       <version>5.2</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>4.0.0-beta-2-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>4.0.0-beta-2-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
-      <version>4.0.0-beta-2-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-<!--
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>patched-iceberg-api</artifactId>
-      <version>patched-1.4.2-4.0.0-beta-2-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>patched-iceberg-core</artifactId>
-      <version>patched-1.4.2-4.0.0-beta-2-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-iceberg-catalog</artifactId>
-      <version>4.0.0-beta-2-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
--->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -235,28 +223,21 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-iceberg-catalog</artifactId>
-      <version>4.0.0-beta-2-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
-    <!--
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>5.10.0</version>
-      <scope>test</scope>
-    </dependency>
-    -->
   </dependencies>
-<!--
   <build>
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <includes>
+            <include>TestHMSCatalog.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -264,9 +245,6 @@
         <executions>
           <execution>
             <phase>test</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
             <configuration>
               <systemProperties>
                 <systemProperty>
@@ -280,7 +258,6 @@
       </plugin>
     </plugins>
   </build>
--->
 
 
 </project>

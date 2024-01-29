@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.rest;
 
+import com.codahale.metrics.Counter;
 import com.google.gson.Gson;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -36,13 +37,14 @@ import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.Catalog;
-import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.catalog.SupportsNamespaces;
+import org.apache.iceberg.hive.HiveCatalog;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;
@@ -57,8 +59,8 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -66,7 +68,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -127,7 +133,8 @@ public abstract class HMSTestBase {
   protected final String catalogPath = "hmscatalog";
   protected Server catalogServer = null;
   // for direct calls
-  protected HMSCatalog catalog;
+  protected Catalog catalog;
+  protected SupportsNamespaces nsCatalog;
   protected HiveMetaStoreClient metastoreClient;
 
   protected int createMetastoreServer(Configuration conf) throws Exception {
@@ -143,6 +150,9 @@ public abstract class HMSTestBase {
     NS = "hms" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
     HMSTestUtils.setConfForStandloneMode(conf);
+    conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), true);
+    Metrics.initialize(conf);
+
     String whpath = new File(baseDir,"target/tmp/warehouse").getAbsolutePath().toString();
     // "hive.metastore.warehouse.external.dir"
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, whpath);
@@ -152,7 +162,10 @@ public abstract class HMSTestBase {
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT, 0);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "JWT");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_CLASS, "HMSCatalog");
+    //MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_CLASS, "HiveCatalog");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "jwt");
+    //MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "simple");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PATH, catalogPath);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
         "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
@@ -168,30 +181,72 @@ public abstract class HMSTestBase {
     metastoreClient = createClient(conf, port);
     Assert.assertNotNull("Unable to connect to the MetaStore server", metastoreClient);
 
-    Server iceServer = HiveMetaStore.getIcebergServer();
-    Catalog ice = HMSCatalogServer.getLastCatalog();
-    if (iceServer != null) {
-      catalog = (HMSCatalog) HMSCatalogServer.getLastCatalog();;
-      catalogPort = iceServer.getURI().getPort();
-    }
-    if (catalog == null ){
-      catalog = new HMSCatalog(conf);
-      catalog.initialize("hive", Collections.emptyMap());
-      catalogPort = createCatalogServer(conf, catalog);
-    }
-
+    // investigate its necessity
     Warehouse wh = new Warehouse(conf);
     String location0 = wh.getDefaultDatabasePath("hivedb2023", false).toString();
     //wh.getDefaultDatabasePath()
     String location = temp.newFolder("hivedb2023").getAbsolutePath().toString();
-    Database db = new Database("hivedb", "catalog test", location, Collections.emptyMap());
+    Database db = new Database(DB_NAME, "catalog test", location, Collections.emptyMap());
     metastoreClient.createDatabase(db);
+
+    Server iceServer = HiveMetaStore.getIcebergServer();
+    int tries = 5;
+    while(iceServer == null && tries-- > 0) {
+      Thread.sleep(100);
+      iceServer = HiveMetaStore.getIcebergServer();
+    }
+    Catalog ice = HMSCatalogServer.getLastCatalog();
+    if (iceServer != null) {
+      while (iceServer.isStarting()) {
+        Thread.sleep(100);
+      }
+      catalog =  ice != null? ice : HMSCatalogServer.getLastCatalog();
+      if (catalog instanceof HiveCatalog) {
+        Map<String, String> properties;
+        String curi = conf.get(MetastoreConf.ConfVars.THRIFT_URIS.getVarname());
+        String cwarehouse = conf.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
+        String cextwarehouse = conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
+        properties = new TreeMap<>();
+        if (curi != null) {
+          properties.put("uri", curi);
+        }
+        if (cwarehouse != null) {
+          properties.put("warehouse", cwarehouse);
+        }
+        if (cextwarehouse != null) {
+          properties.put("external-warehouse", cextwarehouse);
+        }
+        catalog.initialize("hive", properties);
+      }
+      nsCatalog = catalog instanceof SupportsNamespaces? (SupportsNamespaces) catalog : null;
+      catalogPort = iceServer.getURI().getPort();
+    } else {
+      throw new NullPointerException("no server");
+    }
   }
 
   protected HiveMetaStoreClient createClient(Configuration conf, int port) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     return new HiveMetaStoreClient(conf);
+  }
+
+  /**
+   * @param apis a list of api calls
+   * @return the map of HMSCatalog route counter metrics keyed by their names
+   */
+  static Map<String, Long> reportMetricCounters(String... apis) {
+    Map<String, Long> map = new LinkedHashMap<>();
+    com.codahale.metrics.MetricRegistry registry = Metrics.getRegistry();
+    List<String> names = HMSCatalog.getMetricNames(apis);
+    for(String name : names) {
+      Counter counter = registry.counter(name);
+      if (counter != null) {
+        long count = counter.getCount();
+        map.put(name, count);
+      }
+    }
+    return map;
   }
 
   @After
@@ -285,30 +340,64 @@ public abstract class HMSTestBase {
    * @throws IOException if marshalling the request/response fail
    */
   public static Object clientCall(String jwt, URL url, String method, Object arg) throws IOException {
+    return clientCall(jwt, url, method, true, arg);
+  }
+
+  public static class ServerResponse {
+    private final int code;
+    private final String content;
+    public ServerResponse(int code, String content) {
+      this.code = code;
+      this.content = content;
+    }
+  }
+
+  public static Object clientCall(String jwt, URL url, String method, boolean json, Object arg) throws IOException {
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
     con.setRequestMethod(method);
     con.setRequestProperty(MetaStoreUtils.USER_NAME_HTTP_HEADER, url.getUserInfo());
     con.setRequestProperty("Content-Type", "application/json");
     con.setRequestProperty("Accept", "application/json");
     if (jwt != null) {
-      con.setRequestProperty("Authorization","Bearer " + jwt);
+      con.setRequestProperty("Authorization", "Bearer " + jwt);
     }
     con.setDoInput(true);
     if (arg != null) {
       con.setDoOutput(true);
       DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-      wr.writeBytes(new Gson().toJson(arg));
+      if (json) {
+        wr.writeBytes(new Gson().toJson(arg));
+      } else {
+        wr.writeBytes(arg.toString());
+      }
       wr.flush();
       wr.close();
     }
+    // perform http method
     int responseCode = con.getResponseCode();
-    if (responseCode == HttpServletResponse.SC_OK) {
-      try (Reader reader = new BufferedReader(
-          new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+    InputStream responseStream = con.getErrorStream();
+    if (responseStream == null) {
+      responseStream = con.getInputStream();
+    }
+    if (responseStream != null) {
+      try (BufferedReader reader = new BufferedReader(
+          new InputStreamReader(responseStream, StandardCharsets.UTF_8))) {
+        // if not strictly ok, check we are still receiving a JSON
+        if (responseCode != HttpServletResponse.SC_OK) {
+          String contentType = con.getContentType();
+          if (contentType == null || contentType.indexOf("application/json") == -1) {
+            String line = null;
+            StringBuilder response = new StringBuilder("error " + responseCode + ":");
+            while ((line = reader.readLine()) != null) response.append(line);
+            ServerResponse sr = new ServerResponse(responseCode, response.toString());
+            return sr;
+          }
+        }
         return new Gson().fromJson(reader, Object.class);
       }
     }
-    return null;
+    // no response stream,
+    return responseCode;
   }
 
 }

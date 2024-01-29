@@ -186,7 +186,7 @@ public class PropertySchema implements Serializable {
    * @param version the schema version number
    * @param map        the map of properties and their types
    */
-  PropertySchema(String schemaName, int version, Map<String, PropertyType<?>> map) {
+  protected PropertySchema(String schemaName, int version, Map<String, PropertyType<?>> map) {
     this.name = schemaName;
     this.versionNumber = new AtomicInteger(version);
     this.properties = map == null ? new TreeMap<>() : map;

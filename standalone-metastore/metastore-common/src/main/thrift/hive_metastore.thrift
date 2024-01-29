@@ -3287,6 +3287,7 @@ const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",
 const string NO_CLEANUP = "no_cleanup",
 const string CTAS_LEGACY_CONFIG = "create_table_as_external",
 const string DEFAULT_TABLE_TYPE = "defaultTableType",
+const string DEFAULT_TABLE_LOCATION = "defaultLocation";
 
 // ACID
 const string TXN_ID = "txnId",

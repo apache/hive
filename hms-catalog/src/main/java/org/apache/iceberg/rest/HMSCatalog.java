@@ -65,8 +65,12 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -91,6 +95,38 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
   private Map<String, String> catalogProperties;
   private IHMSHandler hmsHandler;
   private RawStore rawStore;
+
+  /** The metric names prefix. */
+  static final String HMS_METRIC_PREFIX = "hmscatalog.";
+
+  /**
+   * @param route a route/api-call name
+   * @return the metric counter name for the api-call
+   */
+  static String hmsCatalogMetricCount(String route) {
+    return HMS_METRIC_PREFIX + route.toLowerCase() + ".count";
+  }
+
+  /**
+   * @param apis an optional list of known api call names
+   * @return the list of metric names for the HMSCatalog class
+   */
+  public static List<String> getMetricNames(String...apis) {
+    final List<HMSCatalogAdapter.Route> routes;
+    if (apis != null && apis.length > 0) {
+      routes = Arrays.asList(apis).stream()
+          .map(api -> HMSCatalogAdapter.Route.byName(api))
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+    } else {
+      routes = Arrays.asList(HMSCatalogAdapter.Route.values());
+    }
+    final List<String> metricNames = new ArrayList<>(routes.size());
+    for(HMSCatalogAdapter.Route route : routes) {
+      metricNames.add(hmsCatalogMetricCount(route.name()));
+    }
+    return metricNames;
+  }
 
   public HMSCatalog(Configuration configuration) {
     if (configuration == null) {
@@ -132,12 +168,12 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
 
     // compatibility, set deprecated var
     if (properties.containsKey(CatalogProperties.URI)) {
-      this.configuration.set(HiveConf.ConfVars.METASTOREURIS.varname, properties.get(CatalogProperties.URI));
+      this.configuration.set(HiveConf.ConfVars.METASTORE_URIS.varname, properties.get(CatalogProperties.URI));
     }
     // compatibility, set deprecated var
     if (properties.containsKey(CatalogProperties.WAREHOUSE_LOCATION)) {
       this.configuration.set(
-          HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+          HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
           LocationUtil.stripTrailingSlash(properties.get(CatalogProperties.WAREHOUSE_LOCATION)));
     }
 
@@ -163,7 +199,9 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
       List<String> tableNames = store.getAllTables(catalog, database);
       List<TableIdentifier> tableIdentifiers;
 
-      if (listAllTables) {
+      if (tableNames.isEmpty()) {
+        tableIdentifiers = Collections.emptyList();
+      } else if (listAllTables) {
         tableIdentifiers =
             tableNames.stream()
                 .map(t -> TableIdentifier.of(namespace, t))
@@ -464,7 +502,7 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
 
   private String databaseLocation(String databaseName) {
     //MetastoreConf.ConfVars.WAREHOUSE
-    String warehouseLocation = configuration.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname);
+    String warehouseLocation = configuration.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
     if (warehouseLocation == null) {
       warehouseLocation = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
     }
@@ -536,7 +574,7 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add("name", name)
-        .add("uri", this.configuration == null ? "" : this.configuration.get(HiveConf.ConfVars.METASTOREURIS.varname))
+        .add("uri", this.configuration == null ? "" : this.configuration.get(HiveConf.ConfVars.METASTORE_URIS.varname))
         .toString();
   }
 

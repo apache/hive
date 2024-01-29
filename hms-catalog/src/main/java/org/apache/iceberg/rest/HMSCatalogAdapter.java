@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.rest;
 
+import com.codahale.metrics.Counter;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.Table;
@@ -160,6 +162,19 @@ public class HMSCatalogAdapter implements RESTClient {
     private final Class<? extends RESTRequest> requestClass;
     private final Class<? extends RESTResponse> responseClass;
 
+    /**
+     * An exception safe way of getting a route by name.
+     * @param name the route name
+     * @return the route instance or null if it could not be found
+     */
+    static Route byName(String name) {
+      try {
+        return valueOf(name.toUpperCase());
+      } catch(IllegalArgumentException xill) {
+        return null;
+      }
+    }
+
     Route(HTTPMethod method, String pattern) {
       this(method, pattern, null, null);
     }
@@ -232,6 +247,12 @@ public class HMSCatalogAdapter implements RESTClient {
   @SuppressWarnings("MethodLength")
   public <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body, Class<T> responseType) {
+    // update HMS catalog route counter metric
+    final String metricName = HMSCatalog.hmsCatalogMetricCount(route.name());
+    Counter counter = Metrics.getOrCreateCounter(metricName);
+    if (counter != null) {
+      counter.inc();
+    }
     switch (route) {
       case TOKENS: {
         @SuppressWarnings("unchecked")
