@@ -638,8 +638,8 @@ public class TestHive {
                                                  .put("ds", "20141216")
                                                  .put("hr", "12")
                                                  .build();
-
-      int trashSizeBeforeDrop = getTrashContents().length;
+      FileStatus[] trashContentsBeforeDrop = getTrashContents();
+      int trashSizeBeforeDrop = trashContentsBeforeDrop.length;
 
       Table table = createPartitionedTable(dbName, tableName);
       hm.createPartition(table, partitionSpec);
@@ -672,11 +672,12 @@ public class TestHive {
                                            .purgeData(false)
                       );
 
-      int trashSizeWithoutPurge = getTrashContents().length;
+      FileStatus[] trashContentsWithoutPurge = getTrashContents();
+      int trashSizeWithoutPurge = trashContentsWithoutPurge.length;
 
-      assertEquals("After dropPartitions(noPurge), data should've gone to trash!",
-                  trashSizeBeforeDrop, trashSizeWithoutPurge);
-
+      assertEquals("After dropPartitions(noPurge), data should've gone to trash, contents before drop: "
+          + Arrays.asList(trashContentsBeforeDrop) + ", contents without purge: " + Arrays.asList(trashContentsWithoutPurge)
+          + "!", trashSizeBeforeDrop, trashSizeWithoutPurge);
     }
     catch (Exception e) {
       fail("Unexpected exception: " + StringUtils.stringifyException(e));
