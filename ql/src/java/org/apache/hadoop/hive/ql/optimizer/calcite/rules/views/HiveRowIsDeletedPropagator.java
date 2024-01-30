@@ -60,7 +60,6 @@ import static java.util.Arrays.asList;
  * This class is part of incremental rebuild of materialized view plan generation.
  * <br>
  * @see AlterMaterializedViewRebuildAnalyzer
- * @see HiveJoinInsertDeleteIncrementalRewritingRule
  * @see HiveAggregateInsertDeleteIncrementalRewritingRule
  */
 public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
