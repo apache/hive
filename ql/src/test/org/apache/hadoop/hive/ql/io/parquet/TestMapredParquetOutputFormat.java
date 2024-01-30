@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.ql.io.parquet.write.ParquetRecordWriterWrapper;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Progressable;
@@ -48,8 +49,8 @@ public class TestMapredParquetOutputFormat {
   @Test
   public void testGetHiveRecordWriter() throws IOException {
     Properties tableProps = new Properties();
-    tableProps.setProperty("columns", "foo,bar");
-    tableProps.setProperty("columns.types", "int:int");
+    tableProps.setProperty(serdeConstants.LIST_COLUMNS, "foo,bar");
+    tableProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int:int");
 
     final Progressable mockProgress = mock(Progressable.class);
     final ParquetOutputFormat<ParquetHiveRecord> outputFormat = (ParquetOutputFormat<ParquetHiveRecord>) mock(ParquetOutputFormat.class);
@@ -83,8 +84,8 @@ public class TestMapredParquetOutputFormat {
   public void testInvalidCompressionTableProperties() throws IOException {
     Properties tableProps = new Properties();
     tableProps.setProperty("parquet.compression", "unsupported");
-    tableProps.setProperty("columns", "foo,bar");
-    tableProps.setProperty("columns.types", "int:int");
+    tableProps.setProperty(serdeConstants.LIST_COLUMNS, "foo,bar");
+    tableProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int:int");
 
     JobConf jobConf = new JobConf();
 

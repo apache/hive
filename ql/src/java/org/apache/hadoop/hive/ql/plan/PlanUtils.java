@@ -543,9 +543,9 @@ public final class PlanUtils {
               serdeConstants.SERIALIZATION_LIB, BinarySortableSerDe.class.getName()));
     } else {
       return new TableDesc(SequenceFileInputFormat.class,
-          SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
+          SequenceFileOutputFormat.class, Utilities.makeProperties(serdeConstants.LIST_COLUMNS,
               MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
-              "columns.types", MetaStoreUtils
+              serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
               .getColumnTypesFromFieldSchema(fieldSchemas),
               serdeConstants.ESCAPE_CHAR, "\\",
               serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));

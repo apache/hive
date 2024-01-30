@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -691,8 +692,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     // Create 3 original files with 3 rows each
     Properties properties = new Properties();
-    properties.setProperty("columns", DummyOriginalRow.getColumnNamesProperty());
-    properties.setProperty("columns.types", DummyOriginalRow.getColumnTypesProperty());
+    properties.setProperty(serdeConstants.LIST_COLUMNS, DummyOriginalRow.getColumnNamesProperty());
+    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, DummyOriginalRow.getColumnTypesProperty());
 
     OrcFile.WriterOptions writerOptions = OrcFile.writerOptions(properties, conf);
     writerOptions.inspector(originalInspector);
