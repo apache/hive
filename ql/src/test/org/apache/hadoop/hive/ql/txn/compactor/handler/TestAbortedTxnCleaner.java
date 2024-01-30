@@ -286,6 +286,9 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     Mockito.verifyNoInteractions(mockedFSRemover);
     Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    String compactionQueuePresence = "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " +
+            " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\" IS NULL";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
 
     directories = getDirectories(conf, t, null);
     // Both base and delta files are present since the cleaner skips them as there is a newer write.
@@ -327,6 +330,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     addDeltaFile(t, null, writeId1, writeId1, 2);
     addDeltaFile(t, null, writeId2, writeId2, 2);
 
+    ms.abortTxns(Collections.singletonList(openTxnId2));
     ms.commitTxn(openTxnId3);
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
