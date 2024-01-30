@@ -179,38 +179,38 @@ public class SqlFunctionConverter {
       TypeInfo castType = TypeConverter.convert(dt);
 
       if (castType.equals(TypeInfoFactory.byteTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("tinyint");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.TINYINT_TYPE_NAME);
       } else if (castType instanceof CharTypeInfo) {
-        castUDF = handleCastForParameterizedType(castType, FunctionRegistry.getFunctionInfo("char"));
+        castUDF = handleCastForParameterizedType(castType, FunctionRegistry.getFunctionInfo(serdeConstants.CHAR_TYPE_NAME));
       } else if (castType instanceof VarcharTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
-            FunctionRegistry.getFunctionInfo("varchar"));
+            FunctionRegistry.getFunctionInfo(serdeConstants.VARCHAR_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.stringTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("string");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.STRING_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.booleanTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("boolean");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.BOOLEAN_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.shortTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("smallint");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.SMALLINT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("int");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.longTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("bigint");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.BIGINT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.floatTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("float");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.FLOAT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.doubleTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("double");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.DOUBLE_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("timestamp");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
       } else if (castType instanceof TimestampLocalTZTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
             FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("date");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.DATE_TYPE_NAME);
       } else if (castType instanceof DecimalTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
-            FunctionRegistry.getFunctionInfo("decimal"));
+            FunctionRegistry.getFunctionInfo(serdeConstants.DECIMAL_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.binaryTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("binary");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.BINARY_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intervalDayTimeTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intervalYearMonthTypeInfo)) {

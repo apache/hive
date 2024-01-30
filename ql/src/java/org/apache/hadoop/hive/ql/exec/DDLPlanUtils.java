@@ -89,6 +89,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
+import static org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME;
 
 public class DDLPlanUtils {
   private static final String EXTERNAL = "external";
@@ -964,7 +965,7 @@ public class DDLPlanUtils {
           String unionElementType = formatType(unionElementTypeInfo);
           unionFormattedType.append(unionElementType);
         }
-        return "uniontype<" + unionFormattedType.toString() + ">";
+        return UNION_TYPE_NAME + "<" + unionFormattedType.toString() + ">";
       default:
         throw new RuntimeException("Unknown type: " + typeInfo.getCategory());
     }
