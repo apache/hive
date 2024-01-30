@@ -71,18 +71,12 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
   private final boolean fullAcidView;
   private boolean rewritingAllowed;
   private int countIndex;
-  private final Set<TableName> baseTables;
-  private final RelOptCluster optCluster;
-  private final RelMetadataQuery metadataQuery;
 
-  public MaterializedViewRewritingRelVisitor(boolean fullAcidView, RelOptCluster optCluster, Set<TableName> baseTables) {
-    this.optCluster = optCluster;
+  public MaterializedViewRewritingRelVisitor(boolean fullAcidView) {
     this.containsAggregate = false;
     this.fullAcidView = fullAcidView;
     this.rewritingAllowed = false;
     this.countIndex = -1;
-    this.baseTables = new HashSet<>(baseTables);
-    this.metadataQuery = optCluster.getMetadataQuery();
   }
 
   @Override
@@ -139,51 +133,6 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       }
     }.go(queryBranch);
 
-    Map<RelOptHiveTable, ImmutableBitSet.Builder> projectedColumnMap = new HashMap<>();
-    for (int i = 0; i < queryBranch.getRowType().getFieldList().size(); ++i) {
-      RelDataTypeField relDataTypeField = queryBranch.getRowType().getFieldList().get(i);
-      RexNode rexNode = optCluster.getRexBuilder().makeInputRef(relDataTypeField.getType(), i);
-      RexTableInputRef rexTableInputRef = getColumnLineage(queryBranch, rexNode);
-      if (rexTableInputRef == null) {
-        continue;
-      }
-
-      RelOptHiveTable relOptHiveTable = (RelOptHiveTable) rexTableInputRef.getTableRef().getTable();
-      projectedColumnMap.putIfAbsent(relOptHiveTable, ImmutableBitSet.builder());
-      ImmutableBitSet.Builder projectedColumns = projectedColumnMap.get(relOptHiveTable);
-      projectedColumns.set(rexTableInputRef.getIndex());
-    }
-
-    for (Map.Entry<RelOptHiveTable, ImmutableBitSet.Builder> entry : projectedColumnMap.entrySet()) {
-      ImmutableBitSet projectedColPos = entry.getValue().build();
-
-      PrimaryKeyInfo primaryKeyInfo = entry.getKey().getHiveTableMD().getPrimaryKeyInfo();
-      ImmutableBitSet pkColPos = ImmutableBitSet.of(
-          primaryKeyInfo.getColNames().values().stream()
-              .map(name -> entry.getKey().getRowType().getFieldNames().indexOf(name))
-              .collect(Collectors.toList()));
-
-      if (!pkColPos.isEmpty() && projectedColPos.contains(pkColPos)) {
-        baseTables.remove(entry.getKey().getHiveTableMD().getFullTableName());
-        continue;
-      }
-
-      Collection<List<UniqueConstraint.UniqueConstraintCol>> uniqueConstraints =
-          entry.getKey().getHiveTableMD().getUniqueKeyInfo().getUniqueConstraints().values();
-
-      for (List<UniqueConstraint.UniqueConstraintCol> uniqueConstraintCols : uniqueConstraints) {
-        ImmutableBitSet uniqueColPos = ImmutableBitSet.of(
-            uniqueConstraintCols.stream()
-                .map(uniqueConstraintCol -> uniqueConstraintCol.position - 1)
-                .collect(Collectors.toList()));
-
-        if (!uniqueColPos.isEmpty() && projectedColPos.contains(uniqueColPos)) {
-          baseTables.remove(entry.getKey().getHiveTableMD().getFullTableName());
-          break;
-        }
-      }
-    }
-
     // Second branch should only have the MV
     new RelVisitor() {
       @Override
@@ -238,10 +187,6 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     return countIndex;
   }
 
-  public boolean isAllBasedTablesHasProjectedUniqueKeyColumn() {
-    return baseTables.isEmpty();
-  }
-
   /**
    * Exception used to interrupt a visitor walk.
    */
@@ -251,24 +196,5 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     public ReturnedValue(boolean value) {
       this.value = value;
     }
-  }
-
-  public RexTableInputRef getColumnLineage(RelNode startNode, RexNode rexNode) {
-    if (!(rexNode instanceof RexInputRef)) {
-      return null;
-    }
-
-    RexInputRef rexInputRef = (RexInputRef) rexNode;
-    Set<RexNode> rexNodeSet = metadataQuery.getExpressionLineage(startNode, rexInputRef);
-    if (rexNodeSet == null || rexNodeSet.size() != 1) {
-      return null;
-    }
-
-    RexNode resultRexNode = rexNodeSet.iterator().next();
-    if (!(resultRexNode instanceof RexTableInputRef)) {
-      return null;
-    }
-
-    return (RexTableInputRef) resultRexNode;
   }
 }

@@ -350,7 +350,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       boolean acidView = AcidUtils.isFullAcidTable(mvTable.getTTable())
               || AcidUtils.isNonNativeAcidTable(mvTable);
       MaterializedViewRewritingRelVisitor visitor =
-          new MaterializedViewRewritingRelVisitor(acidView, optCluster, baseTables);
+          new MaterializedViewRewritingRelVisitor(acidView);
       visitor.go(basePlan);
       if (visitor.isRewritingAllowed()) {
         if (!materialization.isSourceTablesUpdateDeleteModified()) {
