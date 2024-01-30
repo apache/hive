@@ -119,7 +119,10 @@ import static java.util.Collections.singletonList;
  *      <li>The materialized view definition query has aggregate and any base tables has delete operations.
  *      {@link HiveAggregateInsertDeleteIncrementalRewritingRule}</li>
  *      <li>The materialized view definition query hasn't got aggregate and any base tables has delete operations.
- *      {@link HiveJoinInsertDeleteIncrementalRewritingRule}</li>
+ *      Incremental rebuild is not possible because all records from all source tables need a unique identifier to
+ *      join it with the corresponding record exists in the view. ROW__ID can not be used because it's writedId
+ *      component is changed at delete and unique and primary key constraints are not enforced in Hive.
+ *      </li>
  *    </ul>
  *    When any base tables has delete operations the {@link HiveTableScan} operators are fetching the deleted rows too
  *    and {@link HiveRowIsDeletedPropagator} ensures that extra filter conditions are added to address these.
