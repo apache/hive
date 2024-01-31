@@ -69,7 +69,7 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@web_returns
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], sort10=[$10], sort11=[$11], sort12=[$12], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], dir3=[ASC-nulls-first], dir4=[ASC-nulls-first], dir5=[ASC-nulls-first], dir6=[ASC-nulls-first], dir7=[ASC-nulls-first], dir8=[ASC-nulls-first], dir9=[ASC-nulls-first], dir10=[ASC-nulls-first], dir11=[ASC-nulls-first], dir12=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], sort10=[$10], sort11=[$11], sort12=[$12], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], dir10=[ASC], dir11=[ASC], dir12=[ASC], fetch=[100])
   HiveProject(c_customer_id=[$1], c_salutation=[$3], c_first_name=[$4], c_last_name=[$5], c_preferred_cust_flag=[$6], c_birth_day=[$7], c_birth_month=[$8], c_birth_year=[$9], c_birth_country=[$10], c_login=[$11], c_email_address=[$12], c_last_review_date=[$13], ctr_total_return=[$18])
     HiveJoin(condition=[=($16, $0)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($14, $2)], joinType=[inner], algorithm=[none], cost=[not available])

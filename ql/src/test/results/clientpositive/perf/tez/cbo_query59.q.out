@@ -93,7 +93,7 @@ POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
   HiveProject(s_store_name1=[$2], s_store_id1=[$1], d_week_seq1=[$3], _o__c3=[/($5, $16)], _o__c4=[/($6, $17)], _o__c5=[/($7, $7)], _o__c6=[/($8, $18)], _o__c7=[/($9, $19)], _o__c8=[/($10, $20)], _o__c9=[/($11, $21)])
     HiveJoin(condition=[AND(=($1, $15), =($3, -($14, 52)))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])

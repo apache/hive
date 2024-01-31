@@ -1,9 +1,9 @@
-Warning: Shuffle Join MERGEJOIN[878][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[890][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 6' is a cross product
-Warning: Shuffle Join MERGEJOIN[880][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 13' is a cross product
-Warning: Shuffle Join MERGEJOIN[902][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 14' is a cross product
-Warning: Shuffle Join MERGEJOIN[882][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 18' is a cross product
-Warning: Shuffle Join MERGEJOIN[914][tables = [$hdt$_2, $hdt$_3, $hdt$_1]] in Stage 'Reducer 19' is a cross product
+Warning: Shuffle Join MERGEJOIN[879][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[891][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[881][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[904][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[883][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 18' is a cross product
+Warning: Shuffle Join MERGEJOIN[917][tables = [$hdt$_2, $hdt$_3, $hdt$_1]] in Stage 'Reducer 19' is a cross product
 PREHOOK: query: explain cbo
 with  cross_items as
  (select i_item_sk ss_item_sk
@@ -223,7 +223,7 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], dir3=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
   HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], $f4=[$4], $f5=[$5])
     HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2, 3}, {0, 1, 2}, {0, 1}, {0}, {}]], agg#0=[sum($4)], agg#1=[sum($5)])
       HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], sales=[$4], number_sales=[$5])

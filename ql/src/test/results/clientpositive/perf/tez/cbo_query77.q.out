@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[212][bigTable=?] in task 'Reducer 11' is a cross product
+Warning: Shuffle Join MERGEJOIN[211][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 12' is a cross product
 PREHOOK: query: explain cbo
 with ss as
  (select s_store_sk,
@@ -232,12 +232,12 @@ POSTHOOK: Input: default@web_returns
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(channel=[$0], id=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
     HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)])
       HiveProject(channel=[$0], id=[$1], sales=[$2], returns=[$3], profit=[$4])
         HiveUnion(all=[true])
-          HiveProject(channel=[_UTF-16LE'store channel'], id=[$0], sales=[$1], returns=[CASE(IS NOT NULL($4), $4, 0)], profit=[-($2, CASE(IS NOT NULL($5), $5, 0))])
+          HiveProject(channel=[_UTF-16LE'store channel'], id=[$0], sales=[$1], returns=[coalesce($4, 0)], profit=[-($2, coalesce($5, 0))])
             HiveJoin(condition=[=($0, $3)], joinType=[left], algorithm=[none], cost=[not available])
               HiveProject(s_store_sk=[$0], $f1=[$1], $f2=[$2])
                 HiveAggregate(group=[{6}], agg#0=[sum($2)], agg#1=[sum($3)])
@@ -285,7 +285,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                     HiveProject(d_date_sk=[$0], d_date=[$2])
                       HiveFilter(condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-08-04 00:00:00, 1998-09-03 00:00:00), IS NOT NULL($0))])
                         HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-          HiveProject(channel=[_UTF-16LE'web channel'], id=[$0], sales=[$1], returns=[CASE(IS NOT NULL($4), $4, 0)], profit=[-($2, CASE(IS NOT NULL($5), $5, 0))])
+          HiveProject(channel=[_UTF-16LE'web channel'], id=[$0], sales=[$1], returns=[coalesce($4, 0)], profit=[-($2, coalesce($5, 0))])
             HiveJoin(condition=[=($0, $3)], joinType=[left], algorithm=[none], cost=[not available])
               HiveProject(wp_web_page_sk=[$0], $f1=[$1], $f2=[$2])
                 HiveAggregate(group=[{0}], agg#0=[sum($3)], agg#1=[sum($4)])

@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[92][bigTable=?] in task 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[92][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo
 select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc
@@ -52,7 +52,7 @@ POSTHOOK: Input: default@web_page
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
   HiveProject(am_pm_ratio=[/(CAST($0):DECIMAL(15, 4), CAST($1):DECIMAL(15, 4))])
     HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject($f0=[$0])

@@ -40,7 +40,7 @@ POSTHOOK: Input: default@time_dim
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(_o__c0=[$0])
-  HiveSortLimit(sort0=[$1], dir0=[ASC-nulls-first], fetch=[100])
+  HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[100])
     HiveProject(_o__c0=[$0], (tok_functionstar count)=[$0])
       HiveAggregate(group=[{}], agg#0=[count()])
         HiveJoin(condition=[=($2, $8)], joinType=[inner], algorithm=[none], cost=[not available])
