@@ -1409,7 +1409,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
-                  Statistics: Num rows: 4200 Data size: 1253037 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 4200 Data size: 1253117 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: PARTIAL

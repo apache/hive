@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 public abstract class FileMetadataHandler {
   protected static final Log LOG = LogFactory.getLog(FileMetadataHandler.class);
 
-  private Configuration conf;
+  protected Configuration conf;
   private PartitionExpressionProxy expressionProxy;
   private FileFormatProxy fileFormatProxy;
   private MetadataStore store;

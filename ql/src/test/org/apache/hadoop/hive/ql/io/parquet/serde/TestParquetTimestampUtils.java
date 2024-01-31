@@ -14,10 +14,13 @@
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
@@ -39,78 +42,89 @@ public class TestParquetTimestampUtils extends TestCase {
 
   public void testJulianDay() {
     //check if May 23, 1968 is Julian Day 2440000
-    Calendar cal = Calendar.getInstance();
+    GregorianCalendar cal = new GregorianCalendar();
+    cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+    cal.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal.set(Calendar.YEAR,  1968);
     cal.set(Calendar.MONTH, Calendar.MAY);
     cal.set(Calendar.DAY_OF_MONTH, 23);
     cal.set(Calendar.HOUR_OF_DAY, 0);
-    cal.setTimeZone(TimeZone.getTimeZone("GMT"));
 
     Timestamp ts = Timestamp.ofEpochMilli(cal.getTimeInMillis());
-    NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
+    NanoTime nt = NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId() ,false);
     Assert.assertEquals(nt.getJulianDay(), 2440000);
 
-    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, false);
+    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(tsFetched, ts);
 
     //check if 30 Julian Days between Jan 1, 2005 and Jan 31, 2005.
-    Calendar cal1 = Calendar.getInstance();
+    GregorianCalendar cal1 = new GregorianCalendar();
+    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
+    cal1.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal1.set(Calendar.YEAR,  2005);
     cal1.set(Calendar.MONTH, Calendar.JANUARY);
     cal1.set(Calendar.DAY_OF_MONTH, 1);
     cal1.set(Calendar.HOUR_OF_DAY, 0);
-    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
 
     Timestamp ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
-    NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, false);
+    NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, TimeZone.getDefault().toZoneId() ,false);
 
-    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
+    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts1Fetched, ts1);
 
-    Calendar cal2 = Calendar.getInstance();
+    GregorianCalendar cal2 = new GregorianCalendar();
+    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
+    cal2.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal2.set(Calendar.YEAR,  2005);
     cal2.set(Calendar.MONTH, Calendar.JANUARY);
     cal2.set(Calendar.DAY_OF_MONTH, 31);
     cal2.set(Calendar.HOUR_OF_DAY, 0);
-    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     Timestamp ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
-    NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, false);
+    NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, TimeZone.getDefault().toZoneId(), false);
 
-    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
+    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts2Fetched, ts2);
     Assert.assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 30);
 
     // check if 730517 Julian Days between Jan 1, 0005 and Jan 31, 2005.
     // This method used to test Julian Days between Jan 1, 2005 BCE and Jan 1, 2005 CE. Since BCE
     // timestamps are not supported, both dates were changed to CE.
-    cal1 = Calendar.getInstance();
+    cal1 = new GregorianCalendar();
+    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
+    cal1.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal1.set(Calendar.YEAR,  0005);
     cal1.set(Calendar.MONTH, Calendar.JANUARY);
     cal1.set(Calendar.DAY_OF_MONTH, 1);
     cal1.set(Calendar.HOUR_OF_DAY, 0);
-    cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
 
     ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
-    nt1 = NanoTimeUtils.getNanoTime(ts1, false);
+    nt1 = NanoTimeUtils.getNanoTime(ts1, TimeZone.getDefault().toZoneId(), false);
 
-    ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
+    ts1Fetched = NanoTimeUtils.getTimestamp(nt1, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts1Fetched, ts1);
 
-    cal2 = Calendar.getInstance();
+    cal2 = new GregorianCalendar();
+    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
+    cal2.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
     cal2.set(Calendar.YEAR,  2005);
     cal2.set(Calendar.MONTH, Calendar.JANUARY);
     cal2.set(Calendar.DAY_OF_MONTH, 31);
     cal2.set(Calendar.HOUR_OF_DAY, 0);
-    cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
-    nt2 = NanoTimeUtils.getNanoTime(ts2, false);
+    nt2 = NanoTimeUtils.getNanoTime(ts2, TimeZone.getDefault().toZoneId(), false);
 
-    ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
+    ts2Fetched = NanoTimeUtils.getTimestamp(nt2, TimeZone.getDefault().toZoneId());
     Assert.assertEquals(ts2Fetched, ts2);
-    Assert.assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 730517);
-}
+    Assert.assertEquals(730517, nt2.getJulianDay() - nt1.getJulianDay());
+
+    Date d1 = Date.ofEpochMilli(cal1.getTimeInMillis());
+    Assert.assertEquals("0005-01-01", d1.toString());
+
+    Date d2 = Date.ofEpochMilli(cal2.getTimeInMillis());
+    Assert.assertEquals("2005-01-31", d2.toString());
+  }
 
   public void testNanos() {
     //case 1: 01:01:01.0000000001
@@ -125,7 +139,7 @@ public class TestParquetTimestampUtils extends TestCase {
     Timestamp ts = Timestamp.ofEpochMilli(cal.getTimeInMillis(), 1);
 
     //(1*60*60 + 1*60 + 1) * 10e9 + 1
-    NanoTime nt = NanoTimeUtils.getNanoTime(ts, false, GMT);
+    NanoTime nt = NanoTimeUtils.getNanoTime(ts, GMT, false);
     Assert.assertEquals(nt.getTimeOfDayNanos(), 3661000000001L);
 
     //case 2: 23:59:59.999999999
@@ -140,7 +154,7 @@ public class TestParquetTimestampUtils extends TestCase {
     ts = Timestamp.ofEpochMilli(cal.getTimeInMillis(), 999999999);
 
     //(23*60*60 + 59*60 + 59)*10e9 + 999999999
-    nt = NanoTimeUtils.getNanoTime(ts, false, GMT);
+    nt = NanoTimeUtils.getNanoTime(ts, GMT, false);
     Assert.assertEquals(nt.getTimeOfDayNanos(), 86399999999999L);
 
     //case 3: verify the difference.
@@ -164,15 +178,15 @@ public class TestParquetTimestampUtils extends TestCase {
     cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
     Timestamp ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis(), 1);
 
-    NanoTime n2 = NanoTimeUtils.getNanoTime(ts2, false, GMT);
-    NanoTime n1 = NanoTimeUtils.getNanoTime(ts1, false, GMT);
+    NanoTime n2 = NanoTimeUtils.getNanoTime(ts2, GMT, false);
+    NanoTime n1 = NanoTimeUtils.getNanoTime(ts1, GMT, false);
 
     Assert.assertEquals(n2.getTimeOfDayNanos() - n1.getTimeOfDayNanos(), 600000000009L);
 
     NanoTime n3 = new NanoTime(n1.getJulianDay() - 1, n1.getTimeOfDayNanos() + TimeUnit.DAYS.toNanos(1));
-    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, GMT, false));
     n3 = new NanoTime(n1.getJulianDay() + 3, n1.getTimeOfDayNanos() - TimeUnit.DAYS.toNanos(3));
-    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, GMT, false));
   }
 
   public void testTimezone() {
@@ -194,7 +208,7 @@ public class TestParquetTimestampUtils extends TestCase {
      * 17:00 PST = 01:00 GMT (if not daylight savings)
      * (1*60*60 + 1*60 + 1)*10e9 + 1 = 3661000000001
      */
-    NanoTime nt = NanoTimeUtils.getNanoTime(ts, false, US_PACIFIC);
+    NanoTime nt = NanoTimeUtils.getNanoTime(ts, US_PACIFIC, false);
     long timeOfDayNanos = nt.getTimeOfDayNanos();
     Assert.assertTrue(timeOfDayNanos == 61000000001L || timeOfDayNanos == 3661000000001L);
 
@@ -212,17 +226,17 @@ public class TestParquetTimestampUtils extends TestCase {
 
   public void testTimezoneless() {
     Timestamp ts1 = Timestamp.valueOf("2011-01-01 00:30:30.111111111");
-    NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, true);
+    NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, ZoneOffset.UTC, false);
     Assert.assertEquals(nt1.getJulianDay(), 2455563);
     Assert.assertEquals(nt1.getTimeOfDayNanos(), 1830111111111L);
-    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, true);
+    Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, ZoneOffset.UTC);
     Assert.assertEquals(ts1Fetched.toString(), ts1.toString());
 
     Timestamp ts2 = Timestamp.valueOf("2011-02-02 08:30:30.222222222");
-    NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, true);
+    NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, ZoneOffset.UTC, false);
     Assert.assertEquals(nt2.getJulianDay(), 2455595);
     Assert.assertEquals(nt2.getTimeOfDayNanos(), 30630222222222L);
-    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, true);
+    Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, ZoneOffset.UTC);
     Assert.assertEquals(ts2Fetched.toString(), ts2.toString());
   }
 
@@ -257,8 +271,10 @@ public class TestParquetTimestampUtils extends TestCase {
 
   private void verifyTsString(String tsString, boolean local) {
     Timestamp ts = Timestamp.valueOf(tsString);
-    NanoTime nt = NanoTimeUtils.getNanoTime(ts, local);
-    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, local);
+    ZoneId sourceZone = local ? ZoneOffset.UTC : TimeZone.getDefault().toZoneId(); 
+    NanoTime nt = NanoTimeUtils.getNanoTime(ts, sourceZone, false);
+    ZoneId targetZone = local ? ZoneOffset.UTC : TimeZone.getDefault().toZoneId();
+    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, targetZone);
     Assert.assertEquals(tsString, tsFetched.toString());
   }
 
