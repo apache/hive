@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE TABLE validate_load_data(key int, value string) partitioned by (hr int) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@validate_load_data
+POSTHOOK: query: CREATE TABLE validate_load_data(key int, value string) partitioned by (hr int) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@validate_load_data
+FAILED: SemanticException Line 2:17 Invalid path ''hdfs://### HDFS PATH ###''

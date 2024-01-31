@@ -161,8 +161,12 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     return new URI(fromScheme, fromAuthority, path, null, null);
   }
 
-  private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Table table) throws SemanticException {
-
+  /**
+   * Verifies the file path existence. If the path is a directory, then it is
+   * verified to not be a glob pattern. If the path is a file, then it is
+   * verified to be a valid file name.
+   */
+  private FileStatus[] verifyFilePathExists(URI fromURI) throws SemanticException {
     FileStatus[] srcs = null;
 
     // local mode implies that scheme should be "file"
@@ -172,7 +176,6 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
           ErrorMsg.ILLEGAL_PATH.getMsg(), fromTree,
           "Source file system should be \"file\" if \"local\" is specified"));
     }
-
     try {
       FileSystem fileSystem = FileSystem.get(fromURI, conf);
       srcs = matchFilesOrDir(fileSystem, new Path(fromURI));
@@ -181,7 +184,16 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
             ErrorMsg.INVALID_PATH.getMsg(), fromTree,
             "No files matching path " + fromURI));
       }
-
+    } catch (IOException e) {
+      throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_PATH.getMsg(), fromTree), e);
+    }
+    return srcs;
+  }
+    private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Table table, FileStatus[] srcs)
+            throws SemanticException {
+    try {
+      FileSystem fileSystem = FileSystem.get(fromURI, conf);
       for (FileStatus oneSrc : srcs) {
         if (oneSrc.isDir()) {
           reparseAndSuperAnalyze(table, fromURI);
@@ -325,6 +337,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     if(ts.tableHandle.isStoredAsSubDirectories()) {
       throw new SemanticException(ErrorMsg.LOAD_INTO_STORED_AS_DIR.getMsg());
     }
+    // validate the arguments
+    FileStatus[] srcs = verifyFilePathExists(fromURI);
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
     if ((parts != null && parts.size() > 0)
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
@@ -344,7 +358,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     // make sure the arguments make sense
-    List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, ts.tableHandle);
+    List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, ts.tableHandle, srcs);
     if (queryReWritten) {
       return;
     }

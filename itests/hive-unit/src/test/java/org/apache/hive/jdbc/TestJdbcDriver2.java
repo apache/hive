@@ -3422,4 +3422,62 @@ public class TestJdbcDriver2 {
       stmt.close();
     }
   }
+  /**
+   * These test methods validate the error handling when attempting to load data from a non-existent file into different types of Hive tables.
+   * Each test creates a specific type of table (non-partitioned, dynamically partitioned, or bucketed), and then attempts to load data from a non-existent file.
+   * The tests pass if an exception is thrown with a message containing the string "Invalid path".
+   */
+  @Test
+  public void testLoadDataNegativeForNonPartition() throws Exception{
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    try {
+      stmt.execute("drop table if exists T");
+      stmt.execute("create table T (a int, b int) stored as orc");
+      try {
+        stmt.execute("load data local inpath '/path/to/nonexistent/file' into table T");
+        fail("Expected an exception to be thrown");
+      } catch (Exception e) {
+        assertTrue("load data inpath",
+                e.getMessage() != null && e.getMessage().contains("Invalid path"));
+      }
+    } finally {
+      stmt.close();
+    }
+  }
+
+  public void testLoadDataNegativeForDynamicPartition() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    try {
+      stmt.execute("drop table if exists T");
+      stmt.execute("create table T (a int, b int) partitioned by (p int) stored as orc");
+      stmt.execute("set hive.exec.dynamic.partition=true");
+      stmt.execute("set hive.exec.dynamic.partition.mode=nonstrict");
+      try {
+        stmt.execute("load data local inpath '/path/to/nonexistent/file' into table T partition (p)");
+        fail("Expected an exception to be thrown");
+      } catch (Exception e) {
+        assertTrue("load data inpath",
+                e.getMessage() != null && e.getMessage().contains("Invalid path"));
+      }
+    } finally {
+      stmt.close();
+    }
+  }
+
+  public void testLoadDataNegativeForBucketed() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    try {
+      stmt.execute("drop table if exists T");
+      stmt.execute("create table T (a int, b int) clustered by (a) into 2 buckets stored as orc");
+      try {
+        stmt.execute("load data local inpath '/path/to/nonexistent/file' into table T");
+        fail("Expected an exception to be thrown");
+      } catch (Exception e) {
+        assertTrue("load data inpath",
+                e.getMessage() != null && e.getMessage().contains("Invalid path"));
+      }
+    } finally {
+      stmt.close();
+    }
+  }
 }
