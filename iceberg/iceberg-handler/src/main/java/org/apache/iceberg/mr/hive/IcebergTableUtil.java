@@ -335,7 +335,7 @@ public class IcebergTableUtil {
     return data;
   }
 
-  public static void getFiles(Table table, List<DataFile> dataFiles, List<DeleteFile> deleteFiles) {
+  public static void getDataAndDeleteFiles(Table table, List<DataFile> dataFiles, List<DeleteFile> deleteFiles) {
     CloseableIterable<FileScanTask> fileScanTasks = table.newScan().planFiles();
     Set<String> dataFilesPath = Sets.newHashSet();
     Set<String> deleteFilesPath = Sets.newHashSet();
@@ -348,7 +348,8 @@ public class IcebergTableUtil {
 
       // filter repeated delete files
       fileScanTask.deletes().stream()
-              .filter(delete -> deleteFilesPath.add(delete.path().toString()))
-              .forEach(deleteFiles::add);
+          .filter(delete -> deleteFilesPath.add(delete.path().toString()))
+          .forEach(deleteFiles::add);
     });
+  }
 }

@@ -553,7 +553,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
         List<DataFile> existingDataFiles = Lists.newArrayList();
         List<DeleteFile> existingDeleteFiles = Lists.newArrayList();
-        IcebergTableUtil.getFiles(table, existingDataFiles, existingDeleteFiles);
+        IcebergTableUtil.getDataAndDeleteFiles(table, existingDataFiles, existingDeleteFiles);
 
         RewriteFiles rewriteFiles = transaction.newRewrite();
         rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
