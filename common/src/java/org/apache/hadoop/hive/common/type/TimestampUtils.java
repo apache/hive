@@ -168,4 +168,31 @@ public class TimestampUtils {
     }
   }
 
+  private static final int DATE_LENGTH = "YYYY-MM-DD".length();
+
+  public static Timestamp stringToTimestamp(String s) {
+    s = s.trim();
+    // Handle simpler cases directly avoiding exceptions
+    if (s.length() == DATE_LENGTH) {
+      // Its a date!
+      return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+    }
+    try {
+      return Timestamp.valueOf(s);
+    } catch (IllegalArgumentException eT) {
+      // Try zoned timestamp
+      try {
+        return Timestamp.valueOf(
+            TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime().toString());
+      } catch (IllegalArgumentException | DateTimeException eTZ) {
+        try {
+          // Try HH:mm:ss format (For Hour, Minute & Second UDF).
+          return Timestamp.getTimestampFromTime(s);
+        } catch(DateTimeException e) {
+          // Last attempt
+          return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
+        }
+      }
+    }
+  }
 }

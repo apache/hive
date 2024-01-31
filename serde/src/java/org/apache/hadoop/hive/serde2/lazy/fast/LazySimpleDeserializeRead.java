@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -801,16 +803,12 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
               return false;
             }
             String s = new String(bytes, fieldStart, fieldLength, StandardCharsets.US_ASCII);
-            if (s.compareTo("NULL") == 0) {
+            Timestamp ts = timestampParser.parseTimestamp(s);
+            if (ts == null) {
               logExceptionMessage(bytes, fieldStart, fieldLength, "TIMESTAMP");
               return false;
             }
-            try {
-              currentTimestampWritable.set(timestampParser.parseTimestamp(s));
-            } catch (IllegalArgumentException e) {
-              logExceptionMessage(bytes, fieldStart, fieldLength, "TIMESTAMP");
-              return false;
-            }
+            currentTimestampWritable.set(ts);
           }
           return true;
         case INTERVAL_YEAR_MONTH:

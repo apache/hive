@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
@@ -94,6 +95,7 @@ import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
 import org.apache.hive.beeline.hs2connection.HiveSiteHS2ConnectionFileParser;
 import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.JdbcUriParseException;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
@@ -389,6 +391,12 @@ public class BeeLine implements Closeable {
         .withLongOpt("help")
         .withDescription("Display this message")
         .create('h'));
+    
+    // -getUrlsFromBeelineSite
+    options.addOption(OptionBuilder
+        .withLongOpt("getUrlsFromBeelineSite")
+        .withDescription("Print all urls from beeline-site.xml, if it is present in the classpath")
+        .create());
 
     // Substitution option --hivevar
     options.addOption(OptionBuilder
@@ -712,7 +720,7 @@ public class BeeLine implements Closeable {
 
     private boolean isBeeLineOpt(String arg) {
       return arg.startsWith("--") && !(HIVE_VAR_PREFIX.equals(arg) || (HIVE_CONF_PREFIX.equals(arg))
-          || "--help".equals(arg) || PROP_FILE_PREFIX.equals(arg));
+          || "--help".equals(arg) || PROP_FILE_PREFIX.equals(arg) || "--getUrlsFromBeelineSite".equals(arg));
     }
   }
 
@@ -843,6 +851,12 @@ public class BeeLine implements Closeable {
       getOpts().setHelpAsked(true);
       return true;
     }
+    
+    if (cl.hasOption("getUrlsFromBeelineSite")) {
+      printBeelineSiteUrls();
+      getOpts().setBeelineSiteUrlsAsked(true);
+      return true;
+    }
 
     Properties hiveVars = cl.getOptionProperties("hivevar");
     for (String key : hiveVars.stringPropertyNames()) {
@@ -915,6 +929,44 @@ public class BeeLine implements Closeable {
         exit = true;
         return false;
       }
+    }
+    return false;
+  }
+
+  private void printBeelineSiteUrls() {
+    BeelineSiteParser beelineSiteParser = getUserBeelineSiteParser();
+    if (!beelineSiteParser.configExists()) {
+      output("No beeline-site.xml in the path", true);
+    }
+    if (beelineSiteParser.configExists()) {
+      // Get the named url from user specific config file if present
+      try {
+        Properties userNamedConnectionURLs = beelineSiteParser.getConnectionProperties();
+        userNamedConnectionURLs.remove(BeelineSiteParser.DEFAULT_NAMED_JDBC_URL_PROPERTY_KEY);
+        StringBuilder sb = new StringBuilder("urls: ");
+        for (Entry<Object, Object> entry : userNamedConnectionURLs.entrySet()) {
+          String urlFromBeelineSite = (String) entry.getValue();
+          if (isZkBasedUrl(urlFromBeelineSite)) {
+            List<String> jdbcUrls = HiveConnection.getAllUrlStrings(urlFromBeelineSite);
+            for (String jdbcUrl : jdbcUrls) {
+              sb.append(jdbcUrl + ", ");
+            }
+          } else {
+            sb.append(urlFromBeelineSite + ", ");
+          }
+        }
+        output(sb.toString(), true);
+      } catch (Exception e) {
+        output(e.getMessage(), true);
+        return;
+      }
+    }
+  }
+  
+  private boolean isZkBasedUrl(String urlFromBeelineSite) {
+    String zkJdbcUriParam = ("serviceDiscoveryMode=zooKeeper").toLowerCase();
+    if (urlFromBeelineSite.toLowerCase().contains(zkJdbcUriParam)) {
+      return true;
     }
     return false;
   }
@@ -1058,6 +1110,9 @@ public class BeeLine implements Closeable {
     }
 
     if (getOpts().isHelpAsked()) {
+      return 0;
+    }
+    if (getOpts().isBeelineSiteUrlsAsked()) {
       return 0;
     }
     if (getOpts().getScriptFile() != null) {

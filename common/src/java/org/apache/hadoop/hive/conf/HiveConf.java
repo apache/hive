@@ -1915,12 +1915,35 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
+    HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN("hive.parquet.date.proleptic.gregorian", false,
+        "Should we write date using the proleptic Gregorian calendar instead of the hybrid Julian Gregorian?\n" +
+        "Hybrid is the default."),
+    HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT("hive.parquet.date.proleptic.gregorian.default", false,
+      "This value controls whether date type in Parquet files was written using the hybrid or proleptic\n" +
+      "calendar. Hybrid is the default."),
+    HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.parquet.timestamp.legacy.conversion.enabled", true,
+    "Whether to use former Java date/time APIs to convert between timezones when reading timestamps from " +
+        "Parquet files. The property has no effect when the file contains explicit metadata about the conversion " +
+        "used to write the data; in this case reading conversion is chosen based on the metadata."),
+    HIVE_PARQUET_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED("hive.parquet.timestamp.write.legacy.conversion.enabled", false,
+        "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
+        "Parquet files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
+        "Changing the value of this property affects only new data written to the file."),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
         "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
         "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
         "Setting this flag to true will treat legacy timestamps as time zone agnostic. Setting " +
         "it to false will treat legacy timestamps as UTC-normalized. This flag will not affect " +
         "timestamps written after this change."),
+    HIVE_AVRO_PROLEPTIC_GREGORIAN("hive.avro.proleptic.gregorian", false,
+        "Should we write date and timestamp using the proleptic Gregorian calendar instead of the hybrid Julian Gregorian?\n" +
+        "Hybrid is the default."),
+    HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT("hive.avro.proleptic.gregorian.default", false,
+        "This value controls whether date and timestamp type in Avro files was written using the hybrid or proleptic\n" +
+        "calendar. Hybrid is the default."),
+    HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.legacy.conversion.enabled", true,
+        "This value controls whether we use former Java time API to convert between timezones on files where timezone\n" +
+        "is not encoded in the metadata. This is for debugging."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
@@ -3668,9 +3691,9 @@ public class HiveConf extends Configuration {
         "For example, arithmetic expressions which can overflow the output data type can be evaluated using\n" +
         " checked vector expressions so that they produce same result as non-vectorized evaluation."),
     HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS(
-		"hive.vectorized.adaptor.suppress.evaluate.exceptions", false,
+        "hive.vectorized.adaptor.suppress.evaluate.exceptions", false,
         "This flag should be set to true to suppress HiveException from the generic UDF function\n" +
-		"evaluate call and turn them into NULLs. Assume, by default, this is not needed"),
+        "evaluate call and turn them into NULLs. Assume, by default, this is not needed"),
     HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED(
         "hive.vectorized.input.format.supports.enabled",
         "decimal_64",
@@ -4112,7 +4135,8 @@ public class HiveConf extends Configuration {
     LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR("hive.llap.mapjoin.memory.oversubscribe.factor", 0.2f,
       "Fraction of memory from hive.auto.convert.join.noconditionaltask.size that can be over subscribed\n" +
         "by queries running in LLAP mode. This factor has to be from 0.0 to 1.0. Default is 20% over subscription.\n"),
-    LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY("hive.llap.memory.oversubscription.max.executors.per.query", 3,
+    LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY("hive.llap.memory.oversubscription.max.executors.per.query",
+      -1,
       "Used along with hive.llap.mapjoin.memory.oversubscribe.factor to limit the number of executors from\n" +
         "which memory for mapjoin can be borrowed. Default 3 (from 3 other executors\n" +
         "hive.llap.mapjoin.memory.oversubscribe.factor amount of memory can be borrowed based on which mapjoin\n" +

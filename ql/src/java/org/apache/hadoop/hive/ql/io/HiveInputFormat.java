@@ -18,40 +18,22 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.hive.common.util.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
@@ -69,6 +51,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -77,8 +60,27 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hive.common.util.Ref;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -370,7 +372,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
     HiveInputSplit hsplit = (HiveInputSplit) split;
-    InputSplit inputSplit = hsplit.getInputSplit();
     String inputFormatClassName = null;
     Class inputFormatClass = null;
     try {
@@ -411,7 +412,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     RecordReader innerReader = null;
     try {
-      innerReader = inputFormat.getRecordReader(inputSplit, job, reporter);
+      // Handle the special header/footer skipping cases here.
+      innerReader = RecordReaderWrapper.create(inputFormat, hsplit, part.getTableDesc(), job, reporter);
     } catch (Exception e) {
       innerReader = HiveIOExceptionHandlerUtil
           .handleRecordReaderCreationException(e, job);
@@ -502,14 +504,19 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     conf.setInputFormat(inputFormat.getClass());
-    int headerCount = 0;
-    int footerCount = 0;
     if (table != null) {
-      headerCount = Utilities.getHeaderCount(table);
-      footerCount = Utilities.getFooterCount(table, conf);
+      int headerCount = Utilities.getHeaderCount(table);
+      int footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
-        // Input file has header or footer, cannot be splitted.
-        HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+        if (TextInputFormat.class.isAssignableFrom(inputFormatClass) && isUncompressedInput(finalDirs, conf)) {
+          SkippingTextInputFormat skippingTextInputFormat = new SkippingTextInputFormat();
+          skippingTextInputFormat.configure(conf, headerCount, footerCount);
+          inputFormat = skippingTextInputFormat;
+        } else {
+          // if the input is Compressed OR not text we have no way of splitting them!
+          // In that case RecordReader should take care of header/footer skipping!
+          HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+        }
       }
     }
 
@@ -566,6 +573,25 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
     return validWriteIdList;
+  }
+
+  public boolean isUncompressedInput(List<Path> finalPaths, Configuration conf) throws IOException {
+    CompressionCodecFactory compressionCodecs = new CompressionCodecFactory(conf);
+    for (Path curr : finalPaths) {
+      FileSystem fs = curr.getFileSystem(conf);
+      if (fs.isDirectory(curr)) {
+        List<FileStatus> results = new ArrayList<>();
+        FileUtils.listStatusRecursively(fs, fs.getFileStatus(curr), results);
+        for (FileStatus fileStatus : results) {
+          if (compressionCodecs.getCodec(fileStatus.getPath()) != null) {
+            return false;
+          }
+        }
+      } else if (compressionCodecs.getCodec(curr) != null) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static void processPathsForMmRead(List<Path> dirs, Configuration conf,

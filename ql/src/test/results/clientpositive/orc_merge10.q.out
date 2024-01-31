@@ -636,6 +636,7 @@ File Version: 0.12 with ORC_517
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
+Calendar: Julian/Gregorian
 Type: struct<key:int,value:string>
 
 Stripe Statistics:
@@ -706,6 +707,7 @@ File Version: 0.12 with ORC_517
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
+Calendar: Julian/Gregorian
 Type: struct<key:int,value:string>
 
 Stripe Statistics:

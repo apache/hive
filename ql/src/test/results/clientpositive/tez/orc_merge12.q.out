@@ -148,6 +148,7 @@ File Version: 0.12 with ORC_517
 Rows: 24576
 Compression: ZLIB
 Compression size: 131072
+Calendar: Julian/Gregorian
 Type: struct<atinyint:tinyint,asmallint:smallint,aint:int,abigint:bigint,afloat:float,adouble:double,astring1:string,astring2:string,atimestamp1:timestamp,atimestamp2:timestamp,aboolean1:boolean,aboolean2:boolean,btinyint:tinyint,bsmallint:smallint,bint:int,bbigint:bigint,bfloat:float,bdouble:double,bstring1:string,bstring2:string,btimestamp1:timestamp,btimestamp2:timestamp,bboolean1:boolean,bboolean2:boolean,ctinyint:tinyint,csmallint:smallint,cint:int,cbigint:bigint,cfloat:float,cdouble:double,cstring1:string,cstring2:string,ctimestamp1:timestamp,ctimestamp2:timestamp,cboolean1:boolean,cboolean2:boolean>
 
 Stripe Statistics:
@@ -813,7 +814,7 @@ Stripes:
       Entry 0: count: 6889 hasNull: true true: 3402 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true true: 581 positions: 0,168,8,0,0,520,97,1
 
-File length: 3004630 bytes
+File length: 3004632 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

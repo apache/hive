@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader.ReaderWithOffsets;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.LineRecordReader;
 
 final class LineRrOffsetReader extends PassThruOffsetReader {
@@ -43,24 +44,29 @@ final class LineRrOffsetReader extends PassThruOffsetReader {
     isCompressedMethod = isCompressedMethodTmp;
   }
 
-  static ReaderWithOffsets create(LineRecordReader sourceReader) {
-    if (isCompressedMethod == null) return new PassThruOffsetReader(sourceReader);
+  static ReaderWithOffsets create(LineRecordReader sourceReader, JobConf jobConf, int skipHeaderCnt, int skipFooterCnt) {
+    // File not compressed, skipping is already done as part of SkippingTextInputFormat
+    if (isCompressedMethod == null) {
+      return new PassThruOffsetReader(sourceReader, jobConf, 0, 0);
+    }
     Boolean isCompressed = null;
     try {
       isCompressed = (Boolean)isCompressedMethod.invoke(sourceReader);
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       LlapIoImpl.LOG.error("Cannot check the reader for compression; offsets not supported", e);
-      return new PassThruOffsetReader(sourceReader);
+      return new PassThruOffsetReader(sourceReader, jobConf, 0, 0);
     }
     if (isCompressed) {
+      // Cannot slice compressed files - do header/footer skipping within the Reader
       LlapIoImpl.LOG.info("Reader is compressed; offsets not supported");
-      return new PassThruOffsetReader(sourceReader); // Cannot slice compressed files.
+      return new PassThruOffsetReader(sourceReader, jobConf, skipHeaderCnt, skipFooterCnt);
     }
-    return new LineRrOffsetReader(sourceReader);
+    // For non-compressed Text Files Header/Footer Skipping is already done as part of SkippingTextInputFormat
+    return new LineRrOffsetReader(sourceReader, jobConf);
   }
 
-  private LineRrOffsetReader(LineRecordReader sourceReader) {
-    super(sourceReader);
+  private LineRrOffsetReader(LineRecordReader sourceReader, JobConf jobConf) {
+    super(sourceReader, jobConf, 0, 0);
     this.lrReader = sourceReader;
     this.posKey = (LongWritable)key;
   }
