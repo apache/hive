@@ -1346,7 +1346,7 @@ PREHOOK: query: alter table orc_ppd_n3 change column f f double
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: default@orc_ppd_n3
-PREHOOK: query: select count(*) from orc_ppd_n3 where f = 74.72
+PREHOOK: query: select count(*) from orc_ppd_n3 where f = 74.72000122070312
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
@@ -1378,7 +1378,7 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd_n3 where f = 74.72
+PREHOOK: query: select count(*) from orc_ppd_n3 where f = 74.72000122070312
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
@@ -1414,7 +1414,7 @@ PREHOOK: query: alter table orc_ppd_n3 change column f f string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: default@orc_ppd_n3
-PREHOOK: query: select count(*) from orc_ppd_n3 where f = '74.72'
+PREHOOK: query: select count(*) from orc_ppd_n3 where f = '74.72000122070312'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
@@ -1446,7 +1446,7 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd_n3 where f = '74.72'
+PREHOOK: query: select count(*) from orc_ppd_n3 where f = '74.72000122070312'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###

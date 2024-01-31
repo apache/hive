@@ -24,7 +24,9 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -212,4 +214,38 @@ public class TestTimestampColumnVector {
 
     return testFormatter;
   }
+
+
+  @Test(timeout = 300_000)
+  public void testMultiThreaded() throws Exception {
+
+    // similar to TestDateColumnVector#testMultiThreaded
+
+    List<Thread> threads = new ArrayList<>();
+
+    threads.add(startVectorManipulationThread(50000, -141428));
+    threads.add(startVectorManipulationThread(50000, -141430));
+    threads.add(startVectorManipulationThread(50000, -16768));
+    threads.add(startVectorManipulationThread(50000, -499952));
+    threads.add(startVectorManipulationThread(50000, -499955));
+
+    for (Thread thread : threads) {
+      thread.join();
+    }
+
+  }
+
+  private Thread startVectorManipulationThread(final int vectorLength, final long millis) {
+    Thread thread = new Thread(() -> {
+      TimestampColumnVector columnVector = new TimestampColumnVector(vectorLength).setUsingProlepticCalendar(true);
+      for (int i = 0; i < vectorLength; i++) {
+        columnVector.time[i] = millis;
+        columnVector.nanos[i] = 1;
+      }
+      columnVector.changeCalendar(false, true);
+    });
+    thread.start();
+    return thread;
+  }
+
 }

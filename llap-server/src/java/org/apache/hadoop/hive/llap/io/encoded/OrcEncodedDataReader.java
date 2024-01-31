@@ -77,6 +77,7 @@ import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.BloomFilterIndex;
+import org.apache.orc.OrcProto.CalendarKind;
 import org.apache.orc.OrcProto.FileTail;
 import org.apache.orc.OrcProto.RowIndex;
 import org.apache.orc.OrcProto.Stream;
@@ -768,7 +769,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       sargApp = new RecordReaderImpl.SargApplier(sarg,
           rowIndexStride, evolution,
           OrcFile.WriterVersion.from(OrcFile.WriterImplementation.ORC_JAVA, fileMetadata.getWriterVersionNum()),
-          false);
+          true, fileMetadata.getCalendar() == CalendarKind.PROLEPTIC_GREGORIAN, true);
     }
     boolean hasAnyData = false;
     // stripeRgs should have been initialized by this time with an empty array.

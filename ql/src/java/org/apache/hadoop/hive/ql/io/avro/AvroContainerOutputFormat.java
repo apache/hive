@@ -31,6 +31,7 @@ import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +81,8 @@ public class AvroContainerOutputFormat
 
     // add writer.time.zone property to file metadata
     dfw.setMeta(AvroSerDe.WRITER_TIME_ZONE, TimeZone.getDefault().toZoneId().toString());
+    dfw.setMeta(AvroSerDe.WRITER_PROLEPTIC, String.valueOf(
+        HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN)));
     dfw.create(schema, path.getFileSystem(jobConf).create(path));
     return new AvroGenericRecordWriter(dfw);
   }

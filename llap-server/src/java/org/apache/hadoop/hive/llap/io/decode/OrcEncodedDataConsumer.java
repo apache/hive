@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.CompressionCodec;
+import org.apache.orc.OrcProto.CalendarKind;
 import org.apache.orc.impl.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory;
@@ -224,7 +226,8 @@ public class OrcEncodedDataConsumer
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
             .writerTimeZone(stripeMetadata.getWriterTimezone())
             .fileFormat(fileMetadata == null ? null : fileMetadata.getFileVersion())
-            .useUTCTimestamp(true);
+            .useUTCTimestamp(true)
+            .setProlepticGregorian(fileMetadata != null && fileMetadata.getCalendar() == CalendarKind.PROLEPTIC_GREGORIAN, true);
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
         batchSchemas, stripeMetadata.getEncodings(), batch, codec, context, useDecimal64ColumnVectors);
@@ -246,8 +249,9 @@ public class OrcEncodedDataConsumer
       case SHORT:
       case INT:
       case LONG:
-      case DATE:
         return new LongColumnVector(batchSize);
+      case DATE:
+        return new DateColumnVector(batchSize);
       case FLOAT:
       case DOUBLE:
         return new DoubleColumnVector(batchSize);
