@@ -1,7 +1,7 @@
-Warning: Shuffle Join MERGEJOIN[518][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[519][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[533][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 14' is a cross product
-Warning: Shuffle Join MERGEJOIN[534][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 15' is a cross product
+Warning: Shuffle Join MERGEJOIN[518][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[519][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_1, $hdt$_5]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[533][tables = [$hdt$_3, $hdt$_4, $hdt$_5, $hdt$_2]] in Stage 'Reducer 7' is a cross product
+Warning: Shuffle Join MERGEJOIN[534][tables = [$hdt$_3, $hdt$_4, $hdt$_5, $hdt$_2, $hdt$_6]] in Stage 'Reducer 8' is a cross product
 PREHOOK: query: explain cbo
 with cs_ui as
  (select cs_item_sk
@@ -268,12 +268,14 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_streen_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(2000):INTEGER], cnt=[$11], s1=[$12], s2=[$13], s3=[$14], s11=[$15], s21=[$16], s31=[$17], syear1=[CAST(2001):INTEGER], cnt1=[$18])
-  HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$18], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first])
+  HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$18], dir0=[ASC], dir1=[ASC], dir2=[ASC])
     HiveProject(product_name=[$0], store_name=[$2], store_zip=[$3], b_street_number=[$4], b_streen_name=[$5], b_city=[$6], b_zip=[$7], c_street_number=[$8], c_street_name=[$9], c_city=[$10], c_zip=[$11], cnt=[$12], s1=[$13], s2=[$14], s3=[$15], s11=[$20], s21=[$21], s31=[$22], cnt1=[$19])
       HiveJoin(condition=[AND(AND(AND(=($1, $16), <=($19, $12)), =($2, $17)), =($3, $18))], joinType=[inner], algorithm=[none], cost=[not available])
-        HiveProject($f0=[$9], $f1=[$8], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$10], $f9=[$11], $f10=[$12], $f11=[$13], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
-          HiveAggregate(group=[{4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}], agg#0=[count()], agg#1=[sum($1)], agg#2=[sum($2)], agg#3=[sum($3)])
-            HiveJoin(condition=[=($8, $15)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject($f0=[$13], $f1=[$12], $f2=[$6], $f3=[$7], $f4=[$8], $f5=[$9], $f6=[$10], $f7=[$11], $f8=[$0], $f9=[$1], $f10=[$2], $f11=[$3], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
+          HiveAggregate(group=[{1, 2, 3, 4, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19}], agg#0=[count()], agg#1=[sum($6)], agg#2=[sum($7)], agg#3=[sum($8)])
+            HiveJoin(condition=[=($13, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                HiveTableScan(table=[[default, customer_address]], table:alias=[ad2])
               HiveJoin(condition=[=($0, $13)], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveProject(ss_item_sk=[$0], ss_wholesale_cost=[$2], ss_list_price=[$3], ss_coupon_amt=[$4], d_year0=[$5], d_year1=[$6], s_store_name=[$7], s_zip=[$8], c_current_addr_sk=[$10], ca_street_number=[$13], ca_street_name=[$14], ca_city=[$15], ca_zip=[$16])
                   HiveJoin(condition=[=($1, $12)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -284,9 +286,11 @@ HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=
                             HiveProject(ss_item_sk=[$0], ss_hdemo_sk=[$3], ss_addr_sk=[$4], ss_wholesale_cost=[$5], ss_list_price=[$6], ss_coupon_amt=[$7], d_year0=[$9], d_year1=[$11], s_store_name=[$12], s_zip=[$13], c_current_cdemo_sk=[$15], c_current_hdemo_sk=[$16], c_current_addr_sk=[$17], cd_marital_status=[$21])
                               HiveJoin(condition=[=($2, $20)], joinType=[inner], algorithm=[none], cost=[not available])
                                 HiveJoin(condition=[AND(AND(=($1, $14), =($19, $8)), =($18, $10))], joinType=[inner], algorithm=[none], cost=[not available])
-                                  HiveProject(ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_wholesale_cost=[$7], ss_list_price=[$8], ss_coupon_amt=[$9], d_date_sk0=[$16], d_year0=[$17], d_date_sk1=[$14], d_year1=[$15], s_store_name=[$12], s_zip=[$13])
+                                  HiveProject(ss_item_sk=[$3], ss_customer_sk=[$4], ss_cdemo_sk=[$5], ss_hdemo_sk=[$6], ss_addr_sk=[$7], ss_wholesale_cost=[$9], ss_list_price=[$10], ss_coupon_amt=[$11], d_date_sk0=[$16], d_year0=[$17], d_date_sk1=[$0], d_year1=[$1], s_store_name=[$14], s_zip=[$15])
                                     HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
                                       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                                        HiveProject(d_date_sk=[$0], d_year=[$6])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
                                         HiveJoin(condition=[=($6, $11)], joinType=[inner], algorithm=[none], cost=[not available])
                                           HiveJoin(condition=[=($0, $10)], joinType=[inner], algorithm=[none], cost=[not available])
                                             HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_wholesale_cost=[$8], ss_list_price=[$9], ss_coupon_amt=[$10])
@@ -311,8 +315,6 @@ HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=
                                           HiveProject(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
                                             HiveFilter(condition=[AND(IS NOT NULL($5), IS NOT NULL($25))])
                                               HiveTableScan(table=[[default, store]], table:alias=[store])
-                                        HiveProject(d_date_sk=[$0], d_year=[$6])
-                                          HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
                                       HiveProject(d_date_sk=[$0], d_year=[$6])
                                         HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
                                   HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
@@ -333,11 +335,11 @@ HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=
                 HiveProject(i_item_sk=[$0], i_product_name=[$21])
                   HiveFilter(condition=[AND(IN($17, _UTF-16LE'maroon', _UTF-16LE'burnished', _UTF-16LE'dim', _UTF-16LE'steel', _UTF-16LE'navajo', _UTF-16LE'chocolate'), BETWEEN(false, $5, 35, 45), BETWEEN(false, $5, 36, 50))])
                     HiveTableScan(table=[[default, item]], table:alias=[item])
+        HiveProject($f1=[$12], $f2=[$6], $f3=[$7], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
+          HiveAggregate(group=[{1, 2, 3, 4, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19}], agg#0=[count()], agg#1=[sum($6)], agg#2=[sum($7)], agg#3=[sum($8)])
+            HiveJoin(condition=[=($13, $0)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
                 HiveTableScan(table=[[default, customer_address]], table:alias=[ad2])
-        HiveProject($f1=[$8], $f2=[$2], $f3=[$3], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
-          HiveAggregate(group=[{4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}], agg#0=[count()], agg#1=[sum($1)], agg#2=[sum($2)], agg#3=[sum($3)])
-            HiveJoin(condition=[=($8, $15)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveJoin(condition=[=($0, $13)], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveProject(ss_item_sk=[$0], ss_wholesale_cost=[$2], ss_list_price=[$3], ss_coupon_amt=[$4], d_year0=[$5], d_year1=[$6], s_store_name=[$7], s_zip=[$8], c_current_addr_sk=[$10], ca_street_number=[$13], ca_street_name=[$14], ca_city=[$15], ca_zip=[$16])
                   HiveJoin(condition=[=($1, $12)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -348,9 +350,11 @@ HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=
                             HiveProject(ss_item_sk=[$0], ss_hdemo_sk=[$3], ss_addr_sk=[$4], ss_wholesale_cost=[$5], ss_list_price=[$6], ss_coupon_amt=[$7], d_year0=[$9], d_year1=[$11], s_store_name=[$12], s_zip=[$13], c_current_cdemo_sk=[$15], c_current_hdemo_sk=[$16], c_current_addr_sk=[$17], cd_marital_status=[$21])
                               HiveJoin(condition=[=($2, $20)], joinType=[inner], algorithm=[none], cost=[not available])
                                 HiveJoin(condition=[AND(AND(=($1, $14), =($19, $8)), =($18, $10))], joinType=[inner], algorithm=[none], cost=[not available])
-                                  HiveProject(ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_wholesale_cost=[$7], ss_list_price=[$8], ss_coupon_amt=[$9], d_date_sk0=[$16], d_year0=[$17], d_date_sk1=[$14], d_year1=[$15], s_store_name=[$12], s_zip=[$13])
+                                  HiveProject(ss_item_sk=[$3], ss_customer_sk=[$4], ss_cdemo_sk=[$5], ss_hdemo_sk=[$6], ss_addr_sk=[$7], ss_wholesale_cost=[$9], ss_list_price=[$10], ss_coupon_amt=[$11], d_date_sk0=[$16], d_year0=[$17], d_date_sk1=[$0], d_year1=[$1], s_store_name=[$14], s_zip=[$15])
                                     HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
                                       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                                        HiveProject(d_date_sk=[$0], d_year=[$6])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
                                         HiveJoin(condition=[=($6, $11)], joinType=[inner], algorithm=[none], cost=[not available])
                                           HiveJoin(condition=[=($0, $10)], joinType=[inner], algorithm=[none], cost=[not available])
                                             HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_wholesale_cost=[$8], ss_list_price=[$9], ss_coupon_amt=[$10])
@@ -375,8 +379,6 @@ HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=
                                           HiveProject(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
                                             HiveFilter(condition=[AND(IS NOT NULL($5), IS NOT NULL($25))])
                                               HiveTableScan(table=[[default, store]], table:alias=[store])
-                                        HiveProject(d_date_sk=[$0], d_year=[$6])
-                                          HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
                                       HiveProject(d_date_sk=[$0], d_year=[$6])
                                         HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
                                   HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
@@ -397,6 +399,4 @@ HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=
                 HiveProject(i_item_sk=[$0], i_product_name=[$21])
                   HiveFilter(condition=[AND(IN($17, _UTF-16LE'maroon', _UTF-16LE'burnished', _UTF-16LE'dim', _UTF-16LE'steel', _UTF-16LE'navajo', _UTF-16LE'chocolate'), BETWEEN(false, $5, 35, 45), BETWEEN(false, $5, 36, 50))])
                     HiveTableScan(table=[[default, item]], table:alias=[item])
-              HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
-                HiveTableScan(table=[[default, customer_address]], table:alias=[ad2])
 

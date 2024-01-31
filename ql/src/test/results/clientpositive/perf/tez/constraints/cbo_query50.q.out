@@ -125,7 +125,7 @@ POSTHOOK: Input: default@store_returns
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], dir3=[ASC-nulls-first], dir4=[ASC-nulls-first], dir5=[ASC-nulls-first], dir6=[ASC-nulls-first], dir7=[ASC-nulls-first], dir8=[ASC-nulls-first], dir9=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
   HiveProject(s_store_name=[$0], s_company_id=[$1], s_street_number=[$2], s_street_name=[$3], s_street_type=[$4], s_suite_number=[$5], s_city=[$6], s_county=[$7], s_state=[$8], s_zip=[$9], $f10=[$10], $f11=[$11], $f12=[$12], $f13=[$13], $f14=[$14])
     HiveAggregate(group=[{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}], agg#0=[sum($11)], agg#1=[sum($12)], agg#2=[sum($13)], agg#3=[sum($14)], agg#4=[sum($15)])
       HiveJoin(condition=[=($0, $16)], joinType=[inner], algorithm=[none], cost=[not available])

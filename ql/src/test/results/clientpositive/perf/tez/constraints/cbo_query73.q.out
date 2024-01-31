@@ -88,6 +88,6 @@ HiveSortLimit(sort0=[$5], dir0=[DESC-nulls-last])
                       HiveFilter(condition=[IN($23, _UTF-16LE'Mobile County', _UTF-16LE'Maverick County', _UTF-16LE'Huron County', _UTF-16LE'Kittitas County')])
                         HiveTableScan(table=[[default, store]], table:alias=[store])
                 HiveProject(hd_demo_sk=[$0])
-                  HiveFilter(condition=[AND(IN($2, _UTF-16LE'>10000', _UTF-16LE'unknown'), >($4, 0), CASE(>($4, 0), >(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 1), null))])
+                  HiveFilter(condition=[AND(OR(=($2, _UTF-16LE'>10000'), =($2, _UTF-16LE'unknown')), >($4, 0), CASE(>($4, 0), >(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 1), null))])
                     HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
 

@@ -47,12 +47,12 @@ POSTHOOK: Input: default@customer_address
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
   HiveProject(ca_zip=[$0], $f1=[$1])
     HiveAggregate(group=[{2}], agg#0=[sum($1)])
       HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(cs_sold_date_sk=[$0], cs_sales_price=[$2], ca_zip=[$7])
-          HiveJoin(condition=[AND(=($1, $4), OR($8, $3, $9))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[AND(=($1, $4), OR($8, $9, $3))], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_sales_price=[$21], >=[>($21, 500)])
               HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
                 HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])

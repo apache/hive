@@ -80,7 +80,7 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@item
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC-nulls-first], dir1=[ASC-nulls-first], dir2=[ASC-nulls-first], dir3=[ASC-nulls-first], fetch=[100])
+HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
   HiveProject($f0=[$3], $f1=[$2], $f2=[$1], $f3=[$0], $f4=[/($4, $5)], $f5=[/($6, $7)], $f6=[/($8, $9)], $f7=[/($10, $11)], $f8=[/($12, $13)], $f9=[/($14, $15)], $f10=[/($16, $17)])
     HiveAggregate(group=[{2, 3, 4, 14}], groups=[[{2, 3, 4, 14}, {3, 4, 14}, {4, 14}, {14}, {}]], agg#0=[sum($5)], agg#1=[count($5)], agg#2=[sum($6)], agg#3=[count($6)], agg#4=[sum($7)], agg#5=[count($7)], agg#6=[sum($8)], agg#7=[count($8)], agg#8=[sum($9)], agg#9=[count($9)], agg#10=[sum($10)], agg#11=[count($10)], agg#12=[sum($11)], agg#13=[count($11)])
       HiveJoin(condition=[=($1, $13)], joinType=[inner], algorithm=[none], cost=[not available])

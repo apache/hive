@@ -189,7 +189,7 @@ Stage-0
                             <-Map 10 [BROADCAST_EDGE] vectorized
                               BROADCAST [RS_245]
                                 PartitionCols:_col0
-                                Map Join Operator [MAPJOIN_242] (rows=1827 width=4)
+                                Map Join Operator [MAPJOIN_242] (rows=1444 width=4)
                                   Conds:SEL_241._col1=RS_239._col0(Inner),HybridGraceHashJoin:true,Output:["_col0"]
                                 <-Reducer 12 [BROADCAST_EDGE] vectorized
                                   BROADCAST [RS_239]
