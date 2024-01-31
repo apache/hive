@@ -340,19 +340,15 @@ public class IcebergTableUtil {
     Set<String> dataFilesPath = Sets.newHashSet();
     Set<String> deleteFilesPath = Sets.newHashSet();
 
-    for (FileScanTask fileScanTask : fileScanTasks) {
+    fileScanTasks.forEach(fileScanTask -> {
       // filter repeated data files
-      if (!dataFilesPath.contains(fileScanTask.file().path().toString())) {
+      if (dataFilesPath.add(fileScanTask.file().path().toString())) {
         dataFiles.add(fileScanTask.file());
-        dataFilesPath.add(fileScanTask.file().path().toString());
       }
-      for (DeleteFile delete : fileScanTask.deletes()) {
-        // filter repeated delete files
-        if (!deleteFilesPath.contains(delete.path().toString())) {
-          deleteFiles.add(delete);
-          deleteFilesPath.add(delete.path().toString());
-        }
-      }
-    }
-  }
+
+      // filter repeated delete files
+      fileScanTask.deletes().stream()
+              .filter(delete -> deleteFilesPath.add(delete.path().toString()))
+              .forEach(deleteFiles::add);
+    });
 }
