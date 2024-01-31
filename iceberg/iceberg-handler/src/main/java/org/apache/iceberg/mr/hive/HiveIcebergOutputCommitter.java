@@ -558,9 +558,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         RewriteFiles rewriteFiles = transaction.newRewrite();
         rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
 
-        existingDataFiles.stream().forEach(rewriteFiles::deleteFile);
-        existingDeleteFiles.stream().forEach(rewriteFiles::deleteFile);
-        results.dataFiles().stream().forEach(rewriteFiles::addFile);
+        existingDataFiles.forEach(rewriteFiles::deleteFile);
+        existingDeleteFiles.forEach(rewriteFiles::deleteFile);
+        results.dataFiles().forEach(rewriteFiles::addFile);
 
         rewriteFiles.commit();
       } else {
