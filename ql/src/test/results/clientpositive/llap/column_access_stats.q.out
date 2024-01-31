@@ -747,8 +747,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -770,7 +769,7 @@ STAGE PLANS:
                         Statistics: Num rows: 5 Data size: 425 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 3
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: t1_n127
@@ -789,7 +788,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 4
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: t3_n29
