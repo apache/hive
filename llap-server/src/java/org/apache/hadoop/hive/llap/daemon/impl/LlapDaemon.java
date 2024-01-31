@@ -383,6 +383,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
     // requests before it is started.
     addIfService(amReporter);
+    addIfService(new LocalDirCleaner(localDirs, daemonConf));
   }
 
   private static long determineXmxHeadroom(

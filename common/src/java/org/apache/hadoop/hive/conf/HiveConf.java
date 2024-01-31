@@ -5508,6 +5508,17 @@ public class HiveConf extends Configuration {
     LLAP_TASK_TIME_SUMMARY(
         "hive.llap.task.time.print.summary", false,
         "Display queue and runtime of tasks by host for every query executed by the shell."),
+
+    LLAP_LOCAL_DIR_CLEANER_CLEANUP_INTERVAL(
+        "hive.llap.local.dir.cleaner.cleanup.interval", "2h", new TimeValidator(TimeUnit.HOURS),
+      "Interval by which the LocalDirCleaner service in LLAP daemon checks for stale/old files." +
+      "Under normal circumstances, local files are cleaned up properly, so it's not recommended to" +
+      "set this more frequent than a couple of hours. Default is 2 hours."),
+    LLAP_LOCAL_DIR_CLEANER_FILE_MODIFY_TIME_THRESHOLD("hive.llap.local.dir.cleaner.file.modify.time.threshold", "24h",
+        new TimeValidator(TimeUnit.HOURS),
+      "Threshold time for LocalDirCleaner: if a regular file's modify time is older than this value, the file gets deleted." +
+      "Defaults to 86400s (1 day), which is a reasonable period for a local file to be considered as a stale one."),
+
     HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
       "Interval for validating triggers during execution of a query. Triggers defined in resource plan will get\n" +
