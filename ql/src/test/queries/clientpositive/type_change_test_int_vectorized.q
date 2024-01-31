@@ -1,3 +1,8 @@
+-- The data stored (text, sequence file, rc file, orc, parquet with and without dictionary
+-- encryption) as bigint, int, smallint and tinyint is read back as Bigint, int, smallint
+-- tinyint, float, double, and decimal.  This is done after the type is changed in HMS
+-- through alter table.  Vectorization is enabled for this test.
+
 -- Create a base table to be used for loading data: Begin
 drop table if exists testAltCol;
 create table testAltCol

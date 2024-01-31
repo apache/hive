@@ -168,7 +168,7 @@ STAGE PLANS:
               serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 199
+              totalSize 201
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -214,7 +214,7 @@ STAGE PLANS:
               serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 199
+              totalSize 201
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -260,7 +260,7 @@ STAGE PLANS:
               serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 199
+              totalSize 201
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -306,7 +306,7 @@ STAGE PLANS:
               serialization.ddl struct date_dim_n1 { date d_date}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 199
+              totalSize 201
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           

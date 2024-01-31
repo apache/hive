@@ -23,6 +23,7 @@ import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -183,6 +184,10 @@ public class VectorBatchGenerator {
       colVector = new LongColumnVector();
       break;
 
+    case DATE:
+      colVector = new DateColumnVector();
+      break;
+
     case FLOAT:
     case DOUBLE:
       colVector = new DoubleColumnVector();
@@ -193,7 +198,6 @@ public class VectorBatchGenerator {
       break;
 
     // UNDONE
-    case DATE:
     case TIMESTAMP:
     case BINARY:
     case DECIMAL:

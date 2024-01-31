@@ -44,14 +44,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n_mv
-            Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -143,7 +143,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	2000                
-	totalSize           	974                 
+	totalSize           	976                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -326,34 +326,34 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n_mv
-            Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: reverse(value) (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 41 Data size: 2476 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 41 Data size: 2477 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 41 Data size: 2476 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 41 Data size: 2477 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -401,25 +401,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n_mv
-            Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: reverse(value) (type: string), key (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 83 Data size: 5016 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -428,10 +428,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 41 Data size: 2476 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 41 Data size: 2477 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 41 Data size: 2476 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 41 Data size: 2477 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -676,14 +676,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srctnx
-            Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -775,7 +775,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	2000                
-	totalSize           	974                 
+	totalSize           	976                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

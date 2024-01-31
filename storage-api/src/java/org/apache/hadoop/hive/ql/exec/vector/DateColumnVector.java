@@ -17,37 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.text.SimpleDateFormat;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
+import org.apache.hadoop.hive.common.type.CalendarUtils;
 
 /**
  * This class extends LongColumnVector in order to introduce some date-specific semantics. In
  * DateColumnVector, the elements of vector[] represent the days since 1970-01-01
  */
 public class DateColumnVector extends LongColumnVector {
-  private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-  private static final GregorianCalendar PROLEPTIC_GREGORIAN_CALENDAR = new GregorianCalendar(UTC);
-  private static final GregorianCalendar GREGORIAN_CALENDAR = new GregorianCalendar(UTC);
-
-  private static final SimpleDateFormat PROLEPTIC_GREGORIAN_DATE_FORMATTER =
-      new SimpleDateFormat("yyyy-MM-dd");
-  private static final SimpleDateFormat GREGORIAN_DATE_FORMATTER =
-      new SimpleDateFormat("yyyy-MM-dd");
-
-  /**
-  * -141427: hybrid: 1582-10-15 proleptic: 1582-10-15
-  * -141428: hybrid: 1582-10-04 proleptic: 1582-10-14
-  */
-  private static final int CUTOVER_DAY_EPOCH = -141427; // it's 1582-10-15 in both calendars
-
-  static {
-    PROLEPTIC_GREGORIAN_CALENDAR.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
-
-    PROLEPTIC_GREGORIAN_DATE_FORMATTER.setCalendar(PROLEPTIC_GREGORIAN_CALENDAR);
-    GREGORIAN_DATE_FORMATTER.setCalendar(GREGORIAN_CALENDAR);
-  }
 
   private boolean usingProlepticCalendar = false;
 
@@ -76,24 +52,16 @@ public class DateColumnVector extends LongColumnVector {
 
   private void updateDataAccordingProlepticSetting() throws Exception {
     for (int i = 0; i < vector.length; i++) {
-      if (vector[i] >= CUTOVER_DAY_EPOCH) { // no need for conversion
+      if (vector[i] >= CalendarUtils.SWITCHOVER_DAYS) { // no need for conversion
         continue;
       }
-      long millis = TimeUnit.DAYS.toMillis(vector[i]);
-      String originalFormatted = usingProlepticCalendar ? GREGORIAN_DATE_FORMATTER.format(millis)
-        : PROLEPTIC_GREGORIAN_DATE_FORMATTER.format(millis);
-
-      millis = (usingProlepticCalendar ? PROLEPTIC_GREGORIAN_DATE_FORMATTER.parse(originalFormatted)
-        : GREGORIAN_DATE_FORMATTER.parse(originalFormatted)).getTime();
-
-      vector[i] = TimeUnit.MILLISECONDS.toDays(millis);
+      vector[i] = usingProlepticCalendar ? CalendarUtils.convertDateToProleptic((int) vector[i]) : CalendarUtils
+          .convertDateToHybrid((int) vector[i]);
     }
   }
 
   public String formatDate(int i) {
-    long millis = TimeUnit.DAYS.toMillis(vector[i]);
-    return usingProlepticCalendar ? PROLEPTIC_GREGORIAN_DATE_FORMATTER.format(millis)
-      : GREGORIAN_DATE_FORMATTER.format(millis);
+    return CalendarUtils.formatDate(vector[i], usingProlepticCalendar);
   }
 
   public DateColumnVector setUsingProlepticCalendar(boolean usingProlepticCalendar) {
