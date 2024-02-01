@@ -98,7 +98,7 @@ public class DummyCustomRDBMS extends DatabaseProduct {
     return true;
   }
   @Override
-  public boolean isDuplicateKeyError(Throwable t) {
+  public boolean isDuplicateKeyError(SQLException ex) {
    return true;
   }
   @Override

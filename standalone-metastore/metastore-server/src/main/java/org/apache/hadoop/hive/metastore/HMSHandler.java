@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.txn.*;
-import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
@@ -8872,7 +8871,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public void set_hadoop_jobid(String jobId, long cqId) throws MetaException {
+  public void set_hadoop_jobid(String jobId, long cqId) {
     getTxnHandler().setHadoopJobId(jobId, cqId);
   }
 

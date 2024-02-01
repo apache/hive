@@ -36,7 +36,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,11 +206,10 @@ public class DatabaseProduct implements Configurable {
 
   /**
    * Is the given exception a table not found exception
-   * @param t Exception
+   * @param e Exception
    * @return
    */
-  public boolean isTableNotExistsError(Throwable t) {
-    SQLException e = TxnUtils.getSqlException(t);    
+  public boolean isTableNotExistsError(SQLException e) {
     return (isPOSTGRES() && "42P01".equalsIgnoreCase(e.getSQLState()))
         || (isMYSQL() && "42S02".equalsIgnoreCase(e.getSQLState()))
         || (isORACLE() && "42000".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("ORA-00942"))
@@ -561,42 +559,41 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
-  public boolean isDuplicateKeyError(Throwable t) {
-    SQLException sqlEx = TxnUtils.getSqlException(t); 
+  public boolean isDuplicateKeyError(SQLException ex) {
     switch (dbType) {
     case DERBY:
     case CUSTOM: // ANSI SQL
-      if("23505".equals(sqlEx.getSQLState())) {
+      if("23505".equals(ex.getSQLState())) {
         return true;
       }
       break;
     case MYSQL:
       //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
-      if((sqlEx.getErrorCode() == 1022 || sqlEx.getErrorCode() == 1062 || sqlEx.getErrorCode() == 1586)
-        && "23000".equals(sqlEx.getSQLState())) {
+      if((ex.getErrorCode() == 1022 || ex.getErrorCode() == 1062 || ex.getErrorCode() == 1586)
+        && "23000".equals(ex.getSQLState())) {
         return true;
       }
       break;
     case SQLSERVER:
       //2627 is unique constaint violation incl PK, 2601 - unique key
-      if ((sqlEx.getErrorCode() == 2627 || sqlEx.getErrorCode() == 2601) && "23000".equals(sqlEx.getSQLState())) {
+      if ((ex.getErrorCode() == 2627 || ex.getErrorCode() == 2601) && "23000".equals(ex.getSQLState())) {
         return true;
       }
       break;
     case ORACLE:
-      if(sqlEx.getErrorCode() == 1 && "23000".equals(sqlEx.getSQLState())) {
+      if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
         return true;
       }
       break;
     case POSTGRES:
       //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
-      if("23505".equals(sqlEx.getSQLState())) {
+      if("23505".equals(ex.getSQLState())) {
         return true;
       }
       break;
     default:
-      String msg = sqlEx.getMessage() +
-                " (SQLState=" + sqlEx.getSQLState() + ", ErrorCode=" + sqlEx.getErrorCode() + ")";
+      String msg = ex.getMessage() +
+                " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
       throw new IllegalArgumentException("Unexpected DB type: " + dbType + "; " + msg);
   }
   return false;

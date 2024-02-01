@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import com.google.common.base.Splitter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -26,18 +25,14 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
-import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -55,13 +50,12 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
-import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
 import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
@@ -124,7 +118,7 @@ public class TxnUtils {
       if (abortedBits.get(i)) {
         // Only need aborted since we don't consider anything above minOpenWriteId
         exceptions[i++] = writeId;
-      } 
+      }
     }
     if (i < exceptions.length) {
       exceptions = Arrays.copyOf(exceptions, i);
@@ -149,7 +143,6 @@ public class TxnUtils {
     try {
       TxnStore handler = JavaUtils.getClass(className, TxnStore.class).newInstance();
       handler.setConf(conf);
-      handler = TransactionalRetryProxy.getProxy(handler.getRetryHandler(), handler.getJdbcResourceHolder(), handler);
       return handler;
     } catch (Exception e) {
       LOG.error("Unable to instantiate raw store directly in fastpath mode", e);
@@ -196,9 +189,9 @@ public class TxnUtils {
 
   public static boolean isTableSoftDeleteEnabled(Table table, boolean isSoftDelete) {
     return isSoftDelete && TxnUtils.isTransactionalTable(table)
-      && Boolean.parseBoolean(table.getParameters().get(SOFT_DELETE_TABLE));
+        && Boolean.parseBoolean(table.getParameters().get(SOFT_DELETE_TABLE));
   }
-  
+
   /**
    * Should produce the result as &lt;dbName&gt;.&lt;tableName&gt;.
    */
@@ -244,19 +237,19 @@ public class TxnUtils {
    * @return          OUT: a list of the count of IN list values that are in each of the corresponding queries
    */
   public static List<Integer> buildQueryWithINClause(Configuration conf,
-                                            List<String> queries,
-                                            StringBuilder prefix,
-                                            StringBuilder suffix,
-                                            Collection<Long> inValues,
-                                            String inColumn,
-                                            boolean addParens,
-                                            boolean notIn) {
+                                                     List<String> queries,
+                                                     StringBuilder prefix,
+                                                     StringBuilder suffix,
+                                                     Collection<Long> inValues,
+                                                     String inColumn,
+                                                     boolean addParens,
+                                                     boolean notIn) {
     List<String> inValueStrings = inValues.stream()
-            .map(Object::toString)
-            .collect(Collectors.toList());
+        .map(Object::toString)
+        .collect(Collectors.toList());
 
     return buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
-            inValueStrings, inColumn, addParens, notIn);
+        inValueStrings, inColumn, addParens, notIn);
   }
   /**
    * Build a query (or queries if one query is too big but only for the case of 'IN'
@@ -290,7 +283,7 @@ public class TxnUtils {
    * @return          OUT:    a list of the count of IN list values that are in each of the corresponding queries
    */
   public static List<Integer> buildQueryWithINClauseStrings(Configuration conf, List<String> queries, StringBuilder prefix,
-      StringBuilder suffix, List<String> inList, String inColumn, boolean addParens, boolean notIn) {
+                                                            StringBuilder suffix, List<String> inList, String inColumn, boolean addParens, boolean notIn) {
     // Get configuration parameters
     int maxQueryLength = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
@@ -312,8 +305,8 @@ public class TxnUtils {
     boolean newInclausePrefixJustAppended = false;
     StringBuilder nextValue = new StringBuilder("");
     StringBuilder newInclausePrefix =
-      new StringBuilder(notIn ? " and " + inColumn + " not in (":
-	                        " or " + inColumn + " in (");
+        new StringBuilder(notIn ? " and " + inColumn + " not in (":
+            " or " + inColumn + " in (");
     List<Integer> ret = new ArrayList<>();
     int currentCount = 0;
 
@@ -400,8 +393,8 @@ public class TxnUtils {
 
     // Finish the last query.
     if (newInclausePrefixJustAppended) {
-        buf.delete(buf.length()-newInclausePrefix.length(), buf.length());
-      }
+      buf.delete(buf.length()-newInclausePrefix.length(), buf.length());
+    }
     buf.setCharAt(buf.length() - 1, ')'); // replace the commar.
     if (addParens) {
       buf.append(")");
@@ -428,7 +421,7 @@ public class TxnUtils {
     int size = sizeSoFar + sizeNextItem + suffixSize;
 
     if (addParens) {
-       size++;
+      size++;
     }
 
     return size;
@@ -536,7 +529,7 @@ public class TxnUtils {
    * @throws java.io.IOException if neither the hive metastore user nor the table owner can stat
    * the location.
    */
-  public static String findUserToRunAs(String location, Table t, Configuration conf) 
+  public static String findUserToRunAs(String location, Table t, Configuration conf)
       throws IOException, InterruptedException {
     LOG.debug("Determining who to run the job as.");
 
@@ -560,7 +553,7 @@ public class TxnUtils {
       // Now, try it as the table owner and see if we get better luck.
       List<String> wrapper = new ArrayList<>(1);
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
-        UserGroupInformation.getLoginUser());
+          UserGroupInformation.getLoginUser());
 
       ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
         // need to use a new filesystem object here to have the correct ugi
@@ -585,7 +578,7 @@ public class TxnUtils {
     throw new IOException("Unable to stat file: " + p);
   }
 
-  public static CompactionType dbCompactionType2ThriftType(char dbValue) throws SQLException {
+  public static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
     switch (dbValue) {
       case TxnStore.MAJOR_TYPE:
         return CompactionType.MAJOR;
@@ -596,7 +589,7 @@ public class TxnUtils {
       case TxnStore.ABORT_TXN_CLEANUP_TYPE:
         return CompactionType.ABORT_TXN_CLEANUP;
       default:
-        throw new SQLException("Unexpected compaction type " + dbValue);
+        throw new MetaException("Unexpected compaction type " + dbValue);
     }
   }
 
@@ -623,61 +616,6 @@ public class TxnUtils {
    */
   public static String nvl(String input) {
     return input != null ? " = ? " : " IS NULL ";
-  }
-
-  public static String normalizePartitionCase(String s) {
-    if (s == null) {
-      return null;
-    }
-    Map<String, String> map = Splitter.on(Path.SEPARATOR).withKeyValueSeparator('=').split(s);
-    return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
-  }
-
-  @SuppressWarnings("squid:S2245")
-  public static long generateTemporaryId() {
-    return -1 * ThreadLocalRandom.current().nextLong();
-  }
-
-  public static boolean isValidTxn(long txnId) {
-    return txnId != 0;
-  }
-
-  /**
-   * Used to raise an informative error when the caller expected a txn in a particular TxnStatus
-   * but found it in some other status
-   */
-  public static void raiseTxnUnexpectedState(TxnStatus actualStatus, long txnid)
-      throws NoSuchTxnException, TxnAbortedException {
-    switch (actualStatus) {
-      case ABORTED:
-        throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) + " already aborted");
-      case COMMITTED:
-        throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
-      case UNKNOWN:
-        throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
-      case OPEN:
-        throw new NoSuchTxnException(JavaUtils.txnIdToString(txnid) + " is " + TxnStatus.OPEN);
-      default:
-        throw new IllegalArgumentException("Unknown TxnStatus " + actualStatus);
-    }
-  }
-
-  /**
-   * Checks is the passed exception, or any of the root (cause) exceptions are an instance of {@link SQLException}.
-   * Returns with the found {@link SQLException} or throws an {@link IllegalArgumentException} if no {@link SQLException}
-   * found in the chain.
-   * @param ex The exception to check
-   * @return Returns with the {@link SQLException} found in the exception chain. 
-   * @throws IllegalArgumentException Thrown if there is no {@link SQLException} in the exception chain
-   */
-  public static SQLException getSqlException(Throwable ex) throws IllegalArgumentException {
-    while (ex != null && !(ex instanceof SQLException) ) {
-      ex = ex.getCause();
-    }
-    if (ex == null) {
-      throw new IllegalArgumentException("No SQLException found in the exception chain!");
-    }
-    return (SQLException)ex;
   }
 
   public static String createUpdatePreparedStmt(String tableName, List<String> columnNames, List<String> conditionKeys) {

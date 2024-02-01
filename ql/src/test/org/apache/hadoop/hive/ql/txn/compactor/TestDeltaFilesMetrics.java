@@ -74,7 +74,6 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
   @After
   public void tearDown() throws Exception {
     MetricsFactory.close();
-    compactorTestCleanup();
   }
 
   private static void verifyDeltaMetricsMatch(Map<String, Integer> expected, String metricName) throws Exception {
