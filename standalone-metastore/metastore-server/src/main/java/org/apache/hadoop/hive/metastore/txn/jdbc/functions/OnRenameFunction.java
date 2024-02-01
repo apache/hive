@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
+import java.sql.Types;
+
 public class OnRenameFunction implements TransactionalFunction<Void> {
 
   private static final Logger LOG = LoggerFactory.getLogger(OnRenameFunction.class);
@@ -105,12 +107,12 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
   public OnRenameFunction(String oldCatName, String oldDbName, String oldTabName, String oldPartName, 
                           String newCatName, String newDbName, String newTabName, String newPartName) {
     this.oldCatName = oldCatName;
-    this.oldDbName = oldDbName;
-    this.oldTabName = oldTabName;
+    this.oldDbName = StringUtils.lowerCase(oldDbName);
+    this.oldTabName = StringUtils.lowerCase(oldTabName);
     this.oldPartName = oldPartName;
     this.newCatName = newCatName;
-    this.newDbName = newDbName;
-    this.newTabName = newTabName;
+    this.newDbName = StringUtils.lowerCase(newDbName);
+    this.newTabName = StringUtils.lowerCase(newTabName);
     this.newPartName = newPartName;
   }
 
@@ -121,23 +123,23 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
         oldCatName + "," + oldDbName + "," + oldTabName + "," + oldPartName + "," +
         newCatName + "," + newDbName + "," + newTabName + "," + newPartName + ")";
 
-    if(newPartName != null) {
+    if (newPartName != null) {
       assert oldPartName != null && oldTabName != null && oldDbName != null && oldCatName != null : callSig;
     }
-    if(newTabName != null) {
+    if (newTabName != null) {
       assert oldTabName != null && oldDbName != null && oldCatName != null : callSig;
     }
-    if(newDbName != null) {
+    if (newDbName != null) {
       assert oldDbName != null && oldCatName != null : callSig;
     }
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource()
-        .addValue("oldDbName", StringUtils.lowerCase(oldDbName))
-        .addValue("newDbName", StringUtils.lowerCase(newDbName))
-        .addValue("oldTableName", StringUtils.lowerCase(oldTabName))
-        .addValue("newTableName", StringUtils.lowerCase(newTabName))
-        .addValue("oldPartName", oldPartName)
-        .addValue("newPartName", newPartName);
+        .addValue("oldDbName", oldDbName, Types.VARCHAR)
+        .addValue("newDbName", newDbName, Types.VARCHAR)
+        .addValue("oldTableName", oldTabName, Types.VARCHAR)
+        .addValue("newTableName", newTabName, Types.VARCHAR)
+        .addValue("oldPartName", oldPartName, Types.VARCHAR)
+        .addValue("newPartName", newPartName, Types.VARCHAR);
     try {
       for (String command : UPDATE_COMMANNDS) {
         jdbcResource.getJdbcTemplate().update(command, paramSource);

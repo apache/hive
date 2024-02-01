@@ -173,9 +173,9 @@ public class MultiDataSourceJdbcResource {
    * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} or
    *                       thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
    */
-  public Integer execute(ParameterizedCommand command) throws MetaException {
+  public int execute(ParameterizedCommand command) throws MetaException {
     if (!shouldExecute(command)) {
-      return null;
+      return -1;
     }
      try {
        return execute(command.getParameterizedQueryString(getDatabaseProduct()),
@@ -191,32 +191,23 @@ public class MultiDataSourceJdbcResource {
    * call using the query string obtained from {@link ParameterizedBatchCommand#getParameterizedQueryString(DatabaseProduct)},
    * the parameters obtained from {@link ParameterizedBatchCommand#getQueryParameters()}, and the
    * {@link org.springframework.jdbc.core.PreparedStatementSetter} obtained from 
-   * {@link ParameterizedBatchCommand#getPreparedStatementSetter()} methods. The batchSize is coming fomr the 
-   * {@link Configuration} object. After the execution, this method validates the resulted number of affected rows using the
-   * {@link ParameterizedBatchCommand#resultPolicy()} function for each element in the batch.
+   * {@link ParameterizedBatchCommand#getPreparedStatementSetter()} methods. The batchSize is coming from the 
+   * {@link Configuration} object.
    *
    * @param command The {@link ParameterizedBatchCommand} to execute.
-   * @return Returns an integer array,containing the number of affected rows for each element in the batch.
    */
-  public <T> int execute(ParameterizedBatchCommand<T> command) throws MetaException {
+  public <T> int[][] execute(ParameterizedBatchCommand<T> command) throws MetaException {
     if (!shouldExecute(command)) {
-      return 0;
+      return null;
     }
     try {      
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
-      int[][] result = getJdbcTemplate().getJdbcTemplate().batchUpdate(
+      return getJdbcTemplate().getJdbcTemplate().batchUpdate(
           command.getParameterizedQueryString(databaseProduct),
           command.getQueryParameters(),
           maxBatchSize,
           command.getPreparedStatementSetter()
-      );
-      
-      Function<Integer, Boolean> resultPolicy = command.resultPolicy();
-      if (resultPolicy != null && !Arrays.stream(result).allMatch(inner -> Arrays.stream(inner).allMatch(resultPolicy::apply))) {
-        LOG.error("The update count was rejected in at least one of the result array. Rolling back.");
-        throw new MetaException("The update count was rejected in at least one of the result array. Rolling back.");        
-      }
-      return Arrays.stream(result).reduce(0, (acc, i) -> acc + Arrays.stream(i).sum(), Integer::sum);      
+      );      
     } catch (Exception e) {
       handleError(command, e);
       throw e;
@@ -300,7 +291,7 @@ public class MultiDataSourceJdbcResource {
    * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)} or
    *                       thrown if the update count was rejected by the {@link ParameterizedCommand#resultPolicy()} method
    */
-  public Integer execute(String query, SqlParameterSource params,
+  public int execute(String query, SqlParameterSource params,
                          Function<Integer, Boolean> resultPolicy) throws MetaException {
     LOG.debug("Going to execute command <{}>", query);
     int count = getJdbcTemplate().update(query, params);
@@ -322,7 +313,7 @@ public class MultiDataSourceJdbcResource {
    * @return Returns with the object(s) constructed from the result of the executed query.
    * @throws MetaException Forwarded from {@link ParameterizedCommand#getParameterizedQueryString(DatabaseProduct)}.
    */
-  public <Result> Result execute(QueryHandler<Result> queryHandler) throws MetaException {
+  public <T> T execute(QueryHandler<T> queryHandler) throws MetaException {
     String queryStr = queryHandler.getParameterizedQueryString(getDatabaseProduct());
     LOG.debug("Going to execute query <{}>", queryStr);
     SqlParameterSource params = queryHandler.getQueryParameters();
