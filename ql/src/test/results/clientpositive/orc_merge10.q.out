@@ -689,7 +689,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 152 hasNull: false min: val_0 max: val_97 sum: 1034 positions: 0,0,0
 
-File length: 2157 bytes
+File length: 2159 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -760,7 +760,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 152 hasNull: false min: val_0 max: val_97 sum: 1034 positions: 0,0,0
 
-File length: 2157 bytes
+File length: 2159 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
