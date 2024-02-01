@@ -45,6 +45,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Spool;
+import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalTableSpool;
 import org.apache.calcite.rel.type.RelDataType;
@@ -56,6 +57,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -64,6 +66,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.parse.QueryTables;
@@ -248,6 +251,14 @@ public class CteRewriteRule {
         return new HiveTableScan(newcl, traitSet,
             tmpOptTable(scan.getTable().getQualifiedName(), scan.getRowType(), newcl.getTypeFactory(),
                 scan.getTable().getRowCount()), scan.getTable().getQualifiedName().get(0), null, false, false);
+      } else if (other instanceof TableFunctionScan) {
+        TableFunctionScan tfs = (TableFunctionScan) other;
+        try {
+          return HiveTableFunctionScan.create(newcl, traitSet, tfs.getInputs(), tfs.getCall(), tfs.getElementType(),
+              tfs.getRowType(), tfs.getColumnMappings());
+        } catch (CalciteSemanticException e) {
+          throw new RuntimeException(e);
+        }
       } else if (other instanceof Join) {
         Join j = (Join) other;
         return HiveJoin.getJoin(newcl, j.getLeft(), j.getRight(), j.getCondition(), j.getJoinType());
