@@ -1746,8 +1746,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
-      if (System.getProperty("cte.rewrite.disable") == null) {
-        conf.setIntVar(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, 0);
+      if (conf.getBoolVar(ConfVars.HIVE_CTE_REWRITE_ENABLED)) {
         calcitePlan = CteRewriteRule.rewrite(calcitePlan);
       }
       return calcitePlan;

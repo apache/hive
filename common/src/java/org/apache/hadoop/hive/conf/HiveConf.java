@@ -2761,6 +2761,8 @@ public class HiveConf extends Configuration {
             + " provides an optimization if it is accurate."),
 
     // CTE
+    HIVE_CTE_REWRITE_ENABLED("hive.optimize.cte.rewrite.enabled", true,
+        "Whether to enable common table expression detection and rewrite."),
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
