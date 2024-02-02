@@ -52,7 +52,7 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
           // First sub-query - Gets the aborted txns with min txn start time, number of aborted txns
           // for corresponding db, table, partition.
           " ( SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MIN(\"TXN_STARTED\") AS \"MIN_TXN_START_TIME\", " +
-          " MAX(\"TC_WRITEID\") as \"MAX_ABORTED_WRITE_ID\", COUNT(*) AS \"ABORTED_TXN_COUNT\" FROM \"TXNS\", \"TXN_COMPONENTS\" " +
+          " COUNT(*) AS \"ABORTED_TXN_COUNT\" FROM \"TXNS\", \"TXN_COMPONENTS\" " +
           " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = :abortedState" +
           " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" %s ) \"res1\" " +
           " LEFT JOIN" +
@@ -76,15 +76,7 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
           " AND \"res1\".\"TC_TABLE\" = \"res3\".\"CQ_TABLE\" " +
           " AND (\"res1\".\"TC_PARTITION\" = \"res3\".\"CQ_PARTITION\" " +
           " OR (\"res1\".\"TC_PARTITION\" IS NULL AND \"res3\".\"CQ_PARTITION\" IS NULL))" +
-          " WHERE (\"res3\".\"RETRY_RECORD_CHECK\" <= 0 OR \"res3\".\"RETRY_RECORD_CHECK\" IS NULL)" +
-          " AND NOT EXISTS (SELECT 1 " +
-          " FROM \"COMPACTION_QUEUE\" AS \"cq\" " +
-          " WHERE \"cq\".\"CQ_DATABASE\" = \"res1\".\"TC_DATABASE\" AND \"cq\".\"CQ_TABLE\" = \"res1\".\"TC_TABLE\"" +
-          " AND (\"cq\".\"CQ_PARTITION\" = \"res1\".\"TC_PARTITION\"" +
-          " OR (\"cq\".\"CQ_PARTITION\" IS NULL AND \"res1\".\"TC_PARTITION\" IS NULL))" +
-          " AND \"cq\".\"CQ_HIGHEST_WRITE_ID\" > \"res1\".\"MAX_ABORTED_WRITE_ID\"" +
-          " AND \"cq\".\"CQ_STATE\" " +
-          " IN ('i', 'w', 'r'))";
+          " WHERE \"res3\".\"RETRY_RECORD_CHECK\" <= 0 OR \"res3\".\"RETRY_RECORD_CHECK\" IS NULL";
 
   private final long abortedTimeThreshold;
   private final int abortedThreshold;
