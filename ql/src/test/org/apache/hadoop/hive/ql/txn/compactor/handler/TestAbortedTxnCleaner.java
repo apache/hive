@@ -44,7 +44,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -282,8 +284,21 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
     cleaner.run();
 
-    Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
+    Mockito.verifyNoInteractions(mockedFSRemover);
     Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    String compactionQueuePresence = "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " +
+            " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\" IS NULL";
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
+
+    directories = getDirectories(conf, t, null);
+    // Both base and delta files are present since the cleaner skips them as there is a newer write.
+    Assert.assertEquals(5, directories.size());
+    Assert.assertEquals(1, directories.stream().filter(dir -> dir.getName().startsWith(AcidUtils.BASE_PREFIX)).count());
+
+    // Run compaction and clean up
+    startInitiator();
+    startWorker();
+    startCleaner();
 
     directories = getDirectories(conf, t, null);
     // The table is already compacted, so we must see 1 base delta
