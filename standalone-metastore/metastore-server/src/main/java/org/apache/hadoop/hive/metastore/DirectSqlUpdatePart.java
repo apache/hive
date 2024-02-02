@@ -556,7 +556,7 @@ class DirectSqlUpdatePart {
     Connection dbConn = null;
     JDOConnection jdoConn = null;
 
-    try (Statement statement = dbConn.createStatement()) {
+    try {
       dbType.lockInternal();
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
@@ -572,7 +572,8 @@ class DirectSqlUpdatePart {
                 + "WHERE \"SEQUENCE_NAME\"= "
                 + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics"));
         LOG.debug("Execute query: " + query);
-        try (ResultSet rs = statement.executeQuery(query)) {
+        try (Statement statement = dbConn.createStatement();
+             ResultSet rs = statement.executeQuery(query)) {
           if (rs.next()) {
             maxCsId = rs.getLong(1);
           } else if (insertDone) {
@@ -601,7 +602,10 @@ class DirectSqlUpdatePart {
               + nextMaxCsId
               + " WHERE \"SEQUENCE_NAME\" = "
               + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
-      statement.executeUpdate(query);
+
+      try (Statement statement = dbConn.createStatement()) {
+        statement.executeUpdate(query);
+      }
       dbConn.commit();
       committed = true;
       return maxCsId;
@@ -613,6 +617,7 @@ class DirectSqlUpdatePart {
       if (!committed) {
         rollbackDBConn(dbConn);
       }
+      closeDbConn(jdoConn);
       dbType.unlockInternal();
     }
   }
