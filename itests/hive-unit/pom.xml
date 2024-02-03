@@ -118,6 +118,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
+      <artifactId>tez-protobuf-history-plugin</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
       <artifactId>tez-tests</artifactId>
       <classifier>tests</classifier>
       <exclusions>
