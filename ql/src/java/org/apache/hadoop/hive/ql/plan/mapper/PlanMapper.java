@@ -32,11 +32,15 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 /**
  * Enables to connect related objects to eachother.
@@ -182,6 +186,125 @@ public class PlanMapper {
     }
   }
 
+  private void assertNotLinked(Object o) {
+    if (objectMap.get(o) != null) {
+      throw new AssertionError(o + " must not belong to any groups");
+    }
+  }
+
+  private EquivGroup getGroupOrError(Object o) {
+    final EquivGroup group = objectMap.get(o);
+    if (group == null) {
+      throw new AssertionError(o + " should be linked to an existing group");
+    }
+    return group;
+  }
+
+  // ASTConverter links a TableScan(RelNode) or Filter(RelNode) with their ASTNodes
+  public void link(ASTNode astNode, RelNode relNode) {
+    // This is the first appearance of the ASTNode. Also, the same ASTNode is traversed only once
+    assertNotLinked(astNode);
+    // This is the first appearance of the RelNode. Also, the same RelNode is linked only once
+    assertNotLinked(relNode);
+    final EquivGroup group = new EquivGroup();
+    groups.add(group);
+    group.add(astNode);
+    group.add(relNode);
+  }
+
+  // ASTConverter links an ASTNode of a Filter(RelNode) with the signature of the Filter
+  // (This is off-topic. Why not linking a signature of a TableScan? That may be because TableScan RelNodes are too simple)
+  public void link(ASTNode astNode, RelTreeSignature relTreeSignature) {
+    // The ASTNode already belongs to the group including the ASTNode and its RelNode
+    final EquivGroup groupForAstNode = getGroupOrError(astNode);
+    // This is the first appearance of the RelTreeSignature. Also, the same RelTreeSignature is linked only once
+    // (This is off-topic. I would say RelTreeSignatures should be linked by not their identities but equality)
+    assertNotLinked(relTreeSignature);
+    groupForAstNode.add(relTreeSignature);
+  }
+
+  // SemanticAnalyzer#genFilterPlan links a Filter ASTNode with a newly created FilterOperator
+  // (This is off-topic. I would say a TableScan ASTNode should be also linked to a TableScanOperator)
+  // (But it may cause a problem as TableScanOperators could be excessively grouped before TableScanPPD is applied)
+  public void link(ASTNode astNode, Operator<?> operator) {
+    // The Filter ASTNode already belongs to the group including the ASTNode, its RelNode, and its RelTreeSignature
+    final EquivGroup groupForAstNode = getGroupOrError(astNode);
+    // This is the first appearance of this Operator. Also, the same FilterOperator comes here only once
+    assertNotLinked(operator);
+    // - If no CTE is materialized, groupForSignature is NULL. That's because any signatures of any Operators have not been linked yet
+    // - If CTEs are materialized and any CTEs don't share the same shape of TableScan + Filter, groupForSignature is NULL
+    final EquivGroup groupForSignature = objectMap.get(signatureCache.getSignature(operator));
+    if (groupForSignature != null && groupForAstNode != groupForSignature) {
+      // HIVE-24167
+      // - If CTEs are materialized and any CTEs share the same shape of TableScan + Filter, this error happens
+      throw new AssertionError(String.format(
+          "Equivalence mapping violation. groupForAstNode=%s, groupForSignature=%s",
+          groupForAstNode, groupForSignature));
+    }
+    groupForAstNode.add(operator);
+  }
+
+  // StatsRulesProcFactory links all Operator with their OpTreeSignatures
+  public void link(Operator<?> operator, OpTreeSignature signature) {
+    // The Operator already belongs to a group as AuxSignatureLinker creates groups of all Operators
+    final EquivGroup groupForOperator = getGroupOrError(operator);
+    // The given signature has been already cached. That's because AuxSignatureLinker is triggered after
+    // SemanticAnalyzer builds pre-optimized Operator trees, and the linker caches signatures of all Operators.
+    if (signature != signatureCache.getSignature(operator)) {
+      // This should never happen
+      throw new AssertionError(String.format(
+          "Unexpected signature is provided. actual=%s, expected=%s",
+          signature, signatureCache.getSignature(operator)));
+    }
+    // Note that the given Operator could have been mutated by some optimizations such as TableScanPPD. So, the cached
+    // signature could be stale. It means the following assertion could fail
+    // assert signature.equals(OpTreeSignature.of(operator));
+
+    // If this is the first appearance of this signature, groupForSignature is NULL
+    // If multiple Operators share this signature and this is the second or later appearance, groupForSignature is the
+    // same instance as groupForOperator. That's because AuxSignatureLinker MERGEs all Operators with the same cached
+    // signature.
+    final EquivGroup groupForSignature = objectMap.get(signature);
+    if (groupForSignature != null && groupForOperator != groupForSignature) {
+      // This should never happen
+      throw new AssertionError(String.format(
+          "Equivalence mapping violation. groupForOperator=%s, groupForSignature=%s",
+          groupForOperator, groupForSignature));
+    }
+    groupForOperator.add(signature);
+  }
+
+  // ConvertJoinMapJoin or Vectorizer can generate a new optimized Operator, and link it with the original Operator
+  public void link(Operator<?> originalOperator, Operator<?> optimizedOperator) {
+    // The original Operator already belongs to a group as AuxSignatureLinker creates groups of all Operators
+    final EquivGroup groupForOriginal = getGroupOrError(originalOperator);
+    // This is the first appearance of the optimized Operator. Also, The optimized Operator comes here only once
+    assertNotLinked(optimizedOperator);
+    // The signature of the original Operator already belongs to the same group as the original Operator. That's because
+    // ConvertJoinMapJoin and Vectorizer are invoked after StatsRulesProcFactory links all Operators and their
+    // signatures.
+    final EquivGroup groupForOriginalSignature = getGroupOrError(signatureCache.getSignature(originalOperator));
+    if (groupForOriginal != groupForOriginalSignature) {
+      // This should never happen
+      throw new AssertionError(String.format(
+          "Equivalence mapping violation. groupForOperator=%s, groupForSignature=%s",
+          groupForOriginal, groupForOriginalSignature));
+    }
+    // If this is the first appearance of this signature, groupForOptimizedSignature is NULL
+    // If multiple optimized Operators share this signature and this is the second or later appearance,
+    // groupForOptimizedSignature is the same instance as groupForOriginal. That's because
+    // ConvertJoinMapJoin or Vectorizer generate the same shape of an Operator tree only when the original Operators
+    // have the same shape <- Note that I am not 100% confident with this statement
+    final EquivGroup groupForOptimizedSignature = objectMap.get(signatureCache.getSignature(optimizedOperator));
+    if (groupForOptimizedSignature != null && groupForOriginalSignature != groupForOptimizedSignature) {
+      // This should never happen
+      throw new AssertionError(String.format(
+          "Equivalence mapping violation. groupForOriginalSignature=%s, groupForOptimizedSignature=%s",
+          groupForOriginalSignature, groupForOptimizedSignature));
+    }
+    groupForOriginal.add(optimizedOperator);
+  }
+
   /**
    * States that the two objects are representing the same.
    *
@@ -189,13 +312,18 @@ public class PlanMapper {
    * then those two can be linked.
    */
   public void link(Object o1, Object o2) {
+    assert o1 instanceof Operator<?>;
+    assert o2 instanceof OperatorStats
+        || o2 instanceof OperatorStats.IncorrectRuntimeStatsMarker
+        || o2 instanceof OperatorStats.MayNotUseForRelNodes;
     link(o1, o2, false);
   }
 
   /**
    * Links and optionally merges the groups identified by the two objects.
+   * This is invoked twice, pre-optimization and post-optimization, per SemanticAnalyzer#analyzeInternal.
    */
-  public void merge(Object o1, Object o2) {
+  public void merge(Operator<?> o1, AuxOpTreeSignature o2) {
     link(o1, o2, true);
   }
 
