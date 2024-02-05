@@ -59,6 +59,8 @@
     <module>packaging</module>
     <module>standalone-metastore</module>
     <module>kafka-handler</module>
+    <module>iceberg</module>
+    <module>hms-catalog</module>
   </modules>
   <properties>
     <standalone-metastore.version>4.0.0-beta-2-SNAPSHOT</standalone-metastore.version>
@@ -2027,7 +2029,6 @@
       <id>iceberg</id>
       <modules>
         <module>iceberg</module>
-        <module>hms-catalog</module>
       </modules>
     </profile>
     <profile>
