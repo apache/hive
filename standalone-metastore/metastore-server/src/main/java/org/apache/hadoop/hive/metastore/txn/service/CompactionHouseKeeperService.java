@@ -28,13 +28,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class CompactionHouseKeeperService extends AcidHouseKeeperService {
 
-  private boolean isCompactorEnabled;
-  @Override
-  public void setConf(Configuration configuration) {
-    super.setConf(configuration);
-    setServiceName(this.getClass().getSimpleName());
-    isCompactorEnabled = MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)
-        || MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
+  public CompactionHouseKeeperService() {
+    serviceName = this.getClass().getSimpleName();
   }
 
   @Override
@@ -44,11 +39,9 @@ public class CompactionHouseKeeperService extends AcidHouseKeeperService {
   }
 
   @Override
-  void cleanTheHouse() {
-    if (isCompactorEnabled) {
-      performTask(getTxnHandler()::removeDuplicateCompletedTxnComponents,
-          "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries");
-      performTask(getTxnHandler()::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
-    }
+  public void cleanTheHouse() {
+    performTask(txnHandler::removeDuplicateCompletedTxnComponents,
+            "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries");
+    performTask(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
   }
 }

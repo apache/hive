@@ -40,22 +40,17 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
 
   private Configuration conf;
-  private TxnStore txnHandler;
-  private String serviceName;
+  protected TxnStore txnHandler;
+  protected String serviceName;
 
-  public void setServiceName(String serviceName) {
-    this.serviceName = serviceName;
-  }
-
-  public TxnStore getTxnHandler() {
-    return txnHandler;
+  public AcidHouseKeeperService() {
+    serviceName = this.getClass().getSimpleName();
   }
 
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
     txnHandler = TxnUtils.getTxnStore(conf);
-    this.serviceName = this.getClass().getSimpleName();
   }
 
   @Override
@@ -86,7 +81,7 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
     }
   }
 
-  void cleanTheHouse() {
+  protected void cleanTheHouse() {
     performTask(txnHandler::performTimeOuts, "Cleaning timed out txns and locks");
     performTask(txnHandler::performWriteSetGC, "Cleaning obsolete write set entries");
     performTask(txnHandler::cleanTxnToWriteIdTable, "Cleaning obsolete TXN_TO_WRITE_ID entries");

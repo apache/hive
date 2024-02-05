@@ -1247,8 +1247,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         TimeUnit.MILLISECONDS);
     MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL, 10,
         TimeUnit.MILLISECONDS);
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
     MetastoreTaskThread compactionHouseKeeper = new CompactionHouseKeeperService();
     houseKeeper.setConf(hiveConf);
@@ -3355,8 +3353,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     runCleaner(hiveConf);
 
     // Run AcidHouseKeeperService to cleanup the COMPLETED_TXN_COMPONENTS.
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
     MetastoreTaskThread compactionHouseKeeper = new CompactionHouseKeeperService();
     houseKeeper.setConf(hiveConf);
