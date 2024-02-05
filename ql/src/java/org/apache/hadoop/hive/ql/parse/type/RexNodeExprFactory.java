@@ -170,7 +170,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     for (RowResolver rr: rowResolverList) {
       ColumnInfo tmp = rr.get(colInfo.getTabAlias(), colInfo.getAlias());
       if (tmp == null) {
-        // if column in not present in the RR, increment position by size of RR
+        // if column is not present in the RR, increment position by size of RR
         position += rr.getColumnInfos().size();
       } else {
         // if column is present, increment position by the position of the column in RR
