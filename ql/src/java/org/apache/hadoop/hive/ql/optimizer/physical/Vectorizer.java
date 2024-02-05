@@ -3082,7 +3082,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         // For Map, check for virtual columns.
         VirtualColumn virtualColumn = VirtualColumn.VIRTUAL_COLUMN_NAME_MAP.get(columnName);
-        if (virtualColumn != null) {
+        if (virtualColumn != null && virtualColumn != VirtualColumn.GROUPINGID) {
 
           // We support some virtual columns in vectorization for this table scan.
 

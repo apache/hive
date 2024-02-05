@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexNode;
@@ -29,23 +30,27 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PlanModifierForReturnPath {
 
+  private static final Logger LOG = LoggerFactory.getLogger(PlanModifierForASTConv.class);
 
-  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean isCTAS)
+  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema)
           throws CalciteSemanticException {
     if (rel instanceof HiveValues) {
       return rel;
     }
 
-    if (isCTAS) {
-      rel = introduceProjectIfNeeded(rel, resultSchema);
-    }
-    RelNode newTopNode = rel;
-
+    RelNode newTopNode = introduceProjectIfNeeded(rel, resultSchema);
     Pair<RelNode, RelNode> topSelparentPair = HiveCalciteUtil.getTopLevelSelect(newTopNode);
     PlanModifierUtil.fixTopOBSchema(newTopNode, topSelparentPair, resultSchema, false);
+
+    PlanModifierForASTConv.convertOpTree(newTopNode, null);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after nested convertOpTree\n " + RelOptUtil.toString(newTopNode));
+    }
 
     return newTopNode;
   }

@@ -42,15 +42,19 @@ STAGE PLANS:
                 aggregations: count()
                 keys: KEY._col0 (type: string)
                 mode: complete
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -102,15 +106,19 @@ STAGE PLANS:
                 aggregations: count()
                 keys: KEY._col0 (type: string)
                 mode: complete
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: b.key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -179,15 +187,19 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: final
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -256,15 +268,19 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: final
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: b.key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -324,15 +340,19 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -392,15 +412,19 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: b.key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -477,15 +501,19 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: final
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -562,15 +590,19 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: final
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: key (type: string), $f1 (type: bigint)
+                  outputColumnNames: b.key, _c1
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -743,50 +775,50 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: final
-                outputColumnNames: _col0, _col1
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 105 Data size: 9975 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: 0 (type: int), _col1 (type: bigint)
+                  key expressions: 0 (type: int), $f1 (type: bigint)
                   null sort order: az
                   sort order: ++
                   Map-reduce partition columns: 0 (type: int)
                   Statistics: Num rows: 105 Data size: 9975 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string)
+                  value expressions: key (type: string)
         Reducer 4 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: bigint)
-                outputColumnNames: _col0, _col1
+                expressions: VALUE.key (type: string), KEY.reducesinkkey1 (type: bigint)
+                outputColumnNames: key, $f1
                 Statistics: Num rows: 105 Data size: 9975 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
                         input alias: ptf_0
-                        output shape: _col0: string, _col1: bigint
+                        output shape: key: string, $f1: bigint
                         type: WINDOWING
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: $f1 ASC NULLS LAST
                         partition by: 0
                         raw input shape:
                         window functions:
                             window function definition
-                              alias: rank_window_0
-                              arguments: _col1
+                              alias: $win$_col_2
+                              arguments: $f1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 105 Data size: 9975 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: bigint), rank_window_0 (type: int)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 105 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: string), $f1 (type: bigint), $win$_col_2 (type: int)
+                    outputColumnNames: key, _c1, _c2
+                    Statistics: Num rows: 105 Data size: 9975 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 105 Data size: 10395 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 105 Data size: 9975 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
