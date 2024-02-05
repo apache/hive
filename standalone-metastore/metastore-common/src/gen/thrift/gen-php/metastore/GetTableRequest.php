@@ -113,7 +113,7 @@ class GetTableRequest
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
     /**
      * @var int
      */

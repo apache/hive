@@ -998,25 +998,26 @@ public class TypeCheckProcFactory<T> {
           // different value type. The reason is that Hive and Calcite treat
           // types in IN clauses differently and it is practically impossible
           // to find some correct implementation unless this is done.
-          boolean hasNullValue = false;
           ListMultimap<TypeInfo, T> expressions = ArrayListMultimap.create();
           for (int i = 1; i < children.size(); i++) {
             T columnDesc = children.get(0);
             T valueDesc = interpretNode(columnDesc, children.get(i));
-            if (valueDesc == null) {
-              // Keep original
-              TypeInfo targetType = exprFactory.getTypeInfo(children.get(i));
-              if (!expressions.containsKey(targetType)) {
-                expressions.put(targetType, columnDesc);
-              }
-              expressions.put(targetType, children.get(i));
-            } else {
+            if (valueDesc != null) {
+              // Only add to the expression map if types can be coerced
               TypeInfo targetType = exprFactory.getTypeInfo(valueDesc);
               if (!expressions.containsKey(targetType)) {
                 expressions.put(targetType, columnDesc);
               }
               expressions.put(targetType, valueDesc);
             }
+          }
+          if(expressions.isEmpty()) {
+            // We will only hit this when none of the operands inside the "in" clause can be type-coerced
+            // That would imply that the result of "in" is a boolean "false"
+            // This should not impact those cases where the "in" clause is used on a boolean column and
+            // there is no operand in the "in" clause that cannot be type-coerced into boolean because
+            // in case of boolean, Hive does not allow such use cases and throws an error
+            return exprFactory.createBooleanConstantExpr("false");
           }
 
           children.clear();

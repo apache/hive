@@ -53,14 +53,16 @@ public class ReleaseMaterializationRebuildLocks implements TransactionalFunction
     LOG.debug("Going to execute query <{}>", selectQ);
 
     jdbcResource.getJdbcTemplate().query(selectQ, rs -> {
-      long lastHeartbeat = rs.getLong(2);
-      if (lastHeartbeat < timeoutTime) {
-        // The heartbeat has timeout, double check whether we can remove it
-        long txnId = rs.getLong(1);
-        if (validTxnList.isTxnValid(txnId) || validTxnList.isTxnAborted(txnId)) {
-          // Txn was committed (but notification was not received) or it was aborted.
-          // Either case, we can clean it up
-          txnIds.add(txnId);
+      if (rs.next()) {
+        long lastHeartbeat = rs.getLong(2);
+        if (lastHeartbeat < timeoutTime) {
+          // The heartbeat has timeout, double check whether we can remove it
+          long txnId = rs.getLong(1);
+          if (validTxnList.isTxnValid(txnId) || validTxnList.isTxnAborted(txnId)) {
+            // Txn was committed (but notification was not received) or it was aborted.
+            // Either case, we can clean it up
+            txnIds.add(txnId);
+          }
         }
       }
       return null;

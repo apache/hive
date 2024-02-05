@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
@@ -52,9 +51,10 @@ import com.google.common.base.Preconditions;
  * */
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
-  private static final Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
-          // TODO: collect more unrecoverable SQLExceptions
-          SQLIntegrityConstraintViolationException.class
+  private static final Class<Exception>[] unrecoverableExceptions = new Class[]{
+          // TODO: collect more unrecoverable Exceptions
+          SQLIntegrityConstraintViolationException.class,
+          DeadlineException.class
   };
 
   public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
@@ -164,7 +164,7 @@ public class DatabaseProduct implements Configurable {
   }
 
   public static boolean isRecoverableException(Throwable t) {
-    return Stream.of(unrecoverableSqlExceptions)
+    return Stream.of(unrecoverableExceptions)
                  .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
   }
 
