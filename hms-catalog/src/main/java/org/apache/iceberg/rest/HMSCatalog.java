@@ -502,14 +502,14 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
 
   private String databaseLocation(String databaseName) {
     //MetastoreConf.ConfVars.WAREHOUSE
-    String warehouseLocation = configuration.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
+    String warehouseLocation = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
     if (warehouseLocation == null) {
-      warehouseLocation = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
+      warehouseLocation = configuration.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
     }
     Preconditions.checkNotNull(
         warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.dir=null");
     warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
-    return String.format("%s/%s.db", warehouseLocation, databaseName);
+    return String.format("%s/%s.db", warehouseLocation, databaseName.toLowerCase());
   }
 
   private Map<String, String> convertToMetadata(Database database) {
@@ -529,6 +529,16 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
     return meta;
   }
 
+  private String databaseLocationInExternalWarehouse(String databaseName) {
+    String warehouseLocation = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
+    if (warehouseLocation == null) {
+       warehouseLocation = configuration.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname);
+    }
+    Preconditions.checkNotNull(warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.external.dir=null");
+    warehouseLocation = org.apache.iceberg.util.LocationUtil.stripTrailingSlash(warehouseLocation);
+    return String.format("%s/%s.db", warehouseLocation, databaseName);
+  }
+
   Database convertToDatabase(Namespace namespace, Map<String, String> meta) {
     if (!isValidateNamespace(namespace)) {
       throw new NoSuchNamespaceException("Namespace does not exist: %s", namespace);
@@ -537,9 +547,11 @@ public class HMSCatalog extends BaseMetastoreCatalog implements SupportsNamespac
     Database database = new Database();
     Map<String, String> parameter = Maps.newHashMap();
 
-    database.setName(namespace.level(0));
-    database.setLocationUri(databaseLocation(namespace.level(0)));
-
+    final String name = namespace.level(0);
+    database.setName(name);
+    database.setLocationUri(databaseLocationInExternalWarehouse(name));
+    database.setManagedLocationUri(databaseLocation(name));
+    
     meta.forEach(
         (key, value) -> {
           if (key.equals("comment")) {

@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class HMSCatalogServer {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServer.class);
@@ -55,18 +57,36 @@ public class HMSCatalogServer {
       return new HMSCatalogServlet(security, adapter);
     }
   }
-
+  
   public static Catalog createCatalog(Configuration configuration) {
-    String clazz = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_CLASS);
-    Catalog catalog;
+    final String clazz = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_CLASS);
+    final Catalog catalog;
+    final String name;
+    String curi = configuration.get(MetastoreConf.ConfVars.THRIFT_URIS.getVarname());
+    String cwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
+    String cextwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
     if ("HMSCatalog".equals(clazz)) {
+      name = "hms";
       catalog = new HMSCatalog(configuration);
     } else {
+      name = "hive";
       catalog = new org.apache.iceberg.hive.HiveCatalog();
       if (catalog instanceof Configurable) {
         ((HiveCatalog) catalog).setConf(configuration);
       }
     }
+    Map<String, String> properties;
+    properties = new TreeMap<>();
+    if (curi != null) {
+      properties.put("uri", curi);
+    }
+    if (cwarehouse != null) {
+      properties.put("warehouse", cwarehouse);
+    }
+    if (cextwarehouse != null) {
+      properties.put("external-warehouse", cextwarehouse);
+    }
+    catalog.initialize(name, properties);
     return catalog;
   }
 

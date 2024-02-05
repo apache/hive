@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -75,7 +74,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.apache.iceberg.TableProperties.GC_ENABLED;
@@ -456,7 +454,7 @@ public class HMSTableOperations extends BaseMetastoreTableOperations {
       }
     } catch (org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException ex) {
       LOG.warn("Failed to convert current snapshot({}) summary to a json string", currentSnapshot.snapshotId(), ex);
-      }
+    }
   }
 
   @VisibleForTesting

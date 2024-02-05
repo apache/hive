@@ -1,0 +1,1408 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.iceberg.rest;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.iceberg.*;
+import org.apache.iceberg.catalog.Catalog;
+import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.exceptions.AlreadyExistsException;
+import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
+import org.apache.iceberg.exceptions.NoSuchNamespaceException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.hive.HiveTableOperations;
+import org.apache.iceberg.hive.HiveUtil;
+import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.transforms.Transform;
+import org.apache.iceberg.transforms.Transforms;
+import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.JsonUtil;
+import org.apache.thrift.TException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.apache.iceberg.NullOrder.NULLS_FIRST;
+import static org.apache.iceberg.SortDirection.ASC;
+import static org.apache.iceberg.TableProperties.CURRENT_SCHEMA;
+import static org.apache.iceberg.TableProperties.CURRENT_SNAPSHOT_ID;
+import static org.apache.iceberg.TableProperties.CURRENT_SNAPSHOT_SUMMARY;
+import static org.apache.iceberg.TableProperties.CURRENT_SNAPSHOT_TIMESTAMP;
+import static org.apache.iceberg.TableProperties.DEFAULT_PARTITION_SPEC;
+import static org.apache.iceberg.TableProperties.DEFAULT_SORT_ORDER;
+import static org.apache.iceberg.TableProperties.SNAPSHOT_COUNT;
+import static org.apache.iceberg.expressions.Expressions.bucket;
+import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+public class TestHiveCatalog extends HMSTestBase {
+  public TestHiveCatalog() {
+    super();
+  }
+  protected void setCatalogClass(Configuration conf) {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_CLASS, "HiveCatalog");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "jwt");
+  }
+  static TableOperations newTableOperations(Catalog catalog, Configuration conf, ClientPool metaClients, FileIO fileIO, String catalogName, String database, String table) {
+    return catalog instanceof HiveCatalog ?
+        HiveUtil.newTableOperations(conf, null, null, catalogName, database, table)
+        : new HMSTableOperations(conf, null, null, catalogName, database, table);
+  }
+
+  static TableOperations newTableOps(Catalog catalog, TableIdentifier table) {
+    if (catalog instanceof HiveCatalog) {
+      return ((HiveCatalog) catalog).newTableOps(table);
+    } else if (catalog instanceof HMSCatalog) {
+      return ((HMSCatalog) catalog).newTableOps(table);
+    } else {
+      throw new IllegalArgumentException(table.toString());
+    }
+  }
+
+  static Database convertToDatabase(Catalog catalog, Namespace ns, Map<String, String> meta) {
+    return catalog instanceof HMSCatalog ? ((HMSCatalog) catalog).convertToDatabase(ns, meta)
+        : catalog instanceof HiveCatalog ? HiveUtil.convertToDatabase((HiveCatalog) catalog, ns, meta)
+        : null;
+  }
+
+  static void illegalArgumentException(String str) {
+    throw new IllegalArgumentException(str);
+  }
+
+  static void setSnapshotSummary(TableOperations ops, Map<String, String> parameters, Snapshot snapshot) {
+    if (ops instanceof HMSTableOperations) {
+      ((HMSTableOperations) ops).setSnapshotSummary(parameters, snapshot);
+    } else if (ops instanceof HiveTableOperations) {
+      HiveUtil.setSnapshotSummary((HiveTableOperations) ops, parameters, snapshot);
+    } else {
+      illegalArgumentException(ops.getClass().getName());
+    }
+  }
+
+  static void setSnapshotStats(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
+    if (ops instanceof HMSTableOperations) {
+      ((HMSTableOperations) ops).setSnapshotStats(metadata, parameters);
+    } else if (ops instanceof HiveTableOperations) {
+      HiveUtil.setSnapshotStats((HiveTableOperations) ops, metadata, parameters);
+    } else {
+      illegalArgumentException(ops.getClass().getName());
+    }
+  }
+
+  static void setSchema(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
+    if (ops instanceof HMSTableOperations) {
+      ((HMSTableOperations) ops).setSchema(metadata, parameters);
+    } else if (ops instanceof HiveTableOperations) {
+      HiveUtil.setSchema((HiveTableOperations) ops, metadata, parameters);
+    } else {
+      illegalArgumentException(ops.getClass().getName());
+    }
+  }
+
+  static void setPartitionSpec(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
+    if (ops instanceof HMSTableOperations) {
+      ((HMSTableOperations) ops).setPartitionSpec(metadata, parameters);
+    } else if (ops instanceof HiveTableOperations) {
+      HiveUtil.setPartitionSpec((HiveTableOperations) ops, metadata, parameters);
+    } else {
+      illegalArgumentException(ops.getClass().getName());
+    }
+  }
+
+  static void setSortOrder(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
+    if (ops instanceof HMSTableOperations) {
+      ((HMSTableOperations) ops).setSortOrder(metadata, parameters);
+    } else if (ops instanceof HiveTableOperations) {
+      HiveUtil.setSortOrder((HiveTableOperations) ops, metadata, parameters);
+    } else {
+      illegalArgumentException(ops.getClass().getName());
+    }
+  }
+
+  static String currentMetadataLocation(TableOperations ops) {
+    if (ops instanceof HiveTableOperations) {
+      return ((HiveTableOperations) ops).currentMetadataLocation();
+    }
+    return ops.current().metadataFileLocation();
+  }
+
+  private static ImmutableMap meta =
+      ImmutableMap.of(
+          "owner", "apache",
+          "group", "iceberg",
+          "comment", "iceberg  hiveCatalog test");
+  
+  private String tempResolve(String name) {
+    try {
+      return temp.newFolder(name).toString();
+    } catch(IOException xio) {
+      throw new IllegalStateException(xio);
+    }
+  }
+
+  private Schema getTestSchema() {
+    return new Schema(
+        required(1, "id", Types.IntegerType.get(), "unique ID"),
+        required(2, "data", Types.StringType.get()));
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+  }
+
+  @Test
+  public void testCreateTableBuilder() throws Exception {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+    String location = tempResolve("tbl");
+
+    try {
+      Table table =
+          catalog
+              .buildTable(tableIdent, schema)
+              .withPartitionSpec(spec)
+              .withLocation(location)
+              .withProperty("key1", "value1")
+              .withProperty("key2", "value2")
+              .create();
+
+      assertThat(table.location()).isEqualTo(location);
+      assertThat(table.schema().columns()).hasSize(2);
+      assertThat(table.spec().fields()).hasSize(1);
+      assertThat(table.properties()).containsEntry("key1", "value1");
+      assertThat(table.properties()).containsEntry("key2", "value2");
+      // default Parquet compression is explicitly set for new tables
+//      assertThat(table.properties())
+//          .containsEntry(
+//              TableProperties.PARQUET_COMPRESSION,
+//              PARQUET_COMPRESSION);
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testCreateTableWithCaching() throws Exception {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+    String location = tempResolve("tbl");
+    ImmutableMap<String, String> properties = ImmutableMap.of("key1", "value1", "key2", "value2");
+    Catalog cachingCatalog = CachingCatalog.wrap(catalog);
+
+    try {
+      Table table = cachingCatalog.createTable(tableIdent, schema, spec, location, properties);
+
+      assertThat(table.location()).isEqualTo(location);
+      assertThat(table.schema().columns()).hasSize(2);
+      assertThat(table.spec().fields()).hasSize(1);
+      assertThat(table.properties()).containsEntry("key1", "value1");
+      assertThat(table.properties()).containsEntry("key2", "value2");
+      // default Parquet compression is explicitly set for new tables
+//      assertThat(table.properties())
+//          .containsEntry(
+//              TableProperties.PARQUET_COMPRESSION,
+//              PARQUET_COMPRESSION);
+    } finally {
+      cachingCatalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testInitialize() {
+    assertThatNoException()
+        .isThrownBy(
+            () -> {
+              HiveCatalog catalog = new HiveCatalog();
+              catalog.initialize("org/apache/iceberg", Maps.newHashMap());
+            });
+  }
+
+  @Test
+  public void testToStringWithoutSetConf() {
+    assertThatNoException()
+        .isThrownBy(
+            () -> {
+              HiveCatalog catalog = new HiveCatalog();
+              catalog.toString();
+            });
+  }
+
+  @Test
+  public void testInitializeCatalogWithProperties() {
+    Map<String, String> properties = Maps.newHashMap();
+    properties.put("uri", "thrift://examplehost:9083");
+    properties.put("warehouse", "/user/hive/testwarehouse");
+    HiveCatalog catalog = new HiveCatalog();
+    catalog.initialize("org/apache/iceberg", properties);
+
+    assertThat(catalog.getConf().get("hive.metastore.uris")).isEqualTo("thrift://examplehost:9083");
+    assertThat(catalog.getConf().get("hive.metastore.warehouse.dir"))
+        .isEqualTo("/user/hive/testwarehouse");
+  }
+
+  @Test
+  public void testCreateTableTxnBuilder() throws Exception {
+    Schema schema = getTestSchema();
+    String tblName = "tbl" + Integer.toHexString(RND.nextInt(65536));
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, tblName);
+    String location = temp.newFolder(tblName).toString();
+
+    try {
+      Transaction txn = catalog.buildTable(tableIdent, schema)
+          .withLocation(location)
+          .createTransaction();
+      txn.commitTransaction();
+      Table table = catalog.loadTable(tableIdent);
+
+      Assert.assertEquals(location, table.location());
+      Assert.assertEquals(2, table.schema().columns().size());
+      Assert.assertTrue(table.spec().isUnpartitioned());
+
+      List<TableIdentifier> tis = catalog.listTables(Namespace.of(DB_NAME));
+      Assert.assertFalse(tis.isEmpty());
+
+      // list namespaces
+      URL url = new URL("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
+      String jwt = generateJWT();
+      // succeed
+      Object response = clientCall(jwt, url, "GET", null);
+      Assert.assertNotNull(response);
+
+      // list tables in hivedb
+      url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables");
+      // succeed
+      response = clientCall(jwt, url, "GET", null);
+      Assert.assertNotNull(response);
+
+      // load table
+      url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables/" + tblName);
+      // succeed
+      response = clientCall(jwt, url, "GET", null);
+      Assert.assertNotNull(response);
+
+      // quick check on metrics
+      Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables", "load_table");
+      counters.entrySet().forEach(m->{
+        Assert.assertTrue(m.getKey(), m.getValue() > 0);
+      });
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testReplaceTxnBuilder1() {
+    replaceTxnBuilder(1);
+  }
+  
+  @Test
+  public void testReplaceTxnBuilder2() {
+    replaceTxnBuilder(2);
+  }
+  
+  private void replaceTxnBuilder(int formatVersion) {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+    String location = tempResolve("tbl");
+
+    try {
+      Transaction createTxn =
+          catalog
+              .buildTable(tableIdent, schema)
+              .withPartitionSpec(spec)
+              .withLocation(location)
+              .withProperty("key1", "value1")
+              .withProperty(TableProperties.FORMAT_VERSION, String.valueOf(formatVersion))
+              .createOrReplaceTransaction();
+      createTxn.commitTransaction();
+
+      Table table = catalog.loadTable(tableIdent);
+      assertThat(table.spec().fields()).hasSize(1);
+
+      String newLocation = tempResolve("tbl-2");
+
+      Transaction replaceTxn =
+          catalog
+              .buildTable(tableIdent, schema)
+              .withProperty("key2", "value2")
+              .withLocation(newLocation)
+              .replaceTransaction();
+      replaceTxn.commitTransaction();
+
+      table = catalog.loadTable(tableIdent);
+      assertThat(table.location()).isEqualTo(newLocation);
+      assertThat(table.currentSnapshot()).isNull();
+      if (formatVersion == 1) {
+        PartitionSpec v1Expected =
+            PartitionSpec.builderFor(table.schema())
+                .alwaysNull("data", "data_bucket")
+                .withSpecId(1)
+                .build();
+        assertThat(table.spec())
+            .as("Table should have a spec with one void field")
+            .isEqualTo(v1Expected);
+      } else {
+        assertThat(table.spec().isUnpartitioned()).as("Table spec must be unpartitioned").isTrue();
+      }
+
+      assertThat(table.properties()).containsEntry("key1", "value1");
+      assertThat(table.properties()).containsEntry("key2", "value2");
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testCreateTableWithOwner() throws Exception {
+    createTableAndVerifyOwner(
+        DB_NAME,
+        "tbl_specified_owner",
+        ImmutableMap.of(HiveCatalog.HMS_TABLE_OWNER, "some_owner"),
+        "some_owner");
+    createTableAndVerifyOwner(
+        DB_NAME,
+        "tbl_default_owner",
+        ImmutableMap.of(),
+        UserGroupInformation.getCurrentUser().getShortUserName());
+  }
+
+  private void createTableAndVerifyOwner(
+      String db, String tbl, Map<String, String> properties, String owner)
+      throws IOException, TException {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(db, tbl);
+    String location = tempResolve(tbl);
+    try {
+      Table table = catalog.createTable(tableIdent, schema, spec, location, properties);
+      org.apache.hadoop.hive.metastore.api.Table hmsTable = metastoreClient.getTable(db, tbl);
+      assertThat(hmsTable.getOwner()).isEqualTo(owner);
+      Map<String, String> hmsTableParams = hmsTable.getParameters();
+      assertThat(hmsTableParams).doesNotContainKey(HiveCatalog.HMS_TABLE_OWNER);
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testCreateTableDefaultSortOrder() throws Exception {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+
+    try {
+      Table table = catalog.createTable(tableIdent, schema, spec);
+      assertThat(table.sortOrder().orderId()).as("Order ID must match").isEqualTo(0);
+      assertThat(table.sortOrder().isUnsorted()).as("Order must unsorted").isTrue();
+
+      assertThat(hmsTableParameters())
+          .as("Must not have default sort order in catalog")
+          .doesNotContainKey(DEFAULT_SORT_ORDER);
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testCreateTableCustomSortOrder() throws Exception {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    SortOrder order = SortOrder.builderFor(schema).asc("id", NULLS_FIRST).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+
+    try {
+      Table table =
+          catalog
+              .buildTable(tableIdent, schema)
+              .withPartitionSpec(spec)
+              .withSortOrder(order)
+              .create();
+      SortOrder sortOrder = table.sortOrder();
+      assertThat(sortOrder.orderId()).as("Order ID must match").isEqualTo(1);
+      assertThat(sortOrder.fields()).as("Order must have 1 field").hasSize(1);
+      assertThat(sortOrder.fields().get(0).direction()).as("Direction must match ").isEqualTo(ASC);
+      assertThat(sortOrder.fields().get(0).nullOrder())
+          .as("Null order must match ")
+          .isEqualTo(NULLS_FIRST);
+      Transform<?, ?> transform = Transforms.identity(Types.IntegerType.get());
+      assertThat(sortOrder.fields().get(0).transform())
+          .as("Transform must match")
+          .isEqualTo(transform);
+
+      assertThat(hmsTableParameters())
+          .containsEntry(DEFAULT_SORT_ORDER, SortOrderParser.toJson(table.sortOrder()));
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testCreateNamespace() throws Exception {
+    Namespace namespace1 = Namespace.of("nolocation");
+    nsCatalog.createNamespace(namespace1, meta);
+    Database database1 = metastoreClient.getDatabase(namespace1.toString());
+
+    assertThat(database1.getParameters()).containsEntry("owner", "apache");
+    assertThat(database1.getParameters()).containsEntry("group", "iceberg");
+
+    assertThat(defaultUri(namespace1))
+        .as("There no same location for db and namespace")
+        .isEqualTo(database1.getLocationUri());
+
+    assertThatThrownBy(() -> nsCatalog.createNamespace(namespace1))
+        .isInstanceOf(AlreadyExistsException.class)
+        .hasMessage("Namespace '" + namespace1 + "' already exists!");
+    
+    String hiveLocalDir = temp.newFolder().toURI().toString();
+    // remove the trailing slash of the URI
+    hiveLocalDir = hiveLocalDir.substring(0, hiveLocalDir.length() - 1);
+    ImmutableMap newMeta =
+        ImmutableMap.<String, String>builder()
+            .putAll(meta)
+            .put("location", hiveLocalDir)
+            .buildOrThrow();
+    Namespace namespace2 = Namespace.of("haveLocation");
+
+    nsCatalog.createNamespace(namespace2, newMeta);
+    Database database2 = metastoreClient.getDatabase(namespace2.toString());
+    assertThat(hiveLocalDir)
+        .as("There no same location for db and namespace")
+        .isEqualTo(database2.getLocationUri());
+  }
+
+  @Test
+  public void testCreateNamespaceHttp() throws Exception {
+    String ns = "nstesthttp";
+    // list namespaces
+    URL url = new URL("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
+    String jwt = generateJWT();
+    // check namespaces list (ie 0)
+    Object response = clientCall(jwt, url, "GET", null);
+    Assert.assertTrue(response instanceof Map);
+    Map<String, Object> nsrep = (Map<String, Object>) response;
+    List<String> nslist = (List<String>) nsrep.get("namespaces");
+    Assert.assertEquals(2, nslist.size());
+    Assert.assertTrue((nslist.contains(Arrays.asList("default"))));
+    Assert.assertTrue((nslist.contains(Arrays.asList("hivedb"))));
+    // succeed
+    response = clientCall(jwt, url, "POST", false, "{ \"namespace\" : [ \""+ns+"\" ], "+
+        "\"properties\":{ \"owner\": \"apache\", \"group\" : \"iceberg\" }"
+        +"}");
+    Assert.assertNotNull(response);
+    Database database1 = metastoreClient.getDatabase(ns);
+    Assert.assertTrue(database1.getParameters().get("owner").equals("apache"));
+    Assert.assertTrue(database1.getParameters().get("group").equals("iceberg"));
+
+    List<TableIdentifier> tis = catalog.listTables(Namespace.of(ns));
+    Assert.assertTrue(tis.isEmpty());
+
+    // list tables in hivedb
+    url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + ns + "/tables");
+    // succeed
+    response = clientCall(jwt, url, "GET", null);
+    Assert.assertNotNull(response);
+
+    // quick check on metrics
+    Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables");
+    counters.entrySet().forEach(m->{
+      Assert.assertTrue(m.getKey(), m.getValue() > 0);
+    });
+  }
+
+  @Test
+  public void testCreateNamespaceWithOwnership() throws Exception {
+    createNamespaceAndVerifyOwnership(
+        "default_ownership_1",
+        ImmutableMap.of(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER);
+
+    createNamespaceAndVerifyOwnership(
+        "default_ownership_2",
+        ImmutableMap.of(
+            "non_owner_prop1", "value1",
+            "non_owner_prop2", "value2"),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER);
+
+    createNamespaceAndVerifyOwnership(
+        "individual_ownership_1",
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "apache",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.USER.name()),
+        "apache",
+        PrincipalType.USER);
+
+    createNamespaceAndVerifyOwnership(
+        "individual_ownership_2",
+        ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "someone"),
+        "someone",
+        PrincipalType.USER);
+
+    createNamespaceAndVerifyOwnership(
+        "group_ownership",
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "iceberg",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        "iceberg",
+        PrincipalType.GROUP);
+
+    assertThatThrownBy(
+            () ->
+                createNamespaceAndVerifyOwnership(
+                    "create_with_owner_type_alone",
+                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER_TYPE, PrincipalType.USER.name()),
+                    "no_post_create_expectation_due_to_exception_thrown",
+                    null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Create namespace setting %s without setting %s is not allowed",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
+
+    assertThatThrownBy(
+            () ->
+                createNamespaceAndVerifyOwnership(
+                    "create_with_invalid_owner_type",
+                    ImmutableMap.of(
+                        HiveCatalog.HMS_DB_OWNER, "iceberg",
+                        HiveCatalog.HMS_DB_OWNER_TYPE, "invalidOwnerType"),
+                    "no_post_create_expectation_due_to_exception_thrown",
+                    null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageStartingWith("No enum constant " + PrincipalType.class.getCanonicalName());
+  }
+
+  private void createNamespaceAndVerifyOwnership(
+      String name, Map<String, String> prop, String expectedOwner, PrincipalType expectedOwnerType)
+      throws TException {
+    Namespace namespace = Namespace.of(name);
+
+    nsCatalog.createNamespace(namespace, prop);
+    Database db = metastoreClient.getDatabase(namespace.toString());
+
+    assertThat(db.getOwnerName()).isEqualTo(expectedOwner);
+    assertThat(db.getOwnerType()).isEqualTo(expectedOwnerType);
+  }
+
+  @Test
+  public void testListNamespace() throws TException {
+    List<Namespace> namespaces;
+    Namespace namespace1 = Namespace.of("dbname1");
+    nsCatalog.createNamespace(namespace1, meta);
+    namespaces = nsCatalog.listNamespaces(namespace1);
+    assertThat(namespaces).as("Hive db not hive the namespace 'dbname1'").isEmpty();
+
+    Namespace namespace2 = Namespace.of("dbname2");
+    nsCatalog.createNamespace(namespace2, meta);
+    namespaces = nsCatalog.listNamespaces();
+
+    assertThat(namespaces).as("Hive db not hive the namespace 'dbname2'").contains(namespace2);
+  }
+
+  @Test
+  public void testLoadNamespaceMeta() throws TException {
+    Namespace namespace = Namespace.of("dbname_load");
+
+    nsCatalog.createNamespace(namespace, meta);
+
+    Map<String, String> nameMata = nsCatalog.loadNamespaceMetadata(namespace);
+    assertThat(nameMata).containsEntry("owner", "apache");
+    assertThat(nameMata).containsEntry("group", "iceberg");
+    assertThat(convertToDatabase(catalog, namespace, meta).getLocationUri())
+        .as("There no same location for db and namespace")
+        .isEqualTo(nameMata.get("location"));
+  }
+
+  @Test
+  public void testNamespaceExists() throws TException {
+    Namespace namespace = Namespace.of("dbname_exists");
+
+    nsCatalog.createNamespace(namespace, meta);
+
+    assertThat(nsCatalog.namespaceExists(namespace)).as("Should true to namespace exist").isTrue();
+    assertThat(nsCatalog.namespaceExists(Namespace.of("db2", "db2", "ns2")))
+        .as("Should false to namespace doesn't exist")
+        .isFalse();
+  }
+
+  @Test
+  public void testSetNamespaceProperties() throws TException {
+    Namespace namespace = Namespace.of("dbname_set");
+
+    nsCatalog.createNamespace(namespace, meta);
+    nsCatalog.setProperties(
+        namespace,
+        ImmutableMap.of(
+            "owner", "alter_apache",
+            "test", "test",
+            "location", "file:/data/tmp",
+            "comment", "iceberg test"));
+
+    Database database = metastoreClient.getDatabase(namespace.level(0));
+    assertThat(database.getParameters()).containsEntry("owner", "alter_apache");
+    assertThat(database.getParameters()).containsEntry("test", "test");
+    assertThat(database.getParameters()).containsEntry("group", "iceberg");
+
+    assertThatThrownBy(
+            () -> nsCatalog.setProperties(Namespace.of("db2", "db2", "ns2"), ImmutableMap.of()))
+        .isInstanceOf(NoSuchNamespaceException.class)
+        .hasMessage("Namespace does not exist: db2.db2.ns2");
+  }
+
+  @Test
+  public void testSetNamespaceOwnership() throws TException {
+    setNamespaceOwnershipAndVerify(
+        "set_individual_ownership_on_default_owner",
+        ImmutableMap.of(),
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_individual_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.USER.name()),
+        System.getProperty("user.name"),
+        PrincipalType.USER,
+        "some_individual_owner",
+        PrincipalType.USER);
+
+    setNamespaceOwnershipAndVerify(
+        "set_group_ownership_on_default_owner",
+        ImmutableMap.of(),
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        System.getProperty("user.name"),
+        PrincipalType.USER,
+        "some_group_owner",
+        PrincipalType.GROUP);
+
+    setNamespaceOwnershipAndVerify(
+        "change_individual_to_group_ownership",
+        ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_owner"),
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        "some_owner",
+        PrincipalType.USER,
+        "some_group_owner",
+        PrincipalType.GROUP);
+
+    setNamespaceOwnershipAndVerify(
+        "change_group_to_individual_ownership",
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_individual_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.USER.name()),
+        "some_group_owner",
+        PrincipalType.GROUP,
+        "some_individual_owner",
+        PrincipalType.USER);
+
+    assertThatThrownBy(
+            () ->
+                setNamespaceOwnershipAndVerify(
+                    "set_owner_without_setting_owner_type",
+                    ImmutableMap.of(),
+                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_individual_owner"),
+                    System.getProperty("user.name"),
+                    PrincipalType.USER,
+                    "no_post_setting_expectation_due_to_exception_thrown",
+                    null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Setting %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
+
+    assertThatThrownBy(
+            () ->
+                setNamespaceOwnershipAndVerify(
+                    "set_owner_type_without_setting_owner",
+                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_owner"),
+                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER_TYPE, PrincipalType.GROUP.name()),
+                    "some_owner",
+                    PrincipalType.USER,
+                    "no_post_setting_expectation_due_to_exception_thrown",
+                    null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Setting %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
+
+    assertThatThrownBy(
+            () ->
+                setNamespaceOwnershipAndVerify(
+                    "set_invalid_owner_type",
+                    ImmutableMap.of(),
+                    ImmutableMap.of(
+                        HiveCatalog.HMS_DB_OWNER, "iceberg",
+                        HiveCatalog.HMS_DB_OWNER_TYPE, "invalidOwnerType"),
+                    System.getProperty("user.name"),
+                    PrincipalType.USER,
+                    "no_post_setting_expectation_due_to_exception_thrown",
+                    null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "No enum constant org.apache.hadoop.hive.metastore.api.PrincipalType.invalidOwnerType");
+  }
+
+  @Test
+  public void testSetNamespaceOwnershipNoop() throws TException, IOException {
+    setNamespaceOwnershipAndVerify(
+        "set_ownership_noop_1",
+        ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_individual_owner"),
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_individual_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.USER.name()),
+        "some_individual_owner",
+        PrincipalType.USER,
+        "some_individual_owner",
+        PrincipalType.USER);
+
+    setNamespaceOwnershipAndVerify(
+        "set_ownership_noop_2",
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        "some_group_owner",
+        PrincipalType.GROUP,
+        "some_group_owner",
+        PrincipalType.GROUP);
+
+    setNamespaceOwnershipAndVerify(
+        "set_ownership_noop_3",
+        ImmutableMap.of(),
+        ImmutableMap.of(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER,
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER);
+
+    setNamespaceOwnershipAndVerify(
+        "set_ownership_noop_4",
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        ImmutableMap.of("unrelated_prop_1", "value_1", "unrelated_prop_2", "value_2"),
+        "some_group_owner",
+        PrincipalType.GROUP,
+        "some_group_owner",
+        PrincipalType.GROUP);
+  }
+
+  private void setNamespaceOwnershipAndVerify(
+      String name,
+      Map<String, String> propToCreate,
+      Map<String, String> propToSet,
+      String expectedOwnerPostCreate,
+      PrincipalType expectedOwnerTypePostCreate,
+      String expectedOwnerPostSet,
+      PrincipalType expectedOwnerTypePostSet)
+      throws TException {
+    createNamespaceAndVerifyOwnership(
+        name, propToCreate, expectedOwnerPostCreate, expectedOwnerTypePostCreate);
+
+    nsCatalog.setProperties(Namespace.of(name), propToSet);
+    Database database = metastoreClient.getDatabase(name);
+
+    assertThat(database.getOwnerName()).isEqualTo(expectedOwnerPostSet);
+    assertThat(database.getOwnerType()).isEqualTo(expectedOwnerTypePostSet);
+  }
+
+  @Test
+  public void testRemoveNamespaceProperties() throws TException {
+    Namespace namespace = Namespace.of("dbname_remove");
+
+    nsCatalog.createNamespace(namespace, meta);
+
+    nsCatalog.removeProperties(namespace, ImmutableSet.of("comment", "owner"));
+
+    Database database = metastoreClient.getDatabase(namespace.level(0));
+
+    assertThat(database.getParameters()).doesNotContainKey("owner");
+    assertThat(database.getParameters()).containsEntry("group", "iceberg");
+
+    assertThatThrownBy(
+            () ->
+                nsCatalog.removeProperties(
+                    Namespace.of("db2", "db2", "ns2"), ImmutableSet.of("comment", "owner")))
+        .isInstanceOf(NoSuchNamespaceException.class)
+        .hasMessage("Namespace does not exist: db2.db2.ns2");
+  }
+
+  @Test
+  public void testRemoveNamespaceOwnership() throws TException, IOException {
+    removeNamespaceOwnershipAndVerify(
+        "remove_individual_ownership",
+        ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_owner"),
+        ImmutableSet.of(HiveCatalog.HMS_DB_OWNER, HiveCatalog.HMS_DB_OWNER_TYPE),
+        "some_owner",
+        PrincipalType.USER,
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER);
+
+    removeNamespaceOwnershipAndVerify(
+        "remove_group_ownership",
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        ImmutableSet.of(HiveCatalog.HMS_DB_OWNER, HiveCatalog.HMS_DB_OWNER_TYPE),
+        "some_group_owner",
+        PrincipalType.GROUP,
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER);
+
+    removeNamespaceOwnershipAndVerify(
+        "remove_ownership_on_default_noop_1",
+        ImmutableMap.of(),
+        ImmutableSet.of(HiveCatalog.HMS_DB_OWNER, HiveCatalog.HMS_DB_OWNER_TYPE),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER,
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER);
+
+    removeNamespaceOwnershipAndVerify(
+        "remove_ownership_on_default_noop_2",
+        ImmutableMap.of(),
+        ImmutableSet.of(),
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER,
+        UserGroupInformation.getCurrentUser().getShortUserName(),
+        PrincipalType.USER);
+
+    removeNamespaceOwnershipAndVerify(
+        "remove_ownership_noop_1",
+        ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_owner"),
+        ImmutableSet.of(),
+        "some_owner",
+        PrincipalType.USER,
+        "some_owner",
+        PrincipalType.USER);
+
+    removeNamespaceOwnershipAndVerify(
+        "remove_ownership_noop_2",
+        ImmutableMap.of(
+            HiveCatalog.HMS_DB_OWNER,
+            "some_group_owner",
+            HiveCatalog.HMS_DB_OWNER_TYPE,
+            PrincipalType.GROUP.name()),
+        ImmutableSet.of(),
+        "some_group_owner",
+        PrincipalType.GROUP,
+        "some_group_owner",
+        PrincipalType.GROUP);
+
+    assertThatThrownBy(
+            () ->
+                removeNamespaceOwnershipAndVerify(
+                    "remove_owner_without_removing_owner_type",
+                    ImmutableMap.of(
+                        HiveCatalog.HMS_DB_OWNER,
+                        "some_individual_owner",
+                        HiveCatalog.HMS_DB_OWNER_TYPE,
+                        PrincipalType.USER.name()),
+                    ImmutableSet.of(HiveCatalog.HMS_DB_OWNER),
+                    "some_individual_owner",
+                    PrincipalType.USER,
+                    "no_post_remove_expectation_due_to_exception_thrown",
+                    null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Removing %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
+
+    assertThatThrownBy(
+            () ->
+                removeNamespaceOwnershipAndVerify(
+                    "remove_owner_type_without_removing_owner",
+                    ImmutableMap.of(
+                        HiveCatalog.HMS_DB_OWNER,
+                        "some_group_owner",
+                        HiveCatalog.HMS_DB_OWNER_TYPE,
+                        PrincipalType.GROUP.name()),
+                    ImmutableSet.of(HiveCatalog.HMS_DB_OWNER_TYPE),
+                    "some_group_owner",
+                    PrincipalType.GROUP,
+                    "no_post_remove_expectation_due_to_exception_thrown",
+                    null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            String.format(
+                "Removing %s and %s has to be performed together or not at all",
+                HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
+  }
+
+  private void removeNamespaceOwnershipAndVerify(
+      String name,
+      Map<String, String> propToCreate,
+      Set<String> propToRemove,
+      String expectedOwnerPostCreate,
+      PrincipalType expectedOwnerTypePostCreate,
+      String expectedOwnerPostRemove,
+      PrincipalType expectedOwnerTypePostRemove)
+      throws TException {
+    createNamespaceAndVerifyOwnership(
+        name, propToCreate, expectedOwnerPostCreate, expectedOwnerTypePostCreate);
+
+    nsCatalog.removeProperties(Namespace.of(name), propToRemove);
+
+    Database database = metastoreClient.getDatabase(name);
+
+    assertThat(database.getOwnerName()).isEqualTo(expectedOwnerPostRemove);
+    assertThat(database.getOwnerType()).isEqualTo(expectedOwnerTypePostRemove);
+  }
+
+  @Test
+  public void testDropNamespace() throws TException {
+    Namespace namespace = Namespace.of("dbname_drop");
+    TableIdentifier identifier = TableIdentifier.of(namespace, "table");
+    Schema schema = getTestSchema();
+
+    nsCatalog.createNamespace(namespace, meta);
+    catalog.createTable(identifier, schema);
+    Map<String, String> nameMata = nsCatalog.loadNamespaceMetadata(namespace);
+    assertThat(nameMata).containsEntry("owner", "apache");
+    assertThat(nameMata).containsEntry("group", "iceberg");
+
+    assertThatThrownBy(() -> nsCatalog.dropNamespace(namespace))
+        .isInstanceOf(NamespaceNotEmptyException.class)
+        .hasMessage("Namespace dbname_drop is not empty. One or more tables exist.");
+    assertThat(catalog.dropTable(identifier, true)).isTrue();
+    assertThat(nsCatalog.dropNamespace(namespace))
+        .as("Should fail to drop namespace if it is not empty")
+        .isTrue();
+    assertThat(nsCatalog.dropNamespace(Namespace.of("db.ns1")))
+        .as("Should fail to drop when namespace doesn't exist")
+        .isFalse();
+    assertThatThrownBy(() -> nsCatalog.loadNamespaceMetadata(namespace))
+        .isInstanceOf(NoSuchNamespaceException.class)
+        .hasMessage("Namespace does not exist: dbname_drop");
+  }
+
+  @Test
+  public void testDropTableWithoutMetadataFile() {
+    TableIdentifier identifier = TableIdentifier.of(DB_NAME, "tbl");
+    Schema tableSchema = getTestSchema();
+    catalog.createTable(identifier, tableSchema);
+    String metadataFileLocation = newTableOps(catalog, identifier).current().metadataFileLocation();
+    TableOperations ops = newTableOps(catalog, identifier);
+    ops.io().deleteFile(metadataFileLocation);
+    assertThat(catalog.dropTable(identifier)).isTrue();
+    assertThatThrownBy(() -> catalog.loadTable(identifier))
+        .isInstanceOf(NoSuchTableException.class)
+        .hasMessageContaining("Table does not exist:");
+  }
+
+  @Test
+  public void testTableName() {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+
+    try {
+      catalog.buildTable(tableIdent, schema).withPartitionSpec(spec).create();
+
+      Table table = catalog.loadTable(tableIdent);
+      assertThat(table.name()).as("Name must match").isEqualTo("hive.hivedb.tbl");
+
+      TableIdentifier snapshotsTableIdent = TableIdentifier.of(DB_NAME, "tbl", "snapshots");
+      Table snapshotsTable = catalog.loadTable(snapshotsTableIdent);
+      assertThat(snapshotsTable.name())
+          .as("Name must match")
+          .isEqualTo("hive.hivedb.tbl.snapshots");
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  private String defaultUri(Namespace namespace) throws TException {
+    String dir = "hive.metastore.warehouse.external.dir";
+    return LocationUtil.stripTrailingSlash(metastoreClient.getConfigValue(dir, ""))
+        + "/"
+        + namespace.level(0)
+        + ".db";
+  }
+
+  @Test
+  public void testUUIDinTableProperties() throws Exception {
+    Schema schema = getTestSchema();
+    TableIdentifier tableIdentifier = TableIdentifier.of(DB_NAME, "tbl");
+    String location = tempResolve("tbl");
+
+    try {
+      catalog.buildTable(tableIdentifier, schema).withLocation(location).create();
+
+      assertThat(hmsTableParameters()).containsKey(TableProperties.UUID);
+    } finally {
+      catalog.dropTable(tableIdentifier);
+    }
+  }
+
+  @Test
+  public void testSnapshotStatsTableProperties() throws Exception {
+    Schema schema = getTestSchema();
+    TableIdentifier tableIdentifier = TableIdentifier.of(DB_NAME, "tbl");
+    String location = tempResolve("tbl");
+
+    try {
+      catalog.buildTable(tableIdentifier, schema).withLocation(location).create();
+
+      // check whether parameters are in expected state
+      Map<String, String> parameters = hmsTableParameters();
+      assertThat(parameters).containsEntry(SNAPSHOT_COUNT, "0");
+      assertThat(parameters)
+          .doesNotContainKey(CURRENT_SNAPSHOT_SUMMARY)
+          .doesNotContainKey(CURRENT_SNAPSHOT_ID)
+          .doesNotContainKey(CURRENT_SNAPSHOT_TIMESTAMP);
+
+      // create a snapshot
+      Table icebergTable = catalog.loadTable(tableIdentifier);
+      String fileName = UUID.randomUUID().toString();
+      DataFile file =
+          DataFiles.builder(icebergTable.spec())
+              .withPath(FileFormat.PARQUET.addExtension(fileName))
+              .withRecordCount(2)
+              .withFileSizeInBytes(0)
+              .build();
+      icebergTable.newFastAppend().appendFile(file).commit();
+
+      // check whether parameters are in expected state
+      parameters = hmsTableParameters();
+      assertThat(parameters).containsEntry(SNAPSHOT_COUNT, "1");
+      String summary =
+          JsonUtil.mapper().writeValueAsString(icebergTable.currentSnapshot().summary());
+      assertThat(parameters).containsEntry(CURRENT_SNAPSHOT_SUMMARY, summary);
+      long snapshotId = icebergTable.currentSnapshot().snapshotId();
+      assertThat(parameters).containsEntry(CURRENT_SNAPSHOT_ID, String.valueOf(snapshotId));
+      assertThat(parameters)
+          .containsEntry(
+              CURRENT_SNAPSHOT_TIMESTAMP,
+              String.valueOf(icebergTable.currentSnapshot().timestampMillis()));
+    } finally {
+      catalog.dropTable(tableIdentifier);
+    }
+  }
+
+  @Test
+  public void testSetSnapshotSummary() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set("iceberg.hive.table-property-max-size", "4000");
+    TableOperations ops = newTableOperations(catalog, conf, null, null, catalog.name(), DB_NAME, "tbl");
+    Snapshot snapshot = mock(Snapshot.class);
+    Map<String, String> summary = Maps.newHashMap();
+    when(snapshot.summary()).thenReturn(summary);
+
+    // create a snapshot summary whose json string size is less than the limit
+    for (int i = 0; i < 100; i++) {
+      summary.put(String.valueOf(i), "value");
+    }
+    assertThat(JsonUtil.mapper().writeValueAsString(summary).length()).isLessThan(4000);
+    Map<String, String> parameters = Maps.newHashMap();
+    setSnapshotSummary(ops, parameters, snapshot);
+    assertThat(parameters).as("The snapshot summary must be in parameters").hasSize(1);
+
+    // create a snapshot summary whose json string size exceeds the limit
+    for (int i = 0; i < 1000; i++) {
+      summary.put(String.valueOf(i), "value");
+    }
+    long summarySize = JsonUtil.mapper().writeValueAsString(summary).length();
+    // the limit has been updated to 4000 instead of the default value(32672)
+    assertThat(summarySize).isGreaterThan(4000).isLessThan(32672);
+    parameters.remove(CURRENT_SNAPSHOT_SUMMARY);
+    setSnapshotSummary(ops, parameters, snapshot);
+    assertThat(parameters)
+        .as("The snapshot summary must not be in parameters due to the size limit")
+        .isEmpty();
+  }
+
+  @Test
+  public void testNotExposeTableProperties() {
+    Configuration conf = new Configuration();
+    conf.set("iceberg.hive.table-property-max-size", "0");
+    TableOperations ops = newTableOperations(catalog, conf, null, null, catalog.name(), DB_NAME, "tbl");
+    TableMetadata metadata = mock(TableMetadata.class);
+    Map<String, String> parameters = Maps.newHashMap();
+    parameters.put(CURRENT_SNAPSHOT_SUMMARY, "summary");
+    parameters.put(CURRENT_SNAPSHOT_ID, "snapshotId");
+    parameters.put(CURRENT_SNAPSHOT_TIMESTAMP, "timestamp");
+    parameters.put(CURRENT_SCHEMA, "schema");
+    parameters.put(DEFAULT_PARTITION_SPEC, "partitionSpec");
+    parameters.put(DEFAULT_SORT_ORDER, "sortOrder");
+
+   setSnapshotStats(ops, metadata, parameters);
+    assertThat(parameters)
+        .doesNotContainKey(CURRENT_SNAPSHOT_SUMMARY)
+        .doesNotContainKey(CURRENT_SNAPSHOT_ID)
+        .doesNotContainKey(CURRENT_SNAPSHOT_TIMESTAMP);
+
+    setSchema(ops, metadata, parameters);
+    assertThat(parameters).doesNotContainKey(CURRENT_SCHEMA);
+
+    setPartitionSpec(ops, metadata, parameters);
+    assertThat(parameters).doesNotContainKey(DEFAULT_PARTITION_SPEC);
+
+    setSortOrder(ops, metadata, parameters);
+    assertThat(parameters).doesNotContainKey(DEFAULT_SORT_ORDER);
+  }
+
+  @Test
+  public void testSetDefaultPartitionSpec() throws Exception {
+    Schema schema = getTestSchema();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+
+    try {
+      Table table = catalog.buildTable(tableIdent, schema).create();
+      assertThat(hmsTableParameters())
+          .as("Must not have default partition spec")
+          .doesNotContainKey(TableProperties.DEFAULT_PARTITION_SPEC);
+
+      table.updateSpec().addField(bucket("data", 16)).commit();
+      assertThat(hmsTableParameters())
+          .containsEntry(
+              TableProperties.DEFAULT_PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testSetCurrentSchema() throws Exception {
+    Schema schema = getTestSchema();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+
+    try {
+      Table table = catalog.buildTable(tableIdent, schema).create();
+
+      assertThat(hmsTableParameters())
+          .containsEntry(CURRENT_SCHEMA, SchemaParser.toJson(table.schema()));
+
+      // add many new fields to make the schema json string exceed the limit
+      UpdateSchema updateSchema = table.updateSchema();
+      final int ncolumns = 600;
+      for (int i = 0; i < ncolumns; i++) {
+        updateSchema.addColumn("new_col_" + i, Types.StringType.get());
+      }
+      updateSchema.commit();
+
+      assertThat(SchemaParser.toJson(table.schema()).length()).isGreaterThan(32768);
+      assertThat(hmsTableParameters()).doesNotContainKey(CURRENT_SCHEMA);
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  private Map<String, String> hmsTableParameters() throws TException {
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = metastoreClient.getTable(DB_NAME, "tbl");
+    return hmsTable.getParameters();
+  }
+
+  @Test
+  public void testConstructorWarehousePathWithEndSlash() {
+    HiveCatalog catalogWithSlash = new HiveCatalog();
+    String wareHousePath = "s3://bucket/db/tbl";
+
+    catalogWithSlash.initialize(
+        "hive_catalog", ImmutableMap.of(CatalogProperties.WAREHOUSE_LOCATION, wareHousePath + "/"));
+    assertThat(catalogWithSlash.getConf().get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname))
+        .as("Should have trailing slash stripped")
+        .isEqualTo(wareHousePath);
+  }
+
+  @Test
+  public void testTablePropsDefinedAtCatalogLevel() {
+    Schema schema = getTestSchema();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+
+    ImmutableMap<String, String> catalogProps =
+        ImmutableMap.of(
+            "table-default.key1", "catalog-default-key1",
+            "table-default.key2", "catalog-default-key2",
+            "table-default.key3", "catalog-default-key3",
+            "table-override.key3", "catalog-override-key3",
+            "table-override.key4", "catalog-override-key4");
+    Catalog hiveCatalog =
+        CatalogUtil.loadCatalog(
+            HiveCatalog.class.getName(),
+            CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
+            catalogProps,
+            conf);
+
+    try {
+      Table table =
+          hiveCatalog
+              .buildTable(tableIdent, schema)
+              .withProperty("key2", "table-key2")
+              .withProperty("key3", "table-key3")
+              .withProperty("key5", "table-key5")
+              .create();
+
+      assertThat(table.properties())
+          .as("Table defaults set for the catalog must be added to the table properties.")
+          .containsEntry("key1", "catalog-default-key1");
+      assertThat(table.properties())
+          .as("Table property must override table default properties set at catalog level.")
+          .containsEntry("key2", "table-key2");
+      assertThat(table.properties())
+          .as(
+              "Table property override set at catalog level must override table default"
+                  + " properties set at catalog level and table property specified.")
+          .containsEntry("key3", "catalog-override-key3");
+      assertThat(table.properties())
+          .as("Table override not in table props or defaults should be added to table properties")
+          .containsEntry("key4", "catalog-override-key4");
+      assertThat(table.properties())
+          .as(
+              "Table properties without any catalog level default or override should be added to table"
+                  + " properties.")
+          .containsEntry("key5", "table-key5");
+    } finally {
+      hiveCatalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testDatabaseLocationWithSlashInWarehouseDir() {
+    Configuration conf = new Configuration();
+    // With a trailing slash
+    conf.set("hive.metastore.warehouse.dir", "s3://bucket/wh/");
+    conf.set("hive.metastore.warehouse.external.dir", "s3://bucket/ext/");
+
+    HiveCatalog catalog = new HiveCatalog();
+    catalog.setConf(conf);
+
+    Database database = HiveUtil.convertToDatabase(catalog, Namespace.of("database"), ImmutableMap.of());
+
+    assertThat(database.getLocationUri()).isEqualTo("s3://bucket/ext/database.db");
+  }
+
+  @Test
+  public void testRegisterTable() {
+    TableIdentifier identifier = TableIdentifier.of(DB_NAME, "t1");
+    catalog.createTable(identifier, getTestSchema());
+    Table registeringTable = catalog.loadTable(identifier);
+    catalog.dropTable(identifier, false);
+    TableOperations ops = ((HasTableOperations) registeringTable).operations();
+    String metadataLocation = currentMetadataLocation(ops);
+    Table registeredTable = catalog.registerTable(identifier, metadataLocation);
+    assertThat(registeredTable).isNotNull();
+    //TestHelpers.assertSerializedAndLoadedMetadata(registeringTable, registeredTable);
+    String expectedMetadataLocation =
+        ((HasTableOperations) registeredTable).operations().current().metadataFileLocation();
+    assertThat(metadataLocation).isEqualTo(expectedMetadataLocation);
+    assertThat(catalog.loadTable(identifier)).isNotNull();
+    assertThat(catalog.dropTable(identifier)).isTrue();
+  }
+
+  @Test
+  public void testRegisterTableHadoop() throws Exception {
+    HadoopTables hadoopTables = new HadoopTables(this.conf);
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+    File path = temp.newFolder("tbl");
+    Table table = hadoopTables.buildTable(path.toString(), schema)
+        .withPartitionSpec(spec)
+        .withProperty("key1", "value1")
+        .withProperty("key2", "value2")
+        .create();
+    Assert.assertFalse(catalog.tableExists(tableIdent));
+    String location = java.nio.file.Paths.get(path.toString(), "metadata", "v1.metadata.json").toString();
+
+    try {
+      Table registered = catalog.registerTable(tableIdent, location);
+      Assert.assertEquals(table.location(), registered.location());
+      Assert.assertEquals("value1", table.properties().get("key1"));
+      Assert.assertEquals("value2", table.properties().get("key2"));
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+
+  @Test
+  public void testRegisterExistingTable() {
+    TableIdentifier identifier = TableIdentifier.of(DB_NAME, "t1");
+    catalog.createTable(identifier, getTestSchema());
+    Table registeringTable = catalog.loadTable(identifier);
+    TableOperations ops = ((HasTableOperations) registeringTable).operations();
+    String metadataLocation = currentMetadataLocation(ops);
+    assertThatThrownBy(() -> catalog.registerTable(identifier, metadataLocation))
+        .isInstanceOf(AlreadyExistsException.class)
+        .hasMessage("Table already exists: hivedb.t1");
+    assertThat(catalog.dropTable(identifier, true)).isTrue();
+  }
+}

@@ -487,20 +487,28 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     String databaseLocation = databaseLocation(tableIdentifier.namespace().levels()[0]);
     return String.format("%s/%s", databaseLocation, tableIdentifier.name());
   }
-
+  
   private String databaseLocation(String databaseName) {
-    String warehouseLocation = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
-    Preconditions.checkNotNull(
-            warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.dir=null");
+    String warehouseLocation = conf.get("metastore.warehouse.dir");
+    if (warehouseLocation == null) {
+      warehouseLocation = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
+    }
+    Preconditions.checkNotNull(warehouseLocation,
+        "Warehouse location is not set: hive.metastore.warehouse.dir=null");
     warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
-    return String.format("%s/%s.db", warehouseLocation, databaseName);
+    return String.format("%s/%s.db", warehouseLocation, databaseName.toLowerCase());
   }
 
-  private String getExternalWarehouseLocation() {
-    String warehouseLocation = conf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname);
+
+  private String databaseLocationInExternalWarehouse(String databaseName) {
+    String warehouseLocation = conf.get("metastore.warehouse.external.dir");
+    if (warehouseLocation == null) {
+      warehouseLocation = conf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname);
+    }
     Preconditions.checkNotNull(warehouseLocation,
         "Warehouse location is not set: hive.metastore.warehouse.external.dir=null");
-    return warehouseLocation;
+    warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
+    return String.format("%s/%s.db", warehouseLocation, databaseName);
   }
 
   private Map<String, String> convertToMetadata(Database database) {
@@ -530,10 +538,11 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     Database database = new Database();
     Map<String, String> parameter = Maps.newHashMap();
 
-    database.setName(namespace.level(0));
-    database.setLocationUri(new Path(getExternalWarehouseLocation(), namespace.level(0)).toString() + ".db");
-    database.setManagedLocationUri(databaseLocation(namespace.level(0)));
-
+    final String dbname = namespace.level(0);
+    database.setName(dbname);
+    database.setLocationUri(databaseLocationInExternalWarehouse(dbname));
+    database.setManagedLocationUri(databaseLocation(dbname));
+    
     meta.forEach((key, value) -> {
       if (key.equals("comment")) {
         database.setDescription(value);
