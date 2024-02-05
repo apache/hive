@@ -511,9 +511,9 @@ public class TestRCFile {
 
     // Set the configuration parameters
     tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
-    tbl.setProperty("columns",
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
         "abyte,ashort,aint,along,adouble,astring,anullint,anullstring");
-    tbl.setProperty("columns.types",
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "tinyint:smallint:int:bigint:double:string:int:string");
     tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
     return tbl;

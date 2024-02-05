@@ -364,8 +364,8 @@ public class TestVectorSerDeRow {
     // Set the configuration parameters
     tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
 
-    tbl.setProperty("columns", fieldNames);
-    tbl.setProperty("columns.types", fieldTypes);
+    tbl.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
 
     tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "\\N");
   }
