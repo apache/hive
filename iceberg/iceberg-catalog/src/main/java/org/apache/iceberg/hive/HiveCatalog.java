@@ -564,10 +564,9 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     }
 
     database.setParameters(parameter);
-
     return database;
   }
-  
+
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
