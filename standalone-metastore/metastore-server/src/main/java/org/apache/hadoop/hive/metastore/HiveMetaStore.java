@@ -768,9 +768,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Method iceStart = iceClazz.getMethod("startServer", Configuration.class);
       return (Server) iceStart.invoke(null, configuration);
     } catch (ClassNotFoundException xnf) {
+      LOG.warn("unable to start Iceberg REST Catalog server {}, missing jar?", xnf);
       return null;
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      LOG.error("error starting Iceberg REST server {}", e);
+      LOG.error("unable to start Iceberg REST Catalog server {}", e);
       return null;
     }
   }

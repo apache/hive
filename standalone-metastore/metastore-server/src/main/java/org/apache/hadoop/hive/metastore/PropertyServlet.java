@@ -382,24 +382,4 @@ public class PropertyServlet extends HttpServlet {
     }
     return server;
   }
-
-  /*
-  public static void main(String[] args) throws Exception {
-    HttpServlet servlet = createServlet(null);
-    ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-    context.setContextPath("/");
-    ServletHolder servletHolder = new ServletHolder(servlet);
-    servletHolder.setInitParameter("javax.ws.rs.Application", "ServiceListPublic");
-    context.addServlet(servletHolder, "/*");
-    context.setVirtualHosts(null);
-    context.setGzipHandler(new GzipHandler());
-
-    Server httpServer =
-        new Server(PropertyUtil.propertyAsInt(System.getenv(), "REST_PORT", 8181));
-    httpServer.setHandler(context);
-
-    httpServer.start();
-    httpServer.join();
-  }
-  */
 }
