@@ -80,7 +80,7 @@ public class InitiatorBase extends MetaStoreCompactorThread {
     }
     compactionInfo.poolName = compactionRequest.getPoolName();
     try {
-      StorageDescriptor sd = resolveStorageDescriptor(table, partition);
+      StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(table, partition);
       String runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
       LOG.info(
           "Checking to see if we should compact partition " + compactionInfo.partName + " of table " + table.getDbName()
