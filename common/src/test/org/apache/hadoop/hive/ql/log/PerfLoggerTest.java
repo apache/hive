@@ -35,6 +35,26 @@ public class PerfLoggerTest {
     }
   }
 
+  private static void snoozeRecursive(int ms, int depth) {
+    if (depth <= 0) {
+      return;
+    }
+    final PerfLogger pl = PerfLogger.getPerfLogger(null, false);
+    pl.perfLogBegin(PerfLoggerTest.class.getName(), "snoozeRecursive");
+    snooze(ms);
+    snoozeRecursive(ms, depth-1);
+    pl.perfLogEnd(PerfLoggerTest.class.getName(), "snoozeRecursive");
+  }
+
+  @Test
+  public void testRecursive() {
+    final PerfLogger pl = PerfLogger.getPerfLogger(null, false);
+    int depth = 3;
+    snoozeRecursive(100, depth);
+    long duration = pl.getDuration("snoozeRecursive");
+    Assert.assertTrue(duration >= depth * 100);
+  }
+
   @Test
   public void testBasic() {
     final PerfLogger pl = PerfLogger.getPerfLogger(null, true);

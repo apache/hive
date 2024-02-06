@@ -93,6 +93,18 @@ public class PerfLogger {
   protected final Map<String, Long> startTimes = new ConcurrentHashMap<>();
   protected final Map<String, Long> endTimes = new ConcurrentHashMap<>();
 
+  /**
+   * This Map is used to keep track of the number of active calls to a method.
+   * Each call to perfLogBegin and perfLogEnd will increase and decrease the
+   * value respectively.
+   * <p>
+   * A start time will be logged only when the value for a method is 1, i.e.,
+   * the first call, and an end time will be logged only when the value is 0.
+   * So, this will behave like a stack for each method and prevent overwriting
+   * of start times during recursive calls.
+   */
+  protected final Map<String, Integer> activeMethodCalls = new ConcurrentHashMap<>();
+
   private static final Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<>();
 
@@ -124,11 +136,47 @@ public class PerfLogger {
   }
 
   /**
+   * Check if it's okay to start logging for a method.
+   *
+   * @param method key
+   * @return boolean
+   */
+  private boolean canBeginPerfLog(String method) {
+    // For a new method, or if somehow the value is negative, reset value to zero
+    if (!activeMethodCalls.containsKey(method) || activeMethodCalls.get(method) < 0) {
+      activeMethodCalls.put(method, 0);
+    }
+    // Increase the value everytime we see a method
+    activeMethodCalls.put(method, activeMethodCalls.get(method) + 1);
+
+    return activeMethodCalls.get(method) == 1;
+  }
+
+  /**
+   * Check if it's okay to end logging for a method.
+   *
+   * @param method key
+   * @return boolean
+   */
+  private boolean canEndPerfLog(String method) {
+    if (!activeMethodCalls.containsKey(method)) {
+      return false;
+    }
+    // Decrease the value everytime we see a method
+    activeMethodCalls.put(method, activeMethodCalls.get(method) - 1);
+
+    return activeMethodCalls.get(method) == 0;
+  }
+
+  /**
    * Call this function when you start to measure time spent by a piece of code.
    * @param callerName the logging object to be used.
    * @param method method or ID that identifies this perf log element.
    */
   public void perfLogBegin(String callerName, String method) {
+    if (!canBeginPerfLog(method)) {
+      return;
+    }
     long startTime = System.currentTimeMillis();
     startTimes.put(method, Long.valueOf(startTime));
     LOG.debug("<PERFLOG method={} from={}>", method, callerName);
@@ -152,6 +200,9 @@ public class PerfLogger {
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long perfLogEnd(String callerName, String method, String additionalInfo) {
+    if (!canEndPerfLog(method)) {
+      return -1;
+    }
     long startTime = startTimes.getOrDefault(method, -1L);
     long endTime = System.currentTimeMillis();
     long duration = startTime < 0 ? -1 : endTime - startTime;
