@@ -667,7 +667,7 @@ Stripes:
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[114]
     Row group indices for column 0:
-      Entry 0: count: 152 hasNull: false positions:
+      Entry 0: count: 152 hasNull: false positions: 
     Row group indices for column 1:
       Entry 0: count: 152 hasNull: false min: 0 max: 497 sum: 38034 positions: 0,0,0
     Row group indices for column 2:
@@ -683,13 +683,13 @@ Stripes:
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
     Row group indices for column 0:
-      Entry 0: count: 90 hasNull: false positions:
+      Entry 0: count: 90 hasNull: false positions: 
     Row group indices for column 1:
       Entry 0: count: 90 hasNull: false min: 0 max: 495 sum: 22736 positions: 0,0,0
     Row group indices for column 2:
       Entry 0: count: 90 hasNull: false min: val_0 max: val_86 sum: 612 positions: 0,0,0,0,0
 
-File length: 2159 bytes
+File length: 2157 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -738,7 +738,7 @@ Stripes:
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[114]
     Row group indices for column 0:
-      Entry 0: count: 152 hasNull: false positions:
+      Entry 0: count: 152 hasNull: false positions: 
     Row group indices for column 1:
       Entry 0: count: 152 hasNull: false min: 0 max: 497 sum: 38034 positions: 0,0,0
     Row group indices for column 2:
@@ -754,7 +754,7 @@ Stripes:
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
     Row group indices for column 0:
-      Entry 0: count: 90 hasNull: false positions:
+      Entry 0: count: 90 hasNull: false positions: 
     Row group indices for column 1:
       Entry 0: count: 90 hasNull: false min: 0 max: 495 sum: 22736 positions: 0,0,0
     Row group indices for column 2:
