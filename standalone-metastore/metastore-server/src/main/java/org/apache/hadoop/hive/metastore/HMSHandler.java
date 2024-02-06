@@ -7466,7 +7466,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return result;
   }
 
-  public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
+  private List<Partition> get_partitions_by_names(final String dbName, final String tblName,
       boolean getColStats, String engine,
       List<String> processorCapabilities, String processorId,
       GetPartitionsArgs args) throws TException {
@@ -7478,14 +7478,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Table table = null;
     Exception ex = null;
     boolean success = false;
-    startTableFunction("get_partitions_by_names", parsedCatName, parsedDbName,
-        tblName);
+    startTableFunction("get_partitions_by_names", parsedCatName, parsedDbName, tblName);
     try {
       getMS().openTransaction();
       authorizeTableForPartitionMetadata(parsedCatName, parsedDbName, tblName);
 
       fireReadTablePreEvent(parsedCatName, parsedDbName, tblName);
 
+      checkLimitNumberOfPartitions(tblName, args.getPartNames().size(), -1);
       ret = getMS().getPartitionsByNames(parsedCatName, parsedDbName, tblName, args);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
       table = getTable(parsedCatName, parsedDbName, tblName);

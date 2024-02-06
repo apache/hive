@@ -739,14 +739,8 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
-        String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
-        List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName,
-            filter, input, Collections.<String>emptyList(), null);
-        if (partitionIds.isEmpty()) {
-          return Collections.emptyList(); // no partitions, bail early.
-        }
-        return getPartitionsFromPartitionIds(catName, dbName, tblName, null,
-                partitionIds, Collections.emptyList(), false, args);
+        return getPartitionsFromPartitionNames(catName, dbName, tblName, null,
+                partNames, Collections.emptyList(), false, args);
       }
     });
   }
@@ -1024,15 +1018,42 @@ class MetaStoreDirectSql {
     }
   }
 
+
+  /** Should be called with the list short enough to not trip up Oracle/etc. */
+  private List<Partition> getPartitionsFromPartitionNames(String catName, String dbName,
+      String tblName, Boolean isView, List<String> partNameList, List<String> projectionFields,
+      boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
+    // Get most of the fields for the partNames provided.
+    // Assume db and table names are the same for all partition, as provided in arguments.
+    String partNames = partNameList.stream()
+            .map(name -> "'" + name + "'")
+            .collect(Collectors.joining(","));
+    String queryText =
+        "select " + PARTITIONS + ".\"PART_ID\", " + SDS + ".\"SD_ID\", " + SDS + ".\"CD_ID\"," + " "
+        + SERDES + ".\"SERDE_ID\", " + PARTITIONS + ".\"CREATE_TIME\"," + " " + PARTITIONS
+        + ".\"LAST_ACCESS_TIME\", " + SDS + ".\"INPUT_FORMAT\", " + SDS + ".\"IS_COMPRESSED\","
+        + " " + SDS + ".\"IS_STOREDASSUBDIRECTORIES\", " + SDS + ".\"LOCATION\", " + SDS
+        + ".\"NUM_BUCKETS\"," + " " + SDS + ".\"OUTPUT_FORMAT\", " + SERDES + ".\"NAME\", "
+        + SERDES + ".\"SLIB\", " + PARTITIONS + ".\"WRITE_ID\"" + " from " + PARTITIONS + ""
+        + "  left outer join " + SDS + " on " + PARTITIONS + ".\"SD_ID\" = " + SDS
+        + ".\"SD_ID\" " + "  left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = "
+        + SERDES + ".\"SERDE_ID\" " + " inner join " + TBLS + " on " + TBLS + ".\"TBL_ID\" = "
+        + PARTITIONS + ".\"TBL_ID\" " + " inner join " + DBS + " on " + DBS + ".\"DB_ID\" = "
+        + TBLS + ".\"DB_ID\" " + "where \"PART_NAME\" in (" + partNames + ") "
+        + " and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS
+        + ".\"CTLG_NAME\" = ? order by \"PART_NAME\" asc";
+    Object[] params = new Object[]{tblName, dbName, catName};
+    // Keep order by name, consistent with JDO.
+    ArrayList<Partition> orderedResult = new ArrayList<Partition>(partNameList.size());
+    populatePartitionsByQuery(catName, dbName, tblName, isView, queryText, params, projectionFields,
+        isAcidTable, args, orderedResult);
+    return orderedResult;
+  }
+
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
       Boolean isView, List<Long> partIdList, List<String> projectionFields,
       boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
-
-    boolean doTrace = LOG.isDebugEnabled();
-
-    int idStringWidth = (int)Math.ceil(Math.log10(partIdList.size())) + 1; // 1 for comma
-    int sbCapacity = partIdList.size() * idStringWidth;
     // Get most of the fields for the IDs provided.
     // Assume db and table names are the same for all partition, as provided in arguments.
     String partIds = getIdListForIn(partIdList);
@@ -1047,17 +1068,26 @@ class MetaStoreDirectSql {
             + ".\"SD_ID\" " + "  left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = "
             + SERDES + ".\"SERDE_ID\" " + "where \"PART_ID\" in (" + partIds
             + ") order by \"PART_NAME\" asc";
+    // Keep order by name, consistent with JDO.
+    ArrayList<Partition> orderedResult = new ArrayList<Partition>(partIdList.size());
+    populatePartitionsByQuery(catName, dbName, tblName, isView, queryText, null, projectionFields,
+        isAcidTable, args, orderedResult);
+    return orderedResult;
+  }
+
+  private void populatePartitionsByQuery(String catName, String dbName, String tblName,
+      Boolean isView, String queryText, Object[] params, List<String> projectionFields,
+      boolean isAcidTable, GetPartitionsArgs args, List<Partition> result) throws MetaException {
+    boolean doTrace = LOG.isDebugEnabled();
 
     // Read all the fields and create partitions, SDs and serdes.
     TreeMap<Long, Partition> partitions = new TreeMap<Long, Partition>();
     TreeMap<Long, StorageDescriptor> sds = new TreeMap<Long, StorageDescriptor>();
     TreeMap<Long, SerDeInfo> serdes = new TreeMap<Long, SerDeInfo>();
     TreeMap<Long, List<FieldSchema>> colss = new TreeMap<Long, List<FieldSchema>>();
-    // Keep order by name, consistent with JDO.
-    ArrayList<Partition> orderedResult = new ArrayList<Partition>(partIdList.size());
 
     // Prepare StringBuilder-s for "in (...)" lists to use in one-to-many queries.
-    StringBuilder sdSb = new StringBuilder(sbCapacity), serdeSb = new StringBuilder(sbCapacity);
+    StringBuilder sdSb = new StringBuilder(), serdeSb = new StringBuilder();
     StringBuilder colsSb = new StringBuilder(7); // We expect that there's only one field schema.
     tblName = tblName.toLowerCase();
     dbName = dbName.toLowerCase();
@@ -1066,7 +1096,7 @@ class MetaStoreDirectSql {
 
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       long start = doTrace ? System.nanoTime() : 0;
-      List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+      List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), params, queryText);
       long queryTime = doTrace ? System.nanoTime() : 0;
       Deadline.checkTimeout();
 
@@ -1078,7 +1108,7 @@ class MetaStoreDirectSql {
         Long serdeId = MetastoreDirectSqlUtils.extractSqlLong(fields[3]);
 
         Partition part = new Partition();
-        orderedResult.add(part);
+        result.add(part);
         // Set the collection fields; some code might not check presence before accessing them.
         part.setParameters(new HashMap<>());
         part.setValues(new ArrayList<String>());
@@ -1161,6 +1191,7 @@ class MetaStoreDirectSql {
       }
       MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
     }
+    String partIds = getIdListForIn(partitions.keySet());
     // Now get all the one-to-many things. Start with partitions.
     MetastoreDirectSqlUtils
         .setPartitionParametersWithFilter(PARTITION_PARAMS, convertMapNullsToEmptyStrings, pm,
@@ -1171,7 +1202,7 @@ class MetaStoreDirectSql {
     // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
     if (sdSb.length() == 0) {
       assert serdeSb.length() == 0 && colsSb.length() == 0;
-      return orderedResult; // No SDs, probably a view.
+      return; // No SDs, probably a view.
     }
 
     String sdIds = trimCommaList(sdSb);
@@ -1216,8 +1247,6 @@ class MetaStoreDirectSql {
     if (!isAcidTable) {
       MetastoreDirectSqlUtils.setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
     }
-
-    return orderedResult;
   }
 
   public int getNumPartitionsViaSqlFilter(SqlFilterForPushdown filter) throws MetaException {
