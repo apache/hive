@@ -119,10 +119,6 @@ public class PerfLogger {
     return result;
   }
 
-  public static void setPerfLogger(PerfLogger resetPerfLogger) {
-    perfLogger.set(resetPerfLogger);
-  }
-
   /**
    * Call this function when you start to measure time spent by a piece of code.
    * @param callerName the logging object to be used.
