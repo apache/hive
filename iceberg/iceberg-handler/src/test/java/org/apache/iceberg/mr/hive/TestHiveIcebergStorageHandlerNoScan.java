@@ -2059,7 +2059,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testCreateTableWithPercentInName() throws TException, IOException, InterruptedException {
+  public void testCreateTableWithPercentInName() throws IOException {
     TableIdentifier identifier = TableIdentifier.of("default", "[|]#&%_@");
 
     shell.executeStatement("CREATE EXTERNAL TABLE `[|]#&%_@` " +
@@ -2075,6 +2075,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     // Check the Iceberg table data
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
     Assert.assertEquals(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.asStruct(),
         icebergTable.schema().asStruct());
     Assert.assertEquals(PartitionSpec.unpartitioned(), icebergTable.spec());
