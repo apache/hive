@@ -501,9 +501,9 @@ public class TestMetastoreConf {
         EventCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.METASTORE_DELEGATION_MANAGER_CLASS,
         MetastoreDelegationTokenManager.class.getName());
-    Assert.assertEquals(MetastoreConf.ACID_HOUSE_KEEPER_SERVICE_CLASS,
+    Assert.assertEquals(MetastoreConf.ACID_HOUSEKEEPER_SERVICE_CLASS,
         AcidHouseKeeperService.class.getName());
-    Assert.assertEquals(MetastoreConf.COMPACTION_HOUSE_KEEPER_SERVICE_CLASS,
+    Assert.assertEquals(MetastoreConf.COMPACTION_HOUSEKEEPER_SERVICE_CLASS,
         CompactionHouseKeeperService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_TXN_CLEANER_SERVICE_CLASS,
         AcidTxnCleanerService.class.getName());

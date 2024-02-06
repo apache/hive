@@ -17,9 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.txn.service;
 
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.function.FailableRunnable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,16 +37,21 @@ public class CompactionHouseKeeperService extends AcidHouseKeeperService {
     serviceName = this.getClass().getSimpleName();
   }
 
+  protected void initTasks(){
+    tasks = ImmutableMap.<FailableRunnable<MetaException>, String>builder()
+            .put(txnHandler::removeDuplicateCompletedTxnComponents,
+                    "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries")
+            .put(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries")
+            .build();
+  }
+
+  @Override
+  protected void cleanTheHouse() {
+    tasks.forEach(super::performTask);
+  }
   @Override
   public long runFrequency(TimeUnit unit) {
     return MetastoreConf.getTimeVar(getConf(), MetastoreConf.ConfVars.COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL,
         unit);
-  }
-
-  @Override
-  public void cleanTheHouse() {
-    performTask(txnHandler::removeDuplicateCompletedTxnComponents,
-            "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries");
-    performTask(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
   }
 }

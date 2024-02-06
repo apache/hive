@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn.service;
 
-import org.apache.commons.lang3.Functions;
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.function.Failable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -27,9 +28,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.lang3.Functions.FailableRunnable;
+import org.apache.commons.lang3.function.FailableRunnable;
 
 /**
  * Performs background tasks for Transaction management in Hive.
@@ -42,6 +44,7 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   private Configuration conf;
   protected TxnStore txnHandler;
   protected String serviceName;
+  protected Map<FailableRunnable<MetaException>, String> tasks;
 
   public AcidHouseKeeperService() {
     serviceName = this.getClass().getSimpleName();
@@ -51,6 +54,15 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   public void setConf(Configuration configuration) {
     conf = configuration;
     txnHandler = TxnUtils.getTxnStore(conf);
+    initTasks();
+  }
+
+  protected void initTasks(){
+    tasks = ImmutableMap.<FailableRunnable<MetaException>, String>builder()
+            .put(txnHandler::performTimeOuts, "Cleaning timed out txns and locks")
+            .put(txnHandler::performWriteSetGC, "Cleaning obsolete write set entries")
+            .put(txnHandler::cleanTxnToWriteIdTable, "Cleaning obsolete TXN_TO_WRITE_ID entries")
+            .build();
   }
 
   @Override
@@ -82,14 +94,12 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   }
 
   protected void cleanTheHouse() {
-    performTask(txnHandler::performTimeOuts, "Cleaning timed out txns and locks");
-    performTask(txnHandler::performWriteSetGC, "Cleaning obsolete write set entries");
-    performTask(txnHandler::cleanTxnToWriteIdTable, "Cleaning obsolete TXN_TO_WRITE_ID entries");
+    tasks.forEach(this::performTask);
   }
 
-  void performTask(FailableRunnable<MetaException> task, String description) {
+  protected void performTask(FailableRunnable<MetaException> task, String description) {
     long start = System.currentTimeMillis();
-    Functions.run(task);
+    Failable.run(task);
     LOG.debug("{} took {} seconds.", description, elapsedSince(start));
   }
 
