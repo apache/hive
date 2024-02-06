@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -487,7 +486,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     String databaseLocation = databaseLocation(tableIdentifier.namespace().levels()[0]);
     return String.format("%s/%s", databaseLocation, tableIdentifier.name());
   }
-  
+
   private String databaseLocation(String databaseName) {
     String warehouseLocation = conf.get("metastore.warehouse.dir");
     if (warehouseLocation == null) {
@@ -542,7 +541,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     database.setName(dbname);
     database.setLocationUri(databaseLocationInExternalWarehouse(dbname));
     database.setManagedLocationUri(databaseLocation(dbname));
-    
+
     meta.forEach((key, value) -> {
       if (key.equals("comment")) {
         database.setDescription(value);
@@ -568,6 +567,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     return database;
   }
+  
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
