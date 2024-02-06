@@ -33,7 +33,6 @@ import org.springframework.jdbc.UncategorizedSQLException;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 /**
@@ -47,11 +46,6 @@ public class SqlRetryHandler {
   static final String MANUAL_RETRY = "ManualRetry";
 
   private final StackThreadLocal<Object> threadLocal = new StackThreadLocal<>();
-
-  /**
-   * Derby specific concurrency control
-   */
-  private static final ReentrantLock derbyLock = new ReentrantLock(true);
 
   private final DatabaseProduct databaseProduct;
   private final long deadlockRetryInterval;
@@ -122,14 +116,14 @@ public class SqlRetryHandler {
     
     try {
       if (properties.isLockInternally()) {
-        lockInternal();
+        databaseProduct.lockInternal();
       }
       threadLocal.set(new Object());
       return executeWithRetryInternal(properties, function);
     } finally {
       threadLocal.unset();
       if (properties.isLockInternally()) {
-        unlockInternal();
+        databaseProduct.unlockInternal();
       }
     }
   }
@@ -269,21 +263,4 @@ public class SqlRetryHandler {
     }
     return false;
   }
-
-  /**
-   * lockInternal() and {@link #unlockInternal()} are used to serialize those operations that require
-   * Select ... For Update to sequence operations properly.  In practice that means when running
-   * with Derby database.  See more notes at class level.
-   */
-  private void lockInternal() {
-    if(databaseProduct.isDERBY()) {
-      derbyLock.lock();
-    }
-  }
-  private void unlockInternal() {
-    if(databaseProduct.isDERBY()) {
-      derbyLock.unlock();
-    }
-  }
-
 }
