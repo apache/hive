@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 
-import java.util.List;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Parser;
 import org.antlr.runtime.ParserRuleReturnScope;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
@@ -29,10 +29,12 @@ import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.antlr.runtime.tree.TreeAdaptor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * ParseDriver.
@@ -109,61 +111,28 @@ public class ParseDriver {
    *
    * @return parsed AST
    */
-  public ParseResult parse(String command, Configuration configuration)
-      throws ParseException {
-    LOG.debug("Parsing command: {}", command);
-
-    GenericHiveLexer lexer = GenericHiveLexer.of(command, configuration);
-    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-    HiveParser parser = new HiveParser(tokens);
-    parser.setTreeAdaptor(adaptor);
-    parser.setHiveConf(configuration);
-    ParserRuleReturnScope r;
-    try {
-      r = parser.statement();
-    } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
-    }
-
-    if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.debug("Parse Completed");
-    } else if (lexer.getErrors().size() != 0) {
-      throw new ParseException(lexer.getErrors());
-    } else {
-      throw new ParseException(parser.errors);
-    }
-
-    ASTNode tree = (ASTNode) r.getTree();
-    tree.setUnknownTokenBoundaries();
-    return new ParseResult(tree, tokens, parser.gFromClauseParser.tables);
+  public ParseResult parse(String command, Configuration configuration) throws ParseException {
+    ASTParser<HiveParser> p = createHiveParser(command, configuration);
+    ASTNode t = p.parse(HiveParser::statement);
+    t.setUnknownTokenBoundaries();
+    return new ParseResult(t, p.tokens, p.parser.gFromClauseParser.tables);
   }
 
   /*
    * Parse a string as a query hint.
    */
   public ASTNode parseHint(String command) throws ParseException {
-    LOG.debug("Parsing hint: {}", command);
-
-    GenericHiveLexer lexer = GenericHiveLexer.of(command, null);
-    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-    HintParser parser = new HintParser(tokens);
-    parser.setTreeAdaptor(adaptor);
-    HintParser.hint_return r = null;
-    try {
-      r = parser.hint();
-    } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
-    }
-
-    if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.debug("Parse Completed");
-    } else if (lexer.getErrors().size() != 0) {
-      throw new ParseException(lexer.getErrors());
-    } else {
-      throw new ParseException(parser.errors);
-    }
-
-    return (ASTNode) r.getTree();
+    ASTParser<HintParser> p = new ASTParser<HintParser>(command, null, (tokens) -> {
+      HintParser hintParser = new HintParser(tokens);
+      hintParser.setTreeAdaptor(adaptor);
+      return hintParser;
+    }) {
+      @Override
+      Collection<ParseError> parseErrors() {
+        return parser.errors;
+      }
+    };
+    return p.parse(HintParser::hint);
   }
 
   /*
@@ -177,95 +146,69 @@ public class ParseDriver {
    * translation process.
    */
   public ParseResult parseSelect(String command, Configuration configuration) throws ParseException {
-    LOG.debug("Parsing command: {}", command);
-
-    GenericHiveLexer lexer = GenericHiveLexer.of(command, configuration);
-    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-//    if (ctx != null) {
-//      ctx.setTokenRewriteStream(tokens);
-//    }
-    HiveParser parser = new HiveParser(tokens);
-    parser.setTreeAdaptor(adaptor);
-    parser.setHiveConf(configuration);
-    ParserRuleReturnScope r;
-    try {
-      r = parser.selectClause();
-    } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
-    }
-
-    if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.debug("Parse Completed");
-    } else if (lexer.getErrors().size() != 0) {
-      throw new ParseException(lexer.getErrors());
-    } else {
-      throw new ParseException(parser.errors);
-    }
-
-    return new ParseResult((ASTNode) r.getTree(), tokens, parser.gFromClauseParser.tables);
+    ASTParser<HiveParser> p = createHiveParser(command, configuration);
+    ASTNode tree = p.parse(HiveParser::selectClause);
+    return new ParseResult(tree, p.tokens, p.parser.gFromClauseParser.tables);
   }
+
   public ASTNode parseExpression(String command) throws ParseException {
-    LOG.debug("Parsing expression: {}", command);
-
-    GenericHiveLexer lexer = GenericHiveLexer.of(command, null);
-    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-    HiveParser parser = new HiveParser(tokens);
-    parser.setTreeAdaptor(adaptor);
-    ParserRuleReturnScope r;
-    try {
-      r = parser.expression();
-    } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
-    }
-
-    if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.debug("Parse Completed");
-    } else if (lexer.getErrors().size() != 0) {
-      throw new ParseException(lexer.getErrors());
-    } else {
-      throw new ParseException(parser.errors);
-    }
-
-    return (ASTNode) r.getTree();
+    return createHiveParser(command, null).parse(HiveParser::expression);
   }
 
   public ASTNode parseTriggerExpression(String command) throws ParseException {
-    GenericHiveLexer lexer = GenericHiveLexer.of(command, null);
-    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-    HiveParser parser = new HiveParser(tokens);
-    parser.setTreeAdaptor(adaptor);
-    ParserRuleReturnScope r;
-    try {
-      r = parser.triggerExpressionStandalone();
-    } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
-    }
-    if (lexer.getErrors().size() != 0) {
-      throw new ParseException(lexer.getErrors());
-    } else if (parser.errors.size() != 0) {
-      throw new ParseException(parser.errors);
-    }
-
-    return (ASTNode) r.getTree();
+    return createHiveParser(command, null).parse(HiveParser::triggerExpressionStandalone);
   }
 
   public ASTNode parseTriggerActionExpression(String command) throws ParseException {
-    GenericHiveLexer lexer = GenericHiveLexer.of(command, null);
-    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
-    HiveParser parser = new HiveParser(tokens);
-    parser.setTreeAdaptor(adaptor);
-    ParserRuleReturnScope r;
-    try {
-      r = parser.triggerActionExpressionStandalone();
-    } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
-    }
-    if (lexer.getErrors().size() != 0) {
-      throw new ParseException(lexer.getErrors());
-    } else if (parser.errors.size() != 0) {
-      throw new ParseException(parser.errors);
+    return createHiveParser(command, null).parse(HiveParser::triggerActionExpressionStandalone);
+  }
+
+  private interface ParseFunction<T extends Parser> {
+    ParserRuleReturnScope apply(T parser) throws RecognitionException;
+  }
+
+  private static abstract class ASTParser<T extends Parser> {
+    private final GenericHiveLexer lexer;
+    protected final TokenRewriteStream tokens;
+    protected final T parser;
+
+    ASTParser(String command, Configuration conf, Function<TokenRewriteStream, T> parserFactory) {
+      LOG.debug("Parsing command: {}", command);
+      this.lexer = GenericHiveLexer.of(command, conf);
+      this.tokens = new TokenRewriteStream(lexer);
+      this.parser = parserFactory.apply(tokens);
     }
 
-    return (ASTNode) r.getTree();
+    public ASTNode parse(ParseFunction<T> function) throws ParseException {
+      ParserRuleReturnScope r;
+      try {
+        r = function.apply(parser);
+      } catch (RecognitionException e) {
+        throw new ParseException(parseErrors());
+      }
+      if (lexer.getErrors().size() != 0) {
+        throw new ParseException(lexer.getErrors());
+      } else if (parseErrors().size() != 0) {
+        throw new ParseException(parseErrors());
+      }
+      LOG.debug("Parse Completed");
+      return (ASTNode) r.getTree();
+    }
+
+    abstract Collection<ParseError> parseErrors();
+  }
+
+  private static ASTParser<HiveParser> createHiveParser(String command, Configuration conf) {
+    return new ASTParser<HiveParser>(command, conf, (tokens -> {
+      HiveParser parser = new HiveParser(tokens);
+      parser.setHiveConf(conf);
+      parser.setTreeAdaptor(adaptor);
+      return parser;
+    })) {
+      @Override
+      Collection<ParseError> parseErrors() {
+        return parser.errors;
+      }
+    };
   }
 }
