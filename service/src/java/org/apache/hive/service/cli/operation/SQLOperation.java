@@ -322,7 +322,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           Hive.set(parentHive);
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
-          PerfLogger.setPerfLogger(SessionState.getPerfLogger());
+          SessionState.getPerfLogger();
           if (!embedded) {
             LogUtils.registerLoggingContext(queryState.getConf());
           }
