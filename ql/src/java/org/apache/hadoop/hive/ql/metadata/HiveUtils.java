@@ -468,4 +468,12 @@ public final class HiveUtils {
     Matcher ref = TAG.matcher(refName);
     return ref.matches();
   }
+
+  public static String getLowerCaseTableName(String refName) {
+    String[] refParts = refName.split("\\.");
+    if (refParts.length == 3 && SNAPSHOT_REF.matcher(refParts[2]).matches()) {
+      return (refParts[0].toLowerCase() + "." + refParts[1]).toLowerCase() + "." + refParts[2];
+    }
+    return refName.toLowerCase();
+  }
 }
