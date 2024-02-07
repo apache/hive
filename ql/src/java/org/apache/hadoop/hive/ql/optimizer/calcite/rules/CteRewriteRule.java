@@ -22,23 +22,18 @@ import com.cloudera.insights.advisor.materializations.rel.metadata.DASMetadataPr
 import com.cloudera.insights.advisor.materializations.tools.Driver;
 import com.cloudera.insights.advisor.materializations.tools.WorkloadInput;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
-import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.plan.RelOptSchema;
-import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.volcano.VolcanoPlanner;
-import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.RelCollationTraitDef;
-import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
 import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelReferentialConstraint;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
@@ -50,10 +45,7 @@ import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalTableSpool;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.schema.ColumnStrategy;
-import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -124,8 +116,9 @@ public class CteRewriteRule {
           LOG.info("Creating spool for: {}", RelOptUtil.toString(scan));
           RelOptMaterialization mv = nameToMv.get(tableName);
           // The Spool types are not used at the moment so choice between LAZY/EAGER does not affect anything
-          return new LogicalTableSpool(newcl, newcl.traitSet(), mv.queryRel, Spool.Type.LAZY, Spool.Type.LAZY, new TemporaryRelOptTable(
-              scan.getTable().getQualifiedName(), scan.getRowType()));
+          RelOptTableImpl cteTable =
+              RelOptTableImpl.create(null, scan.getRowType(), scan.getTable().getQualifiedName(), null);
+          return new LogicalTableSpool(newcl, newcl.traitSet(), mv.queryRel, Spool.Type.LAZY, Spool.Type.LAZY, cteTable);
         }
         return super.visit(scan);
       }
@@ -153,72 +146,7 @@ public class CteRewriteRule {
     LOG.info("Redundant spool removal: {}", RelOptUtil.toString(optimized));
     return optimized;
   }
-  
-  private static class TemporaryRelOptTable implements RelOptTable {
-    private final List<String> qname;
-    private final RelDataType rowType;
-    TemporaryRelOptTable(List<String> qname, RelDataType type) {
-      this.qname = qname;
-      this.rowType = type;
-    }
-    
-    @Override public List<String> getQualifiedName() {
-      return qname;
-    }
 
-    @Override public double getRowCount() {
-      return 0;
-    }
-
-    @Override public RelDataType getRowType() {
-      return rowType;
-    }
-
-    @Override public RelOptSchema getRelOptSchema() {
-      return null;
-    }
-
-    @Override public RelNode toRel(ToRelContext toRelContext) {
-      return null;
-    }
-
-    @Override public List<RelCollation> getCollationList() {
-      return null;
-    }
-
-    @Override public RelDistribution getDistribution() {
-      return null;
-    }
-
-    @Override public boolean isKey(ImmutableBitSet immutableBitSet) {
-      return false;
-    }
-
-    @Override public List<ImmutableBitSet> getKeys() {
-      return null;
-    }
-
-    @Override public List<RelReferentialConstraint> getReferentialConstraints() {
-      return null;
-    }
-
-    @Override public Expression getExpression(Class aClass) {
-      return null;
-    }
-
-    @Override public RelOptTable extend(List<RelDataTypeField> list) {
-      return null;
-    }
-
-    @Override public List<ColumnStrategy> getColumnStrategies() {
-      return null;
-    }
-
-    @Override public <C> C unwrap(Class<C> aClass) {
-      return null;
-    }
-  }
-  
   private static class ClusterCopier extends RelHomogeneousShuttle {
     private final RelOptCluster newcl;
     ClusterCopier(RelOptCluster cluster){
