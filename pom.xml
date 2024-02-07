@@ -227,27 +227,6 @@
     <spring.version>5.3.21</spring.version>
   </properties>
   <repositories>
-    <!-- This needs to be removed before checking in-->
-    <repository>
-      <id>central</id>
-      <name>central</name>
-      <url>https://repo.maven.apache.org/maven2</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-    </repository>
-    <repository>
-      <id>repository-release</id>
-      <url>https://repository.apache.org/content/repositories/releases/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
     <repository>
       <!-- shibboleth doesn't publish artifacts on maven central
         See https://wiki.shibboleth.net/confluence/display/DEV/Use+of+Maven+Central -->
