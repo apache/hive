@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
+import static org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.MAP_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRUCT_TYPE_NAME;
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.getPrimitiveTypeInfo;
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.stringTypeInfo;
 import static org.junit.Assert.assertEquals;
@@ -461,7 +464,7 @@ public class TestETypeConverter {
   public void testGetConverterForList() {
     MyConverterParent converterParent = new MyConverterParent();
     GroupType type =
-        Types.optionalList().element(Types.optional(PrimitiveTypeName.INT64).named("value")).named("array");
+        Types.optionalList().element(Types.optional(PrimitiveTypeName.INT64).named("value")).named(LIST_TYPE_NAME);
     HiveGroupConverter f = HiveGroupConverter.getConverterFromDescription(type, 1, converterParent, null);
     assertTrue(f instanceof HiveCollectionConverter);
   }
@@ -470,7 +473,7 @@ public class TestETypeConverter {
   public void testGetConverterForMap() {
     MyConverterParent converterParent = new MyConverterParent();
     GroupType type = Types.optionalMap().key(Types.optional(PrimitiveTypeName.INT64).named("key"))
-        .value(Types.optional(PrimitiveTypeName.INT64).named("value")).named("map");
+        .value(Types.optional(PrimitiveTypeName.INT64).named("value")).named(MAP_TYPE_NAME);
     HiveGroupConverter f = HiveGroupConverter.getConverterFromDescription(type, 1, converterParent, null);
     assertTrue(f instanceof HiveCollectionConverter);
   }
@@ -478,7 +481,7 @@ public class TestETypeConverter {
   @Test
   public void testGetConverterForStruct() {
     MyConverterParent converterParent = new MyConverterParent();
-    GroupType type = Types.buildGroup(Repetition.OPTIONAL).named("struct");
+    GroupType type = Types.buildGroup(Repetition.OPTIONAL).named(STRUCT_TYPE_NAME);
     HiveGroupConverter f = HiveGroupConverter.getConverterFromDescription(type, 1, converterParent, null);
     assertTrue(f instanceof HiveStructConverter);
   }

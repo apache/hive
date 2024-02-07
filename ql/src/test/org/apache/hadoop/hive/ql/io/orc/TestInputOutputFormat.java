@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import static org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg.sargToKryo;
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -2229,7 +2230,7 @@ public class TestInputOutputFormat {
 
     Properties tblProps = new Properties();
     tblProps.put("name", tableName);
-    tblProps.put("serialization.lib", OrcSerde.class.getName());
+    tblProps.put(SERIALIZATION_LIB, OrcSerde.class.getName());
     tblProps.put(serdeConstants.LIST_COLUMNS, columnNames.toString());
     tblProps.put(serdeConstants.LIST_COLUMN_TYPES, columnTypes.toString());
     TableDesc tbl = new TableDesc(OrcInputFormat.class, OrcOutputFormat.class,

@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_DDL;
+
 public class TestSerializationUtilities {
 
   @Test
@@ -55,7 +57,7 @@ public class TestSerializationUtilities {
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk1", true);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk2", true);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "rawDataSize", true);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "serialization.ddl", true);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", SERIALIZATION_DDL, true);
   }
 
   @Test
@@ -67,7 +69,7 @@ public class TestSerializationUtilities {
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk2",
         false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "rawDataSize", false);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "serialization.ddl", false);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", SERIALIZATION_DDL, false);
   }
 
   @Test
@@ -79,7 +81,7 @@ public class TestSerializationUtilities {
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk2",
         false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "rawDataSize", true);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "serialization.ddl", true);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", SERIALIZATION_DDL, true);
   }
 
   @Test
@@ -89,7 +91,7 @@ public class TestSerializationUtilities {
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk1", true);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk2", true);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "rawDataSize", false);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "serialization.ddl", true);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", SERIALIZATION_DDL, true);
   }
 
   @Test
@@ -100,7 +102,7 @@ public class TestSerializationUtilities {
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk1", true);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk2", true);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "rawDataSize", false);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "serialization.ddl", true);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", SERIALIZATION_DDL, true);
   }
 
   @Test
@@ -112,7 +114,7 @@ public class TestSerializationUtilities {
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk2",
         false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "rawDataSize", false);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "serialization.ddl", false);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", SERIALIZATION_DDL, false);
   }
 
   @Test
@@ -124,14 +126,14 @@ public class TestSerializationUtilities {
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "impala_intermediate_stats_chunk2",
         false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "rawDataSize", false);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", "serialization.ddl", false);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=0", SERIALIZATION_DDL, false);
 
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=1", "impala_intermediate_stats_chunk1",
         false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=1", "impala_intermediate_stats_chunk2",
         false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=1", "rawDataSize", false);
-    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=1", "serialization.ddl", false);
+    assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=1", SERIALIZATION_DDL, false);
   }
 
   @Test
@@ -213,7 +215,7 @@ public class TestSerializationUtilities {
       part.getProperties().put("impala_intermediate_stats_chunk1", "asdfghjk12345678");
       part.getProperties().put("impala_intermediate_stats_chunk2", "asdfghjk12345678");
       part.getProperties().put("rawDataSize", "10");
-      part.getProperties().put("serialization.ddl", "asdf");
+      part.getProperties().put(SERIALIZATION_DDL, "asdf");
 
       partMap.put(path, part);
     }

@@ -93,6 +93,11 @@ import org.apache.hadoop.io.LongWritable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Charsets;
 
+import static org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.MAP_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRUCT_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME;
+
 /**
  * Generate object inspector and random row object[].
  */
@@ -382,10 +387,10 @@ public class VectorRandomRowSource {
   };
 
   private static String[] possibleHiveComplexTypeNames = {
-      "array",
-      "struct",
-      "uniontype",
-      "map"
+          LIST_TYPE_NAME,
+          STRUCT_TYPE_NAME,
+          UNION_TYPE_NAME,
+          MAP_TYPE_NAME
   };
 
   public static String getRandomTypeName(Random random, SupportedTypes supportedTypes,
@@ -437,12 +442,12 @@ public class VectorRandomRowSource {
               HiveDecimal.SYSTEM_DEFAULT_SCALE);
     } else if (typeName.equals("decimal64")) {
       typeName = "decimal(18,6)";
-    } else if (typeName.equals("array")) {
+    } else if (typeName.equals(LIST_TYPE_NAME)) {
       String elementTypeName = getRandomTypeName(random, supportedTypes, allowedTypeNameSet);
       elementTypeName =
           getDecoratedTypeName(random, elementTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      typeName = String.format("array<%s>", elementTypeName);
-    } else if (typeName.equals("map")) {
+      typeName = String.format("%s<%s>", LIST_TYPE_NAME, elementTypeName);
+    } else if (typeName.equals(MAP_TYPE_NAME)) {
       String keyTypeName =
           getRandomTypeName(
               random, SupportedTypes.PRIMITIVES, allowedTypeNameSet);
@@ -455,8 +460,8 @@ public class VectorRandomRowSource {
       valueTypeName =
           getDecoratedTypeName(
               random, valueTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      typeName = String.format("map<%s,%s>", keyTypeName, valueTypeName);
-    } else if (typeName.equals("struct")) {
+      typeName = String.format("%s<%s,%s>", MAP_TYPE_NAME, keyTypeName, valueTypeName);
+    } else if (typeName.equals(STRUCT_TYPE_NAME)) {
       final int fieldCount = 1 + random.nextInt(10);
       final StringBuilder sb = new StringBuilder();
       for (int i = 0; i < fieldCount; i++) {
@@ -474,9 +479,9 @@ public class VectorRandomRowSource {
         sb.append(":");
         sb.append(fieldTypeName);
       }
-      typeName = String.format("struct<%s>", sb.toString());
-    } else if (typeName.equals("struct") ||
-        typeName.equals("uniontype")) {
+      typeName = String.format("%s<%s>", STRUCT_TYPE_NAME, sb.toString());
+    } else if (typeName.equals(STRUCT_TYPE_NAME) ||
+        typeName.equals(UNION_TYPE_NAME)) {
       final int fieldCount = 1 + random.nextInt(10);
       final StringBuilder sb = new StringBuilder();
       for (int i = 0; i < fieldCount; i++) {
@@ -491,7 +496,7 @@ public class VectorRandomRowSource {
         }
         sb.append(fieldTypeName);
       }
-      typeName = String.format("uniontype<%s>", sb.toString());
+      typeName = String.format("%s<%s>", UNION_TYPE_NAME, sb.toString());
     }
     return typeName;
   }
