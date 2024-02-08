@@ -106,7 +106,7 @@ class HiveRelCopier extends RelHomogeneousShuttle {
       return new HiveTableScan(targetCluster, traitSet, copyTbl, originalTbl.getQualifiedName().get(0), null, false,
           false);
     }
-    return other;
+    return other.copy(traitSet, other.getInputs());
   }
 
   private static RelOptHiveTable tmpOptTable(List<String> qname, RelDataType type, RelDataTypeFactory typeFactory,
