@@ -17,6 +17,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte;
 
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelHomogeneousShuttle;
@@ -58,6 +59,11 @@ class HiveRelCopier extends RelHomogeneousShuttle {
 
   HiveRelCopier(RelOptCluster cluster) {
     this.targetCluster = cluster;
+  }
+
+  RelOptMaterialization copy(RelOptMaterialization m) {
+    return new RelOptMaterialization(m.tableRel.accept(this), m.queryRel.accept(this), m.starRelOptTable,
+        m.qualifiedTableName);
   }
 
   @Override public RelNode visit(RelNode other) {
