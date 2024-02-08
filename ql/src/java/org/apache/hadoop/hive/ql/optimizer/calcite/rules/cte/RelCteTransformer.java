@@ -49,14 +49,7 @@ import java.util.stream.Collectors;
 public class RelCteTransformer {
   private static final Logger LOG = LoggerFactory.getLogger(RelCteTransformer.class);
   public static RelNode rewrite(RelNode input){
-    RelOptCluster cl = Driver.createCluster();
-    List<WorkloadInput> wi = Collections.singletonList(WorkloadInput.builder().inputName("none").jsonPlan("none").runtime(0).plan(input).build());
-    AdvisorConf conf = new AdvisorConf();
-//    conf.set(AdvisorConf.Property.SUBSET_CARDINALITY_THRESHOLD, "0");
-    final String cteIdPrefix = "cte_candidate_";
-    conf.set(AdvisorConf.Property.MATERIALIZED_VIEW_NAME_PREFIX, cteIdPrefix);
-    MaterializationsAdvisor advisor = new MaterializationsAdvisor(conf, cl, wi, Collections.emptySet());
-    List<RelOptMaterialization> mvs = advisor.generateRecommendations();
+    List<RelOptMaterialization> ctes = extractCTEs(input);
     VolcanoPlanner planner = new VolcanoPlanner();
     planner.addRelTraitDef(ConventionTraitDef.INSTANCE);
     planner.addRelTraitDef(RelDistributionTraitDef.INSTANCE);
@@ -69,7 +62,7 @@ public class RelCteTransformer {
     // rewritting will be performed.
     newcl.setMetadataProvider(DASMetadataProvider.DEFAULT);
     HiveRelCopier copier = new HiveRelCopier(newcl);
-    Map<String, RelOptMaterialization> nameToMv = mvs.stream().map(
+    Map<String, RelOptMaterialization> nameToMv = ctes.stream().map(
             m -> new RelOptMaterialization(m.tableRel.accept(copier), m.queryRel.accept(copier), m.starRelOptTable,
                 m.qualifiedTableName)).peek(planner::addMaterialization)
         .collect(Collectors.toMap(m -> m.qualifiedTableName.toString(), Function.identity()));
@@ -85,14 +78,23 @@ public class RelCteTransformer {
     // 1. The mv.queryRel is not optimized so putting into the plan as it is kind of destroys the optimizations done so far
     // 2. The mv.queryRel is using DAS operators so these cannot really run with Hive.
     LOG.info("Spool introduction: {}", RelOptUtil.toString(optimized));
-    Map<String, Long> cteCounts = RelOptUtil.findAllTables(optimized).stream().map(t -> t.getQualifiedName().toString())
-        .filter(s -> s.contains(cteIdPrefix))
+    Map<String, Long> tableCounts = RelOptUtil.findAllTables(optimized).stream()
+        .map(t -> t.getQualifiedName().toString())
         .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-    optimized = transform(optimized, HepProgram.builder().addRuleInstance(new SpoolRemoveRule(cteCounts)).build());
+    optimized = transform(optimized, HepProgram.builder().addRuleInstance(new SpoolRemoveRule(tableCounts)).build());
     LOG.info("Redundant spool removal: {}", RelOptUtil.toString(optimized));
     return optimized;
   }
 
+  private static List<RelOptMaterialization> extractCTEs(RelNode input) {
+    RelOptCluster cl = Driver.createCluster();
+    List<WorkloadInput> wi = Collections.singletonList(WorkloadInput.builder().inputName("none").jsonPlan("none").runtime(0).plan(input).build());
+    AdvisorConf conf = new AdvisorConf();
+    conf.set(AdvisorConf.Property.MATERIALIZED_VIEW_NAME_PREFIX, "cte_candidate_");
+    MaterializationsAdvisor advisor = new MaterializationsAdvisor(conf, cl, wi, Collections.emptySet());
+    return advisor.generateRecommendations();
+  }
+  
   private static RelNode transform(RelNode plan, HepProgram program) {
     HepPlanner planner = new HepPlanner(program, null, true, null, RelOptCostImpl.FACTORY);
     planner.setRoot(plan);
