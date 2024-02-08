@@ -24,6 +24,7 @@ import com.cloudera.insights.advisor.materializations.tools.WorkloadInput;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptCostImpl;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptUtil;
@@ -78,8 +79,6 @@ public class RelCteTransformer {
     }
     planner.setRoot(input.accept(copier));
     RelNode optimized = planner.findBestExp();
-    // Copy to make operators unique, probably we can avoid this
-    optimized = optimized.accept(copier);
     LOG.info("MV rewrite using ctes: {}", RelOptUtil.toString(optimized));
     optimized = transform(optimized, HepProgram.builder().addRuleInstance(new TableScanToSpoolRule(nameToMv)).build());
     // TODO Two problems:
@@ -95,7 +94,7 @@ public class RelCteTransformer {
   }
 
   private static RelNode transform(RelNode plan, HepProgram program) {
-    HepPlanner planner = new HepPlanner(program);
+    HepPlanner planner = new HepPlanner(program, null, true, null, RelOptCostImpl.FACTORY);
     planner.setRoot(plan);
     return planner.findBestExp();
   }
