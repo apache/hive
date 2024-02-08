@@ -472,7 +472,7 @@ public final class HiveUtils {
   public static String getLowerCaseTableName(String refName) {
     String[] refParts = refName.split("\\.");
     if (refParts.length == 3 && SNAPSHOT_REF.matcher(refParts[2]).matches()) {
-      return (refParts[0].toLowerCase() + "." + refParts[1]).toLowerCase() + "." + refParts[2];
+      return (refParts[0] + "." + refParts[1]).toLowerCase() + "." + refParts[2];
     }
     return refName.toLowerCase();
   }
