@@ -25,7 +25,6 @@ import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalTableSpool;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class TableScanToSpoolRule extends RelOptRule {
@@ -33,27 +32,25 @@ public class TableScanToSpoolRule extends RelOptRule {
    * Track created spools to avoid introducing more than one.
    */
   private final Set<String> spools = new HashSet<>();
-  /**
-   * Available CTEs from which we can create spool operators.
-   */
-  private final Map<String, RelOptMaterialization> ctes;
 
-  public TableScanToSpoolRule(Map<String, RelOptMaterialization> ctes) {
+  public TableScanToSpoolRule() {
     super(operand(TableScan.class, none()));
-    this.ctes = ctes;
   }
 
   @Override public void onMatch(RelOptRuleCall call) {
     TableScan scan = call.rel(0);
     String tableName = scan.getTable().getQualifiedName().toString();
-    RelOptMaterialization cte = ctes.get(tableName);
-    if (cte != null && spools.add(tableName)) {
-      // The Spool types are not used at the moment so choice between LAZY/EAGER does not affect anything
-      RelOptTableImpl cteTable =
-          RelOptTableImpl.create(null, scan.getRowType(), scan.getTable().getQualifiedName(), null);
-      call.transformTo(
-          new LogicalTableSpool(scan.getCluster(), scan.getCluster().traitSet(), cte.queryRel, Spool.Type.LAZY,
-              Spool.Type.LAZY, cteTable));
+    // In this case materializations are the CTEs
+    for (RelOptMaterialization cte : call.getPlanner().getMaterializations()) {
+      if (tableName.equals(cte.qualifiedTableName.toString()) && spools.add(tableName)) {
+        RelOptTableImpl cteTable =
+            RelOptTableImpl.create(null, scan.getRowType(), scan.getTable().getQualifiedName(), null);
+        // TODO Use the builder or something more generic to create the spool
+        // The Spool types are not used at the moment so choice between LAZY/EAGER does not affect anything
+        call.transformTo(
+            new LogicalTableSpool(scan.getCluster(), scan.getCluster().traitSet(), cte.queryRel, Spool.Type.LAZY,
+                Spool.Type.LAZY, cteTable));
+      }
     }
   }
 }
