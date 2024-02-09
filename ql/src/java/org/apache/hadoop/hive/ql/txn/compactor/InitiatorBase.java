@@ -59,9 +59,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class InitiatorBase extends MetaStoreCompactorThread {
 
   static final private String COMPACTOR_THRESHOLD_PREFIX = "compactorthreshold.";
-  
-  public void initialize() throws Exception {
-    super.init(new AtomicBoolean());
+
+  @Override
+  public void init(AtomicBoolean stop) throws Exception {
+    super.init(stop);
     ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
   }

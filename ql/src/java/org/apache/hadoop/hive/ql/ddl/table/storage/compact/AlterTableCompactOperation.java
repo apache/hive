@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
@@ -64,7 +65,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
 
     InitiatorBase initiatorBase = new InitiatorBase();
     initiatorBase.setConf(context.getConf());
-    initiatorBase.initialize();
+    initiatorBase.init(new AtomicBoolean());
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
