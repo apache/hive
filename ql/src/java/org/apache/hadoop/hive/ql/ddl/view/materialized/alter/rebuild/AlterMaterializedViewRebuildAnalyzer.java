@@ -459,7 +459,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       case AGGREGATE_INSERT_DELETE_REBUILD:
         fixUpASTAggregateInsertDeleteIncrementalRebuild(fixedAST, getMaterializedViewASTBuilder());
         return fixedAST;
-      case JOIN_INSERT_DELETE_REBUILD:
       default:
         throw new UnsupportedOperationException("No materialized view rebuild exists for mode " + mvRebuildMode);
     }
