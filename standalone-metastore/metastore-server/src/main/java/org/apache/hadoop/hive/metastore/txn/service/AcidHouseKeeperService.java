@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn.service;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.function.Failable;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.function.FailableRunnable;
+import org.apache.commons.lang3.function.Failable;
 
 /**
  * Performs background tasks for Transaction management in Hive.
@@ -93,11 +94,11 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
     }
   }
 
-  protected void cleanTheHouse() {
+  private void cleanTheHouse() {
     tasks.forEach(this::performTask);
   }
 
-  protected void performTask(FailableRunnable<MetaException> task, String description) {
+  private void performTask(FailableRunnable<MetaException> task, String description) {
     long start = System.currentTimeMillis();
     Failable.run(task);
     LOG.debug("{} took {} seconds.", description, elapsedSince(start));

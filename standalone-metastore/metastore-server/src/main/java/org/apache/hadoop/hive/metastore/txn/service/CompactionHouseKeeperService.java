@@ -19,12 +19,9 @@ package org.apache.hadoop.hive.metastore.txn.service;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.function.FailableRunnable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,6 +34,7 @@ public class CompactionHouseKeeperService extends AcidHouseKeeperService {
     serviceName = this.getClass().getSimpleName();
   }
 
+  @Override
   protected void initTasks(){
     tasks = ImmutableMap.<FailableRunnable<MetaException>, String>builder()
             .put(txnHandler::removeDuplicateCompletedTxnComponents,
