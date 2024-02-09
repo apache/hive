@@ -448,7 +448,7 @@ final class HMSBenchmarks {
               client.getPartitionNames(dbName, tableName));
       updateManyPartitionsStatsNoException(client, dbName, tableName, partNames);
       PartitionsStatsRequest request = new PartitionsStatsRequest(
-              dbName, tableName, Arrays.asList("name"), partNames, "hive");
+              dbName, tableName, Arrays.asList("name"), partNames);
       return bench.measure(
           () ->
               throwingSupplierWrapper(() -> client.getPartitionsStats(request))
