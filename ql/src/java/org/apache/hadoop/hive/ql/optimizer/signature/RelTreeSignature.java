@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.base.Objects;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 
 /**
  * Operator tree signature.
@@ -87,7 +88,11 @@ public final class RelTreeSignature {
     final RelWriter planWriter =
         new NonRecursiveRelWriterImpl(
             new PrintWriter(sw), SqlExplainLevel.EXPPLAN_ATTRIBUTES, false);
-    rel.explain(planWriter);
+    if (rel instanceof HiveRelNode) {
+      ((HiveRelNode) rel).sign(planWriter);
+    } else {
+      rel.explain(planWriter);
+    }
     return sw.toString();
   }
 

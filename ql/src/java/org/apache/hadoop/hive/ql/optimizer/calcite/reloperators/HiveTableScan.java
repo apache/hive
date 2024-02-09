@@ -337,4 +337,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     }
     return shuttle.visit(this);
   }
+
+  @Override
+  public void sign(RelWriter writer) {
+    super.explainTerms(writer)
+        .item("columns", hiveTableScanRowType)
+        .item("plKey", ((RelOptHiveTable) table).getPartitionListKey())
+        .item("tableScanTrait", this.tableScanTrait)
+        .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
+            isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()))
+        .done(this);
+  }
 }
