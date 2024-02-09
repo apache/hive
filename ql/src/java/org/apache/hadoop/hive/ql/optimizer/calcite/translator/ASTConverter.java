@@ -277,8 +277,8 @@ public class ASTConverter {
     if (where != null) {
       ASTNode cond = where.getCondition().accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder()));
       hiveAST.where = ASTBuilder.where(cond);
-      planMapper.link(cond, where);
       planMapper.link(cond, RelTreeSignature.of(where));
+      planMapper.link(cond, where);
     }
 
     /*
