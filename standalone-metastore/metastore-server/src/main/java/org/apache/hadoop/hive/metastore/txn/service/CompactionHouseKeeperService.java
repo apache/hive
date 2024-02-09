@@ -46,10 +46,6 @@ public class CompactionHouseKeeperService extends AcidHouseKeeperService {
   }
 
   @Override
-  protected void cleanTheHouse() {
-    tasks.forEach(super::performTask);
-  }
-  @Override
   public long runFrequency(TimeUnit unit) {
     return MetastoreConf.getTimeVar(getConf(), MetastoreConf.ConfVars.COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL,
         unit);
