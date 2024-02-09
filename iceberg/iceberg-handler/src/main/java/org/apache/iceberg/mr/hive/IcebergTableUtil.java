@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.sun.tools.javac.util.Pair;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,6 +58,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
@@ -335,8 +337,10 @@ public class IcebergTableUtil {
     return data;
   }
 
-  public static void getDataAndDeleteFiles(Table table, List<DataFile> dataFiles, List<DeleteFile> deleteFiles) {
+  public static Pair<List<DataFile>, List<DeleteFile>> getDataAndDeleteFiles(Table table) {
     CloseableIterable<FileScanTask> fileScanTasks = table.newScan().planFiles();
+    List<DataFile> dataFiles = Lists.newArrayList();
+    List<DeleteFile> deleteFiles = Lists.newArrayList();
     Set<String> dataFilesPath = Sets.newHashSet();
     Set<String> deleteFilesPath = Sets.newHashSet();
 
@@ -351,5 +355,7 @@ public class IcebergTableUtil {
           .filter(delete -> deleteFilesPath.add(delete.path().toString()))
           .forEach(deleteFiles::add);
     });
+
+    return new Pair<>(dataFiles, deleteFiles);
   }
 }

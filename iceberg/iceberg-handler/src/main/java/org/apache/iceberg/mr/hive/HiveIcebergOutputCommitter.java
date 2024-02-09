@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.sun.tools.javac.util.Pair;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -65,7 +66,6 @@ import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.Transaction;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
@@ -548,14 +548,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       RewritePolicy rewritePolicy) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
-      Transaction transaction = table.newTransaction();
       if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
 
-        List<DataFile> existingDataFiles = Lists.newArrayList();
-        List<DeleteFile> existingDeleteFiles = Lists.newArrayList();
-        IcebergTableUtil.getDataAndDeleteFiles(table, existingDataFiles, existingDeleteFiles);
+        Pair<List<DataFile>, List<DeleteFile>> dataAndDeleteFiles = IcebergTableUtil.getDataAndDeleteFiles(table);
+        List<DataFile> existingDataFiles = dataAndDeleteFiles.fst;
+        List<DeleteFile> existingDeleteFiles = dataAndDeleteFiles.snd;
 
-        RewriteFiles rewriteFiles = transaction.newRewrite();
+        RewriteFiles rewriteFiles = table.newRewrite();
         rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
 
         existingDataFiles.forEach(rewriteFiles::deleteFile);
@@ -564,14 +563,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
         rewriteFiles.commit();
       } else {
-        ReplacePartitions overwrite = transaction.newReplacePartitions();
+        ReplacePartitions overwrite = table.newReplacePartitions();
         results.dataFiles().forEach(overwrite::addFile);
         if (StringUtils.isNotEmpty(branchName)) {
           overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
         }
         overwrite.commit();
       }
-      transaction.commitTransaction();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());
     } else if (table.spec().isUnpartitioned()) {
