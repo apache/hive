@@ -19,19 +19,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelWriter;
 
 public interface HiveRelNode extends RelNode {
 
   /** Calling convention for relational operations that occur in Hive. */
   Convention CONVENTION = new Convention.Impl("HIVE", HiveRelNode.class);
-
-  /**
-   * Writes a signature for {@link org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature}.
-   *
-   * @param writer the RelWriter
-   */
-  default void sign(RelWriter writer) {
-    explain(writer);
-  }
 }
