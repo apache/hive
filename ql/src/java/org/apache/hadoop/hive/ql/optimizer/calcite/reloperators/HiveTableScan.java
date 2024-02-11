@@ -205,8 +205,6 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   @Override public RelWriter explainTerms(RelWriter pw) {
     if (pw instanceof RelTreeSignatureWriter) {
       return super.explainTerms(pw)
-          .item("columns", hiveTableScanRowType)
-          .item("plKey", ((RelOptHiveTable) table).getPartitionListKey())
           .item("tableScanTrait", this.tableScanTrait)
           .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
               isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
