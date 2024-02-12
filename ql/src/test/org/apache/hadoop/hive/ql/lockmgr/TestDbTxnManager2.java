@@ -38,7 +38,8 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -3509,8 +3510,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       5, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
 
     MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
+    MetastoreTaskThread compactionHouseKeeper = new CompactionHouseKeeperService();
     houseKeeper.setConf(conf);
+    compactionHouseKeeper.setConf(conf);
     houseKeeper.run();
+    compactionHouseKeeper.run();
 
     Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
       2, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
@@ -3527,6 +3531,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       4, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
 
     houseKeeper.run();
+    compactionHouseKeeper.run();
     Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
       3, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
 

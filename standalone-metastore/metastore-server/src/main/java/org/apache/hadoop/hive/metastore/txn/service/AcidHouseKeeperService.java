@@ -15,19 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.txn;
+package org.apache.hadoop.hive.metastore.txn.service;
 
-import org.apache.commons.lang3.Functions;
+import com.google.common.collect.ImmutableMap;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.lang3.Functions.FailableRunnable;
+import org.apache.commons.lang3.function.FailableRunnable;
+import org.apache.commons.lang3.function.Failable;
 
 /**
  * Performs background tasks for Transaction management in Hive.
@@ -38,16 +43,27 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
 
   private Configuration conf;
-  private boolean isCompactorEnabled;
-  private TxnStore txnHandler;
+  protected TxnStore txnHandler;
+  protected String serviceName;
+  protected Map<FailableRunnable<MetaException>, String> tasks;
+
+  public AcidHouseKeeperService() {
+    serviceName = this.getClass().getSimpleName();
+  }
 
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
-    isCompactorEnabled =
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON) || MetastoreConf.getBoolVar(conf,
-            MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
     txnHandler = TxnUtils.getTxnStore(conf);
+    initTasks();
+  }
+
+  protected void initTasks(){
+    tasks = ImmutableMap.<FailableRunnable<MetaException>, String>builder()
+            .put(txnHandler::performTimeOuts, "Cleaning timed out txns and locks")
+            .put(txnHandler::performWriteSetGC, "Cleaning obsolete write set entries")
+            .put(txnHandler::cleanTxnToWriteIdTable, "Cleaning obsolete TXN_TO_WRITE_ID entries")
+            .build();
   }
 
   @Override
@@ -65,12 +81,12 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
       handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name());
-      LOG.info("Starting to run AcidHouseKeeperService.");
+      LOG.info("Starting to run {}", serviceName);
       long start = System.currentTimeMillis();
       cleanTheHouse();
-      LOG.debug("Total time AcidHouseKeeperService took: {} seconds.", elapsedSince(start));
-    } catch (Throwable t) {
-      LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
+      LOG.debug("Total time {} took: {} seconds.", serviceName, elapsedSince(start));
+    } catch (Exception e) {
+      LOG.error("Unexpected exception in thread: {}, message: {}", Thread.currentThread().getName(), e.getMessage(), e);
     } finally {
       if (handle != null) {
         handle.releaseLocks();
@@ -79,18 +95,12 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   }
 
   private void cleanTheHouse() {
-    performTask(txnHandler::performTimeOuts, "Cleaning timed out txns and locks");
-    performTask(txnHandler::performWriteSetGC, "Cleaning obsolete write set entries");
-    performTask(txnHandler::cleanTxnToWriteIdTable, "Cleaning obsolete TXN_TO_WRITE_ID entries");
-    if (isCompactorEnabled) {
-      performTask(txnHandler::removeDuplicateCompletedTxnComponents, "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries");
-      performTask(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
-    }
+    tasks.forEach(this::performTask);
   }
 
   private void performTask(FailableRunnable<MetaException> task, String description) {
     long start = System.currentTimeMillis();
-    Functions.run(task);
+    Failable.run(task);
     LOG.debug("{} took {} seconds.", description, elapsedSince(start));
   }
 
