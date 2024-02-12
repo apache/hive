@@ -364,17 +364,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
           }
         } else {
-          if (acidView) {
-            if (visitor.isContainsAggregate()) {
-              if (visitor.getCountIndex() < 0) {
-                // count(*) is necessary for determine which rows should be deleted from the view
-                // if view definition does not have it incremental rebuild can not be performed, bail out
-                return calcitePreMVRewritingPlan;
-              }
-              return applyAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
-            } else {
-              return calcitePreMVRewritingPlan;
-            }
+          // count(*) is necessary for determine which rows should be deleted from the view
+          // if view definition does not have it incremental rebuild can not be performed
+          if (acidView && visitor.isContainsAggregate() && visitor.getCountIndex() < 0) {
+            return applyAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
           } else {
             return calcitePreMVRewritingPlan;
           }
