@@ -83,13 +83,12 @@ public class InitiatorBase extends MetaStoreCompactorThread {
     try {
       StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(table, partition);
       String runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
-      LOG.info(
-          "Checking to see if we should compact partition " + compactionInfo.partName + " of table " + table.getDbName()
-              + "." + table.getTableName());
+      LOG.info("Checking to see if we should compact partition {} of table {}.{}",
+              compactionInfo.partName, table.getDbName(), table.getTableName());
       compactionResponse = scheduleCompactionIfRequired(compactionInfo, table, partition, runAs, false);
     } catch (IOException | InterruptedException | MetaException e) {
-      LOG.error("Error occurred while Checking if we should compact partition " + compactionInfo.partName + " of table "
-          + table.getDbName() + "." + table.getTableName() + " Exception: " + e.getMessage());
+      LOG.error("Error occurred while Checking if we should compact partition {} of table {}.{} Exception: {}",
+              compactionInfo.partName, table.getDbName(), table.getTableName(), e.getMessage());
       throw new RuntimeException(e);
     }
     return compactionResponse;
