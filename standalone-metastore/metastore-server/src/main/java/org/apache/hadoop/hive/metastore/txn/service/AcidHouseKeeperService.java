@@ -85,8 +85,8 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
       long start = System.currentTimeMillis();
       cleanTheHouse();
       LOG.debug("Total time {} took: {} seconds.", serviceName, elapsedSince(start));
-    } catch (Throwable t) {
-      LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
+    } catch (Exception e) {
+      LOG.error("Unexpected exception in thread: {}, message: {}", Thread.currentThread().getName(), e.getMessage(), e);
     } finally {
       if (handle != null) {
         handle.releaseLocks();
