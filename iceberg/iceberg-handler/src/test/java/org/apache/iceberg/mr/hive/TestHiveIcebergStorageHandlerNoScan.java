@@ -2060,6 +2060,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void testCreateTableWithPercentInName() throws IOException {
+    Assume.assumeTrue("This test requires Hive Version 4.", HiveVersion.min(HiveVersion.HIVE_4));
+
     TableIdentifier identifier = TableIdentifier.of("default", "[|]#&%_@");
 
     shell.executeStatement("CREATE EXTERNAL TABLE `[|]#&%_@` " +
