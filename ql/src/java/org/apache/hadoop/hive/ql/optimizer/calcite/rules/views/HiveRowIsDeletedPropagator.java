@@ -75,14 +75,14 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     return dispatcher.invoke(relNode, new Context());
   }
 
-  protected RelNode visitChild(RelNode parent, int i, RelNode child, Context context) {
+  private RelNode visitChild(RelNode parent, int i, RelNode child, Context context) {
     RelNode newRel = dispatcher.invoke(child, context);
     final List<RelNode> newInputs = new ArrayList<>(parent.getInputs());
     newInputs.set(i, newRel);
     return parent.copy(parent.getTraitSet(), newInputs);
   }
 
-  protected RelNode visitChildren(RelNode rel, Context context) {
+  private RelNode visitChildren(RelNode rel, Context context) {
     for (Ord<RelNode> input : Ord.zip(rel.getInputs())) {
       rel = visitChild(rel, input.i, input.e, context);
     }
@@ -312,7 +312,7 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     }
   }
 
-  protected RexNode createInputRef(RelNode relNode, int negativeOffset) {
+  private RexNode createInputRef(RelNode relNode, int negativeOffset) {
     int index = relNode.getRowType().getFieldCount() - negativeOffset;
     return relBuilder.getRexBuilder().makeInputRef(
         relNode.getRowType().getFieldList().get(index).getType(), index);
@@ -333,4 +333,3 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     return rexTableInputRefs;
   }
 }
-
