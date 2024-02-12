@@ -41,9 +41,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,8 +62,7 @@ import static java.util.Arrays.asList;
  */
 public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
 
-  protected final RelBuilder relBuilder;
-  protected final Deque<RelNode> stack = new ArrayDeque<>();
+  private final RelBuilder relBuilder;
   private final ReflectUtil.MethodDispatcher<RelNode> dispatcher;
 
   public HiveRowIsDeletedPropagator(RelBuilder relBuilder) {
@@ -79,18 +76,10 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
   }
 
   protected RelNode visitChild(RelNode parent, int i, RelNode child, Context context) {
-    stack.push(parent);
-    try {
-      RelNode newRel = dispatcher.invoke(child, context);
-      if (newRel != child) {
-        final List<RelNode> newInputs = new ArrayList<>(parent.getInputs());
-        newInputs.set(i, newRel);
-        return parent.copy(parent.getTraitSet(), newInputs);
-      }
-      return parent;
-    } finally {
-      stack.pop();
-    }
+    RelNode newRel = dispatcher.invoke(child, context);
+    final List<RelNode> newInputs = new ArrayList<>(parent.getInputs());
+    newInputs.set(i, newRel);
+    return parent.copy(parent.getTraitSet(), newInputs);
   }
 
   protected RelNode visitChildren(RelNode rel, Context context) {
