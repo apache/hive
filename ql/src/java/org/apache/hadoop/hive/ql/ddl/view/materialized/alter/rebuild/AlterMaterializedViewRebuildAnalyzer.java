@@ -324,8 +324,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
                 executorProvider,
                 optCluster,
                 calcitePreMVRewritingPlan,
-                materialization,
-                tablesUsedQuery);
+                materialization);
 
         if (mvRebuildMode != MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
           return incrementalRebuildPlan;
@@ -345,8 +344,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         RexExecutor executorProvider,
         RelOptCluster optCluster,
         RelNode calcitePreMVRewritingPlan,
-        HiveRelOptMaterialization materialization,
-        Set<TableName> baseTables) {
+        HiveRelOptMaterialization materialization) {
       // First we need to check if it is valid to convert to MERGE/INSERT INTO.
       // If we succeed, we modify the plan and afterwards the AST.
       // MV should be an acid table.
