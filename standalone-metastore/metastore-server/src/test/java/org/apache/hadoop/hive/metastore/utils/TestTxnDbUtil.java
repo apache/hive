@@ -338,10 +338,24 @@ public final class TestTxnDbUtil {
       closeResources(conn, stmt, rs);
     }
   }
+
   public static String queryToString(Configuration conf, String query) throws Exception {
     return queryToString(conf, query, true);
   }
-  public static String queryToString(Configuration conf, String query, boolean includeHeader)
+
+  public static String queryToString(Configuration conf, String query, boolean includeHeader) throws Exception {
+    return queryToString(conf, query, includeHeader, "   ");
+  }
+
+  public static String queryToCsv(Configuration conf, String query) throws Exception {
+    return queryToString(conf, query, true, ",");
+  }
+
+  public static String queryToCsv(Configuration conf, String query, boolean includeHeader) throws Exception {
+    return queryToString(conf, query, includeHeader, ",");
+  }
+
+  public static String queryToString(Configuration conf, String query, boolean includeHeader, String columnSeparator)
       throws Exception {
     Connection conn = null;
     Statement stmt = null;
@@ -354,13 +368,13 @@ public final class TestTxnDbUtil {
       ResultSetMetaData rsmd = rs.getMetaData();
       if(includeHeader) {
         for (int colPos = 1; colPos <= rsmd.getColumnCount(); colPos++) {
-          sb.append(rsmd.getColumnName(colPos)).append("   ");
+          sb.append(rsmd.getColumnName(colPos)).append(columnSeparator);
         }
         sb.append('\n');
       }
       while(rs.next()) {
         for (int colPos = 1; colPos <= rsmd.getColumnCount(); colPos++) {
-          sb.append(rs.getObject(colPos)).append("   ");
+          sb.append(rs.getObject(colPos)).append(columnSeparator);
         }
         sb.append('\n');
       }
@@ -369,6 +383,8 @@ public final class TestTxnDbUtil {
     }
     return sb.toString();
   }
+
+
 
   /**
    * This is only for testing, it does not use the connectionPool from TxnHandler!
