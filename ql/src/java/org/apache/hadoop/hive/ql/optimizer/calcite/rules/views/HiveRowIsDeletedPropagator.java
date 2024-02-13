@@ -153,7 +153,7 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     RelNode newProject = visitChild(project, 0, project.getInput(), context);
     RelNode projectInput = newProject.getInput(0);
 
-    List<RexNode> newProjects = new ArrayList<>(project.getRowType().getFieldCount() + 1);
+    List<RexNode> newProjects = new ArrayList<>(project.getProjects().size() + 2);
     newProjects.addAll(project.getProjects());
     newProjects.add(createInputRef(projectInput, 2));
     newProjects.add(createInputRef(projectInput, 1));
