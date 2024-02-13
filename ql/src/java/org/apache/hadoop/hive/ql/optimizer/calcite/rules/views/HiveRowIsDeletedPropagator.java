@@ -187,10 +187,9 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
 
     for (RexNode operand : ((RexCall)condition).operands) {
       RexInputRef inputRef = findPossibleRowIdRef(operand);
-      if (inputRef == null) {
-        continue;
+      if (inputRef != null) {
+        context.rowIdPredicates.put(inputRef.getIndex(), operand);
       }
-      context.rowIdPredicates.put(inputRef.getIndex(), operand);
     }
 
     return visitChild(filter, 0, filter.getInput(0), context);
