@@ -81,7 +81,6 @@ public class TestHiveRowIsDeletedPropagator extends TestRuleBase {
 
     String dump = RelOptUtil.toString(newRoot);
     assertThat(dump, is(EXPECTED_testJoining3TablesAndAllChanged));
-//    System.out.println();
   }
 
   private static final String EXPECTED_testJoining3TablesAndAllChanged =

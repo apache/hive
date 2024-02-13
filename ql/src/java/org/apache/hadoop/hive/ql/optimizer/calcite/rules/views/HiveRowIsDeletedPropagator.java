@@ -242,23 +242,15 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
 
     // Shift column references refers columns coming from right input in join condition since the new left input
     // has a new columns
-    RexNode newJoinCondition;
-    int newLeftFieldCount;
-    int shift;
-    if (newLeftRowType.getField("_rowId_greater_than", false, false) == null) {
-      shift = 2;
-      newLeftFieldCount = newLeftRowType.getFieldCount() - 2;
-    } else {
-      shift = 3;
-      newLeftFieldCount = newLeftRowType.getFieldCount() - 3;
-    }
-    newJoinCondition = new InputRefShifter(newLeftFieldCount, shift, relBuilder).apply(join.getCondition());
+    int newLeftFieldCount = newLeftRowType.getFieldCount() - 2;
+    RexNode newJoinCondition = new InputRefShifter(newLeftFieldCount, 2, relBuilder).apply(join.getCondition());
 
     // Collect projected columns: all columns from both inputs
     List<RexNode> projects = new ArrayList<>(newLeftFieldCount + newRightRowType.getFieldCount() + 1);
     List<String> projectNames = new ArrayList<>(newLeftFieldCount + newRightRowType.getFieldCount() + 1);
     populateProjects(rexBuilder, newLeftRowType, 0, newLeftFieldCount, projects, projectNames);
-    populateProjects(rexBuilder, newRightRowType, newLeftRowType.getFieldCount(), newRightRowType.getFieldCount() - 2, projects, projectNames);
+    populateProjects(rexBuilder, newRightRowType, newLeftRowType.getFieldCount(),
+        newRightRowType.getFieldCount() - 2, projects, projectNames);
 
     // Create derived expressions
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftDeleted, rightDeleted));
