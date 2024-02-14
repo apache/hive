@@ -383,9 +383,7 @@ public final class TestTxnDbUtil {
     }
     return sb.toString();
   }
-
-
-
+  
   /**
    * This is only for testing, it does not use the connectionPool from TxnHandler!
    * @param conf
