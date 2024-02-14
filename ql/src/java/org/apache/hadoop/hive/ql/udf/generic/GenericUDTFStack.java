@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 
 /**
@@ -74,7 +73,7 @@ public class GenericUDTFStack extends GenericUDTF {
       throw new UDFArgumentTypeException(
           0,
           "The first argument to STACK() must be a constant integer (got " +
-              args[0].getTypeName() + " instead).");
+          args[0].getTypeName() + " instead).");
     }
     numRows = (IntWritable) value;
 
