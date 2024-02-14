@@ -888,6 +888,62 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "2023 = Hive");
   }
 
+  @Test
+  public void testHplSqlProcedureCallingWithAllDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "default_val = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureCallingWithSomeDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1('Pass_Value');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Pass_Value = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1(111);\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithSomeDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING, num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1('Passed_Val');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Passed_Val = 123");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);

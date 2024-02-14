@@ -20,6 +20,7 @@ package org.apache.hive.hplsql.functions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -136,28 +137,49 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
                          HplsqlParser.Create_routine_paramsContext formal,
                          HashMap<String, Var> out,
                          Exec exec) {
-    if (actual == null || actual.func_param() == null || actualValues == null) {
-      return;
+    int actualCnt = actualValues == null ? 0 : actualValues.size();
+    int passedParamCnt = actualCnt;
+    List<HplsqlParser.Create_routine_param_itemContext> routine_param_item_list = formal.create_routine_param_item();
+    int formalCnt = routine_param_item_list.size();
+    List<Integer> defaultParamIndexes = new ArrayList<>();
+    if (actualCnt != formalCnt) {
+      for (int i = 0; i < formalCnt; i++) {
+        if (routine_param_item_list.get(i).dtype_default() != null) {
+          defaultParamIndexes.add(i);
+        }
+      }
+      actualCnt = actualCnt + defaultParamIndexes.size();
+      if (actualCnt < formalCnt) {
+        throw new ArityException(actual == null ? null : actual.getParent(), procName, formalCnt, passedParamCnt);
+      }
     }
-    int actualCnt = actualValues.size();
-    int formalCnt = formal.create_routine_param_item().size();
-    if (formalCnt != actualCnt) {
-      throw new ArityException(actual.getParent(), procName, formalCnt, actualCnt);
-    }
-    for (int i = 0; i < actualCnt; i++) {
-      HplsqlParser.ExprContext a = actual.func_param(i).expr(); 
-      HplsqlParser.Create_routine_param_itemContext p = getCallParameter(actual, formal, i);
+    for (int i = 0; i < formalCnt; i++) {
+      HplsqlParser.ExprContext a = null;
+      HplsqlParser.Create_routine_param_itemContext p = null;
+      Var value = null;
+      if (actual == null || actual.func_param() == null || actual.func_param(i) == null) {
+        if (!defaultParamIndexes.contains(i)) {
+          throw new ArityException(actual == null ? null : actual.getParent(), procName, formalCnt, passedParamCnt);
+        }
+        p = formal.create_routine_param_item().get(i);
+        a = p.dtype_default().expr();
+        value = exec.evalPop(p.dtype_default().expr());
+      } else {
+        a = actual.func_param(i).expr();
+        p = getCallParameter(actual, formal, i);
+        value = actualValues.get(i);
+      }
       String name = p.ident().getText();
       String type = p.dtype().getText();
       String len = null;
-      String scale = null;   
+      String scale = null;
       if (p.dtype_len() != null) {
         len = p.dtype_len().L_INT(0).getText();
         if (p.dtype_len().L_INT(1) != null) {
           scale = p.dtype_len().L_INT(1).getText();
         }
       }
-      Var var = setCallParameter(name, type, len, scale, actualValues.get(i), exec);
+      Var var = setCallParameter(name, type, len, scale, value, exec);
       exec.trace(actual, "SET PARAM " + name + " = " + var.toString());
       if (out != null && a.expr_atom() != null && a.expr_atom().qident() != null &&
           (p.T_OUT() != null || p.T_INOUT() != null)) {
