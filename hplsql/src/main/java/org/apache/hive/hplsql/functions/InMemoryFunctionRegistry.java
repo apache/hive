@@ -137,10 +137,17 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
                          HplsqlParser.Create_routine_paramsContext formal,
                          HashMap<String, Var> out,
                          Exec exec) {
+    // if it is a non-parameter function then just return.
+    if (actual == null && formal == null) {
+      return;
+    }
     int actualCnt = actualValues == null ? 0 : actualValues.size();
     int passedParamCnt = actualCnt;
     List<HplsqlParser.Create_routine_param_itemContext> routine_param_item_list = formal.create_routine_param_item();
     int formalCnt = routine_param_item_list.size();
+    if (actualCnt > formalCnt) {
+      throw new ArityException(actual == null ? null : actual.getParent(), procName, formalCnt, actualCnt);
+    }
     List<Integer> defaultParamIndexes = new ArrayList<>();
     if (actualCnt != formalCnt) {
       for (int i = 0; i < formalCnt; i++) {

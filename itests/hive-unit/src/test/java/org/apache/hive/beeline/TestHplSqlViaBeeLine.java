@@ -107,7 +107,7 @@ public class TestHplSqlViaBeeLine {
       "p1();\n" +
       "SELECT * FROM result;\n" +
       "/\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello world");
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 1 got 0.", OutStream.ERR);
   }
 
   @Test
@@ -927,7 +927,7 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1(111);\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "");
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 2 got 1.", OutStream.ERR);
   }
 
   @Test
