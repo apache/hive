@@ -55,7 +55,6 @@ public class GenericUDFDate extends GenericUDF {
   private transient Converter dateWritableConverter;
   private transient PrimitiveCategory inputType;
   private transient PrimitiveObjectInspector argumentOI;
-  private transient DateParser dateParser = new DateParser();
   private transient final DateWritableV2 output = new DateWritableV2();
   private transient final Date date = new Date();
 
@@ -109,7 +108,7 @@ public class GenericUDFDate extends GenericUDF {
       throw new UDFArgumentException("TO_DATE() received non-null object of VOID type");
     case STRING:
       String dateString = textConverter.convert(arguments[0].get()).toString();
-      if (dateParser.parseDate(dateString, date)) {
+      if (DateParser.parseDate(dateString, date)) {
         output.set(date);
       } else {
         return null;

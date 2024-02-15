@@ -21,7 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import com.google.common.collect.Multimap;
+import java.util.Collection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -527,27 +530,37 @@ public class ExprNodeDescUtils {
     } catch (Exception e) {
       return null;
     }
-	}
+  }
 
-	public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
-			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
-		for (ExprNodeDesc exprNodeDesc : exprDescList) {
-			getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
-		}
-	}
+  public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeTocolumnDescMap) {
+    for (ExprNodeDesc exprNodeDesc : exprDescList) {
+      getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
+    }
+  }
 
 	/**
 	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 * 
+	 *
 	 * @param exprDesc
 	 * @param hashCodeToColumnDescMap
 	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
 	 *            they are logically referring to same projection
 	 */
 	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
-			Map<Integer, ExprNodeDesc> hashCodeToColumnDescMap) {
+                                             Multimap<Integer, ExprNodeColumnDesc> hashCodeToColumnDescMap) {
 		if (exprDesc instanceof ExprNodeColumnDesc) {
-			hashCodeToColumnDescMap.put(exprDesc.hashCode(), exprDesc);
+          Collection<ExprNodeColumnDesc> nodes = hashCodeToColumnDescMap.get(exprDesc.hashCode());
+          boolean insert = true;
+          for (ExprNodeColumnDesc node : nodes) {
+            if (node.isSame(exprDesc)) {
+              insert = false;
+              break;
+            }
+          }
+          if (insert) {
+            nodes.add((ExprNodeColumnDesc) exprDesc);
+          }
 		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
 			for (ExprNodeDesc child : exprDesc.getChildren()) {
 				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
@@ -619,7 +632,7 @@ public class ExprNodeDescUtils {
    * Build ExprNodeColumnDesc for the projections in the input operator from
    * sartpos to endpos(both included). Operator must have an associated
    * colExprMap.
-   * 
+   *
    * @param inputOp
    *          Input Hive Operator
    * @param startPos
@@ -651,7 +664,7 @@ public class ExprNodeDescUtils {
     }
 
     return exprColLst;
-  }  
+  }
 
   public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());

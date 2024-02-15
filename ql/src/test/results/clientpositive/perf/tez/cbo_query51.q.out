@@ -1,0 +1,125 @@
+PREHOOK: query: explain cbo
+WITH web_v1 as (
+select
+  ws_item_sk item_sk, d_date,
+  sum(sum(ws_sales_price))
+      over (partition by ws_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
+from web_sales
+    ,date_dim
+where ws_sold_date_sk=d_date_sk
+  and d_month_seq between 1212 and 1212+11
+  and ws_item_sk is not NULL
+group by ws_item_sk, d_date),
+store_v1 as (
+select
+  ss_item_sk item_sk, d_date,
+  sum(sum(ss_sales_price))
+      over (partition by ss_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
+from store_sales
+    ,date_dim
+where ss_sold_date_sk=d_date_sk
+  and d_month_seq between 1212 and 1212+11
+  and ss_item_sk is not NULL
+group by ss_item_sk, d_date)
+ select  *
+from (select item_sk
+     ,d_date
+     ,web_sales
+     ,store_sales
+     ,max(web_sales)
+         over (partition by item_sk order by d_date rows between unbounded preceding and current row) web_cumulative
+     ,max(store_sales)
+         over (partition by item_sk order by d_date rows between unbounded preceding and current row) store_cumulative
+     from (select case when web.item_sk is not null then web.item_sk else store.item_sk end item_sk
+                 ,case when web.d_date is not null then web.d_date else store.d_date end d_date
+                 ,web.cume_sales web_sales
+                 ,store.cume_sales store_sales
+           from web_v1 web full outer join store_v1 store on (web.item_sk = store.item_sk
+                                                          and web.d_date = store.d_date)
+          )x )y
+where web_cumulative > store_cumulative
+order by item_sk
+        ,d_date
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+WITH web_v1 as (
+select
+  ws_item_sk item_sk, d_date,
+  sum(sum(ws_sales_price))
+      over (partition by ws_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
+from web_sales
+    ,date_dim
+where ws_sold_date_sk=d_date_sk
+  and d_month_seq between 1212 and 1212+11
+  and ws_item_sk is not NULL
+group by ws_item_sk, d_date),
+store_v1 as (
+select
+  ss_item_sk item_sk, d_date,
+  sum(sum(ss_sales_price))
+      over (partition by ss_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
+from store_sales
+    ,date_dim
+where ss_sold_date_sk=d_date_sk
+  and d_month_seq between 1212 and 1212+11
+  and ss_item_sk is not NULL
+group by ss_item_sk, d_date)
+ select  *
+from (select item_sk
+     ,d_date
+     ,web_sales
+     ,store_sales
+     ,max(web_sales)
+         over (partition by item_sk order by d_date rows between unbounded preceding and current row) web_cumulative
+     ,max(store_sales)
+         over (partition by item_sk order by d_date rows between unbounded preceding and current row) store_cumulative
+     from (select case when web.item_sk is not null then web.item_sk else store.item_sk end item_sk
+                 ,case when web.d_date is not null then web.d_date else store.d_date end d_date
+                 ,web.cume_sales web_sales
+                 ,store.cume_sales store_sales
+           from web_v1 web full outer join store_v1 store on (web.item_sk = store.item_sk
+                                                          and web.d_date = store.d_date)
+          )x )y
+where web_cumulative > store_cumulative
+order by item_sk
+        ,d_date
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(item_sk=[$0], d_date=[$1], web_sales=[$2], store_sales=[$3], max_window_0=[$4], max_window_1=[$5])
+    HiveFilter(condition=[>($4, $5)])
+      HiveProject(item_sk=[CASE(IS NOT NULL($3), $3, $0)], d_date=[CASE(IS NOT NULL($4), $4, $1)], web_sales=[$5], store_sales=[$2], max_window_0=[max($5) OVER (PARTITION BY CASE(IS NOT NULL($3), $3, $0) ORDER BY CASE(IS NOT NULL($4), $4, $1) NULLS LAST ROWS BETWEEN CURRENT ROW AND 2147483647 PRECEDING)], max_window_1=[max($2) OVER (PARTITION BY CASE(IS NOT NULL($3), $3, $0) ORDER BY CASE(IS NOT NULL($4), $4, $1) NULLS LAST ROWS BETWEEN CURRENT ROW AND 2147483647 PRECEDING)])
+        HiveJoin(condition=[AND(=($3, $0), =($4, $1))], joinType=[full], algorithm=[none], cost=[not available])
+          HiveProject((tok_table_or_col ss_item_sk)=[$0], (tok_table_or_col d_date)=[$1], sum_window_0=[$2])
+            HiveProject((tok_table_or_col ss_item_sk)=[$0], (tok_table_or_col d_date)=[$1], sum_window_0=[sum($2) OVER (PARTITION BY $0 ORDER BY $1 NULLS LAST ROWS BETWEEN CURRENT ROW AND 2147483647 PRECEDING)], window_col_0=[$2])
+              HiveProject(ss_item_sk=[$0], d_date=[$1], $f2=[$2])
+                HiveAggregate(group=[{1, 4}], agg#0=[sum($2)])
+                  HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_sales_price=[$13])
+                      HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    HiveProject(d_date_sk=[$0], d_date=[$2], d_month_seq=[$3])
+                      HiveFilter(condition=[AND(BETWEEN(false, $3, 1212, 1223), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject((tok_table_or_col ws_item_sk)=[$0], (tok_table_or_col d_date)=[$1], sum_window_0=[$2])
+            HiveProject((tok_table_or_col ws_item_sk)=[$0], (tok_table_or_col d_date)=[$1], sum_window_0=[sum($2) OVER (PARTITION BY $0 ORDER BY $1 NULLS LAST ROWS BETWEEN CURRENT ROW AND 2147483647 PRECEDING)], window_col_0=[$2])
+              HiveProject(ws_item_sk=[$0], d_date=[$1], $f2=[$2])
+                HiveAggregate(group=[{1, 4}], agg#0=[sum($2)])
+                  HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_sales_price=[$21])
+                      HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                    HiveProject(d_date_sk=[$0], d_date=[$2], d_month_seq=[$3])
+                      HiveFilter(condition=[AND(BETWEEN(false, $3, 1212, 1223), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

@@ -44,7 +44,7 @@ import org.apache.hadoop.io.Text;
  * UDFToInteger.
  *
  */
-@VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
+@VectorizedExpressions({CastDoubleToLong.class,
     CastDecimalToLong.class, CastStringToLong.class})
 public class UDFToInteger extends UDF {
   private final IntWritable intWritable = new IntWritable();
@@ -197,7 +197,7 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
-      final long longValue = i.getSeconds();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final int intValue = (int) longValue;
       if (intValue != longValue) {
         return null;

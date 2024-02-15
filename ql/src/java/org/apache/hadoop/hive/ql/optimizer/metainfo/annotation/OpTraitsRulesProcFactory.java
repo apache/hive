@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer.metainfo.annotation;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -124,18 +126,25 @@ public class OpTraitsRulesProcFactory {
                   continue;
                 }
                 // Fetch the column expression. There should be atleast one.
-                Map<Integer, ExprNodeDesc> colMap = new HashMap<>();
+                Multimap<Integer, ExprNodeColumnDesc> colMap = ArrayListMultimap.create();
                 boolean found = false;
                 ExprNodeDescUtils.getExprNodeColumnDesc(entry.getValue(), colMap);
                 for (Integer hashCode : colMap.keySet()) {
-                  ExprNodeColumnDesc expr = (ExprNodeColumnDesc) colMap.get(hashCode);
-                  if (expr.getColumn().equals(col)) {
-                    bucketCols.add(entry.getKey());
-                    found = true;
+                  Collection<ExprNodeColumnDesc> exprs = colMap.get(hashCode);
+                  for (ExprNodeColumnDesc expr : exprs) {
+                    if (expr.getColumn().equals(col)) {
+                      bucketCols.add(entry.getKey());
+                      found = true;
+                      break;
+                    }
+                  }
+                  if (found) {
                     break;
                   }
                 }
-                if (found) break;
+                if (found) {
+                  break;
+                }
               } // column exprmap.
             } // cols
           }

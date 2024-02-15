@@ -25,6 +25,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -3535,7 +3538,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (joinKeys == null || joinKeys.length == 0) {
       return input;
     }
-    Map<Integer, ExprNodeDesc> hashes = new HashMap<Integer, ExprNodeDesc>();
+    Multimap<Integer, ExprNodeColumnDesc> hashes = ArrayListMultimap.create();
     if (input instanceof FilterOperator) {
       ExprNodeDescUtils.getExprNodeColumnDesc(Arrays.asList(((FilterDesc)input.getConf()).getPredicate()), hashes);
     }
@@ -3548,7 +3551,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // virtual column, since those columns can never be null.
         continue;
       }
-      if(null != hashes.get(joinKeys[i].hashCode())) {
+      boolean skip = false;
+      for (ExprNodeColumnDesc node : hashes.get(joinKeys[i].hashCode())) {
+        if (node.isSame(joinKeys[i])) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) {
         // there is already a predicate on this src.
         continue;
       }

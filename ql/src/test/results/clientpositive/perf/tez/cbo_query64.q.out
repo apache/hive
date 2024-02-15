@@ -1,0 +1,438 @@
+PREHOOK: query: explain cbo
+with cs_ui as
+ (select cs_item_sk
+        ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
+  from catalog_sales
+      ,catalog_returns
+  where cs_item_sk = cr_item_sk
+    and cs_order_number = cr_order_number
+  group by cs_item_sk
+  having sum(cs_ext_list_price)>2*sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit)),
+cross_sales as
+ (select i_product_name product_name
+     ,i_item_sk item_sk
+     ,s_store_name store_name
+     ,s_zip store_zip
+     ,ad1.ca_street_number b_street_number
+     ,ad1.ca_street_name b_streen_name
+     ,ad1.ca_city b_city
+     ,ad1.ca_zip b_zip
+     ,ad2.ca_street_number c_street_number
+     ,ad2.ca_street_name c_street_name
+     ,ad2.ca_city c_city
+     ,ad2.ca_zip c_zip
+     ,d1.d_year as syear
+     ,d2.d_year as fsyear
+     ,d3.d_year s2year
+     ,count(*) cnt
+     ,sum(ss_wholesale_cost) s1
+     ,sum(ss_list_price) s2
+     ,sum(ss_coupon_amt) s3
+  FROM   store_sales
+        ,store_returns
+        ,cs_ui
+        ,date_dim d1
+        ,date_dim d2
+        ,date_dim d3
+        ,store
+        ,customer
+        ,customer_demographics cd1
+        ,customer_demographics cd2
+        ,promotion
+        ,household_demographics hd1
+        ,household_demographics hd2
+        ,customer_address ad1
+        ,customer_address ad2
+        ,income_band ib1
+        ,income_band ib2
+        ,item
+  WHERE  ss_store_sk = s_store_sk AND
+         ss_sold_date_sk = d1.d_date_sk AND
+         ss_customer_sk = c_customer_sk AND
+         ss_cdemo_sk= cd1.cd_demo_sk AND
+         ss_hdemo_sk = hd1.hd_demo_sk AND
+         ss_addr_sk = ad1.ca_address_sk and
+         ss_item_sk = i_item_sk and
+         ss_item_sk = sr_item_sk and
+         ss_ticket_number = sr_ticket_number and
+         ss_item_sk = cs_ui.cs_item_sk and
+         c_current_cdemo_sk = cd2.cd_demo_sk AND
+         c_current_hdemo_sk = hd2.hd_demo_sk AND
+         c_current_addr_sk = ad2.ca_address_sk and
+         c_first_sales_date_sk = d2.d_date_sk and
+         c_first_shipto_date_sk = d3.d_date_sk and
+         ss_promo_sk = p_promo_sk and
+         hd1.hd_income_band_sk = ib1.ib_income_band_sk and
+         hd2.hd_income_band_sk = ib2.ib_income_band_sk and
+         cd1.cd_marital_status <> cd2.cd_marital_status and
+         i_color in ('maroon','burnished','dim','steel','navajo','chocolate') and
+         i_current_price between 35 and 35 + 10 and
+         i_current_price between 35 + 1 and 35 + 15
+group by i_product_name
+       ,i_item_sk
+       ,s_store_name
+       ,s_zip
+       ,ad1.ca_street_number
+       ,ad1.ca_street_name
+       ,ad1.ca_city
+       ,ad1.ca_zip
+       ,ad2.ca_street_number
+       ,ad2.ca_street_name
+       ,ad2.ca_city
+       ,ad2.ca_zip
+       ,d1.d_year
+       ,d2.d_year
+       ,d3.d_year
+)
+select cs1.product_name
+     ,cs1.store_name
+     ,cs1.store_zip
+     ,cs1.b_street_number
+     ,cs1.b_streen_name
+     ,cs1.b_city
+     ,cs1.b_zip
+     ,cs1.c_street_number
+     ,cs1.c_street_name
+     ,cs1.c_city
+     ,cs1.c_zip
+     ,cs1.syear
+     ,cs1.cnt
+     ,cs1.s1
+     ,cs1.s2
+     ,cs1.s3
+     ,cs2.s1
+     ,cs2.s2
+     ,cs2.s3
+     ,cs2.syear
+     ,cs2.cnt
+from cross_sales cs1,cross_sales cs2
+where cs1.item_sk=cs2.item_sk and
+     cs1.syear = 2000 and
+     cs2.syear = 2000 + 1 and
+     cs2.cnt <= cs1.cnt and
+     cs1.store_name = cs2.store_name and
+     cs1.store_zip = cs2.store_zip
+order by cs1.product_name
+       ,cs1.store_name
+       ,cs2.cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@income_band
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with cs_ui as
+ (select cs_item_sk
+        ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
+  from catalog_sales
+      ,catalog_returns
+  where cs_item_sk = cr_item_sk
+    and cs_order_number = cr_order_number
+  group by cs_item_sk
+  having sum(cs_ext_list_price)>2*sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit)),
+cross_sales as
+ (select i_product_name product_name
+     ,i_item_sk item_sk
+     ,s_store_name store_name
+     ,s_zip store_zip
+     ,ad1.ca_street_number b_street_number
+     ,ad1.ca_street_name b_streen_name
+     ,ad1.ca_city b_city
+     ,ad1.ca_zip b_zip
+     ,ad2.ca_street_number c_street_number
+     ,ad2.ca_street_name c_street_name
+     ,ad2.ca_city c_city
+     ,ad2.ca_zip c_zip
+     ,d1.d_year as syear
+     ,d2.d_year as fsyear
+     ,d3.d_year s2year
+     ,count(*) cnt
+     ,sum(ss_wholesale_cost) s1
+     ,sum(ss_list_price) s2
+     ,sum(ss_coupon_amt) s3
+  FROM   store_sales
+        ,store_returns
+        ,cs_ui
+        ,date_dim d1
+        ,date_dim d2
+        ,date_dim d3
+        ,store
+        ,customer
+        ,customer_demographics cd1
+        ,customer_demographics cd2
+        ,promotion
+        ,household_demographics hd1
+        ,household_demographics hd2
+        ,customer_address ad1
+        ,customer_address ad2
+        ,income_band ib1
+        ,income_band ib2
+        ,item
+  WHERE  ss_store_sk = s_store_sk AND
+         ss_sold_date_sk = d1.d_date_sk AND
+         ss_customer_sk = c_customer_sk AND
+         ss_cdemo_sk= cd1.cd_demo_sk AND
+         ss_hdemo_sk = hd1.hd_demo_sk AND
+         ss_addr_sk = ad1.ca_address_sk and
+         ss_item_sk = i_item_sk and
+         ss_item_sk = sr_item_sk and
+         ss_ticket_number = sr_ticket_number and
+         ss_item_sk = cs_ui.cs_item_sk and
+         c_current_cdemo_sk = cd2.cd_demo_sk AND
+         c_current_hdemo_sk = hd2.hd_demo_sk AND
+         c_current_addr_sk = ad2.ca_address_sk and
+         c_first_sales_date_sk = d2.d_date_sk and
+         c_first_shipto_date_sk = d3.d_date_sk and
+         ss_promo_sk = p_promo_sk and
+         hd1.hd_income_band_sk = ib1.ib_income_band_sk and
+         hd2.hd_income_band_sk = ib2.ib_income_band_sk and
+         cd1.cd_marital_status <> cd2.cd_marital_status and
+         i_color in ('maroon','burnished','dim','steel','navajo','chocolate') and
+         i_current_price between 35 and 35 + 10 and
+         i_current_price between 35 + 1 and 35 + 15
+group by i_product_name
+       ,i_item_sk
+       ,s_store_name
+       ,s_zip
+       ,ad1.ca_street_number
+       ,ad1.ca_street_name
+       ,ad1.ca_city
+       ,ad1.ca_zip
+       ,ad2.ca_street_number
+       ,ad2.ca_street_name
+       ,ad2.ca_city
+       ,ad2.ca_zip
+       ,d1.d_year
+       ,d2.d_year
+       ,d3.d_year
+)
+select cs1.product_name
+     ,cs1.store_name
+     ,cs1.store_zip
+     ,cs1.b_street_number
+     ,cs1.b_streen_name
+     ,cs1.b_city
+     ,cs1.b_zip
+     ,cs1.c_street_number
+     ,cs1.c_street_name
+     ,cs1.c_city
+     ,cs1.c_zip
+     ,cs1.syear
+     ,cs1.cnt
+     ,cs1.s1
+     ,cs1.s2
+     ,cs1.s3
+     ,cs2.s1
+     ,cs2.s2
+     ,cs2.s3
+     ,cs2.syear
+     ,cs2.cnt
+from cross_sales cs1,cross_sales cs2
+where cs1.item_sk=cs2.item_sk and
+     cs1.syear = 2000 and
+     cs2.syear = 2000 + 1 and
+     cs2.cnt <= cs1.cnt and
+     cs1.store_name = cs2.store_name and
+     cs1.store_zip = cs2.store_zip
+order by cs1.product_name
+       ,cs1.store_name
+       ,cs2.cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@income_band
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_streen_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(2000):INTEGER], cnt=[$11], s1=[$12], s2=[$13], s3=[$14], s11=[$15], s21=[$16], s31=[$17], syear1=[CAST(2001):INTEGER], cnt1=[$18])
+  HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$18], dir0=[ASC], dir1=[ASC], dir2=[ASC])
+    HiveProject(product_name=[$0], store_name=[$2], store_zip=[$3], b_street_number=[$4], b_streen_name=[$5], b_city=[$6], b_zip=[$7], c_street_number=[$8], c_street_name=[$9], c_city=[$10], c_zip=[$11], cnt=[$12], s1=[$13], s2=[$14], s3=[$15], s11=[$20], s21=[$21], s31=[$22], cnt1=[$19])
+      HiveJoin(condition=[AND(AND(AND(=($1, $16), <=($19, $12)), =($2, $17)), =($3, $18))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject($f0=[$13], $f1=[$12], $f2=[$10], $f3=[$11], $f4=[$6], $f5=[$7], $f6=[$8], $f7=[$9], $f8=[$2], $f9=[$3], $f10=[$4], $f11=[$5], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
+          HiveAggregate(group=[{9, 11, 16, 17, 18, 19, 23, 24, 25, 26, 28, 29, 50, 53}], agg#0=[count()], agg#1=[sum($47)], agg#2=[sum($48)], agg#3=[sum($49)])
+            HiveJoin(condition=[AND(<>($1, $21), =($41, $0))], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(cd_demo_sk=[$0], cd_marital_status=[$2])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, customer_demographics]], table:alias=[cd1])
+              HiveJoin(condition=[=($38, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[=($1, $18)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($3, $13)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveJoin(condition=[=($2, $10)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveJoin(condition=[=($4, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($5, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($6), IS NOT NULL($5), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($4))])
+                              HiveTableScan(table=[[default, customer]], table:alias=[customer])
+                          HiveProject(d_date_sk=[$0], d_year=[$6])
+                            HiveFilter(condition=[IS NOT NULL($0)])
+                              HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+                        HiveProject(d_date_sk=[$0], d_year=[$6])
+                          HiveFilter(condition=[IS NOT NULL($0)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+                      HiveProject(hd_demo_sk=[$0], hd_income_band_sk=[$1], ib_income_band_sk=[$2])
+                        HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              HiveTableScan(table=[[default, household_demographics]], table:alias=[hd2])
+                          HiveProject(ib_income_band_sk=[$0])
+                            HiveFilter(condition=[IS NOT NULL($0)])
+                              HiveTableScan(table=[[default, income_band]], table:alias=[ib2])
+                    HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                      HiveFilter(condition=[IS NOT NULL($0)])
+                        HiveTableScan(table=[[default, customer_address]], table:alias=[ad2])
+                  HiveProject(cd_demo_sk=[$0], cd_marital_status=[$2])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, customer_demographics]], table:alias=[cd2])
+                HiveProject(ca_address_sk=[$0], ca_street_number=[$1], ca_street_name=[$2], ca_city=[$3], ca_zip=[$4], s_store_sk=[$5], s_store_name=[$6], s_zip=[$7], hd_demo_sk=[$8], hd_income_band_sk=[$9], ib_income_band_sk=[$10], p_promo_sk=[$11], d_date_sk=[$12], d_year=[$13], sr_item_sk=[$14], sr_ticket_number=[$15], ss_sold_date_sk=[$16], ss_item_sk=[$17], ss_customer_sk=[$18], ss_cdemo_sk=[$19], ss_hdemo_sk=[$20], ss_addr_sk=[$21], ss_store_sk=[$22], ss_promo_sk=[$23], ss_ticket_number=[$24], ss_wholesale_cost=[$25], ss_list_price=[$26], ss_coupon_amt=[$27], i_item_sk=[$28], i_current_price=[$29], i_color=[$30], i_product_name=[$31], $f0=[$32], $f1=[$33], $f2=[$34])
+                  HiveJoin(condition=[=($21, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                      HiveFilter(condition=[IS NOT NULL($0)])
+                        HiveTableScan(table=[[default, customer_address]], table:alias=[ad1])
+                    HiveJoin(condition=[=($17, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
+                        HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($25))])
+                          HiveTableScan(table=[[default, store]], table:alias=[store])
+                      HiveJoin(condition=[=($9, $24)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($12, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                              HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                                HiveTableScan(table=[[default, household_demographics]], table:alias=[hd1])
+                            HiveProject(ib_income_band_sk=[$0])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, income_band]], table:alias=[ib1])
+                          HiveProject(p_promo_sk=[$0], d_date_sk=[$1], d_year=[$2], sr_item_sk=[$3], sr_ticket_number=[$4], ss_sold_date_sk=[$5], ss_item_sk=[$6], ss_customer_sk=[$7], ss_cdemo_sk=[$8], ss_hdemo_sk=[$9], ss_addr_sk=[$10], ss_store_sk=[$11], ss_promo_sk=[$12], ss_ticket_number=[$13], ss_wholesale_cost=[$14], ss_list_price=[$15], ss_coupon_amt=[$16], i_item_sk=[$17], i_current_price=[$18], i_color=[$19], i_product_name=[$20])
+                            HiveJoin(condition=[=($12, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                              HiveProject(p_promo_sk=[$0])
+                                HiveFilter(condition=[IS NOT NULL($0)])
+                                  HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
+                              HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                                HiveProject(d_date_sk=[$0], d_year=[CAST(2000):INTEGER])
+                                  HiveFilter(condition=[AND(=($6, 2000), IS NOT NULL($0))])
+                                    HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                                HiveJoin(condition=[AND(=($3, $0), =($10, $1))], joinType=[inner], algorithm=[none], cost=[not available])
+                                  HiveProject(sr_item_sk=[$2], sr_ticket_number=[$9])
+                                    HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
+                                      HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                                  HiveJoin(condition=[=($1, $12)], joinType=[inner], algorithm=[none], cost=[not available])
+                                    HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_cdemo_sk=[$4], ss_hdemo_sk=[$5], ss_addr_sk=[$6], ss_store_sk=[$7], ss_promo_sk=[$8], ss_ticket_number=[$9], ss_wholesale_cost=[$11], ss_list_price=[$12], ss_coupon_amt=[$19])
+                                      HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($9), IS NOT NULL($0), IS NOT NULL($7), IS NOT NULL($3), IS NOT NULL($4), IS NOT NULL($8), IS NOT NULL($5), IS NOT NULL($6))])
+                                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                    HiveProject(i_item_sk=[$0], i_current_price=[$5], i_color=[$17], i_product_name=[$21])
+                                      HiveFilter(condition=[AND(IN($17, _UTF-16LE'maroon', _UTF-16LE'burnished', _UTF-16LE'dim', _UTF-16LE'steel', _UTF-16LE'navajo', _UTF-16LE'chocolate'), BETWEEN(false, $5, 35, 45), BETWEEN(false, $5, 36, 50), IS NOT NULL($0))])
+                                        HiveTableScan(table=[[default, item]], table:alias=[item])
+                        HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+                          HiveFilter(condition=[>($1, *(2, $2))])
+                            HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)])
+                              HiveProject($f0=[$0], $f1=[$2], $f2=[+(+($5, $6), $7)])
+                                HiveJoin(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+                                  HiveProject(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
+                                    HiveFilter(condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
+                                      HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                  HiveProject(cr_item_sk=[$2], cr_order_number=[$16], cr_refunded_cash=[$23], cr_reversed_charge=[$24], cr_store_credit=[$25])
+                                    HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
+                                      HiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+        HiveProject($f1=[$12], $f2=[$10], $f3=[$11], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
+          HiveAggregate(group=[{9, 11, 16, 17, 18, 19, 23, 24, 25, 26, 28, 29, 50, 53}], agg#0=[count()], agg#1=[sum($47)], agg#2=[sum($48)], agg#3=[sum($49)])
+            HiveJoin(condition=[AND(<>($1, $21), =($41, $0))], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(cd_demo_sk=[$0], cd_marital_status=[$2])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, customer_demographics]], table:alias=[cd1])
+              HiveJoin(condition=[=($38, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[=($1, $18)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($3, $13)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveJoin(condition=[=($2, $10)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveJoin(condition=[=($4, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($5, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($6), IS NOT NULL($5), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($4))])
+                              HiveTableScan(table=[[default, customer]], table:alias=[customer])
+                          HiveProject(d_date_sk=[$0], d_year=[$6])
+                            HiveFilter(condition=[IS NOT NULL($0)])
+                              HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+                        HiveProject(d_date_sk=[$0], d_year=[$6])
+                          HiveFilter(condition=[IS NOT NULL($0)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+                      HiveProject(hd_demo_sk=[$0], hd_income_band_sk=[$1], ib_income_band_sk=[$2])
+                        HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              HiveTableScan(table=[[default, household_demographics]], table:alias=[hd2])
+                          HiveProject(ib_income_band_sk=[$0])
+                            HiveFilter(condition=[IS NOT NULL($0)])
+                              HiveTableScan(table=[[default, income_band]], table:alias=[ib2])
+                    HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                      HiveFilter(condition=[IS NOT NULL($0)])
+                        HiveTableScan(table=[[default, customer_address]], table:alias=[ad2])
+                  HiveProject(cd_demo_sk=[$0], cd_marital_status=[$2])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, customer_demographics]], table:alias=[cd2])
+                HiveProject(ca_address_sk=[$0], ca_street_number=[$1], ca_street_name=[$2], ca_city=[$3], ca_zip=[$4], s_store_sk=[$5], s_store_name=[$6], s_zip=[$7], hd_demo_sk=[$8], hd_income_band_sk=[$9], ib_income_band_sk=[$10], p_promo_sk=[$11], d_date_sk=[$12], d_year=[$13], sr_item_sk=[$14], sr_ticket_number=[$15], ss_sold_date_sk=[$16], ss_item_sk=[$17], ss_customer_sk=[$18], ss_cdemo_sk=[$19], ss_hdemo_sk=[$20], ss_addr_sk=[$21], ss_store_sk=[$22], ss_promo_sk=[$23], ss_ticket_number=[$24], ss_wholesale_cost=[$25], ss_list_price=[$26], ss_coupon_amt=[$27], i_item_sk=[$28], i_current_price=[$29], i_color=[$30], i_product_name=[$31], $f0=[$32], $f1=[$33], $f2=[$34])
+                  HiveJoin(condition=[=($21, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                      HiveFilter(condition=[IS NOT NULL($0)])
+                        HiveTableScan(table=[[default, customer_address]], table:alias=[ad1])
+                    HiveJoin(condition=[=($17, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
+                        HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($25))])
+                          HiveTableScan(table=[[default, store]], table:alias=[store])
+                      HiveJoin(condition=[=($9, $24)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($12, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                              HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                                HiveTableScan(table=[[default, household_demographics]], table:alias=[hd1])
+                            HiveProject(ib_income_band_sk=[$0])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, income_band]], table:alias=[ib1])
+                          HiveProject(p_promo_sk=[$0], d_date_sk=[$1], d_year=[$2], sr_item_sk=[$3], sr_ticket_number=[$4], ss_sold_date_sk=[$5], ss_item_sk=[$6], ss_customer_sk=[$7], ss_cdemo_sk=[$8], ss_hdemo_sk=[$9], ss_addr_sk=[$10], ss_store_sk=[$11], ss_promo_sk=[$12], ss_ticket_number=[$13], ss_wholesale_cost=[$14], ss_list_price=[$15], ss_coupon_amt=[$16], i_item_sk=[$17], i_current_price=[$18], i_color=[$19], i_product_name=[$20])
+                            HiveJoin(condition=[=($12, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                              HiveProject(p_promo_sk=[$0])
+                                HiveFilter(condition=[IS NOT NULL($0)])
+                                  HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
+                              HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                                HiveProject(d_date_sk=[$0], d_year=[CAST(2001):INTEGER])
+                                  HiveFilter(condition=[AND(=($6, 2001), IS NOT NULL($0))])
+                                    HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                                HiveJoin(condition=[AND(=($3, $0), =($10, $1))], joinType=[inner], algorithm=[none], cost=[not available])
+                                  HiveProject(sr_item_sk=[$2], sr_ticket_number=[$9])
+                                    HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
+                                      HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                                  HiveJoin(condition=[=($1, $12)], joinType=[inner], algorithm=[none], cost=[not available])
+                                    HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_cdemo_sk=[$4], ss_hdemo_sk=[$5], ss_addr_sk=[$6], ss_store_sk=[$7], ss_promo_sk=[$8], ss_ticket_number=[$9], ss_wholesale_cost=[$11], ss_list_price=[$12], ss_coupon_amt=[$19])
+                                      HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($9), IS NOT NULL($0), IS NOT NULL($7), IS NOT NULL($3), IS NOT NULL($4), IS NOT NULL($8), IS NOT NULL($5), IS NOT NULL($6))])
+                                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                    HiveProject(i_item_sk=[$0], i_current_price=[$5], i_color=[$17], i_product_name=[$21])
+                                      HiveFilter(condition=[AND(IN($17, _UTF-16LE'maroon', _UTF-16LE'burnished', _UTF-16LE'dim', _UTF-16LE'steel', _UTF-16LE'navajo', _UTF-16LE'chocolate'), BETWEEN(false, $5, 35, 45), BETWEEN(false, $5, 36, 50), IS NOT NULL($0))])
+                                        HiveTableScan(table=[[default, item]], table:alias=[item])
+                        HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+                          HiveFilter(condition=[>($1, *(2, $2))])
+                            HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)])
+                              HiveProject($f0=[$0], $f1=[$2], $f2=[+(+($5, $6), $7)])
+                                HiveJoin(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+                                  HiveProject(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
+                                    HiveFilter(condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
+                                      HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                  HiveProject(cr_item_sk=[$2], cr_order_number=[$16], cr_refunded_cash=[$23], cr_reversed_charge=[$24], cr_store_credit=[$25])
+                                    HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
+                                      HiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+

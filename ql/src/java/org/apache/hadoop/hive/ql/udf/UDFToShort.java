@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Text;
  * UDFToShort.
  *
  */
-@VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
+@VectorizedExpressions({CastDoubleToLong.class,
     CastDecimalToLong.class, CastStringToLong.class})
 public class UDFToShort extends UDF {
   ShortWritable shortWritable = new ShortWritable();
@@ -188,7 +188,7 @@ public class UDFToShort extends UDF {
     if (i == null) {
       return null;
     } else {
-      final long longValue = i.getSeconds();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final short shortValue = (short) longValue;
       if (shortValue != longValue) {
         return null;

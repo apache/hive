@@ -1,0 +1,81 @@
+PREHOOK: query: explain cbo
+select  i_item_desc 
+       ,i_category 
+       ,i_class 
+       ,i_current_price
+       ,sum(cs_ext_sales_price) as itemrevenue 
+       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+           (partition by i_class) as revenueratio
+ from	catalog_sales
+     ,item 
+     ,date_dim
+ where cs_item_sk = i_item_sk 
+   and i_category in ('Jewelry', 'Sports', 'Books')
+   and cs_sold_date_sk = d_date_sk
+ and d_date between cast('2001-01-12' as date) 
+ 				and (cast('2001-01-12' as date) + 30 days)
+ group by i_item_id
+         ,i_item_desc 
+         ,i_category
+         ,i_class
+         ,i_current_price
+ order by i_category
+         ,i_class
+         ,i_item_id
+         ,i_item_desc
+         ,revenueratio
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  i_item_desc 
+       ,i_category 
+       ,i_class 
+       ,i_current_price
+       ,sum(cs_ext_sales_price) as itemrevenue 
+       ,sum(cs_ext_sales_price)*100/sum(sum(cs_ext_sales_price)) over
+           (partition by i_class) as revenueratio
+ from	catalog_sales
+     ,item 
+     ,date_dim
+ where cs_item_sk = i_item_sk 
+   and i_category in ('Jewelry', 'Sports', 'Books')
+   and cs_sold_date_sk = d_date_sk
+ and d_date between cast('2001-01-12' as date) 
+ 				and (cast('2001-01-12' as date) + 30 days)
+ group by i_item_id
+         ,i_item_desc 
+         ,i_category
+         ,i_class
+         ,i_current_price
+ order by i_category
+         ,i_class
+         ,i_item_id
+         ,i_item_desc
+         ,revenueratio
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(i_item_desc=[$0], i_category=[$1], i_class=[$2], i_current_price=[$3], itemrevenue=[$4], revenueratio=[$5])
+  HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$6], sort3=[$0], sort4=[$5], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
+    HiveProject(i_item_desc=[$1], i_category=[$4], i_class=[$3], i_current_price=[$2], itemrevenue=[$5], revenueratio=[/(*($5, CAST(100):DECIMAL(10, 0)), sum($5) OVER (PARTITION BY $3 ORDER BY $3 NULLS FIRST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING))], (tok_table_or_col i_item_id)=[$0])
+      HiveAggregate(group=[{1, 2, 3, 4, 5}], agg#0=[sum($8)])
+        HiveJoin(condition=[=($7, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5], i_class=[$10], i_category=[$12])
+            HiveFilter(condition=[IN($12, _UTF-16LE'Jewelry', _UTF-16LE'Sports', _UTF-16LE'Books')])
+              HiveTableScan(table=[[default, item]], table:alias=[item])
+          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_sales_price=[$23])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+            HiveProject(d_date_sk=[$0])
+              HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 2001-01-12 00:00:00, 2001-02-11 00:00:00)])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

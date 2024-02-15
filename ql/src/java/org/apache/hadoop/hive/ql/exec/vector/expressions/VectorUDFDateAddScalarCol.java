@@ -45,7 +45,6 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
   protected boolean isPositive = true;
 
-  private transient final DateParser dateParser = new DateParser();
   private transient final Date baseDate = new Date();
 
   // Transient members initialized by transientInit method.
@@ -109,7 +108,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
       case STRING:
       case CHAR:
       case VARCHAR:
-        boolean parsed = dateParser.parseDate(new String(stringValue, StandardCharsets.UTF_8), baseDate);
+        boolean parsed = DateParser.parseDate(new String(stringValue, StandardCharsets.UTF_8), baseDate);
         if (!parsed) {
           outputColVector.noNulls = false;
           if (selectedInUse) {

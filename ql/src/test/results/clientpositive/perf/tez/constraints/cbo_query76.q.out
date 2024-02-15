@@ -1,0 +1,95 @@
+PREHOOK: query: explain cbo
+select  channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt, SUM(ext_sales_price) sales_amt FROM (
+        SELECT 'store' as channel, 'ss_addr_sk' col_name, d_year, d_qoy, i_category, ss_ext_sales_price ext_sales_price
+         FROM store_sales, item, date_dim
+         WHERE ss_addr_sk IS NULL
+           AND ss_sold_date_sk=d_date_sk
+           AND ss_item_sk=i_item_sk
+        UNION ALL
+        SELECT 'web' as channel, 'ws_web_page_sk' col_name, d_year, d_qoy, i_category, ws_ext_sales_price ext_sales_price
+         FROM web_sales, item, date_dim
+         WHERE ws_web_page_sk IS NULL
+           AND ws_sold_date_sk=d_date_sk
+           AND ws_item_sk=i_item_sk
+        UNION ALL
+        SELECT 'catalog' as channel, 'cs_warehouse_sk' col_name, d_year, d_qoy, i_category, cs_ext_sales_price ext_sales_price
+         FROM catalog_sales, item, date_dim
+         WHERE cs_warehouse_sk IS NULL
+           AND cs_sold_date_sk=d_date_sk
+           AND cs_item_sk=i_item_sk) foo
+GROUP BY channel, col_name, d_year, d_qoy, i_category
+ORDER BY channel, col_name, d_year, d_qoy, i_category
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt, SUM(ext_sales_price) sales_amt FROM (
+        SELECT 'store' as channel, 'ss_addr_sk' col_name, d_year, d_qoy, i_category, ss_ext_sales_price ext_sales_price
+         FROM store_sales, item, date_dim
+         WHERE ss_addr_sk IS NULL
+           AND ss_sold_date_sk=d_date_sk
+           AND ss_item_sk=i_item_sk
+        UNION ALL
+        SELECT 'web' as channel, 'ws_web_page_sk' col_name, d_year, d_qoy, i_category, ws_ext_sales_price ext_sales_price
+         FROM web_sales, item, date_dim
+         WHERE ws_web_page_sk IS NULL
+           AND ws_sold_date_sk=d_date_sk
+           AND ws_item_sk=i_item_sk
+        UNION ALL
+        SELECT 'catalog' as channel, 'cs_warehouse_sk' col_name, d_year, d_qoy, i_category, cs_ext_sales_price ext_sales_price
+         FROM catalog_sales, item, date_dim
+         WHERE cs_warehouse_sk IS NULL
+           AND cs_sold_date_sk=d_date_sk
+           AND cs_item_sk=i_item_sk) foo
+GROUP BY channel, col_name, d_year, d_qoy, i_category
+ORDER BY channel, col_name, d_year, d_qoy, i_category
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
+  HiveProject(channel=[$0], col_name=[$1], d_year=[$2], d_qoy=[$3], i_category=[$4], $f5=[$5], $f6=[$6])
+    HiveAggregate(group=[{0, 1, 2, 3, 4}], agg#0=[count()], agg#1=[sum($5)])
+      HiveProject(channel=[$0], col_name=[$1], d_year=[$2], d_qoy=[$3], i_category=[$4], ext_sales_price=[$5])
+        HiveUnion(all=[true])
+          HiveProject(channel=[_UTF-16LE'store'], col_name=[_UTF-16LE'ss_addr_sk'], d_year=[$1], d_qoy=[$2], i_category=[$4], ext_sales_price=[$7])
+            HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(d_date_sk=[$0], d_year=[$6], d_qoy=[$10])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(i_item_sk=[$0], i_category=[$12])
+                  HiveTableScan(table=[[default, item]], table:alias=[item])
+                HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_ext_sales_price=[$15])
+                  HiveFilter(condition=[AND(IS NULL($6), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          HiveProject(channel=[_UTF-16LE'web'], col_name=[_UTF-16LE'ws_web_page_sk'], d_year=[$6], d_qoy=[$7], i_category=[$4], ext_sales_price=[$2])
+            HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_sales_price=[$23])
+                  HiveFilter(condition=[AND(IS NULL($12), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                HiveProject(i_item_sk=[$0], i_category=[$12])
+                  HiveTableScan(table=[[default, item]], table:alias=[item])
+              HiveProject(d_date_sk=[$0], d_year=[$6], d_qoy=[$10])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(channel=[_UTF-16LE'catalog'], col_name=[_UTF-16LE'cs_warehouse_sk'], d_year=[$6], d_qoy=[$7], i_category=[$4], ext_sales_price=[$2])
+            HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_sales_price=[$23])
+                  HiveFilter(condition=[AND(IS NULL($14), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                HiveProject(i_item_sk=[$0], i_category=[$12])
+                  HiveTableScan(table=[[default, item]], table:alias=[item])
+              HiveProject(d_date_sk=[$0], d_year=[$6], d_qoy=[$10])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

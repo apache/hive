@@ -14,7 +14,7 @@ create table emps_n5 (
   commission int)
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into emps_n5 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250);
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250);
 analyze table emps_n5 compute statistics for columns;
 
 create table depts_n4 (
@@ -29,14 +29,14 @@ create table dependents_n3 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into dependents_n3 values (10, 'Michael'), (10, 'Jane');
+insert into dependents_n3 values (10, 'Michael'), (20, 'Jane');
 analyze table dependents_n3 compute statistics for columns;
 
 create table locations_n3 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into locations_n3 values (10, 'San Francisco'), (10, 'San Diego');
+insert into locations_n3 values (10, 'San Francisco'), (20, 'San Diego');
 analyze table locations_n3 compute statistics for columns;
 
 alter table emps_n5 add constraint pk1 primary key (empid) disable novalidate rely;
@@ -78,7 +78,8 @@ from emps_n5 group by name, salary;
 
 drop materialized view mv1_n3;
 
--- EXAMPLE 25
+-- EXAMPLE 25: REWRITING NOT TRIGGERED WHEN JOIN CONSTRAINTS
+-- OPTIMIZATION IS ENABLED
 create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)

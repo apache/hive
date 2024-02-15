@@ -1,0 +1,143 @@
+PREHOOK: query: explain cbo
+select   
+     i_item_id
+    ,i_item_desc
+    ,s_store_id
+    ,s_store_name
+    ,sum(ss_quantity)        as store_sales_quantity
+    ,sum(sr_return_quantity) as store_returns_quantity
+    ,sum(cs_quantity)        as catalog_sales_quantity
+ from
+    store_sales
+   ,store_returns
+   ,catalog_sales
+   ,date_dim             d1
+   ,date_dim             d2
+   ,date_dim             d3
+   ,store
+   ,item
+ where
+     d1.d_moy               = 4 
+ and d1.d_year              = 1999
+ and d1.d_date_sk           = ss_sold_date_sk
+ and i_item_sk              = ss_item_sk
+ and s_store_sk             = ss_store_sk
+ and ss_customer_sk         = sr_customer_sk
+ and ss_item_sk             = sr_item_sk
+ and ss_ticket_number       = sr_ticket_number
+ and sr_returned_date_sk    = d2.d_date_sk
+ and d2.d_moy               between 4 and  4 + 3 
+ and d2.d_year              = 1999
+ and sr_customer_sk         = cs_bill_customer_sk
+ and sr_item_sk             = cs_item_sk
+ and cs_sold_date_sk        = d3.d_date_sk     
+ and d3.d_year              in (1999,1999+1,1999+2)
+ group by
+    i_item_id
+   ,i_item_desc
+   ,s_store_id
+   ,s_store_name
+ order by
+    i_item_id 
+   ,i_item_desc
+   ,s_store_id
+   ,s_store_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select   
+     i_item_id
+    ,i_item_desc
+    ,s_store_id
+    ,s_store_name
+    ,sum(ss_quantity)        as store_sales_quantity
+    ,sum(sr_return_quantity) as store_returns_quantity
+    ,sum(cs_quantity)        as catalog_sales_quantity
+ from
+    store_sales
+   ,store_returns
+   ,catalog_sales
+   ,date_dim             d1
+   ,date_dim             d2
+   ,date_dim             d3
+   ,store
+   ,item
+ where
+     d1.d_moy               = 4 
+ and d1.d_year              = 1999
+ and d1.d_date_sk           = ss_sold_date_sk
+ and i_item_sk              = ss_item_sk
+ and s_store_sk             = ss_store_sk
+ and ss_customer_sk         = sr_customer_sk
+ and ss_item_sk             = sr_item_sk
+ and ss_ticket_number       = sr_ticket_number
+ and sr_returned_date_sk    = d2.d_date_sk
+ and d2.d_moy               between 4 and  4 + 3 
+ and d2.d_year              = 1999
+ and sr_customer_sk         = cs_bill_customer_sk
+ and sr_item_sk             = cs_item_sk
+ and cs_sold_date_sk        = d3.d_date_sk     
+ and d3.d_year              in (1999,1999+1,1999+2)
+ group by
+    i_item_id
+   ,i_item_desc
+   ,s_store_id
+   ,s_store_name
+ order by
+    i_item_id 
+   ,i_item_desc
+   ,s_store_id
+   ,s_store_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
+  HiveProject(i_item_id=[$0], i_item_desc=[$1], s_store_id=[$2], s_store_name=[$3], $f4=[$4], $f5=[$5], $f6=[$6])
+    HiveAggregate(group=[{1, 2, 10, 11}], agg#0=[sum($20)], agg#1=[sum($25)], agg#2=[sum($6)])
+      HiveJoin(condition=[=($0, $16)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, item]], table:alias=[item])
+        HiveJoin(condition=[AND(=($20, $1), =($19, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15], cs_quantity=[$18])
+              HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($15), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+            HiveProject(d_date_sk=[$0], d_year=[$6])
+              HiveFilter(condition=[AND(IN($6, 1999, 2000, 2001), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+          HiveProject(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$2], d_date_sk=[$3], d_year=[$4], d_moy=[$5], ss_sold_date_sk=[$6], ss_item_sk=[$7], ss_customer_sk=[$8], ss_store_sk=[$9], ss_ticket_number=[$10], ss_quantity=[$11], sr_returned_date_sk=[$12], sr_item_sk=[$13], sr_customer_sk=[$14], sr_ticket_number=[$15], sr_return_quantity=[$16], d_date_sk0=[$17], d_year0=[$18], d_moy0=[$19])
+            HiveJoin(condition=[=($0, $9)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, store]], table:alias=[store])
+              HiveJoin(condition=[=($9, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(d_date_sk=[$0], d_year=[CAST(1999):INTEGER], d_moy=[$8])
+                  HiveFilter(condition=[AND(BETWEEN(false, $8, 4, 7), =($6, 1999), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+                HiveJoin(condition=[=($11, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[AND(AND(=($2, $8), =($1, $7)), =($4, $9))], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ticket_number=[$9], ss_quantity=[$10])
+                      HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($9), IS NOT NULL($0), IS NOT NULL($7))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    HiveProject(sr_returned_date_sk=[$0], sr_item_sk=[$2], sr_customer_sk=[$3], sr_ticket_number=[$9], sr_return_quantity=[$10])
+                      HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($9), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                  HiveProject(d_date_sk=[$0], d_year=[CAST(1999):INTEGER], d_moy=[CAST(4):INTEGER])
+                    HiveFilter(condition=[AND(=($8, 4), =($6, 1999), IS NOT NULL($0))])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+
