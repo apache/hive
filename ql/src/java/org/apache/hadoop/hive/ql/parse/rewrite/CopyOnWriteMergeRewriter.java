@@ -127,6 +127,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
   static class CopyOnWriteMergeWhenClauseSqlGenerator extends MergeRewriter.MergeWhenClauseSqlGenerator {
 
     private final COWWithClauseBuilder cowWithClauseBuilder;
+    private int subQueryCount = 0;
 
     CopyOnWriteMergeWhenClauseSqlGenerator(
       HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
@@ -138,7 +139,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     public void appendWhenNotMatchedInsertClause(MergeStatement.InsertClause insertClause) {
       String targetAlias = mergeStatement.getTargetAlias();
       
-      if (mergeStatement.getWhenClauses().size() > 1) {
+      if (++subQueryCount > 1) {
         sqlGenerator.append("union all\n");
       }
       sqlGenerator.append("    -- insert clause\n").append("SELECT ");
@@ -173,7 +174,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       sqlGenerator.append("    -- update clause (insert part)\n").append("SELECT ");
-
+      ++subQueryCount;
+      
       if (isNotBlank(hintStr)) {
         sqlGenerator.append(hintStr);
         hintStr = null;
@@ -206,8 +208,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       List<String> deleteValues = sqlGenerator.getDeleteValues(Context.Operation.DELETE);
 
-      List<MergeStatement.WhenClause> whenClauses = mergeStatement.getWhenClauses();
-      if (whenClauses.size() > 1 || whenClauses.get(0) instanceof MergeStatement.UpdateClause) {
+      if (++subQueryCount > 1) {
         sqlGenerator.append("union all\n");
       }
       sqlGenerator.append("    -- delete clause\n").append("SELECT ");
