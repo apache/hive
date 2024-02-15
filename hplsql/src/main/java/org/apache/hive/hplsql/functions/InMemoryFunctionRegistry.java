@@ -143,15 +143,15 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
     }
     int actualCnt = actualValues == null ? 0 : actualValues.size();
     int passedParamCnt = actualCnt;
-    List<HplsqlParser.Create_routine_param_itemContext> routine_param_item_list = formal.create_routine_param_item();
-    int formalCnt = routine_param_item_list.size();
+    List<HplsqlParser.Create_routine_param_itemContext> routineParamItem = formal.create_routine_param_item();
+    int formalCnt = routineParamItem.size();
     if (actualCnt > formalCnt) {
       throw new ArityException(actual == null ? null : actual.getParent(), procName, formalCnt, actualCnt);
     }
     List<Integer> defaultParamIndexes = new ArrayList<>();
     if (actualCnt != formalCnt) {
       for (int i = 0; i < formalCnt; i++) {
-        if (routine_param_item_list.get(i).dtype_default() != null) {
+        if (routineParamItem.get(i).dtype_default() != null) {
           defaultParamIndexes.add(i);
         }
       }
@@ -186,13 +186,13 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
           scale = p.dtype_len().L_INT(1).getText();
         }
       }
-      Var var = setCallParameter(name, type, len, scale, value, exec);
-      exec.trace(actual, "SET PARAM " + name + " = " + var.toString());
+      Var variable = setCallParameter(name, type, len, scale, value, exec);
+      exec.trace(actual, "SET PARAM " + name + " = " + variable.toString());
       if (out != null && a.expr_atom() != null && a.expr_atom().qident() != null &&
           (p.T_OUT() != null || p.T_INOUT() != null)) {
         String actualName = a.expr_atom().qident().getText();
         if (actualName != null) {
-          out.put(actualName, var);  
+          out.put(actualName, variable);
         }         
       }
     }
