@@ -125,7 +125,7 @@ public class Msck {
    * @param msckInfo Information about the tables and partitions we want to check for.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    */
-  public int repair(MsckInfo msckInfo) {
+  public int repair(MsckInfo msckInfo) throws TException, MetastoreException, IOException {
     CheckResult result = null;
     List<String> repairOutput = new ArrayList<>();
     String qualifiedTableName = null;
@@ -271,6 +271,7 @@ public class Msck {
     } catch (Exception e) {
       LOG.warn("Failed to run metacheck: ", e);
       success = false;
+      throw e;
     } finally {
       if (result != null) {
         logResult(result);
