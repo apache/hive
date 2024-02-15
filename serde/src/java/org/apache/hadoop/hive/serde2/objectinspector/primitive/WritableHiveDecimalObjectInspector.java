@@ -98,11 +98,11 @@ implements SettableHiveDecimalObjectInspector {
   }
 
   private HiveDecimal enforcePrecisionScale(HiveDecimal dec) {
-    return HiveDecimalUtils.enforcePrecisionScale(dec, new DecimalTypeInfo(dec.precision(), dec.scale()));
+    return HiveDecimalUtils.enforcePrecisionScale(dec, (DecimalTypeInfo)typeInfo);
   }
 
   private HiveDecimalWritable enforcePrecisionScale(HiveDecimalWritable writable) {
-    return HiveDecimalUtils.enforcePrecisionScale(writable,
-        new DecimalTypeInfo(writable.precision(), writable.scale()));
+    return HiveDecimalUtils.enforcePrecisionScale(writable, (DecimalTypeInfo)typeInfo);
   }
+
 }
