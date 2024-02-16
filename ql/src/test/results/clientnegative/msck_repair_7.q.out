@@ -15,18 +15,4 @@ POSTHOOK: Output: default@repairtable
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable
-POSTHOOK: query: MSCK REPAIR TABLE default.repairtable
-POSTHOOK: type: MSCK
-POSTHOOK: Output: default@repairtable
-PREHOOK: query: MSCK REPAIR TABLE default.repairtable
-PREHOOK: type: MSCK
-PREHOOK: Output: default@repairtable
-POSTHOOK: query: MSCK REPAIR TABLE default.repairtable
-POSTHOOK: type: MSCK
-POSTHOOK: Output: default@repairtable
-Partitions not in metastore:	repairtable:p1=a
-#### A masked pattern was here ####
-PREHOOK: query: MSCK REPAIR TABLE default.repairtable
-PREHOOK: type: MSCK
-PREHOOK: Output: default@repairtable
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. The partition 'repairtable:p1=a' already exists for tablerepairtable
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.metastore.api.MetastoreException: Invalid partition name hdfs://### HDFS PATH ###
