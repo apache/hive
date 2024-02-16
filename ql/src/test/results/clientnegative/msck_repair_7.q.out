@@ -15,4 +15,4 @@ POSTHOOK: Output: default@repairtable
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.metastore.api.MetastoreException: Invalid partition name hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
