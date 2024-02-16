@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
@@ -58,7 +59,7 @@ public class GenericUDFArrayPosition extends AbstractGenericUDFArrayBase {
     }
 
     for (int index = 0; index < arrayLength; ++index) {
-      if (compareElements(value,valueOI,arrayOI.getListElement(array, index)) == 0) {
+      if (ObjectInspectorUtils.compare(value, valueOI, arrayOI.getListElement(array, index), arrayElementOI) == 0) {
           return new IntWritable(index + 1);
       }
     }

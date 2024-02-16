@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector

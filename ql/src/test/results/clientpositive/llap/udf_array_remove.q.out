@@ -49,15 +49,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 [1,2,3]	[1,2,3]
-PREHOOK: query: SELECT array_remove(array(1, 2, 3), CAST(null AS int))
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT array_remove(array(1, 2, 3), CAST(null AS int))
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-NULL
 PREHOOK: query: SELECT array_remove(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),1.1234567890)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -67,11 +58,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 [2.23456789,3.3456789,null,3.3456789,2.234567]
-PREHOOK: query: SELECT array_remove(array(11234567890L, 2234567890L, 334567890L, null, 11234567890L, 2234567890L, 334567890L, null),11234567890L)
+PREHOOK: query: SELECT array_remove(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),11234567890)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT array_remove(array(11234567890L, 2234567890L, 334567890L, null, 11234567890L, 2234567890L, 334567890L, null),11234567890L)
+POSTHOOK: query: SELECT array_remove(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),11234567890)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
@@ -85,83 +76,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 [["a","b","c","d","e"],null,["e","a","b","c","d"]]
-PREHOOK: query: create table test as select array('a', 'b', 'c', 'b') as a union all select array('a', 'c', 'd') as a
-PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: database:default
-PREHOOK: Output: default@test
-POSTHOOK: query: create table test as select array('a', 'b', 'c', 'b') as a union all select array('a', 'c', 'd') as a
-POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test
-POSTHOOK: Lineage: test.a SCRIPT []
-PREHOOK: query: select * from test
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test
-#### A masked pattern was here ####
-POSTHOOK: query: select * from test
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
-#### A masked pattern was here ####
-["a","b","c","b"]
-["a","c","d"]
-PREHOOK: query: select a, array_remove(a, 'b') from test
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test
-#### A masked pattern was here ####
-POSTHOOK: query: select a, array_remove(a, 'b') from test
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
-#### A masked pattern was here ####
-["a","b","c","b"]	["a","c"]
-["a","c","d"]	["a","c","d"]
-PREHOOK: query: select a, array_remove(a, cast('a' as varchar(5))) from test
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test
-#### A masked pattern was here ####
-POSTHOOK: query: select a, array_remove(a, cast('a' as varchar(5))) from test
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
-#### A masked pattern was here ####
-["a","b","c","b"]	["b","c","b"]
-["a","c","d"]	["c","d"]
-PREHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@temp
-POSTHOOK: query: CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@temp
-PREHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'))
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@temp
-POSTHOOK: query: insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'))
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@temp
-POSTHOOK: Lineage: temp.bottom SCRIPT []
-POSTHOOK: Lineage: temp.top SCRIPT []
-PREHOOK: query: select top, array_remove(top,cast('abc' as VARCHAR(10))), array_remove(bottom,cast('def' as VARCHAR(10))) from temp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@temp
-#### A masked pattern was here ####
-POSTHOOK: query: select top, array_remove(top,cast('abc' as VARCHAR(10))), array_remove(bottom,cast('def' as VARCHAR(10))) from temp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@temp
-#### A masked pattern was here ####
-["abc"]	[]	[]
-PREHOOK: query: select top, array_remove(top,'abc'), array_remove(bottom,'def') from temp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@temp
-#### A masked pattern was here ####
-POSTHOOK: query: select top, array_remove(top,'abc'), array_remove(bottom,'def') from temp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@temp
-#### A masked pattern was here ####
-["abc"]	[]	[]
 PREHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE

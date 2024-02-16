@@ -19,9 +19,11 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,10 +38,7 @@ import java.util.stream.Collectors;
     + "  [1,3,4]")
 public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
   private static final String FUNC_NAME = "ARRAY_REMOVE";
-
-  private static final int ELEMENT_IDX = 1;
-
-  private transient ObjectInspector valueOI;
+  private static final int VALUE_IDX = 1;
 
   public GenericUDFArrayRemove() {
     super(FUNC_NAME, 2, 2, ObjectInspector.Category.LIST);
@@ -48,22 +47,33 @@ public class GenericUDFArrayRemove extends AbstractGenericUDFArrayBase {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     ObjectInspector defaultOI = super.initialize(arguments);
-    valueOI = arguments[ELEMENT_IDX];
-    checkValueAndListElementTypes(arrayOI.getListElementObjectInspector(), FUNC_NAME,valueOI,ELEMENT_IDX);
+    ObjectInspector arrayElementOI = arrayOI.getListElementObjectInspector();
+
+    ObjectInspector valueOI = arguments[VALUE_IDX];
+
+    // Check if list element and value are of same type
+    if (!ObjectInspectorUtils.compareTypes(arrayElementOI, valueOI)) {
+      throw new UDFArgumentTypeException(VALUE_IDX,
+          String.format("%s type element is expected at function array_remove(array<%s>,%s), but %s is found",
+              arrayElementOI.getTypeName(), arrayElementOI.getTypeName(), arrayElementOI.getTypeName(),
+              valueOI.getTypeName()));
+    }
     return defaultOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
+
     Object array = arguments[ARRAY_IDX].get();
-    Object value = arguments[ELEMENT_IDX].get();
+    Object value = arguments[VALUE_IDX].get();
     if (arrayOI.getListLength(array) == 0) {
       return Collections.emptyList();
     } else if (arrayOI.getListLength(array) < 0 || value == null) {
       return null;
     }
+
     List<?> resultArray = new ArrayList<>(((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array));
-    resultArray.removeIf(listElement -> (compareElements(value, valueOI, listElement) == 0));
+    resultArray.removeIf(value::equals);
     return resultArray.stream().map(o -> converter.convert(o)).collect(Collectors.toList());
   }
 }

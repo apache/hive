@@ -131,51 +131,10 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         int elementIndex) throws UDFArgumentTypeException {
         // Check if list element and value are of same type
         if (!ObjectInspectorUtils.compareTypes(arrayElementOI, valueOI)) {
-            if (arrayElementOI.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) || arrayElementOI.getTypeName()
-                .equals(serdeConstants.STRING_TYPE_NAME)) {
-                if (valueOI.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) || valueOI.getTypeName()
-                    .equals(serdeConstants.STRING_TYPE_NAME)) {
-                    return;
-                }
-            }
             throw new UDFArgumentTypeException(elementIndex,
                 String.format("%s type element is expected at function %s(array<%s>,%s), but %s is found",
                     arrayElementOI.getTypeName(), functionName, arrayElementOI.getTypeName(),
                     arrayElementOI.getTypeName(), valueOI.getTypeName()));
         }
-    }
-
-    boolean isConversionSupported(ObjectInspector oi1, ObjectInspector oi2) {
-        if (oi1.getCategory() == oi2.getCategory()) {
-            if (oi1.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-                PrimitiveObjectInspector poi1 = ((PrimitiveObjectInspector) oi1);
-                PrimitiveObjectInspector poi2 = ((PrimitiveObjectInspector) oi2);
-                return (poi1.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.VARCHAR)
-                    && poi2.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.STRING)) || (
-                    poi1.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.STRING)
-                        && poi2.getPrimitiveCategory().equals(PrimitiveObjectInspector.PrimitiveCategory.VARCHAR));
-            }
-        }
-        return false;
-    }
-
-    int compareConvertibleElements(ObjectInspector oi1, Object o1, ObjectInspector oi2, Object o2) {
-        PrimitiveObjectInspector poi1 = ((PrimitiveObjectInspector) oi1);
-        PrimitiveObjectInspector poi2 = ((PrimitiveObjectInspector) oi2);
-        if (String.valueOf(poi1.getPrimitiveWritableObject(o1))
-            .equals(String.valueOf(poi2.getPrimitiveWritableObject(o2)))) {
-            return 0;
-        } else {
-            return -1;
-        }
-    }
-
-    int compareElements(Object value, ObjectInspector valueOI, Object listElement) {
-        if ((listElement != null) && (ObjectInspectorUtils.compare(value, valueOI, listElement, arrayElementOI) == 0
-            || (isConversionSupported(valueOI, arrayElementOI)
-            && compareConvertibleElements(valueOI, value, arrayElementOI, listElement) == 0))) {
-            return 0;
-        }
-        return -1;
     }
 }

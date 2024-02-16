@@ -32,16 +32,6 @@ select * from test;
 
 select a, array_position(a, 'b') from test;
 
-select a, array_position(a, cast('a' as varchar(5))) from test;
-
-CREATE TABLE temp (top ARRAY<VARCHAR(10)>,bottom ARRAY<STRING>);
-
-insert into temp values(array(cast('abc' as VARCHAR(10))),array('def'));
-
-select top, array_position(top,cast('abc' as VARCHAR(10))), array_position(bottom,cast('def' as VARCHAR(10))) from temp;
-
-select top, array_position(top,'abc'), array_position(bottom,'def') from temp;
-
 # handle null array cases
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/test_null_array;
