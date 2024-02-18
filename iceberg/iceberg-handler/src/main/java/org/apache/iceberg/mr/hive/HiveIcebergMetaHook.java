@@ -197,6 +197,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   @Override
   public void preCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    CreateTableRequest request = new CreateTableRequest(hmsTable);
+    preCreateTable(request);
   }
   @Override
   public void preCreateTable(CreateTableRequest request) {
@@ -398,7 +400,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       preAlterTableProperties = new PreAlterTableProperties();
       preAlterTableProperties.tableLocation = sd.getLocation();
       preAlterTableProperties.format = sd.getInputFormat();
-      preAlterTableProperties.schema = schema(catalogProperties, hmsTable, null);
+      preAlterTableProperties.schema = schema(catalogProperties, hmsTable, Collections.emptySet());
       preAlterTableProperties.partitionKeys = hmsTable.getPartitionKeys();
 
       context.getProperties().put(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE, "true");
@@ -814,16 +816,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     if (properties.getProperty(InputFormatConfig.TABLE_SCHEMA) != null) {
       return SchemaParser.fromJson(properties.getProperty(InputFormatConfig.TABLE_SCHEMA));
-    } else if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
-      // Add partitioning columns to the original column list before creating the Iceberg Schema
-      List<FieldSchema> cols = Lists.newArrayList(hmsTable.getSd().getCols());
-      cols.addAll(hmsTable.getPartitionKeys());
-      Schema schema = HiveSchemaUtil.convert(cols, autoConversion);
-      return getSchemaWithIdentifierFields(schema, identifierFields);
-    } else {
-      Schema schema = HiveSchemaUtil.convert(hmsTable.getSd().getCols(), autoConversion);
-      return getSchemaWithIdentifierFields(schema, identifierFields);
     }
+    List<FieldSchema> cols = Lists.newArrayList(hmsTable.getSd().getCols());
+    if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
+      cols.addAll(hmsTable.getPartitionKeys());
+    }
+    Schema schema = HiveSchemaUtil.convert(cols, autoConversion);
+
+    return getSchemaWithIdentifierFields(schema, identifierFields);
   }
 
   private Schema getSchemaWithIdentifierFields(Schema schema, Set<String> identifierFields) {
