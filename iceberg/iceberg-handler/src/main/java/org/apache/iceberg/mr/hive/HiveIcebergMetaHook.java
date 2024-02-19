@@ -640,7 +640,13 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       throws MetaException {
     this.catalogProperties = getCatalogProperties(table);
     this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
-    Map<String, PartitionField> partitionFieldMap = icebergTable.spec().fields().stream()
+    truncatePartitionBySpec(icebergTable, partNames, icebergTable.newDelete());
+    context.putToProperties("truncateSkipDataDeletion", "true");
+  }
+
+  public static void truncatePartitionBySpec(Table table, List<String> partNames, DeleteFiles delete)
+      throws MetaException {
+    Map<String, PartitionField> partitionFieldMap = table.spec().fields().stream()
         .collect(Collectors.toMap(PartitionField::name, Function.identity()));
     Expression finalExp = CollectionUtils.isEmpty(partNames) ? Expressions.alwaysTrue() : Expressions.alwaysFalse();
     if (partNames != null) {
@@ -657,8 +663,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           }
           if (partitionFieldMap.containsKey(entry.getKey())) {
             PartitionField partitionField = partitionFieldMap.get(entry.getKey());
-            Type resultType = partitionField.transform().getResultType(icebergTable.schema()
-                    .findField(partitionField.sourceId()).type());
+            Type resultType = partitionField.transform().getResultType(table.schema()
+                .findField(partitionField.sourceId()).type());
             TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
             Object value = Conversions.fromPartitionString(resultType, partColValue);
             Iterable iterable = () -> Collections.singletonList(value).iterator();
@@ -678,10 +684,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       }
     }
 
-    DeleteFiles delete = icebergTable.newDelete();
     delete.deleteFromRowFilter(finalExp);
     delete.commit();
-    context.putToProperties("truncateSkipDataDeletion", "true");
   }
 
   @Override public boolean createHMSTableInHook() {

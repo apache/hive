@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -481,7 +482,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
           .orElse(RewritePolicy.DEFAULT.name()));
 
-      commitOverwrite(table, branchName, startTime, filesForCommit, rewritePolicy);
+      String partitionSpec = outputTable.jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(Context.compactPartition))
+          .orElse(StringUtils.EMPTY);
+
+      commitOverwrite(table, branchName, startTime, filesForCommit, rewritePolicy, partitionSpec);
     }
   }
 
@@ -569,7 +575,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param rewritePolicy The rewrite policy to use for the insert overwrite commit
    */
   private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results,
-      RewritePolicy rewritePolicy) {
+      RewritePolicy rewritePolicy, String partitionSpec) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
       Transaction transaction = table.newTransaction();
@@ -577,6 +583,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         DeleteFiles delete = transaction.newDelete();
         delete.deleteFromRowFilter(Expressions.alwaysTrue());
         delete.commit();
+      } else if (rewritePolicy == RewritePolicy.SINGLE_PARTITION) {
+        try {
+          HiveIcebergMetaHook.truncatePartitionBySpec(table, Arrays.asList(partitionSpec), transaction.newDelete());
+        } catch (Exception e) {
+          throw new RuntimeException("Failed truncating partitions", e);
+        }
       }
       ReplacePartitions overwrite = transaction.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);

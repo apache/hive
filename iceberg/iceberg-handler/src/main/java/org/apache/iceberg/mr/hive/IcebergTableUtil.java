@@ -85,7 +85,7 @@ public class IcebergTableUtil {
     return getTable(configuration, properties, skipCache);
   }
 
-  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  public static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     return getTable(configuration, hmsTable, false);
   }
 

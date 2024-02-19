@@ -27,9 +27,12 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -154,6 +157,21 @@ public final class PartitionUtils {
         // Don't request any locks here, as the table has already been locked.
         outputs.add(new WriteEntity(p, writeType));
       }
+    }
+  }
+
+  public static Partition getPartitionFromNonNativeTable(Table table, Map<String, String> partitionSpec) throws SemanticException {
+    if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+      table.getStorageHandler().validatePartSpec(table, partitionSpec);
+      try {
+        String partName = Warehouse.makePartName(partitionSpec, false);
+        return new DummyPartition(table, partName, partitionSpec);
+      } catch (MetaException e) {
+        throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+      }
+    }
+    else {
+      throw new SemanticException("Unable to construct a dummy partition for a native table.");
     }
   }
 }

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -133,7 +134,12 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       }
     } else {
       Map<String, String> partitionSpec = desc.getPartitionSpec();
-      partitions = context.getDb().getPartitions(table, partitionSpec);
+      if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+        Partition partition = PartitionUtils.getPartitionFromNonNativeTable(table, partitionSpec);
+        partitions.add(partition);
+      } else {
+        partitions = context.getDb().getPartitions(table, partitionSpec);
+      }
       if (partitions.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       } else if (partitions.isEmpty()) {

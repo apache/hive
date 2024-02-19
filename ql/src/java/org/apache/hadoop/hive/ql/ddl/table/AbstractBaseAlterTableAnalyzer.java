@@ -22,6 +22,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -31,6 +33,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -95,11 +98,16 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
       // ReadEntity as no lock.
       re.noLockNeeded();
       inputs.add(re);
+      Partition partition;
 
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
         // Fully specified partition spec
-        Partition part = PartitionUtils.getPartition(db, table, partitionSpec, true);
-        outputs.add(new WriteEntity(part, writeType));
+        if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+          partition = PartitionUtils.getPartitionFromNonNativeTable(table, partitionSpec);
+        } else {
+          partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
+        }
+        outputs.add(new WriteEntity(partition, writeType));
       } else {
         // Partial partition spec supplied. Make sure this is allowed.
         if (!AlterTableType.SUPPORT_PARTIAL_PARTITION_SPEC.contains(op)) {

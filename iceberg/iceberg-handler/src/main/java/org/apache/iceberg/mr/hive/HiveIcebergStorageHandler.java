@@ -1125,8 +1125,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // If the table is empty we don't have any danger that some data can get lost.
         return;
       }
-      if (RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, RewritePolicy.DEFAULT.name())) ==
-          RewritePolicy.ALL_PARTITIONS) {
+      RewritePolicy rewritePolicy = RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname,
+          RewritePolicy.DEFAULT.name()));
+      if (rewritePolicy == RewritePolicy.ALL_PARTITIONS || rewritePolicy == RewritePolicy.SINGLE_PARTITION) {
         // Table rewriting has special logic as part of IOW that handles the case when table had a partition evolution
         return;
       }
