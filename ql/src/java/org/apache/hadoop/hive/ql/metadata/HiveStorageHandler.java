@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -750,6 +751,11 @@ public interface HiveStorageHandler extends Configurable {
     return true;
   }
 
+  default Pair<Boolean, ErrorMsg> isEligibleForCompaction(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec) {
+    throw new UnsupportedOperationException("Storage handler does not support validating eligibility for compaction");
+  }
+
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
@@ -777,6 +783,16 @@ public interface HiveStorageHandler extends Configurable {
             "for a table.");
   }
 
+  default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table, 
+      Map<String, String> partialPartSpec) throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partitions for a table.");
+  }
+
+  default Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partSpec) 
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partition for a table.");
+  }
+  
   default boolean supportsMergeFiles() {
     return false;
   }

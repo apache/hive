@@ -480,6 +480,8 @@ public enum ErrorMsg {
   INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
   TABLE_META_REF_NOT_SUPPORTED(10431, "Table Meta Ref extension is not supported for table {0}.", true),
   COMPACTION_REFUSED(10432, "Compaction request for {0}.{1}{2} is refused, details: {3}.", true),
+  COMPACTION_PARTITION_EVOLUTION(10438, "Compaction for {0}.{1} on partition level is not allowed on a table that has undergone partition evolution", true),
+  COMPACTION_NON_IDENTITY_PARTITION_SPEC(10439, "Compaction for {0}.{1} is not supported on the table with non-identity partition spec", true),
   CBO_IS_REQUIRED(10433,
           "The following functionality requires CBO (" + HiveConf.ConfVars.HIVE_CBO_ENABLED.varname + "): {0}", true),
   CTLF_UNSUPPORTED_FORMAT(10434, "CREATE TABLE LIKE FILE is not supported by the ''{0}'' file format", true),

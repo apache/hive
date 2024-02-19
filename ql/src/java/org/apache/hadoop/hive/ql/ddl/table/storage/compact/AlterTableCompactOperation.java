@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 
+import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -60,6 +61,13 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     Table table = context.getDb().getTable(desc.getTableName());
     if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, table.getDbName(), table.getTableName());
+    }
+    
+    if (table.getStorageHandler() != null) {
+      Pair<Boolean, ErrorMsg> result = table.getStorageHandler().isEligibleForCompaction(table, desc.getPartitionSpec());
+      if (!result.getLeft()) {
+        throw new HiveException(result.getRight(), table.getDbName(), table.getTableName());
+      }
     }
 
     Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
