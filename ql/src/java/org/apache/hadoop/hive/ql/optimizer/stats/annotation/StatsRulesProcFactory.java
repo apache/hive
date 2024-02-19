@@ -169,8 +169,13 @@ public class StatsRulesProcFactory {
       Table table = tsop.getConf().getTableMetadata();
 
       try {
-        // gather statistics for the first time and the attach it to table scan operator
-        Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
+        Statistics stats;
+        if (table.isMaterializedTable()) {
+          stats = tsop.getStatistics();
+        } else {
+          // gather statistics for the first time and attach it to table scan operator
+          stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
+        }
 
         stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
         tsop.setStatistics(stats);

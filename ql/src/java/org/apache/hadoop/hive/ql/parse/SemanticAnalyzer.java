@@ -226,6 +226,7 @@ import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
@@ -256,6 +257,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
@@ -8174,6 +8176,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     FileSinkOperator fso = (FileSinkOperator) output;
     fso.getConf().setTable(destinationTable);
+    if (destTableIsMaterialization) {
+      ctx.addMaterializedTableSource(destinationTable.getFullTableName(), fso);
+    }
     // the following code is used to collect column stats when
     // hive.stats.autogather=true
     // and it is an insert overwrite or insert into table
@@ -12142,6 +12147,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Operator output = putOpInsertMap(op, rwsch);
+
+    if (tab.isMaterializedTable()) {
+      final FileSinkOperator source = ctx.getMaterializedTableSource(tab.getFullTableName());
+      final Statistics stats = source.getStatistics().clone();
+      final List<ColStatistics> sourceColStatsList = stats.getColumnStats();
+      final List<String> colNames = tab.getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
+      if (sourceColStatsList.size() != colNames.size()) {
+        throw new IllegalStateException(String.format(
+            "The size of col stats must be equal to that of schema. Stats = %s, Schema = %s",
+            sourceColStatsList, colNames));
+      }
+      final List<ColStatistics> colStatsList = new ArrayList<>(sourceColStatsList.size());
+      for (int i = 0; i < sourceColStatsList.size(); i++) {
+        final ColStatistics colStats = sourceColStatsList.get(i).clone();
+        // FileSinkOperator stores column stats with internal names such as "_col1"
+        colStats.setColumnName(colNames.get(i));
+        colStatsList.add(colStats);
+      }
+      stats.setColumnStats(colStatsList);
+      top.setStatistics(stats);
+    }
 
     LOG.debug("Created Table Plan for {} {}", alias, op);
 

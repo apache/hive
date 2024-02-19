@@ -45,9 +45,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -140,6 +142,7 @@ public class Context {
   private AtomicInteger sequencer = new AtomicInteger();
 
   private final Map<String, Table> cteTables = new HashMap<String, Table>();
+  private final Map<TableName, FileSinkOperator> cteSources = new HashMap<>();
 
   // Keep track of the mapping from load table desc to the output and the lock
   private final Map<LoadTableDesc, WriteEntity> loadTableOutputMap =
@@ -1227,6 +1230,14 @@ public class Context {
 
   public void addMaterializedTable(String cteName, Table table) {
     cteTables.put(cteName, table);
+  }
+
+  public FileSinkOperator getMaterializedTableSource(TableName tableName) {
+    return cteSources.get(tableName);
+  }
+
+  public void addMaterializedTableSource(TableName tableName, FileSinkOperator operator) {
+    cteSources.put(tableName, operator);
   }
 
   public AtomicInteger getSequencer() {
