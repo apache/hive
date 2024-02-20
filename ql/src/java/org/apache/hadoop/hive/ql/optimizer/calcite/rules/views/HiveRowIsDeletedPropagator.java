@@ -62,6 +62,11 @@ import static java.util.Arrays.asList;
  */
 public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
 
+  private static final String ANY_DELETED_COLUMN_NAME = "_any_deleted";
+  private static final String ANY_INSERTED_COLUMN_NAME = "_any_inserted";
+  private static final String DELETED_COLUMN_NAME = "_deleted";
+  private static final String INSERTED_COLUMN_NAME = "_inserted";
+
   private final RelBuilder relBuilder;
   private final ReflectUtil.MethodDispatcher<RelNode> dispatcher;
 
@@ -137,8 +142,8 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     }
     String rowIsDeletedName = projectNames.remove(rowIsDeletedField.getIndex());
     projectNames.add(rowIsDeletedName);
-    projectNames.add("_deleted");
-    projectNames.add("_inserted");
+    projectNames.add(DELETED_COLUMN_NAME);
+    projectNames.add(INSERTED_COLUMN_NAME);
 
     // Note: as a nature of Calcite if row schema of TS and the new Project would be exactly the same no
     // Project is created.
@@ -255,8 +260,8 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     // Create derived expressions
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftDeleted, rightDeleted));
     projects.add(rexBuilder.makeCall(SqlStdOperatorTable.OR, leftInserted, rightInserted));
-    projectNames.add("_any_deleted");
-    projectNames.add("_any_inserted");
+    projectNames.add(ANY_DELETED_COLUMN_NAME);
+    projectNames.add(ANY_INSERTED_COLUMN_NAME);
 
     // Create input refs to derived expressions in project
     RelDataType boolIntType = relBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN);
