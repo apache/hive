@@ -107,7 +107,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       return false;
     }
     Aggregate oldAggRel = (Aggregate) call.rels[0];
-    return containsAvgStddevVarCall(oldAggRel.getAggCallList());
+    return containsAvgStddevVarCall(oldAggRel.getAggCallList(), oldAggRel.getInput());
   }
 
   public void onMatch(RelOptRuleCall ruleCall) {
@@ -120,10 +120,20 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
    *
    * @param aggCallList List of aggregate calls
    */
-  private boolean containsAvgStddevVarCall(List<AggregateCall> aggCallList) {
+  private boolean containsAvgStddevVarCall(List<AggregateCall> aggCallList, RelNode input) {
     for (AggregateCall call : aggCallList) {
       if (isReducible(call.getAggregation().getKind())) {
-        return true;
+        assert call.getArgList().size() == 1;
+        final RelDataType inputType = getFieldType(input, call.getArgList().get(0));
+        switch (inputType.getSqlTypeName()) {
+          case VARCHAR:
+          case CHAR:
+            // The UDFs try to decode string values as double. The behavior is not simple enough when the source data
+            // includes records which can't be decoded. So, Hive fallbacks to the original behavior in that case.
+            return false;
+          default:
+            return true;
+        }
       }
     }
     return false;
@@ -210,10 +220,10 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       switch (kind) {
       case SUM0:
         // replace original SUM0(x) with COALESCE(SUM(x), 0)
-        return reduceSum0(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
+        return reduceSum0(oldAggRel, oldCall, newCalls, aggCallMapping);
       case AVG:
         // replace original AVG(x) with SUM(x) / COUNT(x)
-        return reduceAvg(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
+        return reduceAvg(oldAggRel, oldCall, newCalls, aggCallMapping);
       case STDDEV_POP:
         // replace original STDDEV_POP(x) with
         //   SQRT(
@@ -283,31 +293,14 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       Aggregate oldAggRel,
       AggregateCall oldCall,
       List<AggregateCall> newCalls,
-      Map<AggregateCall, RexNode> aggCallMapping,
-      List<RexNode> inputExprs) {
+      Map<AggregateCall, RexNode> aggCallMapping) {
     final int nGroups = oldAggRel.getGroupCount();
     final RexBuilder rexBuilder = oldAggRel.getCluster().getRexBuilder();
     final RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
     final int iAvgInput = oldCall.getArgList().get(0);
     final RelDataType sum0InputType = typeFactory.createTypeWithNullability(
         getFieldType(oldAggRel.getInput(), iAvgInput), true);
-    final RelDataType sumReturnType = getSumReturnType(
-        rexBuilder.getTypeFactory(), sum0InputType);
-    final AggregateCall sumCall =
-        AggregateCall.create(
-            new HiveSqlSumAggFunction(
-                oldCall.isDistinct(),
-                ReturnTypes.explicit(sumReturnType),
-                oldCall.getAggregation().getOperandTypeInference(),
-                oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
-            oldCall.isDistinct(),
-            oldCall.isApproximate(),
-            oldCall.getArgList(),
-            oldCall.filterArg,
-            oldAggRel.getGroupCount(),
-            oldAggRel.getInput(),
-            null,
-            null);
+    final AggregateCall sumCall = createSumCall(oldAggRel, oldCall, rexBuilder, sum0InputType);
 
     RexNode refSum =
         rexBuilder.addAggCall(sumCall,
@@ -327,48 +320,15 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       Aggregate oldAggRel,
       AggregateCall oldCall,
       List<AggregateCall> newCalls,
-      Map<AggregateCall, RexNode> aggCallMapping,
-      List<RexNode> inputExprs) {
+      Map<AggregateCall, RexNode> aggCallMapping) {
     final int nGroups = oldAggRel.getGroupCount();
     final RexBuilder rexBuilder = oldAggRel.getCluster().getRexBuilder();
     final RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
     final int iAvgInput = oldCall.getArgList().get(0);
     final RelDataType avgInputType = typeFactory.createTypeWithNullability(
         getFieldType(oldAggRel.getInput(), iAvgInput), true);
-    final RelDataType sumReturnType = getSumReturnType(
-        rexBuilder.getTypeFactory(), avgInputType);
-    final AggregateCall sumCall =
-        AggregateCall.create(
-            new HiveSqlSumAggFunction(
-                oldCall.isDistinct(),
-                ReturnTypes.explicit(sumReturnType),
-                oldCall.getAggregation().getOperandTypeInference(),
-                oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
-            oldCall.isDistinct(),
-            oldCall.isApproximate(),
-            oldCall.getArgList(),
-            oldCall.filterArg,
-            oldAggRel.getGroupCount(),
-            oldAggRel.getInput(),
-            null,
-            null);
-    RelDataType countRetType = typeFactory.createTypeWithNullability(
-        typeFactory.createSqlType(SqlTypeName.BIGINT), true);
-    final AggregateCall countCall =
-        AggregateCall.create(
-            new HiveSqlCountAggFunction(
-                oldCall.isDistinct(),
-                ReturnTypes.explicit(countRetType),
-                oldCall.getAggregation().getOperandTypeInference(),
-                oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.COUNT,
-            oldCall.isDistinct(),
-            oldCall.isApproximate(),
-            oldCall.getArgList(),
-            oldCall.filterArg,
-            oldAggRel.getGroupCount(),
-            oldAggRel.getInput(),
-            countRetType,
-            null);
+    final AggregateCall sumCall = createSumCall(oldAggRel, oldCall, rexBuilder, avgInputType);
+    final AggregateCall countCall = createCountCall(oldAggRel, oldCall, typeFactory);
 
     // NOTE:  these references are with respect to the output
     // of newAggRel
@@ -395,6 +355,45 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final RexNode divideRef =
         rexBuilder.makeCall(SqlStdOperatorTable.DIVIDE, numeratorRef, denominatorRef);
     return rexBuilder.makeCast(oldCall.getType(), divideRef);
+  }
+
+  private static AggregateCall createSumCall(Aggregate oldAggRel, AggregateCall oldCall, RexBuilder rexBuilder,
+      RelDataType sumInputType) {
+    final RelDataType sumReturnType = getSumReturnType(rexBuilder.getTypeFactory(), sumInputType);
+    return AggregateCall.create(
+        new HiveSqlSumAggFunction(
+            oldCall.isDistinct(),
+            ReturnTypes.explicit(sumReturnType),
+            oldCall.getAggregation().getOperandTypeInference(),
+            oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
+        oldCall.isDistinct(),
+        oldCall.isApproximate(),
+        oldCall.getArgList(),
+        oldCall.filterArg,
+        oldAggRel.getGroupCount(),
+        oldAggRel.getInput(),
+        null,
+        null);
+  }
+
+  private static AggregateCall createCountCall(Aggregate oldAggRel, AggregateCall oldCall,
+      RelDataTypeFactory typeFactory) {
+    RelDataType countRetType = typeFactory.createTypeWithNullability(
+        typeFactory.createSqlType(SqlTypeName.BIGINT), true);
+    return AggregateCall.create(
+        new HiveSqlCountAggFunction(
+            oldCall.isDistinct(),
+            ReturnTypes.explicit(countRetType),
+            oldCall.getAggregation().getOperandTypeInference(),
+            oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.COUNT,
+        oldCall.isDistinct(),
+        oldCall.isApproximate(),
+        oldCall.getArgList(),
+        oldCall.filterArg,
+        oldAggRel.getGroupCount(),
+        oldAggRel.getInput(),
+        countRetType,
+        null);
   }
 
   private RexNode reduceStddev(
@@ -484,22 +483,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
         rexBuilder.makeCall(
             SqlStdOperatorTable.MULTIPLY, sumArgCast, sumArgCast);
 
-    RelDataType countRetType = typeFactory.createTypeWithNullability(typeFactory.createSqlType(SqlTypeName.BIGINT), true);
-    final AggregateCall countArgAggCall =
-        AggregateCall.create(
-            new HiveSqlCountAggFunction(
-                oldCall.isDistinct(),
-                ReturnTypes.explicit(countRetType),
-                oldCall.getAggregation().getOperandTypeInference(),
-                oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.COUNT,
-            oldCall.isDistinct(),
-            oldCall.isApproximate(),
-            oldCall.getArgList(),
-            oldCall.filterArg,
-            oldAggRel.getGroupCount(),
-            oldAggRel.getInput(),
-            countRetType,
-            null);
+    final AggregateCall countArgAggCall = createCountCall(oldAggRel, oldCall, typeFactory);
 
     final RexNode countArg =
         rexBuilder.addAggCall(countArgAggCall,
@@ -590,13 +574,13 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
         newCalls);
   }
 
-  private RelDataType getFieldType(RelNode relNode, int i) {
+  private static RelDataType getFieldType(RelNode relNode, int i) {
     final RelDataTypeField inputField =
         relNode.getRowType().getFieldList().get(i);
     return inputField.getType();
   }
 
-  private RelDataType getSumReturnType(RelDataTypeFactory typeFactory,
+  private static RelDataType getSumReturnType(RelDataTypeFactory typeFactory,
       RelDataType inputType) {
     switch (inputType.getSqlTypeName()) {
       case TINYINT:

@@ -21,10 +21,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[round(/($0, $1), 3)], _o__c1=[round(POWER(/(-($2, /(*($3, $3), $1)), $1), 0.5:DECIMAL(2, 1)), 3)], _o__c2=[round(POWER(/(-($2, /(*($3, $3), $1)), CASE(=($1, 1), null:BIGINT, -($1, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c3=[round(/(-($2, /(*($3, $3), $1)), $1), 3)], _o__c4=[round(/(-($2, /(*($3, $3), $1)), CASE(=($1, 1), null:BIGINT, -($1, 1))), 3)])
-  HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[count($0)], agg#2=[sum($2)], agg#3=[sum($1)])
-    HiveProject($f0=[$0], $f00=[CAST($0):DOUBLE], $f2=[*(CAST($0):DOUBLE, CAST($0):DOUBLE)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
+HiveProject(_o__c0=[round($0, 3)], _o__c1=[round($1, 3)], _o__c2=[round($2, 3)], _o__c3=[round($3, 3)], _o__c4=[round($4, 3)])
+  HiveAggregate(group=[{}], agg#0=[avg($0)], agg#1=[stddev_pop($0)], agg#2=[stddev_samp($0)], agg#3=[var_pop($0)], agg#4=[var_samp($0)])
+    HiveTableScan(table=[[default, src]], table:alias=[src])
 
 PREHOOK: query: SELECT
   ROUND(AVG(key), 3),
@@ -70,10 +69,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[round(/($0, $1), 3)], _o__c1=[round(POWER(/(-($2, /(*($3, $3), $1)), $1), 0.5:DECIMAL(2, 1)), 3)], _o__c2=[round(POWER(/(-($2, /(*($3, $3), $1)), CASE(=($1, 1), null:BIGINT, -($1, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c3=[round(/(-($2, /(*($3, $3), $1)), $1), 3)], _o__c4=[round(/(-($2, /(*($3, $3), $1)), CASE(=($1, 1), null:BIGINT, -($1, 1))), 3)])
-  HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[count($0)], agg#2=[sum($2)], agg#3=[sum($1)])
-    HiveProject($f0=[$1], $f00=[CAST($1):DOUBLE], $f2=[*(CAST($1):DOUBLE, CAST($1):DOUBLE)])
-      HiveTableScan(table=[[default, src]], table:alias=[src])
+HiveProject(_o__c0=[round($0, 3)], _o__c1=[round($1, 3)], _o__c2=[round($2, 3)], _o__c3=[round($3, 3)], _o__c4=[round($4, 3)])
+  HiveAggregate(group=[{}], agg#0=[avg($1)], agg#1=[stddev_pop($1)], agg#2=[stddev_samp($1)], agg#3=[var_pop($1)], agg#4=[var_samp($1)])
+    HiveTableScan(table=[[default, src]], table:alias=[src])
 
 PREHOOK: query: SELECT
   ROUND(AVG(value), 3),
@@ -95,7 +93,7 @@ FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN CBO
 WITH combined AS (
   SELECT key AS combined_value FROM src
@@ -129,9 +127,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[round(/($0, $1), 3)], _o__c1=[round(POWER(/(-($2, /(*($3, $3), $1)), $1), 0.5:DECIMAL(2, 1)), 3)], _o__c2=[round(POWER(/(-($2, /(*($3, $3), $1)), CASE(=($1, 1), null:BIGINT, -($1, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c3=[round(/(-($2, /(*($3, $3), $1)), $1), 3)], _o__c4=[round(/(-($2, /(*($3, $3), $1)), CASE(=($1, 1), null:BIGINT, -($1, 1))), 3)])
-  HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[count($0)], agg#2=[sum($2)], agg#3=[sum($1)])
-    HiveProject($f0=[$0], $f00=[CAST($0):DOUBLE], $f2=[*(CAST($0):DOUBLE, CAST($0):DOUBLE)])
+HiveProject(_o__c0=[round($0, 3)], _o__c1=[round($1, 3)], _o__c2=[round($2, 3)], _o__c3=[round($3, 3)], _o__c4=[round($4, 3)])
+  HiveAggregate(group=[{}], agg#0=[avg($0)], agg#1=[stddev_pop($0)], agg#2=[stddev_samp($0)], agg#3=[var_pop($0)], agg#4=[var_samp($0)])
+    HiveProject(combined_value=[$0])
       HiveUnion(all=[true])
         HiveProject(combined_value=[$0])
           HiveTableScan(table=[[default, src]], table:alias=[src])
@@ -168,7 +166,7 @@ FROM combined
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-130.091	164.735	164.818	27137.705	27164.87
+260.182	142.927	143.07	20428.073	20469.011
 PREHOOK: query: SELECT
   ROUND(AVG(key), 3),
   ROUND(STDDEV_POP(key), 3),
