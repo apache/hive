@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -65,6 +64,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
@@ -142,7 +142,7 @@ public class Context {
   private AtomicInteger sequencer = new AtomicInteger();
 
   private final Map<String, Table> cteTables = new HashMap<String, Table>();
-  private final Map<TableName, FileSinkOperator> cteSources = new HashMap<>();
+  private final Map<TableName, Statistics> cteTableStats = new HashMap<>();
 
   // Keep track of the mapping from load table desc to the output and the lock
   private final Map<LoadTableDesc, WriteEntity> loadTableOutputMap =
@@ -1228,16 +1228,14 @@ public class Context {
     return cteTables.get(cteName);
   }
 
-  public void addMaterializedTable(String cteName, Table table) {
+  public void addMaterializedTable(String cteName, Table table, Statistics statistics) {
     cteTables.put(cteName, table);
+    cteTables.put(table.getFullyQualifiedName(), table);
+    cteTableStats.put(table.getFullTableName(), statistics);
   }
 
-  public FileSinkOperator getMaterializedTableSource(TableName tableName) {
-    return cteSources.get(tableName);
-  }
-
-  public void addMaterializedTableSource(TableName tableName, FileSinkOperator operator) {
-    cteSources.put(tableName, operator);
+  public Statistics getMaterializedTableStats(TableName tableName) {
+    return cteTableStats.get(tableName);
   }
 
   public AtomicInteger getSequencer() {

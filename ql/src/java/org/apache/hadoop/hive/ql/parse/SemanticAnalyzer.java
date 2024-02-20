@@ -1600,9 +1600,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("{} will be materialized into {}", cteName, location);
     cte.source = analyzer;
 
-    ctx.addMaterializedTable(cteName, table);
+    ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp(), table));
 
     return table;
+  }
+
+  static Statistics getMaterializedTableStats(Operator<?> sinkOp, Table table) {
+    final Statistics tableStats = sinkOp.getStatistics().clone();
+    final List<ColStatistics> sourceColStatsList = tableStats.getColumnStats();
+    final List<String> colNames = table.getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
+    if (sourceColStatsList.size() != colNames.size()) {
+      throw new IllegalStateException(String.format(
+          "The size of col stats must be equal to that of schema. Stats = %s, Schema = %s",
+          sourceColStatsList, colNames));
+    }
+    final List<ColStatistics> colStatsList = new ArrayList<>(sourceColStatsList.size());
+    for (int i = 0; i < sourceColStatsList.size(); i++) {
+      final ColStatistics colStats = sourceColStatsList.get(i);
+      // FileSinkOperator stores column stats with internal names such as "_col1"
+      colStats.setColumnName(colNames.get(i));
+      colStatsList.add(colStats);
+    }
+    tableStats.setColumnStats(colStatsList);
+    return tableStats;
   }
 
 
@@ -8176,9 +8196,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     FileSinkOperator fso = (FileSinkOperator) output;
     fso.getConf().setTable(destinationTable);
-    if (destTableIsMaterialization) {
-      ctx.addMaterializedTableSource(destinationTable.getFullTableName(), fso);
-    }
     // the following code is used to collect column stats when
     // hive.stats.autogather=true
     // and it is an insert overwrite or insert into table
@@ -12149,24 +12166,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator output = putOpInsertMap(op, rwsch);
 
     if (tab.isMaterializedTable()) {
-      final FileSinkOperator source = ctx.getMaterializedTableSource(tab.getFullTableName());
-      final Statistics stats = source.getStatistics().clone();
-      final List<ColStatistics> sourceColStatsList = stats.getColumnStats();
-      final List<String> colNames = tab.getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
-      if (sourceColStatsList.size() != colNames.size()) {
-        throw new IllegalStateException(String.format(
-            "The size of col stats must be equal to that of schema. Stats = %s, Schema = %s",
-            sourceColStatsList, colNames));
-      }
-      final List<ColStatistics> colStatsList = new ArrayList<>(sourceColStatsList.size());
-      for (int i = 0; i < sourceColStatsList.size(); i++) {
-        final ColStatistics colStats = sourceColStatsList.get(i).clone();
-        // FileSinkOperator stores column stats with internal names such as "_col1"
-        colStats.setColumnName(colNames.get(i));
-        colStatsList.add(colStats);
-      }
-      stats.setColumnStats(colStatsList);
-      top.setStatistics(stats);
+      // Clone Statistics just in case because multiple TableScanOperator can access the same CTE
+      top.setStatistics(ctx.getMaterializedTableStats(tab.getFullTableName()).clone());
     }
 
     LOG.debug("Created Table Plan for {} {}", alias, op);
