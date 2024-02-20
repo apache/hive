@@ -18,6 +18,10 @@
 -->
 <configuration>
     <property>
+        <name>hive.metastore.client.cache.v2.recordStats</name>
+        <value>true</value>
+    </property>
+    <property>
         <name>hive.in.test</name>
         <value>true</value>
         <description>Internal marker for test. Used for masking env-dependent values</description>
