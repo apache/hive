@@ -3199,19 +3199,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
           partitionNames.add(Warehouse.makeDynamicPartNameNoTrailingSeperator(details.fullSpec));
         }
       }
-      List<Partition> partitions = Hive.get().getPartitionsByNames(tbl, partitionNames);
-      for(Partition partition : partitions) {
-        LOG.debug("HMS partition spec: {}", partition.getSpec());
-        partitionDetailsMap.entrySet().parallelStream()
-            .filter(entry -> entry.getValue().fullSpec.equals(partition.getSpec()))
-            .findAny().ifPresent(entry -> {
-          entry.getValue().partition = partition;
-          entry.getValue().hasOldPartition = true;
-        });
+      try {
+        List<Partition> partitions = Hive.get().getPartitionsByNames(tbl, partitionNames);
+        for(Partition partition : partitions) {
+          LOG.debug("HMS partition spec: {}", partition.getSpec());
+          partitionDetailsMap.entrySet().parallelStream()
+              .filter(entry -> entry.getValue().fullSpec.equals(partition.getSpec()))
+              .findAny().ifPresent(entry -> {
+            entry.getValue().partition = partition;
+            entry.getValue().hasOldPartition = true;
+          });
+        }
+        // no need to fetch partition again in tasks since we have already fetched partitions
+        // info in getPartitionsByNames()
+        fetchPartitionInfo = false;
+      } catch (HiveException e) {
+        // Failed to fetch partitions in some cases (e.g., partition number limit)
+        LOG.warn("Fetching partitions by names failed.", e);
       }
-      // no need to fetch partition again in tasks since we have already fetched partitions
-      // info in getPartitionsByNames()
-      fetchPartitionInfo = false;
     }
 
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
