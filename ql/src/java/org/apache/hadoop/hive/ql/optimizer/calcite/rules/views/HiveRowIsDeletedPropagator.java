@@ -89,7 +89,7 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     return rel;
   }
 
-  public static class Context {
+  public static final class Context {
     private final Map<Integer, RexNode> rowIdPredicates = new HashMap<>();
   }
 
@@ -309,7 +309,7 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
         relNode.getRowType().getFieldList().get(index).getType(), index);
   }
 
-  public Set<RexInputRef> findRexInputRefs(RexNode rexNode) {
+  private Set<RexInputRef> findRexInputRefs(RexNode rexNode) {
     Set<RexInputRef> rexTableInputRefs = new HashSet<>();
     RexVisitor<RexInputRef> visitor = new RexVisitorImpl<RexInputRef>(true) {
 
