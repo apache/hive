@@ -944,6 +944,34 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "Passed_Val = 123");
   }
 
+  @Test
+  public void testHplSqlProcedureWithDefaultParamCallingWithNamedParameterBinding() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1(num => 111);\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "default_val = 111");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithAllDefaultParamsCallingWithNamedParameterBinding() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s1 STRING default 'Default S1', s2 string default 'Default S2')\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1 || '=' || s2);\n" +
+            "END;\n" +
+            "p1(s2 => 'PassedValue S2');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Default S1=PassedValue S2");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
