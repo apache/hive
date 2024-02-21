@@ -5,10 +5,14 @@
   </property>
   <property>
     <name>tez.am.resource.memory.mb</name>
-    <value>256</value>
+    <value>512</value>
   </property>
   <property>
-    <name>hive.tez.container.size</name>
-    <value>512</value>
+    <name>tez.runtime.io.sort.mb</name>
+    <value>24</value>
+  </property>
+  <property>
+    <name>tez.counters.max</name>
+    <value>1024</value>
   </property>
 </configuration>

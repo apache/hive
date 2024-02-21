@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -41,18 +42,21 @@ import java.util.List;
 @InterfaceStability.Stable
 public interface HiveMetaHook {
 
-  public String ALTER_TABLE_OPERATION_TYPE = "alterTableOpType";
+  String ALTER_TABLE_OPERATION_TYPE = "alterTableOpType";
 
   // These should remain in sync with AlterTableType enum
-  public List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS");
+  List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS");
   String ALTERLOCATION = "ALTERLOCATION";
   String ALLOW_PARTITION_KEY_CHANGE = "allow_partition_key_change";
   String SET_PROPERTIES = "set_properties";
   String UNSET_PROPERTIES = "unset_properties";
 
-  String TABLE_TYPE = "table_type";
+  String TRANSLATED_TO_EXTERNAL = "TRANSLATED_TO_EXTERNAL";
 
+  String TABLE_TYPE = "table_type";
+  String EXTERNAL = "EXTERNAL";
   String ICEBERG = "ICEBERG";
+  
   String PROPERTIES_SEPARATOR = "'";
   String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
   String INITIALIZE_ROLLBACK_MIGRATION = "initialize_rollback_migration";
@@ -69,7 +73,7 @@ public interface HiveMetaHook {
    *
    * @param table new table definition
    */
-  public void preCreateTable(Table table)
+  void preCreateTable(Table table)
     throws MetaException;
 
   /**
@@ -78,7 +82,7 @@ public interface HiveMetaHook {
    *
    * @param table new table definition
    */
-  public void rollbackCreateTable(Table table)
+  void rollbackCreateTable(Table table)
     throws MetaException;
 
   /**
@@ -87,7 +91,7 @@ public interface HiveMetaHook {
    *
    * @param table new table definition
    */
-  public void commitCreateTable(Table table)
+  void commitCreateTable(Table table)
     throws MetaException;
 
   /**
@@ -96,7 +100,7 @@ public interface HiveMetaHook {
    *
    * @param table table definition
    */
-  public void preDropTable(Table table)
+  void preDropTable(Table table)
     throws MetaException;
 
   /**
@@ -117,7 +121,7 @@ public interface HiveMetaHook {
    *
    * @param table table definition
    */
-  public void rollbackDropTable(Table table)
+  void rollbackDropTable(Table table)
     throws MetaException;
 
   /**
@@ -129,7 +133,7 @@ public interface HiveMetaHook {
    * @param deleteData whether to delete data as well; this should typically
    * be ignored in the case of an external table
    */
-  public void commitDropTable(Table table, boolean deleteData)
+  void commitDropTable(Table table, boolean deleteData)
     throws MetaException;
 
   /**
@@ -138,7 +142,7 @@ public interface HiveMetaHook {
    *
    * @param table new table definition
    */
-  public default void preAlterTable(Table table, EnvironmentContext context) throws MetaException {
+  default void preAlterTable(Table table, EnvironmentContext context) throws MetaException {
     String alterOpType = (context == null || context.getProperties() == null) ?
         null : context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
     // By default allow only ADDPROPS and DROPPROPS.
@@ -174,11 +178,11 @@ public interface HiveMetaHook {
    * @param context context of the truncate operation
    * @throws MetaException
    */
-  public default void preTruncateTable(Table table, EnvironmentContext context) throws MetaException {
+  default void preTruncateTable(Table table, EnvironmentContext context) throws MetaException {
     preTruncateTable(table, context, null);
   }
 
-  public default void preTruncateTable(Table table, EnvironmentContext context, List<String> partNames) throws MetaException {
+  default void preTruncateTable(Table table, EnvironmentContext context, List<String> partNames) throws MetaException {
     // Do nothing
   }
 
@@ -195,6 +199,18 @@ public interface HiveMetaHook {
    * @param table
    */
   default void postGetTable(Table table) {
+    // Do nothing
+  }
+
+  /**
+   * Called before dropping the partitions from the table in the metastore during ALTER TABLE DROP PARTITION.
+   * @param table table whose partition needs to be dropped
+   * @param context context of the  operation
+   * @param partExprs List of partition expressions
+   * @throws MetaException
+   */
+  default void preDropPartitions(Table table,
+      EnvironmentContext context, List<Pair<Integer, byte[]>> partExprs) throws MetaException {
     // Do nothing
   }
 }

@@ -112,12 +112,13 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
 	numRows             	5                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	455                 
 	schema.name-mapping.default	[ {                 
@@ -278,12 +279,13 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
 	numRows             	5                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	116                 
 	schema.name-mapping.default	[ {                 
@@ -444,12 +446,13 @@ Table Parameters:
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
 	numRows             	5                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	schema.name-mapping.default	[ {                 

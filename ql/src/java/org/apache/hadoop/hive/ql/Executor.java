@@ -297,7 +297,7 @@ public class Executor {
   }
 
   private String getJobName() {
-    int maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+    int maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
     return Utilities.abbreviate(driverContext.getQueryString(), maxlen - 6);
   }
 
@@ -322,7 +322,7 @@ public class Executor {
   private void launchTasks(boolean noName, int jobCount, String jobName) throws HiveException {
     // Launch upto maxthreads tasks
     Task<?> task;
-    int maxthreads = HiveConf.getIntVar(driverContext.getConf(), HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
+    int maxthreads = HiveConf.getIntVar(driverContext.getConf(), HiveConf.ConfVars.EXEC_PARALLEL_THREAD_NUMBER);
     while ((task = taskQueue.getRunnable(maxthreads)) != null) {
       TaskRunner runner = launchTask(task, noName, jobName, jobCount);
       if (!runner.isRunning()) {
@@ -346,7 +346,7 @@ public class Executor {
     TaskRunner taskRun = new TaskRunner(task, taskQueue);
     taskQueue.launching(taskRun);
 
-    if (HiveConf.getBoolVar(task.getConf(), HiveConf.ConfVars.EXECPARALLEL) && task.canExecuteInParallel()) {
+    if (HiveConf.getBoolVar(task.getConf(), HiveConf.ConfVars.EXEC_PARALLEL) && task.canExecuteInParallel()) {
       LOG.info("Starting task [" + task + "] in parallel");
       taskRun.start();
     } else {

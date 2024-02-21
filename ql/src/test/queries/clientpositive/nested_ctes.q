@@ -5,6 +5,7 @@ with
         select 1
     )
 select * from test1;
+
 with
     test2 as (
         with
@@ -36,3 +37,14 @@ with
         select * from t1
     )
 select * from test4;
+
+with
+    q1 as (
+        with t3 as (select 1)
+        select * from t3
+    ),
+    q2 as (
+        with t3 as (select * from q1)
+        select * from t3
+    )
+select * from q2;

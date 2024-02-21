@@ -205,12 +205,12 @@ public class TestJdbcDriver2 {
     // Create test database and base tables once for all the test
     Class.forName(driverName);
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
+    System.setProperty(ConfVars.HIVE_MAPRED_MODE.varname, "nonstrict");
     System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
     System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
-    System.setProperty(ConfVars.REPLCMENABLED.varname, "true");
-    System.setProperty(ConfVars.REPLCMDIR.varname, "cmroot");
+    System.setProperty(ConfVars.REPL_CM_ENABLED.varname, "true");
+    System.setProperty(ConfVars.REPL_CM_DIR.varname, "cmroot");
     con = getConnection(defaultDbName + ";create=true");
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
@@ -268,7 +268,6 @@ public class TestJdbcDriver2 {
 
     Statement stmt =  con.createStatement();
     stmt.execute("set " + ConfVars.SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
-    stmt.execute("set " + ConfVars.MERGE_SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
     stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
     stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
         "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
@@ -2101,7 +2100,7 @@ public class TestJdbcDriver2 {
       String rline = res.getString(1);
       assertFalse(
           "set output must not contain hidden variables such as the metastore password:" + rline,
-          rline.contains(HiveConf.ConfVars.METASTOREPWD.varname)
+          rline.contains(HiveConf.ConfVars.METASTORE_PWD.varname)
               && !(rline.contains(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname)));
       // the only conf allowed to have the metastore pwd keyname is the hidden list configuration
       // value
@@ -2348,7 +2347,7 @@ public class TestJdbcDriver2 {
    */
   @Test
   public void testFetchFirstDfsCmds() throws Exception {
-    String wareHouseDir = conf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname);
+    String wareHouseDir = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
     execFetchFirst("dfs -ls " + wareHouseDir, DfsProcessor.DFS_RESULT_HEADER, false);
   }
 

@@ -19,13 +19,16 @@ package org.apache.hadoop.hive.ql.parse.relnodegen;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.metadata.RelColumnMapping;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
@@ -102,8 +105,9 @@ public class LateralViewPlan {
 
     this.lateralTableAlias = getTableAliasFromASTNode(selExprAST);
 
-    // The RexCall for the udtf function (e.g. inline)
-    RexCall udtfCall = getUDTFFunction(functionAST, inputRR);
+    // The RexCall for the lateral function (e.g. lateral(inline(), $0, $1, ...)), where
+    // the inputrefs are all retrieved from the input RelNode.
+    RexCall udtfCall = getLateralFunction(functionAST, inputRR, inputRel);
 
     // Column aliases provided by the query.
     List<String> columnAliases = getColumnAliasesFromASTNode(selExprAST, udtfCall);
@@ -114,7 +118,7 @@ public class LateralViewPlan {
 
     this.lateralViewRel = HiveTableFunctionScan.create(cluster,
         TraitsUtil.getDefaultTraitSet(cluster), ImmutableList.of(inputRel), udtfCall,
-        null, retType, null);
+        null, retType, createColumnMappings(inputRel));
   }
 
   public static void validateLateralView(ASTNode lateralView) throws SemanticException {
@@ -128,6 +132,18 @@ public class LateralViewPlan {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
     }
+  }
+
+  private RexCall getLateralFunction(ASTNode functionAST, RowResolver inputRR, RelNode inputRel)
+      throws SemanticException {
+    RexCall udtfCall = getUDTFFunction(functionAST, inputRR);
+    List<RexNode> operands = new ArrayList<>();
+    operands.add(udtfCall);
+    for (int i = 0; i < inputRel.getRowType().getFieldCount(); ++i) {
+      RelDataType type = inputRel.getRowType().getFieldList().get(i).getType();
+      operands.add(this.cluster.getRexBuilder().makeInputRef(type, i));
+    }
+    return (RexCall) this.cluster.getRexBuilder().makeCall(SqlStdOperatorTable.LATERAL, operands);
   }
 
   private RexCall getUDTFFunction(ASTNode functionAST, RowResolver inputRR)
@@ -246,8 +262,7 @@ public class LateralViewPlan {
       RexNode udtfCall, List<String> columnAliases) {
 
     // initialize allDataTypes and allDataTypeNames from the fields in the inputRel
-    List<RelDataType> allDataTypes = new ArrayList<>(
-        Lists.transform(inputRel.getRowType().getFieldList(), RelDataTypeField::getType));
+    List<RelDataType> allDataTypes = new ArrayList<>( Lists.transform(inputRel.getRowType().getFieldList(), RelDataTypeField::getType));
     List<String> allDataTypeNames = new ArrayList<>(
         Lists.transform(inputRel.getRowType().getFieldList(), RelDataTypeField::getName));
 
@@ -256,10 +271,20 @@ public class LateralViewPlan {
     Preconditions.checkState(retType.isStruct());
 
     // Add the type names and values from the udtf into the lists that will make up the
-    // return type.
+    // return type. Names need to be unique so add the table prefix
     allDataTypes.addAll(Lists.transform(retType.getFieldList(), RelDataTypeField::getType));
-    allDataTypeNames.addAll(columnAliases);
+    for (String s : columnAliases) {
+      allDataTypeNames.add(lateralTableAlias + "." + s);
+    }
 
     return cluster.getTypeFactory().createStructType(allDataTypes, allDataTypeNames);
+  }
+
+  private Set<RelColumnMapping> createColumnMappings(RelNode inputRel) {
+    Set<RelColumnMapping> colMappings = new HashSet<>();
+    for (int i = 0; i < inputRel.getRowType().getFieldCount(); ++i) {
+      colMappings.add(new RelColumnMapping(i, 0, i, false));
+    }
+    return colMappings;
   }
 }

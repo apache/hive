@@ -1,8 +1,8 @@
-PREHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc
+PREHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_truncate_part_evolution
-POSTHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc
+POSTHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_truncate_part_evolution

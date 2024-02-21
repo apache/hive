@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -333,7 +332,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   public static void raiseAcidTablesMustBeReadWithAcidReaderException(Configuration conf)
       throws IOException {
-    String hiveInputFormat = HiveConf.getVar(conf, ConfVars.HIVEINPUTFORMAT);
+    String hiveInputFormat = HiveConf.getVar(conf, ConfVars.HIVE_INPUT_FORMAT);
     if (hiveInputFormat.equals(HiveInputFormat.class.getName())) {
       throw new IOException(ErrorMsg.ACID_TABLES_MUST_BE_READ_WITH_ACID_READER.getErrorCodedMsg());
     } else {
@@ -717,8 +716,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       this.isVectorMode = Utilities.getIsVectorized(conf);
       this.forceThreadpool = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
       this.sarg = ConvertAstToSearchArg.createFromConf(conf);
-      minSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, DEFAULT_MIN_SPLIT_SIZE);
-      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMAXSPLITSIZE, DEFAULT_MAX_SPLIT_SIZE);
+      minSize = HiveConf.getLongVar(conf, ConfVars.MAPRED_MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
+      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPRED_MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
       String ss = conf.get(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
       if (ss == null || ss.equals(SplitStrategyKind.HYBRID.name())) {
         splitStrategyKind = SplitStrategyKind.HYBRID;

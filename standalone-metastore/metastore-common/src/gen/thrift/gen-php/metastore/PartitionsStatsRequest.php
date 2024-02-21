@@ -61,7 +61,7 @@ class PartitionsStatsRequest
         ),
         7 => array(
             'var' => 'engine',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
     );
@@ -93,7 +93,7 @@ class PartitionsStatsRequest
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
 
     public function __construct($vals = null)
     {

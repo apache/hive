@@ -83,6 +83,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.math.DoubleMath;
 
+import static org.apache.hadoop.hive.ql.exec.OperatorUtils.hasMoreOperatorsThan;
+
 /**
  * ConvertJoinMapJoin is an optimization that replaces a common join
  * (aka shuffle join) with a map join (aka broadcast or fragment replicate
@@ -111,7 +113,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     OptimizeTezProcContext context = (OptimizeTezProcContext) procCtx;
 
-    hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVEHASHTABLELOADFACTOR);
+    hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVE_HASHTABLE_LOAD_FACTOR);
     fastHashTableAvailable = context.conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED);
 
     JoinOperator joinOp = (JoinOperator) nd;
@@ -131,7 +133,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
-    boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
+    boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN) &
             !context.parseContext.getDisableMapJoin();
     if (!hiveConvertJoin) {
       // we are just converting to a common merge join operator. The shuffle
@@ -249,7 +251,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
                           TezBucketJoinProcCtx tezBucketJoinProcCtx,
                           LlapClusterStateForCompile llapInfo,
                           MapJoinConversion mapJoinConversion, int numBuckets) throws SemanticException {
-    if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)
+    if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DYNAMIC_PARTITION_HASHJOIN)
             && numBuckets > 1) {
       // DPHJ is disabled, only attempt BMJ or mapjoin
       return convertJoinBucketMapJoin(joinOp, context, mapJoinConversion, tezBucketJoinProcCtx);
@@ -404,7 +406,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   public MemoryMonitorInfo getMemoryMonitorInfo(
                                                 final HiveConf conf,
                                                 LlapClusterStateForCompile llapInfo) {
-    long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+    long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
     final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
     final int maxSlotsPerQuery = getMaxSlotsPerQuery(conf, llapInfo);
     final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
@@ -755,6 +757,21 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         LOG.debug("External table {} found in join and also could not provide statistics - disabling SMB join.", sb);
         return false;
       }
+      // GBY operators buffers one record. These are processed when ReduceRecordSources flushes the operator tree
+      // when end of record stream reached. If the tree has more than two GBY operators CommonMergeJoinOperator can
+      // not process all buffered records.
+      // HIVE-27788
+      if (parentOp.getParentOperators() != null) {
+        // Parent operator is RS and hasMoreOperatorsThan traverses until the next RS, so we start from grandparent
+        for (Operator<?> grandParent : parentOp.getParentOperators()) {
+          if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 1)) {
+            LOG.info("We cannot convert to SMB join " +
+                "because one of the join branches has more than one Group by operators in the same reducer.");
+            return false;
+          }
+        }
+      }
+
       // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
       // This is a workaround for now. Right fix would be to refactor code in the
       // MapRecordProcessor and ReduceRecordProcessor with respect to the sources.
@@ -1222,7 +1239,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         if (i != bigTablePosition) {
           Statistics parentStats = joinOp.getParentOperators().get(i).getStatistics();
           if (parentStats.getNumRows() >
-            HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPRODSMALLTABLEROWSTHRESHOLD)) {
+            HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPROD_SMALL_TABLE_ROWS_THRESHOLD)) {
             // if any of smaller side is estimated to generate more than
             // threshold rows we would disable mapjoin
             return null;
@@ -1311,7 +1328,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     }
     MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
     mapJoinDesc.setHybridHashJoin(HiveConf.getBoolVar(context.conf,
-        HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN));
+        HiveConf.ConfVars.HIVE_USE_HYBRIDGRACE_HASHJOIN));
     List<ExprNodeDesc> joinExprs = mapJoinDesc.getKeys().values().iterator().next();
     if (joinExprs.size() == 0) {  // In case of cross join, we disable hybrid grace hash join
       mapJoinDesc.setHybridHashJoin(false);
@@ -1568,8 +1585,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
   private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context)
       throws SemanticException {
-    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &&
-        context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)) {
+    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN) &&
+        context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DYNAMIC_PARTITION_HASHJOIN)) {
       if (convertJoinDynamicPartitionedHashJoin(joinOp, context)) {
         return;
       }
@@ -1600,7 +1617,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   private boolean checkNumberOfEntriesForHashTable(JoinOperator joinOp, int position,
           OptimizeTezProcContext context) {
     long max = HiveConf.getLongVar(context.parseContext.getConf(),
-            HiveConf.ConfVars.HIVECONVERTJOINMAXENTRIESHASHTABLE);
+            HiveConf.ConfVars.HIVE_CONVERT_JOIN_MAX_ENTRIES_HASHTABLE);
     if (max < 1) {
       // Max is disabled, we can safely return true
       return true;
@@ -1635,7 +1652,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   private boolean checkShuffleSizeForLargeTable(JoinOperator joinOp, int position,
           OptimizeTezProcContext context) {
     long max = HiveConf.getLongVar(context.parseContext.getConf(),
-            HiveConf.ConfVars.HIVECONVERTJOINMAXSHUFFLESIZE);
+            HiveConf.ConfVars.HIVE_CONVERT_JOIN_MAX_SHUFFLE_SIZE);
     if (max < 1) {
       // Max is disabled, we can safely return false
       return false;

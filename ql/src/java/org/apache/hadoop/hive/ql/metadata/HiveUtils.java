@@ -298,6 +298,10 @@ public final class HiveUtils {
         quotation.getQuotationChar());
   }
 
+  public static String unparseIdentifier(String identifier) {
+    return unparseIdentifier(identifier, Quotation.BACKTICKS);
+  }
+
   public static HiveStorageHandler getStorageHandler(
     Configuration conf, String className) throws HiveException {
 
@@ -463,5 +467,13 @@ public final class HiveUtils {
   public static Boolean isTableTag(String refName) {
     Matcher ref = TAG.matcher(refName);
     return ref.matches();
+  }
+
+  public static String getLowerCaseTableName(String refName) {
+    String[] refParts = refName.split("\\.");
+    if (refParts.length == 3 && SNAPSHOT_REF.matcher(refParts[2]).matches()) {
+      return (refParts[0] + "." + refParts[1]).toLowerCase() + "." + refParts[2];
+    }
+    return refName.toLowerCase();
   }
 }

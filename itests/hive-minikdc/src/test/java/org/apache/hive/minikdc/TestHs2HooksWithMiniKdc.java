@@ -50,12 +50,12 @@ public class TestHs2HooksWithMiniKdc {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
-    confOverlay.put(ConfVars.POSTEXECHOOKS.varname, PostExecHook.class.getName());
-    confOverlay.put(ConfVars.PREEXECHOOKS.varname, PreExecHook.class.getName());
+    confOverlay.put(ConfVars.POST_EXEC_HOOKS.varname, PostExecHook.class.getName());
+    confOverlay.put(ConfVars.PRE_EXEC_HOOKS.varname, PreExecHook.class.getName());
     confOverlay.put(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
         SemanticAnalysisHook.class.getName());
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "" + Boolean.FALSE);
-    confOverlay.put(ConfVars.HIVEFETCHTASKCACHING.varname, "" + false);
+    confOverlay.put(ConfVars.HIVE_FETCH_TASK_CACHING.varname, "" + false);
 
     miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();

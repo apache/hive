@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -345,7 +344,7 @@ public class TestUtilities {
 
     List<Path> inputPaths = new ArrayList<>();
     try {
-      Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+      Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
 
       List<Path> inputPaths1 = Utilities.getInputPaths(jobConf, mapWork1, scratchDir,
               mock(Context.class), false);
@@ -414,7 +413,7 @@ public class TestUtilities {
     try {
       fs.mkdirs(testTablePath);
       List<Path> inputPaths = Utilities.getInputPaths(jobConf, mapWork,
-              new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR)), mock(Context.class), false);
+              new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR)), mock(Context.class), false);
       assertEquals(inputPaths.size(), numPartitions);
 
       for (int i = 0; i < numPartitions; i++) {
@@ -542,7 +541,7 @@ public class TestUtilities {
 
   private void runTestGetInputPaths(JobConf jobConf, int numOfPartitions) throws Exception {
     MapWork mapWork = new MapWork();
-    Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
 
     Map<Path, List<String>> pathToAliasTable = new LinkedHashMap<>();
 

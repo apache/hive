@@ -19,11 +19,9 @@ package org.apache.hadoop.hive.ql.session;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -101,7 +99,7 @@ public class ClearDanglingScratchDir implements Runnable {
     if (cli.hasOption("s")) {
       rootHDFSDir = cli.getOptionValue("s");
     } else {
-      rootHDFSDir = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR);
+      rootHDFSDir = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR);
     }
     ClearDanglingScratchDir clearDanglingScratchDirMain = new ClearDanglingScratchDir(dryRun,
         verbose, true, rootHDFSDir, conf);
@@ -186,7 +184,7 @@ public class ClearDanglingScratchDir implements Runnable {
         return;
       }
       consoleMessage("Removing " + scratchDirToRemove.size() + " scratch directories");
-      String localTmpDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
+      String localTmpDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR);
       for (Path scratchDir : scratchDirToRemove) {
         if (dryRun) {
           System.out.println(scratchDir);

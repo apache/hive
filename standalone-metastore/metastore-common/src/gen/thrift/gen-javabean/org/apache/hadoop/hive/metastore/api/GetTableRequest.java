@@ -157,6 +157,8 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public GetTableRequest() {
+    this.engine = "hive";
+
     this.id = -1L;
 
   }
@@ -219,7 +221,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.getColumnStats = false;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
-    this.engine = null;
+    this.engine = "hive";
+
     this.id = -1L;
 
   }
@@ -1106,13 +1109,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 8: // PROCESSOR_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1150 = iprot.readListBegin();
-                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1150.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1151;
-                for (int _i1152 = 0; _i1152 < _list1150.size; ++_i1152)
+                org.apache.thrift.protocol.TList _list1166 = iprot.readListBegin();
+                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1166.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1167;
+                for (int _i1168 = 0; _i1168 < _list1166.size; ++_i1168)
                 {
-                  _elem1151 = iprot.readString();
-                  struct.processorCapabilities.add(_elem1151);
+                  _elem1167 = iprot.readString();
+                  struct.processorCapabilities.add(_elem1167);
                 }
                 iprot.readListEnd();
               }
@@ -1199,9 +1202,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PROCESSOR_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.processorCapabilities.size()));
-            for (java.lang.String _iter1153 : struct.processorCapabilities)
+            for (java.lang.String _iter1169 : struct.processorCapabilities)
             {
-              oprot.writeString(_iter1153);
+              oprot.writeString(_iter1169);
             }
             oprot.writeListEnd();
           }
@@ -1287,9 +1290,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorCapabilities()) {
         {
           oprot.writeI32(struct.processorCapabilities.size());
-          for (java.lang.String _iter1154 : struct.processorCapabilities)
+          for (java.lang.String _iter1170 : struct.processorCapabilities)
           {
-            oprot.writeString(_iter1154);
+            oprot.writeString(_iter1170);
           }
         }
       }
@@ -1331,13 +1334,13 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list1155 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1155.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1156;
-          for (int _i1157 = 0; _i1157 < _list1155.size; ++_i1157)
+          org.apache.thrift.protocol.TList _list1171 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1171.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1172;
+          for (int _i1173 = 0; _i1173 < _list1171.size; ++_i1173)
           {
-            _elem1156 = iprot.readString();
-            struct.processorCapabilities.add(_elem1156);
+            _elem1172 = iprot.readString();
+            struct.processorCapabilities.add(_elem1172);
           }
         }
         struct.setProcessorCapabilitiesIsSet(true);

@@ -109,6 +109,8 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.location");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.password");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.type");
+    addToExpectedRestrictedMap("hive.iceberg.allow.datafiles.in.table.location.only");
+    addToExpectedRestrictedMap("hive.rewrite.data.policy");
 
     checkRestrictedListMatch();
   }

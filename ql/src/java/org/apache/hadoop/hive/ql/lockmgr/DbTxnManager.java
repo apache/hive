@@ -268,7 +268,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       shouldReallocateWriteIds = false;
       isExplicitTransaction = false;
       startTransactionCount = 0;
-      this.queryId = ctx.getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      this.queryId = ctx.getConf().get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
       LOG.info("Opened " + JavaUtils.txnIdToString(txnId));
       ctx.setHeartbeater(startHeartbeat(delay));
       return txnId;
@@ -727,7 +727,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   private ScheduledFuture<?> startHeartbeat(long initialDelay, long heartbeatInterval, Runnable heartbeater) {
     // For negative testing purpose..
-    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER)) {
+    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_HEARTBEATER)) {
       initialDelay = 0;
     } else if (initialDelay == 0) {
       /*make initialDelay a random number in [0, 0.75*heartbeatInterval] so that if a lot
@@ -1120,8 +1120,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     public void run() {
       try {
         // For negative testing purpose..
-        if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER)) {
-          throw new LockException(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER.name() + "=true");
+        if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_HEARTBEATER)) {
+          throw new LockException(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_HEARTBEATER.name() + "=true");
         }
         LOG.debug("Heartbeating...for currentUser: " + currentUser);
         currentUser.doAs((PrivilegedExceptionAction<Object>) () -> {

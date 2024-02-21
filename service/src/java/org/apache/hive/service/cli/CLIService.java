@@ -510,6 +510,10 @@ public class CLIService extends CompositeService implements ICLIService {
     opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation, conf));
     return opStatus;
   }
+  public HiveConf getHiveSessionConf(OperationHandle opHandle) throws HiveSQLException {
+    Operation operation = sessionManager.getOperationManager().getOperation(opHandle);
+    return operation.getParentSession().getHiveConf();
+  }
 
   public HiveConf getSessionConf(SessionHandle sessionHandle)
       throws HiveSQLException {

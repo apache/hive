@@ -353,7 +353,7 @@ public class TestLlapTaskCommunicator {
     private TaskSpec createBaseTaskSpec(String vertexName, TezVertexID vertexId, int taskIdx) {
       TaskSpec taskSpec = mock(TaskSpec.class);
       Configuration conf = new Configuration(false);
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYID, "fakeQueryId");
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, "fakeQueryId");
       UserPayload userPayload;
       try {
         userPayload = TezUtils.createUserPayloadFromConf(conf);

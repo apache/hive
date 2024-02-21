@@ -77,7 +77,7 @@ POSTHOOK: Input: tmp_feng@tmp_showcrt2
 CREATE TABLE `tmp_feng`.`tmp_showcrt2`(
   `key` string, 
   `value` int)
-SKEWED BY (key)
+SKEWED BY (`key`)
   ON (('1'),('2'))
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -99,7 +99,7 @@ POSTHOOK: Input: tmp_feng@tmp_showcrt3
 CREATE TABLE `tmp_feng`.`tmp_showcrt3`(
   `key` string, 
   `value` int)
-SKEWED BY (key)
+SKEWED BY (`key`)
   ON (('1'),('2'))
   STORED AS DIRECTORIES
 ROW FORMAT SERDE 

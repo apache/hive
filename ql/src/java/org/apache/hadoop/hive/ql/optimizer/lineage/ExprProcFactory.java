@@ -234,7 +234,9 @@ public class ExprProcFactory {
         if (baseCols != null && !baseCols.isEmpty()) {
           BaseColumnInfo baseCol = baseCols.iterator().next();
           tabAlias = baseCol.getTabAlias().getAlias();
-          alias = baseCol.getColumn().getName();
+          if (baseCol.getColumn() != null) {
+            alias = baseCol.getColumn().getName();
+          }
         }
       }
       if (tabAlias != null && tabAlias.length() > 0

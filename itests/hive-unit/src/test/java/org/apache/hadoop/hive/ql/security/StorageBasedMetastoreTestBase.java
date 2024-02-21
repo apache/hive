@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
@@ -77,11 +76,11 @@ public class StorageBasedMetastoreTestBase {
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
 
-    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
-    clientHiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    clientHiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    clientHiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    clientHiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
 
     ugi = Utils.getUGI();
 

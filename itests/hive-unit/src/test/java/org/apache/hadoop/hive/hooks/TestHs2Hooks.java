@@ -19,7 +19,6 @@
 //The tests here are heavily based on some timing, so there is some chance to fail.
 package org.apache.hadoop.hive.hooks;
 
-import java.io.Serializable;
 import java.lang.Override;
 import java.sql.Statement;
 import java.util.List;
@@ -140,9 +139,9 @@ public class TestHs2Hooks {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     HiveConf hiveConf = new HiveConf();
-    hiveConf.setVar(ConfVars.PREEXECHOOKS,
+    hiveConf.setVar(ConfVars.PRE_EXEC_HOOKS,
         PreExecHook.class.getName());
-    hiveConf.setVar(ConfVars.POSTEXECHOOKS,
+    hiveConf.setVar(ConfVars.POST_EXEC_HOOKS,
         PostExecHook.class.getName());
     hiveConf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK,
         SemanticAnalysisHook.class.getName());

@@ -601,11 +601,12 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_year\",\"transform\":\"year\",\"source-id\":3,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	24                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
@@ -1257,11 +1258,12 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	24                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
@@ -1913,11 +1915,12 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_day\",\"transform\":\"day\",\"source-id\":1,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	24                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
@@ -2340,11 +2343,12 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"4\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"8\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_trunc\",\"transform\":\"truncate[2]\",\"source-id\":1,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	8                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
@@ -2751,11 +2755,12 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"4\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"8\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_bucket\",\"transform\":\"bucket[16]\",\"source-id\":1,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	8                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   

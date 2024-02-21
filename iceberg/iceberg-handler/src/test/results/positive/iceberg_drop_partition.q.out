@@ -1,0 +1,530 @@
+PREHOOK: query: create table ice_int (a int, b string) partitioned by spec (a) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: create table ice_int (a int, b string) partitioned by spec (a) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: insert into table ice_int values (1, 'ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: insert into table ice_int values (1, 'ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: insert into table ice_int values (2, 'DEF')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: insert into table ice_int values (2, 'DEF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: insert into table ice_int values (3, 'ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: insert into table ice_int values (3, 'ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: insert into table ice_int values (4, 'DEF')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: insert into table ice_int values (4, 'DEF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: insert into table ice_int values (1, 'ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: insert into table ice_int values (1, 'ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: insert into table ice_int values (2, 'DEF')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: insert into table ice_int values (2, 'DEF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: alter table ice_int drop partition (a <= 2), partition (a >= 3)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ice_int
+PREHOOK: Output: default@ice_int@a=1
+PREHOOK: Output: default@ice_int@a=2
+PREHOOK: Output: default@ice_int@a=3
+PREHOOK: Output: default@ice_int@a=4
+POSTHOOK: query: alter table ice_int drop partition (a <= 2), partition (a >= 3)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ice_int
+POSTHOOK: Output: default@ice_int@a=1
+POSTHOOK: Output: default@ice_int@a=2
+POSTHOOK: Output: default@ice_int@a=3
+POSTHOOK: Output: default@ice_int@a=4
+PREHOOK: query: select * from ice_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: create table ice_str (a int, b string) partitioned by spec (b) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: create table ice_str (a int, b string) partitioned by spec (b) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: insert into table ice_str values (1, 'ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: insert into table ice_str values (1, 'ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: insert into table ice_str values (2, 'DEF')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: insert into table ice_str values (2, 'DEF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: insert into table ice_str values (3, 'ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: insert into table ice_str values (3, 'ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: insert into table ice_str values (4, 'DEF')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: insert into table ice_str values (4, 'DEF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: insert into table ice_str values (1, 'ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: insert into table ice_str values (1, 'ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: insert into table ice_str values (2, 'XYZ')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: insert into table ice_str values (2, 'XYZ')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: alter table ice_str drop partition (b != 'ABC'), partition (b == 'XYZ')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ice_str
+PREHOOK: Output: default@ice_str@b=DEF
+PREHOOK: Output: default@ice_str@b=XYZ
+POSTHOOK: query: alter table ice_str drop partition (b != 'ABC'), partition (b == 'XYZ')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ice_str
+POSTHOOK: Output: default@ice_str@b=DEF
+POSTHOOK: Output: default@ice_str@b=XYZ
+PREHOOK: query: select * from ice_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+1	ABC
+3	ABC
+PREHOOK: query: create table ice_int_double_part (a int, b int, c int) partitioned by spec (a, b) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: create table ice_int_double_part (a int, b int, c int) partitioned by spec (a, b) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: insert into table ice_int_double_part values (1, 2, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: insert into table ice_int_double_part values (1, 2, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: insert into table ice_int_double_part values (2, 3, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: insert into table ice_int_double_part values (2, 3, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: insert into table ice_int_double_part values (3, 4, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: insert into table ice_int_double_part values (3, 4, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: insert into table ice_int_double_part values (4, 5, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: insert into table ice_int_double_part values (4, 5, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: insert into table ice_int_double_part values (1, 2, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: insert into table ice_int_double_part values (1, 2, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: insert into table ice_int_double_part values (2, 1, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: insert into table ice_int_double_part values (2, 1, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: alter table ice_int_double_part drop partition (a <= 2, b <= 1), partition (a >= 3, b != 4)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ice_int_double_part
+PREHOOK: Output: default@ice_int_double_part@a=2/b=1
+PREHOOK: Output: default@ice_int_double_part@a=4/b=5
+POSTHOOK: query: alter table ice_int_double_part drop partition (a <= 2, b <= 1), partition (a >= 3, b != 4)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ice_int_double_part
+POSTHOOK: Output: default@ice_int_double_part@a=2/b=1
+POSTHOOK: Output: default@ice_int_double_part@a=4/b=5
+PREHOOK: query: select * from ice_int_double_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_int_double_part
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_int_double_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_int_double_part
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2	3
+1	2	4
+2	3	4
+3	4	5
+PREHOOK: query: create table ice_date_int_double_part (a date, b int, c int) partitioned by spec (a, b) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: create table ice_date_int_double_part (a date, b int, c int) partitioned by spec (a, b) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: insert into table ice_date_int_double_part values ('2022-02-07', 2, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: insert into table ice_date_int_double_part values ('2022-02-07', 2, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: insert into table ice_date_int_double_part values ('2022-08-07', 3, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: insert into table ice_date_int_double_part values ('2022-08-07', 3, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: insert into table ice_date_int_double_part values ('2022-10-05', 4, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: insert into table ice_date_int_double_part values ('2022-10-05', 4, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: insert into table ice_date_int_double_part values ('2022-01-17', 5, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: insert into table ice_date_int_double_part values ('2022-01-17', 5, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: insert into table ice_date_int_double_part values ('2022-04-08', 2, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: insert into table ice_date_int_double_part values ('2022-04-08', 2, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: insert into table ice_date_int_double_part values ('2023-02-07', 1, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: insert into table ice_date_int_double_part values ('2023-02-07', 1, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: alter table ice_date_int_double_part drop partition (a <= '2023-02-07', b <= 1), partition (a >= '2022-08-07', b >= 2)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ice_date_int_double_part
+PREHOOK: Output: default@ice_date_int_double_part@a=2022-08-07/b=3
+PREHOOK: Output: default@ice_date_int_double_part@a=2022-10-05/b=4
+PREHOOK: Output: default@ice_date_int_double_part@a=2023-02-07/b=1
+POSTHOOK: query: alter table ice_date_int_double_part drop partition (a <= '2023-02-07', b <= 1), partition (a >= '2022-08-07', b >= 2)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ice_date_int_double_part
+POSTHOOK: Output: default@ice_date_int_double_part@a=2022-08-07/b=3
+POSTHOOK: Output: default@ice_date_int_double_part@a=2022-10-05/b=4
+POSTHOOK: Output: default@ice_date_int_double_part@a=2023-02-07/b=1
+PREHOOK: query: select * from ice_date_int_double_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date_int_double_part
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_date_int_double_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date_int_double_part
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2022-01-17	5	6
+2022-02-07	2	3
+2022-04-08	2	4
+PREHOOK: query: create table ice_date_double_double_part (a date, b double, c int) partitioned by spec (a, b) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: create table ice_date_double_double_part (a date, b double, c int) partitioned by spec (a, b) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: insert into table ice_date_double_double_part values ('2022-02-07', 2.75, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: insert into table ice_date_double_double_part values ('2022-02-07', 2.75, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: insert into table ice_date_double_double_part values ('2022-08-07', 3.25, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: insert into table ice_date_double_double_part values ('2022-08-07', 3.25, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: insert into table ice_date_double_double_part values ('2022-10-05', 4.23, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: insert into table ice_date_double_double_part values ('2022-10-05', 4.23, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: insert into table ice_date_double_double_part values ('2022-01-17', 5.67, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: insert into table ice_date_double_double_part values ('2022-01-17', 5.67, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: insert into table ice_date_double_double_part values ('2022-04-08', 2.45, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: insert into table ice_date_double_double_part values ('2022-04-08', 2.45, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: insert into table ice_date_double_double_part values ('2023-02-07', 1.08, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: insert into table ice_date_double_double_part values ('2023-02-07', 1.08, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: alter table ice_date_double_double_part drop partition (a <= '2023-02-07', b <= 1.09), partition (a >= '2022-08-07', b >= 2.78)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ice_date_double_double_part
+PREHOOK: Output: default@ice_date_double_double_part@a=2022-08-07/b=3.25
+PREHOOK: Output: default@ice_date_double_double_part@a=2022-10-05/b=4.23
+PREHOOK: Output: default@ice_date_double_double_part@a=2023-02-07/b=1.08
+POSTHOOK: query: alter table ice_date_double_double_part drop partition (a <= '2023-02-07', b <= 1.09), partition (a >= '2022-08-07', b >= 2.78)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ice_date_double_double_part
+POSTHOOK: Output: default@ice_date_double_double_part@a=2022-08-07/b=3.25
+POSTHOOK: Output: default@ice_date_double_double_part@a=2022-10-05/b=4.23
+POSTHOOK: Output: default@ice_date_double_double_part@a=2023-02-07/b=1.08
+PREHOOK: query: select * from ice_date_int_double_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date_int_double_part
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_date_int_double_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date_int_double_part
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2022-01-17	5	6
+2022-02-07	2	3
+2022-04-08	2	4
+PREHOOK: query: create table ice_date_bigint_double_part (a date, b bigint, c int) partitioned by spec (a, b) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: create table ice_date_bigint_double_part (a date, b bigint, c int) partitioned by spec (a, b) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_bigint_double_part
+PREHOOK: query: insert into table ice_date_bigint_double_part values ('2022-02-07', 267859937678997886, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: insert into table ice_date_bigint_double_part values ('2022-02-07', 267859937678997886, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_bigint_double_part
+PREHOOK: query: insert into table ice_date_bigint_double_part values ('2022-08-07', 325678599459970774, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: insert into table ice_date_bigint_double_part values ('2022-08-07', 325678599459970774, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_bigint_double_part
+PREHOOK: query: insert into table ice_date_bigint_double_part values ('2022-10-05', 423789504756478599, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: insert into table ice_date_bigint_double_part values ('2022-10-05', 423789504756478599, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_bigint_double_part
+PREHOOK: query: insert into table ice_date_bigint_double_part values ('2022-01-17', 567890387564883960, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: insert into table ice_date_bigint_double_part values ('2022-01-17', 567890387564883960, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_bigint_double_part
+PREHOOK: query: insert into table ice_date_bigint_double_part values ('2022-04-08', 245789600487678594, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: insert into table ice_date_bigint_double_part values ('2022-04-08', 245789600487678594, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_bigint_double_part
+PREHOOK: query: insert into table ice_date_bigint_double_part values ('2023-02-07', 108789600487566478, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: insert into table ice_date_bigint_double_part values ('2023-02-07', 108789600487566478, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_bigint_double_part
+PREHOOK: query: alter table ice_date_bigint_double_part drop partition (a <= '2023-02-07', b <= 109000000000000000L), partition (a >= '2022-08-07', b >= 278000000000000000L)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ice_date_bigint_double_part
+PREHOOK: Output: default@ice_date_bigint_double_part@a=2022-08-07/b=325678599459970774
+PREHOOK: Output: default@ice_date_bigint_double_part@a=2022-10-05/b=423789504756478599
+PREHOOK: Output: default@ice_date_bigint_double_part@a=2023-02-07/b=108789600487566478
+POSTHOOK: query: alter table ice_date_bigint_double_part drop partition (a <= '2023-02-07', b <= 109000000000000000L), partition (a >= '2022-08-07', b >= 278000000000000000L)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ice_date_bigint_double_part
+POSTHOOK: Output: default@ice_date_bigint_double_part@a=2022-08-07/b=325678599459970774
+POSTHOOK: Output: default@ice_date_bigint_double_part@a=2022-10-05/b=423789504756478599
+POSTHOOK: Output: default@ice_date_bigint_double_part@a=2023-02-07/b=108789600487566478
+PREHOOK: query: select * from ice_date_bigint_double_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date_bigint_double_part
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_date_bigint_double_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date_bigint_double_part
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2022-01-17	567890387564883960	6
+2022-02-07	267859937678997886	3
+2022-04-08	245789600487678594	4
+PREHOOK: query: drop table ice_int
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_int
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int
+POSTHOOK: query: drop table ice_int
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_int
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int
+PREHOOK: query: drop table ice_str
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_str
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str
+POSTHOOK: query: drop table ice_str
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_str
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str
+PREHOOK: query: drop table ice_int_double_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_int_double_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int_double_part
+POSTHOOK: query: drop table ice_int_double_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_int_double_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int_double_part
+PREHOOK: query: drop table ice_date_int_double_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_date_int_double_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_int_double_part
+POSTHOOK: query: drop table ice_date_int_double_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_date_int_double_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_int_double_part
+PREHOOK: query: drop table ice_date_double_double_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_date_double_double_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_double_double_part
+POSTHOOK: query: drop table ice_date_double_double_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_date_double_double_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_double_double_part
+PREHOOK: query: drop table ice_date_bigint_double_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_date_bigint_double_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_bigint_double_part
+POSTHOOK: query: drop table ice_date_bigint_double_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_date_bigint_double_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_bigint_double_part

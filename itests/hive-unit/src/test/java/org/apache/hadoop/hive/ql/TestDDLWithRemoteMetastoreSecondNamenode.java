@@ -83,10 +83,10 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
 
       // Test with remote metastore service
       int port = MetaStoreTestUtils.startMetaStoreWithRetry();
-      conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-      conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+      conf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:" + port);
+      conf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
       conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-      conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, new URI(tmppath + "/warehouse").getPath());
+      conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, new URI(tmppath + "/warehouse").getPath());
 
       // Initialize second mocked filesystem (implement only necessary stuff)
       // Physical files are resides in local file system in the similar location

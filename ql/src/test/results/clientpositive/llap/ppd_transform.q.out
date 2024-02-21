@@ -384,8 +384,7 @@ FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: cat
 PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM (
     FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
@@ -394,8 +393,7 @@ FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2

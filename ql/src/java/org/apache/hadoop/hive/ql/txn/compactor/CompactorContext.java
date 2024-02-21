@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 
 /**
@@ -38,7 +38,7 @@ public class CompactorContext {
   private final CompactionInfo compactionInfo;
   private final AcidDirectory dir;
 
-  CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
+  public CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
     this.conf = conf;
     this.table = table;
     this.partition = p;
@@ -46,6 +46,10 @@ public class CompactorContext {
     this.validWriteIdList = tblValidWriteIds;
     this.compactionInfo = ci;
     this.dir = dir;
+  }
+
+  public CompactorContext(HiveConf conf, Table table, CompactionInfo ci) {
+    this(conf, table, null, null, null, ci, null);
   }
 
   public HiveConf getConf() {

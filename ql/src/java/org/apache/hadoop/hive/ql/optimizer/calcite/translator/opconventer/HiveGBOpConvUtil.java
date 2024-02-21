@@ -133,8 +133,8 @@ final class HiveGBOpConvUtil {
   private static HIVEGBPHYSICALMODE getAggOPMode(HiveConf hc, GBInfo gbInfo) {
     HIVEGBPHYSICALMODE gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB;
 
-    if (hc.getBoolVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
-      if (!hc.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+    if (hc.getBoolVar(HiveConf.ConfVars.HIVE_MAPSIDE_AGGREGATE)) {
+      if (!hc.getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
         if (!gbInfo.grpSetRqrAdditionalMRJob) {
           gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB;
         } else {
@@ -148,7 +148,7 @@ final class HiveGBOpConvUtil {
         }
       }
     } else {
-      if (!hc.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+      if (!hc.getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
         gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.NO_MAP_SIDE_GB_NO_SKEW;
       } else {
         gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.NO_MAP_SIDE_GB_SKEW;
@@ -283,11 +283,11 @@ final class HiveGBOpConvUtil {
     }
 
     // 4. Gather GB Memory threshold
-    gbInfo.groupByMemoryUsage = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
-    gbInfo.memoryThreshold = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
-    gbInfo.minReductionHashAggr = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    gbInfo.groupByMemoryUsage = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MEMORY);
+    gbInfo.memoryThreshold = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_MEMORY_THRESHOLD);
+    gbInfo.minReductionHashAggr = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION);
     gbInfo.minReductionHashAggrLowerBound =
-            HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
+            HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND);
 
     // 5. Gather GB Physical pipeline (based on user config & Grping Sets size)
     gbInfo.gbPhysicalPipelineMode = getAggOPMode(hc, gbInfo);

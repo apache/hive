@@ -142,7 +142,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -223,6 +222,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortPredicates;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterTableFunctionTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInBetweenExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectMergeRule;
@@ -311,9 +311,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -357,7 +355,7 @@ import javax.sql.DataSource;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ANY;
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -508,9 +506,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private static RelOptPlanner createPlanner(
       HiveConf conf, StatsSource statsSource, boolean isExplainPlan) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
-            conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
+            conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
-            conf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+            conf, HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
     HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
     HiveRulesRegistry registry = new HiveRulesRegistry();
     Properties calciteConfigProperties = new Properties();
@@ -1024,30 +1022,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   @Override
   boolean isCBOSupportedLateralView(ASTNode lateralView) {
-    // Lateral view AST has the following shape:
-    // ^(TOK_LATERAL_VIEW
-    //   ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier params) identifier* tableAlias)))
-    if (lateralView.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
-      // LATERAL VIEW OUTER not supported in CBO
-      return false;
-    }
-    // Only INLINE followed by ARRAY supported in CBO
-    ASTNode lvFunc = (ASTNode) lateralView.getChild(0).getChild(0).getChild(0);
-    String lvFuncName = lvFunc.getChild(0).getText();
-    if (lvFuncName.compareToIgnoreCase(
-            GenericUDTFInline.class.getAnnotation(Description.class).name()) != 0) {
-      return false;
-    }
-    if (lvFunc.getChildCount() != 2) {
-      return false;
-    }
-    ASTNode innerFunc = (ASTNode) lvFunc.getChild(1);
-    if (innerFunc.getToken().getType() != HiveParser.TOK_FUNCTION ||
-            innerFunc.getChild(0).getText().compareToIgnoreCase(
-                GenericUDFArray.class.getAnnotation(Description.class).name()) != 0) {
-      return false;
-    }
-    return true;
+    // LATERAL VIEW OUTER not supported in CBO
+    return lateralView.getToken().getType() != HiveParser.TOK_LATERAL_VIEW_OUTER;
   }
 
   @Override
@@ -1705,8 +1681,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       materializationValidator.validate(calcitePlan);
       setInvalidResultCacheReason(
           materializationValidator.getResultCacheInvalidReason());
-      setInvalidAutomaticRewritingMaterializationReason(
-          materializationValidator.getAutomaticRewritingInvalidReason());
+      setMaterializationValidationResult(
+          materializationValidator.getAutomaticRewritingValidationResult());
 
       // 2. Apply pre-join order optimizations
       calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
@@ -1769,7 +1745,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
-      final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
+      final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
       final boolean allowDisjunctivePredicates = conf.getBoolVar(ConfVars.HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN);
 
       final HepProgramBuilder program = new HepProgramBuilder();
@@ -1814,7 +1790,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
-          conf.getBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEDISTINCTREWRITE)) {
+          conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_DISTINCT_REWRITE)) {
         // Its not clear, if this rewrite is always performant on MR, since extra map phase
         // introduced for 2nd MR job may offset gains of this multi-stage aggregation.
         // We need a cost model for MR to enable this on MR.
@@ -1833,11 +1809,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
       List<RelOptRule> rules = Lists.newArrayList();
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING)) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPT_PPD_WINDOWING)) {
         rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING);
       } else {
         rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC);
       }
+      rules.add(HiveFilterTableFunctionTransposeRule.INSTANCE);
       rules.add(HiveOptimizeInlineArrayTableFunctionRule.INSTANCE);
       rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
       rules.add(HiveFilterSortTransposeRule.INSTANCE);
@@ -1859,7 +1836,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
       rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
@@ -2179,7 +2156,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN);
       rules.add(HiveProjectMergeRule.INSTANCE);
       if (profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
-        rules.add(conf.getBoolVar(HiveConf.ConfVars.HIVEOPTPPD_WINDOWING) ?
+        rules.add(conf.getBoolVar(HiveConf.ConfVars.HIVE_OPT_PPD_WINDOWING) ?
             HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN :
             HiveFilterProjectTransposeRule.DETERMINISTIC_ON_NON_FILTERING_JOIN);
         rules.add(HiveFilterJoinRule.FILTER_ON_NON_FILTERING_JOIN);
@@ -2922,7 +2899,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 2. if returnpath is on and hivetestmode is on bail
         if (qb.getParseInfo().getTabSample(tableAlias) != null
             || getNameToSplitSampleMap().containsKey(tableAlias)
-            || (conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) && (conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)) ) {
+            || (conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) && (conf.getBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE)) ) {
           String msg = String.format("Table Sample specified for %s."
               + " Currently we don't support Table Sample clauses in CBO,"
               + " turn off cbo for queries on tableSamples.", tableAlias);
@@ -2983,7 +2960,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<VirtualColumn> virtualCols = new ArrayList<>();
         if (tableType == TableType.NATIVE) {
           virtualCols = VirtualColumn.getRegistry(conf);
-          if (AcidUtils.isNonNativeAcidTable(tabMetaData, false)) {
+          if (AcidUtils.isNonNativeAcidTable(tabMetaData)) {
             virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
           }
           if (tabMetaData.isNonNative() && tabMetaData.getStorageHandler().areSnapshotsSupported() &&
@@ -3686,16 +3663,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
           || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
 
       // 2. Sanity check
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_SKEW)
           && qbp.getDistinctFuncExprsForClause(destClauseName).size() > 1) {
         throw new SemanticException(ErrorMsg.UNSUPPORTED_MULTIPLE_DISTINCTS.getMsg());
       }
       if (cubeRollupGrpSetPresent) {
-        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
+        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MAPSIDE_AGGREGATE)) {
           throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOMAPAGGR.getMsg());
         }
 
-        if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
 
           if (qbp.getDestGroupingSets().size() > conf
               .getIntVar(HiveConf.ConfVars.HIVE_NEW_JOB_GROUPING_SET_CARDINALITY)) {

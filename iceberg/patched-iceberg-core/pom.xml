@@ -20,6 +20,12 @@
   </properties>
   <dependencies>
     <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>${caffeine.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-core</artifactId>
       <version>${iceberg.version}</version>

@@ -5012,7 +5012,7 @@ void swap(ColumnStatisticsDesc &a, ColumnStatisticsDesc &b);
 std::ostream& operator<<(std::ostream& out, const ColumnStatisticsDesc& obj);
 
 typedef struct _ColumnStatistics__isset {
-  _ColumnStatistics__isset() : isStatsCompliant(false), engine(false) {}
+  _ColumnStatistics__isset() : isStatsCompliant(false), engine(true) {}
   bool isStatsCompliant :1;
   bool engine :1;
 } _ColumnStatistics__isset;
@@ -5022,9 +5022,8 @@ class ColumnStatistics : public virtual ::apache::thrift::TBase {
 
   ColumnStatistics(const ColumnStatistics&);
   ColumnStatistics& operator=(const ColumnStatistics&);
-  ColumnStatistics() noexcept
-                   : isStatsCompliant(0),
-                     engine() {
+  ColumnStatistics() : isStatsCompliant(0),
+                       engine("hive") {
   }
 
   virtual ~ColumnStatistics() noexcept;
@@ -5938,10 +5937,11 @@ void swap(AggrStats &a, AggrStats &b);
 std::ostream& operator<<(std::ostream& out, const AggrStats& obj);
 
 typedef struct _SetPartitionsStatsRequest__isset {
-  _SetPartitionsStatsRequest__isset() : needMerge(false), writeId(true), validWriteIdList(false) {}
+  _SetPartitionsStatsRequest__isset() : needMerge(false), writeId(true), validWriteIdList(false), engine(true) {}
   bool needMerge :1;
   bool writeId :1;
   bool validWriteIdList :1;
+  bool engine :1;
 } _SetPartitionsStatsRequest__isset;
 
 class SetPartitionsStatsRequest : public virtual ::apache::thrift::TBase {
@@ -5949,11 +5949,10 @@ class SetPartitionsStatsRequest : public virtual ::apache::thrift::TBase {
 
   SetPartitionsStatsRequest(const SetPartitionsStatsRequest&);
   SetPartitionsStatsRequest& operator=(const SetPartitionsStatsRequest&);
-  SetPartitionsStatsRequest() noexcept
-                            : needMerge(0),
-                              writeId(-1LL),
-                              validWriteIdList(),
-                              engine() {
+  SetPartitionsStatsRequest() : needMerge(0),
+                                writeId(-1LL),
+                                validWriteIdList(),
+                                engine("hive") {
   }
 
   virtual ~SetPartitionsStatsRequest() noexcept;
@@ -5991,7 +5990,9 @@ class SetPartitionsStatsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
-    if (!(engine == rhs.engine))
+    if (__isset.engine != rhs.__isset.engine)
+      return false;
+    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     return true;
   }
@@ -7238,7 +7239,7 @@ void swap(PartitionsSpecByExprResult &a, PartitionsSpecByExprResult &b);
 std::ostream& operator<<(std::ostream& out, const PartitionsSpecByExprResult& obj);
 
 typedef struct _PartitionsByExprRequest__isset {
-  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true), catName(false), order(false), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false) {}
+  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true), catName(false), order(false), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool defaultPartitionName :1;
   bool maxParts :1;
   bool catName :1;
@@ -7246,6 +7247,8 @@ typedef struct _PartitionsByExprRequest__isset {
   bool validWriteIdList :1;
   bool id :1;
   bool skipColumnSchemaForPartition :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
 } _PartitionsByExprRequest__isset;
 
 class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
@@ -7263,7 +7266,9 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
                             order(),
                             validWriteIdList(),
                             id(-1LL),
-                            skipColumnSchemaForPartition(0) {
+                            skipColumnSchemaForPartition(0),
+                            includeParamKeyPattern(),
+                            excludeParamKeyPattern() {
   }
 
   virtual ~PartitionsByExprRequest() noexcept;
@@ -7277,6 +7282,8 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
   std::string validWriteIdList;
   int64_t id;
   bool skipColumnSchemaForPartition;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
 
   _PartitionsByExprRequest__isset __isset;
 
@@ -7299,6 +7306,10 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
   void __set_id(const int64_t val);
 
   void __set_skipColumnSchemaForPartition(const bool val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
 
   bool operator == (const PartitionsByExprRequest & rhs) const
   {
@@ -7335,6 +7346,14 @@ class PartitionsByExprRequest : public virtual ::apache::thrift::TBase {
     if (__isset.skipColumnSchemaForPartition != rhs.__isset.skipColumnSchemaForPartition)
       return false;
     else if (__isset.skipColumnSchemaForPartition && !(skipColumnSchemaForPartition == rhs.skipColumnSchemaForPartition))
+      return false;
+    if (__isset.includeParamKeyPattern != rhs.__isset.includeParamKeyPattern)
+      return false;
+    else if (__isset.includeParamKeyPattern && !(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (__isset.excludeParamKeyPattern != rhs.__isset.excludeParamKeyPattern)
+      return false;
+    else if (__isset.excludeParamKeyPattern && !(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
       return false;
     return true;
   }
@@ -7455,9 +7474,10 @@ void swap(PartitionsStatsResult &a, PartitionsStatsResult &b);
 std::ostream& operator<<(std::ostream& out, const PartitionsStatsResult& obj);
 
 typedef struct _TableStatsRequest__isset {
-  _TableStatsRequest__isset() : catName(false), validWriteIdList(false), id(true) {}
+  _TableStatsRequest__isset() : catName(false), validWriteIdList(false), engine(true), id(true) {}
   bool catName :1;
   bool validWriteIdList :1;
+  bool engine :1;
   bool id :1;
 } _TableStatsRequest__isset;
 
@@ -7466,13 +7486,12 @@ class TableStatsRequest : public virtual ::apache::thrift::TBase {
 
   TableStatsRequest(const TableStatsRequest&);
   TableStatsRequest& operator=(const TableStatsRequest&);
-  TableStatsRequest() noexcept
-                    : dbName(),
-                      tblName(),
-                      catName(),
-                      validWriteIdList(),
-                      engine(),
-                      id(-1LL) {
+  TableStatsRequest() : dbName(),
+                        tblName(),
+                        catName(),
+                        validWriteIdList(),
+                        engine("hive"),
+                        id(-1LL) {
   }
 
   virtual ~TableStatsRequest() noexcept;
@@ -7516,7 +7535,9 @@ class TableStatsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
-    if (!(engine == rhs.engine))
+    if (__isset.engine != rhs.__isset.engine)
+      return false;
+    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     if (__isset.id != rhs.__isset.id)
       return false;
@@ -7541,9 +7562,10 @@ void swap(TableStatsRequest &a, TableStatsRequest &b);
 std::ostream& operator<<(std::ostream& out, const TableStatsRequest& obj);
 
 typedef struct _PartitionsStatsRequest__isset {
-  _PartitionsStatsRequest__isset() : catName(false), validWriteIdList(false) {}
+  _PartitionsStatsRequest__isset() : catName(false), validWriteIdList(false), engine(true) {}
   bool catName :1;
   bool validWriteIdList :1;
+  bool engine :1;
 } _PartitionsStatsRequest__isset;
 
 class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
@@ -7551,12 +7573,11 @@ class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
 
   PartitionsStatsRequest(const PartitionsStatsRequest&);
   PartitionsStatsRequest& operator=(const PartitionsStatsRequest&);
-  PartitionsStatsRequest() noexcept
-                         : dbName(),
-                           tblName(),
-                           catName(),
-                           validWriteIdList(),
-                           engine() {
+  PartitionsStatsRequest() : dbName(),
+                             tblName(),
+                             catName(),
+                             validWriteIdList(),
+                             engine("hive") {
   }
 
   virtual ~PartitionsStatsRequest() noexcept;
@@ -7602,7 +7623,9 @@ class PartitionsStatsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
-    if (!(engine == rhs.engine))
+    if (__isset.engine != rhs.__isset.engine)
+      return false;
+    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     return true;
   }
@@ -8236,7 +8259,7 @@ void swap(PartitionValuesResponse &a, PartitionValuesResponse &b);
 std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse& obj);
 
 typedef struct _GetPartitionsByNamesRequest__isset {
-  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(false), validWriteIdList(false), getFileMetadata(false), id(true), skipColumnSchemaForPartition(false) {}
+  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false), engine(true), validWriteIdList(false), getFileMetadata(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool names :1;
   bool get_col_stats :1;
   bool processorCapabilities :1;
@@ -8246,6 +8269,8 @@ typedef struct _GetPartitionsByNamesRequest__isset {
   bool getFileMetadata :1;
   bool id :1;
   bool skipColumnSchemaForPartition :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
 } _GetPartitionsByNamesRequest__isset;
 
 class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
@@ -8253,16 +8278,17 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
 
   GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest&);
   GetPartitionsByNamesRequest& operator=(const GetPartitionsByNamesRequest&);
-  GetPartitionsByNamesRequest() noexcept
-                              : db_name(),
-                                tbl_name(),
-                                get_col_stats(0),
-                                processorIdentifier(),
-                                engine(),
-                                validWriteIdList(),
-                                getFileMetadata(0),
-                                id(-1LL),
-                                skipColumnSchemaForPartition(0) {
+  GetPartitionsByNamesRequest() : db_name(),
+                                  tbl_name(),
+                                  get_col_stats(0),
+                                  processorIdentifier(),
+                                  engine("hive"),
+                                  validWriteIdList(),
+                                  getFileMetadata(0),
+                                  id(-1LL),
+                                  skipColumnSchemaForPartition(0),
+                                  includeParamKeyPattern(),
+                                  excludeParamKeyPattern() {
   }
 
   virtual ~GetPartitionsByNamesRequest() noexcept;
@@ -8277,6 +8303,8 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
   bool getFileMetadata;
   int64_t id;
   bool skipColumnSchemaForPartition;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
 
   _GetPartitionsByNamesRequest__isset __isset;
 
@@ -8301,6 +8329,10 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
   void __set_id(const int64_t val);
 
   void __set_skipColumnSchemaForPartition(const bool val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
 
   bool operator == (const GetPartitionsByNamesRequest & rhs) const
   {
@@ -8343,6 +8375,14 @@ class GetPartitionsByNamesRequest : public virtual ::apache::thrift::TBase {
     if (__isset.skipColumnSchemaForPartition != rhs.__isset.skipColumnSchemaForPartition)
       return false;
     else if (__isset.skipColumnSchemaForPartition && !(skipColumnSchemaForPartition == rhs.skipColumnSchemaForPartition))
+      return false;
+    if (__isset.includeParamKeyPattern != rhs.__isset.includeParamKeyPattern)
+      return false;
+    else if (__isset.includeParamKeyPattern && !(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (__isset.excludeParamKeyPattern != rhs.__isset.excludeParamKeyPattern)
+      return false;
+    else if (__isset.excludeParamKeyPattern && !(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
       return false;
     return true;
   }
@@ -12383,9 +12423,12 @@ void swap(BasicTxnInfo &a, BasicTxnInfo &b);
 std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj);
 
 typedef struct _NotificationEventRequest__isset {
-  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false) {}
+  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false), catName(false), dbName(false), tableNames(false) {}
   bool maxEvents :1;
   bool eventTypeSkipList :1;
+  bool catName :1;
+  bool dbName :1;
+  bool tableNames :1;
 } _NotificationEventRequest__isset;
 
 class NotificationEventRequest : public virtual ::apache::thrift::TBase {
@@ -12395,13 +12438,18 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   NotificationEventRequest& operator=(const NotificationEventRequest&);
   NotificationEventRequest() noexcept
                            : lastEvent(0),
-                             maxEvents(0) {
+                             maxEvents(0),
+                             catName(),
+                             dbName() {
   }
 
   virtual ~NotificationEventRequest() noexcept;
   int64_t lastEvent;
   int32_t maxEvents;
   std::vector<std::string>  eventTypeSkipList;
+  std::string catName;
+  std::string dbName;
+  std::vector<std::string>  tableNames;
 
   _NotificationEventRequest__isset __isset;
 
@@ -12410,6 +12458,12 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   void __set_maxEvents(const int32_t val);
 
   void __set_eventTypeSkipList(const std::vector<std::string> & val);
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableNames(const std::vector<std::string> & val);
 
   bool operator == (const NotificationEventRequest & rhs) const
   {
@@ -12422,6 +12476,18 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
     if (__isset.eventTypeSkipList != rhs.__isset.eventTypeSkipList)
       return false;
     else if (__isset.eventTypeSkipList && !(eventTypeSkipList == rhs.eventTypeSkipList))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tableNames != rhs.__isset.tableNames)
+      return false;
+    else if (__isset.tableNames && !(tableNames == rhs.tableNames))
       return false;
     return true;
   }
@@ -12611,10 +12677,11 @@ void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b);
 std::ostream& operator<<(std::ostream& out, const CurrentNotificationEventId& obj);
 
 typedef struct _NotificationEventsCountRequest__isset {
-  _NotificationEventsCountRequest__isset() : catName(false), toEventId(false), limit(false) {}
+  _NotificationEventsCountRequest__isset() : catName(false), toEventId(false), limit(false), tableNames(false) {}
   bool catName :1;
   bool toEventId :1;
   bool limit :1;
+  bool tableNames :1;
 } _NotificationEventsCountRequest__isset;
 
 class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
@@ -12636,6 +12703,7 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
   std::string catName;
   int64_t toEventId;
   int64_t limit;
+  std::vector<std::string>  tableNames;
 
   _NotificationEventsCountRequest__isset __isset;
 
@@ -12648,6 +12716,8 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
   void __set_toEventId(const int64_t val);
 
   void __set_limit(const int64_t val);
+
+  void __set_tableNames(const std::vector<std::string> & val);
 
   bool operator == (const NotificationEventsCountRequest & rhs) const
   {
@@ -12666,6 +12736,10 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
     if (__isset.limit != rhs.__isset.limit)
       return false;
     else if (__isset.limit && !(limit == rhs.limit))
+      return false;
+    if (__isset.tableNames != rhs.__isset.tableNames)
+      return false;
+    else if (__isset.tableNames && !(tableNames == rhs.tableNames))
       return false;
     return true;
   }
@@ -13818,7 +13892,7 @@ void swap(GetProjectionsSpec &a, GetProjectionsSpec &b);
 std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj);
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(false), id(true) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false), engine(true), id(true) {}
   bool capabilities :1;
   bool catName :1;
   bool validWriteIdList :1;
@@ -13834,15 +13908,14 @@ class GetTableRequest : public virtual ::apache::thrift::TBase {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() noexcept
-                  : dbName(),
-                    tblName(),
-                    catName(),
-                    validWriteIdList(),
-                    getColumnStats(0),
-                    processorIdentifier(),
-                    engine(),
-                    id(-1LL) {
+  GetTableRequest() : dbName(),
+                      tblName(),
+                      catName(),
+                      validWriteIdList(),
+                      getColumnStats(0),
+                      processorIdentifier(),
+                      engine("hive"),
+                      id(-1LL) {
   }
 
   virtual ~GetTableRequest() noexcept;
@@ -19273,12 +19346,14 @@ void swap(GetPartitionResponse &a, GetPartitionResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetPartitionResponse& obj);
 
 typedef struct _PartitionsRequest__isset {
-  _PartitionsRequest__isset() : catName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false) {}
+  _PartitionsRequest__isset() : catName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool catName :1;
   bool maxParts :1;
   bool validWriteIdList :1;
   bool id :1;
   bool skipColumnSchemaForPartition :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
 } _PartitionsRequest__isset;
 
 class PartitionsRequest : public virtual ::apache::thrift::TBase {
@@ -19293,7 +19368,9 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
                       maxParts(-1),
                       validWriteIdList(),
                       id(-1LL),
-                      skipColumnSchemaForPartition(0) {
+                      skipColumnSchemaForPartition(0),
+                      includeParamKeyPattern(),
+                      excludeParamKeyPattern() {
   }
 
   virtual ~PartitionsRequest() noexcept;
@@ -19304,6 +19381,8 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
   std::string validWriteIdList;
   int64_t id;
   bool skipColumnSchemaForPartition;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
 
   _PartitionsRequest__isset __isset;
 
@@ -19320,6 +19399,10 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
   void __set_id(const int64_t val);
 
   void __set_skipColumnSchemaForPartition(const bool val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
 
   bool operator == (const PartitionsRequest & rhs) const
   {
@@ -19346,6 +19429,14 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
     if (__isset.skipColumnSchemaForPartition != rhs.__isset.skipColumnSchemaForPartition)
       return false;
     else if (__isset.skipColumnSchemaForPartition && !(skipColumnSchemaForPartition == rhs.skipColumnSchemaForPartition))
+      return false;
+    if (__isset.includeParamKeyPattern != rhs.__isset.includeParamKeyPattern)
+      return false;
+    else if (__isset.includeParamKeyPattern && !(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (__isset.excludeParamKeyPattern != rhs.__isset.excludeParamKeyPattern)
+      return false;
+    else if (__isset.excludeParamKeyPattern && !(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
       return false;
     return true;
   }
@@ -19402,13 +19493,15 @@ void swap(PartitionsResponse &a, PartitionsResponse &b);
 std::ostream& operator<<(std::ostream& out, const PartitionsResponse& obj);
 
 typedef struct _GetPartitionsByFilterRequest__isset {
-  _GetPartitionsByFilterRequest__isset() : catName(false), dbName(false), tblName(false), filter(false), maxParts(true), skipColumnSchemaForPartition(false) {}
+  _GetPartitionsByFilterRequest__isset() : catName(false), dbName(false), tblName(false), filter(false), maxParts(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool catName :1;
   bool dbName :1;
   bool tblName :1;
   bool filter :1;
   bool maxParts :1;
   bool skipColumnSchemaForPartition :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
 } _GetPartitionsByFilterRequest__isset;
 
 class GetPartitionsByFilterRequest : public virtual ::apache::thrift::TBase {
@@ -19422,7 +19515,9 @@ class GetPartitionsByFilterRequest : public virtual ::apache::thrift::TBase {
                                  tblName(),
                                  filter(),
                                  maxParts(-1),
-                                 skipColumnSchemaForPartition(0) {
+                                 skipColumnSchemaForPartition(0),
+                                 includeParamKeyPattern(),
+                                 excludeParamKeyPattern() {
   }
 
   virtual ~GetPartitionsByFilterRequest() noexcept;
@@ -19432,6 +19527,8 @@ class GetPartitionsByFilterRequest : public virtual ::apache::thrift::TBase {
   std::string filter;
   int16_t maxParts;
   bool skipColumnSchemaForPartition;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
 
   _GetPartitionsByFilterRequest__isset __isset;
 
@@ -19446,6 +19543,10 @@ class GetPartitionsByFilterRequest : public virtual ::apache::thrift::TBase {
   void __set_maxParts(const int16_t val);
 
   void __set_skipColumnSchemaForPartition(const bool val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
 
   bool operator == (const GetPartitionsByFilterRequest & rhs) const
   {
@@ -19466,6 +19567,14 @@ class GetPartitionsByFilterRequest : public virtual ::apache::thrift::TBase {
     if (__isset.skipColumnSchemaForPartition != rhs.__isset.skipColumnSchemaForPartition)
       return false;
     else if (__isset.skipColumnSchemaForPartition && !(skipColumnSchemaForPartition == rhs.skipColumnSchemaForPartition))
+      return false;
+    if (__isset.includeParamKeyPattern != rhs.__isset.includeParamKeyPattern)
+      return false;
+    else if (__isset.includeParamKeyPattern && !(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (__isset.excludeParamKeyPattern != rhs.__isset.excludeParamKeyPattern)
+      return false;
+    else if (__isset.excludeParamKeyPattern && !(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
       return false;
     return true;
   }
@@ -19614,7 +19723,7 @@ void swap(GetPartitionNamesPsResponse &a, GetPartitionNamesPsResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetPartitionNamesPsResponse& obj);
 
 typedef struct _GetPartitionsPsWithAuthRequest__isset {
-  _GetPartitionsPsWithAuthRequest__isset() : catName(false), partVals(false), maxParts(true), userName(false), groupNames(false), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false) {}
+  _GetPartitionsPsWithAuthRequest__isset() : catName(false), partVals(false), maxParts(true), userName(false), groupNames(false), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false), partNames(false) {}
   bool catName :1;
   bool partVals :1;
   bool maxParts :1;
@@ -19623,6 +19732,9 @@ typedef struct _GetPartitionsPsWithAuthRequest__isset {
   bool validWriteIdList :1;
   bool id :1;
   bool skipColumnSchemaForPartition :1;
+  bool includeParamKeyPattern :1;
+  bool excludeParamKeyPattern :1;
+  bool partNames :1;
 } _GetPartitionsPsWithAuthRequest__isset;
 
 class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
@@ -19638,7 +19750,9 @@ class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
                                    userName(),
                                    validWriteIdList(),
                                    id(-1LL),
-                                   skipColumnSchemaForPartition(0) {
+                                   skipColumnSchemaForPartition(0),
+                                   includeParamKeyPattern(),
+                                   excludeParamKeyPattern() {
   }
 
   virtual ~GetPartitionsPsWithAuthRequest() noexcept;
@@ -19652,6 +19766,9 @@ class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
   std::string validWriteIdList;
   int64_t id;
   bool skipColumnSchemaForPartition;
+  std::string includeParamKeyPattern;
+  std::string excludeParamKeyPattern;
+  std::vector<std::string>  partNames;
 
   _GetPartitionsPsWithAuthRequest__isset __isset;
 
@@ -19674,6 +19791,12 @@ class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
   void __set_id(const int64_t val);
 
   void __set_skipColumnSchemaForPartition(const bool val);
+
+  void __set_includeParamKeyPattern(const std::string& val);
+
+  void __set_excludeParamKeyPattern(const std::string& val);
+
+  void __set_partNames(const std::vector<std::string> & val);
 
   bool operator == (const GetPartitionsPsWithAuthRequest & rhs) const
   {
@@ -19712,6 +19835,18 @@ class GetPartitionsPsWithAuthRequest : public virtual ::apache::thrift::TBase {
     if (__isset.skipColumnSchemaForPartition != rhs.__isset.skipColumnSchemaForPartition)
       return false;
     else if (__isset.skipColumnSchemaForPartition && !(skipColumnSchemaForPartition == rhs.skipColumnSchemaForPartition))
+      return false;
+    if (__isset.includeParamKeyPattern != rhs.__isset.includeParamKeyPattern)
+      return false;
+    else if (__isset.includeParamKeyPattern && !(includeParamKeyPattern == rhs.includeParamKeyPattern))
+      return false;
+    if (__isset.excludeParamKeyPattern != rhs.__isset.excludeParamKeyPattern)
+      return false;
+    else if (__isset.excludeParamKeyPattern && !(excludeParamKeyPattern == rhs.excludeParamKeyPattern))
+      return false;
+    if (__isset.partNames != rhs.__isset.partNames)
+      return false;
+    else if (__isset.partNames && !(partNames == rhs.partNames))
       return false;
     return true;
   }

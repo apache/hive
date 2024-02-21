@@ -26,14 +26,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Preconditions;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
@@ -169,6 +169,7 @@ public class Context {
   private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
   private int deleteBranchOfUpdateIdx = -1;
   private Operation operation = Operation.OTHER;
+  private boolean splitUpdate = false;
   private WmContext wmContext;
 
   private boolean isExplainPlan = false;
@@ -198,6 +199,11 @@ public class Context {
 
   public void setOperation(Operation operation) {
     this.operation = operation;
+  }
+
+  public void setOperation(Operation operation, boolean splitUpdate) {
+    setOperation(operation);
+    this.splitUpdate = splitUpdate;
   }
 
   public Operation getOperation() {
@@ -234,7 +240,7 @@ public class Context {
    */
   public enum Operation {UPDATE, DELETE, MERGE, IOW, OTHER}
   public enum DestClausePrefix {
-    INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
+    INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-"), MERGE("mergeclause-");
     private final String prefix;
     DestClausePrefix(String prefix) {
       this.prefix = prefix;
@@ -242,6 +248,21 @@ public class Context {
     @Override
     public String toString() {
       return prefix;
+    }
+  }
+  public enum RewritePolicy {
+
+    DEFAULT,
+    ALL_PARTITIONS;
+
+    public static RewritePolicy fromString(String rewritePolicy) {
+      Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");
+
+      try {
+        return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException var2) {
+        throw new IllegalArgumentException(String.format("Invalid rewrite policy: %s", rewritePolicy), var2);
+      }
     }
   }
   private String getMatchedText(ASTNode n) {
@@ -305,7 +326,7 @@ public class Context {
       case OTHER:
         return DestClausePrefix.INSERT;
       case UPDATE:
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE)) {
+        if (splitUpdate) {
           return getMergeDestClausePrefix(curNode);
         }
         return DestClausePrefix.UPDATE;
@@ -332,11 +353,12 @@ public class Context {
     ASTNode query = (ASTNode) insert.getParent();
     assert query != null && query.getType() == HiveParser.TOK_QUERY;
 
-    for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
+    int tokFromIdx = query.getFirstChildWithType(HiveParser.TOK_FROM).getChildIndex();
+    for (int childIdx = tokFromIdx + 1; childIdx < query.getChildCount(); childIdx++) {
       assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
-      if(insert == query.getChild(childIdx)) {
-        DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx);
-        if(prefix == null) {
+      if (insert == query.getChild(childIdx)) {
+        DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx - tokFromIdx);
+        if (prefix == null) {
           throw new IllegalStateException("Found a node w/o branch mapping: '" +
             getMatchedText(insert) + "'");
         }
@@ -380,8 +402,8 @@ public class Context {
     // all external file systems
     nonLocalScratchPath = new Path(SessionState.getHDFSSessionPath(conf), executionId);
     localScratchDir = new Path(SessionState.getLocalSessionPath(conf), executionId).toUri().getPath();
-    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
-    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR);
+    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION);
+    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGING_DIR);
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
@@ -429,6 +451,7 @@ public class Context {
     this.isUpdateDeleteMerge = ctx.isUpdateDeleteMerge;
     this.isLoadingMaterializedView = ctx.isLoadingMaterializedView;
     this.operation = ctx.operation;
+    this.splitUpdate = ctx.splitUpdate;
     this.wmContext = ctx.wmContext;
     this.isExplainPlan = ctx.isExplainPlan;
     this.statsSource = ctx.statsSource;
@@ -1346,8 +1369,7 @@ public class Context {
   }
 
   public boolean isDeleteBranchOfUpdate(String dest) {
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE) &&
-            !HiveConf.getBoolVar(conf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE)) {
+    if (!splitUpdate) {
       return false;
     }
 

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.service.AcidTxnCleanerService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Assert;

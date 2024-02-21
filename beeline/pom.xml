@@ -183,7 +183,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>4.11.0</version>
+      <version>${mockito-inline.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -243,14 +243,12 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <descriptorRefs>
-                <descriptorRef>jar-with-dependencies</descriptorRef>
-              </descriptorRefs>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
               <finalName>jar-with-dependencies</finalName>
               <transformers>
                 <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.openjdk.jmh.Main</mainClass>
+                  <mainClass>org.apache.hive.beeline.BeeLine</mainClass>
                 </transformer>
               </transformers>
               <filters>

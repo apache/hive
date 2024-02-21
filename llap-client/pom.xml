@@ -56,6 +56,14 @@
       <artifactId>zookeeper</artifactId>
       <exclusions>
         <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
         </exclusion>
@@ -133,7 +141,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>4.11.0</version>
+      <version>${mockito-inline.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

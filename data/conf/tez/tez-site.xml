@@ -1,11 +1,7 @@
 <configuration>
   <property>
     <name>tez.am.resource.memory.mb</name>
-    <value>128</value>
-  </property>
-  <property>
-    <name>tez.task.resource.memory.mb</name>
-    <value>128</value>
+    <value>512</value>
   </property>
   <property>
     <name>tez.runtime.io.sort.mb</name>

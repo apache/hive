@@ -2,7 +2,7 @@ set hive.vectorized.execution.enabled=true;
 
 drop table if exists tbl_ice_parquet;
 create external table tbl_ice_parquet(a int, b string) stored by iceberg stored as parquet
-TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 insert into table tbl_ice_parquet values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five'), (111, 'one'), (22, 'two'), (11, 'one'), (44444, 'four'), (44, 'four');
 analyze table tbl_ice_parquet compute statistics for columns;
 
@@ -22,7 +22,7 @@ create external table tbl_ice_parquet_all_types (
     t_date DATE,
     t_decimal DECIMAL(4,2)
     ) stored by iceberg stored as parquet
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 
 insert into tbl_ice_parquet_all_types values (1.1, 1.2, false, 4, 567890123456789, '6', "col7", cast('2012-10-03 19:58:08' as timestamp), date('1234-09-09'), cast('10.01' as decimal(4,2)));
 
@@ -39,7 +39,7 @@ create external table tbl_ice_parquet_parted (
     b string
     ) partitioned by (p1 string, p2 string)
     stored by iceberg stored as parquet location 'file:/tmp/tbl_ice_parquet_parted'
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 
 insert into tbl_ice_parquet_parted values
                                       (1, 'aa', 'Europe', 'Hungary'),
@@ -85,7 +85,7 @@ create external table tbl_ice_parquet_complex (
     structofarrays struct<names:array<string>, birthdays:array<string>>,
     structofmaps struct<map1:map<string, string>, map2:map<string, string>>
     ) stored by iceberg stored as parquet
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 
 -- insert some test data
 insert into tbl_ice_parquet_complex values (

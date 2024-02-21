@@ -1076,9 +1076,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view12
-POSTHOOK: Lineage: view12.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view12.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: view12.mycol SCRIPT []
-POSTHOOK: Lineage: view12.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: view12.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view12
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view12

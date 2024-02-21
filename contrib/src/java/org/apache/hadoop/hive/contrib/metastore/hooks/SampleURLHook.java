@@ -33,7 +33,7 @@ public class SampleURLHook implements JDOConnectionURLHook {
   @Override
   public String getJdoConnectionUrl(Configuration conf) throws Exception {
     if (originalUrl == null) {
-      originalUrl = conf.get(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "");
+      originalUrl = conf.get(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname, "");
       return "jdbc:derby:;databaseName=target/tmp/junit_metastore_db_blank;create=true";
     } else {
       return originalUrl;

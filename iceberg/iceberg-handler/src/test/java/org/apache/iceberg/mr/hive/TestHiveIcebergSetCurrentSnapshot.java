@@ -21,15 +21,24 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
+import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 /**
  * Tests setting current snapshot feature
  */
 public class TestHiveIcebergSetCurrentSnapshot extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  }
 
   @Test
   public void testSetCurrentSnapshot() throws IOException, InterruptedException {
@@ -59,5 +68,36 @@ public class TestHiveIcebergSetCurrentSnapshot extends HiveIcebergStorageHandler
     HiveIcebergTestUtils.validateData(
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, currentResult),
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, result4), 0);
+  }
+
+  @Test
+  public void testSetCurrentSnapshotBySnapshotRef() throws IOException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "source");
+    Table table =
+        testTables.createTableWithVersions(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 5);
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " CREATE TAG test_tag");
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT('test_tag')");
+    table.refresh();
+    Assert.assertEquals(table.currentSnapshot().snapshotId(), table.refs().get("test_tag").snapshotId());
+
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " CREATE BRANCH test_branch");
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT('test_branch')");
+    table.refresh();
+    Assert.assertEquals(table.currentSnapshot().snapshotId(), table.refs().get("test_branch").snapshotId());
+
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "SnapshotRef unknown_ref does not exist", () -> {
+          shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT('unknown_ref')");
+        });
+
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT" +
+            "(" + table.currentSnapshot().snapshotId() + ")");
+
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "SnapshotRef " + table.currentSnapshot().snapshotId() + " does not exist", () -> {
+          shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE SET_CURRENT_SNAPSHOT" +
+              "('" + table.currentSnapshot().snapshotId() + "')");
+        });
   }
 }

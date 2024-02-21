@@ -118,10 +118,13 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 record_count        	bigint              	Count of records in data files
 file_count          	int                 	Count of data files 
+total_data_file_size_in_bytes	bigint              	Total size in bytes of data files
 position_delete_record_count	bigint              	Count of records in position delete files
 position_delete_file_count	int                 	Count of position delete files
 equality_delete_record_count	bigint              	Count of records in equality delete files
 equality_delete_file_count	int                 	Count of equality delete files
+last_updated_at     	timestamp with local time zone	Commit time of snapshot that last updated this partition
+last_updated_snapshot_id	bigint              	Id of snapshot that last updated this partition
 PREHOOK: query: describe default.ice_meta_desc.all_manifests
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -374,10 +377,13 @@ POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
 record_count        	bigint              	Count of records in data files
 file_count          	int                 	Count of data files 
+total_data_file_size_in_bytes	bigint              	Total size in bytes of data files
 position_delete_record_count	bigint              	Count of records in position delete files
 position_delete_file_count	int                 	Count of position delete files
 equality_delete_record_count	bigint              	Count of records in equality delete files
 equality_delete_file_count	int                 	Count of equality delete files
+last_updated_at     	timestamp with local time zone	Commit time of snapshot that last updated this partition
+last_updated_snapshot_id	bigint              	Id of snapshot that last updated this partition
 PREHOOK: query: describe formatted default.ice_meta_desc.all_manifests
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -633,10 +639,13 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 record_count        	bigint              	Count of records in data files
 file_count          	int                 	Count of data files 
+total_data_file_size_in_bytes	bigint              	Total size in bytes of data files
 position_delete_record_count	bigint              	Count of records in position delete files
 position_delete_file_count	int                 	Count of position delete files
 equality_delete_record_count	bigint              	Count of records in equality delete files
 equality_delete_file_count	int                 	Count of equality delete files
+last_updated_at     	timestamp with local time zone	Commit time of snapshot that last updated this partition
+last_updated_snapshot_id	bigint              	Id of snapshot that last updated this partition
 PREHOOK: query: describe extended default.ice_meta_desc.all_manifests
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc

@@ -1,14 +1,18 @@
 <configuration>
   <property>
-    <name>tez.am.resource.memory.mb</name>
-    <value>128</value>
-  </property>
-  <property>
     <name>tez.am.dag.scheduler.class</name>
     <value>org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled</value>
   </property>
   <property>
     <name>tez.am.resource.memory.mb</name>
     <value>256</value>
+  </property>
+  <property>
+    <name>tez.runtime.io.sort.mb</name>
+    <value>24</value>
+  </property>
+  <property>
+    <name>tez.counters.max</name>
+    <value>1024</value>
   </property>
 </configuration>

@@ -1,2 +1,2 @@
 CONCAT('a', 'b', NULL, 'c'); 
-NVL(CONCAT(NULL, NULL, NULL), 'NULL Value'); 
+NVL2(CONCAT(NULL, NULL, NULL), NULL, 'NULL Value');

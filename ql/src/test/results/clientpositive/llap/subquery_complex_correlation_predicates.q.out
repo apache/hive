@@ -290,3 +290,69 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 Men Without Women
+PREHOOK: query: drop table if exists store_sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists store_sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table store_sales (promo_sk int, sales_price int, list_price int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: create table store_sales (promo_sk int, sales_price int, list_price int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: insert into store_sales values (1, 20, 15), (1, 15, 20), (1, 10, 15)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: insert into store_sales values (1, 20, 15), (1, 15, 20), (1, 10, 15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store_sales
+POSTHOOK: Lineage: store_sales.list_price SCRIPT []
+POSTHOOK: Lineage: store_sales.promo_sk SCRIPT []
+POSTHOOK: Lineage: store_sales.sales_price SCRIPT []
+PREHOOK: query: explain cbo
+select * from store_sales A where exists( 
+select 1 from store_sales B 
+    where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from store_sales A where exists( 
+select 1 from store_sales B 
+    where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSemiJoin(condition=[AND(=($3, $0), =($4, $1))], joinType=[semi])
+  HiveProject(promo_sk=[$0], sales_price=[$1], list_price=[$2])
+    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+      HiveTableScan(table=[[default, store_sales]], table:alias=[a])
+  HiveProject(promo_sk0=[$3], sales_price0=[$4])
+    HiveJoin(condition=[AND(=($3, $0), >($4, $2), <($4, $1))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(promo_sk=[$0], sales_price=[$1], list_price=[$2])
+        HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($1))])
+          HiveTableScan(table=[[default, store_sales]], table:alias=[b])
+      HiveProject(promo_sk=[$0], sales_price=[$1])
+        HiveAggregate(group=[{0, 1}])
+          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[a])
+
+PREHOOK: query: select * from store_sales A where exists( 
+select 1 from store_sales B 
+    where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select * from store_sales A where exists( 
+select 1 from store_sales B 
+    where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####

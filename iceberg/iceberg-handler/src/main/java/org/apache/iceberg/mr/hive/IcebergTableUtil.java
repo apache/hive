@@ -21,24 +21,38 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.SnapshotRef;
+import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -235,13 +249,23 @@ public class IcebergTableUtil {
   /**
    * Set the current snapshot for the iceberg table
    * @param table the iceberg table
-   * @param value parameter of the rollback, that can be a timestamp in millis or a snapshot id
+   * @param value parameter of the rollback, that can be a snapshot id or a SnapshotRef name
    */
-  public static void setCurrentSnapshot(Table table, Long value) {
+  public static void setCurrentSnapshot(Table table, String value) {
     ManageSnapshots manageSnapshots = table.manageSnapshots();
-    LOG.debug("Rolling the iceberg table {} from snapshot id {} to snapshot ID {}", table.name(),
-        table.currentSnapshot().snapshotId(), value);
-    manageSnapshots.setCurrentSnapshot(value);
+    long snapshotId;
+    try {
+      snapshotId = Long.parseLong(value);
+      LOG.debug("Rolling the iceberg table {} from snapshot id {} to snapshot ID {}", table.name(),
+          table.currentSnapshot().snapshotId(), snapshotId);
+    } catch (NumberFormatException e) {
+      String refName = PlanUtils.stripQuotes(value);
+      snapshotId = Optional.ofNullable(table.refs().get(refName)).map(SnapshotRef::snapshotId).orElseThrow(() ->
+          new IllegalArgumentException(String.format("SnapshotRef %s does not exist", refName)));
+      LOG.debug("Rolling the iceberg table {} from snapshot id {} to the snapshot ID {} of SnapshotRef {}",
+          table.name(), table.currentSnapshot().snapshotId(), snapshotId, refName);
+    }
+    manageSnapshots.setCurrentSnapshot(snapshotId);
     manageSnapshots.commit();
   }
 
@@ -264,5 +288,44 @@ public class IcebergTableUtil {
   public static boolean isV2Table(Map<String, String> props) {
     return props != null &&
         "2".equals(props.get(TableProperties.FORMAT_VERSION));
+  }
+
+  public static boolean isCopyOnWriteMode(Context.Operation operation, BinaryOperator<String> props) {
+    String mode = null;
+    switch (operation) {
+      case DELETE:
+        mode = props.apply(TableProperties.DELETE_MODE,
+            TableProperties.DELETE_MODE_DEFAULT);
+        break;
+      case UPDATE:
+        mode = props.apply(TableProperties.UPDATE_MODE,
+            TableProperties.UPDATE_MODE_DEFAULT);
+        break;
+      case MERGE:
+        mode = props.apply(TableProperties.MERGE_MODE,
+            TableProperties.MERGE_MODE_DEFAULT);
+        break;
+    }
+    return RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(mode);
+  }
+
+  public static void performMetadataDelete(Table icebergTable, String branchName, SearchArgument sarg) {
+    Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    DeleteFiles deleteFiles = icebergTable.newDelete();
+    if (StringUtils.isNotEmpty(branchName)) {
+      deleteFiles = deleteFiles.toBranch(HiveUtils.getTableSnapshotRef(branchName));
+    }
+    deleteFiles.deleteFromRowFilter(exp).commit();
+  }
+
+  public static PartitionData toPartitionData(StructLike key, Types.StructType keyType) {
+    PartitionData data = new PartitionData(keyType);
+    for (int i = 0; i < keyType.fields().size(); i++) {
+      Object val = key.get(i, keyType.fields().get(i).type().typeId().javaClass());
+      if (val != null) {
+        data.set(i, val);
+      }
+    }
+    return data;
   }
 }

@@ -21,15 +21,23 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnapshot;
 
 public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  }
 
   @Test
   public void testCreateBranchWithDefaultConfig() throws InterruptedException, IOException {
@@ -229,5 +237,19 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     Assertions.assertThatThrownBy(() -> shell.executeStatement(String.format(
             "ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s", branchName2, branchName1)))
         .isInstanceOf(IllegalArgumentException.class).hasMessageEndingWith("does not exist");
+  }
+
+  @Test
+  public void testCreateBranchWithNonLowerCase() throws InterruptedException, IOException {
+    Table table =
+        testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    String branchName = "test_Branch_1";
+    Long snapshotId = table.history().get(0).snapshotId();
+    shell.executeStatement(
+        String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_VERSION AS OF %d", branchName, snapshotId));
+    // Select with non-lower case branch name shouldn't throw exception.
+    shell.executeStatement(String.format("SELECT * FROM default.customers.branch_%s", branchName));
   }
 }

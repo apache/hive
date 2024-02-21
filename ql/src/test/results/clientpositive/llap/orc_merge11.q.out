@@ -76,7 +76,7 @@ PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -168,7 +168,7 @@ ________________________________________________________________________________
 -- END ORC FILE DUMP --
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -281,7 +281,7 @@ PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 100000
 Compression: ZLIB
 Compression size: 4096

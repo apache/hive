@@ -600,7 +600,7 @@ struct ColumnStatistics {
 2: required list<ColumnStatisticsObj> statsObj,
 3: optional bool isStatsCompliant, // Are the stats isolation-level-compliant with the
                                                       // the calling query?
-4: optional string engine
+4: optional string engine = "hive"
 }
 
 // FileMetadata represents the table-level (in case of unpartitioned) or partition-level
@@ -725,7 +725,7 @@ struct SetPartitionsStatsRequest {
 2: optional bool needMerge, //stats need to be merged with the existing stats
 3: optional i64 writeId=-1,         // writeId for the current query that updates the stats
 4: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
-5: required string engine //engine creating the current request
+5: optional string engine = "hive" //engine creating the current request
 }
 
 struct SetPartitionsStatsResponse {
@@ -880,7 +880,9 @@ struct PartitionsByExprRequest {
   7: optional string order
   8: optional string validWriteIdList,
   9: optional i64 id=-1, // table id
-  10: optional bool skipColumnSchemaForPartition
+  10: optional bool skipColumnSchemaForPartition,
+  11: optional string includeParamKeyPattern,
+  12: optional string excludeParamKeyPattern
 }
 
 struct TableStatsResult {
@@ -899,7 +901,7 @@ struct TableStatsRequest {
  3: required list<string> colNames
  4: optional string catName,
  5: optional string validWriteIdList,  // valid write id list for the table for which this struct is being sent
- 6: required string engine, //engine creating the current request
+ 6: optional string engine = "hive", //engine creating the current request
  7: optional i64 id=-1 // table id
 }
 
@@ -910,7 +912,7 @@ struct PartitionsStatsRequest {
  4: required list<string> partNames,
  5: optional string catName,
  6: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
- 7: required string engine //engine creating the current request
+ 7: optional string engine = "hive" //engine creating the current request
 }
 
 // Return type for add_partitions_req
@@ -991,11 +993,13 @@ struct GetPartitionsByNamesRequest {
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
-  7: optional string engine,
+  7: optional string engine = "hive",
   8: optional string validWriteIdList,
   9: optional bool getFileMetadata,
   10: optional i64 id=-1,  // table id
-  11: optional bool skipColumnSchemaForPartition
+  11: optional bool skipColumnSchemaForPartition,
+  12: optional string includeParamKeyPattern,
+  13: optional string excludeParamKeyPattern
 }
 
 struct GetPartitionsByNamesResult {
@@ -1483,6 +1487,9 @@ struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
     3: optional list<string> eventTypeSkipList,
+    4: optional string catName,
+    5: optional string dbName,
+    6: optional list<string> tableNames
 }
 
 struct NotificationEvent {
@@ -1509,7 +1516,8 @@ struct NotificationEventsCountRequest {
     2: required string dbName,
     3: optional string catName,
     4: optional i64 toEventId,
-    5: optional i64 limit
+    5: optional i64 limit,
+    6: optional list<string> tableNames
 }
 
 struct NotificationEventsCountResponse {
@@ -1702,7 +1710,7 @@ struct GetTableRequest {
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
   9: optional string processorIdentifier,
-  10: optional string engine,
+  10: optional string engine = "hive",
   11: optional i64 id=-1 // table id
 }
 
@@ -2306,7 +2314,9 @@ struct PartitionsRequest { // Not using Get prefix as that name is already used 
    4: optional i16 maxParts=-1,
    5: optional string validWriteIdList,
    6: optional i64 id=-1, // table id
-   7: optional bool skipColumnSchemaForPartition
+   7: optional bool skipColumnSchemaForPartition,
+   8: optional string includeParamKeyPattern,
+   9: optional string excludeParamKeyPattern
 }
 
 struct PartitionsResponse { // Not using Get prefix as that name is already used for a different method
@@ -2319,7 +2329,9 @@ struct GetPartitionsByFilterRequest {
    3: string tblName,
    4: string filter,
    5: optional i16 maxParts=-1,
-   6: optional bool skipColumnSchemaForPartition
+   6: optional bool skipColumnSchemaForPartition,
+   7: optional string includeParamKeyPattern,
+   8: optional string excludeParamKeyPattern
 }
 
 struct GetPartitionNamesPsRequest {
@@ -2346,7 +2358,10 @@ struct GetPartitionsPsWithAuthRequest {
    7: optional list<string> groupNames,
    8: optional string validWriteIdList,
    9: optional i64 id=-1 // table id
-   10: optional bool skipColumnSchemaForPartition
+   10: optional bool skipColumnSchemaForPartition,
+   11: optional string includeParamKeyPattern,
+   12: optional string excludeParamKeyPattern,
+   13: optional list<string> partNames;
 }
 
 struct GetPartitionsPsWithAuthResponse {

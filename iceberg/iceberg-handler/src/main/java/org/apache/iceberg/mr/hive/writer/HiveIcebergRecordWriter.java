@@ -29,9 +29,11 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.ClusteredDataWriter;
 import org.apache.iceberg.io.DataWriteResult;
+import org.apache.iceberg.io.FanoutDataWriter;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
+import org.apache.iceberg.io.PartitioningWriter;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.mapred.Container;
 
@@ -41,9 +43,8 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
 
   HiveIcebergRecordWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io,
-      long targetFileSize) {
-    super(schema, specs, io,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, targetFileSize));
+      long targetFileSize, boolean fanoutEnabled) {
+    super(schema, specs, io, getIcebergDataWriter(fileWriterFactory, fileFactory, io, targetFileSize, fanoutEnabled));
     this.currentSpecId = currentSpecId;
   }
 
@@ -57,5 +58,12 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
   public FilesForCommit files() {
     List<DataFile> dataFiles = ((DataWriteResult) writer.result()).dataFiles();
     return FilesForCommit.onlyData(dataFiles);
+  }
+
+  private static PartitioningWriter getIcebergDataWriter(FileWriterFactory<Record> fileWriterFactory,
+      OutputFileFactory fileFactory, FileIO io,
+      long targetFileSize, boolean fanoutEnabled) {
+    return fanoutEnabled ? new FanoutDataWriter<>(fileWriterFactory, fileFactory, io, targetFileSize)
+      : new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, targetFileSize);
   }
 }

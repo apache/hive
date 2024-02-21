@@ -85,11 +85,11 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
 
     if (isTez(conf)) {
-      conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+      conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     }
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
@@ -480,8 +480,8 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
   @Test public void testMmMinorCompactionWithSchemaEvolutionNoBucketsMultipleReducers()
       throws Exception {
     HiveConf hiveConf = new HiveConf(conf);
-    hiveConf.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
-    hiveConf.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
+    hiveConf.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 2);
+    hiveConf.setIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS, 2);
     driver = DriverFactory.newDriver(hiveConf);
     String dbName = "default";
     String tblName = "testMmMinorCompactionWithSchemaEvolutionNoBucketsMultipleReducers";
@@ -638,7 +638,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
    * Set to true to cause all transactions to be rolled back, until set back to false.
    */
   private static void rollbackAllTxns(boolean val, IDriver driver) {
-    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, val);
+    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, val);
   }
 
   private boolean isTez(HiveConf conf){

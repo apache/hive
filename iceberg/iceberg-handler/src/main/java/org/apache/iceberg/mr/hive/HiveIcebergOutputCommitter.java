@@ -42,7 +42,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
@@ -56,11 +58,13 @@ import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.OverwriteFiles;
 import org.apache.iceberg.ReplacePartitions;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
@@ -140,12 +144,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               if (writers.get(output) != null) {
                 Collection<DataFile> dataFiles = Lists.newArrayList();
                 Collection<DeleteFile> deleteFiles = Lists.newArrayList();
+                Collection<DataFile> referencedDataFiles = Lists.newArrayList();
                 for (HiveIcebergWriter writer : writers.get(output)) {
                   FilesForCommit files = writer.files();
                   dataFiles.addAll(files.dataFiles());
                   deleteFiles.addAll(files.deleteFiles());
+                  referencedDataFiles.addAll(files.referencedDataFiles());
                 }
-                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles), fileForCommitLocation, table.io());
+                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles),
+                    fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
@@ -405,6 +412,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
     List<DataFile> dataFiles = Lists.newArrayList();
     List<DeleteFile> deleteFiles = Lists.newArrayList();
+    List<DataFile> referencedDataFiles = Lists.newArrayList();
 
     Table table = null;
     String branchName = null;
@@ -431,9 +439,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           numTasks, executor, outputTable.table.location(), jobContext, io, true);
       dataFiles.addAll(writeResults.dataFiles());
       deleteFiles.addAll(writeResults.deleteFiles());
+      referencedDataFiles.addAll(writeResults.referencedDataFiles());
     }
 
-    FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles);
+    FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles);
     long startTime = System.currentTimeMillis();
 
     if (Operation.IOW != operation) {
@@ -447,7 +456,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation);
       }
     } else {
-      commitOverwrite(table, branchName, startTime, filesForCommit);
+
+      RewritePolicy rewritePolicy = RewritePolicy.fromString(outputTable.jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
+          .orElse(RewritePolicy.DEFAULT.name()));
+
+      commitOverwrite(table, branchName, startTime, filesForCommit, rewritePolicy);
     }
   }
 
@@ -469,6 +484,22 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitWrite(Table table, String branchName, Long snapshotId, long startTime,
       FilesForCommit results, Operation operation) {
+
+    if (!results.referencedDataFiles().isEmpty()) {
+      OverwriteFiles write = table.newOverwrite();
+      results.referencedDataFiles().forEach(write::deleteFile);
+      results.dataFiles().forEach(write::addFile);
+
+      if (StringUtils.isNotEmpty(branchName)) {
+        write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
+      }
+      if (snapshotId != null) {
+        write.validateFromSnapshot(snapshotId);
+      }
+      write.validateNoConflictingData();
+      write.commit();
+      return;
+    }
 
     if (results.deleteFiles().isEmpty() && Operation.MERGE != operation) {
       AppendFiles write = table.newAppend();
@@ -510,16 +541,25 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param table The table we are changing
    * @param startTime The start time of the commit - used only for logging
    * @param results The object containing the new files
+   * @param rewritePolicy The rewrite policy to use for the insert overwrite commit
    */
-  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results) {
+  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results,
+      RewritePolicy rewritePolicy) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
-      ReplacePartitions overwrite = table.newReplacePartitions();
+      Transaction transaction = table.newTransaction();
+      if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
+        DeleteFiles delete = transaction.newDelete();
+        delete.deleteFromRowFilter(Expressions.alwaysTrue());
+        delete.commit();
+      }
+      ReplacePartitions overwrite = transaction.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
       if (StringUtils.isNotEmpty(branchName)) {
         overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
       overwrite.commit();
+      transaction.commitTransaction();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());
     } else if (table.spec().isUnpartitioned()) {
@@ -620,6 +660,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     // starting from 0.
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
+    Collection<DataFile> referencedDataFiles = new ConcurrentLinkedQueue<>();
     Tasks.range(numTasks)
         .throwFailureWhenFinished(throwOnFailure)
         .executeWith(executor)
@@ -629,9 +670,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           FilesForCommit files = readFileForCommit(taskFileName, io);
           dataFiles.addAll(files.dataFiles());
           deleteFiles.addAll(files.deleteFiles());
+          referencedDataFiles.addAll(files.referencedDataFiles());
+
         });
 
-    return new FilesForCommit(dataFiles, deleteFiles);
+    return new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles);
   }
 
   /**
@@ -644,7 +687,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   @VisibleForTesting
   static String generateJobLocation(String location, Configuration conf, JobID jobId) {
-    String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     return location + "/temp/" + queryId + "-" + jobId;
   }
 

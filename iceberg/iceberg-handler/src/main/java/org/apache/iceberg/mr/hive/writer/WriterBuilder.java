@@ -31,6 +31,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFileFactory;
+import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.util.PropertyUtil;
 
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
@@ -44,6 +45,8 @@ public class WriterBuilder {
   private String queryId;
   private int poolSize;
   private Operation operation;
+  private boolean fanoutEnabled;
+
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
   private static AtomicInteger operationNum = new AtomicInteger(0);
 
@@ -84,6 +87,11 @@ public class WriterBuilder {
     return this;
   }
 
+  public WriterBuilder isFanoutEnabled(boolean isFanoutEnabled) {
+    this.fanoutEnabled = isFanoutEnabled;
+    return this;
+  }
+
   public HiveIcebergWriter build() {
     Map<String, String> properties = table.properties();
 
@@ -121,19 +129,24 @@ public class WriterBuilder {
             skipRowData ? null : dataSchema);
 
     HiveIcebergWriter writer;
-    switch (operation) {
-      case DELETE:
-        writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
+    if (IcebergTableUtil.isCopyOnWriteMode(operation, properties::getOrDefault)) {
+      writer = new HiveIcebergCopyOnWriteRecordWriter(dataSchema, specs, currentSpecId, writerFactory,
+        outputFileFactory, io, targetFileSize);
+    } else {
+      switch (operation) {
+        case DELETE:
+          writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
             io, targetFileSize, skipRowData);
-        break;
-      case OTHER:
-        writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
-            io, targetFileSize);
-        break;
-      default:
-        // Update and Merge should be splitted to inserts and deletes
-        throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
-                operation.name());
+          break;
+        case OTHER:
+          writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
+            io, targetFileSize, fanoutEnabled);
+          break;
+        default:
+          // Update and Merge should be splitted to inserts and deletes
+          throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
+            operation.name());
+      }
     }
 
     WriterRegistry.registerWriter(attemptID, tableName, writer);

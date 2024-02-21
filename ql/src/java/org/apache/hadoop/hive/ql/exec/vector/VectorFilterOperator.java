@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -84,7 +83,7 @@ public class VectorFilterOperator extends FilterOperator
     VectorExpression.doTransientInit(predicateExpression, hconf);
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
-          HiveConf.ConfVars.HIVESENDHEARTBEAT);
+          HiveConf.ConfVars.HIVE_SEND_HEARTBEAT);
 
       predicateExpression.init(hconf);
     } catch (Throwable e) {

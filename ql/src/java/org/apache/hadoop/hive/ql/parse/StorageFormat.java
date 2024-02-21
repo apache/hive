@@ -170,7 +170,7 @@ public class StorageFormat {
     return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(name));
   }
 
-  protected void processStorageFormat(String name) throws SemanticException {
+  public void processStorageFormat(String name) throws SemanticException {
     StorageFormatDescriptor descriptor = getDescriptor(name, "STORED AS clause");
     inputFormat = ensureClassExists(descriptor.getInputFormat());
     outputFormat = ensureClassExists(descriptor.getOutputFormat());
@@ -180,9 +180,9 @@ public class StorageFormat {
     if (serde == null) {
       // RCFile supports a configurable SerDe
       if (name.equalsIgnoreCase(IOConstants.RCFILE)) {
-        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE));
+        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_RCFILE_SERDE));
       } else {
-        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTSERDE));
+        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_SERDE));
       }
     }
   }
@@ -197,8 +197,8 @@ public class StorageFormat {
             HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_FILE_FORMAT);
         serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_SERDE);
       } else {
-        defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
-        defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);
+        defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_FILEFORMAT);
+        defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_MANAGED_FILEFORMAT);
       }
 
       if (!isExternal && !"none".equals(defaultManagedFormat)) {
@@ -211,7 +211,7 @@ public class StorageFormat {
       } else {
         processStorageFormat(defaultFormat);
         if (defaultFormat.equalsIgnoreCase(IOConstants.RCFILE)) {
-          serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
+          serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_RCFILE_SERDE);
         }
       }
     }

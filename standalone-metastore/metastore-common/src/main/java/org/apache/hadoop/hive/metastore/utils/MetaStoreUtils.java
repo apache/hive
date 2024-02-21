@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -286,10 +287,14 @@ public class MetaStoreUtils {
     return isExternal(params);
   }
 
+  public static boolean isIcebergTable(Map<String, String> params) {
+    return HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
+  }
+
   public static boolean isTranslatedToExternalTable(Table table) {
     Map<String, String> params = table.getParameters();
-    return params != null && MetaStoreUtils.isPropertyTrue(params, "EXTERNAL")
-        && MetaStoreUtils.isPropertyTrue(params, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
+    return params != null && MetaStoreUtils.isPropertyTrue(params, HiveMetaHook.EXTERNAL)
+        && MetaStoreUtils.isPropertyTrue(params, HiveMetaHook.TRANSLATED_TO_EXTERNAL) && table.getSd() != null
         && table.getSd().isSetLocation();
   }
 
@@ -1259,6 +1264,23 @@ public class MetaStoreUtils {
       result.setId(tableId);
     }
     return result;
+  }
+
+  public static <T> T createThriftPartitionsReq(Class<T> clazz, Configuration conf, T... deepCopy) {
+    final T req;
+    if (deepCopy != null && deepCopy.length == 1) {
+      assert clazz.isAssignableFrom(deepCopy[0].getClass());
+      req = JavaUtils.newInstance(clazz, new Class[]{clazz}, deepCopy);
+    } else {
+      req = JavaUtils.newInstance(clazz);
+    }
+    JavaUtils.setField(req, "setSkipColumnSchemaForPartition", new Class[]{boolean.class},
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS));
+    JavaUtils.setField(req, "setIncludeParamKeyPattern", new Class[]{String.class},
+        MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN));
+    JavaUtils.setField(req, "setExcludeParamKeyPattern", new Class[]{String.class},
+        MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN));
+    return req;
   }
 
   /**

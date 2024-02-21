@@ -19,17 +19,18 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import com.google.common.base.Joiner;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * Helper utilities used by DirectSQL code in HiveMetastore.
@@ -165,24 +165,6 @@ class MetastoreDirectSqlUtils {
     }
     timingTrace(doTrace, queryText, start, queryTime);
     return rv;
-  }
-
-  static void setPartitionParameters(String PARTITION_PARAMS, boolean convertMapNullsToEmptyStrings,
-      PersistenceManager pm, String partIds, TreeMap<Long, Partition> partitions)
-      throws MetaException {
-    String queryText;
-    queryText = "select \"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from " + PARTITION_PARAMS + ""
-        + " where \"PART_ID\" in (" + partIds + ") and \"PARAM_KEY\" is not null"
-        + " order by \"PART_ID\" asc";
-    loopJoinOrderedResult(pm, partitions, queryText, 0, new ApplyFunc<Partition>() {
-      @Override
-      public void apply(Partition t, Object[] fields) {
-        t.putToParameters(extractSqlClob(fields[1]), extractSqlClob(fields[2]));
-      }});
-    // Perform conversion of null map values
-    for (Partition t : partitions.values()) {
-      t.setParameters(MetaStoreServerUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
-    }
   }
 
   static void setPartitionParametersWithFilter(String PARTITION_PARAMS,
@@ -512,6 +494,19 @@ class MetastoreDirectSqlUtils {
     for (SerDeInfo t : serdes.values()) {
       t.setParameters(MetaStoreServerUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
     }
+  }
+
+  static void setFunctionResourceUris(String FUNC_RU, PersistenceManager pm, String funcIds,
+      TreeMap<Long, Function> functions)
+      throws MetaException {
+    String queryText;
+    queryText = "select \"FUNC_ID\", \"RESOURCE_TYPE\", \"RESOURCE_URI\" from " +  FUNC_RU
+        + " where \"FUNC_ID\" in (" + funcIds + ")"
+        + " order by \"FUNC_ID\" asc, \"INTEGER_IDX\" asc";
+    loopJoinOrderedResult(pm, functions, queryText, 0, (t, fields) -> {
+      ResourceUri resourceUri = new ResourceUri(ResourceType.findByValue((int)fields[1]), (String) fields[2]);
+      t.getResourceUris().add(resourceUri);
+    });
   }
 
   /**

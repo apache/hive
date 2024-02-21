@@ -95,6 +95,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION;
 import static org.apache.iceberg.TableProperties.GC_ENABLED;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.junit.runners.Parameterized.Parameter;
@@ -194,7 +195,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.locationForCreateTableSQL(identifier) +
         " TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(schema) + "', " +
-        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "'" +
+        ", " + "'format-version'='1')");
 
     shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (month(ts))");
 
@@ -238,7 +240,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(schema) + "', " +
-        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "'" +
+        ", " + "'format-version'='1')");
 
     PartitionSpec spec = PartitionSpec.builderFor(schema)
         .year("year_field")
@@ -326,7 +329,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(schema) + "', " +
-        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "'" +
+        ", " + "'format-version'='1')");
 
     PartitionSpec spec = PartitionSpec.builderFor(schema)
         .truncate("truncate_field", 2)
@@ -397,7 +401,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(schema) + "', " +
-        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "'" +
+        ", " + "'format-version'='1')");
 
     PartitionSpec spec = PartitionSpec.builderFor(schema)
         .truncate("truncate_field", 2)
@@ -990,6 +995,9 @@ public class TestHiveIcebergStorageHandlerNoScan {
     expectedIcebergProperties.put("EXTERNAL", "TRUE");
     expectedIcebergProperties.put("storage_handler", HiveIcebergStorageHandler.class.getName());
     expectedIcebergProperties.put(serdeConstants.SERIALIZATION_FORMAT, "1");
+    expectedIcebergProperties.put(
+        TableProperties.PARQUET_COMPRESSION,
+        TableProperties.PARQUET_COMPRESSION_DEFAULT_SINCE_1_4_0);
 
     // Check the HMS table parameters
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
@@ -1000,9 +1008,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Properties tableProperties = new Properties();
     tableProperties.putAll(hmsParams);
 
-    if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      expectedIcebergProperties.put(TableProperties.ENGINE_HIVE_ENABLED, "true");
-    }
     if (HiveVersion.min(HiveVersion.HIVE_3)) {
       expectedIcebergProperties.put("bucketing_version", "2");
     }
@@ -1012,7 +1017,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertEquals(13, hmsParams.size());
       Assert.assertEquals("initial_val", hmsParams.get("custom_property"));
       Assert.assertEquals("TRUE", hmsParams.get("EXTERNAL"));
-      Assert.assertEquals("true", hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
       Assert.assertEquals(HiveIcebergStorageHandler.class.getName(),
           hmsParams.get(hive_metastoreConstants.META_TABLE_STORAGE));
       Assert.assertEquals(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(),
@@ -1046,7 +1050,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(16, hmsParams.size()); // 2 newly-added properties + previous_metadata_location prop
+      // 2 newly-added properties + previous_metadata_location prop + explicit Parquet compression
+      Assert.assertEquals(16, hmsParams.size());
       Assert.assertEquals("true", hmsParams.get("new_prop_1"));
       Assert.assertEquals("false", hmsParams.get("new_prop_2"));
       Assert.assertEquals("new_val", hmsParams.get("custom_property"));
@@ -1480,31 +1485,59 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testAuthzURI() throws TException, InterruptedException, URISyntaxException {
+  public void testAuthzURIMasked() throws TException, URISyntaxException, InterruptedException {
+    testAuthzURI(true);
+  }
+
+  @Test
+  public void testAuthzURIUnmasked() throws TException, URISyntaxException, InterruptedException {
+    testAuthzURI(false);
+  }
+
+  public void testAuthzURI(boolean masked) throws TException, InterruptedException, URISyntaxException {
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
 
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+
+    String metadataLocation =
+        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+            hmsTable.getSd().getLocation());
+
+    if (masked) {
+      Assert.assertTrue(metadataLocation.startsWith(HiveIcebergStorageHandler.TABLE_DEFAULT_LOCATION));
+    }
 
     Assert.assertEquals("iceberg://" +
             HiveIcebergStorageHandler.encodeString(target.namespace().toString()) + "/" +
             HiveIcebergStorageHandler.encodeString(target.name()) + "?snapshot=" +
             HiveIcebergStorageHandler.encodeString(
-            URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()),
+            URI.create(metadataLocation).getPath()),
         uriForAuth.toString());
 
     Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
-        URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath(),
+        URI.create(metadataLocation).getPath(),
         HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
 
   }
 
   @Test
-  public void testAuthzURIWithAuthEnabledWithMetadataLocation() throws HiveException {
+  public void testAuthzURIWithAuthEnabledWithMetadataLocationMasked() throws HiveException {
+    testAuthzURIWithAuthEnabledWithMetadataLocation(true);
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledWithMetadataLocationUnmasked() throws HiveException {
+    testAuthzURIWithAuthEnabledWithMetadataLocation(false);
+  }
+
+  public void testAuthzURIWithAuthEnabledWithMetadataLocation(boolean masked) throws HiveException {
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
         "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
@@ -1536,7 +1569,21 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizer() throws HiveException {
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizerMasked()
+      throws HiveException, TException, InterruptedException {
+    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    testAuthzURIWithAuthEnabledAndMockCommandAuthorizer(true);
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizerUnmasked()
+      throws HiveException, TException, InterruptedException {
+    testAuthzURIWithAuthEnabledAndMockCommandAuthorizer(false);
+  }
+
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizer(boolean masked)
+      throws HiveException, TException, InterruptedException {
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
         "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
@@ -1550,8 +1597,18 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Optional<HivePrivilegeObject> hivePrivObject = outputHObjsCaptor.getValue().stream()
         .filter(hpo -> hpo.getType().equals(HivePrivilegeObject.HivePrivilegeObjectType.STORAGEHANDLER_URI)).findAny();
     if (hivePrivObject.isPresent()) {
+      org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
+      HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+      storageHandler.setConf(shell.getHiveConf());
+      String metadataLocation = HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(
+          storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+              hmsTable.getSd().getLocation()));
+
+      if (masked) {
+        Assert.assertTrue(metadataLocation.startsWith(HiveIcebergStorageHandler.TABLE_DEFAULT_LOCATION));
+      }
       Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
-              new Path(((BaseTable) table).operations().current().metadataFileLocation()).getParent().toUri()
+              new Path(metadataLocation).getParent().toUri()
                   .getPath() +
               "/dummy.metadata.json",
           HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(hivePrivObject.get().getObjectName()));
@@ -1561,7 +1618,18 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testAuthzURIWithAuthEnabled() throws TException, InterruptedException, URISyntaxException {
+  public void testAuthzURIWithAuthEnabledMasked() throws TException, URISyntaxException, InterruptedException {
+    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    testAuthzURIWithAuthEnabled(true);
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledUnmasked() throws TException, URISyntaxException, InterruptedException {
+    testAuthzURIWithAuthEnabled(false);
+  }
+
+  public void testAuthzURIWithAuthEnabled(boolean masked) throws TException, InterruptedException, URISyntaxException {
+    shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1571,9 +1639,15 @@ public class TestHiveIcebergStorageHandlerNoScan {
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+    String metadataLocation =
+        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+            hmsTable.getSd().getLocation());
+
+    if (masked) {
+      Assert.assertTrue(metadataLocation.startsWith(HiveIcebergStorageHandler.TABLE_DEFAULT_LOCATION));
+    }
     Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
-        URI.create(((BaseTable) table).operations().current()
-        .metadataFileLocation()).getPath(),
+        URI.create(metadataLocation).getPath(),
         HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
   }
 
@@ -1904,7 +1978,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     String dBName = "testdb";
     String tableName = "tbl";
     String dbWithSuffix = "/" + dBName + ".db";
-    String dbManagedLocation = shell.getHiveConf().get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname) + dbWithSuffix;
+    String dbManagedLocation = shell.getHiveConf().get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname) + dbWithSuffix;
     String dbExternalLocation = shell.getHiveConf().get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname) +
         dbWithSuffix;
     Path noExistedTblPath = new Path(dbManagedLocation + "/" + tableName);
@@ -1930,6 +2004,54 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("DROP TABLE " + dBName + "." + tableName);
     // external table location should still exist if table is dropped as external.table.purge is default false.
     Assert.assertTrue(hmsTblLocation.getFileSystem(shell.getHiveConf()).exists(hmsTblLocation));
+  }
+
+  @Test
+  public void testSnycProperties() throws TException, InterruptedException {
+    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    // Test create v2 iceberg table and check iceberg properties & hms properties
+    TableIdentifier identifier = TableIdentifier.of("default", "customers_v2");
+    shell.executeStatement("CREATE TABLE customers_v2 (id int, name string) Stored by Iceberg stored as ORC " +
+        "TBLPROPERTIES ('format-version'='2','write.delete.mode'='copy-on-write')");
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers_v2");
+    Map<String, String> icePros = icebergTable.properties();
+    Map<String, String> hmsProps = hmsTable.getParameters();
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), HiveIcebergStorageHandler.COPY_ON_WRITE);
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), hmsProps.get(TableProperties.DELETE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), hmsProps.get(TableProperties.UPDATE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), hmsProps.get(TableProperties.MERGE_MODE));
+
+    // Test create v1 iceberg table and check its properties before and after it upgrades to v2
+    identifier = TableIdentifier.of("default", "customers_v1");
+    shell.executeStatement("CREATE TABLE customers_v1 (id int, name string) Stored by Iceberg stored as ORC " +
+        "TBLPROPERTIES ('format-version'='1')");
+    icebergTable = testTables.loadTable(identifier);
+    hmsTable = shell.metastore().getTable("default", "customers_v1");
+    icePros = icebergTable.properties();
+    hmsProps = hmsTable.getParameters();
+    // check v1 iceberg table properties
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), null);
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), null);
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), null);
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), hmsProps.get(TableProperties.DELETE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), hmsProps.get(TableProperties.UPDATE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), hmsProps.get(TableProperties.MERGE_MODE));
+    // check table properties after upgrading to v2
+    shell.executeStatement("ALTER TABLE customers_v1 SET TBLPROPERTIES ('format-version'='2')");
+    icebergTable = testTables.loadTable(identifier);
+    hmsTable = shell.metastore().getTable("default", "customers_v1");
+    icePros = icebergTable.properties();
+    hmsProps = hmsTable.getParameters();
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), HiveIcebergStorageHandler.MERGE_ON_READ);
+    Assert.assertEquals(icePros.get(TableProperties.DELETE_MODE), hmsProps.get(TableProperties.DELETE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.UPDATE_MODE), hmsProps.get(TableProperties.UPDATE_MODE));
+    Assert.assertEquals(icePros.get(TableProperties.MERGE_MODE), hmsProps.get(TableProperties.MERGE_MODE));
   }
 
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {

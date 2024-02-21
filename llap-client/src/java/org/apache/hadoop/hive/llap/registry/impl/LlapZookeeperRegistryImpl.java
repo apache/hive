@@ -168,6 +168,16 @@ public class LlapZookeeperRegistryImpl
     String uniqueId = UNIQUE_ID.toString();
     long znodeCreationTimeout = 120;
 
+    /* When no LLAP executors are running, the getInstances()/ llapRegistryService.getInstances() method results in
+     InvalidACL exception when Hive tries to evict the cache in DROP DATABASE/TABLE
+
+     As ContainerManager of zookeeper makes sure to cleanup znodes periodically, once query-coordinator zookeeper
+     client session is terminated,entire path will get deleted sooner or later. This results in InvalidACL exception
+
+     PersistentNode created on server will be preserved through restarts of query executor and makes sure
+     proactive eviction call of DROP DATABASE/ DROP TABLE go through
+     successfully. */
+    ensurePersistentNodePath(daemonZkRecord);
     initializeWithoutRegisteringInternal();
     // Create a znode under the rootNamespace parent for this instance of the server
     try {

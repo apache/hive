@@ -70,13 +70,13 @@ POSTHOOK: query: explain truncate table test_ice_int partition (a = 22)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_ice_int@a=22
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -119,10 +119,10 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.test_ice_int
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -132,7 +132,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.test_ice_int
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
@@ -281,13 +281,13 @@ POSTHOOK: query: explain truncate table test_ice_bigint partition (a = 226784902
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_ice_bigint@a=226784902765739
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -330,10 +330,10 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.test_ice_bigint
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -343,7 +343,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.test_ice_bigint
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
@@ -518,13 +518,13 @@ POSTHOOK: query: explain truncate table test_ice_str partition (b = 'ddd')
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_ice_str@b=ddd
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -567,10 +567,10 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.test_ice_str
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -580,7 +580,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.test_ice_str
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
@@ -775,13 +775,13 @@ POSTHOOK: query: explain truncate table test_ice_date partition (b = '2022-02-07
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_ice_date@b=2022-02-07
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -824,10 +824,10 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.test_ice_date
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -837,7 +837,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.test_ice_date
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
@@ -979,13 +979,13 @@ POSTHOOK: query: explain truncate table test_ice_double partition (a = 115674892
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_ice_double@a=115674892756.67590946
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -1028,10 +1028,10 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.test_ice_double
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -1041,7 +1041,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.test_ice_double
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
@@ -1177,13 +1177,13 @@ POSTHOOK: query: explain truncate table test_ice_double_date partition (a = 1156
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_ice_double_date@a=115674892756.67590946/b=2022-02-07
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -1225,10 +1225,10 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.test_ice_double_date
 
-  Stage: Stage-2
+  Stage: Stage-3
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: false
@@ -1238,7 +1238,7 @@ STAGE PLANS:
               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
               name: default.test_ice_double_date
 
-  Stage: Stage-3
+  Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
