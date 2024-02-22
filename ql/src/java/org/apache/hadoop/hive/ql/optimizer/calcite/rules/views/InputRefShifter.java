@@ -23,26 +23,26 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.tools.RelBuilder;
 
+/**
+ * Shift input reference index by the specified amount (shift) if the referenced column index is higher or equals with
+ * the startIndex.
+ */
 public class InputRefShifter extends RexShuttle {
   private final int startIndex;
+  private final int shift;
   private final RelBuilder relBuilder;
 
-  InputRefShifter(int startIndex, RelBuilder relBuilder) {
+  InputRefShifter(int startIndex, int shift, RelBuilder relBuilder) {
     this.startIndex = startIndex;
+    this.shift = shift;
     this.relBuilder = relBuilder;
   }
 
-  /**
-   * Shift input reference index by one if the referenced column index is higher or equals with the startIndex.
-   * @param inputRef - {@link RexInputRef} to transform
-   * @return new {@link RexInputRef} if the referenced column index is higher or equals with the startIndex,
-   * original otherwise
-   */
   @Override
   public RexNode visitInputRef(RexInputRef inputRef) {
     if (inputRef.getIndex() >= startIndex) {
       RexBuilder rexBuilder = relBuilder.getRexBuilder();
-      return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + 1);
+      return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + shift);
     }
     return inputRef;
   }
