@@ -140,49 +140,55 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
     if (actual == null && formal == null) {
       return;
     }
-    int actualCnt = actualValues == null ? 0 : actualValues.size();
+    int actualCnt = (actualValues == null) ? 0 : actualValues.size();
     int passedParamCnt = actualCnt;
     List<HplsqlParser.Create_routine_param_itemContext> routineParamItem = formal.create_routine_param_item();
     int formalCnt = routineParamItem.size();
+    ParserRuleContext ruleContext = (actual == null) ? null : actual.getParent();
     if (actualCnt > formalCnt) {
-      throw new ArityException(actual == null ? null : actual.getParent(), procName, formalCnt, actualCnt);
+      throw new ArityException(ruleContext, procName, formalCnt, actualCnt);
     }
     Map<String, Integer> defaultParamNamesVsIndexes = new HashMap<>();
     if (actualCnt != formalCnt) {
-      for (int i = 0; i < formalCnt; i++) {
-        HplsqlParser.Create_routine_param_itemContext routineParamItemContext = routineParamItem.get(i);
-        if (routineParamItemContext.dtype_default() != null) {
-          defaultParamNamesVsIndexes.put(routineParamItemContext.ident().getText(), i);
-        }
-      }
+      populateDefaultParamDetails(routineParamItem, formalCnt, defaultParamNamesVsIndexes);
       actualCnt = actualCnt + defaultParamNamesVsIndexes.size();
       if (actualCnt < formalCnt) {
-        throw new ArityException(actual == null ? null : actual.getParent(), procName, formalCnt, passedParamCnt);
+        throw new ArityException(ruleContext, procName, formalCnt, passedParamCnt);
       }
     }
 
-    HplsqlParser.ExprContext a = null;
-    HplsqlParser.Create_routine_param_itemContext p = null;
+    HplsqlParser.ExprContext exprContext = null;
+    HplsqlParser.Create_routine_param_itemContext paramItemContext = null;
     Var value = null;
     // set the passed params
     for (int i = 0; i < passedParamCnt; i++) {
-      a = actual.func_param(i).expr();
-      p = getCallParameter(actual, formal, i);
+      exprContext = actual.func_param(i).expr();
+      paramItemContext = getCallParameter(actual, formal, i);
       value = actualValues.get(i);
       // for any default param value is passed then remove it from default param list
-      defaultParamNamesVsIndexes.remove(p.ident().getText());
-      setCallParameter(actual, out, exec, a, p, value);
+      defaultParamNamesVsIndexes.remove(paramItemContext.ident().getText());
+      setCallParameter(actual, out, exec, exprContext, paramItemContext, value);
     }
     // set the remaining default params
     for (int index : defaultParamNamesVsIndexes.values()) {
-      p = formal.create_routine_param_item().get(index);
-      a = p.dtype_default().expr();
-      value = exec.evalPop(p.dtype_default().expr());
-      setCallParameter(actual, out, exec, a, p, value);
+      paramItemContext = formal.create_routine_param_item().get(index);
+      exprContext = paramItemContext.dtype_default().expr();
+      value = exec.evalPop(paramItemContext.dtype_default().expr());
+      setCallParameter(actual, out, exec, exprContext, paramItemContext, value);
     }
     // if actual param count + remaining default param count is lesser than formal param count then throw exception as some params are missing
     if ((passedParamCnt + defaultParamNamesVsIndexes.size()) < formalCnt) {
-      throw new ArityException(actual == null ? null : actual.getParent(), procName, formalCnt, passedParamCnt);
+      throw new ArityException(ruleContext, procName, formalCnt, passedParamCnt);
+    }
+  }
+
+  private static void populateDefaultParamDetails(List<HplsqlParser.Create_routine_param_itemContext> routineParamItem, int formalCnt,
+      Map<String, Integer> defaultParamNamesVsIndexes) {
+    for (int i = 0; i < formalCnt; i++) {
+      HplsqlParser.Create_routine_param_itemContext routineParamItemContext = routineParamItem.get(i);
+      if (routineParamItemContext.dtype_default() != null) {
+        defaultParamNamesVsIndexes.put(routineParamItemContext.ident().getText(), i);
+      }
     }
   }
 
