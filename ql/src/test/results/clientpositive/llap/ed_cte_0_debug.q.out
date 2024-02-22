@@ -1,0 +1,99 @@
+PREHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: INSERT INTO emps VALUES (0, 0, 'Rob', 150000.50), (1, 0, 'Alice', 160000.30), (2, 0, 'Mark', 100000.20), 
+                        (3, 1, 'Greg', 50000.20), (4, 1, 'Josh', 150000.50), (5, 1, 'Hector', 50000.20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps
+POSTHOOK: query: INSERT INTO emps VALUES (0, 0, 'Rob', 150000.50), (1, 0, 'Alice', 160000.30), (2, 0, 'Mark', 100000.20), 
+                        (3, 1, 'Greg', 50000.20), (4, 1, 'Josh', 150000.50), (5, 1, 'Hector', 50000.20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.salary SCRIPT []
+PREHOOK: query: CREATE TABLE depts
+(
+    deptno INTEGER,
+    name   VARCHAR(20)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts
+POSTHOOK: query: CREATE TABLE depts
+(
+    deptno INTEGER,
+    name   VARCHAR(20)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts
+PREHOOK: query: INSERT INTO depts VALUES (0, 'Engineering'), (1, 'Support'), (2, 'Sales')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@depts
+POSTHOOK: query: INSERT INTO depts VALUES (0, 'Engineering'), (1, 'Support'), (2, 'Sales')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@depts
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.name SCRIPT []
+PREHOOK: query: EXPLAIN CBO SELECT sup.name, eng.name
+FROM (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+     (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+WHERE sup.salary = eng.salary
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT sup.name, eng.name
+FROM (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+     (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+WHERE sup.salary = eng.salary
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(name=[$1], name1=[$5])
+  HiveJoin(condition=[=($2, $6)], joinType=[inner])
+    HiveProject($f1=[$1], $f2=[$2], $f3=[$3], $f10=[$1])
+      HiveFilter(condition=[=($0, _UTF-16LE'Support')])
+        LogicalTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte_candidate_merged_2]])
+          HiveProject($f0=[$1], $f1=[$7], $f2=[$8], $f3=[$9])
+            HiveFilter(condition=[AND(=($7, $0), IS NOT NULL($9))])
+              HiveJoin(condition=[true], joinType=[inner])
+                HiveTableScan(table=[[default, depts]], table:alias=[d])
+                HiveTableScan(table=[[default, emps]], table:alias=[e])
+    HiveProject($f1=[$1], $f2=[$2], $f3=[$3], $f10=[$1])
+      HiveFilter(condition=[=($0, _UTF-16LE'Engineering')])
+        HiveTableScan(table=[[cte_candidate_merged_2]], table:alias=[cte_candidate_merged_2])
+

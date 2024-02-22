@@ -1743,7 +1743,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
       if (conf.getBoolVar(ConfVars.HIVE_CTE_REWRITE_ENABLED)) {
-        calcitePlan = RelCteTransformer.rewrite(calcitePlan, mdProvider.getMetadataProvider(), conf);
+        RelCteTransformer cteTransformer = new RelCteTransformer(conf, mdProvider.getMetadataProvider());
+        calcitePlan = cteTransformer.rewrite(calcitePlan);
       }
       return calcitePlan;
     }

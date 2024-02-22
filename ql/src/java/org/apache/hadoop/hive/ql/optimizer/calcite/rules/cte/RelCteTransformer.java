@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -49,39 +50,29 @@ import java.util.stream.Collectors;
 public class RelCteTransformer {
   private static final Logger LOG = LoggerFactory.getLogger(RelCteTransformer.class);
 
-  public static RelNode rewrite(RelNode input, RelMetadataProvider mdProvider, HiveConf conf) {
-    List<RelOptMaterialization> ctes = extractCTEs(input);
-    RexBuilder builder = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
-    // Depending on the cost-mode we may also need to change the planner
-    RelOptPlanner planner = CalcitePlanner.createPlanner(conf, new HiveFunctionHelper(builder));
-    // DANGER: Creating a cluster has HUGE side effects since it switches the metadata provider for the whole
-    // thread and obviously nukes out any previous cost model that is in place. Moving this RelOptCluster.create around
-    // can easily break this class or even worse parts outside this class.   
-    RelOptCluster cluster = RelOptCluster.create(planner, builder);
-    // TODO: The cost-model that we use for deciding which CTEs to use will probably require a bit of fine tuning
-    cluster.setMetadataProvider(mdProvider);
+  private final HiveConf conf;
+  private final RelMetadataProvider provider;
+  private List<RelOptMaterialization> ctes;
 
-    HiveRelCopier copier = new HiveRelCopier(cluster);
-    // Copy ctes to the new cluster and register them to the planner. Copying is necessary cause VolcanoPlanner does
-    // not allow using expressions from different cluster and throws expeptions.
-    ctes.stream().map(copier::copy).forEach(planner::addMaterialization);
-    // TODO: Check if we need consider other rules
-    for (RelOptRule rule : HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES) {
-      planner.addRule(rule);
-    }
-    planner.setRoot(input.accept(copier));
-    RelNode optimized = planner.findBestExp();
+  public RelCteTransformer(HiveConf conf, RelMetadataProvider provider) {
+    this.conf = conf;
+    this.provider = provider;
+  }
+
+  public RelNode rewrite(RelNode input) {
+    this.ctes = extractCTEs(input);
+    // TODO: Check if we need consider other MV rules
+    RelNode optimized =
+        apply(PlannerFactory.COSTBASED, input, HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES);
     LOG.info("MV rewrite using ctes: {}", RelOptUtil.toString(optimized));
-    // TODO: Register the CTES in HepPlanne so that the TableScanToSpoolRule can take advantage of them.
-    optimized = transform(optimized, new TableScanToSpoolRule());
-    // TODO Two problems:
-    // 1. The mv.queryRel is not optimized so putting into the plan as it is kind of destroys the optimizations done so far
-    // 2. The mv.queryRel is using DAS operators so these cannot really run with Hive.
+    optimized = apply(PlannerFactory.HEURISTIC, optimized, new TableScanToSpoolRule());
+    // TODO: The plan under the spool operator (mv.queryRel) is not optimized (since it comes from the advisor) so
+    // this step kind of destroys optimizations that were done so far.
     LOG.info("Spool introduction: {}", RelOptUtil.toString(optimized));
     Map<String, Long> tableCounts =
         RelOptUtil.findAllTables(optimized).stream().map(t -> t.getQualifiedName().toString())
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-    optimized = transform(optimized, new SpoolRemoveRule(tableCounts));
+    optimized = apply(PlannerFactory.HEURISTIC, optimized, new SpoolRemoveRule(tableCounts));
     LOG.info("Redundant spool removal: {}", RelOptUtil.toString(optimized));
     return optimized;
   }
@@ -96,10 +87,37 @@ public class RelCteTransformer {
     return advisor.generateRecommendations();
   }
 
-  private static RelNode transform(RelNode plan, RelOptRule rule) {
-    HepProgram program = HepProgram.builder().addRuleInstance(rule).build();
-    HepPlanner planner = new HepPlanner(program, null, true, null, RelOptCostImpl.FACTORY);
-    planner.setRoot(plan);
+  private enum PlannerFactory {
+    HEURISTIC {
+      @Override RelOptPlanner create(HiveConf conf, RexBuilder builder, RelOptRule... rules) {
+        HepProgram p = HepProgram.builder().addRuleCollection(Arrays.asList(rules)).build();
+        return new HepPlanner(p, null, true, null, RelOptCostImpl.FACTORY);
+      }
+    }, COSTBASED {
+      @Override RelOptPlanner create(HiveConf conf, RexBuilder builder, RelOptRule... rules) {
+        RelOptPlanner planner = CalcitePlanner.createPlanner(conf, new HiveFunctionHelper(builder));
+        Arrays.stream(rules).forEach(planner::addRule);
+        return planner;
+      }
+    };
+
+    abstract RelOptPlanner create(HiveConf conf, RexBuilder builder, RelOptRule... rules);
+  }
+
+  private RelNode apply(PlannerFactory plannerFactory, RelNode plan, RelOptRule... rules) {
+    RexBuilder xBuilder = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+    RelOptPlanner planner = plannerFactory.create(conf, xBuilder, rules);
+    // DANGER: Creating a cluster has HUGE side effects since it switches the metadata provider for the whole
+    // thread and obviously nukes out any previous cost model that is in place. Moving this RelOptCluster.create around
+    // can easily break this class or even worse parts outside this class.
+    RelOptCluster cluster = RelOptCluster.create(planner, xBuilder);
+    // TODO: The cost-model that we use for deciding which CTEs to use will probably require a bit of fine tuning
+    cluster.setMetadataProvider(provider);
+    HiveRelCopier copier = new HiveRelCopier(cluster);
+    // Copy ctes to the new cluster and register them to the planner. Copying is necessary cause VolcanoPlanner does
+    // not allow using expressions from different cluster and throws expeptions.
+    ctes.stream().map(copier::copy).forEach(planner::addMaterialization);
+    planner.setRoot(plan.accept(copier));
     return planner.findBestExp();
   }
 }
