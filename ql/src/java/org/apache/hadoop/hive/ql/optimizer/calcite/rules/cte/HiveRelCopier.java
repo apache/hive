@@ -56,9 +56,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class HiveRelCopier extends RelHomogeneousShuttle {
   private final RelOptCluster targetCluster;
-
+  private final RelTraitSet defaultTraits;
   HiveRelCopier(RelOptCluster cluster) {
     this.targetCluster = cluster;
+    this.defaultTraits = cluster.traitSet().plus(HiveRelNode.CONVENTION);
   }
 
   RelOptMaterialization copy(RelOptMaterialization m) {
@@ -68,7 +69,7 @@ class HiveRelCopier extends RelHomogeneousShuttle {
 
   @Override public RelNode visit(RelNode other) {
     other = super.visit(other);
-    RelTraitSet traitSet = other.getTraitSet().replace(HiveRelNode.CONVENTION);
+    RelTraitSet traitSet = other.getTraitSet().merge(defaultTraits);
     if (other instanceof Aggregate) {
       Aggregate agg = (Aggregate) other;
       return new HiveAggregate(targetCluster, traitSet, agg.getInput(), agg.getGroupSet(), agg.getGroupSets(),
