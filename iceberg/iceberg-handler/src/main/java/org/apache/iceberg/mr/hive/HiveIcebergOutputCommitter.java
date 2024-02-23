@@ -426,7 +426,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       JobConf conf = jobContext.getJobConf();
       table = Optional.ofNullable(table).orElse(Catalogs.loadTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
-      filterExpr = Expressions.and(filterExpr, HiveIcebergStorageHandler.getQueryFilter(conf));
+      filterExpr = Expressions.and(filterExpr, (Expression) SessionStateUtil.getResource(conf,
+              InputFormatConfig.QUERY_FILTERS).orElse(Expressions.alwaysTrue()));
       LOG.info("Committing job has started for table: {}, using location: {}",
           table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
@@ -503,6 +504,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
+      write.conflictDetectionFilter(filterExpr);
       write.validateNoConflictingData();
       write.validateNoConflictingDeletes();
       write.commit();

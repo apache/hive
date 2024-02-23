@@ -19,6 +19,10 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +38,17 @@ public class HiveIcebergStorageHandlerStub extends HiveIcebergStorageHandler {
   public HiveIcebergOutputCommitter getOutputCommitter() {
 
     try {
-      LOG.info("Using HiveIcebergStorageHandlerStub for unit tests");
-      LOG.info("Sleeping thread: {} ", Thread.currentThread().getName());
-      Thread.sleep(35000);
-      LOG.info("Awake thread: {} ", Thread.currentThread().getName());
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+      LOG.info(" Using HiveIcebergStorageHandlerStub for unit tests");
+      if (TestUtilCyclicBarrier.isInstantiated()) {
+        CyclicBarrier testUtilCyclicBarrier = TestUtilCyclicBarrier.getInstance(0).getCyclicBarrier();
+        LOG.info("Activating the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
+        testUtilCyclicBarrier.await(600, TimeUnit.SECONDS);
+        LOG.info("Breaking the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
+      }
+    } catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
+      throw new RuntimeException("Barrier failed: ", e);
     }
+
     return new HiveIcebergOutputCommitter();
   }
 

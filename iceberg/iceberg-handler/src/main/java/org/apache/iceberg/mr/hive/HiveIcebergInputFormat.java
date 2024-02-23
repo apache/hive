@@ -102,12 +102,25 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     if (hiveFilter != null) {
       ExprNodeGenericFuncDesc exprNodeDesc = SerializationUtilities
           .deserializeObject(hiveFilter, ExprNodeGenericFuncDesc.class);
-      SearchArgument sarg = ConvertAstToSearchArg.create(conf, exprNodeDesc);
-      try {
+      return getFilterExpr(conf, exprNodeDesc);
+    }
+    return null;
+  }
+
+  /**
+   * getFilterExpr extracts search argument from ExprNodeGenericFuncDesc and returns Iceberg Filter Expression
+   * @param conf - job conf
+   * @param exprNodeDesc - Describes a GenericFunc node
+   * @return Iceberg Filter Expression
+   */
+  public static Expression getFilterExpr(Configuration conf, ExprNodeGenericFuncDesc exprNodeDesc) {
+    try {
+      if (exprNodeDesc != null) {
+        SearchArgument sarg = ConvertAstToSearchArg.create(conf, exprNodeDesc);
         return HiveIcebergFilterFactory.generateFilterExpression(sarg);
-      } catch (UnsupportedOperationException e) {
-        LOG.warn("Unable to create Iceberg filter, continuing without filter (will be applied by Hive later): ", e);
       }
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("Unable to create Iceberg filter, continuing without filter (will be applied by Hive later): ", e);
     }
     return null;
   }
