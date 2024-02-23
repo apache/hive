@@ -759,22 +759,6 @@ public class DatabaseProduct implements Configurable {
     return val;
   }
 
-  public Object convertDateValue(Object dateValue) {
-    assert dateValue instanceof String;
-    Date date = MetaStoreUtils.convertStringToDate((String)dateValue);
-    Object result = MetaStoreUtils.convertDateToString(date);
-    return result;
-  }
-
-  public Object convertTimestampValue(Object timestampValue) {
-    assert timestampValue instanceof String;
-    MetaStoreUtils.convertStringToTimestamp((String) timestampValue);
-    // The timestampValue looks valid now, for Postgres/SQLServer/Oracle, return timestampValue as it is,
-    // otherwise we may run into different results on SQL and JDO, check the partition_timestamp3.q
-    // for such case.
-    return timestampValue;
-  }
-  
   /**
    * Get the max rows in a query with paramSize.
    * @param batch the configured batch size

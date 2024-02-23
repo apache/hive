@@ -1427,7 +1427,9 @@ class MetaStoreDirectSql {
       // type mismatch when string col is filtered by a string that looks like date.
       if (colType == FilterType.Date) {
         try {
-          nodeValue = dbType.convertDateValue(nodeValue);
+          // check the nodeValue is a valid date
+          nodeValue = MetaStoreUtils.convertDateToString(
+              MetaStoreUtils.convertStringToDate((String) nodeValue));
           valType = FilterType.Date;
           if (dbType.isPOSTGRES() || dbType.isORACLE()) {
             nodeValue0 = "date '" + nodeValue + "'";
@@ -1437,18 +1439,18 @@ class MetaStoreDirectSql {
         }
       } else if (colType == FilterType.Timestamp) {
         if (dbType.isDERBY() || dbType.isMYSQL()) {
-          filterBuffer.setError("Filter pushdown not supported for timestamp on " + dbType.dbType.name());
+          filterBuffer.setError("Filter pushdown on timestamp not supported for " + dbType.dbType.name());
           return;
         }
         try {
-          nodeValue = dbType.convertTimestampValue(nodeValue);
+          // check the nodeValue is a valid timestamp
+          MetaStoreUtils.convertStringToTimestamp((String) nodeValue);
           valType = FilterType.Timestamp;
           if (dbType.isPOSTGRES() || dbType.isORACLE()) {
             nodeValue0 = "timestamp '" + nodeValue + "'";
             nodeValue = null;
           }
-        } catch (Exception e) {
-          // The nodeValue could be '__HIVE_DEFAULT_PARTITION__'
+        } catch (Exception e) { //nodeValue could be '__HIVE_DEFAULT_PARTITION__'
         }
       }
 

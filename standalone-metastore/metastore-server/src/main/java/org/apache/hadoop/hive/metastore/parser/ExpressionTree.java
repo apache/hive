@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
@@ -273,20 +274,12 @@ public class ExpressionTree {
      */
     public static int getPartColIndexForFilter(String partitionKeyName,
         List<FieldSchema> partitionKeys, FilterBuilder filterBuilder) throws MetaException {
-      assert (partitionKeys.size() > 0);
-      int partitionColumnIndex;
-      for (partitionColumnIndex = 0; partitionColumnIndex < partitionKeys.size();
-           ++partitionColumnIndex) {
-        if (partitionKeys.get(partitionColumnIndex).getName().equalsIgnoreCase(partitionKeyName)) {
-          break;
-        }
-      }
-      if( partitionColumnIndex == partitionKeys.size()) {
+      int partitionColumnIndex = Iterables.indexOf(partitionKeys, key -> partitionKeyName.equalsIgnoreCase(key.getName()));
+      if( partitionColumnIndex < 0) {
         filterBuilder.setError("Specified key <" + partitionKeyName +
             "> is not a partitioning key for the table");
         return -1;
       }
-
       return partitionColumnIndex;
     }
   }
