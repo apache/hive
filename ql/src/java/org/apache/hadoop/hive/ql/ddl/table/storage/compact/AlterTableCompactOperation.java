@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
@@ -26,7 +27,9 @@ import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -35,14 +38,13 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.txn.compactor.InitiatorBase;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
@@ -50,6 +52,9 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftTyp
  * Operation process of compacting a table.
  */
 public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
+
+  protected TxnStore txnHandler;
+
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
     super(context, desc);
   }
@@ -63,9 +68,9 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
         convertPartitionsFromThriftToDB(getPartitions(table, desc, context));
 
-    InitiatorBase initiatorBase = new InitiatorBase();
-    initiatorBase.setConf(context.getConf());
-    initiatorBase.init(new AtomicBoolean());
+    txnHandler = TxnUtils.getTxnStore(context.getConf());
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+    context.getConf().set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
@@ -86,14 +91,14 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         Optional<String> partitionName = partitionMap.keySet().stream().findFirst();
         partitionName.ifPresent(compactionRequest::setPartitionname);
       }
-      CompactionResponse compactionResponse = initiatorBase.initiateCompactionForTable(compactionRequest);
+      CompactionResponse compactionResponse = CompactorUtil.initiateCompactionForTable(compactionRequest,txnHandler);
       parseCompactionResponse(compactionResponse, table, compactionRequest.getPartitionname());
     } else { // Check for eligible partitions and initiate compaction
       for (Map.Entry<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMapEntry : partitionMap.entrySet()) {
         compactionRequest.setPartitionname(partitionMapEntry.getKey());
         CompactionResponse compactionResponse =
-            initiatorBase.initiateCompactionForPartition(table.getTTable(), partitionMapEntry.getValue(),
-                compactionRequest);
+            CompactorUtil.initiateCompactionForPartition(table.getTTable(), partitionMapEntry.getValue(),
+                compactionRequest,JavaUtils.hostname(),txnHandler, context.getConf());
         parseCompactionResponse(compactionResponse, table, partitionMapEntry.getKey());
       }
     }
@@ -136,7 +141,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       partitions = context.getDb().getPartitions(table, partitionSpec);
       if (partitions.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
-      } else if (partitions.size() == 0) {
+      } else if (partitions.isEmpty()) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
       }
     }
