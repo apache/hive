@@ -522,7 +522,7 @@ public class CompactorUtil {
 
   public static CompactionResponse initiateCompactionForPartition(Table table, Partition partition,
                                                            CompactionRequest compactionRequest,String hostName, TxnStore txnHandler, HiveConf conf) {
-    CompactionResponse compactionResponse = null;
+    CompactionResponse compactionResponse;
     CompactionInfo compactionInfo =
             new CompactionInfo(table.getDbName(), table.getTableName(), compactionRequest.getPartitionname(),
                     compactionRequest.getType());

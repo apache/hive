@@ -53,13 +53,12 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftTyp
  */
 public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
 
-  protected TxnStore txnHandler;
-
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
     super(context, desc);
   }
 
   @Override public int execute() throws Exception {
+    TxnStore txnHandler;
     Table table = context.getDb().getTable(desc.getTableName());
     if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, table.getDbName(), table.getTableName());
