@@ -54,15 +54,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Creates a full copy of the RelNode using the specified cluster.
  */
-class HiveRelCopier extends RelHomogeneousShuttle {
+public class HiveRelCopier extends RelHomogeneousShuttle {
   private final RelOptCluster targetCluster;
   private final RelTraitSet defaultTraits;
-  HiveRelCopier(RelOptCluster cluster) {
+  public HiveRelCopier(RelOptCluster cluster) {
     this.targetCluster = cluster;
     this.defaultTraits = cluster.traitSet().plus(HiveRelNode.CONVENTION);
   }
 
-  RelOptMaterialization copy(RelOptMaterialization m) {
+  public RelOptMaterialization copy(RelOptMaterialization m) {
     return new RelOptMaterialization(m.tableRel.accept(this), m.queryRel.accept(this), m.starRelOptTable,
         m.qualifiedTableName);
   }

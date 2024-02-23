@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.cloudera.insights.advisor.materializations.AdvisorConf;
+import com.cloudera.insights.advisor.materializations.MaterializationsAdvisor;
+import com.cloudera.insights.advisor.materializations.tools.Driver;
+import com.cloudera.insights.advisor.materializations.tools.WorkloadInput;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableBiMap;
@@ -29,6 +33,7 @@ import com.google.common.collect.Multimap;
 
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -202,7 +207,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte.RelCteTransformer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte.HiveRelCopier;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
@@ -265,6 +270,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingLastValueRewrite;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte.SpoolRemoveRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte.TableScanToSpoolRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
@@ -1715,6 +1722,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITING);
+      if (conf.getBoolVar(ConfVars.HIVE_CTE_REWRITE_ENABLED)) {
+        calcitePreCboPlan =
+            applyCteRewriting(planner, calcitePreCboPlan, mdProvider.getMetadataProvider(), executorProvider);
+      }
 
       // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
@@ -1742,10 +1753,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
-      if (conf.getBoolVar(ConfVars.HIVE_CTE_REWRITE_ENABLED)) {
-        RelCteTransformer cteTransformer = new RelCteTransformer(conf, mdProvider.getMetadataProvider());
-        calcitePlan = cteTransformer.rewrite(calcitePlan);
-      }
+
       return calcitePlan;
     }
 
@@ -1978,10 +1986,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     protected RelNode applyMaterializedViewRewriting(RelOptPlanner planner, RelNode basePlan,
         RelMetadataProvider mdProvider, RexExecutor executorProvider) {
       final RelOptCluster optCluster = basePlan.getCluster();
-
       final boolean useMaterializedViewsRegistry =
           !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname).equals("DUMMY");
-      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       final RelNode calcitePreMVRewritingPlan = basePlan;
       final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
 
@@ -2010,6 +2016,49 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // There are no materializations, we can return the original plan
         return calcitePreMVRewritingPlan;
       }
+
+      basePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, materializations);
+
+      List<Table> materializedViewsUsedOriginalPlan = getMaterializedViewsUsed(calcitePreMVRewritingPlan);
+      List<Table> materializedViewsUsedAfterRewrite = getMaterializedViewsUsed(basePlan);
+      if (materializedViewsUsedOriginalPlan.size() == materializedViewsUsedAfterRewrite.size()) {
+        // Materialized view-based rewriting did not happen, we can return the original plan
+        return calcitePreMVRewritingPlan;
+      }
+
+      try {
+        if (!checkPrivilegeForMaterializedViews(materializedViewsUsedAfterRewrite)) {
+          // if materialized views do not have appropriate privileges, we shouldn't be using them
+          return calcitePreMVRewritingPlan;
+        }
+      } catch (HiveException e) {
+        LOG.warn("Exception checking privileges for materialized views", e);
+        return calcitePreMVRewritingPlan;
+      }
+
+      // A rewriting was produced, we will check whether it was part of an incremental rebuild
+      // to try to replace INSERT OVERWRITE by INSERT or MERGE
+      if (useMaterializedViewsRegistry) {
+        // Before proceeding we need to check whether materialized views used are up-to-date
+        // wrt information in metastore
+        try {
+          if (!db.validateMaterializedViewsFromRegistry(materializedViewsUsedAfterRewrite, tablesUsedQuery, getTxnMgr())) {
+            return calcitePreMVRewritingPlan;
+          }
+        } catch (HiveException e) {
+          LOG.warn("Exception validating materialized views", e);
+          return calcitePreMVRewritingPlan;
+        }
+      }
+      // Now we trigger some needed optimization rules again
+      return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+    }
+
+    private RelNode rewriteUsingViews(RelOptPlanner planner, RelNode basePlan,
+    RelMetadataProvider mdProvider, RexExecutor executorProvider, Collection<? extends RelOptMaterialization> materializations) {
+      final PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      final RelOptCluster optCluster = basePlan.getCluster();
 
       // We need to expand IN/BETWEEN expressions when materialized view rewriting
       // is triggered since otherwise this may prevent some rewritings from happening
@@ -2045,6 +2094,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       planner.addRule(new HivePartitionPruneRule(conf));
 
       // Optimize plan
+      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       if (!ruleExclusionRegex.isEmpty()) {
         LOG.info("The CBO rules matching the following regex are excluded from planning: {}",
             ruleExclusionRegex);
@@ -2059,38 +2109,37 @@ public class CalcitePlanner extends SemanticAnalyzer {
       optCluster.invalidateMetadataQuery();
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
 
-      List<Table> materializedViewsUsedOriginalPlan = getMaterializedViewsUsed(calcitePreMVRewritingPlan);
-      List<Table> materializedViewsUsedAfterRewrite = getMaterializedViewsUsed(basePlan);
-      if (materializedViewsUsedOriginalPlan.size() == materializedViewsUsedAfterRewrite.size()) {
-        // Materialized view-based rewriting did not happen, we can return the original plan
-        return calcitePreMVRewritingPlan;
-      }
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+      return basePlan;
+    }
 
-      try {
-        if (!HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(materializedViewsUsedAfterRewrite)) {
-          // if materialized views do not have appropriate privileges, we shouldn't be using them
-          return calcitePreMVRewritingPlan;
-        }
-      } catch (HiveException e) {
-        LOG.warn("Exception checking privileges for materialized views", e);
-        return calcitePreMVRewritingPlan;
+    private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
+      // TODO: cbo_query64.q still fails due to metadata NPE check it
+      List<WorkloadInput> wi = Collections.singletonList(
+          WorkloadInput.builder().inputName("none").jsonPlan("none").runtime(0).plan(basePlan).build());
+      AdvisorConf conf = new AdvisorConf();
+      conf.set(AdvisorConf.Property.MATERIALIZED_VIEW_NAME_PREFIX, "cte_candidate_");
+      MaterializationsAdvisor advisor =
+          new MaterializationsAdvisor(conf, Driver.createCluster(), wi, Collections.emptySet());
+      List<RelOptMaterialization> ctes = advisor.generateRecommendations();
+      if(ctes.isEmpty()) {
+        return basePlan;
       }
-      // A rewriting was produced, we will check whether it was part of an incremental rebuild
-      // to try to replace INSERT OVERWRITE by INSERT or MERGE
-      if (useMaterializedViewsRegistry) {
-        // Before proceeding we need to check whether materialized views used are up-to-date
-        // wrt information in metastore
-        try {
-          if (!db.validateMaterializedViewsFromRegistry(materializedViewsUsedAfterRewrite, tablesUsedQuery, getTxnMgr())) {
-            return calcitePreMVRewritingPlan;
-          }
-        } catch (HiveException e) {
-          LOG.warn("Exception validating materialized views", e);
-          return calcitePreMVRewritingPlan;
-        }
-      }
-      // Now we trigger some needed optimization rules again
-      return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+      final RelOptCluster cluster = basePlan.getCluster();
+      HiveRelCopier copier = new HiveRelCopier(cluster);
+      ctes = ctes.stream().map(copier::copy).collect(Collectors.toList());
+      final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, ctes);
+      LOG.info("MV rewrite using CTEs: {}", RelOptUtil.toString(ctePlan));
+      final RelNode spoolPlan =
+          executeProgram(ctePlan, HepProgram.builder().addRuleInstance(new TableScanToSpoolRule()).build(), mdProvider,
+              executorProvider, ctes, true, null);
+      LOG.info("Spool introduction: {}", RelOptUtil.toString(spoolPlan));
+      Map<String, Long> tableCounts =
+          RelOptUtil.findAllTables(spoolPlan).stream().map(t -> t.getQualifiedName().toString())
+              .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+      final RelNode finalCtePlan = executeProgram(spoolPlan, HepProgram.builder().addRuleInstance(new SpoolRemoveRule(tableCounts)).build(), mdProvider, executorProvider);
+      LOG.info("CTE final plan: {}", RelOptUtil.toString(finalCtePlan));
+      return applyPreJoinOrderingTransforms(finalCtePlan, mdProvider, executorProvider);
     }
 
     private boolean isMaterializedViewRewritingByTextEnabled() {
@@ -2414,7 +2463,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     protected RelNode executeProgram(RelNode basePlan, HepProgram program,
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
-        List<HiveRelOptMaterialization> materializations) {
+        List<? extends RelOptMaterialization> materializations) {
+      return executeProgram(basePlan, program, mdProvider, executorProvider,
+          materializations, false, null);
+    }
+
+    private RelNode executeProgram(RelNode basePlan, HepProgram program,
+        RelMetadataProvider mdProvider, RexExecutor executorProvider,
+        List<? extends RelOptMaterialization> materializations, boolean noDag,
+        RelOptListener listener) {
 
       final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
 
