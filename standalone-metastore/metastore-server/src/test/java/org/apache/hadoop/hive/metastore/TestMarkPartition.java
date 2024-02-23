@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,6 +58,8 @@ public class TestMarkPartition {
 
   @Test
   public void testMarkingPartitionSet() throws TException, InterruptedException {
+    EventCleanerTask cleanerTask = new EventCleanerTask();
+    cleanerTask.setConf(conf);
     HiveMetaStoreClient msc = new HiveMetaStoreClient(conf);
 
     final String dbName = "hive2215";
@@ -83,7 +86,8 @@ public class TestMarkPartition {
     kvs.put("b", "'2011'");
     msc.markPartitionForEvent(dbName, tableName, kvs, PartitionEventType.LOAD_DONE);
     Assert.assertTrue(msc.isPartitionMarkedForEvent(dbName, tableName, kvs, PartitionEventType.LOAD_DONE));
-    Thread.sleep(10000);
+    Thread.sleep(3000);
+    cleanerTask.run();
     Assert.assertFalse(msc.isPartitionMarkedForEvent(dbName, tableName, kvs, PartitionEventType.LOAD_DONE));
 
     kvs.put("b", "'2012'");

@@ -48,8 +48,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
-import org.apache.hadoop.hive.metastore.leader.HouseKeepingTasks;
-import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -130,11 +128,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public static final Logger LOG = LoggerFactory.getLogger(HMSHandler.class);
   private final Configuration conf; // stores datastore (jpox) properties,
                                    // right now they come from jpox.properties
-
-  // Flag to control that always threads are initialized only once
-  // instead of multiple times
-  private final static AtomicBoolean alwaysThreadsInitialized =
-      new AtomicBoolean(false);
 
   private static String currentUrl;
   private FileMetadataManager fileMetadataManager;
@@ -391,12 +384,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       partitionValidationPattern = Pattern.compile(partitionValidationRegex);
     }
 
-    // We only initialize once the tasks that need to be run periodically. For remote metastore
-    // these threads are started along with the other housekeeping threads only in the leader
-    // HMS.
-    if (!HiveMetaStore.isMetaStoreRemote()) {
-      startAlwaysTaskThreads(conf, this);
-    }
     expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
     fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
 
@@ -414,20 +401,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     }
     dataconnectorFactory = DataConnectorProviderFactory.getInstance(this);
-  }
-
-  static void startAlwaysTaskThreads(Configuration conf, IHMSHandler handler) throws MetaException {
-    if (alwaysThreadsInitialized.compareAndSet(false, true)) {
-      try {
-        LeaderElectionContext context = new LeaderElectionContext.ContextBuilder(conf)
-            .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS)
-            .addListener(new HouseKeepingTasks(conf, false))
-            .setHMSHandler(handler).build();
-        context.start();
-      } catch (Exception e) {
-        throw newMetaException(e);
-      }
-    }
   }
 
   /**
