@@ -30,7 +30,6 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
-import static org.apache.hadoop.hive.metastore.utils.FileUtils.unescapePathName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -1427,7 +1426,6 @@ class MetaStoreDirectSql {
       // type mismatch when string col is filtered by a string that looks like date.
       if (colType == FilterType.Date) {
         try {
-          // check the nodeValue is a valid date
           nodeValue = MetaStoreUtils.convertDateToString(
               MetaStoreUtils.convertStringToDate((String) nodeValue));
           valType = FilterType.Date;
@@ -1439,11 +1437,10 @@ class MetaStoreDirectSql {
         }
       } else if (colType == FilterType.Timestamp) {
         if (dbType.isDERBY() || dbType.isMYSQL()) {
-          filterBuffer.setError("Filter pushdown on timestamp not supported for " + dbType.dbType.name());
+          filterBuffer.setError("Filter pushdown on timestamp not supported for " + dbType.dbType);
           return;
         }
         try {
-          // check the nodeValue is a valid timestamp
           MetaStoreUtils.convertStringToTimestamp((String) nodeValue);
           valType = FilterType.Timestamp;
           if (dbType.isPOSTGRES() || dbType.isORACLE()) {
@@ -1528,7 +1525,7 @@ class MetaStoreDirectSql {
       boolean isOpEquals = Operator.isEqualOperator(node.operator);
       if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
         Map<String, String> partKeyToVal = new HashMap<>();
-        partKeyToVal.put(partCol.getName(), nodeValue.toString());
+        partKeyToVal.put(partCol.getName(), node.value.toString());
         String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
         if (colType == FilterType.Date) {
           // Some engines like Pig will record both date and time values, in which case we need
