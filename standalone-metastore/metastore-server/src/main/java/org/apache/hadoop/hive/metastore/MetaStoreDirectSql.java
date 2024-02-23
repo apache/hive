@@ -30,6 +30,7 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.FileUtils.unescapePathName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -1407,7 +1408,8 @@ class MetaStoreDirectSql {
         return;
       }
 
-      String colTypeStr = ColumnType.getTypeName(partitionKeys.get(partColIndex).getType());
+      FieldSchema partCol = partitionKeys.get(partColIndex);
+      String colTypeStr = ColumnType.getTypeName(partCol.getType());
       FilterType colType = FilterType.fromType(colTypeStr);
       if (colType == FilterType.Invalid) {
         filterBuffer.setError("Filter pushdown not supported for type " + colTypeStr);
@@ -1517,10 +1519,43 @@ class MetaStoreDirectSql {
       if (node.operator == Operator.LIKE) {
         nodeValue0 = nodeValue0 + " ESCAPE '\\' ";
       }
+      String filter = node.isReverseOrder
+              ? nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue
+              : tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0;
+      // For equals and not-equals filter, we can add partition name filter to improve performance.
+      boolean isOpEquals = Operator.isEqualOperator(node.operator);
+      if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
+        Map<String, String> partKeyToVal = new HashMap<>();
+        partKeyToVal.put(partCol.getName(), nodeValue.toString());
+        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
+        if (colType == FilterType.Date) {
+          // Some engines like Pig will record both date and time values, in which case we need
+          // match PART_NAME by like clause.
+          escapedNameFragment += "%";
+        }
+        if (colType != FilterType.Date && partColCount == 1) {
+          // Case where partition column type is not date and there is no other partition columns
+          params.add(escapedNameFragment);
+          filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " =? " : " !=? ");
+        } else {
+          if (partColCount == 1) {
+            // Case where partition column type is date and there is no other partition columns
+            params.add(escapedNameFragment);
+          } else if (partColIndex + 1 == partColCount) {
+            // Case where the partition column is at the end of the name.
+            params.add("%/" + escapedNameFragment);
+          } else if (partColIndex == 0) {
+            // Case where the partition column is at the beginning of the name.
+            params.add(escapedNameFragment + "/%");
+          } else {
+            // Case where the partition column is in the middle of the name.
+            params.add("%/" + escapedNameFragment + "/%");
+          }
+          filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " like ? " : " not like ? ");
+        }
+      }
 
-      filterBuffer.append(node.isReverseOrder
-          ? "(" + nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue + ")"
-          : "(" + tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0 + ")");
+      filterBuffer.append("(" + filter + ")");
     }
   }
 

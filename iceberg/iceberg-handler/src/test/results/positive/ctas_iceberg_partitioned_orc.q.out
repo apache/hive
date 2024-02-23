@@ -333,5 +333,5 @@ POSTHOOK: query: select * from tbl_ice
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	one	3
 1	two	4
+1	one	3

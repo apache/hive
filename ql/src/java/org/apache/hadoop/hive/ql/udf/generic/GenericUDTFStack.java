@@ -23,13 +23,13 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 
 /**
@@ -63,13 +63,21 @@ public class GenericUDTFStack extends GenericUDTF {
     }
     if (!(args[0] instanceof ConstantObjectInspector)) {
       throw new UDFArgumentException(
+          "The first argument to STACK() must be a constant.");
+    }
+    final Object value = ((ConstantObjectInspector) args[0]).getWritableConstantValue();
+    if (value == null) {
+      throw new UDFArgumentException("The first argument of STACK() must not be null.");
+    }
+    if (!(value instanceof IntWritable)) {
+      throw new UDFArgumentTypeException(
+          0,
           "The first argument to STACK() must be a constant integer (got " +
           args[0].getTypeName() + " instead).");
     }
-    numRows = (IntWritable)
-        ((ConstantObjectInspector)args[0]).getWritableConstantValue();
+    numRows = (IntWritable) value;
 
-    if (numRows == null || numRows.get() < 1) {
+    if (numRows.get() < 1) {
       throw new UDFArgumentException(
           "STACK() expects its first argument to be >= 1.");
     }
@@ -109,7 +117,7 @@ public class GenericUDTFStack extends GenericUDTF {
 
   @Override
   public void process(Object[] args)
-      throws HiveException, UDFArgumentException {
+      throws HiveException {
     for (int ii = 0; ii < numRows.get(); ++ii) {
       for (int jj = 0; jj < numCols; ++jj) {
         int index = ii * numCols + jj + 1;
@@ -117,7 +125,7 @@ public class GenericUDTFStack extends GenericUDTF {
           forwardObj[jj] = 
             returnOIResolvers.get(jj).convertIfNecessary(args[index], argOIs.get(index));
         } else {
-          forwardObj[ii] = null;
+          forwardObj[jj] = null;
         }
       }
       forward(forwardObj);

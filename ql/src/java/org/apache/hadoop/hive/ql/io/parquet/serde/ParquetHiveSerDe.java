@@ -412,8 +412,9 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
       FileMetaData metadata;
       try {
         HadoopInputFile inputFile = HadoopInputFile.fromPath(new Path(file), conf);
-        ParquetFileReader reader = ParquetFileReader.open(inputFile);
-        metadata = reader.getFileMetaData();
+        try(ParquetFileReader reader = ParquetFileReader.open(inputFile)) {
+          metadata = reader.getFileMetaData();
+        }
       } catch (Exception e) {
         throw new SerDeException(ErrorMsg.PARQUET_FOOTER_ERROR.getErrorCodedMsg(), e);
       }

@@ -81,58 +81,6 @@ public final class SampleProtos {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private MapFieldEntry(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
-              key_ = bs;
-              break;
-            }
-            case 18: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
-              value_ = bs;
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (com.google.protobuf.UninitializedMessageException e) {
-        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.internal_static_MapFieldEntry_descriptor;
@@ -263,7 +211,7 @@ public final class SampleProtos {
       if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, value_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -278,7 +226,7 @@ public final class SampleProtos {
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, value_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -303,7 +251,7 @@ public final class SampleProtos {
         if (!getValue()
             .equals(other.getValue())) return false;
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -322,7 +270,7 @@ public final class SampleProtos {
         hash = (37 * hash) + VALUE_FIELD_NUMBER;
         hash = (53 * hash) + getValue().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -439,18 +387,13 @@ public final class SampleProtos {
 
       // Construct using org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -554,7 +497,7 @@ public final class SampleProtos {
           value_ = other.value_;
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -569,17 +512,40 @@ public final class SampleProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                key_ = input.readBytes();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                value_ = input.readBytes();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -784,7 +750,18 @@ public final class SampleProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new MapFieldEntry(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -892,95 +869,6 @@ public final class SampleProtos {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private Mesg1(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                anotherMap_ = new java.util.ArrayList<org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              anotherMap_.add(
-                  input.readMessage(org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry.PARSER, extensionRegistry));
-              break;
-            }
-            case 18: {
-              org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) != 0)) {
-                subBuilder = noMap_.toBuilder();
-              }
-              noMap_ = input.readMessage(org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(noMap_);
-                noMap_ = subBuilder.buildPartial();
-              }
-              bitField0_ |= 0x00000001;
-              break;
-            }
-            case 24: {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-                intList_ = newIntList();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              intList_.addInt(input.readInt32());
-              break;
-            }
-            case 26: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000004) != 0) && input.getBytesUntilLimit() > 0) {
-                intList_ = newIntList();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                intList_.addInt(input.readInt32());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (com.google.protobuf.UninitializedMessageException e) {
-        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          anotherMap_ = java.util.Collections.unmodifiableList(anotherMap_);
-        }
-        if (((mutable_bitField0_ & 0x00000004) != 0)) {
-          intList_.makeImmutable(); // C
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -1112,7 +1000,7 @@ public final class SampleProtos {
       for (int i = 0; i < intList_.size(); i++) {
         output.writeInt32(3, intList_.getInt(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -1138,7 +1026,7 @@ public final class SampleProtos {
         size += dataSize;
         size += 1 * getIntListList().size();
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1162,7 +1050,7 @@ public final class SampleProtos {
       }
       if (!getIntListList()
           .equals(other.getIntListList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -1185,7 +1073,7 @@ public final class SampleProtos {
         hash = (37 * hash) + INTLIST_FIELD_NUMBER;
         hash = (53 * hash) + getIntListList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -1322,10 +1210,11 @@ public final class SampleProtos {
         super.clear();
         if (anotherMapBuilder_ == null) {
           anotherMap_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
         } else {
+          anotherMap_ = null;
           anotherMapBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000001);
         if (noMapBuilder_ == null) {
           noMap_ = null;
         } else {
@@ -1472,7 +1361,7 @@ public final class SampleProtos {
           }
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1487,17 +1376,66 @@ public final class SampleProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1 parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry m =
+                    input.readMessage(
+                        org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry.PARSER,
+                        extensionRegistry);
+                if (anotherMapBuilder_ == null) {
+                  ensureAnotherMapIsMutable();
+                  anotherMap_.add(m);
+                } else {
+                  anotherMapBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+              case 18: {
+                input.readMessage(
+                    getNoMapFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 24: {
+                int v = input.readInt32();
+                ensureIntListIsMutable();
+                intList_.addInt(v);
+                break;
+              } // case 24
+              case 26: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureIntListIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  intList_.addInt(input.readInt32());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 26
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -1973,7 +1911,18 @@ public final class SampleProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Mesg1(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -2299,183 +2248,6 @@ public final class SampleProtos {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private AllTypes(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 9: {
-              bitField0_ |= 0x00000001;
-              doubleType_ = input.readDouble();
-              break;
-            }
-            case 21: {
-              bitField0_ |= 0x00000002;
-              floatType_ = input.readFloat();
-              break;
-            }
-            case 24: {
-              bitField0_ |= 0x00000004;
-              int32Type_ = input.readInt32();
-              break;
-            }
-            case 32: {
-              bitField0_ |= 0x00000008;
-              int64Type_ = input.readInt64();
-              break;
-            }
-            case 40: {
-              bitField0_ |= 0x00000010;
-              uint32Type_ = input.readUInt32();
-              break;
-            }
-            case 48: {
-              bitField0_ |= 0x00000020;
-              uint64Type_ = input.readUInt64();
-              break;
-            }
-            case 56: {
-              bitField0_ |= 0x00000040;
-              sint32Type_ = input.readSInt32();
-              break;
-            }
-            case 64: {
-              bitField0_ |= 0x00000080;
-              sint64Type_ = input.readSInt64();
-              break;
-            }
-            case 77: {
-              bitField0_ |= 0x00000100;
-              fixed32Type_ = input.readFixed32();
-              break;
-            }
-            case 81: {
-              bitField0_ |= 0x00000200;
-              fixed64Type_ = input.readFixed64();
-              break;
-            }
-            case 93: {
-              bitField0_ |= 0x00000400;
-              sfixed32Type_ = input.readSFixed32();
-              break;
-            }
-            case 97: {
-              bitField0_ |= 0x00000800;
-              sfixed64Type_ = input.readSFixed64();
-              break;
-            }
-            case 104: {
-              bitField0_ |= 0x00001000;
-              boolType_ = input.readBool();
-              break;
-            }
-            case 114: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00002000;
-              stringType_ = bs;
-              break;
-            }
-            case 122: {
-              bitField0_ |= 0x00004000;
-              bytesType_ = input.readBytes();
-              break;
-            }
-            case 130: {
-              if (!((mutable_bitField0_ & 0x00008000) != 0)) {
-                mapType_ = new java.util.ArrayList<org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry>();
-                mutable_bitField0_ |= 0x00008000;
-              }
-              mapType_.add(
-                  input.readMessage(org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry.PARSER, extensionRegistry));
-              break;
-            }
-            case 138: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00010000) != 0)) {
-                stringListType_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00010000;
-              }
-              stringListType_.add(bs);
-              break;
-            }
-            case 146: {
-              org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1.Builder subBuilder = null;
-              if (((bitField0_ & 0x00008000) != 0)) {
-                subBuilder = messageType_.toBuilder();
-              }
-              messageType_ = input.readMessage(org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(messageType_);
-                messageType_ = subBuilder.buildPartial();
-              }
-              bitField0_ |= 0x00008000;
-              break;
-            }
-            case 154: {
-              if (!((mutable_bitField0_ & 0x00040000) != 0)) {
-                messageListType_ = new java.util.ArrayList<org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1>();
-                mutable_bitField0_ |= 0x00040000;
-              }
-              messageListType_.add(
-                  input.readMessage(org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1.PARSER, extensionRegistry));
-              break;
-            }
-            case 160: {
-              int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
-              org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes.Enum1 value = org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes.Enum1.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(20, rawValue);
-              } else {
-                bitField0_ |= 0x00010000;
-                enumType_ = rawValue;
-              }
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (com.google.protobuf.UninitializedMessageException e) {
-        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00008000) != 0)) {
-          mapType_ = java.util.Collections.unmodifiableList(mapType_);
-        }
-        if (((mutable_bitField0_ & 0x00010000) != 0)) {
-          stringListType_ = stringListType_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00040000) != 0)) {
-          messageListType_ = java.util.Collections.unmodifiableList(messageListType_);
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -3135,7 +2907,7 @@ public final class SampleProtos {
       if (((bitField0_ & 0x00010000) != 0)) {
         output.writeEnum(20, enumType_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -3227,7 +2999,7 @@ public final class SampleProtos {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(20, enumType_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -3334,7 +3106,7 @@ public final class SampleProtos {
       if (hasEnumType()) {
         if (enumType_ != other.enumType_) return false;
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -3433,7 +3205,7 @@ public final class SampleProtos {
         hash = (37 * hash) + ENUMTYPE_FIELD_NUMBER;
         hash = (53 * hash) + enumType_;
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -3601,10 +3373,11 @@ public final class SampleProtos {
         bitField0_ = (bitField0_ & ~0x00004000);
         if (mapTypeBuilder_ == null) {
           mapType_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00008000);
         } else {
+          mapType_ = null;
           mapTypeBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00008000);
         stringListType_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00010000);
         if (messageTypeBuilder_ == null) {
@@ -3615,10 +3388,11 @@ public final class SampleProtos {
         bitField0_ = (bitField0_ & ~0x00020000);
         if (messageListTypeBuilder_ == null) {
           messageListType_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00040000);
         } else {
+          messageListType_ = null;
           messageListTypeBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00040000);
         enumType_ = 1;
         bitField0_ = (bitField0_ & ~0x00080000);
         return this;
@@ -3908,7 +3682,7 @@ public final class SampleProtos {
         if (other.hasEnumType()) {
           setEnumType(other.getEnumType());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -3923,17 +3697,156 @@ public final class SampleProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 9: {
+                doubleType_ = input.readDouble();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 9
+              case 21: {
+                floatType_ = input.readFloat();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 21
+              case 24: {
+                int32Type_ = input.readInt32();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+              case 32: {
+                int64Type_ = input.readInt64();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
+              case 40: {
+                uint32Type_ = input.readUInt32();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 40
+              case 48: {
+                uint64Type_ = input.readUInt64();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 48
+              case 56: {
+                sint32Type_ = input.readSInt32();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 56
+              case 64: {
+                sint64Type_ = input.readSInt64();
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 64
+              case 77: {
+                fixed32Type_ = input.readFixed32();
+                bitField0_ |= 0x00000100;
+                break;
+              } // case 77
+              case 81: {
+                fixed64Type_ = input.readFixed64();
+                bitField0_ |= 0x00000200;
+                break;
+              } // case 81
+              case 93: {
+                sfixed32Type_ = input.readSFixed32();
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 93
+              case 97: {
+                sfixed64Type_ = input.readSFixed64();
+                bitField0_ |= 0x00000800;
+                break;
+              } // case 97
+              case 104: {
+                boolType_ = input.readBool();
+                bitField0_ |= 0x00001000;
+                break;
+              } // case 104
+              case 114: {
+                stringType_ = input.readBytes();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 114
+              case 122: {
+                bytesType_ = input.readBytes();
+                bitField0_ |= 0x00004000;
+                break;
+              } // case 122
+              case 130: {
+                org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry m =
+                    input.readMessage(
+                        org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry.PARSER,
+                        extensionRegistry);
+                if (mapTypeBuilder_ == null) {
+                  ensureMapTypeIsMutable();
+                  mapType_.add(m);
+                } else {
+                  mapTypeBuilder_.addMessage(m);
+                }
+                break;
+              } // case 130
+              case 138: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                ensureStringListTypeIsMutable();
+                stringListType_.add(bs);
+                break;
+              } // case 138
+              case 146: {
+                input.readMessage(
+                    getMessageTypeFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00020000;
+                break;
+              } // case 146
+              case 154: {
+                org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1 m =
+                    input.readMessage(
+                        org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1.PARSER,
+                        extensionRegistry);
+                if (messageListTypeBuilder_ == null) {
+                  ensureMessageListTypeIsMutable();
+                  messageListType_.add(m);
+                } else {
+                  messageListTypeBuilder_.addMessage(m);
+                }
+                break;
+              } // case 154
+              case 160: {
+                int tmpRaw = input.readEnum();
+                org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes.Enum1 tmpValue =
+                    org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes.Enum1.forNumber(tmpRaw);
+                if (tmpValue == null) {
+                  mergeUnknownVarintField(20, tmpRaw);
+                } else {
+                  enumType_ = tmpRaw;
+                  bitField0_ |= 0x00080000;
+                }
+                break;
+              } // case 160
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -5355,7 +5268,18 @@ public final class SampleProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AllTypes(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 

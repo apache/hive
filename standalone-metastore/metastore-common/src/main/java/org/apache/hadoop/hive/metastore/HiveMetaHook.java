@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -75,6 +76,17 @@ public interface HiveMetaHook {
    */
   void preCreateTable(Table table)
     throws MetaException;
+
+  /**
+   * Called before a new table definition is added to the metastore
+   * during CREATE TABLE.
+   *
+   * @param request the whole request to create a new table
+   */
+  default void preCreateTable(CreateTableRequest request)
+          throws MetaException {
+    preCreateTable(request.getTable());
+  }
 
   /**
    * Called after failure adding a new table definition to the metastore

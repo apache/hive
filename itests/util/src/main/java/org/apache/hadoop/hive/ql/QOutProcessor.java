@@ -337,6 +337,10 @@ public class QOutProcessor {
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
 
+    // since TEZ-4506, the node is reported with task attempt failures, which needs to be masked
+    ppm.add(new PatternReplacementPair(Pattern.compile("Error: Node: (.*) : Error while running task"),
+        "Error: Node: #NODE# : Error while running task"));
+
     ppm.add(new PatternReplacementPair(Pattern.compile("rowcount = [0-9]+(\\.[0-9]+(E[0-9]+)?)?, cumulative cost = \\{.*\\}, id = [0-9]*"),
         "rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###"));
 

@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * This class is a helper to check whether a materialized view rebuild
  * can be transformed from INSERT OVERWRITE to INSERT INTO.
@@ -50,7 +49,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
 
 
   private boolean containsAggregate;
-  private boolean fullAcidView;
+  private final boolean fullAcidView;
   private boolean rewritingAllowed;
   private int countIndex;
 
@@ -88,6 +87,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       throw new ReturnedValue(false);
     }
     // First branch should have the query (with write ID filter conditions)
+    RelNode queryBranch = union.getInput(0);
     new RelVisitor() {
       @Override
       public void visit(RelNode node, int ordinal, RelNode parent) {
@@ -112,7 +112,8 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
           throw new ReturnedValue(false);
         }
       }
-    }.go(union.getInput(0));
+    }.go(queryBranch);
+
     // Second branch should only have the MV
     new RelVisitor() {
       @Override
@@ -177,5 +178,4 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       this.value = value;
     }
   }
-
 }

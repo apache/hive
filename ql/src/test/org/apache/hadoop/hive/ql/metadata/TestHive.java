@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,7 +52,10 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -678,6 +682,45 @@ public class TestHive {
       fail("Unexpected exception: " + StringUtils.stringifyException(e));
     }
     finally {
+      cleanUpTableQuietly(dbName, tableName);
+    }
+  }
+
+  @Test
+  public void testDropMissingPartitionsByFilter() throws Throwable {
+    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    String tableName = "table_for_testDropMissingPartitionsByFilter";
+
+    Table table = createPartitionedTable(dbName, tableName);
+    for (int i = 10; i <= 12; i++) {
+      Map<String, String> partitionSpec = new ImmutableMap.Builder<String, String>()
+          .put("ds", "20231129")
+          .put("hr", String.valueOf(i))
+          .build();
+      hm.createPartition(table, partitionSpec);
+    }
+
+    List<Partition> partitions = hm.getPartitions(table);
+    assertEquals(3, partitions.size());
+
+    // drop partitions by filter with missing predicate
+    try {
+      List<Pair<Integer, byte[]>> partExprs = new ArrayList<>();
+      ExprNodeColumnDesc column = new ExprNodeColumnDesc(
+          TypeInfoFactory.stringTypeInfo, "ds", null, true);
+      List<String> values = Arrays.asList("20231130", "20231129");
+      for (int i = 0; i < values.size(); i++) {
+        ExprNodeGenericFuncDesc expr = PartitionUtils.makeBinaryPredicate(
+            "=", column, new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, values.get(i)));
+        partExprs.add(Pair.of(i, SerializationUtilities.serializeObjectWithTypeInformation(expr)));
+      }
+      hm.dropPartitions(dbName, tableName, partExprs, PartitionDropOptions.instance());
+      fail("Expected exception");
+    } catch (HiveException e) {
+      // expected
+      assertEquals("Some partitions to drop are missing", e.getCause().getMessage());
+      assertEquals(3, hm.getPartitions(table).size());
+    } finally {
       cleanUpTableQuietly(dbName, tableName);
     }
   }

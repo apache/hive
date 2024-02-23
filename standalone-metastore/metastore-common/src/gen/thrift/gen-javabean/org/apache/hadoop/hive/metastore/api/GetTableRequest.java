@@ -157,6 +157,8 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public GetTableRequest() {
+    this.engine = "hive";
+
     this.id = -1L;
 
   }
@@ -219,7 +221,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.getColumnStats = false;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
-    this.engine = null;
+    this.engine = "hive";
+
     this.id = -1L;
 
   }

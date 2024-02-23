@@ -957,7 +957,11 @@ public class Stmt {
       int cols = query.columnCount();
       Row row = new Row();
       for (int i = 0; i < cols; i++) {
-        row.addColumnDefinition(query.metadata().columnName(i), query.metadata().columnTypeName(i));
+        String columnName = query.metadata().columnName(i);
+        if (columnName.contains(".")) {
+          columnName = columnName.substring(columnName.lastIndexOf('.') + 1);
+        }
+        row.addColumnDefinition(columnName, query.metadata().columnTypeName(i));
       }
       Var var = new Var(cursor, row);
       exec.addVariable(var);

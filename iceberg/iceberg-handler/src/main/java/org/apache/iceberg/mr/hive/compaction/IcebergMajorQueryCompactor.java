@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
+import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,12 +40,12 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
   @Override
   public boolean run(CompactorContext context) throws IOException, HiveException, InterruptedException {
 
-    String compactTableName = context.getTable().getTableName();
+    String compactTableName = TableName.getDbTable(context.getTable().getDbName(), context.getTable().getTableName());
     Map<String, String> tblProperties = context.getTable().getParameters();
     LOG.debug("Initiating compaction for the {} table", compactTableName);
 
-    String compactionQuery = String.format("insert overwrite table %s select * from %s",
-        compactTableName, compactTableName);
+    String compactionQuery = String.format("insert overwrite table %s select * from %<s",
+        compactTableName);
 
     SessionState sessionState = setupQueryCompactionSession(context.getConf(),
         context.getCompactionInfo(), tblProperties);

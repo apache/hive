@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import static org.junit.Assert.*;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class TestStringExpr {
   @Test
@@ -47,6 +49,24 @@ public class TestStringExpr {
     assertEquals("Testing zero-length pattern", 0, find(patternZero, input1));
     assertEquals("Testing match at start of string", 0, find(pattern, input3));
     assertEquals("Testing match at end of string", 24, find(pattern, input4));
+  }
+
+  @Test
+  public void testControlCharacters() throws Exception {
+    StringExpr.Finder pattern = compile("pattern");
+    assertNotNull(pattern);
+
+    byte b = -1;
+    byte[] controlBytes1 = "abcedf".getBytes(StandardCharsets.UTF_8);
+    byte[] controlBytes2 = "pattern".getBytes(StandardCharsets.UTF_8);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    outputStream.write(controlBytes1);
+    outputStream.write(b);
+    outputStream.write(controlBytes2);
+    byte[] controlChar = outputStream.toByteArray();
+    outputStream.close();
+
+    assertEquals("Testing valid match", 7, pattern.find(controlChar, 0, controlChar.length));
   }
 
   private StringExpr.Finder compile(String pattern) {

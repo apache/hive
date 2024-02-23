@@ -3,13 +3,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 Status: Failed
-Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
+Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
-], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
+], TaskAttempt 1 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
@@ -17,13 +17,13 @@ Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An e
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
 DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
-], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
+], TaskAttempt 1 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####

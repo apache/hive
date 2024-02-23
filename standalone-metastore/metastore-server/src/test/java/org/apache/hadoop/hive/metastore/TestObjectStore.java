@@ -1635,40 +1635,44 @@ public class TestObjectStore {
 
   @Test
   public void testNoJdoForUnrecoverableException() throws Exception {
-    objectStore.openTransaction();
-    AtomicBoolean runDirectSql = new AtomicBoolean(false);
-    AtomicBoolean runJdo = new AtomicBoolean(false);
-    try {
-      objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
-        @Override
-        protected String describeResult() {
-          return "test not run jdo for unrecoverable exception";
-        }
+    Exception[] unrecoverableExceptions = new Exception[] {
+        new SQLIntegrityConstraintViolationException("Unrecoverable ex"),
+        new DeadlineException("unrecoverable ex")};
+    for (Exception unrecoverableException : unrecoverableExceptions) {
+      objectStore.openTransaction();
+      AtomicBoolean runDirectSql = new AtomicBoolean(false);
+      AtomicBoolean runJdo = new AtomicBoolean(false);
+      try {
+        objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
+          @Override
+          protected String describeResult() {
+            return "test not run jdo for unrecoverable exception";
+          }
 
-        @Override
-        protected Object getSqlResult(ObjectStore.GetHelper ctx) throws MetaException {
-          runDirectSql.set(true);
-          SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
-          MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
-          me.initCause(ex);
-          throw me;
-        }
+          @Override
+          protected Object getSqlResult(ObjectStore.GetHelper ctx) throws MetaException {
+            runDirectSql.set(true);
+            MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
+            me.initCause(unrecoverableException);
+            throw me;
+          }
 
-        @Override
-        protected Object getJdoResult(ObjectStore.GetHelper ctx) throws MetaException, NoSuchObjectException {
-          runJdo.set(true);
-          SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
-          MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
-          me.initCause(ex);
-          throw me;
-        }
-      }.run(false);
-    } catch (MetaException ex) {
-      // expected
+          @Override
+          protected Object getJdoResult(ObjectStore.GetHelper ctx) throws MetaException, NoSuchObjectException {
+            runJdo.set(true);
+            SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
+            MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
+            me.initCause(ex);
+            throw me;
+          }
+        }.run(false);
+      } catch (MetaException ex) {
+        // expected
+      }
+      objectStore.commitTransaction();
+      Assert.assertEquals(true, runDirectSql.get());
+      Assert.assertEquals(false, runJdo.get());
     }
-    objectStore.commitTransaction();
-    Assert.assertEquals(true, runDirectSql.get());
-    Assert.assertEquals(false, runJdo.get());
   }
 
   /**
