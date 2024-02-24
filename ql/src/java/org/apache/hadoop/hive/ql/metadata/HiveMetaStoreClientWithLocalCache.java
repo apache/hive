@@ -668,7 +668,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
 
 
   protected final Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(CacheI cache,
-      GetValidWriteIdsRequest rqst) throws TException {
+      GetValidWriteIdsRequest rqst) {
     List<String> fullTableNamesMissing = new ArrayList<>();
     List<TableValidWriteIds> tblValidWriteIds = new ArrayList<>();
     for (String fullTableName : rqst.getFullTableNames()) {
@@ -688,8 +688,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   }
 
   protected final List<TableValidWriteIds> loadValidWriteIdsCache(CacheI cache,
-      GetValidWriteIdsResponse r, GetValidWriteIdsRequest rqst)
-      throws TException {
+      GetValidWriteIdsResponse r, GetValidWriteIdsRequest rqst) {
     List<TableValidWriteIds> newTblValidWriteIds = new ArrayList<>();
     for (TableValidWriteIds tableValidWriteIds : r.getTblValidWriteIds()) {
       newTblValidWriteIds.add(tableValidWriteIds);
