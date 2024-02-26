@@ -194,6 +194,8 @@ public class ReExecDriver implements IDriver {
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr == null && plugins.stream().anyMatch(p -> p.shouldReExecute(executionIndex));
 
+      LOG.info("Deciding re-execution is made according to: executionIndex: {}, maxExecutions: {}, shouldReExecute: {}",
+          executionIndex, maxExecutions, shouldReExecute);
       if (executionIndex >= maxExecutions || !shouldReExecute) {
         if (cpr != null) {
           return cpr;
