@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -49,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
@@ -521,7 +521,9 @@ public class CompactorUtil {
   }
 
   public static CompactionResponse initiateCompactionForPartition(Table table, Partition partition,
-                                                           CompactionRequest compactionRequest,String hostName, TxnStore txnHandler, HiveConf conf) {
+                                                           CompactionRequest compactionRequest,String hostName, TxnStore txnHandler, HiveConf conf) throws MetaException {
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     CompactionResponse compactionResponse;
     CompactionInfo compactionInfo =
             new CompactionInfo(table.getDbName(), table.getTableName(), compactionRequest.getPartitionname(),

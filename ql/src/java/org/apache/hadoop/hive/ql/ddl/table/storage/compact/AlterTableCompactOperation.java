@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
@@ -27,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -68,8 +66,6 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         convertPartitionsFromThriftToDB(getPartitions(table, desc, context));
 
     txnHandler = TxnUtils.getTxnStore(context.getConf());
-    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
-    context.getConf().set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
