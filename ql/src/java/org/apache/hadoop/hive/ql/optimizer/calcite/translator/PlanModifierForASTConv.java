@@ -36,6 +36,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.Window.RexWinAggCall;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
@@ -207,6 +208,11 @@ public class PlanModifierForASTConv {
           // to be the new aggregate so that when convertOpTree gets
           // called recursively, it will have the correct parent.
           rel = newParent.getInputs().get(0);
+        }
+      } else if (rel instanceof Spool) {
+        Spool spool = (Spool) rel;
+        if (!validSpoolChild(spool)) {
+          introduceDerivedTable(spool.getInput(), spool);
         }
       }
     }
@@ -381,6 +387,10 @@ public class PlanModifierForASTConv {
     }
 
     return validChild;
+  }
+
+  private static boolean validSpoolChild(Spool spoolNode) {
+    return spoolNode.getInput() instanceof Project;
   }
 
   private static boolean validExchangeChild(HiveSortExchange sortNode) {
