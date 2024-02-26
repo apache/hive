@@ -842,7 +842,7 @@ STAGE PLANS:
         TableScan
           alias: default.mv1
           Filter Operator
-            predicate: (UDFToString(name1) = 'Bill') (type: boolean)
+            predicate: (CAST( name1 AS STRING) = 'Bill') (type: boolean)
             Select Operator
               expressions: empid (type: int), empid (type: int), deptno (type: int)
               outputColumnNames: _col0, _col1, _col2
