@@ -60,6 +60,7 @@ import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptListener;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
@@ -1723,8 +1724,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITING);
       if (conf.getBoolVar(ConfVars.HIVE_CTE_REWRITE_ENABLED)) {
-        calcitePreCboPlan =
-            applyCteRewriting(planner, calcitePreCboPlan, mdProvider.getMetadataProvider(), executorProvider);
+        calcitePlan =
+            applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
       }
 
       // 4. Apply join order optimizations: reordering MST algorithm
@@ -2027,7 +2028,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       try {
-        if (!checkPrivilegeForMaterializedViews(materializedViewsUsedAfterRewrite)) {
+        if (!HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(materializedViewsUsedAfterRewrite)) {
           // if materialized views do not have appropriate privileges, we shouldn't be using them
           return calcitePreMVRewritingPlan;
         }
@@ -2035,7 +2036,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.warn("Exception checking privileges for materialized views", e);
         return calcitePreMVRewritingPlan;
       }
-
       // A rewriting was produced, we will check whether it was part of an incremental rebuild
       // to try to replace INSERT OVERWRITE by INSERT or MERGE
       if (useMaterializedViewsRegistry) {
@@ -2109,7 +2109,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       optCluster.invalidateMetadataQuery();
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
 
-      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
       return basePlan;
     }
 
