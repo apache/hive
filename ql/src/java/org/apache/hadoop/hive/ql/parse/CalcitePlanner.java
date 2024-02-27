@@ -2116,7 +2116,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      // TODO: cbo_query64.q still fails due to metadata NPE check it
       List<WorkloadInput> wi = Collections.singletonList(
           WorkloadInput.builder().inputName("none").jsonPlan("none").runtime(0).plan(basePlan).build());
       AdvisorConf conf = new AdvisorConf();
