@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte;
+package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Creates a full copy of the RelNode using the specified cluster.
+ * Transforms a RelNode tree with arbitrary operators to an equivalent tree with Hive specific operators using the specified cluster.
  */
 public class HiveRelCopier extends RelHomogeneousShuttle {
   private final RelOptCluster targetCluster;
