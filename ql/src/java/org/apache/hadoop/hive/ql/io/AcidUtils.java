@@ -1421,7 +1421,7 @@ public class AcidUtils {
       throws IOException {
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    return AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
+    return getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
   }
 
   private static void findBestWorkingDeltas(ValidWriteIdList writeIdList, AcidDirectory directory) {
