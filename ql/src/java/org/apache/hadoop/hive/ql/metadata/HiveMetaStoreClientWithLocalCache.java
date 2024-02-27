@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -271,12 +273,13 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   @Override
   protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
+      GetTableResult r;
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), req.getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
-        GetTableResult r = (GetTableResult) mscLocalCache.getIfPresent(cacheKey);
+        r = (GetTableResult) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getTableInternal(req);
           mscLocalCache.put(cacheKey, r);
@@ -291,6 +294,21 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
         }
 
         return r;
+      } else if (!StringUtils.isBlank(req.getValidWriteIdList()) && req.getId() == -1) {
+        // if validWriteIdList is not null and tableId == -1, put the result in the
+        // cache with a key containing the correct table id.
+        r = super.getTableInternal(req);
+        GetTableRequest newRequest = new GetTableRequest(req);
+        newRequest.setId(r.getTable().getId());
+        CacheKey newCacheKey = new CacheKey(KeyType.TABLE, newRequest);
+        mscLocalCache.put(newCacheKey, r);
+
+        // put tableId in cache
+        CacheKey cacheKeyTableId =
+            new CacheKey(KeyType.TABLE_ID, req.getDbName(), req.getTblName(), req.getValidWriteIdList());
+        mscLocalCache.put(cacheKeyTableId, newRequest.getId());
+
+        return r;
       }
     }
     return super.getTableInternal(req);
@@ -301,7 +319,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     if (isCacheEnabledAndInitialized()) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
+          req.getValidWriteIdList(),
+          getTableId(req.getDbName(), req.getTblName(), req.getValidWriteIdList())
+      );
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, watermark, req);
         PartitionsByExprResult r = (PartitionsByExprResult) mscLocalCache.getIfPresent(cacheKey);
@@ -329,9 +349,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
       int maxParts) throws TException {
     if (isCacheEnabledAndInitialized()) {
+      String validWriteIdList = getValidWriteIdList(dbName, tableName);
       TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(dbName, tableName),
-          getTable(dbName, tableName).getId());
+          validWriteIdList,
+          getTableId(dbName, tableName, validWriteIdList)
+      );
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
             catName, dbName, tableName, maxParts);
@@ -368,10 +390,12 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   @Override
   protected PartitionsSpecByExprResult getPartitionsSpecByExprInternal(PartitionsByExprRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
+      String validWriteIdList = getValidWriteIdList(req.getDbName(), req.getTblName());
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(req.getDbName(), req.getTblName()),
-          getTable(req.getDbName(), req.getTblName()).getId());
+          validWriteIdList,
+          getTableId(req.getDbName(), req.getTblName(), validWriteIdList)
+      );
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, watermark, req);
         PartitionsSpecByExprResult r = (PartitionsSpecByExprResult) mscLocalCache.getIfPresent(cacheKey);
@@ -398,9 +422,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   @Override
   protected TableStatsResult getTableColumnStatisticsInternal(TableStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
+      String validWriteIdList = getValidWriteIdList(req.getDbName(), req.getTblName());
       TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(req.getDbName(), req.getTblName()),
-          getTable(req.getDbName(), req.getTblName()).getId());
+          validWriteIdList,
+          getTableId(req.getDbName(), req.getTblName(), validWriteIdList)
+      );
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -437,7 +463,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   protected AggrStats getAggrStatsForInternal(PartitionsStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
+          req.getValidWriteIdList(),
+          getTableId(req.getDbName(), req.getTblName(), req.getValidWriteIdList())
+      );
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
         AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
@@ -466,7 +494,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     if (isCacheEnabledAndInitialized()) {
       String dbName = parseDbName(rqst.getDb_name(), conf)[1];
       TableWatermark watermark = new TableWatermark(
-          rqst.getValidWriteIdList(), getTable(dbName, rqst.getTbl_name()).getId());
+          rqst.getValidWriteIdList(),
+          getTableId(dbName, rqst.getTbl_name(), rqst.getValidWriteIdList())
+      );
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -497,6 +527,45 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     }
 
     return super.getPartitionsByNamesInternal(rqst);
+  }
+
+  protected Long getTableId(String dbName, String tableName, String validWriteIdList) throws TException {
+    if (isCacheEnabledAndInitialized() && !StringUtils.isBlank(validWriteIdList)) {
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE_ID, dbName, tableName, validWriteIdList);
+      Long id = (Long) mscLocalCache.getIfPresent(cacheKey);
+      if (id == null) {
+        id = getTableId(dbName, tableName);
+        mscLocalCache.put(cacheKey, id);
+      }
+
+      if (LOG.isDebugEnabled() && recordStats) {
+        LOG.debug(cacheObjName + ": " + mscLocalCache.stats());
+      }
+
+      return id;
+    }
+
+    return getTableId(dbName, tableName);
+  }
+
+  private Long getTableId(String dbName, String tableName) throws TException {
+    try {
+      return Hive.get()
+          .getTable(dbName, tableName, null, true, true)
+          .getTTable()
+          .getId();
+    } catch (HiveException e) {
+      throw new TException(e);
+    }
+  }
+
+  protected Long getTableIdFromCache(CacheKey cacheKeyTableId) {
+    if (isCacheEnabledAndInitialized() && cacheKeyTableId.IDENTIFIER == KeyType.TABLE_ID) {
+      Long id = (Long) mscLocalCache.getIfPresent(cacheKeyTableId);
+      return id != null? id: -1L;
+    }
+
+    return -1L;
   }
 
 

@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.hadoop.conf.Configuration;
@@ -41,7 +43,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -2094,12 +2095,21 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
+      // Set validWriteIdList, if not set
+      if (StringUtils.isBlank(req.getValidWriteIdList())) {
+        req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+      }
       // Retrieve or populate cache
-      CacheKey cacheKeyTableId = new CacheKey(KeyType.TABLE_ID, req.getCatName(), req.getDbName(), req.getTblName());
+      CacheKey cacheKeyTableId =
+          new CacheKey(KeyType.TABLE_ID, req.getDbName(), req.getTblName(), req.getValidWriteIdList());
       long tableId = -1;
 
-      if (queryCache.containsKey(cacheKeyTableId))
+      if (queryCache.containsKey(cacheKeyTableId)) {
         tableId = (long) queryCache.get(cacheKeyTableId);
+      }
+      if (tableId == -1) {
+        tableId = getTableIdFromCache(cacheKeyTableId);
+      }
 
       req.setId(tableId);
       CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
@@ -2107,9 +2117,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       if (v == null) {
         v = super.getTableInternal(req);
         if (tableId == -1) {
+          // we are here because tableId wasn't present in either cache.
+          // So put tableId in the query cache, and update tableId in
+          // the CacheKey for TABLE
           queryCache.put(cacheKeyTableId, v.getTable().getId());
           req.setId(v.getTable().getId());
           cacheKey = new CacheKey(KeyType.TABLE, req);
+        } else if (!queryCache.containsKey(cacheKeyTableId)) {
+          // if tableId != -1 and it's not present in the query cache,
+          // then it was found in the HS2 cache and CacheKey for table
+          // has been updated. So just put the tableId in the query cache.
+          queryCache.put(cacheKeyTableId, v.getTable().getId());
         }
         queryCache.put(cacheKey, v);
       } else {
@@ -2508,14 +2526,16 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   @Override
   protected String getValidWriteIdList(String dbName, String tblName) {
     try {
-      final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);
+      Hive hive = Hive.get();
+      final String validTxnsList = hive.getConf().get(ValidTxnList.VALID_TXNS_KEY);
       if (validTxnsList == null) {
         return super.getValidWriteIdList(dbName, tblName);
       }
-      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
+      Table table =  hive.getTable(dbName, tblName, null, true, true);
+      if (!AcidUtils.isTransactionalTable(table)) {
         return null;
       }
-      final String fullTableName = TableName.getDbTable(dbName, tblName);
+      final String fullTableName = table.getFullTableName().getNotEmptyDbTable().toLowerCase();
       final ValidTxnWriteIdList validTxnWriteIdList = SessionState.get().getTxnMgr()
           .getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
