@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
@@ -86,14 +87,14 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         Optional<String> partitionName = partitionMap.keySet().stream().findFirst();
         partitionName.ifPresent(compactionRequest::setPartitionname);
       }
-      CompactionResponse compactionResponse = CompactorUtil.initiateCompactionForTable(compactionRequest,txnHandler);
+      CompactionResponse compactionResponse = CompactorUtil.initiateCompactionForTable(compactionRequest, txnHandler);
       parseCompactionResponse(compactionResponse, table, compactionRequest.getPartitionname());
     } else { // Check for eligible partitions and initiate compaction
       for (Map.Entry<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMapEntry : partitionMap.entrySet()) {
         compactionRequest.setPartitionname(partitionMapEntry.getKey());
         CompactionResponse compactionResponse =
             CompactorUtil.initiateCompactionForPartition(table.getTTable(), partitionMapEntry.getValue(),
-                compactionRequest,JavaUtils.hostname(),txnHandler, context.getConf());
+                compactionRequest, ServerUtils.hostname(), txnHandler, context.getConf());
         parseCompactionResponse(compactionResponse, table, partitionMapEntry.getKey());
       }
     }
@@ -112,8 +113,8 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         throw new HiveException(ErrorMsg.COMPACTION_REFUSED, table.getDbName(), table.getTableName(),
             partitionName == null ? "" : " partition(" + partitionName + ")", compactionResponse.getErrormessage());
       }
-      context.getConsole().printInfo("Compaction already enqueued with id " + compactionResponse.getId() + "; State is "
-          + compactionResponse.getState());
+      context.getConsole().printInfo(
+          "Compaction already enqueued with id " + compactionResponse.getId() + "; State is " + compactionResponse.getState());
       return;
     }
     context.getConsole().printInfo("Compaction enqueued with id " + compactionResponse.getId());

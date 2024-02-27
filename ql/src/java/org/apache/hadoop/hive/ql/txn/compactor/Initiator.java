@@ -153,7 +153,7 @@ public class Initiator extends MetaStoreCompactorThread {
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
               String tableName = ci.getFullTableName();
               String partition = ci.getFullPartitionName();
-
+              ci.initiatorVersion = this.runtimeVersion;
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
                           CompactorUtil.ThrowingRunnable.unchecked(() ->
