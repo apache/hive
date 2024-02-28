@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -113,6 +114,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -2091,13 +2093,31 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     return super.getDatabaseInternal(request);
   }
 
+  private void setValidWriteIdList(GetTableRequest req) throws TException {
+    long txnId = SessionState.get() != null && SessionState.get().getTxnMgr() != null ?
+        SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+    if (txnId <= 0) {
+      return;
+    }
+
+    try {
+      ValidWriteIdList validWriteIdList =
+          AcidUtils.getTableValidWriteIdListWithTxnList(conf, req.getDbName(), req.getTblName());
+      req.setValidWriteIdList(
+          validWriteIdList != null? validWriteIdList.toString(): null
+      );
+    } catch (LockException e) {
+      throw new TException(e);
+    }
+  }
+
   @Override
   protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Set validWriteIdList, if not set
       if (StringUtils.isBlank(req.getValidWriteIdList())) {
-        req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+        setValidWriteIdList(req);
       }
       // Retrieve or populate cache
       CacheKey cacheKeyTableId =
@@ -2526,16 +2546,14 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   @Override
   protected String getValidWriteIdList(String dbName, String tblName) {
     try {
-      Hive hive = Hive.get();
-      final String validTxnsList = hive.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+      final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);
       if (validTxnsList == null) {
         return super.getValidWriteIdList(dbName, tblName);
       }
-      Table table =  hive.getTable(dbName, tblName, null, true, true);
-      if (!AcidUtils.isTransactionalTable(table)) {
+      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
         return null;
       }
-      final String fullTableName = table.getFullTableName().getNotEmptyDbTable().toLowerCase();
+      final String fullTableName = TableName.getDbTable(dbName, tblName);
       final ValidTxnWriteIdList validTxnWriteIdList = SessionState.get().getTxnMgr()
           .getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
