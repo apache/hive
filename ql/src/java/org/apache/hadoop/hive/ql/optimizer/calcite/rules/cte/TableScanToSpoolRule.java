@@ -22,7 +22,7 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rel.logical.LogicalTableSpool;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -48,7 +48,7 @@ public class TableScanToSpoolRule extends RelOptRule {
         // TODO Use the builder or something more generic to create the spool
         // The Spool types are not used at the moment so choice between LAZY/EAGER does not affect anything
         call.transformTo(
-            new LogicalTableSpool(scan.getCluster(), scan.getCluster().traitSet(), cte.queryRel, Spool.Type.LAZY,
+            new HiveTableSpool(scan.getCluster(), scan.getCluster().traitSet(), cte.queryRel, Spool.Type.LAZY,
                 Spool.Type.LAZY, cteTable));
       }
     }
