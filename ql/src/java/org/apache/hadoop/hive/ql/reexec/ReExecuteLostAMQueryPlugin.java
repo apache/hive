@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -35,14 +35,21 @@ import java.util.regex.Pattern;
  */
 public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteLostAMQueryPlugin.class);
+
+  // Lost am container have exit code -100, due to node failures. This pattern of exception is thrown when
+  // AM is managed by HS2.
+  private static final Pattern LOST_AM_CONTAINER_ERROR_PATTERN =
+      Pattern.compile(".*AM Container for .* exited .* exitCode: -100.*");
+  // When HS2 does not manage the AMs, tez AMs are registered with zookeeper and HS2 discovers it,
+  // failure of unmanaged AMs will throw AM record not being found in zookeeper.
+  private static final String UNMANAGED_AM_FAILURE = "AM record not found (likely died)";
+  // DAG lost in the scenario described at TEZ-4543
+  private static final String DAG_LOST_FAILURE = "No running DAG at present";
+
   private boolean retryPossible;
   // a list to track DAG ids seen by this re-execution plugin during the same query
   // it can help a lot with identifying the previous DAGs in case of retries
-  private List<String> dagIds = new ArrayList<>();
-
-  // Lost am container have exit code -100, due to node failures. This pattern of exception is thrown when AM is managed
-  // by HS2.
-  private final Pattern lostAMContainerErrorPattern = Pattern.compile(".*AM Container for .* exited .* exitCode: -100.*");
+  private Set<String> dagIds = new HashSet<>();
 
   class LocalHook implements ExecuteWithHookContext {
     @Override
@@ -56,21 +63,16 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
         }
 
         TezRuntimeException tre = (TezRuntimeException)exception;
-
-        if (tre != null && tre.getMessage() != null) {
+        String message = tre.getMessage();
+        if (message != null) {
           dagIds.add(tre.getDagId());
-          // When HS2 does not manage the AMs, tez AMs are registered with zookeeper and HS2 discovers it,
-          // failure of unmanaged AMs will throw AM record not being found in zookeeper.
-          String unmanagedAMFailure = "AM record not found (likely died)";
-          // DAG lost in the scenario described at TEZ-4543
-          String dagLostFailure = "No running DAG at present";
 
-          if (lostAMContainerErrorPattern.matcher(tre.getMessage()).matches()
-              || tre.getMessage().contains(unmanagedAMFailure)
-              || tre.getMessage().contains(dagLostFailure)) {
+          if (LOST_AM_CONTAINER_ERROR_PATTERN.matcher(message).matches()
+              || message.contains(UNMANAGED_AM_FAILURE)
+              || message.contains(DAG_LOST_FAILURE)) {
             retryPossible = true;
           }
-          LOG.info("Got exception message: {} retryPossible: {}, dags seen so far: {}", tre.getMessage(), retryPossible,
+          LOG.info("Got exception message: {} retryPossible: {}, dags seen so far: {}", message, retryPossible,
               dagIds);
         }
       }

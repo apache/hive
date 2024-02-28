@@ -28,31 +28,25 @@ public class TestReExecuteLostAMQueryPlugin {
 
   @Test
   public void testRetryOnUnmanagedAmFailure() throws Exception {
-    ReExecuteLostAMQueryPlugin plugin = new ReExecuteLostAMQueryPlugin();
-    ReExecuteLostAMQueryPlugin.LocalHook hook = plugin.new LocalHook();
-
-    HookContext context = new HookContext(null, QueryState.getNewQueryState(new HiveConf(), null), null, null, null,
-        null, null, null, null, false, null, null);
-    context.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
-    context.setException(new TezRuntimeException("dag_0_0", "AM record not found (likely died)"));
-
-    hook.run(context);
-
-    Assert.assertEquals(true, plugin.shouldReExecute(1));
+    testReExecuteWithExceptionMessage("AM record not found (likely died)");
   }
 
   @Test
   public void testRetryOnNoCurrentDAGException() throws Exception {
+    testReExecuteWithExceptionMessage("No running DAG at present");
+  }
+
+  private void testReExecuteWithExceptionMessage(String message) throws Exception {
     ReExecuteLostAMQueryPlugin plugin = new ReExecuteLostAMQueryPlugin();
     ReExecuteLostAMQueryPlugin.LocalHook hook = plugin.new LocalHook();
 
     HookContext context = new HookContext(null, QueryState.getNewQueryState(new HiveConf(), null), null, null, null,
         null, null, null, null, false, null, null);
     context.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
-    context.setException(new TezRuntimeException("dag_0_0", "No running DAG at present"));
+    context.setException(new TezRuntimeException("dag_0_0", message));
 
     hook.run(context);
 
-    Assert.assertEquals(true, plugin.shouldReExecute(1));
+    Assert.assertTrue(plugin.shouldReExecute(1));
   }
 }
