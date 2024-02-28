@@ -596,7 +596,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             // 1. Convert Plan to AST
             ASTNode newAST = getOptimizedAST(newPlan);
-            LOG.info("NEW AST {}", newAST.dump());
             // 1.1. Fix up the query for insert/ctas/materialized views
             newAST = fixUpAfterCbo(ast, newAST, cboCtx);
 

@@ -13173,7 +13173,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.GENERATE_RESOLVED_PARSETREE);
 
     // 2. Gen OP Tree from resolved Parse Tree
-    LOG.info("RESOLVED AST: {}", ast.dump());
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.LOGICALPLAN_AND_HIVE_OPERATOR_TREE);
     sinkOp = genOPTree(ast, plannerCtx);
 
