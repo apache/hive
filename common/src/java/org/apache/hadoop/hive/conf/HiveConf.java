@@ -4652,7 +4652,7 @@ public class HiveConf extends Configuration {
         "The default value is true."),
     HIVE_VECTORIZATION_USE_ROW_DESERIALIZE("hive.vectorized.use.row.serde.deserialize", true,
         "This flag should be set to true to enable vectorizing using row deserialize.\n" +
-        "The default value is false."),
+        "The default value is true."),
     HIVE_VECTORIZATION_ROW_DESERIALIZE_INPUTFORMAT_EXCLUDES(
         "hive.vectorized.row.serde.inputformat.excludes",
         "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
