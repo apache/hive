@@ -18,14 +18,22 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -37,6 +45,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -57,6 +66,8 @@ public class HiveOpConverter {
   private final UnparseTranslator              unparseTranslator;
   private final Map<String, TableScanOperator> topOps;
   private int                                  uniqueCounter;
+  private final Map<String, Operator<?>> cteProducers = new HashMap<>();
+  private final Map<Operator<?>, String> cteConsumers = new HashMap<>();
 
   public HiveOpConverter(SemanticAnalyzer semanticAnalyzer, HiveConf hiveConf,
       UnparseTranslator unparseTranslator, Map<String, TableScanOperator> topOps) {
@@ -65,6 +76,14 @@ public class HiveOpConverter {
     this.unparseTranslator = unparseTranslator;
     this.topOps = topOps;
     this.uniqueCounter = 0;
+  }
+
+  void setCTEProducer(RelOptTable table, Operator<?> operator) {
+    this.cteProducers.put(String.join(".", table.getQualifiedName()), operator);
+  }
+
+  void setCTEConsumer(Operator<?> operator, RelOptTable table) {
+    this.cteConsumers.put(operator, String.join(".", table.getQualifiedName()));
   }
 
   static class OpAttr {
@@ -87,7 +106,25 @@ public class HiveOpConverter {
     OpAttr opAf = dispatch(root);
     Operator<?>rootOp = opAf.inputs.get(0);
     handleTopLimit(rootOp);
+    connectCTEs(rootOp);
     return rootOp;
+  }
+
+  private void connectCTEs(Operator<?> root) throws SemanticException {
+    SemanticRule rule = new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%");
+    SemanticNodeProcessor cteProcessor = (nd, stack, procCtx, nodeOutputs) -> {
+      TableScanOperator scan = (TableScanOperator) nd;
+      String producerId = cteConsumers.get(scan);
+      if (producerId == null) {
+        return null;
+      }
+      Operator<?> cte = cteProducers.get(producerId);
+      scan.getParentOperators().forEach(p -> p.replaceChild(scan, cte));
+      return null;
+    };
+    DefaultRuleDispatcher dispatcher =
+        new DefaultRuleDispatcher(null, Collections.singletonMap(rule, cteProcessor), null);
+    new DefaultGraphWalker(dispatcher).startWalking(Collections.singleton(root), null);
   }
 
   OpAttr dispatch(RelNode rn) throws SemanticException {
@@ -117,6 +154,8 @@ public class HiveOpConverter {
       return new HiveTableFunctionScanVisitor(this).visit((HiveTableFunctionScan) rn);
     } else if (rn instanceof HiveValues) {
       return new HiveValuesVisitor(this).visit((HiveValues) rn);
+    } else if (rn instanceof HiveTableSpool) {
+      return new HiveTableSpoolVisitor(this).visit((HiveTableSpool) rn);
     }
     LOG.error(rn.getClass().getCanonicalName() + "operator translation not supported yet in return path.");
     return null;
