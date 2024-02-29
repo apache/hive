@@ -1426,8 +1426,7 @@ class MetaStoreDirectSql {
       // type mismatch when string col is filtered by a string that looks like date.
       if (colType == FilterType.Date) {
         try {
-          nodeValue = MetaStoreUtils.convertDateToString(
-              MetaStoreUtils.convertStringToDate((String) nodeValue));
+          nodeValue = MetaStoreUtils.normalizeDate((String) nodeValue);
           valType = FilterType.Date;
           if (dbType.isPOSTGRES() || dbType.isORACLE()) {
             nodeValue0 = "date '" + nodeValue + "'";
