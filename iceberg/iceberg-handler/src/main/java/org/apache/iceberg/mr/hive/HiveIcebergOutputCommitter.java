@@ -421,13 +421,20 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     Table table = null;
     String branchName = null;
+
     Expression filterExpr = Expressions.alwaysTrue();
+
     for (JobContext jobContext : outputTable.jobContexts) {
       JobConf conf = jobContext.getJobConf();
       table = Optional.ofNullable(table).orElse(Catalogs.loadTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
-      filterExpr = Expressions.and(filterExpr, (Expression) SessionStateUtil.getResource(conf,
-              InputFormatConfig.QUERY_FILTERS).orElse(Expressions.alwaysTrue()));
+
+      Expression jobContextFilterExpr = (Expression) SessionStateUtil.getResource(conf, InputFormatConfig.QUERY_FILTERS)
+          .orElse(Expressions.alwaysTrue());
+      if (!filterExpr.equals(jobContextFilterExpr)) {
+        filterExpr = Expressions.and(filterExpr, jobContextFilterExpr);
+      }
+      LOG.debug("Filter Expression :{}", filterExpr);
       LOG.info("Committing job has started for table: {}, using location: {}",
           table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 

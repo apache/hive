@@ -384,8 +384,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
-    Expression expr = (Expression) HiveIcebergInputFormat.getFilterExpr(conf, predicate.pushedPredicate);
-    SessionStateUtil.addResource(conf, InputFormatConfig.QUERY_FILTERS, expr != null ? expr : Expressions.alwaysTrue());
+    Expression filterExpr = (Expression) HiveIcebergInputFormat.getFilterExpr(conf, predicate.pushedPredicate);
+    if (filterExpr != null) {
+      SessionStateUtil.addResource(conf, InputFormatConfig.QUERY_FILTERS, filterExpr);
+    }
     return predicate;
   }
 
@@ -774,6 +776,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public HiveIcebergOutputCommitter getOutputCommitter() {
     return new HiveIcebergOutputCommitter();
   }
+
   @Override
   public boolean isAllowedAlterOperation(AlterTableType opType) {
     return HiveIcebergMetaHook.SUPPORTED_ALTER_OPS.contains(opType);

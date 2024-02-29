@@ -38,12 +38,12 @@ public class HiveIcebergStorageHandlerStub extends HiveIcebergStorageHandler {
   public HiveIcebergOutputCommitter getOutputCommitter() {
 
     try {
-      LOG.info(" Using HiveIcebergStorageHandlerStub for unit tests");
+      LOG.debug(" Using HiveIcebergStorageHandlerStub for unit tests");
       if (TestUtilCyclicBarrier.isInstantiated()) {
         CyclicBarrier testUtilCyclicBarrier = TestUtilCyclicBarrier.getInstance(0).getCyclicBarrier();
-        LOG.info("Activating the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
+        LOG.debug("Activating the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
         testUtilCyclicBarrier.await(600, TimeUnit.SECONDS);
-        LOG.info("Breaking the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
+        LOG.debug("Breaking the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
       }
     } catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
       throw new RuntimeException("Barrier failed: ", e);
