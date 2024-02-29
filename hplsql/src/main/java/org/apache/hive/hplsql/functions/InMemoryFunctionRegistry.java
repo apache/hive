@@ -141,7 +141,6 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
       return;
     }
     int actualCnt = (actualValues == null) ? 0 : actualValues.size();
-    int passedParamCnt = actualCnt;
     List<HplsqlParser.Create_routine_param_itemContext> routineParamItem = formal.create_routine_param_item();
     int formalCnt = routineParamItem.size();
     ParserRuleContext ruleContext = (actual == null) ? null : actual.getParent();
@@ -150,40 +149,34 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
     }
     Map<String, Integer> defaultParamNamesVsIndexes = new HashMap<>();
     if (actualCnt != formalCnt) {
-      populateDefaultParamDetails(routineParamItem, formalCnt, defaultParamNamesVsIndexes);
-      actualCnt = actualCnt + defaultParamNamesVsIndexes.size();
-      if (actualCnt < formalCnt) {
-        throw new ArityException(ruleContext, procName, formalCnt, passedParamCnt);
-      }
+      populateDefaultParamDetails(routineParamItem, defaultParamNamesVsIndexes);
     }
 
-    HplsqlParser.ExprContext exprContext = null;
-    HplsqlParser.Create_routine_param_itemContext paramItemContext = null;
-    Var value = null;
     // set the passed params
-    for (int i = 0; i < passedParamCnt; i++) {
-      exprContext = actual.func_param(i).expr();
-      paramItemContext = getCallParameter(actual, formal, i);
-      value = actualValues.get(i);
+    for (int i = 0; i < actualCnt; i++) {
+      HplsqlParser.ExprContext exprContext = actual.func_param(i).expr();
+      HplsqlParser.Create_routine_param_itemContext paramItemContext = getCallParameter(actual, formal, i);
+      Var value = actualValues.get(i);
       // for any default param value is passed then remove it from default param list
       defaultParamNamesVsIndexes.remove(paramItemContext.ident().getText());
       setCallParameter(actual, out, exec, exprContext, paramItemContext, value);
     }
     // set the remaining default params
     for (int index : defaultParamNamesVsIndexes.values()) {
-      paramItemContext = formal.create_routine_param_item().get(index);
-      exprContext = paramItemContext.dtype_default().expr();
-      value = exec.evalPop(paramItemContext.dtype_default().expr());
+      HplsqlParser.Create_routine_param_itemContext paramItemContext = formal.create_routine_param_item().get(index);
+      HplsqlParser.ExprContext exprContext = paramItemContext.dtype_default().expr();
+      Var value = exec.evalPop(paramItemContext.dtype_default().expr());
       setCallParameter(actual, out, exec, exprContext, paramItemContext, value);
     }
     // if actual param count + remaining default param count is lesser than formal param count then throw exception as some params are missing
-    if ((passedParamCnt + defaultParamNamesVsIndexes.size()) < formalCnt) {
-      throw new ArityException(ruleContext, procName, formalCnt, passedParamCnt);
+    if ((actualCnt + defaultParamNamesVsIndexes.size()) != formalCnt) {
+      throw new ArityException(ruleContext, procName, formalCnt, actualCnt);
     }
   }
 
-  private static void populateDefaultParamDetails(List<HplsqlParser.Create_routine_param_itemContext> routineParamItem, int formalCnt,
+  private static void populateDefaultParamDetails(List<HplsqlParser.Create_routine_param_itemContext> routineParamItem,
       Map<String, Integer> defaultParamNamesVsIndexes) {
+    int formalCnt = routineParamItem.size();
     for (int i = 0; i < formalCnt; i++) {
       HplsqlParser.Create_routine_param_itemContext routineParamItemContext = routineParamItem.get(i);
       if (routineParamItemContext.dtype_default() != null) {

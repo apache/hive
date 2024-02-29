@@ -972,6 +972,20 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "Default S1=PassedValue S2");
   }
 
+  @Test
+  public void testHplSqlProcedureWithoutParameters() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES('No param');\n" +
+            "END;\n" +
+            "p1('none');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 0 got 1.", OutStream.ERR);
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
