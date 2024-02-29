@@ -431,7 +431,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
   }
 
   private StatsAggregator createStatsAggregator(StatsCollectionContext scc, HiveConf conf) throws HiveException {
-    String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
+    String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_DBCLASS);
     StatsFactory factory = StatsFactory.newFactory(statsImpl, conf);
     if (factory == null) {
       throw new HiveException(ErrorMsg.STATSPUBLISHER_NOT_OBTAINED.getErrorCodedMsg());
