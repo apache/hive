@@ -270,7 +270,9 @@ public class DatabaseProduct implements Configurable {
 
   protected String toTimestamp(String tableValue) {
     if (isORACLE()) {
-      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH:mm:ss')";
+      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH24:mi:ss')";
+    } else if (isSQLSERVER()) {
+      return "CONVERT(DATETIME, " + tableValue + ")";
     } else {
       return "cast(" + tableValue + " as TIMESTAMP)";
     }
