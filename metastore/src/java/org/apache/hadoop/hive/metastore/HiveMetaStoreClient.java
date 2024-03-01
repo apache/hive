@@ -1198,12 +1198,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   /** {@inheritDoc} */
   @Override
   public List<String> getAllDatabases() throws MetaException {
-    try {
-      return filterHook.filterDatabases(client.get_databases(prependCatalogToDbName(null, conf)));
-    } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
-    }
-    return null;
+    return getDatabases("*");
   }
 
   /**
