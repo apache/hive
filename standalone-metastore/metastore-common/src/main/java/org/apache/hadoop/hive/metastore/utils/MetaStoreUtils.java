@@ -114,8 +114,7 @@ public class MetaStoreUtils {
    * @return time-zone based string format date
    */
   public static String normalizeDate(String date) {
-    Date val = MetaStoreUtils.convertStringToDate(date);
-    return MetaStoreUtils.convertDateToString(val);
+    return convertDateToString(convertStringToDate(date));
   }
 
   /**
