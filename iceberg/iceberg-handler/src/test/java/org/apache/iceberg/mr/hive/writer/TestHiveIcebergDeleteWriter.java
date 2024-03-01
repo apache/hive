@@ -35,6 +35,7 @@ import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
+import org.apache.iceberg.util.CharSequenceSet;
 import org.apache.iceberg.util.StructLikeSet;
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,17 +55,23 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     Collections.sort(deleteRecords,
         Comparator.comparing(a -> a.getField(MetadataColumns.PARTITION_COLUMN_NAME).toString()));
 
+    CharSequenceSet expectedDataFiles = CharSequenceSet.empty();
     Container<Record> container = new Container<>();
     for (Record deleteRecord : deleteRecords) {
       container.set(deleteRecord);
       testWriter.write(container);
+      expectedDataFiles.add((String) deleteRecord.getField(MetadataColumns.FILE_PATH.name()));
     }
 
     testWriter.close(false);
 
     RowDelta rowDelta = table.newRowDelta();
     testWriter.files().deleteFiles().forEach(rowDelta::addDeletes);
+    CharSequenceSet actualDataFiles = testWriter.files().getReferencedDataFilesInDeleteFiles();
     rowDelta.commit();
+
+    Assert.assertTrue("Actual :" + actualDataFiles + " Expected: " + expectedDataFiles,
+        actualDataFiles.containsAll(expectedDataFiles));
 
     StructLikeSet expected = rowSetWithoutIds(RECORDS, DELETED_IDS);
     StructLikeSet actual = actualRowSet(table);

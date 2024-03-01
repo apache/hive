@@ -28,6 +28,7 @@ import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
+import org.apache.iceberg.util.CharSequenceSet;
 
 public class FilesForCommit implements Serializable {
 
@@ -35,19 +36,29 @@ public class FilesForCommit implements Serializable {
   private final Collection<DeleteFile> deleteFiles;
   private Collection<DataFile> referencedDataFiles;
 
+  private final CharSequenceSet referencedDataFilesInDeleteFiles;
+
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles) {
     this(dataFiles, deleteFiles, Collections.emptyList());
   }
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
-                        Collection<DataFile> referencedDataFiles) {
+      Collection<DataFile> referencedDataFiles, CharSequenceSet referencedDataFilesInDeleteFiles) {
     this.dataFiles = dataFiles;
     this.deleteFiles = deleteFiles;
     this.referencedDataFiles = referencedDataFiles;
+    this.referencedDataFilesInDeleteFiles = referencedDataFilesInDeleteFiles;
   }
 
-  public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles) {
-    return new FilesForCommit(Collections.emptyList(), deleteFiles);
+  public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
+      Collection<DataFile> referencedDataFiles) {
+    this(dataFiles, deleteFiles, referencedDataFiles, CharSequenceSet.empty());
+  }
+
+  public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles,
+      CharSequenceSet referencedDataFilesInDeleteFiles) {
+    return new FilesForCommit(Collections.emptyList(), deleteFiles, Collections.emptyList(),
+        referencedDataFilesInDeleteFiles);
   }
 
   public static FilesForCommit onlyData(Collection<DataFile> dataFiles) {
@@ -74,6 +85,10 @@ public class FilesForCommit implements Serializable {
     return referencedDataFiles;
   }
 
+  public CharSequenceSet getReferencedDataFilesInDeleteFiles() {
+    return referencedDataFilesInDeleteFiles;
+  }
+
   public Collection<? extends ContentFile> allFiles() {
     return Stream.concat(dataFiles.stream(), deleteFiles.stream()).collect(Collectors.toList());
   }
@@ -88,6 +103,7 @@ public class FilesForCommit implements Serializable {
         .add("dataFiles", dataFiles.toString())
         .add("deleteFiles", deleteFiles.toString())
         .add("referencedDataFiles", referencedDataFiles.toString())
+        .add("referencedDataFilesInDeleteFiles", referencedDataFilesInDeleteFiles)
         .toString();
   }
 
