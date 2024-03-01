@@ -1605,7 +1605,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<FieldSchema> getFields(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-    List<FieldSchema> fields = client.get_fields(db, tableName);
+    List<FieldSchema> fields = client.get_fields(prependCatalogToDbName(db, conf), tableName);
     return fastpath ? fields : deepCopyFieldSchemas(fields);
   }
 
@@ -1799,7 +1799,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
          envCxt = new EnvironmentContext(props);
        }
 
-    List<FieldSchema> fields = client.get_schema_with_environment_context(db, tableName, envCxt);
+    List<FieldSchema> fields = client.get_schema_with_environment_context(prependCatalogToDbName(db, conf), tableName, envCxt);
     return fastpath ? fields : deepCopyFieldSchemas(fields);
   }
 
