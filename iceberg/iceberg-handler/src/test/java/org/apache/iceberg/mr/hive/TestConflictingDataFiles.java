@@ -31,7 +31,9 @@ import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.util.Tasks;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
@@ -40,9 +42,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
 
   private final String storageHandlerStub = "'org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerStub'";
 
-  @Test
-  public void testSingleFilterUpdate() {
-
+  @Before
+  public void setUpTables() {
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
             .bucket("customer_id", 16).build();
@@ -53,14 +54,22 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
+    TestUtilPhaser.getInstance();
+  }
 
+  @After
+  public void destroyTestSetUp() {
+    TestUtilPhaser.destroyInstance();
+  }
+
+  @Test
+  public void testSingleFilterUpdate() {
     String[] singleFilterQuery = new String[] { "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'",
         "UPDATE customers SET first_name='Changed' WHERE  last_name='Donnel'" };
 
-    TestUtilCyclicBarrier.getInstance(2);
-
     try {
       Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
+        TestUtilPhaser.getInstance().getPhaser().register();
         init(shell, testTables, temp, executionEngine);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
@@ -91,33 +100,19 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     } catch (Throwable ex) {
       Throwable cause = Throwables.getRootCause(ex);
       Assert.fail(String.valueOf(cause));
-    } finally {
-      TestUtilCyclicBarrier.destroyInstance();
     }
   }
 
   @Test
   public void testMultiFiltersUpdate() {
 
-    PartitionSpec spec =
-        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
-            .bucket("customer_id", 16).build();
-
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,
-        HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(), storageHandlerStub);
-    // insert one more batch so that we have multiple data files within the same partition
-    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
-        TableIdentifier.of("default", "customers"), false));
-
     String[] multiFilterQuery =
         new String[] { "UPDATE customers SET first_name='Changed' WHERE  last_name='Henderson' OR last_name='Johnson'",
             "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor' AND customer_id=1" };
 
-    TestUtilCyclicBarrier.getInstance(2);
-
     try {
       Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
+        TestUtilPhaser.getInstance().getPhaser().register();
         init(shell, testTables, temp, executionEngine);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
@@ -154,31 +149,17 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         .build();
     HiveIcebergTestUtils.validateData(expected,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
-    TestUtilCyclicBarrier.destroyInstance();
   }
 
   @Test
   public void testDeleteFilters() {
-
-    PartitionSpec spec =
-        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
-            .bucket("customer_id", 16).build();
-
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,
-        HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(), storageHandlerStub);
-    // insert one more batch so that we have multiple data files within the same partition
-    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
-        TableIdentifier.of("default", "customers"), false));
-
     String[] sql = new String[] { "DELETE FROM customers WHERE  last_name='Taylor'",
         "DELETE FROM customers WHERE last_name='Donnel'",
         "DELETE FROM customers WHERE last_name='Henderson' OR last_name='Johnson'" };
 
-    TestUtilCyclicBarrier.getInstance(3);
-
     try {
       Tasks.range(3).executeWith(Executors.newFixedThreadPool(3)).run(i -> {
+        TestUtilPhaser.getInstance().getPhaser().register();
         init(shell, testTables, temp, executionEngine);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
@@ -210,29 +191,17 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         .build();
     HiveIcebergTestUtils.validateData(expected,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
-    TestUtilCyclicBarrier.destroyInstance();
+    TestUtilPhaser.destroyInstance();
   }
 
   @Test
   public void testConflictingUpdates() {
-    PartitionSpec spec =
-        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
-            .bucket("customer_id", 16).build();
-
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,
-        HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(), storageHandlerStub);
-    // insert one more batch so that we have multiple data files within the same partition
-    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
-        TableIdentifier.of("default", "customers"), false));
-
     String[] singleFilterQuery = new String[] { "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'",
         "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'" };
 
-    TestUtilCyclicBarrier.getInstance(2);
-
     try {
       Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
+        TestUtilPhaser.getInstance().getPhaser().register();
         init(shell, testTables, temp, executionEngine);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
@@ -268,7 +237,5 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     HiveIcebergTestUtils.validateData(expected,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
 
-    TestUtilCyclicBarrier.destroyInstance();
   }
-
 }

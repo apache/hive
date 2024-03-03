@@ -19,29 +19,30 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Phaser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestUtilCyclicBarrier {
-  private static final Logger LOG = LoggerFactory.getLogger(TestUtilCyclicBarrier.class);
-  private static TestUtilCyclicBarrier instance;
-  private final CyclicBarrier cyclicBarrier;
+public class TestUtilPhaser {
 
-  private TestUtilCyclicBarrier(int parties) {
-    cyclicBarrier = new CyclicBarrier(parties);
+  private static final Logger LOG = LoggerFactory.getLogger(TestUtilPhaser.class);
+  private static TestUtilPhaser instance;
+  private final Phaser phaser;
+
+  private TestUtilPhaser() {
+    phaser = new Phaser();
   }
 
-  public static synchronized TestUtilCyclicBarrier getInstance(int parties) {
+  public static synchronized TestUtilPhaser getInstance() {
     if (instance == null) {
-      LOG.info("UnitTestConcurrency: Instantiating the cyclic barrier");
-      instance = new TestUtilCyclicBarrier(parties);
+      LOG.info("UnitTestConcurrency: Instantiating the Phaser barrier");
+      instance = new TestUtilPhaser();
     }
     return instance;
   }
 
-  public CyclicBarrier getCyclicBarrier() {
-    return cyclicBarrier;
+  public Phaser getPhaser() {
+    return phaser;
   }
 
   public static synchronized boolean isInstantiated() {
@@ -50,7 +51,8 @@ public class TestUtilCyclicBarrier {
 
   public static synchronized void destroyInstance() {
     if (instance != null) {
-      LOG.info("UnitTestConcurrency: Destroying the cyclic barrier");
+      instance.getPhaser().forceTermination();
+      LOG.info("UnitTestConcurrency: Destroying the Phaser barrier");
       instance = null;
     }
   }

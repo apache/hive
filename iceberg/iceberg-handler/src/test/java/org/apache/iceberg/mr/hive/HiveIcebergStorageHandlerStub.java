@@ -19,10 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.Phaser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,14 +36,15 @@ public class HiveIcebergStorageHandlerStub extends HiveIcebergStorageHandler {
 
     try {
       LOG.debug(" Using HiveIcebergStorageHandlerStub for unit tests");
-      if (TestUtilCyclicBarrier.isInstantiated()) {
-        CyclicBarrier testUtilCyclicBarrier = TestUtilCyclicBarrier.getInstance(0).getCyclicBarrier();
-        LOG.debug("Activating the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
-        testUtilCyclicBarrier.await(600, TimeUnit.SECONDS);
-        LOG.debug("Breaking the CyclicBarrier for thread: {} ", Thread.currentThread().getName());
+      if (TestUtilPhaser.isInstantiated()) {
+        Phaser testUtilPhaser = TestUtilPhaser.getInstance().getPhaser();
+        LOG.debug("Activating the Phaser Barrier for thread: {} ", Thread.currentThread().getName());
+        testUtilPhaser.arriveAndAwaitAdvance();
+        LOG.debug("Breaking the Phaser Barrier and deregistering the phaser for thread: {} ",
+            Thread.currentThread().getName());
       }
-    } catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
-      throw new RuntimeException("Barrier failed: ", e);
+    } catch (Exception e) {
+      throw new RuntimeException("Phaser failed: ", e);
     }
 
     return new HiveIcebergOutputCommitter();
