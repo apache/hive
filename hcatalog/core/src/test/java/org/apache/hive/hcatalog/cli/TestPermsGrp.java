@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.cli;
 
 import java.io.FileNotFoundException;
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.ExitException;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
@@ -85,6 +87,7 @@ public class TestPermsGrp extends TestCase {
 
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
+    Policy.setPolicy(new DerbyPolicy());
 
     hcatConf = new HiveConf(this.getClass());
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://127.0.0.1:" + msPort);

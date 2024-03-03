@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.api;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
@@ -114,6 +116,8 @@ public class TestHCatClient {
     msPort = MetaStoreUtils.startMetaStore();
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
+    Policy.setPolicy(new DerbyPolicy());
+
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
       + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
