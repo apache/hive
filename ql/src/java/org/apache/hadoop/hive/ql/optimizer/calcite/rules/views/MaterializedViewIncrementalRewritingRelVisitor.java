@@ -151,7 +151,10 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
     int countStarIndex = -1;
     for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
       AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
-      if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().isEmpty()) {
+      if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT &&
+          aggregateCall.getArgList().isEmpty() &&
+          !aggregateCall.isDistinct() &&
+          !aggregateCall.isApproximate()) {
         countStarIndex = i;
         continue;
       }
@@ -163,11 +166,23 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
       }
     }
 
+    IncrementalRebuildMode incrementalRebuildMode =
+        getIncrementalRebuildMode(aggregate, columnRefByAggregateCall, countStarIndex);
+
+    return new Result(incrementalRebuildMode, true, countStarIndex);
+  }
+
+  private IncrementalRebuildMode getIncrementalRebuildMode(
+      HiveAggregate aggregate, Map<Integer, Set<SqlKind>> columnRefByAggregateCall, int countStarIndex) {
     IncrementalRebuildMode incrementalRebuildMode = countStarIndex == -1 ? INSERT_ONLY : AVAILABLE;
     for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
       AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
       switch (aggregateCall.getAggregation().getKind()) {
         case COUNT:
+          if (aggregateCall.isDistinct() || aggregateCall.isApproximate()) {
+            return NOT_AVAILABLE;
+          }
+
         case SUM:
         case SUM0:
           break;
@@ -175,7 +190,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
         case AVG:
           Set<SqlKind> aggregates = columnRefByAggregateCall.get(aggregateCall.getArgList().get(0));
           if (!(aggregates.contains(SqlKind.SUM) && aggregates.contains(SqlKind.COUNT))) {
-            incrementalRebuildMode = NOT_AVAILABLE;
+            return NOT_AVAILABLE;
           }
           break;
 
@@ -185,12 +200,10 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
           break;
 
         default:
-          incrementalRebuildMode = NOT_AVAILABLE;
-          break;
+          return NOT_AVAILABLE;
       }
     }
-
-    return new Result(incrementalRebuildMode, true, countStarIndex);
+    return incrementalRebuildMode;
   }
 
   public static final class Result {

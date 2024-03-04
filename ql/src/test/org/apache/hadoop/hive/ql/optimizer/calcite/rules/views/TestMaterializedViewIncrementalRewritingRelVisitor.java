@@ -17,14 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -234,6 +240,60 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
             REL_BUILDER.aggregateCall(SqlStdOperatorTable.STDDEV, rexInputRef),
             REL_BUILDER.aggregateCall(SqlStdOperatorTable.SUM, rexInputRef),
             REL_BUILDER.aggregateCall(SqlStdOperatorTable.COUNT, rexInputRef))
+        .build();
+
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.NOT_AVAILABLE));
+  }
+
+  @Test
+  public void testIncrementalRebuildNotAvailableWhenPlanHasBothSupportedAndNotSupportedAggregate() {
+    RelNode ts1 = createTS(t1NativeMock, "t1");
+
+    RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
+    RelNode mvQueryPlan = REL_BUILDER
+        .push(ts1)
+        .aggregate(
+            REL_BUILDER.groupKey(0),
+            REL_BUILDER.aggregateCall(SqlStdOperatorTable.STDDEV, rexInputRef),
+            REL_BUILDER.aggregateCall(SqlStdOperatorTable.MIN, rexInputRef))
+        .build();
+
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.NOT_AVAILABLE));
+  }
+
+  @Test
+  public void testIncrementalRebuildIsInsertOnlyWhenPlanHasBothSupportedAndInsertOnlySupportAggregate() {
+    RelNode ts1 = createTS(t1NativeMock, "t1");
+
+    RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
+    RelNode mvQueryPlan = REL_BUILDER
+        .push(ts1)
+        .aggregate(
+            REL_BUILDER.groupKey(0),
+            REL_BUILDER.aggregateCall(SqlStdOperatorTable.MIN, rexInputRef),
+            REL_BUILDER.aggregateCall(SqlStdOperatorTable.COUNT))
+        .build();
+
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.INSERT_ONLY));
+  }
+
+  @Test
+  public void testIncrementalRebuildIsNotAvailableWhenPlanHasCountDistinct() {
+    RelNode ts1 = createTS(t1NativeMock, "t1");
+
+    RelDataType countRetType =
+        TYPE_FACTORY.createTypeWithNullability(TYPE_FACTORY.createSqlType(SqlTypeName.BIGINT), false);
+
+    AggregateCall aggregateCall = AggregateCall.create(SqlStdOperatorTable.COUNT, true, false, false,
+        Collections.emptyList(), -1, RelCollations.EMPTY, countRetType, null);
+//    AggregateCall aggregateCall = AggregateCall.create(SqlStdOperatorTable.COUNT, true, false, false,
+//        Collections.singletonList(0), -1, RelCollations.EMPTY, countRetType, null);
+    RelNode mvQueryPlan = REL_BUILDER
+        .push(ts1)
+        .aggregate(REL_BUILDER.groupKey(0), Collections.singletonList(aggregateCall))
         .build();
 
     MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
