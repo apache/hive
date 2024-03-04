@@ -29,21 +29,20 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-
 
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -326,7 +325,7 @@ public class CompactorUtil {
   }
 
   private static CompactionResponse requestCompaction(CompactionInfo ci, String runAs, String hostname,
-      String runtimeVersion, TxnStore txnHandler) throws MetaException {
+      TxnStore txnHandler) throws MetaException {
     CompactionRequest compactionRequest = new CompactionRequest(ci.dbname, ci.tableName, ci.type);
     if (ci.partName != null)
       compactionRequest.setPartitionname(ci.partName);
@@ -336,7 +335,7 @@ public class CompactorUtil {
     } else {
       compactionRequest.setInitiatorId(ci.initiatorId);
     }
-    compactionRequest.setInitiatorVersion(runtimeVersion);
+    compactionRequest.setInitiatorVersion(ci.initiatorVersion);
     compactionRequest.setPoolName(ci.poolName);
     LOG.info("Requesting compaction: " + compactionRequest);
     CompactionResponse resp = txnHandler.compact(compactionRequest);
@@ -497,7 +496,7 @@ public class CompactorUtil {
       CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs, txnHandler, conf);
       if (type != null) {
         ci.type = type;
-        return requestCompaction(ci, runAs, hostName, ci.initiatorVersion, txnHandler);
+        return requestCompaction(ci, runAs, hostName, txnHandler);
       }
     } catch (InterruptedException e) {
       //Handle InterruptedException separately so the compactionInfo won't be marked as failed.
@@ -544,10 +543,5 @@ public class CompactorUtil {
       throw new RuntimeException(e);
     }
     return compactionResponse;
-  }
-
-  public static CompactionResponse initiateCompactionForTable(CompactionRequest request, TxnStore txnHandler)
-      throws MetaException {
-    return txnHandler.compact(request);
   }
 }

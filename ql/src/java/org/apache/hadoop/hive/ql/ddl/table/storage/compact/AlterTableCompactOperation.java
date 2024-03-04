@@ -57,7 +57,6 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
   }
 
   @Override public int execute() throws Exception {
-    TxnStore txnHandler;
     Table table = context.getDb().getTable(desc.getTableName());
     if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, table.getDbName(), table.getTableName());
@@ -66,7 +65,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
         convertPartitionsFromThriftToDB(getPartitions(table, desc, context));
 
-    txnHandler = TxnUtils.getTxnStore(context.getConf());
+    TxnStore txnHandler = TxnUtils.getTxnStore(context.getConf());
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
@@ -87,7 +86,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         Optional<String> partitionName = partitionMap.keySet().stream().findFirst();
         partitionName.ifPresent(compactionRequest::setPartitionname);
       }
-      CompactionResponse compactionResponse = CompactorUtil.initiateCompactionForTable(compactionRequest, txnHandler);
+      CompactionResponse compactionResponse = txnHandler.compact(compactionRequest);
       parseCompactionResponse(compactionResponse, table, compactionRequest.getPartitionname());
     } else { // Check for eligible partitions and initiate compaction
       for (Map.Entry<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMapEntry : partitionMap.entrySet()) {
