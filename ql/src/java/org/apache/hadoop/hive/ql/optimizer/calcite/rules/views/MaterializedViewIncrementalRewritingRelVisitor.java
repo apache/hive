@@ -122,24 +122,13 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
     Result rightResult = visitChildOf(join, 1);
 
     boolean containsAggregate = leftResult.containsAggregate || rightResult.containsAggregate;
-    int countStarIndex = leftResult.countStarIndex;
-    if (countStarIndex == -1 && rightResult.countStarIndex != -1) {
-      countStarIndex = rightResult.countStarIndex + join.getLeft().getRowType().getFieldCount();
+    if (leftResult.incrementalRebuildMode == NOT_AVAILABLE || rightResult.incrementalRebuildMode == NOT_AVAILABLE) {
+      return new Result(NOT_AVAILABLE, containsAggregate);
     }
-    switch (rightResult.incrementalRebuildMode) {
-      case INSERT_ONLY:
-        return new Result(INSERT_ONLY, containsAggregate, countStarIndex);
-      case AVAILABLE:
-        return new Result(
-            leftResult.incrementalRebuildMode == INSERT_ONLY ? INSERT_ONLY : AVAILABLE,
-            containsAggregate,
-            countStarIndex);
-      case NOT_AVAILABLE:
-        return new Result(rightResult.incrementalRebuildMode, containsAggregate, countStarIndex);
-      default:
-        throw new UnsupportedOperationException(
-            "Unknown incremental materialized view rebuild mode: " + rightResult.incrementalRebuildMode);
+    if (leftResult.incrementalRebuildMode == INSERT_ONLY || rightResult.incrementalRebuildMode == INSERT_ONLY) {
+      return new Result(INSERT_ONLY, containsAggregate);
     }
+    return new Result(AVAILABLE, containsAggregate);
   }
 
   public Result visit(HiveAggregate aggregate) {
@@ -215,6 +204,10 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
 
     private Result(IncrementalRebuildMode incrementalRebuildMode) {
       this(incrementalRebuildMode, false, -1);
+    }
+
+    private Result(IncrementalRebuildMode incrementalRebuildMode, boolean containsAggregate) {
+      this(incrementalRebuildMode, containsAggregate, -1);
     }
 
     public Result(

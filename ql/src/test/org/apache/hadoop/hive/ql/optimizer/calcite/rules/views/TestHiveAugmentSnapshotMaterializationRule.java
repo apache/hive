@@ -39,7 +39,7 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
 
   @Test
   public void testWhenSnapshotAndTableAreEmptyNoFilterAdded() {
-    RelNode tableScan = createT2IcebergTS();
+    RelNode tableScan = createNonNativeTS();
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(Collections.emptyMap());
 
     RelNode newRoot = HiveMaterializedViewUtils.applyRule(tableScan, rule);
@@ -49,8 +49,8 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
 
   @Test
   public void testWhenNoSnapshotButTableHasNewDataAFilterWithDefaultSnapshotIDAdded() {
-    doReturn(new SnapshotContext(42)).when(table2storageHandler).getCurrentSnapshotContext(table2);
-    RelNode tableScan = createT2IcebergTS();
+    doReturn(new SnapshotContext(42)).when(tNonNativeStorageHandler).getCurrentSnapshotContext(tNonNative);
+    RelNode tableScan = createNonNativeTS();
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(Collections.emptyMap());
 
     RelNode newRoot = HiveMaterializedViewUtils.applyRule(tableScan, rule);
@@ -62,10 +62,10 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
 
   @Test
   public void testWhenMVAndTableCurrentSnapshotAreTheSameNoFilterAdded() {
-    doReturn(new SnapshotContext(42)).when(table2storageHandler).getCurrentSnapshotContext(table2);
-    RelNode tableScan = createT2IcebergTS();
+    doReturn(new SnapshotContext(42)).when(tNonNativeStorageHandler).getCurrentSnapshotContext(tNonNative);
+    RelNode tableScan = createNonNativeTS();
     Map<String, SnapshotContext> mvSnapshot = new HashMap<>();
-    mvSnapshot.put(table2.getFullyQualifiedName(), new SnapshotContext(42));
+    mvSnapshot.put(tNonNative.getFullyQualifiedName(), new SnapshotContext(42));
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(mvSnapshot);
 
     RelNode newRoot = HiveMaterializedViewUtils.applyRule(tableScan, rule);
@@ -75,10 +75,10 @@ public class TestHiveAugmentSnapshotMaterializationRule extends TestRuleBase {
 
   @Test
   public void testWhenMVSnapshotIsDifferentThanTableCurrentSnapshotHasNewDataAFilterWithMVSnapshotIdAdded() {
-    doReturn(new SnapshotContext(10)).when(table2storageHandler).getCurrentSnapshotContext(table2);
-    RelNode tableScan = createT2IcebergTS();
+    doReturn(new SnapshotContext(10)).when(tNonNativeStorageHandler).getCurrentSnapshotContext(tNonNative);
+    RelNode tableScan = createNonNativeTS();
     Map<String, SnapshotContext> mvSnapshot = new HashMap<>();
-    mvSnapshot.put(table2.getFullyQualifiedName(), new SnapshotContext(42));
+    mvSnapshot.put(tNonNative.getFullyQualifiedName(), new SnapshotContext(42));
     RelOptRule rule = HiveAugmentSnapshotMaterializationRule.with(mvSnapshot);
 
     RelNode newRoot = HiveMaterializedViewUtils.applyRule(tableScan, rule);

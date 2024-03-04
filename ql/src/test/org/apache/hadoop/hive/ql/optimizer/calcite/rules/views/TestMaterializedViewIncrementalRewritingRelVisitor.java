@@ -34,7 +34,9 @@ import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRuleBase {
@@ -54,20 +56,35 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
 
   @Test
   public void testIncrementalRebuildIsInsertOnlyWhenPlanHasTSOnNonNativeTable() {
-    RelNode ts1 = createT2IcebergTS();
+    RelNode ts1 = createNonNativeTS();
+    when(tNonNativeStorageHandler.areSnapshotsSupported()).thenReturn(true);
 
     RelNode mvQueryPlan = REL_BUILDER
         .push(ts1)
         .build();
 
     MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.INSERT_ONLY));
+
+    verify(tNonNativeStorageHandler, atLeastOnce()).areSnapshotsSupported();
+  }
+
+  @Test
+  public void testIncrementalRebuildIsNotAvailableWhenPlanHasTSOnNonNativeTableWithoutSnapshots() {
+    RelNode ts1 = createNonNativeTS();
+    RelNode mvQueryPlan = REL_BUILDER
+        .push(ts1)
+        .build();
+
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
     assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.NOT_AVAILABLE));
+
+    verify(tNonNativeStorageHandler, atLeastOnce()).areSnapshotsSupported();
   }
 
   @Test
   public void testIncrementalRebuildIsInsertOnlyWhenPlanHasTSOnNonNativeTableSupportsSnapshots() {
-    doReturn(true).when(table2storageHandler).areSnapshotsSupported();
-    RelNode ts1 = createT2IcebergTS();
+    RelNode ts1 = createNonNativeTSSupportingSnapshots();
 
     RelNode mvQueryPlan = REL_BUILDER
         .push(ts1)
@@ -110,6 +127,38 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
 
     MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
     assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.INSERT_ONLY));
+  }
+
+  @Test
+  public void testInnerJoinWithDifferentInputs() {
+    RelNode tSDoesNotSupport = createNonNativeTS();
+    RelNode tSSupportsInsertOnly = createNonNativeTSSupportingSnapshots();
+    RelNode tSSupports = createTS(t1NativeMock, "t1");
+    RelNode tSSupports2 = createTS(t2NativeMock, "t2");
+
+    testInnerJoin(tSDoesNotSupport, tSSupportsInsertOnly, IncrementalRebuildMode.NOT_AVAILABLE);
+    testInnerJoin(tSSupportsInsertOnly, tSDoesNotSupport, IncrementalRebuildMode.NOT_AVAILABLE);
+    testInnerJoin(tSSupportsInsertOnly, tSSupports, IncrementalRebuildMode.INSERT_ONLY);
+    testInnerJoin(tSSupports, tSSupportsInsertOnly, IncrementalRebuildMode.INSERT_ONLY);
+    testInnerJoin(tSSupports, tSSupports2, IncrementalRebuildMode.AVAILABLE);
+  }
+
+  private void testInnerJoin(RelNode left, RelNode right, IncrementalRebuildMode expected) {
+    RexNode joinCondition = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
+        REX_BUILDER.makeInputRef(left.getRowType().getFieldList().get(0).getType(), 0),
+        REX_BUILDER.makeInputRef(right.getRowType().getFieldList().get(0).getType(), 5));
+
+    RelNode mvQueryPlan = REL_BUILDER
+        .push(left)
+        .push(right)
+        .join(JoinRelType.INNER, joinCondition)
+        .aggregate(REL_BUILDER.groupKey(0), REL_BUILDER.aggregateCall(SqlStdOperatorTable.COUNT))
+        .build();
+
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    assertThat(
+        String.format("leftInput=%s, rightInput=%s, expected incremental rebuild mode=%s", left, right, expected),
+        visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(expected));
   }
 
   @Test
