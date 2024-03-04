@@ -373,7 +373,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         case NOT_AVAILABLE:
         default:
           if (materialization.isSourceTablesUpdateDeleteModified()) {
-            // calcitePreMVRewritingPlan is already got the optimizations by applyPreJoinOrderingTransforms prior calling
+            // calcitePreMVRewritingPlan is already got the optimizations by applyPreJoinOrderingTransforms prior to calling
             // applyMaterializedViewRewriting in CalcitePlanner.CalcitePlannerAction.apply
             return calcitePreMVRewritingPlan;
           } else {

@@ -45,8 +45,8 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.Incrementa
  * We are verifying that:
  * <ul>
  *   <li>Plan only uses legal operators (i.e., Filter, Project, Join, and TableScan)</li>
- *   <li>Whether the plane has aggregate</li>
- *   <li>Whether the plane has count(*) aggregate function call</li>
+ *   <li>Whether the plan has aggregate</li>
+ *   <li>Whether the plan has count(*) aggregate function call</li>
  *   <li>Check whether aggregate functions are supported</li>
  * </ul>
  */
@@ -122,9 +122,9 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
     Result rightResult = visitChildOf(join, 1);
 
     boolean containsAggregate = leftResult.containsAggregate || rightResult.containsAggregate;
-    int countStarIndex = leftResult.countIndex;
-    if (countStarIndex == -1 && rightResult.countIndex != -1) {
-      countStarIndex = rightResult.countIndex + join.getLeft().getRowType().getFieldCount();
+    int countStarIndex = leftResult.countStarIndex;
+    if (countStarIndex == -1 && rightResult.countStarIndex != -1) {
+      countStarIndex = rightResult.countStarIndex + join.getLeft().getRowType().getFieldCount();
     }
     switch (rightResult.incrementalRebuildMode) {
       case INSERT_ONLY:
@@ -196,7 +196,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
   public static final class Result {
     private final IncrementalRebuildMode incrementalRebuildMode;
     private final boolean containsAggregate;
-    private final int countIndex;
+    private final int countStarIndex;
 
     private Result(IncrementalRebuildMode incrementalRebuildMode) {
       this(incrementalRebuildMode, false, -1);
@@ -205,10 +205,10 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
     public Result(
         IncrementalRebuildMode incrementalRebuildMode,
         boolean containsAggregate,
-        int countIndex) {
+        int countStarIndex) {
       this.incrementalRebuildMode = incrementalRebuildMode;
       this.containsAggregate = containsAggregate;
-      this.countIndex = countIndex;
+      this.countStarIndex = countStarIndex;
     }
 
     public IncrementalRebuildMode getIncrementalRebuildMode() {
@@ -220,7 +220,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
     }
 
     public int getCountStarIndex() {
-      return countIndex;
+      return countStarIndex;
     }
   }
 }
