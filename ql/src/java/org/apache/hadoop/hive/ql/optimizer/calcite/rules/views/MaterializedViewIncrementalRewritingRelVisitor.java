@@ -135,8 +135,10 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
             containsAggregate,
             countStarIndex);
       case NOT_AVAILABLE:
-      default:
         return new Result(rightResult.incrementalRebuildMode, containsAggregate, countStarIndex);
+      default:
+        throw new UnsupportedOperationException(
+            "Unknown incremental materialized view rebuild mode: " + rightResult.incrementalRebuildMode);
     }
   }
 
