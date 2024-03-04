@@ -79,8 +79,8 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.iceberg.util.CharSequenceSet;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,19 +143,18 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
               if (writers.get(output) != null) {
-                Collection<DataFile> dataFiles = Lists.newArrayList();
-                Collection<DeleteFile> deleteFiles = Lists.newArrayList();
-                Collection<DataFile> referencedDataFiles = Lists.newArrayList();
-                CharSequenceSet referencedDataFilesInDeleteFiles = CharSequenceSet.empty();
+                List<DataFile> dataFiles = Lists.newArrayList();
+                List<DeleteFile> deleteFiles = Lists.newArrayList();
+                List<DataFile> replacedDataFiles = Lists.newArrayList();
+                Set<CharSequence> referencedDataFiles = Sets.newHashSet();
                 for (HiveIcebergWriter writer : writers.get(output)) {
                   FilesForCommit files = writer.files();
                   dataFiles.addAll(files.dataFiles());
                   deleteFiles.addAll(files.deleteFiles());
+                  replacedDataFiles.addAll(files.replacedDataFiles());
                   referencedDataFiles.addAll(files.referencedDataFiles());
-                  referencedDataFilesInDeleteFiles.addAll(files.getReferencedDataFilesInDeleteFiles());
                 }
-                createFileForCommit(
-                    new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles, referencedDataFilesInDeleteFiles),
+                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles),
                     fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
@@ -416,8 +415,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
     List<DataFile> dataFiles = Lists.newArrayList();
     List<DeleteFile> deleteFiles = Lists.newArrayList();
-    List<DataFile> referencedDataFiles = Lists.newArrayList();
-    CharSequenceSet referencedDataFilesInDeleteFiles = CharSequenceSet.empty();
+    List<DataFile> replacedDataFiles = Lists.newArrayList();
+    Set<CharSequence> referencedDataFiles = Sets.newHashSet();
 
     Table table = null;
     String branchName = null;
@@ -444,12 +443,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           numTasks, executor, outputTable.table.location(), jobContext, io, true);
       dataFiles.addAll(writeResults.dataFiles());
       deleteFiles.addAll(writeResults.deleteFiles());
+      replacedDataFiles.addAll(writeResults.replacedDataFiles());
       referencedDataFiles.addAll(writeResults.referencedDataFiles());
-      referencedDataFilesInDeleteFiles.addAll(writeResults.getReferencedDataFilesInDeleteFiles());
     }
 
-    FilesForCommit filesForCommit =
-        new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles, referencedDataFilesInDeleteFiles);
+    FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles);
     long startTime = System.currentTimeMillis();
 
     if (Operation.IOW != operation) {
@@ -492,9 +490,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   private void commitWrite(Table table, String branchName, Long snapshotId, long startTime,
       FilesForCommit results, Operation operation) {
 
-    if (!results.referencedDataFiles().isEmpty()) {
+    if (!results.replacedDataFiles().isEmpty()) {
       OverwriteFiles write = table.newOverwrite();
-      results.referencedDataFiles().forEach(write::deleteFile);
+      results.replacedDataFiles().forEach(write::deleteFile);
       results.dataFiles().forEach(write::addFile);
 
       if (StringUtils.isNotEmpty(branchName)) {
@@ -504,6 +502,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         write.validateFromSnapshot(snapshotId);
       }
       write.validateNoConflictingData();
+      write.validateNoConflictingDeletes();
       write.commit();
       return;
     }
@@ -530,7 +529,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         write.validateDeletedFiles();
         write.validateNoConflictingDeleteFiles();
       }
-      write.validateDataFilesExist(results.getReferencedDataFilesInDeleteFiles());
+      write.validateDataFilesExist(results.referencedDataFiles());
       write.validateNoConflictingDataFiles();
       write.commit();
     }
@@ -668,8 +667,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     // starting from 0.
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
-    Collection<DataFile> referencedDataFiles = new ConcurrentLinkedQueue<>();
-    Collection<CharSequenceSet> referencedDataFilesInDeleteFiles = new ConcurrentLinkedQueue<>();
+    Collection<DataFile> replacedDataFiles = new ConcurrentLinkedQueue<>();
+    Collection<CharSequence> referencedDataFiles = new ConcurrentLinkedQueue<>();
     Tasks.range(numTasks)
         .throwFailureWhenFinished(throwOnFailure)
         .executeWith(executor)
@@ -679,13 +678,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           FilesForCommit files = readFileForCommit(taskFileName, io);
           dataFiles.addAll(files.dataFiles());
           deleteFiles.addAll(files.deleteFiles());
+          replacedDataFiles.addAll(files.replacedDataFiles());
           referencedDataFiles.addAll(files.referencedDataFiles());
-          referencedDataFilesInDeleteFiles.add(files.getReferencedDataFilesInDeleteFiles());
         });
 
-    CharSequenceSet referencedDataFilesInDeleteFilesSet = CharSequenceSet.empty();
-    referencedDataFilesInDeleteFiles.forEach(referencedDataFilesInDeleteFilesSet::addAll);
-    return new FilesForCommit(dataFiles, deleteFiles, referencedDataFiles, referencedDataFilesInDeleteFilesSet);
+    return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles);
   }
 
   /**

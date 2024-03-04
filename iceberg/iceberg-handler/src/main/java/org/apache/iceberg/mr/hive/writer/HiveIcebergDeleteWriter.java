@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.PartitionSpec;
@@ -37,7 +38,6 @@ import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.mapred.Container;
-import org.apache.iceberg.util.CharSequenceSet;
 
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
@@ -69,7 +69,7 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   @Override
   public FilesForCommit files() {
     List<DeleteFile> deleteFiles = ((DeleteWriteResult) writer.result()).deleteFiles();
-    CharSequenceSet referencedDataFilesInDeleteFiles = ((DeleteWriteResult) writer.result()).referencedDataFiles();
-    return FilesForCommit.onlyDelete(deleteFiles, referencedDataFilesInDeleteFiles);
+    Set<CharSequence> referencedDataFiles = ((DeleteWriteResult) writer.result()).referencedDataFiles();
+    return FilesForCommit.onlyDelete(deleteFiles, referencedDataFiles);
   }
 }

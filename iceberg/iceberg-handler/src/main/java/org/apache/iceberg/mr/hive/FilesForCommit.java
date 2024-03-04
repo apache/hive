@@ -28,45 +28,42 @@ import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
-import org.apache.iceberg.util.CharSequenceSet;
 
 public class FilesForCommit implements Serializable {
 
   private final Collection<DataFile> dataFiles;
   private final Collection<DeleteFile> deleteFiles;
-  private Collection<DataFile> referencedDataFiles;
-
-  private final CharSequenceSet referencedDataFilesInDeleteFiles;
+  private final Collection<DataFile> replacedDataFiles;
+  private final Collection<CharSequence> referencedDataFiles;
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles) {
     this(dataFiles, deleteFiles, Collections.emptyList());
   }
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
-      Collection<DataFile> referencedDataFiles, CharSequenceSet referencedDataFilesInDeleteFiles) {
+      Collection<DataFile> replacedDataFiles, Collection<CharSequence> referencedDataFiles) {
     this.dataFiles = dataFiles;
     this.deleteFiles = deleteFiles;
+    this.replacedDataFiles = replacedDataFiles;
     this.referencedDataFiles = referencedDataFiles;
-    this.referencedDataFilesInDeleteFiles = referencedDataFilesInDeleteFiles;
   }
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
-      Collection<DataFile> referencedDataFiles) {
-    this(dataFiles, deleteFiles, referencedDataFiles, CharSequenceSet.empty());
+      Collection<DataFile> replacedDataFiles) {
+    this(dataFiles, deleteFiles, replacedDataFiles, Collections.emptySet());
   }
 
   public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles,
-      CharSequenceSet referencedDataFilesInDeleteFiles) {
-    return new FilesForCommit(Collections.emptyList(), deleteFiles, Collections.emptyList(),
-        referencedDataFilesInDeleteFiles);
+      Collection<CharSequence> referencedDataFiles) {
+    return new FilesForCommit(Collections.emptyList(), deleteFiles, Collections.emptyList(), referencedDataFiles);
   }
 
   public static FilesForCommit onlyData(Collection<DataFile> dataFiles) {
     return new FilesForCommit(dataFiles, Collections.emptyList());
   }
 
-  public static FilesForCommit onlyData(Collection<DataFile> dataFiles, Collection<DataFile> referencedDataFiles) {
-    return new FilesForCommit(dataFiles, Collections.emptyList(), referencedDataFiles);
+  public static FilesForCommit onlyData(Collection<DataFile> dataFiles, Collection<DataFile> replacedDataFiles) {
+    return new FilesForCommit(dataFiles, Collections.emptyList(), replacedDataFiles);
   }
 
   public static FilesForCommit empty() {
@@ -81,12 +78,12 @@ public class FilesForCommit implements Serializable {
     return deleteFiles;
   }
 
-  public Collection<DataFile> referencedDataFiles() {
-    return referencedDataFiles;
+  public Collection<DataFile> replacedDataFiles() {
+    return replacedDataFiles;
   }
 
-  public CharSequenceSet getReferencedDataFilesInDeleteFiles() {
-    return referencedDataFilesInDeleteFiles;
+  public Collection<CharSequence> referencedDataFiles() {
+    return referencedDataFiles;
   }
 
   public Collection<? extends ContentFile> allFiles() {
@@ -94,7 +91,7 @@ public class FilesForCommit implements Serializable {
   }
 
   public boolean isEmpty() {
-    return dataFiles.isEmpty() && deleteFiles.isEmpty() && referencedDataFiles.isEmpty();
+    return dataFiles.isEmpty() && deleteFiles.isEmpty() && replacedDataFiles.isEmpty();
   }
 
   @Override
@@ -102,8 +99,8 @@ public class FilesForCommit implements Serializable {
     return MoreObjects.toStringHelper(this)
         .add("dataFiles", dataFiles.toString())
         .add("deleteFiles", deleteFiles.toString())
+        .add("replacedDataFiles", replacedDataFiles.toString())
         .add("referencedDataFiles", referencedDataFiles.toString())
-        .add("referencedDataFilesInDeleteFiles", referencedDataFilesInDeleteFiles)
         .toString();
   }
 

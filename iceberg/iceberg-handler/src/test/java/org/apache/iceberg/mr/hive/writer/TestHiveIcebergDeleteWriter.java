@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -67,7 +68,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
 
     RowDelta rowDelta = table.newRowDelta();
     testWriter.files().deleteFiles().forEach(rowDelta::addDeletes);
-    CharSequenceSet actualDataFiles = testWriter.files().getReferencedDataFilesInDeleteFiles();
+    Collection<CharSequence> actualDataFiles = testWriter.files().referencedDataFiles();
     rowDelta.commit();
 
     Assert.assertTrue("Actual :" + actualDataFiles + " Expected: " + expectedDataFiles,
