@@ -64,7 +64,7 @@ STAGE PLANS:
             Number of rows: 1
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: UDFToString(_col0) (type: string), UDFToString(_col1) (type: string)
+              expressions: CAST( _col0 AS STRING) (type: string), CAST( _col1 AS STRING) (type: string)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator

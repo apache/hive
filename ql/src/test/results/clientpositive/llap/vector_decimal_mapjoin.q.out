@@ -753,7 +753,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(14,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(14,2)/DECIMAL_64) -> 3:decimal(14,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,2)/DECIMAL_64)
                     predicate: dec is not null (type: boolean)
                     Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -771,8 +771,8 @@ STAGE PLANS:
                           0 _col0 (type: decimal(16,2))
                           1 _col0 (type: decimal(16,2))
                         Map Join Vectorization:
-                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 4:decimal(16,2)
-                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 5:decimal(16,2)
+                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 3:decimal(16,2)
+                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 4:decimal(16,2)
                             className: VectorMapJoinOperator
                             native: false
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
@@ -808,7 +808,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: dec:decimal(14,2)/DECIMAL_64, value_dec:decimal(14,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(14,2), decimal(16,2), decimal(16,2)]
+                    scratchColumnTypeNames: [decimal(16,2), decimal(16,2)]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -821,7 +821,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(14,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(14,0)/DECIMAL_64) -> 3:decimal(14,0))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0)/DECIMAL_64)
                     predicate: dec is not null (type: boolean)
                     Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -859,7 +859,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: dec:decimal(14,0)/DECIMAL_64, value_dec:decimal(14,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(14,0)]
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -1034,7 +1034,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(14,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(14,2)/DECIMAL_64) -> 3:decimal(14,2))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,2)/DECIMAL_64)
                     predicate: dec is not null (type: boolean)
                     Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1052,8 +1052,8 @@ STAGE PLANS:
                           0 _col0 (type: decimal(16,2))
                           1 _col0 (type: decimal(16,2))
                         Map Join Vectorization:
-                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 4:decimal(16,2)
-                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 5:decimal(16,2), ConvertDecimal64ToDecimal(col 1:decimal(14,2)/DECIMAL_64) -> 3:decimal(14,2)
+                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 3:decimal(16,2)
+                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(16,2)/DECIMAL_64) -> 4:decimal(16,2), ConvertDecimal64ToDecimal(col 1:decimal(14,2)/DECIMAL_64) -> 5:decimal(14,2)
                             className: VectorMapJoinOperator
                             native: false
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
@@ -1089,7 +1089,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: dec:decimal(14,2)/DECIMAL_64, value_dec:decimal(14,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(14,2), decimal(16,2), decimal(16,2), decimal(14,0)]
+                    scratchColumnTypeNames: [decimal(16,2), decimal(16,2), decimal(14,2), decimal(14,0)]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1102,7 +1102,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(14,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(14,0)/DECIMAL_64) -> 3:decimal(14,0))
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0)/DECIMAL_64)
                     predicate: dec is not null (type: boolean)
                     Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1141,7 +1141,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: dec:decimal(14,0)/DECIMAL_64, value_dec:decimal(14,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(14,0)]
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator

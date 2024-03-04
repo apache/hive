@@ -85,7 +85,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                           name: default.orcfile_merge1
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), UDFToString(_col2) (type: string)
+                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
                       outputColumnNames: key, value, ds, part
                       Statistics: Num rows: 500 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
@@ -218,7 +218,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                           name: default.orcfile_merge1b
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), UDFToString(_col2) (type: string)
+                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
                       outputColumnNames: key, value, ds, part
                       Statistics: Num rows: 500 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
@@ -394,7 +394,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                           name: default.orcfile_merge1c
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), UDFToString(_col2) (type: string)
+                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
                       outputColumnNames: key, value, ds, part
                       Statistics: Num rows: 500 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator

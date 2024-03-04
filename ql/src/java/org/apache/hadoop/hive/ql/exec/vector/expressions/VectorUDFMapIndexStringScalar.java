@@ -18,12 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-
-import java.util.Arrays;
 
 /**
  * Returns value of Map.
@@ -62,23 +59,23 @@ public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
   }
 
   @Override
-  protected Object getKeyByIndex(ColumnVector cv, int index) {
-    BytesColumnVector bytesCV = (BytesColumnVector) cv;
-    if (cv.isRepeating) {
-      return ArrayUtils.subarray(bytesCV.vector[0], bytesCV.start[index],
-          bytesCV.start[index] + bytesCV.length[0]);
+  public int findScalarInMap(MapColumnVector mapColumnVector, int mapBatchIndex) {
+    final int offset = (int) mapColumnVector.offsets[mapBatchIndex];
+    final int count = (int) mapColumnVector.lengths[mapBatchIndex];
+    BytesColumnVector keyColVector = (BytesColumnVector) mapColumnVector.keys;
+    byte[][] keyVector = keyColVector.vector;
+    int[] keyStart = keyColVector.start;
+    int[] keyLength = keyColVector.length;
+    final boolean isRepeating = keyColVector.isRepeating;
+    for (int i = 0; i < count; i++) {
+      final int keyOffset = offset + i;
+      final int len = isRepeating? keyLength[0]: keyLength[keyOffset];
+      byte[] rowKey = isRepeating? keyVector[0]: keyVector[keyOffset];
+      if (StringExpr.equal(key, 0, key.length,
+          rowKey, keyStart[keyOffset], len)) {
+        return offset + i;
+      }
     }
-    return ArrayUtils.subarray(bytesCV.vector[index], bytesCV.start[index],
-        bytesCV.start[index] + bytesCV.length[index]);
-  }
-
-  @Override
-  public Object getCurrentKey(int index) {
-    return key;
-  }
-
-  @Override
-  protected boolean compareKeyInternal(Object columnKey, Object otherKey) {
-    return Arrays.equals((byte[])columnKey, (byte[]) otherKey);
+    return -1;
   }
 }

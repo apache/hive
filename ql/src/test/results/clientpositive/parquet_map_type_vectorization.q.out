@@ -128,7 +128,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [1, 2, 3, 8, 9, 10, 11, 12, 13]
-                  selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k2) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 456) -> 9:int, VectorUDFMapIndexDoubleScalar(col 3:map<double,double>, key: 123.123) -> 10:double, VectorUDFMapIndexStringCol(col 1:map<string,string>, key: col 4:string) -> 11:string, VectorUDFMapIndexLongCol(col 2:map<int,int>, key: col 5:int) -> 12:int, VectorUDFMapIndexDoubleCol(col 3:map<double,double>, key: col 6:double) -> 13:double
+                  selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k2) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 456) -> 9:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 10:double, VectorUDFMapIndexStringCol(col 1:map<string,string>, key: col 4:string) -> 11:string, VectorUDFMapIndexLongCol(col 2:map<int,int>, key: col 5:int) -> 12:int, VectorUDFMapIndexDoubleCol(col 3:map<double,double>, key: col 6:double) -> 13:double
               Statistics: Num rows: 1023 Data size: 7161 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
@@ -225,7 +225,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [8, 9, 10]
-                    selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 9:int, VectorUDFMapIndexDoubleScalar(col 3:map<double,double>, key: 123.123) -> 10:double
+                    selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 9:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 10:double
                 Statistics: Num rows: 511 Data size: 3577 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col1), sum(_col2)

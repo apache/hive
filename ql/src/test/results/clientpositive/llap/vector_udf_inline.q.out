@@ -70,7 +70,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: SELECT operator: Unable to vectorize custom UDF. Complex type constants not supported: Const struct<col1:int,col2:string> [1, dude!]
+                notVectorizedReason: UDTF Operator (UDTF) not supported
                 vectorized: false
 
   Stage: Stage-0

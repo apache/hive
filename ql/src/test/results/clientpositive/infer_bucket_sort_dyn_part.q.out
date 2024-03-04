@@ -460,7 +460,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 99 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col1) (type: string), if(((UDFToDouble(_col0) % 100.0D) = 0.0D), '11', '12') (type: string)
+            expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string), if(((UDFToDouble(_col0) % 100.0D) = 0.0D), '11', '12') (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 99 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
             File Output Operator

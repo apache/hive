@@ -133,7 +133,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 3:decimal(8,1))(children: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)), SelectColumnIsNotNull(col 1:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:decimal(8,1)/DECIMAL_64), SelectColumnIsNotNull(col 1:int))
                     predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                     Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -343,7 +343,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 3:decimal(8,1))(children: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:decimal(8,1)/DECIMAL_64))
                     predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                     Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -553,7 +553,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 3:decimal(8,1))(children: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)), SelectColumnIsNotNull(col 1:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:decimal(8,1)/DECIMAL_64), SelectColumnIsNotNull(col 1:int))
                     predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                     Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator

@@ -58,7 +58,8 @@ public class TestVectorRowObject extends TestCase {
 
     VectorRandomRowSource source = new VectorRandomRowSource();
 
-    source.init(r, VectorRandomRowSource.SupportedTypes.ALL, 4);
+    source.init(r, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ true, /* isUnicodeOk */ true);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);

@@ -189,7 +189,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: UDFToString(VALUE._col0) (type: string), UDFToInteger(VALUE._col1) (type: int)
+          expressions: CAST( VALUE._col0 AS STRING) (type: string), UDFToInteger(VALUE._col1) (type: int)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
