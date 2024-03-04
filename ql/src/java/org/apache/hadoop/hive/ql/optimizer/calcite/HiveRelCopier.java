@@ -31,7 +31,9 @@ import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -45,9 +47,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.QueryTables;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -121,10 +128,17 @@ public class HiveRelCopier extends RelHomogeneousShuttle {
     Table tblMetadata = new Table("dummy", qname.get(0));
     // The TableType.CTE is a hack to make the cost model read the size of the table instead of returning infinite
     // for the materialized view. Obviously this has to change to use the metadata providers.
-    RelOptHiveTable tbl = new RelOptHiveTable(null, typeFactory, qname, type, tblMetadata, Collections.emptyList(),
-        Collections.emptyList(), Collections.emptyList(), new HiveConf(), Hive.getThreadLocal(), new QueryTables(true),
-        Collections.emptyMap(), Collections.emptyMap(), new AtomicInteger(), RelOptHiveTable.TableType.CTE,
-        new HivePartitionPruneRuleHelper());
+
+    List<ColumnInfo> columns = new ArrayList<>();
+    for (RelDataTypeField f : type.getFieldList()) {
+      columns.add(
+          new ColumnInfo(f.getName(), TypeConverter.convert(f.getType()), f.getType().isNullable(), qname.get(0), false,
+              false));
+    }
+    RelOptHiveTable tbl =
+        new RelOptHiveTable(null, typeFactory, qname, type, tblMetadata, columns, Collections.emptyList(),
+            Collections.emptyList(), new HiveConf(), Hive.getThreadLocal(), new QueryTables(true), new HashMap<>(),
+            new HashMap<>(), new AtomicInteger(), RelOptHiveTable.TableType.CTE, new HivePartitionPruneRuleHelper());
     tbl.setRowCount(rowCount);
     return tbl;
   }
