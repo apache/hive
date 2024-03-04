@@ -50,7 +50,6 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
         + "  '1970-01-01 00:00:00'")
 public class GenericUDFFromUnixTime extends GenericUDF {
 
-  private transient final Text result = new Text();
   private transient IntObjectInspector inputIntOI;
   private transient LongObjectInspector inputLongOI;
   private transient ZoneId timeZone;

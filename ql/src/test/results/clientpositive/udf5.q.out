@@ -248,7 +248,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 01:53:11'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1400-10-30 02:11:07
+1400-11-08 01:53:11
 PREHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 01:53:11'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -257,7 +257,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 01:53:11'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1800-11-08 02:11:07
+1800-11-08 01:53:11
 PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -266,7 +266,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1400-10-30 07:53:20
+1400-11-08 07:35:24
 PREHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -275,7 +275,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1800-11-08 07:53:20
+1800-11-08 07:35:24
 PREHOOK: query: select from_unixtime(unix_timestamp('0000-00-00', 'uuuu-MM-dd'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -302,7 +302,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 01:53:11'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1400-10-30 01:54:26
+1400-11-08 01:53:11
 PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08', 'yyyy-MM-dd'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -311,7 +311,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08', 'yyyy-MM-dd')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1400-10-30 00:01:15
+1400-11-08 00:00:00
 PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 01:53:11'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -320,7 +320,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 01:53:11'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1400-10-30 02:24:37
+1400-11-08 01:53:11
 PREHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 01:53:11'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -329,7 +329,7 @@ POSTHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 01:53:11'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1800-11-08 02:24:37
+1800-11-08 01:53:11
 PREHOOK: query: select from_unixtime(to_unix_timestamp('0000-00-00'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -356,7 +356,7 @@ POSTHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1400-01-01 00:00:00 UTC','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1399-12-24 07:00:00
+1400-01-01 06:42:04
 PREHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1800-01-01 00:00:00 UTC','yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -365,7 +365,7 @@ POSTHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1800-01-01 00:00:00 UTC','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1800-01-01 07:00:00
+1800-01-01 06:42:04
 PREHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1900-01-01 00:00:00 UTC','yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -428,7 +428,7 @@ POSTHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1400-01-01 00:00:00 ICT','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1399-12-23 23:53:20
+1399-12-31 23:35:24
 PREHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1800-01-01 00:00:00 ICT','yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -437,7 +437,7 @@ POSTHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1800-01-01 00:00:00 ICT','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1799-12-31 23:53:20
+1799-12-31 23:35:24
 PREHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1900-01-01 00:00:00 ICT','yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -446,7 +446,7 @@ POSTHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1900-01-01 00:00:00 ICT','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1899-12-31 23:53:20
+1899-12-31 23:35:24
 PREHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('2000-01-07 00:00:00 ICT','yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -500,7 +500,7 @@ POSTHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1400-01-01 00:00:00 GMT','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1399-12-24 07:00:00
+1400-01-01 06:42:04
 PREHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1800-01-01 00:00:00 GMT','yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -509,7 +509,7 @@ POSTHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1800-01-01 00:00:00 GMT','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1800-01-01 07:00:00
+1800-01-01 06:42:04
 PREHOOK: query: SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('1900-01-01 00:00:00 GMT','yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
