@@ -1,4 +1,5 @@
 set hive.fetch.task.conversion=more;
+set hive.local.time.zone=UTC;
 
 drop table timestamp_3;
 
@@ -16,6 +17,20 @@ select cast(t as float) from timestamp_3 limit 1;
 select cast(t as double) from timestamp_3 limit 1;
 select cast(t as string) from timestamp_3 limit 1;
 
+set hive.local.time.zone=Asia/Bangkok;
+
+select cast(t as boolean) from timestamp_3 limit 1;
+select cast(t as tinyint) from timestamp_3 limit 1;
+select cast(t as smallint) from timestamp_3 limit 1;
+select cast(t as int) from timestamp_3 limit 1;
+select cast(t as bigint) from timestamp_3 limit 1;
+select cast(t as float) from timestamp_3 limit 1;
+select cast(t as double) from timestamp_3 limit 1;
+select cast(t as string) from timestamp_3 limit 1;
+
+set hive.local.time.zone=UTC;
+
 select t, sum(t), count(*), sum(t)/count(*), avg(t) from timestamp_3 group by t;
 
+set hive.local.time.zone=LOCAL;
 drop table timestamp_3;

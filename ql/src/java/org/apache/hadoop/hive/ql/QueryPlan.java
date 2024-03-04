@@ -74,7 +74,7 @@ import com.google.common.annotations.VisibleForTesting;
 public class QueryPlan implements Serializable {
   private static final long serialVersionUID = 1L;
 
-
+  private String cboInfo;
   private String queryString;
   private String optimizedQueryString;
 
@@ -161,6 +161,7 @@ public class QueryPlan implements Serializable {
     this.acidSinks = sem.getAcidFileSinks();
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
+    this.cboInfo = sem.getCboInfo();
   }
 
   /**
@@ -856,5 +857,9 @@ public class QueryPlan implements Serializable {
   }
   public Boolean getAutoCommitValue() {
     return autoCommitValue;
+  }
+
+  public String getCboInfo() {
+    return cboInfo;
   }
 }

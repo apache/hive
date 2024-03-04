@@ -1312,7 +1312,8 @@ public class TestOrcFile {
             .inspector(inspector)
             .stripeSize(100000)
             .bufferSize(10000)
-            .blockPadding(false));
+            .blockPadding(false)
+            .setProlepticGregorian(true));
     OrcStruct row = new OrcStruct(2);
     for (int year = minYear; year < maxYear; ++year) {
       for (int ms = 1000; ms < 2000; ++ms) {

@@ -364,9 +364,9 @@ public class VectorVerifyFast {
       case STRING:
       {
         Text value = (Text) object;
-        byte[] stringBytes = value.getBytes();
-        int stringLength = stringBytes.length;
-        serializeWrite.writeString(stringBytes, 0, stringLength);
+        byte[] bytes = value.getBytes();
+        int byteLength = value.getLength();
+        serializeWrite.writeString(bytes, 0, byteLength);
       }
       break;
       case CHAR:

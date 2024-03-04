@@ -54,10 +54,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampScal
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNull;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColModuloLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColumnInList;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.RoundWithNumDigitsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsFalse;

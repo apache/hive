@@ -248,8 +248,8 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    VectorExpression.doTransientInit(reduceSinkKeyExpressions);
-    VectorExpression.doTransientInit(reduceSinkValueExpressions);
+    VectorExpression.doTransientInit(reduceSinkKeyExpressions, hconf);
+    VectorExpression.doTransientInit(reduceSinkValueExpressions, hconf);
 
     if (LOG.isDebugEnabled()) {
       // Determine the name of our map or reduce task for debug tracing.

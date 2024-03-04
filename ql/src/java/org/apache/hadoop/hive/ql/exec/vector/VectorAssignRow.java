@@ -514,12 +514,22 @@ public class VectorAssignRow {
           }
           break;
         case DECIMAL:
-          if (object instanceof HiveDecimal) {
-            ((DecimalColumnVector) columnVector).set(
-                batchIndex, (HiveDecimal) object);
+          if (columnVector instanceof DecimalColumnVector) {
+            if (object instanceof HiveDecimal) {
+              ((DecimalColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimal) object);
+            } else {
+              ((DecimalColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimalWritable) object);
+            }
           } else {
-            ((DecimalColumnVector) columnVector).set(
-                batchIndex, (HiveDecimalWritable) object);
+            if (object instanceof HiveDecimal) {
+              ((Decimal64ColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimal) object);
+            } else {
+              ((Decimal64ColumnVector) columnVector).set(
+                  batchIndex, (HiveDecimalWritable) object);
+            }
           }
           break;
         case INTERVAL_YEAR_MONTH:

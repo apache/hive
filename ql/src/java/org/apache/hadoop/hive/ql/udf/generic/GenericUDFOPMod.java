@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColModuloLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColModuloLongColumnChecked;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;

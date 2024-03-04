@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.OverflowUtils;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
@@ -94,9 +95,15 @@ public class <ClassName> extends VectorExpression {
     if (inputColVector.isRepeating) {
      if (inputColVector.noNulls || !inputIsNull[0]) {
        outputIsNull[0] = false;
-       <OperandType2> denom = vector[0];
-       outputVector[0] = value <OperatorSymbol> denom;
+       final <OperandType2> denom = vector[0];
        hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+       if (denom != 0) {
+         outputVector[0] = value <OperatorSymbol> denom;
+       }
+#ELSE
+       outputVector[0] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
      } else {
        outputIsNull[0] = true;
        outputColVector.noNulls = false;
@@ -112,15 +119,27 @@ public class <ClassName> extends VectorExpression {
              final int i = sel[j];
              outputIsNull[i] = false;
              <OperandType2> denom = vector[i];
-             outputVector[i] = value <OperatorSymbol> denom;
              hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+             if (denom != 0) {
+               outputVector[i] = value <OperatorSymbol> denom;
+             }
+#ELSE
+             outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
           }
          } else {
            for(int j = 0; j != n; j++) {
              final int i = sel[j];
-             <OperandType2> denom = vector[i];
-             outputVector[i] = value <OperatorSymbol> denom;
+             final <OperandType2> denom = vector[i];
              hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+             if (denom != 0) {
+               outputVector[i] = value <OperatorSymbol> denom;
+             }
+#ELSE
+             outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
            }
          }
       } else {
@@ -132,9 +151,15 @@ public class <ClassName> extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
+          final <OperandType2> denom = vector[i];
           hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
         }
       }
     } else /* there are NULLs in the inputColVector */ {
@@ -146,20 +171,38 @@ public class <ClassName> extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputIsNull[i] = inputIsNull[i];
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
+          final <OperandType2> denom = vector[i];
           hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
         }
       } else {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
+          final <OperandType2> denom = vector[i];
           hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
         }
       }
     }
 
+#IF CHECKED
+    //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+    OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+        batch.selectedInUse, sel, n);
+#ELSE
+#ENDIF CHECKED
     if (!hasDivBy0) {
       NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
     } else {

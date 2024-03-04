@@ -1,0 +1,156 @@
+PREHOOK: query: explain cbo
+with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(4):INTEGER], mean=[$2], cov=[$3], w_warehouse_sk1=[$4], i_item_sk1=[$5], d_moy1=[CAST(5):INTEGER], mean1=[$6], cov1=[$7])
+  HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$6], sort5=[$7], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC])
+    HiveProject(w_warehouse_sk=[$0], i_item_sk=[$1], mean=[$2], cov=[$3], w_warehouse_sk0=[$4], i_item_sk0=[$5], mean0=[$6], cov0=[$7])
+      HiveJoin(condition=[AND(=($1, $5), =($0, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[/(CAST($6):DOUBLE, $5)], cov=[CASE(=(/(CAST($6):DOUBLE, $5), 0), null, /(POWER(/(-($3, /(*($4, $4), $5)), CASE(=($5, 1), null, -($5, 1))), 0.5), /(CAST($6):DOUBLE, $5)))])
+          HiveFilter(condition=[CASE(=(/(CAST($6):DOUBLE, $5), 0), false, >(/(POWER(/(-($3, /(*($4, $4), $5)), CASE(=($5, 1), null, -($5, 1))), 0.5), /(CAST($6):DOUBLE, $5)), 1))])
+            HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($5)], agg#1=[sum($4)], agg#2=[count($3)], agg#3=[sum($3)])
+              HiveProject($f0=[$6], $f1=[$5], $f2=[$3], $f4=[$2], $f40=[CAST($2):DOUBLE], $f6=[*(CAST($2):DOUBLE, CAST($2):DOUBLE)])
+                HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(inv_date_sk=[$0], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3], inv_item_sk=[$1])
+                      HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
+                    HiveProject(d_date_sk=[$0])
+                      HiveFilter(condition=[AND(=($6, 1999), =($8, 4))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(w_warehouse_sk=[$0], w_warehouse_name=[$2])
+                    HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+        HiveProject(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[/(CAST($6):DOUBLE, $5)], cov=[CASE(=(/(CAST($6):DOUBLE, $5), 0), null, /(POWER(/(-($3, /(*($4, $4), $5)), CASE(=($5, 1), null, -($5, 1))), 0.5), /(CAST($6):DOUBLE, $5)))])
+          HiveFilter(condition=[CASE(=(/(CAST($6):DOUBLE, $5), 0), false, >(/(POWER(/(-($3, /(*($4, $4), $5)), CASE(=($5, 1), null, -($5, 1))), 0.5), /(CAST($6):DOUBLE, $5)), 1))])
+            HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($5)], agg#1=[sum($4)], agg#2=[count($3)], agg#3=[sum($3)])
+              HiveProject($f0=[$6], $f1=[$5], $f2=[$3], $f4=[$2], $f40=[CAST($2):DOUBLE], $f6=[*(CAST($2):DOUBLE, CAST($2):DOUBLE)])
+                HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(inv_date_sk=[$0], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3], inv_item_sk=[$1])
+                      HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
+                    HiveProject(d_date_sk=[$0])
+                      HiveFilter(condition=[AND(=($6, 1999), =($8, 5))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(w_warehouse_sk=[$0], w_warehouse_name=[$2])
+                    HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+
+PREHOOK: query: with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+  and inv1.cov > 1.5
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+  and inv1.cov > 1.5
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###

@@ -25,6 +25,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -221,11 +224,13 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCardinalityViolation;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMurmurHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
@@ -3533,7 +3538,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (joinKeys == null || joinKeys.length == 0) {
       return input;
     }
-    Map<Integer, ExprNodeDesc> hashes = new HashMap<Integer, ExprNodeDesc>();
+    Multimap<Integer, ExprNodeColumnDesc> hashes = ArrayListMultimap.create();
     if (input instanceof FilterOperator) {
       ExprNodeDescUtils.getExprNodeColumnDesc(Arrays.asList(((FilterDesc)input.getConf()).getPredicate()), hashes);
     }
@@ -3546,7 +3551,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // virtual column, since those columns can never be null.
         continue;
       }
-      if(null != hashes.get(joinKeys[i].hashCode())) {
+      boolean skip = false;
+      for (ExprNodeColumnDesc node : hashes.get(joinKeys[i].hashCode())) {
+        if (node.isSame(joinKeys[i])) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) {
         // there is already a predicate on this src.
         continue;
       }
@@ -7291,7 +7303,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       lbCtx = constructListBucketingCtx(destinationTable.getSkewedColNames(),
           destinationTable.getSkewedColValues(), destinationTable.getSkewedColValueLocationMaps(),
-          destinationTable.isStoredAsSubDirectories(), conf);
+          destinationTable.isStoredAsSubDirectories());
 
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
@@ -7395,7 +7407,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       lbCtx = constructListBucketingCtx(destinationPartition.getSkewedColNames(),
           destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
-          destinationPartition.isStoredAsSubDirectories(), conf);
+          destinationPartition.isStoredAsSubDirectories());
       AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
       if (destTableIsFullAcid) {
         acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest);
@@ -7733,6 +7745,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         fileSinkDesc, fsRS, input), inputRR);
 
     handleLineage(ltd, output);
+    setWriteIdForSurrogateKeys(ltd, input);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
@@ -7996,6 +8009,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       queryState.getLineageState()
           .mapDirToOp(tlocation, output);
+    }
+  }
+
+  private void setWriteIdForSurrogateKeys(LoadTableDesc ltd, Operator input) throws SemanticException {
+    Map<String, ExprNodeDesc> columnExprMap = input.getConf().getColumnExprMap();
+    if (ltd == null || columnExprMap == null) {
+      return;
+    }
+
+    for (ExprNodeDesc desc : columnExprMap.values()) {
+      if (desc instanceof ExprNodeGenericFuncDesc) {
+        GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
+        if (genericUDF instanceof GenericUDFSurrogateKey) {
+          ((GenericUDFSurrogateKey)genericUDF).setWriteId(ltd.getWriteId());
+        }
+      }
     }
   }
 

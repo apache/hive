@@ -89,6 +89,8 @@ public class VectorExpressionDescriptor {
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
     INT_DATE_INTERVAL_YEAR_MONTH  (INT_FAMILY.value | DATE.value | INTERVAL_YEAR_MONTH.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
+    STRING_FAMILY_BINARY    (STRING_FAMILY.value | BINARY.value),
+    STRING_BINARY           (STRING.value | BINARY.value),
     ALL_FAMILY              (0xFFFFFFL);
 
     private final long value;

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -44,7 +45,7 @@ public class CastTimestampToLong extends VectorExpression {
   }
 
   @Override
-  public void transientInit() throws HiveException {
+  public void transientInit(Configuration conf) throws HiveException {
     integerPrimitiveCategory = ((PrimitiveTypeInfo) outputTypeInfo).getPrimitiveCategory();
   }
 

@@ -74,7 +74,13 @@ select
 select min(fl_date) from date_udf_flight;
 select max(fl_date) from date_udf_flight;
 
+create external table testdatediff(datetimecol string) stored as orc;
+insert into testdatediff values ('2019-09-09T10:45:49+02:00'),('2019-07-24');
 
+select datetimecol from testdatediff where datediff(cast(current_timestamp as string), datetimecol)>183;
+select cast(datetimecol as date), datetimecol from testdatediff;
+
+drop table testdatediff;
 drop table date_udf;
 drop table date_udf_string;
 drop table date_udf_flight;

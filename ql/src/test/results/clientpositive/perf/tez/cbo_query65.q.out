@@ -1,0 +1,99 @@
+PREHOOK: query: explain cbo
+select 
+	s_store_name,
+	i_item_desc,
+	sc.revenue,
+	i_current_price,
+	i_wholesale_cost,
+	i_brand
+ from store, item,
+     (select ss_store_sk, avg(revenue) as ave
+ 	from
+ 	    (select  ss_store_sk, ss_item_sk, 
+ 		     sum(ss_sales_price) as revenue
+ 		from store_sales, date_dim
+ 		where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 		group by ss_store_sk, ss_item_sk) sa
+ 	group by ss_store_sk) sb,
+     (select  ss_store_sk, ss_item_sk, sum(ss_sales_price) as revenue
+ 	from store_sales, date_dim
+ 	where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 	group by ss_store_sk, ss_item_sk) sc
+ where sb.ss_store_sk = sc.ss_store_sk and 
+       sc.revenue <= 0.1 * sb.ave and
+       s_store_sk = sc.ss_store_sk and
+       i_item_sk = sc.ss_item_sk
+ order by s_store_name, i_item_desc
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select 
+	s_store_name,
+	i_item_desc,
+	sc.revenue,
+	i_current_price,
+	i_wholesale_cost,
+	i_brand
+ from store, item,
+     (select ss_store_sk, avg(revenue) as ave
+ 	from
+ 	    (select  ss_store_sk, ss_item_sk, 
+ 		     sum(ss_sales_price) as revenue
+ 		from store_sales, date_dim
+ 		where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 		group by ss_store_sk, ss_item_sk) sa
+ 	group by ss_store_sk) sb,
+     (select  ss_store_sk, ss_item_sk, sum(ss_sales_price) as revenue
+ 	from store_sales, date_dim
+ 	where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 	group by ss_store_sk, ss_item_sk) sc
+ where sb.ss_store_sk = sc.ss_store_sk and 
+       sc.revenue <= 0.1 * sb.ave and
+       s_store_sk = sc.ss_store_sk and
+       i_item_sk = sc.ss_item_sk
+ order by s_store_name, i_item_desc
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(s_store_name=[$11], i_item_desc=[$1], revenue=[$7], i_current_price=[$2], i_wholesale_cost=[$3], i_brand=[$4])
+    HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(i_item_sk=[$0], i_item_desc=[$4], i_current_price=[$5], i_wholesale_cost=[$6], i_brand=[$8])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, item]], table:alias=[item])
+      HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[AND(=($3, $0), <=($2, *(0.1, $4)))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(ss_store_sk=[$1], ss_item_sk=[$0], $f2=[$2])
+            HiveAggregate(group=[{1, 2}], agg#0=[sum($3)])
+              HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_sales_price=[$13])
+                  HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7), IS NOT NULL($2))])
+                    HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                HiveProject(d_date_sk=[$0], d_month_seq=[$3])
+                  HiveFilter(condition=[AND(BETWEEN(false, $3, 1212, 1223), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject($f0=[$0], $f1=[/($1, $2)])
+            HiveAggregate(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)])
+              HiveProject(ss_item_sk=[$0], ss_store_sk=[$1], $f2=[$2])
+                HiveAggregate(group=[{1, 2}], agg#0=[sum($3)])
+                  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_sales_price=[$13])
+                      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    HiveProject(d_date_sk=[$0], d_month_seq=[$3])
+                      HiveFilter(condition=[AND(BETWEEN(false, $3, 1212, 1223), IS NOT NULL($0))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+        HiveProject(s_store_sk=[$0], s_store_name=[$5])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, store]], table:alias=[store])
+

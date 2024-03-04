@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -55,6 +56,8 @@ import org.junit.Test;
  * Test VectorExpression classes for vectorized implementations of type casts.
  */
 public class TestVectorTypeCasts {
+
+  private HiveConf hiveConf = new HiveConf();
 
   @Test
   public void testVectorCastLongToDouble() throws HiveException {
@@ -192,7 +195,7 @@ public class TestVectorTypeCasts {
     VectorExpression expr = new CastTimestampToLong(0, 1);
     expr.setOutputTypeInfo(TypeInfoFactory.longTypeInfo);
     expr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
-    expr.transientInit();
+    expr.transientInit(hiveConf);
     expr.evaluate(b);
     for (int i = 0; i < longValues.length; i++) {
       long actual = resultV.vector[i];
@@ -236,7 +239,7 @@ public class TestVectorTypeCasts {
     b.cols[1].noNulls = true;
     VectorExpression expr = new CastLongToString(1, 2);
     expr.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    expr.transientInit();
+    expr.transientInit(hiveConf);
     expr.evaluate(b);
     byte[] num255 = toBytes("255");
     Assert.assertEquals(0,
@@ -271,7 +274,7 @@ public class TestVectorTypeCasts {
 
     // With the integer type range checking, we need to know the Hive data type.
     expr.setOutputTypeInfo(TypeInfoFactory.longTypeInfo);
-    expr.transientInit();
+    expr.transientInit(hiveConf);
     expr.evaluate(b);
     LongColumnVector r = (LongColumnVector) b.cols[1];
     assertEquals(1, r.vector[0]);
@@ -318,7 +321,7 @@ public class TestVectorTypeCasts {
     VectorExpression expr = new CastDecimalToBoolean(0, 1);
     expr.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.decimalTypeInfo});
     expr.setOutputTypeInfo(TypeInfoFactory.booleanTypeInfo);
-    expr.transientInit();
+    expr.transientInit(hiveConf);
     DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
     in.vector[1].set(HiveDecimal.create(0));
     expr.evaluate(b);
@@ -457,23 +460,23 @@ public class TestVectorTypeCasts {
     VectorizedRowBatch b = getBatchDecimalString();
     VectorExpression expr = new CastDecimalToString(0, 1);
     expr.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.decimalTypeInfo});
-    expr.transientInit();
+    expr.transientInit(hiveConf);
     expr.evaluate(b);
     BytesColumnVector r = (BytesColumnVector) b.cols[1];
 
     // As of HIVE-8745, these decimal values should be trimmed of trailing zeros.
-    byte[] v = toBytes("1.1");
+    byte[] v = toBytes("1.10");
     assertTrue(((Integer) v.length).toString() + " " + r.length[0], v.length == r.length[0]);
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[0], r.start[0], r.length[0]));
 
-    v = toBytes("-2.2");
+    v = toBytes("-2.20");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[1], r.start[1], r.length[1]));
 
-    v = toBytes("9999999999999999");
+    v = toBytes("9999999999999999.00");
     Assert.assertEquals(0,
         StringExpr.compare(v, 0, v.length,
             r.vector[2], r.start[2], r.length[2]));

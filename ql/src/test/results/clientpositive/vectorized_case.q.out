@@ -545,7 +545,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [6]
-                  selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 7:decimal(11,0)col 8:decimal(11,0))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, ConvertDecimal64ToDecimal(col 4:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 4:decimal(11,0)/DECIMAL_64) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 5:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 5:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)) -> 6:decimal(11,0)
+                  selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 7:decimal(11,0)col 8:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 3:boolean, ConvertDecimal64ToDecimal(col 4:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 4:decimal(11,0)/DECIMAL_64) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 5:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 5:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)) -> 6:decimal(11,0)
               Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -565,7 +565,7 @@ STAGE PLANS:
           featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
-          usesVectorUDFAdaptor: true
+          usesVectorUDFAdaptor: false
           vectorized: true
           rowBatchContext:
               dataColumnCount: 2
@@ -626,7 +626,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [8]
-                  selectExpressions: VectorUDFAdaptor(CASE WHEN ((member = 1)) THEN (1) ELSE ((attr + 2)) END)(children: VectorUDFAdaptor((member = 1)) -> 6:boolean, ConvertDecimal64ToDecimal(col 7:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 7:decimal(11,0)/DECIMAL_64) -> 9:decimal(11,0)) -> 8:decimal(11,0)
+                  selectExpressions: IfExprDecimal64ScalarDecimal64Column(col 6:boolean, decimal64Val 1, decimalVal 1, col 7:decimal(1,0)/DECIMAL_64)(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 7:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)/DECIMAL_64
               Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -646,14 +646,14 @@ STAGE PLANS:
           featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
-          usesVectorUDFAdaptor: true
+          usesVectorUDFAdaptor: false
           vectorized: true
           rowBatchContext:
               dataColumnCount: 2
               includeColumns: [0, 1]
               dataColumns: member:decimal(10,0)/DECIMAL_64, attr:decimal(10,0)/DECIMAL_64
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint, decimal(1,0), decimal(11,0)/DECIMAL_64, bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0)]
+              scratchColumnTypeNames: [bigint, decimal(1,0), decimal(11,0)/DECIMAL_64, bigint, decimal(11,0)/DECIMAL_64, decimal(11,0)/DECIMAL_64]
 
   Stage: Stage-0
     Fetch Operator
@@ -707,7 +707,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [8]
-                  selectExpressions: VectorUDFAdaptor(CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (2) END)(children: VectorUDFAdaptor((member = 1)) -> 6:boolean, ConvertDecimal64ToDecimal(col 7:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 7:decimal(11,0)/DECIMAL_64) -> 9:decimal(11,0)) -> 8:decimal(11,0)
+                  selectExpressions: IfExprDecimal64ColumnDecimal64Scalar(col 6:boolean, col 7:decimal(11,0)/DECIMAL_64, decimal64Val 2, decimalVal 2)(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 7:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)/DECIMAL_64
               Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -727,14 +727,14 @@ STAGE PLANS:
           featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
-          usesVectorUDFAdaptor: true
+          usesVectorUDFAdaptor: false
           vectorized: true
           rowBatchContext:
               dataColumnCount: 2
               includeColumns: [0, 1]
               dataColumns: member:decimal(10,0)/DECIMAL_64, attr:decimal(10,0)/DECIMAL_64
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint, decimal(11,0)/DECIMAL_64, decimal(1,0), bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0)]
+              scratchColumnTypeNames: [bigint, decimal(11,0)/DECIMAL_64, decimal(1,0), bigint, decimal(11,0)/DECIMAL_64, decimal(11,0)/DECIMAL_64]
 
   Stage: Stage-0
     Fetch Operator

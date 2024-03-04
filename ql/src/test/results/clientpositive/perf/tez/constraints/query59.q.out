@@ -1,0 +1,217 @@
+PREHOOK: query: explain
+with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from store_sales,date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales1,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185 and 1185 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185+ 12 and 1185 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from store_sales,date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales1,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185 and 1185 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185+ 12 and 1185 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 6 (BROADCAST_EDGE), Map 9 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Map 1 (SIMPLE_EDGE), Map 10 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:100
+    Stage-1
+      Reducer 4 vectorized
+      File Output Operator [FS_148]
+        Limit [LIM_147] (rows=100 width=976)
+          Number of rows:100
+          Select Operator [SEL_146] (rows=514700865 width=976)
+            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
+          <-Reducer 3 [SIMPLE_EDGE]
+            SHUFFLE [RS_58]
+              Select Operator [SEL_57] (rows=514700865 width=976)
+                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
+                Merge Join Operator [MERGEJOIN_103] (rows=514700865 width=1648)
+                  Conds:RS_138._col2, _col1=RS_145._col0, _col7(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col11","_col12","_col13","_col14","_col15","_col16"]
+                <-Reducer 2 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_138]
+                    PartitionCols:_col2, _col1
+                    Select Operator [SEL_137] (rows=681744 width=976)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
+                      Map Join Operator [MAPJOIN_136] (rows=681744 width=976)
+                        Conds:MAPJOIN_135._col1=RS_133._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col11","_col12"]
+                      <-Map 8 [BROADCAST_EDGE] vectorized
+                        BROADCAST [RS_133]
+                          PartitionCols:_col0
+                          Select Operator [SEL_132] (rows=1704 width=192)
+                            Output:["_col0","_col1","_col2"]
+                            TableScan [TS_18] (rows=1704 width=192)
+                              default@store,store,Tbl:COMPLETE,Col:COMPLETE,Output:["s_store_sk","s_store_id","s_store_name"]
+                      <-Map Join Operator [MAPJOIN_135] (rows=681744 width=791)
+                          Conds:GBY_134._col0=RS_130._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                        <-Map 7 [BROADCAST_EDGE] vectorized
+                          BROADCAST [RS_130]
+                            PartitionCols:_col0
+                            Select Operator [SEL_128] (rows=8116 width=4)
+                              Output:["_col0"]
+                              Filter Operator [FIL_126] (rows=8116 width=8)
+                                predicate:(d_month_seq BETWEEN 1185 AND 1196 and d_week_seq is not null)
+                                TableScan [TS_15] (rows=73049 width=8)
+                                  default@date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_week_seq"]
+                        <-Group By Operator [GBY_134] (rows=1104768 width=791)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)","sum(VALUE._col4)","sum(VALUE._col5)","sum(VALUE._col6)"],keys:KEY._col0, KEY._col1
+                          <-Map 1 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_124]
+                              PartitionCols:_col0, _col1
+                              Group By Operator [GBY_122] (rows=525329897 width=791)
+                                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)","sum(_col5)","sum(_col6)","sum(_col7)","sum(_col8)"],keys:_col0, _col1
+                                Select Operator [SEL_120] (rows=525329897 width=142)
+                                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                                  Map Join Operator [MAPJOIN_118] (rows=525329897 width=142)
+                                    Conds:SEL_117._col0=RS_112._col0(Inner),HybridGraceHashJoin:true,Output:["_col1","_col2","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
+                                  <-Map 6 [BROADCAST_EDGE] vectorized
+                                    BROADCAST [RS_112]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_111] (rows=73049 width=36)
+                                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                                        Filter Operator [FIL_110] (rows=73049 width=99)
+                                          predicate:d_week_seq is not null
+                                          TableScan [TS_3] (rows=73049 width=99)
+                                            default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_week_seq","d_day_name"]
+                                  <-Select Operator [SEL_117] (rows=525329897 width=114)
+                                      Output:["_col0","_col1","_col2"]
+                                      Filter Operator [FIL_116] (rows=525329897 width=114)
+                                        predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
+                                        TableScan [TS_0] (rows=575995635 width=114)
+                                          default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_store_sk","ss_sales_price"]
+                                        <-Map 9 [BROADCAST_EDGE] vectorized
+                                          BROADCAST [RS_115]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_114] (rows=73049 width=36)
+                                              Output:["_col0","_col1","_col2","_col3","_col5","_col6","_col7","_col8"]
+                                              Filter Operator [FIL_113] (rows=73049 width=99)
+                                                predicate:d_week_seq is not null
+                                                TableScan [TS_30] (rows=73049 width=99)
+                                                  default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_week_seq","d_day_name"]
+                <-Reducer 5 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_145]
+                    PartitionCols:_col0, _col7
+                    Select Operator [SEL_144] (rows=681744 width=776)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
+                      Map Join Operator [MAPJOIN_143] (rows=681744 width=776)
+                        Conds:MAPJOIN_142._col1=RS_140._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col2","_col3","_col4","_col5","_col6","_col7","_col10"]
+                      <-Map 10 [BROADCAST_EDGE] vectorized
+                        BROADCAST [RS_140]
+                          PartitionCols:_col0
+                          Select Operator [SEL_139] (rows=1704 width=104)
+                            Output:["_col0","_col1"]
+                            TableScan [TS_45] (rows=1704 width=104)
+                              default@store,store,Tbl:COMPLETE,Col:COMPLETE,Output:["s_store_sk","s_store_id"]
+                      <-Map Join Operator [MAPJOIN_142] (rows=681744 width=679)
+                          Conds:GBY_141._col0=RS_131._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
+                        <-Map 7 [BROADCAST_EDGE] vectorized
+                          BROADCAST [RS_131]
+                            PartitionCols:_col0
+                            Select Operator [SEL_129] (rows=8116 width=4)
+                              Output:["_col0"]
+                              Filter Operator [FIL_127] (rows=8116 width=8)
+                                predicate:(d_month_seq BETWEEN 1197 AND 1208 and d_week_seq is not null)
+                                 Please refer to the previous TableScan [TS_15]
+                        <-Group By Operator [GBY_141] (rows=1104768 width=679)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)","sum(VALUE._col4)","sum(VALUE._col5)"],keys:KEY._col0, KEY._col1
+                          <-Map 1 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_125]
+                              PartitionCols:_col0, _col1
+                              Group By Operator [GBY_123] (rows=525329897 width=679)
+                                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"],aggregations:["sum(_col2)","sum(_col3)","sum(_col5)","sum(_col6)","sum(_col7)","sum(_col8)"],keys:_col0, _col1
+                                Select Operator [SEL_121] (rows=525329897 width=138)
+                                  Output:["_col0","_col1","_col2","_col3","_col5","_col6","_col7","_col8"]
+                                  Map Join Operator [MAPJOIN_119] (rows=525329897 width=138)
+                                    Conds:SEL_117._col0=RS_115._col0(Inner),HybridGraceHashJoin:true,Output:["_col1","_col2","_col4","_col5","_col6","_col8","_col9","_col10","_col11"]
+                                  <- Please refer to the previous Map 9 [BROADCAST_EDGE]
+                                     Please refer to the previous Select Operator [SEL_117]
+

@@ -123,11 +123,11 @@ public class <ClassName> extends VectorExpression {
         }
       }
     } else if (inputColVector2.isRepeating) {
+      scratchIntervalYearMonth2.set((int) vector2[0]);
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
-          scratchIntervalYearMonth2.set((int) vector2[i]);
           dtm.<OperatorMethod>(
               scratchDate1, scratchIntervalYearMonth2,  outputDate);
           outputVector[i] = DateWritableV2.dateToDays(outputDate);
@@ -135,7 +135,6 @@ public class <ClassName> extends VectorExpression {
       } else {
         for(int i = 0; i != n; i++) {
           scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
-          scratchIntervalYearMonth2.set((int) vector2[i]);
           dtm.<OperatorMethod>(
               scratchDate1, scratchIntervalYearMonth2,  outputDate);
           outputVector[i] = DateWritableV2.dateToDays(outputDate);

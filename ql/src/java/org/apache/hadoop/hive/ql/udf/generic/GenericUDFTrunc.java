@@ -50,6 +50,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * GenericUDFTrunc.
@@ -297,9 +298,8 @@ public class GenericUDFTrunc extends GenericUDF {
     switch (inputType1) {
     case STRING:
       String dateString = textConverter1.convert(arguments[0].get()).toString();
-      try {
-        d = Date.valueOf(dateString.toString());
-      } catch (IllegalArgumentException e) {
+      d = DateParser.parseDate(dateString);
+      if (d == null) {
         return null;
       }
       break;

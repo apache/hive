@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -48,14 +47,13 @@ import org.apache.hive.common.util.DateParser;
     extended = "Example:\n "
         + "  > SELECT _FUNC_('2009-07-30 04:17:52') FROM src LIMIT 1;\n"
         + "  '2009-07-30'")
-@VectorizedExpressions({VectorUDFDateString.class, VectorUDFDateLong.class, VectorUDFDateTimestamp.class})
+@VectorizedExpressions({VectorUDFDateString.class, VectorUDFDateTimestamp.class})
 public class GenericUDFDate extends GenericUDF {
   private transient TimestampConverter timestampConverter;
   private transient Converter textConverter;
   private transient Converter dateWritableConverter;
   private transient PrimitiveCategory inputType;
   private transient PrimitiveObjectInspector argumentOI;
-  private transient DateParser dateParser = new DateParser();
   private transient final DateWritableV2 output = new DateWritableV2();
   private transient final Date date = new Date();
 
@@ -109,7 +107,7 @@ public class GenericUDFDate extends GenericUDF {
       throw new UDFArgumentException("TO_DATE() received non-null object of VOID type");
     case STRING:
       String dateString = textConverter.convert(arguments[0].get()).toString();
-      if (dateParser.parseDate(dateString, date)) {
+      if (DateParser.parseDate(dateString, date)) {
         output.set(date);
       } else {
         return null;

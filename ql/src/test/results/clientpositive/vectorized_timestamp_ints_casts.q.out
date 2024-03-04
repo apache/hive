@@ -69,7 +69,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [15, 17, 19, 21, 22, 23, 25, 27, 8, 28, 30]
-                    selectExpressions: CastMillisecondsLongToTimestamp(col 0:tinyint) -> 15:timestamp, CastMillisecondsLongToTimestamp(col 1:smallint) -> 17:timestamp, CastMillisecondsLongToTimestamp(col 2:int) -> 19:timestamp, CastMillisecondsLongToTimestamp(col 3:bigint) -> 21:timestamp, CastDoubleToTimestamp(col 4:float) -> 22:timestamp, CastDoubleToTimestamp(col 5:double) -> 23:timestamp, CastMillisecondsLongToTimestamp(col 10:boolean) -> 25:timestamp, CastMillisecondsLongToTimestamp(col 13:bigint)(children: LongColMultiplyLongScalar(col 3:bigint, val 0) -> 13:bigint) -> 27:timestamp, VectorUDFAdaptor(CAST( cstring1 AS TIMESTAMP)) -> 28:timestamp, VectorUDFAdaptor(CAST( substr(cstring1, 1, 1) AS TIMESTAMP))(children: StringSubstrColStartLen(col 6:string, start 0, length 1) -> 29:string) -> 30:timestamp
+                    selectExpressions: CastMillisecondsLongToTimestamp(col 0:tinyint) -> 15:timestamp, CastMillisecondsLongToTimestamp(col 1:smallint) -> 17:timestamp, CastMillisecondsLongToTimestamp(col 2:int) -> 19:timestamp, CastMillisecondsLongToTimestamp(col 3:bigint) -> 21:timestamp, CastDoubleToTimestamp(col 4:float) -> 22:timestamp, CastDoubleToTimestamp(col 5:double) -> 23:timestamp, CastMillisecondsLongToTimestamp(col 10:boolean) -> 25:timestamp, CastMillisecondsLongToTimestamp(col 13:bigint)(children: LongColMultiplyLongScalar(col 3:bigint, val 0) -> 13:bigint) -> 27:timestamp, CastStringToTimestamp(col 6:string) -> 28:timestamp, CastStringToTimestamp(col 29:string)(children: StringSubstrColStartLen(col 6:string, start 0, length 1) -> 29:string) -> 30:timestamp
                 Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -89,7 +89,7 @@ STAGE PLANS:
           featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
-          usesVectorUDFAdaptor: true
+          usesVectorUDFAdaptor: false
           vectorized: true
 
   Stage: Stage-0
@@ -233,7 +233,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [14, 15, 16, 17, 18, 19, 20, 21, 8, 22, 24]
-                    selectExpressions: CastLongToTimestamp(col 0:tinyint) -> 14:timestamp, CastLongToTimestamp(col 1:smallint) -> 15:timestamp, CastLongToTimestamp(col 2:int) -> 16:timestamp, CastLongToTimestamp(col 3:bigint) -> 17:timestamp, CastDoubleToTimestamp(col 4:float) -> 18:timestamp, CastDoubleToTimestamp(col 5:double) -> 19:timestamp, CastLongToTimestamp(col 10:boolean) -> 20:timestamp, CastLongToTimestamp(col 13:bigint)(children: LongColMultiplyLongScalar(col 3:bigint, val 0) -> 13:bigint) -> 21:timestamp, VectorUDFAdaptor(CAST( cstring1 AS TIMESTAMP)) -> 22:timestamp, VectorUDFAdaptor(CAST( substr(cstring1, 1, 1) AS TIMESTAMP))(children: StringSubstrColStartLen(col 6:string, start 0, length 1) -> 23:string) -> 24:timestamp
+                    selectExpressions: CastLongToTimestamp(col 0:tinyint) -> 14:timestamp, CastLongToTimestamp(col 1:smallint) -> 15:timestamp, CastLongToTimestamp(col 2:int) -> 16:timestamp, CastLongToTimestamp(col 3:bigint) -> 17:timestamp, CastDoubleToTimestamp(col 4:float) -> 18:timestamp, CastDoubleToTimestamp(col 5:double) -> 19:timestamp, CastLongToTimestamp(col 10:boolean) -> 20:timestamp, CastLongToTimestamp(col 13:bigint)(children: LongColMultiplyLongScalar(col 3:bigint, val 0) -> 13:bigint) -> 21:timestamp, CastStringToTimestamp(col 6:string) -> 22:timestamp, CastStringToTimestamp(col 23:string)(children: StringSubstrColStartLen(col 6:string, start 0, length 1) -> 23:string) -> 24:timestamp
                 Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -253,7 +253,7 @@ STAGE PLANS:
           featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
-          usesVectorUDFAdaptor: true
+          usesVectorUDFAdaptor: false
           vectorized: true
 
   Stage: Stage-0

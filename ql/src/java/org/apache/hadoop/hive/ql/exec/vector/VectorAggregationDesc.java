@@ -86,7 +86,7 @@ public class VectorAggregationDesc implements java.io.Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final AggregationDesc aggrDesc;
+  private final String aggregationName;
 
   private final TypeInfo inputTypeInfo;
   private final ColumnVector.Type inputColVectorType;
@@ -99,15 +99,19 @@ public class VectorAggregationDesc implements java.io.Serializable {
   private final Class<? extends VectorAggregateExpression> vecAggrClass;
 
   private GenericUDAFEvaluator evaluator;
+  private GenericUDAFEvaluator.Mode udafEvaluatorMode;
 
-  public VectorAggregationDesc(AggregationDesc aggrDesc, GenericUDAFEvaluator evaluator,
+  public VectorAggregationDesc(String aggregationName, GenericUDAFEvaluator evaluator,
+      GenericUDAFEvaluator.Mode udafEvaluatorMode,
       TypeInfo inputTypeInfo, ColumnVector.Type inputColVectorType,
       VectorExpression inputExpression, TypeInfo outputTypeInfo,
       ColumnVector.Type outputColVectorType,
       Class<? extends VectorAggregateExpression> vecAggrClass) {
 
-    this.aggrDesc = aggrDesc;
+    this.aggregationName = aggregationName;
+
     this.evaluator = evaluator;
+    this.udafEvaluatorMode = udafEvaluatorMode;
 
     this.inputTypeInfo = inputTypeInfo;
     this.inputColVectorType = inputColVectorType;
@@ -122,8 +126,12 @@ public class VectorAggregationDesc implements java.io.Serializable {
     this.vecAggrClass = vecAggrClass;
   }
 
-  public AggregationDesc getAggrDesc() {
-    return aggrDesc;
+  public String getAggregationName() {
+    return aggregationName;
+  }
+
+  public GenericUDAFEvaluator.Mode getUdafEvaluatorMode() {
+    return udafEvaluatorMode;
   }
 
   public TypeInfo getInputTypeInfo() {
@@ -174,7 +182,6 @@ public class VectorAggregationDesc implements java.io.Serializable {
       sb.append("/");
       sb.append(outputDataTypePhysicalVariation);
     }
-    String aggregationName = aggrDesc.getGenericUDAFName();
     if (GenericUDAFVariance.isVarianceFamilyName(aggregationName)) {
       sb.append(" aggregation: ");
       sb.append(aggregationName);

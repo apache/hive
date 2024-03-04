@@ -34,7 +34,7 @@ SELECT * FROM acidTblDefault WHERE a = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtbldefault
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `a`
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`
 FROM `default`.`acidtbldefault`
 WHERE `a` = 1
 STAGE DEPENDENCIES:
@@ -112,7 +112,7 @@ STAGE PLANS:
                     serialization.ddl struct acidtbldefault { i32 a}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 34795
+                    totalSize 34829
                     transactional true
                     transactional_properties default
 #### A masked pattern was here ####
@@ -138,7 +138,7 @@ STAGE PLANS:
                       serialization.ddl struct acidtbldefault { i32 a}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 34795
+                      totalSize 34829
                       transactional true
                       transactional_properties default
 #### A masked pattern was here ####

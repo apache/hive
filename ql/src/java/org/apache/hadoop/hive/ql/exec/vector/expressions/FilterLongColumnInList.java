@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -36,8 +37,9 @@ import java.util.regex.Pattern;
 public class FilterLongColumnInList extends VectorExpression implements ILongInExpr {
 
   private static final long serialVersionUID = 1L;
-  private final int inputCol;
-  private long[] inListValues;
+
+  protected final int inputCol;
+  protected long[] inListValues;
 
   // Transient members initialized by transientInit method.
 
@@ -61,8 +63,8 @@ public class FilterLongColumnInList extends VectorExpression implements ILongInE
   }
 
   @Override
-  public void transientInit() throws HiveException {
-    super.transientInit();
+  public void transientInit(Configuration conf) throws HiveException {
+    super.transientInit(conf);
 
     inSet = new CuckooSetLong(inListValues.length);
     inSet.load(inListValues);

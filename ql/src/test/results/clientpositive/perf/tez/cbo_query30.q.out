@@ -1,0 +1,112 @@
+PREHOOK: query: explain cbo
+with customer_total_return as
+ (select wr_returning_customer_sk as ctr_customer_sk
+        ,ca_state as ctr_state, 
+ 	sum(wr_return_amt) as ctr_total_return
+ from web_returns
+     ,date_dim
+     ,customer_address
+ where wr_returned_date_sk = d_date_sk 
+   and d_year =2002
+   and wr_returning_addr_sk = ca_address_sk 
+ group by wr_returning_customer_sk
+         ,ca_state)
+  select  c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+       ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+       ,c_last_review_date,ctr_total_return
+ from customer_total_return ctr1
+     ,customer_address
+     ,customer
+ where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+ 			  from customer_total_return ctr2 
+                  	  where ctr1.ctr_state = ctr2.ctr_state)
+       and ca_address_sk = c_current_addr_sk
+       and ca_state = 'IL'
+       and ctr1.ctr_customer_sk = c_customer_sk
+ order by c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+                  ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+                  ,c_last_review_date,ctr_total_return
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@web_returns
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with customer_total_return as
+ (select wr_returning_customer_sk as ctr_customer_sk
+        ,ca_state as ctr_state, 
+ 	sum(wr_return_amt) as ctr_total_return
+ from web_returns
+     ,date_dim
+     ,customer_address
+ where wr_returned_date_sk = d_date_sk 
+   and d_year =2002
+   and wr_returning_addr_sk = ca_address_sk 
+ group by wr_returning_customer_sk
+         ,ca_state)
+  select  c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+       ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+       ,c_last_review_date,ctr_total_return
+ from customer_total_return ctr1
+     ,customer_address
+     ,customer
+ where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+ 			  from customer_total_return ctr2 
+                  	  where ctr1.ctr_state = ctr2.ctr_state)
+       and ca_address_sk = c_current_addr_sk
+       and ca_state = 'IL'
+       and ctr1.ctr_customer_sk = c_customer_sk
+ order by c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+                  ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+                  ,c_last_review_date,ctr_total_return
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], sort10=[$10], sort11=[$11], sort12=[$12], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], dir10=[ASC], dir11=[ASC], dir12=[ASC], fetch=[100])
+  HiveProject(c_customer_id=[$1], c_salutation=[$3], c_first_name=[$4], c_last_name=[$5], c_preferred_cust_flag=[$6], c_birth_day=[$7], c_birth_month=[$8], c_birth_year=[$9], c_birth_country=[$10], c_login=[$11], c_email_address=[$12], c_last_review_date=[$13], ctr_total_return=[$18])
+    HiveJoin(condition=[=($16, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($14, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_current_addr_sk=[$4], c_salutation=[$7], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_day=[$11], c_birth_month=[$12], c_birth_year=[$13], c_birth_country=[$14], c_login=[$15], c_email_address=[$16], c_last_review_date=[$17])
+          HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($0))])
+            HiveTableScan(table=[[default, customer]], table:alias=[customer])
+        HiveProject(ca_address_sk=[$0], ca_state=[CAST(_UTF-16LE'IL'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"])
+          HiveFilter(condition=[AND(=($8, _UTF-16LE'IL'), IS NOT NULL($0))])
+            HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+      HiveProject(wr_returning_customer_sk=[$0], ca_state=[$1], $f2=[$2], _o__c0=[$3], ctr_state=[$4])
+        HiveJoin(condition=[AND(=($1, $4), >($2, $3))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(wr_returning_customer_sk=[$1], ca_state=[$0], $f2=[$2])
+            HiveAggregate(group=[{1, 3}], agg#0=[sum($5)])
+              HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(ca_address_sk=[$0], ca_state=[$8])
+                  HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($8))])
+                    HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+                HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(wr_returned_date_sk=[$0], wr_returning_customer_sk=[$7], wr_returning_addr_sk=[$10], wr_return_amt=[$15])
+                    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($10), IS NOT NULL($7))])
+                      HiveTableScan(table=[[default, web_returns]], table:alias=[web_returns])
+                  HiveProject(d_date_sk=[$0], d_year=[CAST(2002):INTEGER])
+                    HiveFilter(condition=[AND(=($6, 2002), IS NOT NULL($0))])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(_o__c0=[*(/($1, $2), 1.2)], ctr_state=[$0])
+            HiveAggregate(group=[{0}], agg#0=[sum($2)], agg#1=[count($2)])
+              HiveProject(ca_state=[$0], wr_returning_customer_sk=[$1], $f2=[$2])
+                HiveAggregate(group=[{1, 3}], agg#0=[sum($5)])
+                  HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ca_address_sk=[$0], ca_state=[$8])
+                      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($8))])
+                        HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+                    HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(wr_returned_date_sk=[$0], wr_returning_customer_sk=[$7], wr_returning_addr_sk=[$10], wr_return_amt=[$15])
+                        HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($10))])
+                          HiveTableScan(table=[[default, web_returns]], table:alias=[web_returns])
+                      HiveProject(d_date_sk=[$0], d_year=[CAST(2002):INTEGER])
+                        HiveFilter(condition=[AND(=($6, 2002), IS NOT NULL($0))])
+                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -46,6 +48,13 @@ public class ListIndexColScalar extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -53,37 +62,128 @@ public class ListIndexColScalar extends VectorExpression {
     ColumnVector outV = batch.cols[outputColumnNum];
     ListColumnVector listV = (ListColumnVector) batch.cols[listColumnNum];
     ColumnVector childV = listV.child;
+    int[] sel = batch.selected;
+    boolean[] listIsNull = listV.isNull;
+    boolean[] outputIsNull = outV.isNull;
+
+    if (index < 0) {
+      outV.isNull[0] = true;
+      outV.noNulls = false;
+      outV.isRepeating = true;
+      return;
+    }
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
 
     /*
      * Do careful maintenance of the outputColVector.noNulls flag.
      */
 
     if (listV.isRepeating) {
-      if (listV.isNull[0]) {
-        outV.isNull[0] = true;
-        outV.noNulls = false;
-      } else {
-        if (index >= listV.lengths[0]) {
+      if (listV.noNulls || !listIsNull[0]) {
+        final long repeatedLongListLength = listV.lengths[0];
+        if (index >= repeatedLongListLength) {
           outV.isNull[0] = true;
           outV.noNulls = false;
         } else {
           outV.isNull[0] = false;
           outV.setElement(0, (int) (listV.offsets[0] + index), childV);
         }
+      } else {
+        outV.isNull[0] = true;
+        outV.noNulls = false;
       }
       outV.isRepeating = true;
-    } else {
-      for (int i = 0; i < batch.size; i++) {
-        int j = (batch.selectedInUse) ? batch.selected[i] : i;
-        if (listV.isNull[j] || index >= listV.lengths[j]) {
-          outV.isNull[j] = true;
-          outV.noNulls = false;
+      return;
+    }
+
+    /*
+     * Individual row processing for LIST vector with scalar constant INDEX value.
+     */
+    if (listV.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outV.noNulls) {
+          for (int j = 0; j < n; j++) {
+            final int i = sel[j];
+            final long longListLength = listV.lengths[i];
+            if (index >= longListLength) {
+              outV.isNull[i] = true;
+              outV.noNulls = false;
+            } else {
+              outV.isNull[i] = false;
+              outV.setElement(i, (int) (listV.offsets[i] + index), childV);
+            }
+          }
         } else {
-          outV.isNull[j] = false;
-          outV.setElement(j, (int) (listV.offsets[j] + index), childV);
+          for (int j = 0; j < n; j++) {
+            final int i = sel[j];
+            final long longListLength = listV.lengths[i];
+            if (index >= longListLength) {
+              outV.isNull[i] = true;
+              outV.noNulls = false;
+            } else {
+              outV.setElement(i, (int) (listV.offsets[i] + index), childV);
+            }
+          }
+        }
+      } else {
+        if (!outV.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outV.isNull, false);
+          outV.noNulls = true;
+        }
+        for (int i = 0; i < n; i++) {
+          final long longListLength = listV.lengths[i];
+          if (index >= longListLength) {
+            outV.isNull[i] = true;
+            outV.noNulls = false;
+          } else {
+            outV.setElement(i, (int) (listV.offsets[i] + index), childV);
+          }
         }
       }
-      outV.isRepeating = false;
+    } else /* there are NULLs in the LIST */ {
+
+      if (batch.selectedInUse) {
+        for (int j=0; j != n; j++) {
+          int i = sel[j];
+          if (!listIsNull[i]) {
+            final long longListLength = listV.lengths[i];
+            if (index >= longListLength) {
+              outV.isNull[i] = true;
+              outV.noNulls = false;
+            } else {
+              outV.isNull[i] = false;
+              outV.setElement(i, (int) (listV.offsets[i] + index), childV);
+            }
+          } else {
+            outputIsNull[i] = true;
+            outV.noNulls = false;
+          }
+        }
+      } else {
+        for (int i = 0; i != n; i++) {
+          if (!listIsNull[i]) {
+            final long longListLength = listV.lengths[i];
+            if (index >= longListLength) {
+              outV.isNull[i] = true;
+              outV.noNulls = false;
+            } else {
+              outV.isNull[i] = false;
+              outV.setElement(i, (int) (listV.offsets[i] + index), childV);
+            }
+          } else {
+            outputIsNull[i] = true;
+            outV.noNulls = false;
+          }
+        }
+      }
     }
   }
 

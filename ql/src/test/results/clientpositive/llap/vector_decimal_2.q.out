@@ -896,7 +896,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(18,9)/DECIMAL_64, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: UDFToString(t) (type: string)
+                    expressions: CAST( t AS STRING) (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -980,7 +980,7 @@ POSTHOOK: query: select cast(t as string) from decimal_2 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-17.29
+17.290000000
 PREHOOK: query: insert overwrite table decimal_2
   select cast('3404045.5044003' as decimal(18,9)) from src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -1867,7 +1867,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(18,9)/DECIMAL_64, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: UDFToString(t) (type: string)
+                    expressions: CAST( t AS STRING) (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -1951,7 +1951,7 @@ POSTHOOK: query: select cast(t as string) from decimal_2 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-3404045.5044003
+3404045.504400300
 PREHOOK: query: explain vectorization detail
 select cast(3.14 as decimal(4,2)) as c from decimal_2 order by c
 PREHOOK: type: QUERY

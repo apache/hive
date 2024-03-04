@@ -56,20 +56,9 @@ public class <ClassName> extends VectorAggregateExpression {
       transient private double sum;
       transient private long count;
 
-      /**
-      * Value is explicitly (re)initialized in reset()
-      */
-      transient private boolean isNull = true;
-
       public void avgValue(<ValueType> value) {
-        if (isNull) {
-          sum = value;
-          count = 1;
-          isNull = false;
-        } else {
-          sum += value;
-          count++;
-        }
+        sum += value;
+        count++;
       }
 
       @Override
@@ -79,7 +68,6 @@ public class <ClassName> extends VectorAggregateExpression {
 
       @Override
       public void reset () {
-        isNull = true;
         sum = 0;
         count = 0L;
       }
@@ -151,15 +139,9 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       } else {
         if (inputVector.isRepeating) {
-          if (batch.selectedInUse) {
-            iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              vector[0], batchSize, batch.selected, inputVector.isNull);
-          } else {
-            iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              vector[0], batchSize, inputVector.isNull);
-          }
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, bufferIndex,
+            vector[0], batchSize, inputVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
@@ -217,28 +199,6 @@ public class <ClassName> extends VectorAggregateExpression {
           i);
         myagg.avgValue(values[i]);
       }
-    }
-
-    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int bufferIndex,
-      <ValueType> value,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-      if (isNull[0]) {
-        return;
-      }
-
-      for (int i=0; i < batchSize; ++i) {
-        Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
-          bufferIndex,
-          i);
-        myagg.avgValue(value);
-      }
-
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -321,11 +281,6 @@ public class <ClassName> extends VectorAggregateExpression {
 
       if (inputVector.isRepeating) {
         if (inputVector.noNulls || !inputVector.isNull[0]) {
-          if (myagg.isNull) {
-            myagg.isNull = false;
-            myagg.sum = 0;
-            myagg.count = 0;
-          }
           myagg.sum += vector[0]*batchSize;
           myagg.count += batchSize;
         }
@@ -353,14 +308,8 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          <ValueType> value = vector[i];
-          if (myagg.isNull) {
-            myagg.isNull = false;
-            myagg.sum = 0;
-            myagg.count = 0;
-          }
-          myagg.sum += value;
-          myagg.count += 1;
+          myagg.sum += vector[i];
+          myagg.count++;
         }
       }
     }
@@ -371,16 +320,9 @@ public class <ClassName> extends VectorAggregateExpression {
         int batchSize,
         int[] selected) {
 
-      if (myagg.isNull) {
-        myagg.isNull = false;
-        myagg.sum = 0;
-        myagg.count = 0;
-      }
-
       for (int i=0; i< batchSize; ++i) {
-        <ValueType> value = vector[selected[i]];
-        myagg.sum += value;
-        myagg.count += 1;
+        myagg.sum += vector[selected[i]];
+        myagg.count++;
       }
     }
 
@@ -392,13 +334,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          <ValueType> value = vector[i];
-          if (myagg.isNull) {
-            myagg.isNull = false;
-            myagg.sum = 0;
-            myagg.count = 0;
-          }
-          myagg.sum += value;
+          myagg.sum += vector[i];
           myagg.count += 1;
         }
       }
@@ -408,15 +344,9 @@ public class <ClassName> extends VectorAggregateExpression {
         Aggregation myagg,
         <ValueType>[] vector,
         int batchSize) {
-      if (myagg.isNull) {
-        myagg.isNull = false;
-        myagg.sum = 0;
-        myagg.count = 0;
-      }
 
       for (int i=0;i<batchSize;++i) {
-        <ValueType> value = vector[i];
-        myagg.sum += value;
+        myagg.sum += vector[i];
         myagg.count += 1;
       }
     }
@@ -483,15 +413,11 @@ public class <ClassName> extends VectorAggregateExpression {
 #ENDIF COMPLETE
 
     Aggregation myagg = (Aggregation) agg;
-    if (myagg.isNull) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[batchIndex] = true;
-      return;
-    }
-    Preconditions.checkState(myagg.count > 0);
-    outputColVector.isNull[batchIndex] = false;
 
 #IF PARTIAL1
+    // For AVG, we do not mark NULL if all inputs were NULL.
+    outputColVector.isNull[batchIndex] = false;
+
     ColumnVector[] fields = outputColVector.fields;
     fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
     ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
@@ -506,6 +432,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
 #ENDIF PARTIAL1
 #IF COMPLETE
+    if (myagg.count == 0) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
     outputColVector.vector[batchIndex] = myagg.sum / myagg.count;
 #ENDIF COMPLETE
   }

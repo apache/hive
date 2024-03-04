@@ -107,7 +107,7 @@ STAGE PLANS:
             Number of rows: 10
             Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: UDFToInteger(_col0) (type: int), UDFToString(_col1) (type: string)
+              expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
@@ -198,7 +198,7 @@ STAGE PLANS:
             Number of rows: 10
             Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: UDFToInteger(_col0) (type: int), UDFToString(_col1) (type: string)
+              expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

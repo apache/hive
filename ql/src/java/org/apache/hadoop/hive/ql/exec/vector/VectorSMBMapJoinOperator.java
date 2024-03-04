@@ -129,7 +129,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator
 
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
     keyExpressions = vContext.getVectorExpressions(keyDesc);
-    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
+    keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyExpressions);
 
     Map<Byte, List<ExprNodeDesc>> exprs = desc.getExprs();
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
@@ -166,9 +166,9 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    VectorExpression.doTransientInit(bigTableFilterExpressions);
-    VectorExpression.doTransientInit(keyExpressions);
-    VectorExpression.doTransientInit(bigTableValueExpressions);
+    VectorExpression.doTransientInit(bigTableFilterExpressions, hconf);
+    VectorExpression.doTransientInit(keyExpressions, hconf);
+    VectorExpression.doTransientInit(bigTableValueExpressions, hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
     vrbCtx.init((StructObjectInspector) this.outputObjInspector, vOutContext.getScratchColumnTypeNames());

@@ -21,15 +21,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.FileFormatProxy;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfo;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
-import org.apache.orc.StripeStatistics;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,15 +41,19 @@ public class OrcFileFormatProxy implements FileFormatProxy {
 
   @Override
   public SplitInfos applySargToMetadata(
-      SearchArgument sarg, ByteBuffer fileMetadata) throws IOException {
+      SearchArgument sarg, ByteBuffer fileMetadata, Configuration conf) throws IOException {
     // TODO: ideally we should store shortened representation of only the necessary fields
     //       in HBase; it will probably require custom SARG application code.
     OrcTail orcTail = ReaderImpl.extractFileTail(fileMetadata);
     OrcProto.Footer footer = orcTail.getFooter();
     int stripeCount = footer.getStripesCount();
+    boolean writerUsedProlepticGregorian = footer.hasCalendar()
+        ? footer.getCalendar() == OrcProto.CalendarKind.PROLEPTIC_GREGORIAN
+        : OrcConf.PROLEPTIC_GREGORIAN_DEFAULT.getBoolean(conf);
     boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
         sarg, orcTail.getWriterVersion(),
-        footer.getTypesList(), orcTail.getStripeStatistics(), stripeCount);
+        footer.getTypesList(), orcTail.getStripeStatistics(writerUsedProlepticGregorian, true),
+        stripeCount);
     // For ORC case, send the boundaries of the stripes so we don't have to send the footer.
     SplitInfos.Builder sb = SplitInfos.newBuilder();
     List<StripeInformation> stripes = orcTail.getStripes();

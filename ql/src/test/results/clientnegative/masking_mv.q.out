@@ -44,14 +44,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n_mv
-            Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 30220 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat

@@ -161,7 +161,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  expressions: 'tst1' (type: string), CAST( _col0 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -196,7 +196,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 316 Data size: 30336 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 316 Data size: 85952 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -245,7 +245,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1001 Data size: 280280 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col2) (type: string)
+                  expressions: _col0 (type: string), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1001 Data size: 456456 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1143,7 +1143,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 316 Data size: 30336 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 316 Data size: 85952 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1192,7 +1192,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1001 Data size: 280280 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col2) (type: string)
+                  expressions: _col0 (type: string), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1001 Data size: 456456 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1240,7 +1240,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  expressions: 'tst1' (type: string), CAST( _col0 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -2120,7 +2120,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 316 Data size: 30336 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 316 Data size: 85952 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -2169,7 +2169,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1001 Data size: 280280 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col2) (type: string)
+                  expressions: _col0 (type: string), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1001 Data size: 456456 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -2217,7 +2217,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  expressions: 'tst1' (type: string), CAST( _col0 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -3054,7 +3054,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  expressions: 'tst1' (type: string), CAST( _col0 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -3089,7 +3089,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 24000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 68000 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -3138,7 +3138,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 501 Data size: 140280 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col2) (type: string)
+                  expressions: _col0 (type: string), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 501 Data size: 228456 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -3971,7 +3971,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  expressions: 'tst1' (type: string), CAST( _col0 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -4010,7 +4010,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 116000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col2) (type: string)
+                    expressions: _col0 (type: string), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 250 Data size: 114000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -4044,7 +4044,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 125 Data size: 12000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 125 Data size: 34000 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

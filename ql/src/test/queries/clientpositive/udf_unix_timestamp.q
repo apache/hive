@@ -19,7 +19,7 @@ FROM oneline;
 
 SELECT
   '2009 Mar 20 11:30:01 am',
-  unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
+  unix_timestamp('2009 Mar 20 11:30:01 AM', 'yyyy MMM dd h:mm:ss a')
 FROM oneline;
 
 create table foo_n3 as SELECT

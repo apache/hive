@@ -1405,7 +1405,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(cdate BETWEEN DATE'1969-12-30' AND DATE'1970-01-02') -> 5:boolean
+                        selectExpressions: LongColumnBetween(col 3:date, left -2, right 1) -> 5:boolean
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1439,7 +1439,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized
@@ -1545,7 +1545,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351) -> 5:boolean
+                        selectExpressions: DecimalColumnNotBetween(col 1:decimal(20,10), left -2000, right 4390.1351351351) -> 5:boolean
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1579,7 +1579,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized

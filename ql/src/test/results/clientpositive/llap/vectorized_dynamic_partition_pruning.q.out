@@ -2435,9 +2435,9 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
+                      key expressions: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
                       sort order: +
-                      Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
+                      Map-reduce partition columns: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -2464,12 +2464,12 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToString(_col0) (type: string)
+                        key expressions: CAST( _col0 AS STRING) (type: string)
                         sort order: +
-                        Map-reduce partition columns: UDFToString(_col0) (type: string)
+                        Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
                         Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToString(_col0) (type: string)
+                        expressions: CAST( _col0 AS STRING) (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -2480,7 +2480,7 @@ STAGE PLANS:
                           Dynamic Partitioning Event Operator
                             Target column: hr (string)
                             Target Input: srcpart
-                            Partition key expr: UDFToString((UDFToDouble(hr) * 2.0D))
+                            Partition key expr: CAST( (UDFToDouble(hr) * 2.0D) AS STRING)
                             Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: vectorized, llap
@@ -2501,8 +2501,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
-                  1 UDFToString(_col0) (type: string)
+                  0 CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
+                  1 CAST( _col0 AS STRING) (type: string)
                 Statistics: Num rows: 2200 Data size: 404800 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()

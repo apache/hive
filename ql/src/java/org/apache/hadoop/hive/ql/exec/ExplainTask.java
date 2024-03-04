@@ -140,6 +140,16 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outJSONObject;
   }
 
+  public String outputCboPlan(String cboPlan, PrintStream out, boolean jsonOutput)
+      throws JSONException {
+    if (out != null) {
+      out.println("CBO PLAN:");
+      out.println(cboPlan);
+    }
+
+    return jsonOutput ? cboPlan : null;
+  }
+
   public JSONObject getJSONLogicalPlan(PrintStream out, ExplainWork work) throws Exception {
     isLogical = true;
 
@@ -221,11 +231,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
       throws Exception {
     return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
-                       work.isFormatted(), work.getExtended(), work.isAppendTaskType(), work.getOptimizedSQL());
+        work.isFormatted(), work.getExtended(), work.isAppendTaskType(), work.getCboInfo(),
+        work.getOptimizedSQL());
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
-      boolean jsonOutput, boolean isExtended, boolean appendTaskType, String optimizedSQL) throws Exception {
+      boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo, String optimizedSQL) throws Exception {
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
@@ -280,6 +291,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
 
       if (jsonOutput) {
+        if (cboInfo != null) {
+          outJSONObject.put("cboInfo", cboInfo);
+        }
         outJSONObject.put("STAGE DEPENDENCIES", jsonDependencies);
       }
 
@@ -381,7 +395,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      if (work.isLogical()) {
+      if (work.isCbo()) {
+        if (work.getCboPlan() != null) {
+          outputCboPlan(work.getCboPlan(), out, work.isFormatted());
+        }
+      } else if (work.isLogical()) {
         JSONObject jsonLogicalPlan = getJSONLogicalPlan(out, work);
         if (work.isFormatted()) {
           out.print(jsonLogicalPlan);

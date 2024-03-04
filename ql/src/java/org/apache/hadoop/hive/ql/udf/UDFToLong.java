@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Text;
  * UDFToLong.
  *
  */
-@VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
+@VectorizedExpressions({CastDoubleToLong.class,
     CastDecimalToLong.class, CastStringToLong.class})
 public class UDFToLong extends UDF {
   private final LongWritable longWritable = new LongWritable();
@@ -199,7 +199,7 @@ public class UDFToLong extends UDF {
     if (i == null) {
       return null;
     } else {
-      longWritable.set(i.getSeconds());
+      longWritable.set(UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond());
       return longWritable;
     }
   }

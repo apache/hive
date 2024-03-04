@@ -63,7 +63,7 @@ STAGE PLANS:
           Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), CAST( _col3 AS STRING) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1548,7 +1548,7 @@ STAGE PLANS:
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), CAST( _col3 AS STRING) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1779,7 +1779,7 @@ STAGE PLANS:
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), CAST( _col3 AS STRING) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

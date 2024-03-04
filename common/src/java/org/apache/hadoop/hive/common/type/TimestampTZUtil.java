@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,9 +34,11 @@ import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +58,6 @@ public class TimestampTZUtil {
     builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
         optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
         optionalEnd().optionalEnd();
-
     // Zone part
     builder.optionalStart().appendLiteral(" ").optionalEnd();
     builder.optionalStart().appendZoneText(TextStyle.NARROW).optionalEnd();
@@ -149,13 +153,42 @@ public class TimestampTZUtil {
     }
   }
 
+  private static final ThreadLocal<DateFormat> LEGACY_DATE_FORMATTER = new ThreadLocal<>();
+
+  private static DateFormat getLegacyDateFormatter() {
+    if (LEGACY_DATE_FORMATTER.get() == null) {
+      LEGACY_DATE_FORMATTER.set(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+    }
+    return LEGACY_DATE_FORMATTER.get();
+  }
+
+  public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
+    return convertTimestampToZone(ts, fromZone, toZone, false);
+  }
+
   /**
    * Timestamps are technically time zone agnostic, and this method sort of cheats its logic.
    * Timestamps are supposed to represent nanos since [UTC epoch]. Here,
    * the input timestamp represents nanoseconds since [epoch at fromZone], and
    * we return a Timestamp representing nanoseconds since [epoch at toZone].
    */
-  public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
+  public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone,
+      boolean legacyConversion) {
+    if (legacyConversion) {
+      try {
+        DateFormat formatter = getLegacyDateFormatter();
+        formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
+        java.util.Date date = formatter.parse(ts.toString());
+        // Set the formatter to use a different timezone
+        formatter.setTimeZone(TimeZone.getTimeZone(toZone));
+        Timestamp result = Timestamp.valueOf(formatter.format(date));
+        result.setNanos(ts.getNanos());
+        return result;
+      } catch (ParseException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     // get nanos since [epoch at fromZone]
     Instant instant = convert(ts, fromZone).getZonedDateTime().toInstant();
     // get [local time at toZone]
@@ -163,5 +196,9 @@ public class TimestampTZUtil {
     // get nanos between [epoch at toZone] and [local time at toZone]
     return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
         localDateTimeAtToZone.getNano());
+  }
+
+  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
   }
 }

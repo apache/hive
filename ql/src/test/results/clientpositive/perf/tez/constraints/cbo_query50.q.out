@@ -1,0 +1,146 @@
+PREHOOK: query: explain cbo
+select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   store_sales
+  ,store_returns
+  ,store
+  ,date_dim d1
+  ,date_dim d2
+where
+    d2.d_year = 2000
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   store_sales
+  ,store_returns
+  ,store
+  ,date_dim d1
+  ,date_dim d2
+where
+    d2.d_year = 2000
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
+  HiveProject(s_store_name=[$0], s_company_id=[$1], s_street_number=[$2], s_street_name=[$3], s_street_type=[$4], s_suite_number=[$5], s_city=[$6], s_county=[$7], s_state=[$8], s_zip=[$9], $f10=[$10], $f11=[$11], $f12=[$12], $f13=[$13], $f14=[$14])
+    HiveAggregate(group=[{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}], agg#0=[sum($11)], agg#1=[sum($12)], agg#2=[sum($13)], agg#3=[sum($14)], agg#4=[sum($15)])
+      HiveJoin(condition=[=($0, $16)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(sr_returned_date_sk=[$5], s_store_name=[$10], s_company_id=[$11], s_street_number=[$12], s_street_name=[$13], s_street_type=[$14], s_suite_number=[$15], s_city=[$16], s_county=[$17], s_state=[$18], s_zip=[$19], CASE=[CASE(<=(-($5, $0), 30), 1, 0)], CASE13=[CASE(AND(>(-($5, $0), 30), <=(-($5, $0), 60)), 1, 0)], CASE14=[CASE(AND(>(-($5, $0), 60), <=(-($5, $0), 90)), 1, 0)], CASE15=[CASE(AND(>(-($5, $0), 90), <=(-($5, $0), 120)), 1, 0)], CASE16=[CASE(>(-($5, $0), 120), 1, 0)])
+          HiveJoin(condition=[=($3, $9)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[AND(AND(=($4, $8), =($1, $6)), =($2, $7))], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ticket_number=[$9])
+                HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($7), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveProject(sr_returned_date_sk=[$0], sr_item_sk=[$2], sr_customer_sk=[$3], sr_ticket_number=[$9])
+                HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+            HiveProject(s_store_sk=[$0], s_store_name=[$5], s_company_id=[$16], s_street_number=[$18], s_street_name=[$19], s_street_type=[$20], s_suite_number=[$21], s_city=[$22], s_county=[$23], s_state=[$24], s_zip=[$25])
+              HiveTableScan(table=[[default, store]], table:alias=[store])
+        HiveProject(d_date_sk=[$0])
+          HiveFilter(condition=[AND(=($6, 2000), =($8, 9))])
+            HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+

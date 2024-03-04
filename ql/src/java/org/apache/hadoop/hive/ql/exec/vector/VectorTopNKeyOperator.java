@@ -70,7 +70,7 @@ public class VectorTopNKeyOperator extends TopNKeyOperator implements Vectorizat
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    VectorExpression.doTransientInit(vectorDesc.getKeyExpressions());
+    VectorExpression.doTransientInit(vectorDesc.getKeyExpressions(), hconf);
     for (VectorExpression keyExpression : vectorDesc.getKeyExpressions()) {
       keyExpression.init(hconf);
     }

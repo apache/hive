@@ -513,7 +513,8 @@ public class PrimitiveObjectInspectorConverter {
         }
         return t;
       case DECIMAL:
-        t.set(((HiveDecimalObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
+        HiveDecimal decimalVal = ((HiveDecimalObjectInspector) inputOI).getPrimitiveJavaObject(input);
+        t.set(decimalVal.toFormatString(inputOI.scale()));
         return t;
       default:
         throw new RuntimeException("Hive 2 Internal error: type = " + inputOI.getTypeName());
