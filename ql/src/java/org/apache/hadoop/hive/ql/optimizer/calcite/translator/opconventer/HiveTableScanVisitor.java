@@ -114,13 +114,14 @@ class HiveTableScanVisitor extends HiveRelNodeVisitor<HiveTableScan> {
     if (hiveOpConverter.getTopOps().get(tableAlias) != null) {
       tableAlias = tableAlias + hiveOpConverter.getUniqueCounter();
     }
-    hiveOpConverter.getTopOps().put(tableAlias, ts);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + ts + " with row schema: [" + ts.getSchema() + "]");
     }
     if (RelOptHiveTable.TableType.CTE.equals(ht.getTableType())) {
       hiveOpConverter.setCTEConsumer(ts, ht);
+    } else {
+      hiveOpConverter.getTopOps().put(tableAlias, ts);
     }
     return new OpAttr(tableAlias, vcolsInCalcite, ts);
   }

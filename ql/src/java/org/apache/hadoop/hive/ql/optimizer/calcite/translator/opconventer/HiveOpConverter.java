@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.ForwardWalker;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
@@ -119,12 +119,13 @@ public class HiveOpConverter {
         return null;
       }
       Operator<?> cte = cteProducers.get(producerId);
-      scan.getParentOperators().forEach(p -> p.replaceChild(scan, cte));
+      scan.getChildOperators().forEach(c -> c.replaceParent(scan, cte));
+      cte.getChildOperators().addAll(scan.getChildOperators());
       return null;
     };
     DefaultRuleDispatcher dispatcher =
         new DefaultRuleDispatcher(null, Collections.singletonMap(rule, cteProcessor), null);
-    new DefaultGraphWalker(dispatcher).startWalking(Collections.singleton(root), null);
+    new ForwardWalker(dispatcher).startWalking(Collections.singleton(root), null);
   }
 
   OpAttr dispatch(RelNode rn) throws SemanticException {
