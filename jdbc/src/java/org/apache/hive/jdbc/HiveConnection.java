@@ -511,7 +511,7 @@ public class HiveConnection implements java.sql.Connection {
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
         transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout);
       } else {
-        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout, loginTimeout,
+        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout,
             sslTrustStore, sslTrustStorePassword);
       }
     } else {

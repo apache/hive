@@ -54,6 +54,11 @@ public class HiveAuthUtils {
     return getSSLSocketWithHttps(tSSLSocket);
   }
 
+  public static TTransport getSSLSocket(String host, int port, int loginTimeout,
+    String trustStorePath, String trustStorePassWord) throws TTransportException {
+    return getSSLSocket(host, port, loginTimeout, loginTimeout, trustStorePath, trustStorePassWord);
+  }
+
   public static TTransport getSSLSocket(String host, int port, int socketTimeout, int connectionTimeout,
     String trustStorePath, String trustStorePassWord) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
