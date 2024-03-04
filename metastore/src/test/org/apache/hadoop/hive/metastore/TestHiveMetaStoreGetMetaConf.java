@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.security.Permission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.thrift.TException;
@@ -41,40 +40,16 @@ public class TestHiveMetaStoreGetMetaConf {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStoreGetMetaConf.class);
   private static HiveConf hiveConf;
-  private static SecurityManager securityManager;
 
   private HiveMetaStoreClient hmsc;
-
-  public static class NoExitSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPermission(Permission perm) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkExit(int status) {
-      super.checkExit(status);
-      throw new RuntimeException("System.exit() was called. Raising exception.");
-    }
-  }
 
   @AfterClass
   public static void tearDown() throws Exception {
     LOG.info("Shutting down metastore.");
-    System.setSecurityManager(securityManager);
   }
 
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
-
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
     HiveConf metastoreConf = new HiveConf();
     metastoreConf.setClass(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS.varname,
       MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);

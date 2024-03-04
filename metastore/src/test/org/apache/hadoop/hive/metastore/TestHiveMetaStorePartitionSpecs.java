@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,33 +50,10 @@ public class TestHiveMetaStorePartitionSpecs {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStorePartitionSpecs.class);
   private static int msPort;
   private static HiveConf hiveConf;
-  private static SecurityManager securityManager;
-
-  public static class NoExitSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPermission(Permission perm) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkExit(int status) {
-
-      super.checkExit(status);
-      throw new RuntimeException("System.exit() was called. Raising exception. ");
-    }
-  }
-
 
   @AfterClass
   public static void tearDown() throws Exception {
     LOG.info("Shutting down metastore.");
-    System.setSecurityManager(securityManager);
 
     HiveMetaStoreClient hmsc = new HiveMetaStoreClient(hiveConf);
     hmsc.dropDatabase(dbName, true, true, true);
@@ -90,8 +66,6 @@ public class TestHiveMetaStorePartitionSpecs {
     metastoreConf.setClass(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS.varname,
       MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
     msPort = MetaStoreUtils.startMetaStore(metastoreConf);
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
     hiveConf = new HiveConf(TestHiveMetaStorePartitionSpecs.class);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPort);
