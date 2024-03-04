@@ -146,7 +146,7 @@ abstract class ShowMaterializedViewsFormatter {
           incrementalRebuild = "Available";
           break;
         case INSERT_ONLY:
-          incrementalRebuild = "Available in presence of insert operations only";
+          incrementalRebuild = "Available for insert operations only";
           break;
         case NOT_AVAILABLE:
           incrementalRebuild = "Not available";
