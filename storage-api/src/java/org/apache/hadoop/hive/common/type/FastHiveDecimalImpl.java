@@ -6520,7 +6520,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     if (fastSignum == 0) {
       return FastCheckPrecisionScaleStatus.NO_CHANGE;
     }
-    final int maxIntegerDigitCount = maxPrecision - fastScale;
+    final int maxIntegerDigitCount = maxPrecision - maxScale;
     if (fastIntegerDigitCount > maxIntegerDigitCount) {
       return FastCheckPrecisionScaleStatus.OVERFLOW;
     }
