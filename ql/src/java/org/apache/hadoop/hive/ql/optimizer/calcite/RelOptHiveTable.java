@@ -131,9 +131,9 @@ public class RelOptHiveTable implements RelOptTable {
     this.name = this.qualifiedTblName.stream().collect(Collectors.joining("."));
     this.rowType = rowType;
     this.hiveTblMetadata = hiveTblMetadata;
-    this.hiveColStatsMap = new HashMap<>();
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
     this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, 0);
+    this.hiveColStatsMap = TableType.CTE.equals(tableType) ? emptyStats(hiveNonPartitionColsMap) : new HashMap<>();
     this.hivePartitionCols = ImmutableList.copyOf(hivePartitionCols);
     this.hivePartitionColsMap = HiveCalciteUtil.getColInfoMap(hivePartitionCols, hiveNonPartitionColsMap.size());
     this.noOfNonVirtualCols = hiveNonPartitionCols.size() + hivePartitionCols.size();
@@ -149,6 +149,14 @@ public class RelOptHiveTable implements RelOptTable {
     this.nonNullablekeys = constraintKeys.right;
   }
 
+  Map<Integer, ColStatistics> emptyStats(Map<Integer, ColumnInfo> columns) {
+    Map<Integer, ColStatistics> stats = new HashMap<>();
+    for (Integer p : columns.keySet()) {
+      ColumnInfo ci = columns.get(p);
+      stats.put(p, new ColStatistics(ci.getInternalName(), ci.getTypeName()));
+    }
+    return stats;
+  }
   //~ Methods ----------------------------------------------------------------
 
   public String getName() {
