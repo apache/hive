@@ -56,7 +56,7 @@ public class CommonTableExpressionIdentitySuggester implements CommonTableExpres
         new Table("cte", IDENTITY_TBL), columns, Collections.emptyList(), Collections.emptyList(), new HiveConf(),
         Hive.getThreadLocal(), new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
         RelOptHiveTable.Type.CTE);
-
+    optTable.setRowCount(cluster.getMetadataQuery().getRowCount(input));
     final TableScan scan =
         new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, "cte_alias", null, false,
             false);
