@@ -1033,10 +1033,9 @@ import org.junit.Test;
    * Print PASSED or FAILED
    */
   @Test
-  public void testShowDbInPrompt() throws Throwable {
+  public void testShowDbNameInPrompt() throws Throwable {
     final String EXPECTED_PATTERN = " \\(default\\)>";
     List<String> argList = new ArrayList<>();
-    argList.add("--showDbInPrompt");
     argList.add("-u");
     argList.add(miniHS2.getBaseJdbcURL() + ";user=hivetest;password=hive");
     String SCRIPT_TEXT = "select current_user();";

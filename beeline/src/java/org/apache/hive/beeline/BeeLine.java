@@ -431,6 +431,13 @@ public class BeeLine implements Closeable {
         .withLongOpt("property-file")
         .withDescription("The file to read configuration properties from")
         .create());
+
+    // -hideDbNameInPrompt
+    options.addOption(OptionBuilder
+            .withLongOpt("hideDbNameInPrompt")
+            .withDescription("The flag to hide DB name in prompt")
+            .create());
+
   }
 
 
@@ -729,7 +736,7 @@ public class BeeLine implements Closeable {
 
     private boolean isBeeLineOpt(String arg) {
       return arg.startsWith("--") && !(HIVE_VAR_PREFIX.equals(arg) || (HIVE_CONF_PREFIX.equals(arg))
-          || "--help".equals(arg) || PROP_FILE_PREFIX.equals(arg) || "--getUrlsFromBeelineSite".equals(arg));
+          || "--help".equals(arg) || PROP_FILE_PREFIX.equals(arg) || "--getUrlsFromBeelineSite".equals(arg) || "--hideDbNameInPrompt".equals(arg));
     }
   }
 
@@ -857,6 +864,9 @@ public class BeeLine implements Closeable {
     String driver = null, user = null, pass = "", url = null;
     String auth = null;
 
+    if(cl.hasOption("hideDbNameInPrompt")){
+      opts.setShowDbInPrompt(false);
+    }
 
     if (cl.hasOption("help")) {
       usage();

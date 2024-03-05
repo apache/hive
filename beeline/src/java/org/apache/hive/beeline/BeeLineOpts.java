@@ -72,7 +72,7 @@ public class BeeLineOpts implements Completer {
   private boolean color = false;
   private boolean showHeader = true;
   private boolean escapeCRLF = false;
-  private boolean showDbInPrompt = false;
+  private boolean showDbInPrompt = true;
   private int headerInterval = 100;
   private boolean fastConnect = true;
   private boolean autoCommit = true;

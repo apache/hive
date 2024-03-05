@@ -254,17 +254,17 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] { "-u", "url" };
     Assert.assertEquals(0, bl.initArgs(args));
-    Assert.assertFalse(bl.getOpts().getShowDbInPrompt());
-    Assert.assertEquals("", bl.getFormattedDb());
+    Assert.assertTrue(bl.getOpts().getShowDbInPrompt());
+    Assert.assertEquals(" (default)", bl.getFormattedDb());
   }
 
   @Test
-  public void testBeelineShowDbInPromptOptsTrue() throws Exception {
+  public void testBeelineShowDbInPromptOptsFalse() throws Exception {
     TestBeeline bl = new TestBeeline();
-    String args[] = new String[] { "-u", "url", "--showDbInPrompt=true" };
+    String args[] = new String[] { "-u", "url", "--hideDbNameInPrompt" };
     Assert.assertEquals(0, bl.initArgs(args));
-    Assert.assertTrue(bl.getOpts().getShowDbInPrompt());
-    Assert.assertEquals(" (default)", bl.getFormattedDb());
+    Assert.assertFalse(bl.getOpts().getShowDbInPrompt());
+    Assert.assertEquals("", bl.getFormattedDb());
   }
 
 
