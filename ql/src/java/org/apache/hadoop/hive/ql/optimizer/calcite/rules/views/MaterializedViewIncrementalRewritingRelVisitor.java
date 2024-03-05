@@ -22,12 +22,15 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +54,8 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.Incrementa
  * </ul>
  */
 public class MaterializedViewIncrementalRewritingRelVisitor implements ReflectiveVisitor {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewIncrementalRewritingRelVisitor.class);
 
   private final ReflectUtil.MethodDispatcher<Result> dispatcher;
 
@@ -78,6 +83,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
 
   public Result visit(RelNode relNode) {
     // Only TS, Filter, Join, Project and Aggregate are supported
+    LOG.debug("Plan has unsupported operator {}", relNode);
     return new Result(NOT_AVAILABLE);
   }
 
@@ -92,12 +98,18 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
   public Result visit(HiveTableScan scan) {
     RelOptHiveTable hiveTable = (RelOptHiveTable) scan.getTable();
 
-    if (hiveTable.getHiveTableMD().getStorageHandler() != null) {
-      if (hiveTable.getHiveTableMD().getStorageHandler().areSnapshotsSupported()) {
+    Table hiveTableMD = hiveTable.getHiveTableMD();
+    if (hiveTableMD.getStorageHandler() != null) {
+      if (hiveTableMD.getStorageHandler().areSnapshotsSupported()) {
         // Incremental rebuild of materialized views with non-native source tables are not implemented
         // when any of the source tables has delete/update operation since the last rebuild
+        LOG.debug("Table scan of non-native table {} with {} storage handler supports insert only materialized view" +
+            " incremental rebuild.",
+            hiveTableMD.getTableName(), hiveTableMD.getStorageHandler().getClass().getSimpleName());
         return new Result(INSERT_ONLY);
       } else {
+        LOG.debug("Unsupported table type: non-native table {} with storage handler {}",
+            hiveTableMD.getTableName(), hiveTableMD.getStorageHandler().getClass().getSimpleName());
         return new Result(NOT_AVAILABLE);
       }
     }
@@ -115,6 +127,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
 
   public Result visit(HiveJoin join) {
     if (join.getJoinType() != JoinRelType.INNER) {
+      LOG.debug("Unsupported join type {}", join.getJoinType());
       return new Result(NOT_AVAILABLE);
     }
 
@@ -133,7 +146,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
 
   public Result visit(HiveAggregate aggregate) {
     Result result = visitChildOf(aggregate);
-    if (result.incrementalRebuildMode != AVAILABLE) {
+    if (result.incrementalRebuildMode == NOT_AVAILABLE) {
       return new Result(result.incrementalRebuildMode, true, -1);
     }
 
@@ -158,14 +171,18 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
     }
 
     IncrementalRebuildMode incrementalRebuildMode =
-        getIncrementalRebuildMode(aggregate, columnRefByAggregateCall, countStarIndex);
+        result.incrementalRebuildMode == INSERT_ONLY || countStarIndex == -1 ? INSERT_ONLY : AVAILABLE;
+
+    incrementalRebuildMode = updateBasedOnAggregates(aggregate, columnRefByAggregateCall, incrementalRebuildMode);
 
     return new Result(incrementalRebuildMode, true, countStarIndex);
   }
 
-  private IncrementalRebuildMode getIncrementalRebuildMode(
-      HiveAggregate aggregate, Map<Integer, Set<SqlKind>> columnRefByAggregateCall, int countStarIndex) {
-    IncrementalRebuildMode incrementalRebuildMode = countStarIndex == -1 ? INSERT_ONLY : AVAILABLE;
+  private IncrementalRebuildMode updateBasedOnAggregates(
+      HiveAggregate aggregate,
+      Map<Integer, Set<SqlKind>> columnRefByAggregateCall,
+      IncrementalRebuildMode incrementalRebuildMode) {
+
     for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
       AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
       switch (aggregateCall.getAggregation().getKind()) {
@@ -194,6 +211,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
           return NOT_AVAILABLE;
       }
     }
+
     return incrementalRebuildMode;
   }
 
@@ -229,6 +247,15 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
 
     public int getCountStarIndex() {
       return countStarIndex;
+    }
+
+    @Override
+    public String toString() {
+      return "Result{" +
+          "incrementalRebuildMode=" + incrementalRebuildMode +
+          ", containsAggregate=" + containsAggregate +
+          ", countStarIndex=" + countStarIndex +
+          '}';
     }
   }
 }

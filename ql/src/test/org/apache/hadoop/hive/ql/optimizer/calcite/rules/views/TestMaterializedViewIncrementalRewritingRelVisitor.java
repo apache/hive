@@ -338,8 +338,6 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
 
     AggregateCall aggregateCall = AggregateCall.create(SqlStdOperatorTable.COUNT, true, false, false,
         Collections.emptyList(), -1, RelCollations.EMPTY, countRetType, null);
-//    AggregateCall aggregateCall = AggregateCall.create(SqlStdOperatorTable.COUNT, true, false, false,
-//        Collections.singletonList(0), -1, RelCollations.EMPTY, countRetType, null);
     RelNode mvQueryPlan = REL_BUILDER
         .push(ts1)
         .aggregate(REL_BUILDER.groupKey(0), Collections.singletonList(aggregateCall))
@@ -348,4 +346,19 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
     MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
     assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.NOT_AVAILABLE));
   }
+
+  @Test
+  public void testIncrementalRebuildIsNotAvailableWhenPlanHasUnsupportedAggregateOnSubPlanSupportsInsertOnly() {
+    RelNode ts1 = createNonNativeTSSupportingSnapshots();
+
+    RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
+    RelNode mvQueryPlan = REL_BUILDER
+        .push(ts1)
+        .aggregate(REL_BUILDER.groupKey(), REL_BUILDER.aggregateCall(SqlStdOperatorTable.STDDEV, rexInputRef))
+        .build();
+
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    assertThat(visitor.go(mvQueryPlan).getIncrementalRebuildMode(), is(IncrementalRebuildMode.NOT_AVAILABLE));
+  }
+
 }
