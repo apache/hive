@@ -135,27 +135,19 @@ abstract class ShowMaterializedViewsFormatter {
 
   @NotNull
   private static String formatIncrementalRebuildMode(Table materializedView) {
-    String incrementalRebuild;
     HiveRelOptMaterialization relOptMaterialization = HiveMaterializedViewsRegistry.get().
-            getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
+        getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
     if (relOptMaterialization == null) {
-      incrementalRebuild = "Unknown";
-    } else {
-      switch (relOptMaterialization.getRebuildMode()) {
-        case AVAILABLE:
-          incrementalRebuild = "Available";
-          break;
-        case INSERT_ONLY:
-          incrementalRebuild = "Available for insert operations only";
-          break;
-        case NOT_AVAILABLE:
-          incrementalRebuild = "Not available";
-          break;
-        default:
-          incrementalRebuild = "Unknown";
-          break;
-      }
+      return "Not available";
     }
-    return incrementalRebuild;
+    switch (relOptMaterialization.getRebuildMode()) {
+      case AVAILABLE:
+        return "Available";
+      case INSERT_ONLY:
+        return "Available for insert operations only";
+      case NOT_AVAILABLE:
+      default:
+        return "Not available";
+    }
   }
 }
