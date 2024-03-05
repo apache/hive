@@ -172,6 +172,8 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
 
     IncrementalRebuildMode incrementalRebuildMode =
         result.incrementalRebuildMode == INSERT_ONLY || countStarIndex == -1 ? INSERT_ONLY : AVAILABLE;
+    LOG.debug("Initial incremental rebuild mode {} input's incremental rebuild mode {} count star index {}",
+        incrementalRebuildMode, result.incrementalRebuildMode, countStarIndex);
 
     incrementalRebuildMode = updateBasedOnAggregates(aggregate, columnRefByAggregateCall, incrementalRebuildMode);
 
@@ -188,6 +190,8 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
       switch (aggregateCall.getAggregation().getKind()) {
         case COUNT:
           if (aggregateCall.isDistinct() || aggregateCall.isApproximate()) {
+            LOG.debug("Unsupported aggregate function COUNT with distinct {} or approximate {}",
+                aggregateCall.isDistinct(), aggregateCall.isApproximate());
             return NOT_AVAILABLE;
           }
 
@@ -198,6 +202,7 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
         case AVG:
           Set<SqlKind> aggregates = columnRefByAggregateCall.get(aggregateCall.getArgList().get(0));
           if (!(aggregates.contains(SqlKind.SUM) && aggregates.contains(SqlKind.COUNT))) {
+            LOG.debug("Unsupported aggregate function AVG: missing SUM and COUNT of the same column.");
             return NOT_AVAILABLE;
           }
           break;
@@ -205,9 +210,12 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
         case MIN:
         case MAX:
           incrementalRebuildMode = INSERT_ONLY;
+          LOG.debug("Found {} aggregate function. Incremental materialized view rebuild is supported in " +
+              "the presence of insert operations only", aggregateCall.getAggregation().getKind());
           break;
 
         default:
+          LOG.debug("Unsupported aggregate function {}.", aggregateCall.getAggregation().getKind());
           return NOT_AVAILABLE;
       }
     }
