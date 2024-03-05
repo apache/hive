@@ -116,6 +116,7 @@ public class RelOptHiveTable implements RelOptTable {
 
   private double                                  rowCount        = -1;
   PrunedPartitionList                             partitionList;
+  private final Type type;
 
   protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
 
@@ -124,7 +125,7 @@ public class RelOptHiveTable implements RelOptTable {
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols, List<ColumnInfo> hivePartitionCols,
       List<VirtualColumn> hiveVirtualCols, HiveConf hconf, Hive db, ParsedQueryTables tabNameToTabObject,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
-      AtomicInteger noColsMissingStats) {
+      AtomicInteger noColsMissingStats, Type type) {
     this.schema = calciteSchema;
     this.typeFactory = typeFactory;
     this.qualifiedTblName = ImmutableList.copyOf(qualifiedTblName);
@@ -133,7 +134,7 @@ public class RelOptHiveTable implements RelOptTable {
     this.hiveTblMetadata = hiveTblMetadata;
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
     this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, 0);
-    this.hiveColStatsMap = TableType.CTE.equals(tableType) ? emptyStats(hiveNonPartitionColsMap) : new HashMap<>();
+    this.hiveColStatsMap = Type.CTE.equals(type) ? emptyStats(hiveNonPartitionColsMap) : new HashMap<>();
     this.hivePartitionCols = ImmutableList.copyOf(hivePartitionCols);
     this.hivePartitionColsMap = HiveCalciteUtil.getColInfoMap(hivePartitionCols, hiveNonPartitionColsMap.size());
     this.noOfNonVirtualCols = hiveNonPartitionCols.size() + hivePartitionCols.size();
@@ -147,6 +148,7 @@ public class RelOptHiveTable implements RelOptTable {
     Pair<List<ImmutableBitSet>, List<ImmutableBitSet>> constraintKeys = generateKeys();
     this.keys = constraintKeys.left;
     this.nonNullablekeys = constraintKeys.right;
+    this.type = type;
   }
 
   Map<Integer, ColStatistics> emptyStats(Map<Integer, ColumnInfo> columns) {
@@ -235,7 +237,7 @@ public class RelOptHiveTable implements RelOptTable {
     return new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
         this.hiveConf, this.db, this.tablesCache, this.partitionCache, this.colStatsCache,
-        this.noColsMissingStats);
+        this.noColsMissingStats, this.type);
   }
 
   // Given a key this method returns true if all of the columns in the key are not nullable
@@ -769,4 +771,11 @@ public class RelOptHiveTable implements RelOptTable {
     return partitionList != null ? partitionList.getKey().orElse(null) : null;
   }
 
+  public enum Type {
+    NORMAL, CTE, VIEW
+  }
+
+  public Type getType() {
+    return type;
+  }
 }

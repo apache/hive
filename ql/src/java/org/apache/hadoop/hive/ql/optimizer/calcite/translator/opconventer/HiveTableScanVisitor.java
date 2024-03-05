@@ -118,7 +118,7 @@ class HiveTableScanVisitor extends HiveRelNodeVisitor<HiveTableScan> {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + ts + " with row schema: [" + ts.getSchema() + "]");
     }
-    if (RelOptHiveTable.TableType.CTE.equals(ht.getTableType())) {
+    if (RelOptHiveTable.Type.CTE.equals(ht.getType())) {
       hiveOpConverter.setCTEConsumer(ts, ht);
     } else {
       hiveOpConverter.getTopOps().put(tableAlias, ts);

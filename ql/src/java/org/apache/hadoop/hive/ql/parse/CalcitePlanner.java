@@ -17,10 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import com.cloudera.insights.advisor.materializations.AdvisorConf;
-import com.cloudera.insights.advisor.materializations.MaterializationsAdvisor;
-import com.cloudera.insights.advisor.materializations.tools.Driver;
-import com.cloudera.insights.advisor.materializations.tools.WorkloadInput;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableBiMap;
@@ -97,6 +93,7 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
@@ -166,7 +163,10 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggester;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
@@ -316,6 +316,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -2115,13 +2117,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      List<WorkloadInput> wi = Collections.singletonList(
-          WorkloadInput.builder().inputName("none").jsonPlan("none").runtime(0).plan(basePlan).build());
-      AdvisorConf conf = new AdvisorConf();
-      conf.set(AdvisorConf.Property.MATERIALIZED_VIEW_NAME_PREFIX, "cte_candidate_");
-      MaterializationsAdvisor advisor =
-          new MaterializationsAdvisor(conf, Driver.createCluster(), wi, Collections.emptySet());
-      List<RelOptMaterialization> ctes = advisor.generateRecommendations();
+      CommonTableExpressionSuggester suggester = new CommonTableExpressionIdentitySuggester();
+      List<RelOptMaterialization> ctes = suggester.suggest(basePlan, conf);
       if(ctes.isEmpty()) {
         return basePlan;
       }
@@ -3102,7 +3099,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 intervals, null, null);
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                 rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
+                db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats, RelOptHiveTable.Type.NORMAL);
             final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                 optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                 getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
@@ -3113,7 +3110,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
+                  db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats, RelOptHiveTable.Type.NORMAL);
             final HiveTableScan hts = new HiveTableScan(cluster,
                   cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
                   null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -3178,7 +3175,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           fullyQualifiedTabName.add(tabMetaData.getTableName());
           optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-              db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
+              db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats, RelOptHiveTable.Type.NORMAL);
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
