@@ -202,6 +202,8 @@ public class MaterializedViewIncrementalRewritingRelVisitor implements Reflectiv
         case AVG:
           Set<SqlKind> aggregates = columnRefByAggregateCall.get(aggregateCall.getArgList().get(0));
           if (!(aggregates.contains(SqlKind.SUM) && aggregates.contains(SqlKind.COUNT))) {
+            // We don't check if the Count is distinct or approximate here since these are not supported currently
+            // see count handling
             LOG.debug("Unsupported aggregate function AVG: missing SUM and COUNT of the same column.");
             return NOT_AVAILABLE;
           }
