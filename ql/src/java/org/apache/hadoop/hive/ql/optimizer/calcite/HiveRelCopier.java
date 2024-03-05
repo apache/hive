@@ -36,8 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -46,11 +44,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.QueryTables;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,8 +81,7 @@ public class HiveRelCopier extends RelHomogeneousShuttle {
       return new HiveFilter(targetCluster, traitSet, fil.getInput(), fil.getCondition());
     } else if (other instanceof Project) {
       Project pro = (Project) other;
-      return new HiveProject(targetCluster, traitSet, pro.getInput(), pro.getProjects(), pro.getRowType(),
-          pro.getFlags());
+      return new HiveProject(targetCluster, traitSet, pro.getInput(), pro.getProjects(), pro.getRowType());
     } else if (other instanceof Join) {
       Join j = (Join) other;
       return HiveJoin.getJoin(targetCluster, j.getLeft(), j.getRight(), j.getCondition(), j.getJoinType());
@@ -138,7 +132,7 @@ public class HiveRelCopier extends RelHomogeneousShuttle {
     RelOptHiveTable tbl =
         new RelOptHiveTable(null, typeFactory, qname, type, tblMetadata, columns, Collections.emptyList(),
             Collections.emptyList(), new HiveConf(), Hive.getThreadLocal(), new QueryTables(true), new HashMap<>(),
-            new HashMap<>(), new AtomicInteger(), RelOptHiveTable.TableType.CTE, new HivePartitionPruneRuleHelper());
+            new HashMap<>(), new AtomicInteger(), RelOptHiveTable.Type.CTE);
     tbl.setRowCount(rowCount);
     return tbl;
   }

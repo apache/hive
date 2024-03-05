@@ -440,11 +440,6 @@
       <artifactId>datanucleus-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.cloudera.insights</groupId>
-      <artifactId>workload-insights</artifactId>
-      <version>1.0.1.2024.0.18.0-12</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-core</artifactId>
       <exclusions>
