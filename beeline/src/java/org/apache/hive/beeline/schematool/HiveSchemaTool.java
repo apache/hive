@@ -22,6 +22,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
@@ -29,14 +30,21 @@ import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hive.beeline.BeeLine;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.isEmpty;
 
 public class HiveSchemaTool extends MetastoreSchemaTool {
   private static final Logger LOG = LoggerFactory.getLogger(HiveSchemaTool.class.getName());
@@ -90,6 +98,7 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
 
   @Override
   protected void execSql(String sqlScriptFile) throws IOException {
+    replaceLocationForProtoLogTables(sqlScriptFile);
     CommandBuilder builder = new HiveSchemaToolCommandBuilder(conf, url, driver,
         userName, passWord, sqlScriptFile);
 
@@ -110,6 +119,40 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
         throw new IOException("Schema script failed, errorcode " + status);
       }
     }
+  }
+
+  void replaceLocationForProtoLogTables(String sqlScriptFile) throws IOException {
+    TezConfiguration tezConf = new TezConfiguration(true);
+    String hiveProtoBaseDir = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH);
+    String tezProtoBaseDir = tezConf.get(TezConfiguration.TEZ_HISTORY_LOGGING_PROTO_BASE_DIR);
+
+    if (isEmpty(hiveProtoBaseDir)) {
+      throw new IOException("Hive conf variable hive.hook.proto.base-directory is not set for creating protologging tables");
+    }
+    if (isEmpty(tezProtoBaseDir)) {
+      throw new IOException("Tez conf variable tez.history.logging.proto-base-dir is not set for creating protologging tables");
+    }
+
+    Map<String, String> replacements = new HashMap<>();
+    replacements.put("_REPLACE_WITH_QUERY_DATA_LOCATION_", "hdfs:///" + hiveProtoBaseDir);
+    replacements.put("_REPLACE_WITH_APP_DATA_LOCATION_", "hdfs:///" + tezProtoBaseDir + "/app_data");
+    replacements.put("_REPLACE_WITH_DAG_DATA_LOCATION_", "hdfs:///" + tezProtoBaseDir + "/dag_data");
+    replacements.put("_REPLACE_WITH_DAG_META_LOCATION_", "hdfs:///" + tezProtoBaseDir + "/dag_meta");
+
+    BufferedReader reader = new BufferedReader(new FileReader(sqlScriptFile));
+    String line;
+    StringBuilder newLine = new StringBuilder();
+    while ((line = reader.readLine()) != null) {
+      for (String s: replacements.keySet()) {
+        if (line.contains(s)) {
+          line = line.replace(s, replacements.get(s));
+        }
+      }
+      newLine.append(line).append("\n");
+    }
+    BufferedWriter writer = new BufferedWriter(new FileWriter(sqlScriptFile));
+    writer.write(newLine.toString());
+    writer.close();
   }
 
   static class HiveSchemaToolCommandBuilder extends MetastoreSchemaTool.CommandBuilder {
