@@ -55,7 +55,7 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
   }
 
   @Test
-  public void testIncrementalRebuildIsInsertOnlyWhenPlanHasTSOnNonNativeTable() {
+  public void testIncrementalRebuildIsInsertOnlyWhenPlanHasTSOnNonNativeTableWithSnapshots() {
     RelNode ts1 = createNonNativeTS();
     when(tNonNativeStorageHandler.areSnapshotsSupported()).thenReturn(true);
 
@@ -241,7 +241,7 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
   }
 
   @Test
-  public void testIncrementalRebuildIsInsertOnlyWhenPlanHasAggregateAvgCountSumOnTheSameColumn() {
+  public void testIncrementalRebuildIsInsertOnlyWhenPlanHasAggregateAvgCountSumOfTheSameColumn() {
     RelNode ts1 = createTS(t1NativeMock, "t1");
 
     RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
@@ -259,7 +259,7 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
   }
 
   @Test
-  public void testIncrementalRebuildIsNotAvailableWhenPlanHasAggregateAvgCountSumButOnDifferentColumns() {
+  public void testIncrementalRebuildIsNotAvailableWhenPlanHasAggregateAvgCountSumButOfDifferentColumns() {
     RelNode ts1 = createTS(t1NativeMock, "t1");
 
     RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
@@ -278,7 +278,7 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
   }
 
   @Test
-  public void testIncrementalRebuildNotAvailableWhenPlanHasNotSupportedAggregate() {
+  public void testIncrementalRebuildIsNotAvailableWhenPlanHasNotSupportedAggregateCall() {
     RelNode ts1 = createTS(t1NativeMock, "t1");
 
     RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
@@ -296,7 +296,7 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
   }
 
   @Test
-  public void testIncrementalRebuildNotAvailableWhenPlanHasBothSupportedAndNotSupportedAggregate() {
+  public void testIncrementalRebuildIsNotAvailableWhenPlanHasBothSupportedAndNotSupportedAggregateCall() {
     RelNode ts1 = createTS(t1NativeMock, "t1");
 
     RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
@@ -313,7 +313,7 @@ public class TestMaterializedViewIncrementalRewritingRelVisitor extends TestRule
   }
 
   @Test
-  public void testIncrementalRebuildIsInsertOnlyWhenPlanHasBothSupportedAndInsertOnlySupportAggregate() {
+  public void testIncrementalRebuildIsInsertOnlyWhenPlanHasBothSupportedAggregateCallAndOneThatSupportsInsertOnly() {
     RelNode ts1 = createTS(t1NativeMock, "t1");
 
     RexInputRef rexInputRef = REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0);
