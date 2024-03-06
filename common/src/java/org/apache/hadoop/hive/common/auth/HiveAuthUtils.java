@@ -56,13 +56,19 @@ public class HiveAuthUtils {
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout,
     String trustStorePath, String trustStorePassWord) throws TTransportException {
+    return getSSLSocket(host, port, loginTimeout, loginTimeout, trustStorePath, trustStorePassWord);
+  }
+
+  public static TTransport getSSLSocket(String host, int port, int socketTimeout, int connectionTimeout,
+    String trustStorePath, String trustStorePassWord) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
       new TSSLTransportFactory.TSSLTransportParameters();
     params.setTrustStore(trustStorePath, trustStorePassWord);
     params.requireClientAuth(true);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
     // SSLContext created with the given params
-    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
+    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, socketTimeout, params);
+    tSSLSocket.setConnectTimeout(connectionTimeout);
     return getSSLSocketWithHttps(tSSLSocket);
   }
 

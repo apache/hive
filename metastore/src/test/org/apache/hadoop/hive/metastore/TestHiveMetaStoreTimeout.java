@@ -18,14 +18,20 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.util.StringUtils;
+import org.apache.thrift.transport.TTransportException;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,9 +43,10 @@ public class TestHiveMetaStoreTimeout {
   protected static HiveMetaStoreClient client;
   protected static HiveConf hiveConf;
   protected static Warehouse warehouse;
+  protected static int port;
 
   @BeforeClass
-  public static void setUp() throws Exception {
+  public static void startMetaStoreServer() throws Exception {
     HiveMetaStore.TEST_TIMEOUT_ENABLED = true;
     hiveConf = new HiveConf(TestHiveMetaStoreTimeout.class);
     hiveConf.setBoolean(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS.varname, true);
@@ -48,25 +55,25 @@ public class TestHiveMetaStoreTimeout {
     hiveConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 10 * 1000,
         TimeUnit.MILLISECONDS);
     warehouse = new Warehouse(hiveConf);
-    try {
-      client = new HiveMetaStoreClient(hiveConf);
-    } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw e;
-    }
+    port = MetaStoreUtils.startMetaStoreWithRetry(hiveConf);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, false);
   }
 
   @AfterClass
   public static void tearDown() throws Exception {
     HiveMetaStore.TEST_TIMEOUT_ENABLED = false;
-    try {
-      client.close();
-    } catch (Throwable e) {
-      System.err.println("Unable to close metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw e;
-    }
+  }
+
+  @Before
+  public void setup() throws MetaException {
+    client = new HiveMetaStoreClient(hiveConf);
+  }
+
+  @After
+  public void cleanup() {
+    client.close();
+    client = null;
   }
 
   @Test
@@ -99,9 +106,8 @@ public class TestHiveMetaStoreTimeout {
     try {
       client.createDatabase(db);
       Assert.fail("should throw timeout exception.");
-    } catch (MetaException e) {
-      Assert.assertTrue("unexpected MetaException", e.getMessage().contains("Timeout when " +
-          "executing method: create_database"));
+    } catch (TTransportException e) {
+      Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
 
     // restore
@@ -139,5 +145,34 @@ public class TestHiveMetaStoreTimeout {
     // restore
     client.dropDatabase(dbName, true, true);
     client.setMetaConf(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT.varname, "10s");
+  }
+
+  @Test
+  public void testConnectionTimeout() throws Exception {
+    final HiveConf newConf = new HiveConf(hiveConf);
+    newConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_CONNECTION_TIMEOUT, 1000,
+            TimeUnit.MILLISECONDS);
+    // fake host to mock connection time out
+    newConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://1.1.1.1:" + port);
+    newConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 1);
+
+    Future<Void> future = Executors.newSingleThreadExecutor().submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+            HiveMetaStoreClient c = null;
+            try {
+                c = new HiveMetaStoreClient(newConf);
+                Assert.fail("should throw connection timeout exception.");
+            } catch (MetaException e) {
+                Assert.assertTrue("unexpected Exception", e.getMessage().contains("connect timed out"));
+            } finally {
+                if (c != null) {
+                    c.close();
+                }
+            }
+            return null;
+        }
+    });
+    future.get(5, TimeUnit.SECONDS);
   }
 }

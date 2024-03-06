@@ -400,6 +400,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) conf.getTimeVar(
         ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+    int connectionTimeout = (int) conf.getTimeVar(
+        ConfVars.METASTORE_CLIENT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
@@ -420,7 +422,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               String tokenSig = conf.getVar(ConfVars.METASTORE_TOKEN_SIGNATURE);
               // tokenSig could be null
               tokenStrForm = Utils.getTokenStrForm(tokenSig);
-              transport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(), clientSocketTimeout);
+              transport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(), clientSocketTimeout, connectionTimeout);
 
               if(tokenStrForm != null) {
                 // authenticate using delegation tokens via the "DIGEST" mechanism
@@ -451,7 +453,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
                     HiveConf.ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD.varname);
 
                 // Create an SSL socket and connect
-                transport = HiveAuthUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout, trustStorePath, trustStorePassword );
+                transport = HiveAuthUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout, connectionTimeout, trustStorePath, trustStorePassword );
                 LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
               } catch(IOException e) {
                 throw new IllegalArgumentException(e);
@@ -461,7 +463,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               }
             } else {
               try {
-                transport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(), clientSocketTimeout);
+                transport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(), clientSocketTimeout, connectionTimeout);
               } catch (TTransportException e) {
                 tte = e;
                 throw new MetaException(e.toString());

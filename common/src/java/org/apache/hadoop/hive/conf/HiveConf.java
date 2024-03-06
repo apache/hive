@@ -665,6 +665,9 @@ public class HiveConf extends Configuration {
         "MetaStore Client socket lifetime in seconds. After this time is exceeded, client\n" +
         "reconnects on the next MetaStore operation. A value of 0s means the connection\n" +
         "has an infinite lifetime."),
+    METASTORE_CLIENT_CONNECTION_TIMEOUT("hive.metastore.client.connection.timeout", "600s",
+            new TimeValidator(TimeUnit.SECONDS),
+            "MetaStore Client connection timeout in seconds"),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", "mine",
         "password to use against metastore database"),
     METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", "",
