@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.tools.metatool;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -117,7 +116,7 @@ public class TestHiveMetaTool {
                       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
       hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
       HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.SPLIT_UPDATE, true);
-      hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
       hiveConf.setBoolean("mapred.input.dir.recursive", true);
       TestTxnDbUtil.setConfValues(hiveConf);
       txnHandler = TxnUtils.getTxnStore(hiveConf);

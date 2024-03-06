@@ -2801,7 +2801,7 @@ public class Hive {
 
       // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
       // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
-      if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
         LOG.debug(
             "Clear partition column statistics by setting basic stats to false for " + newTPart.getCompleteName());
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
@@ -2809,7 +2809,7 @@ public class Hive {
 
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
-        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
           StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(),
               MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
         }
@@ -3020,7 +3020,7 @@ public class Hive {
                                               List<Partition> partitions,
                                               AcidUtils.TableSnapshot tableSnapshot)
           throws TException {
-    if (partitions.isEmpty() || conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)) {
+    if (partitions.isEmpty() || conf.getBoolVar(ConfVars.HIVE_STATS_AUTOGATHER)) {
       return;
     }
     EnvironmentContext ec = new EnvironmentContext();
@@ -3520,7 +3520,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
     // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
-    if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
       LOG.debug("Clear table column statistics and set basic statistics to false for " + tbl.getCompleteName());
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
     }

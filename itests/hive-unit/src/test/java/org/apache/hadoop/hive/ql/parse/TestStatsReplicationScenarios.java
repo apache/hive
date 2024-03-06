@@ -112,7 +112,7 @@ public class TestStatsReplicationScenarios {
     // Run with autogather false on primary if requested
     Map<String, String> sourceOverrides = new HashMap<>();
     hasAutogather = autogather;
-    additionalOverrides.put(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname,
+    additionalOverrides.put(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname,
             autogather ? "true" : "false");
     sourceOverrides.putAll(additionalOverrides);
     sourceOverrides.putAll(primaryOverrides);
