@@ -187,7 +187,7 @@ public class TestRuleBase {
 
   protected RelNode createNonNativeTSSupportingSnapshots() {
     HiveTableScan ts = createTS(tNNSnapshotsTableMock, "t_supports_snapshots");
-    when(tNNSnapshotsStorageHandler.areSnapshotsSupported()).thenReturn(true);
+    lenient().doReturn(true).when(tNNSnapshotsStorageHandler).areSnapshotsSupported();
     return ts;
   }
 

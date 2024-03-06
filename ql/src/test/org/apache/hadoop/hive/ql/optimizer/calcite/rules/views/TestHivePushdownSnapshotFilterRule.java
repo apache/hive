@@ -43,7 +43,7 @@ public class TestHivePushdownSnapshotFilterRule extends TestRuleBase {
 
   @Test
   public void testFilterIsRemovedAndVersionIntervalFromIsSetWhenFilterHasSnapshotIdPredicate() {
-    RelNode tableScan = createNonNativeTS();
+    RelNode tableScan = createNonNativeTSSupportingSnapshots();
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
     RelNode root = relBuilder.push(tableScan)
