@@ -56,7 +56,7 @@ import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptListener;
+import org.apache.calcite.plan.RelOptCostImpl;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
@@ -165,7 +165,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionJoinSuggester;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggester;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
@@ -2117,7 +2117,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      CommonTableExpressionSuggester suggester = new CommonTableExpressionIdentitySuggester();
+      CommonTableExpressionSuggester suggester = new CommonTableExpressionJoinSuggester();
       List<RelOptMaterialization> ctes = suggester.suggest(basePlan, conf);
       if(ctes.isEmpty()) {
         return basePlan;
@@ -2129,7 +2129,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       LOG.info("MV rewrite using CTEs: {}", RelOptUtil.toString(ctePlan));
       final RelNode spoolPlan =
           executeProgram(ctePlan, HepProgram.builder().addRuleInstance(new TableScanToSpoolRule()).build(), mdProvider,
-              executorProvider, ctes, true, null);
+              executorProvider, ctes, true);
       LOG.info("Spool introduction: {}", RelOptUtil.toString(spoolPlan));
       Map<String, Long> tableCounts =
           RelOptUtil.findAllTables(spoolPlan).stream().map(t -> t.getQualifiedName().toString())
@@ -2465,20 +2465,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
     protected RelNode executeProgram(RelNode basePlan, HepProgram program,
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
         List<? extends RelOptMaterialization> materializations) {
-      return executeProgram(basePlan, program, mdProvider, executorProvider,
-          materializations, false, null);
+      return executeProgram(basePlan, program, mdProvider, executorProvider, materializations, false);
     }
 
-    private RelNode executeProgram(RelNode basePlan, HepProgram program,
-        RelMetadataProvider mdProvider, RexExecutor executorProvider,
-        List<? extends RelOptMaterialization> materializations, boolean noDag,
-        RelOptListener listener) {
+    private RelNode executeProgram(RelNode basePlan, HepProgram program, RelMetadataProvider mdProvider,
+        RexExecutor executorProvider, List<? extends RelOptMaterialization> materializations, boolean noDag) {
 
       final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
 
       // Create planner and copy context
-      HepPlanner planner = new HepPlanner(program,
-          basePlan.getCluster().getPlanner().getContext());
+      HepPlanner planner =
+          new HepPlanner(program, basePlan.getCluster().getPlanner().getContext(), noDag, null, RelOptCostImpl.FACTORY);
       planner.addListener(new RuleEventLogger());
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(mdProvider);
