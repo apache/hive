@@ -49,6 +49,7 @@ import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -91,6 +92,10 @@ public class HiveRelFactories {
   public static final SetOpFactory HIVE_SET_OP_FACTORY =
           new HiveSetOpFactoryImpl();
 
+  private static final RelFactories.SpoolFactory HIVE_SPOOL_FACTORY =
+      (input, readType, writeType, table) -> new HiveTableSpool(input.getCluster(), input.getTraitSet(), input,
+          readType, writeType, table);
+
   public static final RelBuilderFactory HIVE_BUILDER =
       HiveRelBuilder.proto(
           Contexts.of(
@@ -102,7 +107,8 @@ public class HiveRelFactories {
               HIVE_SORT_EXCHANGE_FACTORY,
               HIVE_VALUES_FACTORY,
               HIVE_AGGREGATE_FACTORY,
-              HIVE_SET_OP_FACTORY));
+              HIVE_SET_OP_FACTORY,
+              HIVE_SPOOL_FACTORY));
 
   private HiveRelFactories() {
   }
