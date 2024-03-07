@@ -601,7 +601,7 @@ public class ASTConverter {
       TableSpool spool = (TableSpool) r;
       ASTConverter cteConverter =
           new ASTConverter(spool.getInput(), this.derivedTableCount, planMapper, Collections.emptyList());
-      String tableName = spool.getTable().getQualifiedName().get(0);
+      String tableName = Iterables.getLast(spool.getTable().getQualifiedName());
       ASTNode cte = ASTBuilder.createAST(HiveParser.TOK_CTE, "TOK_CTE");
       cte.addChild(ASTBuilder.subQuery(cteConverter.convert(), tableName));
       ctes.add(cte);

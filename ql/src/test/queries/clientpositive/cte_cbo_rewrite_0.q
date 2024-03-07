@@ -74,6 +74,7 @@ FROM (SELECT e.name, e.salary
 WHERE sup.salary = eng.salary;
 
 set hive.optimize.cte.materialize.threshold=0;
+set hive.optimize.cte.materialize.full.aggregate.only=false;
 
 EXPLAIN SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
