@@ -92,7 +92,7 @@ OPTS+=" -Pitests,qsplits,dist,errorProne,iceberg"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
-OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
+OPTS=" $M_OPTS -Dmaven.test.failure.ignore -Dmaven.repo.remote=https://repo.maven.apache.org/maven2,https://repository.apache.org/content/repositories/releases/,https://build.shibboleth.net/nexus/content/groups/public,https://repository.apache.org/content/groups/snapshots/"
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
