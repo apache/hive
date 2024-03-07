@@ -262,7 +262,7 @@ public class TezTask extends Task<TezWork> {
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
-          this.setException(new HiveException(monitor.getDiagnostics()));
+          this.setException(new TezRuntimeException(dagId, monitor.getDiagnostics()));
         }
 
         try {

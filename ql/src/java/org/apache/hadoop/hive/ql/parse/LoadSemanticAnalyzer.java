@@ -426,7 +426,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     // However, some other stats, like number of files, do not require a complete scan
     // Update the stats which do not require a complete scan.
     Task<?> statTask = null;
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
       BasicStatsWork basicStatsWork = new BasicStatsWork(loadTableWork);
       basicStatsWork.setNoStatsAggregator(true);
       basicStatsWork.setClearAggregatorStats(true);

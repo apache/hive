@@ -30,13 +30,10 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
-import static org.apache.hadoop.hive.metastore.utils.FileUtils.unescapePathName;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1405,7 +1402,7 @@ class MetaStoreDirectSql {
     @Override
     public void visit(LeafNode node) throws MetaException {
       int partColCount = partitionKeys.size();
-      int partColIndex = node.getPartColIndexForFilter(partitionKeys, filterBuffer);
+      int partColIndex = LeafNode.getPartColIndexForFilter(node.keyName, partitionKeys, filterBuffer);
       if (filterBuffer.hasError()) {
         return;
       }
@@ -1424,30 +1421,33 @@ class MetaStoreDirectSql {
         return;
       }
 
+      String nodeValue0 = "?";
       // if Filter.g does date parsing for quoted strings, we'd need to verify there's no
       // type mismatch when string col is filtered by a string that looks like date.
-      if (colType == FilterType.Date && valType == FilterType.String) {
-        // Filter.g cannot parse a quoted date; try to parse date here too.
+      if (colType == FilterType.Date) {
         try {
-          nodeValue = MetaStoreUtils.convertStringToDate((String)nodeValue);
+          nodeValue = MetaStoreUtils.normalizeDate((String) nodeValue);
           valType = FilterType.Date;
-        } catch (Exception pe) { // do nothing, handled below - types will mismatch
+          if (dbType.isPOSTGRES() || dbType.isORACLE()) {
+            nodeValue0 = "date '" + nodeValue + "'";
+            nodeValue = null;
+          }
+        } catch (Exception e) {  // do nothing, handled below - types will mismatch
         }
-      }
-
-      if (colType == FilterType.Timestamp && valType == FilterType.String) {
-        // timestamp value may be escaped in client side, so we need unescape it here.
-        nodeValue = MetaStoreUtils.convertStringToTimestamp(unescapePathName((String) nodeValue));
-        valType = FilterType.Timestamp;
-      }
-
-      // We format it so we are sure we are getting the right value
-      if (valType == FilterType.Date) {
-        // Format
-        nodeValue = MetaStoreUtils.convertDateToString((Date)nodeValue);
-      } else if (valType == FilterType.Timestamp) {
-        //format
-        nodeValue = MetaStoreUtils.convertTimestampToString((Timestamp) nodeValue);
+      } else if (colType == FilterType.Timestamp) {
+        if (dbType.isDERBY() || dbType.isMYSQL()) {
+          filterBuffer.setError("Filter pushdown on timestamp not supported for " + dbType.dbType);
+          return;
+        }
+        try {
+          MetaStoreUtils.convertStringToTimestamp((String) nodeValue);
+          valType = FilterType.Timestamp;
+          if (dbType.isPOSTGRES() || dbType.isORACLE()) {
+            nodeValue0 = "timestamp '" + nodeValue + "'";
+            nodeValue = null;
+          }
+        } catch (Exception e) { //nodeValue could be '__HIVE_DEFAULT_PARTITION__'
+        }
       }
 
       boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
@@ -1477,8 +1477,7 @@ class MetaStoreDirectSql {
       // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
 
-      String nodeValue0 = "?";
-      if (node.isReverseOrder) {
+      if (node.isReverseOrder && nodeValue != null) {
         params.add(nodeValue);
       }
       String tableColumn = tableValue;
@@ -1508,14 +1507,9 @@ class MetaStoreDirectSql {
           params.add(catName.toLowerCase());
         }
         tableValue += " then " + tableValue0 + " else null end)";
-
-        if (valType == FilterType.Date) {
-        	tableValue = dbType.toDate(tableValue);
-        } else if (valType == FilterType.Timestamp) {
-          tableValue = dbType.toTimestamp(tableValue);
-        }
       }
-      if (!node.isReverseOrder) {
+
+      if (!node.isReverseOrder && nodeValue != null) {
         params.add(nodeValue);
       }
 
@@ -1530,7 +1524,7 @@ class MetaStoreDirectSql {
       boolean isOpEquals = Operator.isEqualOperator(node.operator);
       if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
         Map<String, String> partKeyToVal = new HashMap<>();
-        partKeyToVal.put(partCol.getName(), nodeValue.toString());
+        partKeyToVal.put(partCol.getName(), node.value.toString());
         String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
         if (colType == FilterType.Date) {
           // Some engines like Pig will record both date and time values, in which case we need

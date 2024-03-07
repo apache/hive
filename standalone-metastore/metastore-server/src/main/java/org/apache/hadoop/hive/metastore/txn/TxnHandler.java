@@ -99,6 +99,7 @@ import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryCallProperties;
 import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryException;
 import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryHandler;
+import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.util.StringUtils;

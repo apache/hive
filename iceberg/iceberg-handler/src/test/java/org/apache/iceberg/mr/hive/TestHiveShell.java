@@ -202,15 +202,14 @@ public class TestHiveShell {
 
     // Speed up test execution
     hiveConf.setLongVar(HiveConf.ConfVars.HIVE_COUNTERS_PULL_INTERVAL, 1L);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     // Resource configuration
     hiveConf.setInt("mapreduce.map.memory.mb", 1024);
 
     // Tez configuration
     hiveConf.setBoolean("tez.local.mode", true);
-    // TODO: enable below option once HIVE-26445 is investigated
-    // hiveConf.setBoolean("tez.local.mode.without.network", true);
+    hiveConf.setBoolean("tez.local.mode.without.network", true);
 
     // Disable vectorization for HiveIcebergInputFormat
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);

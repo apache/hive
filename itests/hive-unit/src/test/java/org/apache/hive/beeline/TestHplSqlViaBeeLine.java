@@ -107,7 +107,7 @@ public class TestHplSqlViaBeeLine {
       "p1();\n" +
       "SELECT * FROM result;\n" +
       "/\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello world");
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 1 got 0.", OutStream.ERR);
   }
 
   @Test
@@ -886,6 +886,104 @@ public class TestHplSqlViaBeeLine {
             "p1();\n" +
             "SELECT * FROM result;\n";
     testScriptFile(SCRIPT_TEXT, args(), "2023 = Hive");
+  }
+
+  @Test
+  public void testHplSqlProcedureCallingWithAllDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "default_val = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureCallingWithSomeDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1('Pass_Value');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Pass_Value = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1(111);\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 2 got 1.", OutStream.ERR);
+  }
+
+  @Test
+  public void testHplSqlProcedureWithSomeDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING, num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1('Passed_Val');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Passed_Val = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithDefaultParamCallingWithNamedParameterBinding() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1(num => 111);\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "default_val = 111");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithAllDefaultParamsCallingWithNamedParameterBinding() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s1 STRING default 'Default S1', s2 string default 'Default S2')\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1 || '=' || s2);\n" +
+            "END;\n" +
+            "p1(s2 => 'PassedValue S2');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Default S1=PassedValue S2");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithoutParameters() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES('No param');\n" +
+            "END;\n" +
+            "p1('none');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 0 got 1.", OutStream.ERR);
   }
 
   private static List<String> args() {

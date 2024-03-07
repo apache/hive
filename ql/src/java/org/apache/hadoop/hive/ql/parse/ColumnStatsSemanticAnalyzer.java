@@ -123,7 +123,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       partValsSpecified += partSpec.get(partKey) == null ? 0 : 1;
     }
     try {
-      // for static partition, it may not exist when HIVESTATSCOLAUTOGATHER is
+      // for static partition, it may not exist when HIVE_STATS_COL_AUTOGATHER is
       // set to true
       if (context == null) {
         if ((partValsSpecified == tbl.getPartitionKeys().size())
