@@ -20,12 +20,13 @@ import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.prepare.RelOptTableImpl;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableScan;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories.HIVE_SPOOL_FACTORY;
 
 public class TableScanToSpoolRule extends RelOptRule {
   /**
@@ -45,10 +46,8 @@ public class TableScanToSpoolRule extends RelOptRule {
       if (tableName.equals(cte.qualifiedTableName.toString()) && spools.add(tableName)) {
         RelOptTableImpl cteTable =
             RelOptTableImpl.create(null, scan.getRowType(), scan.getTable().getQualifiedName(), null);
-        RelFactories.SpoolFactory factory =
-            RelFactories.Struct.fromContext(call.getPlanner().getContext()).spoolFactory;
         // The Spool types are not used at the moment so choice between LAZY/EAGER does not affect anything
-        call.transformTo(factory.createTableSpool(cte.queryRel, Spool.Type.LAZY, Spool.Type.LAZY, cteTable));
+        call.transformTo(HIVE_SPOOL_FACTORY.createTableSpool(cte.queryRel, Spool.Type.LAZY, Spool.Type.LAZY, cteTable));
       }
     }
   }

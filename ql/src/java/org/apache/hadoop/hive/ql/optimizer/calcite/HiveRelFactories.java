@@ -92,7 +92,7 @@ public class HiveRelFactories {
   public static final SetOpFactory HIVE_SET_OP_FACTORY =
           new HiveSetOpFactoryImpl();
 
-  private static final RelFactories.SpoolFactory HIVE_SPOOL_FACTORY =
+  public static final RelFactories.SpoolFactory HIVE_SPOOL_FACTORY =
       (input, readType, writeType, table) -> new HiveTableSpool(input.getCluster(), input.getTraitSet(), input,
           readType, writeType, table);
 
