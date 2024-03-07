@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRuntimeRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSelectivity;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdTableReferences;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
 
 import com.google.common.collect.ImmutableList;
@@ -67,6 +68,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdDistribution.SOURCE,
                   HiveRelMdCollation.SOURCE,
                   HiveRelMdPredicates.SOURCE,
+                  HiveRelMdTableReferences.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
   private final RelMetadataProvider metadataProvider;
@@ -102,6 +104,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdDistribution.SOURCE,
                   HiveRelMdCollation.SOURCE,
                   HiveRelMdPredicates.SOURCE,
+                  HiveRelMdTableReferences.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
       if (nodeClasses != null) {
