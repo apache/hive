@@ -616,6 +616,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("array_union", GenericUDFArrayUnion.class);
     system.registerGenericUDF("array_remove", GenericUDFArrayRemove.class);
     system.registerGenericUDF("array_position", GenericUDFArrayPosition.class);
+    system.registerGenericUDF("array_append", GenericUDFArrayAppend.class);
     system.registerGenericUDF("deserialize", GenericUDFDeserialize.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
     system.registerGenericUDF("map_keys", GenericUDFMapKeys.class);
