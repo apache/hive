@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
@@ -105,7 +105,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   private void testRebalanceCompactionWithParallelDeleteAsSecond(boolean optimisticLock) throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, optimisticLock);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
@@ -204,7 +204,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testRebalanceCompactionOfNotPartitionedImplicitlyBucketedTableWithOrder() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "400");
@@ -260,7 +260,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testRebalanceCompactionOfNotPartitionedImplicitlyBucketedTable() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "400");
@@ -314,7 +314,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testRebalanceCompactionOfPartitionedImplicitlyBucketedTable() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "1");
@@ -423,7 +423,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testRebalanceCompactionOfNotPartitionedExplicitlyBucketedTable() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     final String tableName = "rebalance_test";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
@@ -445,7 +445,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testRebalanceCompactionNotPartitionedExplicitBucketNumbers() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "400");
@@ -885,10 +885,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
         testDataProvider.getBucketData(tblName, "536870912"));
 
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     // Run major compaction and cleaner
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(1);
@@ -2215,8 +2215,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   @Test
   public void testCompactionWithSchemaEvolutionNoBucketsMultipleReducers() throws Exception {
     HiveConf hiveConf = new HiveConf(conf);
-    hiveConf.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
-    hiveConf.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
+    hiveConf.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 2);
+    hiveConf.setIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS, 2);
     driver = DriverFactory.newDriver(hiveConf);
     String dbName = "default";
     String tblName = "testCompactionWithSchemaEvolutionNoBucketsMultipleReducers";
@@ -2915,10 +2915,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
     CompactionResponse resp = txnHandler.compact(rqst);
 
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     // Run major compaction and cleaner
     runWorker(conf);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
 
@@ -2981,10 +2981,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Get all data before compaction is run
     List<String> expectedData = testDP.getAllData(tblName);
 
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     // Run major compaction and cleaner
     runWorker(conf);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
 
@@ -3098,7 +3098,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testStatsAfterCompactionPartTbl(boolean isQueryBased, boolean isAutoGatherStats,
                                               CompactionType compactionType) throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, isAutoGatherStats);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, isAutoGatherStats);
     String dbName = "default";
     String tblName = "minor_compaction_test";
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);

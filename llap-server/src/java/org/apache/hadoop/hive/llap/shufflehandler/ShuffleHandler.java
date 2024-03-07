@@ -299,7 +299,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
     final String BOSS_THREAD_NAME_PREFIX = "ShuffleHandler Netty Boss #";
     AtomicInteger bossThreadCounter = new AtomicInteger(0);
-    bossGroup = new NioEventLoopGroup(maxShuffleThreads, new ThreadFactory() {
+    bossGroup = new NioEventLoopGroup(1, new ThreadFactory() {
       @Override
       public Thread newThread(Runnable r) {
         return new Thread(r, BOSS_THREAD_NAME_PREFIX + bossThreadCounter.incrementAndGet());

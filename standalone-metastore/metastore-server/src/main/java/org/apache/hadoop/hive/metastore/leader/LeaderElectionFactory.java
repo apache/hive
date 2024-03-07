@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.leader;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
@@ -26,7 +28,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
  */
 public class LeaderElectionFactory {
 
-  public static LeaderElection create(Configuration conf) {
+  public static LeaderElection create(Configuration conf) throws IOException  {
     String method =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
     switch (method.toLowerCase()) {
@@ -35,7 +37,7 @@ public class LeaderElectionFactory {
       case "lock":
         return new LeaseLeaderElection();
       default:
-        throw new UnsupportedOperationException("Do not support " + method + " now");
+        throw new UnsupportedOperationException(method + " is not supported for electing the leader");
     }
   }
 

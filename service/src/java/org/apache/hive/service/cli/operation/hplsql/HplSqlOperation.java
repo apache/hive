@@ -199,7 +199,7 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
         assert (!parentHive.allowClose());
         Hive.set(parentHive);
         SessionState.setCurrentSessionState(parentSessionState);
-        PerfLogger.setPerfLogger(SessionState.getPerfLogger());
+        SessionState.getPerfLogger();
         LogUtils.registerLoggingContext(queryState.getConf());
         ShimLoader.getHadoopShims()
             .setHadoopQueryContext(String.format(USER_ID, queryState.getQueryId(), parentSessionState.getUserName()));

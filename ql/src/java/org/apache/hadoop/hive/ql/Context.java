@@ -26,14 +26,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Preconditions;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
@@ -63,6 +64,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
@@ -140,6 +142,7 @@ public class Context {
   private AtomicInteger sequencer = new AtomicInteger();
 
   private final Map<String, Table> cteTables = new HashMap<String, Table>();
+  private final Map<TableName, Statistics> cteTableStats = new HashMap<>();
 
   // Keep track of the mapping from load table desc to the output and the lock
   private final Map<LoadTableDesc, WriteEntity> loadTableOutputMap =
@@ -248,6 +251,21 @@ public class Context {
     @Override
     public String toString() {
       return prefix;
+    }
+  }
+  public enum RewritePolicy {
+
+    DEFAULT,
+    ALL_PARTITIONS;
+
+    public static RewritePolicy fromString(String rewritePolicy) {
+      Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");
+
+      try {
+        return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException var2) {
+        throw new IllegalArgumentException(String.format("Invalid rewrite policy: %s", rewritePolicy), var2);
+      }
     }
   }
   private String getMatchedText(ASTNode n) {
@@ -387,8 +405,8 @@ public class Context {
     // all external file systems
     nonLocalScratchPath = new Path(SessionState.getHDFSSessionPath(conf), executionId);
     localScratchDir = new Path(SessionState.getLocalSessionPath(conf), executionId).toUri().getPath();
-    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
-    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR);
+    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION);
+    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGING_DIR);
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
@@ -1210,8 +1228,14 @@ public class Context {
     return cteTables.get(cteName);
   }
 
-  public void addMaterializedTable(String cteName, Table table) {
+  public void addMaterializedTable(String cteName, Table table, Statistics statistics) {
     cteTables.put(cteName, table);
+    cteTables.put(table.getFullyQualifiedName(), table);
+    cteTableStats.put(table.getFullTableName(), statistics);
+  }
+
+  public Statistics getMaterializedTableStats(TableName tableName) {
+    return cteTableStats.get(tableName);
   }
 
   public AtomicInteger getSequencer() {

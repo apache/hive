@@ -385,7 +385,7 @@ class DriverTxnHandler {
   private void setValidWriteIds(ValidTxnWriteIdList txnWriteIds) {
     driverContext.getConf().set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
     if (driverContext.getPlan().getFetchTask() != null) {
-      // This is needed for {@link HiveConf.ConfVars.HIVEFETCHTASKCONVERSION} optimization which initializes JobConf
+      // This is needed for {@link HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION} optimization which initializes JobConf
       // in FetchOperator before recordValidTxns() but this has to be done after locks are acquired to avoid race
       // conditions in ACID. This case is supported only for single source query.
       Operator<?> source = driverContext.getPlan().getFetchTask().getWork().getSource();
@@ -602,7 +602,7 @@ class DriverTxnHandler {
   private void commitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {
     if (commit) {
       if (driverContext.getConf().getBoolVar(ConfVars.HIVE_IN_TEST) &&
-          driverContext.getConf().getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
+          driverContext.getConf().getBoolVar(ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN)) {
         txnManager.rollbackTxn();
       } else {
         txnManager.commitTxn(); //both commit & rollback clear ALL locks for this transaction

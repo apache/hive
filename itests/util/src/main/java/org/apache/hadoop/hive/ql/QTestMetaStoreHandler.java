@@ -60,7 +60,7 @@ public class QTestMetaStoreHandler {
   }
 
   public QTestMetaStoreHandler setMetaStoreConfiguration(HiveConf conf) {
-    conf.setVar(ConfVars.METASTOREDBTYPE, getDbTypeConfString());
+    conf.setVar(ConfVars.METASTORE_DB_TYPE, getDbTypeConfString());
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, rule.getJdbcUrl());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, rule.getJdbcDriver());

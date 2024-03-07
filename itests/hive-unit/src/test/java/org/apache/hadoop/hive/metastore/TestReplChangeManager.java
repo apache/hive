@@ -97,11 +97,11 @@ public class TestReplChangeManager {
     configuration.set("dfs.client.use.datanode.hostname", "true");
     permDdfs = new MiniDFSCluster.Builder(configuration).numDataNodes(2).format(true).build();
     permhiveConf = new HiveConf(TestReplChangeManager.class);
-    permhiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-      "hdfs://" + permDdfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
-    permhiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    permhiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
+      "hdfs://" + permDdfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    permhiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     permCmroot = "hdfs://" + permDdfs.getNameNode().getHostAndPort() + "/cmroot";
-    permhiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, permCmroot);
+    permhiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, permCmroot);
     permhiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     permWarehouse = new Warehouse(permhiveConf);
   }
@@ -109,11 +109,11 @@ public class TestReplChangeManager {
   private static void internalSetUp() throws Exception {
     m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(2).format(true).build();
     hiveConf = new HiveConf(TestReplChangeManager.class);
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-      "hdfs://" + m_dfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
-    hiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
+      "hdfs://" + m_dfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    hiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     cmroot = "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/cmroot";
-    hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
+    hiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmroot);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     warehouse = new Warehouse(hiveConf);
     fs = new Path(cmroot).getFileSystem(hiveConf);

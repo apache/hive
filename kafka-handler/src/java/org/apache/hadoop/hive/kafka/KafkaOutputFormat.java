@@ -67,7 +67,7 @@ public class KafkaOutputFormat implements HiveOutputFormat<NullWritable, KafkaWr
         LOG.error("Can not construct file system instance", e);
         throw new RuntimeException(e);
       }
-      final String queryId = Preconditions.checkNotNull(jc.get(HiveConf.ConfVars.HIVEQUERYID.varname, null));
+      final String queryId = Preconditions.checkNotNull(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname, null));
       recordWriter =
           new TransactionalKafkaWriter(topic, producerProperties,
               new Path(Preconditions.checkNotNull(finalOutPath), queryId),

@@ -81,7 +81,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   public void testStatsWithInsert() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -107,7 +107,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   public void testStatsWithInsertOverwrite() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -125,7 +125,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").build();
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
         fileFormat, ImmutableList.of());
 
@@ -150,7 +150,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     shell.executeStatement(String.format(
         "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
@@ -169,7 +169,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     shell.executeStatement(String.format(
         "CREATE TABLE target PARTITIONED BY (dept, name) STORED BY ICEBERG %s AS SELECT * FROM source s",
         testTables.propertiesForCreateTableSQL(
@@ -189,7 +189,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -215,7 +215,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   public void testColumnStatsAccurate() throws Exception {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
             PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -236,7 +236,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   public void testMergeStatsWithInsert() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -267,7 +267,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   public void testIcebergColStatsPath() throws IOException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     Table table = testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 

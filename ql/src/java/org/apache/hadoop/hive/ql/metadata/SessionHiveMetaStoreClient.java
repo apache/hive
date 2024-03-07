@@ -823,7 +823,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if (pathStr != null) {
       try {
         tablePath = new Path(table.getSd().getLocation());
-        if (!getWh().isWritable(tablePath.getParent())) {
+        if (deleteData && !isExternalTable(table) && !getWh().isWritable(tablePath.getParent())) {
           throw new MetaException("Table metadata not deleted since " + tablePath.getParent() +
               " is not writable by " + SecurityUtils.getUser());
         }
@@ -1446,7 +1446,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     List<Partition> result = new ArrayList<>();
     for (Pair<Integer, byte[]> pair : partExprs) {
       byte[] expr = pair.getRight();
-      String filter = generateJDOFilter(table, expr, conf.get(HiveConf.ConfVars.DEFAULTPARTITIONNAME.varname));
+      String filter = generateJDOFilter(table, expr, conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
       List<Partition> partitions = tt.listPartitionsByFilter(filter);
       for (Partition p : partitions) {
         Partition droppedPartition = tt.dropPartition(p.getValues());
@@ -1705,10 +1705,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     assert table != null;
     ExpressionTree.FilterBuilder filterBuilder = new ExpressionTree.FilterBuilder(true);
     Map<String, Object> params = new HashMap<>();
-    exprTree.generateJDOFilterFragment(conf, params, filterBuilder, table.getPartitionKeys());
+    exprTree.accept(new ExpressionTree.JDOFilterGenerator(conf,
+        table.getPartitionKeys(), filterBuilder, params));
     StringBuilder stringBuilder = new StringBuilder(filterBuilder.getFilter());
-    // replace leading &&
-    stringBuilder.replace(0, 4, "");
     params.entrySet().stream().forEach(e -> {
       int index = stringBuilder.indexOf(e.getKey());
       stringBuilder.replace(index, index + e.getKey().length(), "\"" + e.getValue().toString() + "\"");

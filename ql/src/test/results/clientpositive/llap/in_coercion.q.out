@@ -31,10 +31,12 @@ POSTHOOK: Input: default@src_table
 NULL
 PREHOOK: query: select count(*) from src_table where key in (355.8)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src_table
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from src_table where key in (355.8)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src_table
 #### A masked pattern was here ####
 0

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,6 +48,7 @@ public class TestLlapZookeeperRegistryImpl {
 
   private CuratorFramework curatorFramework;
   private TestingServer server;
+  private final static String NAMESPACE_PREFIX = "llap-";
 
   @Before
   public void setUp() throws Exception {
@@ -122,6 +124,16 @@ public class TestLlapZookeeperRegistryImpl {
             attributes.get(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE));
     assertEquals(expectedExecutorCount,
             attributes.get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS));
+  }
+
+  @Test
+  public void testPersistentNodePath() {
+    String llapRootNameSpace = "/" + LlapZookeeperRegistryImpl.getRootNamespace(hiveConf,
+        HiveConf.getVar(hiveConf, HiveConf.ConfVars.LLAP_ZK_REGISTRY_NAMESPACE), NAMESPACE_PREFIX);
+    String persistentNodeName = "/pnode0";
+
+    Assert.assertEquals(llapRootNameSpace + "/user-" + System.getProperty("user.name") + persistentNodeName,
+        registry.getPersistentNodePath());
   }
 
   static <T> void trySetMock(Object o, String field, T value) {

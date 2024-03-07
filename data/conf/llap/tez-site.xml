@@ -10,10 +10,6 @@
     <value>128</value>
   </property>
   <property>
-    <name>tez.task.resource.memory.mb</name>
-    <value>128</value>
-  </property>
-  <property>
     <name>tez.runtime.io.sort.mb</name>
     <value>24</value>
   </property>

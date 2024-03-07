@@ -14,6 +14,11 @@ insert into source values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 
 explain
 merge into target_ice as t using source src ON t.a = src.a
 when matched and t.a > 100 THEN DELETE
+when not matched then insert values (src.a, src.b, src.c);
+
+explain
+merge into target_ice as t using source src ON t.a = src.a
+when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c);
 

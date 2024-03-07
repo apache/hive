@@ -52,6 +52,7 @@ alterStatement
     | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
+    | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
     ;
 
 alterTableStatementSuffix
@@ -99,6 +100,19 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
   ;
+    
+optimizeTableStatementSuffix
+@init { gParent.pushMsg("optimize table statement suffix", state); }
+@after { gParent.popMsg(state); }
+    : optimizeTblRewriteDataSuffix
+    ;
+    
+optimizeTblRewriteDataSuffix
+@init { gParent.msgs.push("compaction request"); }
+@after { gParent.msgs.pop(); }
+    : KW_REWRITE KW_DATA
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING)
+    ;
 
 alterStatementPartitionKeyType
 @init {gParent.msgs.push("alter partition key type"); }

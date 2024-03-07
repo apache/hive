@@ -1272,7 +1272,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
-        partNames == null ? new ArrayList<String>() : partNames, engine);
+        partNames == null ? new ArrayList<String>() : partNames);
+    rqst.setEngine(engine);
     rqst.setCatName(catName);
     rqst.setValidWriteIdList(validWriteIdList);
     return client.get_partitions_statistics_req(rqst).getPartStats();
@@ -1297,7 +1298,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
         return new AggrStats(new ArrayList<>(), 0); // Nothing to aggregate
       }
-      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
+      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+      req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
 
@@ -1479,7 +1481,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
-      hook.preCreateTable(tbl);
+      hook.preCreateTable(request);
     }
     boolean success = false;
     try {
@@ -3446,7 +3448,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       if (colNames.isEmpty()) {
         return Collections.emptyList();
       }
-      TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
+      TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames);
+      rqst.setEngine(engine);
       rqst.setCatName(catName);
       rqst.setEngine(engine);
       return getTableColumnStatisticsInternal(rqst).getTableStats();
@@ -3479,7 +3482,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       if (colNames.isEmpty()) {
         return Collections.emptyList();
       }
-      TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
+      TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames);
       rqst.setEngine(engine);
       rqst.setCatName(catName);
       rqst.setValidWriteIdList(validWriteIdList);
@@ -3505,8 +3508,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName, List<String> partNames,
       List<String> colNames, String engine) throws TException {
-    PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
-        partNames, engine);
+    PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames, partNames);
+    rqst.setEngine(engine);
     rqst.setCatName(catName);
     rqst.setValidWriteIdList(getValidWriteIdList(dbName, tableName));
     return client.get_partitions_statistics_req(rqst).getPartStats();
@@ -4659,7 +4662,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
         return new AggrStats(new ArrayList<>(), 0); // Nothing to aggregate
       }
-      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
+      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+      req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(getValidWriteIdList(dbName, tblName));
 

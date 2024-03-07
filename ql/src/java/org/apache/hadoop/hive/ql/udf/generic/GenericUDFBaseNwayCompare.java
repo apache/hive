@@ -62,6 +62,7 @@ public abstract class GenericUDFBaseNwayCompare extends GenericUDF {
     TypeInfo commonInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]);
 
     for (int i = 1; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
       PrimitiveTypeInfo currInfo = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[i]);
 
       commonInfo = FunctionRegistry.getCommonClassForComparison(

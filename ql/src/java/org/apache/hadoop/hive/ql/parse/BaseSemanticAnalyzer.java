@@ -1197,9 +1197,9 @@ public abstract class BaseSemanticAnalyzer {
       try {
         // get table metadata
         tableName = HiveTableName.withNoDefault(getUnescapedName((ASTNode)ast.getChild(0)));
-        boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+        boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE);
         if (testMode) {
-          tableName = TableName.fromString(String.join("", conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX),
+          tableName = TableName.fromString(String.join("", conf.getVar(HiveConf.ConfVars.HIVE_TEST_MODE_PREFIX),
               tableName.getTable()), tableName.getCat(), tableName.getDb()); // not that elegant, but hard to refactor
         }
         if (ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
@@ -1274,7 +1274,7 @@ public abstract class BaseSemanticAnalyzer {
             numStaPart = parts.size() - numDynParts;
           }
           if (numStaPart == 0 &&
-              conf.getVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equalsIgnoreCase("strict")) {
+              conf.getVar(HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE).equalsIgnoreCase("strict")) {
             throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_STRICT_MODE.getMsg());
           }
 
@@ -1613,7 +1613,7 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     boolean result = true;
     for (Node childNode : astNode.getChildren()) {
       ASTNode childASTNode = (ASTNode)childNode;
@@ -1803,8 +1803,7 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
     try {
-      return MetaStoreUtils.convertDateToString(
-          MetaStoreUtils.convertStringToDate(value.toString()));
+      return MetaStoreUtils.normalizeDate(value.toString());
     } catch (Exception e) {
       throw new SemanticException(e);
     }

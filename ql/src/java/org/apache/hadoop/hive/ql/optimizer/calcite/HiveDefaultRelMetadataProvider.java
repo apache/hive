@@ -82,7 +82,7 @@ public class HiveDefaultRelMetadataProvider {
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_EXTENDED_COST_MODEL)) {
       // Get max split size for HiveRelMdParallelism
       final Double maxSplitSize = (double) HiveConf.getLongVar(
-          hiveConf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
+          hiveConf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE);
 
       // Create and return metadata provider
       JaninoRelMetadataProvider metadataProvider = JaninoRelMetadataProvider.of(

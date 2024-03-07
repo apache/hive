@@ -20,16 +20,23 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
@@ -121,6 +129,10 @@ public class CompactorUtil {
     return (p == null) ? t.getSd() : p.getSd();
   }
 
+  public static StorageDescriptor resolveStorageDescriptor(Table t) {
+    return resolveStorageDescriptor(t, null);
+  }
+
   public static boolean isDynPartAbort(Table t, String partName) {
     return Optional.ofNullable(t).map(Table::getPartitionKeys).filter(pk -> !pk.isEmpty()).isPresent()
             && partName == null;
@@ -187,5 +199,100 @@ public class CompactorUtil {
       obsoleteDirs = dir.getAbortedDirectories();
     }
     return obsoleteDirs;
+  }
+
+  public static Partition resolvePartition(HiveConf conf, IMetaStoreClient msc, String dbName, String tableName, 
+      String partName, METADATA_FETCH_MODE fetchMode) throws MetaException {
+    if (partName != null) {
+      List<Partition> parts = null;
+      try {
+
+        switch (fetchMode) {
+          case LOCAL: parts = CompactorUtil.getPartitionsByNames(conf, dbName, tableName, partName);
+                      break;
+          case REMOTE: parts = RemoteCompactorUtil.getPartitionsByNames(msc, dbName, tableName, partName);
+            break;
+        }
+
+        if (parts == null || parts.size() == 0) {
+          // The partition got dropped before we went looking for it.
+          return null;
+        }
+      } catch (Exception e) {
+        LOG.error("Unable to find partition " + getFullPartitionName(dbName, tableName, partName), e);
+        throw e;
+      }
+      if (parts.size() != 1) {
+        LOG.error(getFullPartitionName(dbName, tableName, partName) + " does not refer to a single partition. " +
+            Arrays.toString(parts.toArray()));
+        throw new MetaException("Too many partitions for : " + getFullPartitionName(dbName, tableName, partName));
+      }
+      return parts.get(0);
+    } else {
+      return null;
+    }
+  }
+
+  public static String getFullPartitionName(String dbName, String tableName, String partName) {
+    StringBuilder buf = new StringBuilder();
+    buf.append(dbName);
+    buf.append('.');
+    buf.append(tableName);
+    if (partName != null) {
+      buf.append('.');
+      buf.append(partName);
+    }
+    return buf.toString();
+  }
+  
+  public enum METADATA_FETCH_MODE {
+    LOCAL,
+    REMOTE
+  }
+
+  public static void checkInterrupt(String callerClassName) throws InterruptedException {
+    if (Thread.interrupted()) {
+      throw new InterruptedException(callerClassName + " execution is interrupted.");
+    }
+  }
+
+  /**
+   * Check for that special case when minor compaction is supported or not.
+   * <ul>
+   *   <li>The table is Insert-only OR</li>
+   *   <li>Query based compaction is not enabled OR</li>
+   *   <li>The table has only acid data in it.</li>
+   * </ul>
+   * @param tblproperties The properties of the table to check
+   * @param dir The {@link AcidDirectory} instance pointing to the table's folder on the filesystem.
+   * @return Returns true if minor compaction is supported based on the given parameters, false otherwise.
+   */
+  public static boolean isMinorCompactionSupported(HiveConf conf, Map<String, String> tblproperties, AcidDirectory dir) {
+    //Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them.
+    return AcidUtils.isInsertOnlyTable(tblproperties) || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
+        || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
+  }
+
+  public static LockRequest createLockRequest(HiveConf conf, CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
+    String agentInfo = Thread.currentThread().getName();
+    LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
+    requestBuilder.setUser(ci.runAs);
+    requestBuilder.setTransactionId(txnId);
+
+    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
+        .setLock(lockType)
+        .setOperationType(opType)
+        .setDbName(ci.dbname)
+        .setTableName(ci.tableName)
+        .setIsTransactional(true);
+
+    if (ci.partName != null) {
+      lockCompBuilder.setPartitionName(ci.partName);
+    }
+    requestBuilder.addLockComponent(lockCompBuilder.build());
+
+    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+        !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+    return requestBuilder.build();
   }
 }

@@ -405,7 +405,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         this.maxHtEntries = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_MAXENTRIES);
         this.numRowsCompareHashAggr = HiveConf.getIntVar(hconf,
-          HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
+          HiveConf.ConfVars.HIVE_GROUPBY_MAP_INTERVAL);
       }
       else {
         this.percentEntriesToFlush =
@@ -415,7 +415,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         this.maxHtEntries =
             HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_MAXENTRIES.defaultIntVal;
         this.numRowsCompareHashAggr =
-            HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL.defaultIntVal;
+            HiveConf.ConfVars.HIVE_GROUPBY_MAP_INTERVAL.defaultIntVal;
       }
 
       minReductionHashAggr = getConf().getMinReductionHashAggr();

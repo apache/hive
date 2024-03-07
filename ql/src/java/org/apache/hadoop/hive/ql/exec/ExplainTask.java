@@ -275,7 +275,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return getJSONPlan(
             out, tasks, fetchTask, jsonOutput, isExtended,
             appendTaskType, cboInfo, cboPlan, optimizedSQL,
-            conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+            conf.getVar(ConfVars.HIVE_STAGE_ID_REARRANGE));
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
@@ -950,7 +950,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     return outputPlan(work, out, extended, jsonOutput, indent, appendToHeader,
-            queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST));
+              queryState != null && queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST));
   }
 
   public JSONObject outputPlan(Object work, PrintStream out,

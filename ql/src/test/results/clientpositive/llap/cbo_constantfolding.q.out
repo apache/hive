@@ -1,0 +1,60 @@
+PREHOOK: query: EXPLAIN CBO SELECT DATE_ADD('2023-01-01', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT DATE_ADD('2023-01-01', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[CAST(2023-01-02:DATE):DATE])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT DATE_SUB('2023-01-01', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT DATE_SUB('2023-01-01', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[CAST(2022-12-31:DATE):DATE])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT FROM_UNIXTIME(1672560000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT FROM_UNIXTIME(1672560000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[CAST(_UTF-16LE'2023-01-01 00:00:00':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT TO_UNIX_TIMESTAMP(DATE '2023-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT TO_UNIX_TIMESTAMP(DATE '2023-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[CAST(1672560000:BIGINT):BIGINT])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT UNIX_TIMESTAMP(DATE '2023-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT UNIX_TIMESTAMP(DATE '2023-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[CAST(1672560000:BIGINT):BIGINT])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+

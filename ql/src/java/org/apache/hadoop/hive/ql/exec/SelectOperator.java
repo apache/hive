@@ -66,7 +66,7 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
       assert (colList.get(i) != null);
       eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i), hconf);
     }
-    if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
+    if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_EXPR_EVALUATION_CACHE)) {
       eval = ExprNodeEvaluatorFactory.toCachedEvals(eval);
     }
     output = new Object[eval.length];

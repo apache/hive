@@ -45,7 +45,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
   private final int currentSpecId;
 
   private final GenericRecord rowDataTemplate;
-  private final List<DataFile> referencedDataFiles;
+  private final List<DataFile> replacedDataFiles;
 
   HiveIcebergCopyOnWriteRecordWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io,
@@ -54,7 +54,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
         new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, targetFileSize));
     this.currentSpecId = currentSpecId;
     this.rowDataTemplate = GenericRecord.create(schema);
-    this.referencedDataFiles = Lists.newArrayList();
+    this.replacedDataFiles = Lists.newArrayList();
   }
 
   @Override
@@ -72,7 +72,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
             .withFileSizeInBytes(0)
             .withRecordCount(0)
             .build();
-      referencedDataFiles.add(dataFile);
+      replacedDataFiles.add(dataFile);
     } else {
       writer.write(rowData, specs.get(currentSpecId), partition(rowData, currentSpecId));
     }
@@ -81,6 +81,6 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
   @Override
   public FilesForCommit files() {
     List<DataFile> dataFiles = ((DataWriteResult) writer.result()).dataFiles();
-    return FilesForCommit.onlyData(dataFiles, referencedDataFiles);
+    return FilesForCommit.onlyData(dataFiles, replacedDataFiles);
   }
 }

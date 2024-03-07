@@ -151,7 +151,7 @@ public class TestHiveMetastore {
       this.executorService.submit(() -> server.serve());
 
       // in Hive3, setting this as a system prop ensures that it will be picked up whenever a new HiveConf is created
-      System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname, hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS));
+      System.setProperty(HiveConf.ConfVars.METASTORE_URIS.varname, hiveConf.getVar(HiveConf.ConfVars.METASTORE_URIS));
 
       this.clientPool = new HiveClientPool(1, hiveConf);
     } catch (Exception e) {
@@ -229,7 +229,7 @@ public class TestHiveMetastore {
 
   private TServer newThriftServer(TServerSocket socket, int poolSize, HiveConf conf) throws Exception {
     HiveConf serverConf = new HiveConf(conf);
-    serverConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:" + DERBY_PATH + ";create=true");
+    serverConf.set(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname, "jdbc:derby:" + DERBY_PATH + ";create=true");
     baseHandler = HMS_HANDLER_CTOR.newInstance("new db based metaserver", serverConf);
     IHMSHandler handler = GET_BASE_HMS_HANDLER.invoke(serverConf, baseHandler, false);
 
@@ -244,8 +244,8 @@ public class TestHiveMetastore {
   }
 
   private void initConf(HiveConf conf, int port) {
-    conf.set(HiveConf.ConfVars.METASTOREURIS.varname, "thrift://localhost:" + port);
-    conf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, "file:" + HIVE_WAREHOUSE_DIR.getAbsolutePath());
+    conf.set(HiveConf.ConfVars.METASTORE_URIS.varname, "thrift://localhost:" + port);
+    conf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, "file:" + HIVE_WAREHOUSE_DIR.getAbsolutePath());
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname,
         "file:" + HIVE_EXTERNAL_WAREHOUSE_DIR.getAbsolutePath());
     conf.set(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL.varname, "false");

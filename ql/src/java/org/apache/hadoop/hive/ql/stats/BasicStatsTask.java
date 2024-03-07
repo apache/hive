@@ -311,8 +311,9 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+        } else {
+          LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
-        LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
 
         // The table object is assigned to the latest table object.
         // So that it can be used by ColStatsProcessor.
@@ -377,8 +378,9 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           updates.add((Partition) res);
           if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
             console.printInfo("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+          } else {
+            LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
           }
-          LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
         }
 
         if (!updates.isEmpty()) {
@@ -429,7 +431,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
   }
 
   private StatsAggregator createStatsAggregator(StatsCollectionContext scc, HiveConf conf) throws HiveException {
-    String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
+    String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_DBCLASS);
     StatsFactory factory = StatsFactory.newFactory(statsImpl, conf);
     if (factory == null) {
       throw new HiveException(ErrorMsg.STATSPUBLISHER_NOT_OBTAINED.getErrorCodedMsg());

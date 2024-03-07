@@ -40,15 +40,11 @@ public class FunctionMisc extends BuiltinFunctions {
    */
   @Override
   public void register(BuiltinFunctions f) {
-    f.map.put("COALESCE", this::nvl);
     f.map.put("DECODE", this::decode);
-    f.map.put("NVL", this::nvl);
     f.map.put("NVL2", this::nvl2);
     f.map.put("PART_COUNT_BY", this::partCountBy);
-    f.map.put("MOD", this::modulo);
 
     f.specMap.put("ACTIVITY_COUNT", this::activityCount);
-    f.specMap.put("CAST", this::cast);
     f.specMap.put("CURRENT", this::current);
     f.specMap.put("CURRENT_USER", this::currentUser);
     f.specMap.put("PART_COUNT", this::partCount);
@@ -62,28 +58,6 @@ public class FunctionMisc extends BuiltinFunctions {
    */
   void activityCount(HplsqlParser.Expr_spec_funcContext ctx) {
     evalInt(Long.valueOf(exec.getRowCount()));
-  }
-  
-  /**
-   * CAST function
-   */
-  void cast(HplsqlParser.Expr_spec_funcContext ctx) {
-    if (ctx.expr().size() != 1) {
-      evalNull();
-      return;
-    }
-    String type = ctx.dtype().getText();
-    String len = null;
-    String scale = null;
-    if (ctx.dtype_len() != null) {
-      len = ctx.dtype_len().L_INT(0).getText();
-      if (ctx.dtype_len().L_INT(1) != null) {
-        scale = ctx.dtype_len().L_INT(1).getText();
-      }
-    }    
-    Var var = new Var(null, type, len, scale, null);
-    var.cast(evalPop(ctx.expr(0)));
-    evalVar(var);
   }
   
   /**
@@ -124,8 +98,9 @@ public class FunctionMisc extends BuiltinFunctions {
       else {
         evalString("CURRENT_TIMESTAMP");
       }
-    }
-    else {
+    } else if (ctx.T_USER() != null) {
+      evalString("CURRENT_USER()");
+    } else {
       evalString(exec.getFormattedText(ctx));
     }
   }
@@ -138,7 +113,7 @@ public class FunctionMisc extends BuiltinFunctions {
   }
   
   public static Var currentUser() {
-    return new Var(System.getProperty("user.name"));
+    return new Var("CURRENT_USER()");
   }
   
   /**
@@ -169,25 +144,12 @@ public class FunctionMisc extends BuiltinFunctions {
   }
   
   /**
-   * NVL function - Return first non-NULL expression
-   */
-  void nvl(HplsqlParser.Expr_func_paramsContext ctx) {
-    for (int i=0; i < ctx.func_param().size(); i++) {
-      Var v = evalPop(ctx.func_param(i).expr());
-      if (v.type != Var.Type.NULL) {
-        exec.stackPush(v);
-        return;
-      }
-    }
-    evalNull();
-  }
-  
-  /**
    * NVL2 function - If expr1 is not NULL return expr2, otherwise expr3
    */
   void nvl2(HplsqlParser.Expr_func_paramsContext ctx) {
     if (ctx.func_param().size() == 3) {
-      if (!evalPop(ctx.func_param(0).expr()).isNull()) {
+      Var firstParam = evalPop(ctx.func_param(0).expr());
+      if (!(firstParam.isNull() || "null".equalsIgnoreCase((String)firstParam.value))) {
         eval(ctx.func_param(1).expr());
       }
       else {
@@ -247,16 +209,6 @@ public class FunctionMisc extends BuiltinFunctions {
     }
     evalInt(result);
     query.close();
-  }
-
-  public void modulo(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.func_param().size() == 2) {
-      int a = evalPop(ctx.func_param(0).expr()).intValue();
-      int b = evalPop(ctx.func_param(1).expr()).intValue();
-      evalInt(a % b);
-    } else {
-      evalNull();
-    }
   }
 
   /**

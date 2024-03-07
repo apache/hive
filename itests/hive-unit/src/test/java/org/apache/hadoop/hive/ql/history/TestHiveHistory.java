@@ -188,7 +188,7 @@ public class TestHiveHistory {
     try {
       String actualDir = parentTmpDir + "/test";
       HiveConf conf = new HiveConf(SessionState.class);
-      conf.set(HiveConf.ConfVars.HIVEHISTORYFILELOC.toString(), actualDir);
+      conf.set(HiveConf.ConfVars.HIVE_HISTORY_FILE_LOC.toString(), actualDir);
       SessionState ss = new CliSessionState(conf);
       HiveHistory hiveHistory = new HiveHistoryImpl(ss);
       Path actualPath = new Path(actualDir);

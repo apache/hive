@@ -55,7 +55,7 @@ public class LockTableAnalyzer extends BaseSemanticAnalyzer {
     }
 
     LockTableDesc desc = new LockTableDesc(tableName, mode, partitionSpec,
-        HiveConf.getVar(conf, ConfVars.HIVEQUERYID), ctx.getCmd());
+        HiveConf.getVar(conf, ConfVars.HIVE_QUERY_ID), ctx.getCmd());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     // Need to initialize the lock manager

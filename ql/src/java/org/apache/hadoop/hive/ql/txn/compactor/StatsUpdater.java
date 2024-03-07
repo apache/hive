@@ -21,8 +21,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -78,7 +77,7 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
-            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction()) {
+            if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER) && ci.isMajorCompaction()) {
                 List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
                 if (!columnList.isEmpty()) {
                     sb.append(" for columns ").append(String.join(",", columnList));

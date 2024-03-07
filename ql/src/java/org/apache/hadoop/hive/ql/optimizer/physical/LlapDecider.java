@@ -173,7 +173,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       clusterState.initClusterInfo();
       final int targetCount;
       final int executorCount;
-      final int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      final int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
       if (!clusterState.hasClusterInfo()) {
         LOG.warn("Cannot determine LLAP cluster information");
         executorCount = executorsPerNode; // assume 1 node
@@ -190,7 +190,7 @@ public class LlapDecider implements PhysicalPlanResolver {
         if (newMin < reduceWork.getMaxReduceTasks()) {
           reduceWork.setMinReduceTasks(newMin);
           reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,
-              reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER),
+              reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER),
               reduceWork.getMinSrcFraction(), reduceWork.getMaxSrcFraction());
         } else {
           reduceWork.setAutoReduceParallelism(false);

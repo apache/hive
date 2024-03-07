@@ -147,7 +147,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     this.curBatchMaxWriteId = maxWriteId;
     this.statementId = statementId;
     this.conf = conn.getHiveConf();
-    this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     this.table = conn.getTable();
     String location = table.getSd().getLocation();
     try {

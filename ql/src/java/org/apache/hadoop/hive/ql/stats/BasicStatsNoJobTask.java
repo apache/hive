@@ -231,7 +231,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         }
         ThreadPoolExecutor tpE = null;
         List<Future<FileStats>> futures = null;
-        int numThreadsFactor = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASICSTATSTASKSMAXTHREADSFACTOR);
+        int numThreadsFactor = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASIC_STATS_TASKS_MAX_THREADS_FACTOR);
         if (fileList.size() > 1 && numThreadsFactor > 0) {
           int numThreads = Math.min(fileList.size(), numThreadsFactor * Runtime.getRuntime().availableProcessors());
           ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Basic-Stats-Thread-%d").build();

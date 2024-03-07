@@ -313,7 +313,7 @@ public class TestFileSinkOperator {
         TFSOStatsPublisher.class.getName());
     jc.set(HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR.varname,
         TFSOStatsAggregator.class.getName());
-    jc.set(HiveConf.ConfVars.HIVESTATSDBCLASS.varname, "custom");
+    jc.set(HiveConf.ConfVars.HIVE_STATS_DBCLASS.varname, "custom");
   }
 
   @After

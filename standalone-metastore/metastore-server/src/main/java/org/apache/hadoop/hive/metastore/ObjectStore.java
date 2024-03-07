@@ -25,10 +25,12 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaExcep
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
@@ -255,6 +257,8 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.tools.metatool.IcebergTableMetadataHandler;
+import org.apache.hadoop.hive.metastore.tools.metatool.MetadataTableSummary;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -3890,22 +3894,27 @@ public class ObjectStore implements RawStore, Configurable {
       String userName = args.getUserName();
       List<String> groupNames = args.getGroupNames();
       List<String> part_vals = args.getPart_vals();
+      List<String> partNames = args.getPartNames();
+      boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
       boolean getauth = null != userName && null != groupNames &&
           "TRUE".equalsIgnoreCase(
               mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
-
-      if (canTryDirectSQL(part_vals)) {
+      // When partNames is given, sending to JDO directly.
+      if (canTryDirectSQL(part_vals) && partNames == null) {
         LOG.info(
             "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
             db_name, tbl_name, part_vals);
         partitions = getPartitions(catName, db_name, tbl_name, args);
       } else {
-        Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
-            part_vals, max_parts, null);
-        boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
-        for (Object o : parts) {
-          Partition part = convertToPart(catName, db_name, tbl_name, (MPartition) o, isAcidTable, args);
-          partitions.add(part);
+        if (partNames != null) {
+          partitions.addAll(getPartitionsViaOrmFilter(catName, db_name, tbl_name, isAcidTable, args));
+        } else {
+          Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
+                  part_vals, max_parts, null);
+          for (Object o : parts) {
+            Partition part = convertToPart(catName, db_name, tbl_name, (MPartition) o, isAcidTable, args);
+            partitions.add(part);
+          }
         }
       }
       if (getauth) {
@@ -4394,7 +4403,7 @@ public class ObjectStore implements RawStore, Configurable {
     protected abstract String describeResult();
     protected abstract T getSqlResult(GetHelper<T> ctx) throws MetaException;
     protected abstract T getJdoResult(
-        GetHelper<T> ctx) throws MetaException, NoSuchObjectException;
+        GetHelper<T> ctx) throws MetaException, NoSuchObjectException, InvalidObjectException;
 
     public T run(boolean initTable) throws MetaException, NoSuchObjectException {
       try {
@@ -4905,7 +4914,8 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("catName", catName);
     }
 
-    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, table != null ? table.getPartitionKeys() : null);
+    tree.accept(new ExpressionTree.JDOFilterGenerator(getConf(),
+        table != null ? table.getPartitionKeys() : null, queryBuilder, params));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
@@ -4925,7 +4935,7 @@ public class ObjectStore implements RawStore, Configurable {
     params.put("t1", tblName);
     params.put("t2", dbName);
     params.put("t3", catName);
-    tree.generateJDOFilterFragment(getConf(), params, queryBuilder, partitionKeys);
+    tree.accept(new ExpressionTree.JDOFilterGenerator(getConf(), partitionKeys, queryBuilder, params));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
@@ -5089,26 +5099,22 @@ public class ObjectStore implements RawStore, Configurable {
     if (validWriteIds != null && writeId > 0) {
       return null; // We have txn context.
     }
-    String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
-    String newVal = newP == null ? null : newP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
-    // We don't need txn context is that stats state is not being changed.
-    if (StringUtils.isEmpty(oldVal) && StringUtils.isEmpty(newVal)) {
+
+    if (!StatsSetupConst.areBasicStatsUptoDate(newP)) {
+      // The validWriteIds can be absent, for example, in case of Impala alter.
+      // If the new value is invalid, then we don't care, let the alter operation go ahead.
       return null;
     }
+
+    String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+    String newVal = newP == null ? null : newP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
     if (StringUtils.equalsIgnoreCase(oldVal, newVal)) {
       if (!isColStatsChange) {
         return null; // No change in col stats or parameters => assume no change.
       }
-      // Col stats change while json stays "valid" implies stats change. If the new value is invalid,
-      // then we don't care. This is super ugly and idiotic.
-      // It will all become better when we get rid of JSON and store a flag and write ID per stats.
-      if (!StatsSetupConst.areBasicStatsUptoDate(newP)) {
-        return null;
-      }
     }
+
     // Some change to the stats state is being made; it can only be made with a write ID.
-    // Note - we could do this:  if (writeId > 0 && (validWriteIds != null || !StatsSetupConst.areBasicStatsUptoDate(newP))) { return null;
-    //       However the only way ID list can be absent is if WriteEntity wasn't generated for the alter, which is a separate bug.
     return "Cannot change stats state for a transactional table " + fullTableName + " without " +
             "providing the transactional write state for verification (new write ID " +
             writeId + ", valid write IDs " + validWriteIds + "; current state " + oldVal + "; new" +
@@ -5256,91 +5262,114 @@ public class ObjectStore implements RawStore, Configurable {
                               List<List<String>> part_vals, List<Partition> newParts,
                               long writeId, String queryWriteIdList)
                                   throws InvalidObjectException, MetaException {
-    boolean success = false;
-    Exception e = null;
     List<Partition> results = new ArrayList<>(newParts.size());
     if (newParts.isEmpty()) {
       return results;
     }
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    boolean success = false;
     try {
       openTransaction();
 
-      MTable table = this.getMTable(catName, dbName, tblName);
-      if (table == null) {
-        throw new NoSuchObjectException(
-            TableName.getQualified(catName, dbName, tblName) + " table not found");
+      MTable table = ensureGetMTable(catName, dbName, tblName);
+      // Validate new parts: StorageDescriptor and SerDeInfo must be set in Partition.
+      if (!TableType.VIRTUAL_VIEW.name().equals(table.getTableType())) {
+        for (Partition newPart : newParts) {
+          if (!newPart.isSetSd() || !newPart.getSd().isSetSerdeInfo()) {
+            throw new InvalidObjectException("Partition does not set storageDescriptor or serdeInfo.");
+          }
+        }
       }
+      if (writeId > 0) {
+        newParts.forEach(newPart -> newPart.setWriteId(writeId));
+      }
+
+      List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
-        partNames.add(
-            Warehouse.makePartName(convertToFieldSchemas(table.getPartitionKeys()), partVal)
-        );
+        partNames.add(Warehouse.makePartName(partCols, partVal));
       }
 
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tblName = normalizeIdentifier(tblName);
-      List<MPartition> mPartitionList;
-
-      try (Query query = pm.newQuery(MPartition.class,
-              "table.tableName == t1 && table.database.name == t2 && t3.contains(partitionName) " +
-                      " && table.database.catalogName == t4")) {
-        query.declareParameters("java.lang.String t1, java.lang.String t2, java.util.Collection t3, "
-                + "java.lang.String t4");
-        mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
-        pm.retrieveAll(mPartitionList);
-
-        if (mPartitionList.size() > newParts.size()) {
-          throw new MetaException("Expecting only one partition but more than one partitions are found.");
+      results = new GetListHelper<Partition>(catName, dbName, tblName, true, true) {
+        @Override
+        protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx)
+            throws MetaException {
+          return directSql.alterPartitions(table, partNames, newParts, queryWriteIdList);
         }
 
-        Map<List<String>, MPartition> mPartsMap = new HashMap();
-        for (MPartition mPartition : mPartitionList) {
-          mPartsMap.put(mPartition.getValues(), mPartition);
+        @Override
+        protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
+            throws MetaException, InvalidObjectException {
+          return alterPartitionsViaJdo(table, partNames, newParts, queryWriteIdList);
         }
+      }.run(false);
 
-        Set<MColumnDescriptor> oldCds = new HashSet<>();
-        Ref<MColumnDescriptor> oldCdRef = new Ref<>();
-        for (Partition tmpPart : newParts) {
-          if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
-            throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
-          }
-
-          if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
-            throw new MetaException("Invalid table   name : " + tmpPart.getDbName());
-          }
-
-          if (writeId > 0) {
-            tmpPart.setWriteId(writeId);
-          }
-          oldCdRef.t = null;
-          Partition result = alterPartitionNoTxn(catName, dbName, tblName, mPartsMap.get(tmpPart.getValues()),
-                  tmpPart, queryWriteIdList, oldCdRef, table);
-          results.add(result);
-          if (oldCdRef.t != null) {
-            oldCds.add(oldCdRef.t);
-          }
-        }
-        for (MColumnDescriptor oldCd : oldCds) {
-          removeUnusedColumnDescriptor(oldCd);
-        }
-      }
       // commit the changes
       success = commitTransaction();
     } catch (Exception exception) {
-      e = exception;
-      LOG.error("Alter failed", e);
+      LOG.error("Alter failed", exception);
+      throw new MetaException(exception.getMessage());
     } finally {
       if (!success) {
         rollbackTransaction();
-        MetaException metaException = new MetaException(
-            "The transaction for alter partition did not commit successfully.");
-        if (e != null) {
-          metaException.initCause(e);
-        }
-        throw metaException;
       }
     }
+    return results;
+  }
+
+  private List<Partition> alterPartitionsViaJdo(MTable table, List<String> partNames,
+                                                List<Partition> newParts, String queryWriteIdList)
+      throws MetaException, InvalidObjectException {
+    String catName = table.getDatabase().getCatalogName();
+    String dbName = table.getDatabase().getName();
+    String tblName = table.getTableName();
+    List<Partition> results = new ArrayList<>(newParts.size());
+    List<MPartition> mPartitionList;
+
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class,
+        "table.tableName == t1 && table.database.name == t2 && t3.contains(partitionName) " +
+            " && table.database.catalogName == t4"))) {
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.util.Collection t3, "
+          + "java.lang.String t4");
+      mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
+      pm.retrieveAll(mPartitionList);
+
+      if (mPartitionList.size() > newParts.size()) {
+        throw new MetaException("Expecting only one partition but more than one partitions are found.");
+      }
+
+      Map<List<String>, MPartition> mPartsMap = new HashMap();
+      for (MPartition mPartition : mPartitionList) {
+        mPartsMap.put(mPartition.getValues(), mPartition);
+      }
+
+      Set<MColumnDescriptor> oldCds = new HashSet<>();
+      Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+      for (Partition tmpPart : newParts) {
+        if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
+          throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
+        }
+
+        if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
+          throw new MetaException("Invalid table   name : " + tmpPart.getDbName());
+        }
+
+        oldCdRef.t = null;
+        Partition result = alterPartitionNoTxn(catName, dbName, tblName,
+            mPartsMap.get(tmpPart.getValues()), tmpPart, queryWriteIdList, oldCdRef, table);
+        results.add(result);
+        if (oldCdRef.t != null) {
+          oldCds.add(oldCdRef.t);
+        }
+      }
+      for (MColumnDescriptor oldCd : oldCds) {
+        removeUnusedColumnDescriptor(oldCd);
+      }
+    }
+
     return results;
   }
 
@@ -9916,6 +9945,199 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       rollbackAndCleanup(committed, query);
     }
+  }
+
+  /** The following APIs
+   *
+   *  - getMetadataSummary
+   *
+   * is used by HiveMetaTool.
+   */
+
+  /**
+   * Using resultSet to read the HMS_SUMMARY table.
+   * @param catalogFilter the optional catalog name filter
+   * @param dbFilter the optional database name filter
+   * @param tableFilter the optional table name filter
+   * @return MetadataSummary
+   * @throws SQLException
+   */
+  public List<MetadataTableSummary> getMetadataSummary(String catalogFilter, String dbFilter, String tableFilter) throws SQLException {
+    ArrayList<MetadataTableSummary> metadataTableSummaryList = new ArrayList<MetadataTableSummary>();
+
+    ResultSet rs = null;
+    Statement stmt = null;
+    // Fetch the metrics from iceberg manifest for iceberg tables in hive
+    IcebergTableMetadataHandler icebergHandler = null;
+    Map<String, MetadataTableSummary> icebergTableSummaryMap = null;
+
+    try {
+      icebergHandler = new IcebergTableMetadataHandler(conf);
+      icebergTableSummaryMap = icebergHandler.getIcebergTables();
+    } catch (Exception e) {
+      LOG.error("Unable to fetch metadata from iceberg manifests", e);
+    }
+
+    List<String> querySet = sqlGenerator.getCreateQueriesForMetastoreSummary();
+    if (querySet == null) {
+      LOG.warn("Metadata summary has not been implemented for dbtype {}", sqlGenerator.getDbProduct().dbType);
+      return null;
+    }
+
+    try {
+      JDOConnection jdoConn = null;
+      jdoConn = pm.getDataStoreConnection();
+      stmt = ((Connection) jdoConn.getNativeConnection()).createStatement();
+      long startTime = System.currentTimeMillis();
+
+      for (String q: querySet) {
+        stmt.execute(q);
+      }
+      long endTime = System.currentTimeMillis();
+      LOG.info("Total query time for generating HMS Summary: {} (ms)", (((long)endTime) - ((long)startTime)));
+    } catch (SQLException e) {
+      LOG.error("Exception during computing HMS Summary", e);
+      throw e;
+    }
+
+    final String query = sqlGenerator.getSelectQueryForMetastoreSummary();
+    try {
+      String tblName, dbName, ctlgName, tblType, fileType, compressionType, partitionColumn, writeFormatDefault, transactionalProperties;
+      int colCount, arrayColCount, structColCount, mapColCount;
+      Integer partitionCnt;
+      BigInteger totalSize, sizeNumRows, sizeNumFiles;
+      stmt.setFetchSize(0);
+      rs = stmt.executeQuery(query);
+      while (rs.next()) {
+        tblName = rs.getString("TBL_NAME");
+        dbName = rs.getString("NAME");
+        ctlgName = rs.getString("CTLG");
+        if(ctlgName == null) ctlgName = "null";
+        colCount = rs.getInt("TOTAL_COLUMN_COUNT");
+        arrayColCount = rs.getInt("ARRAY_COLUMN_COUNT");
+        structColCount = rs.getInt("STRUCT_COLUMN_COUNT");
+        mapColCount = rs.getInt("MAP_COLUMN_COUNT");
+        tblType = rs.getString("TBL_TYPE");
+        fileType = rs.getString("SLIB");
+        if (fileType != null) fileType = extractFileFormat(fileType);
+        compressionType = rs.getString("IS_COMPRESSED");
+        if (compressionType.equals("0") || compressionType.equals("f")) compressionType = "None";
+        partitionColumn = rs.getString("PARTITION_COLUMN");
+        int partitionColumnCount = (partitionColumn == null) ? 0 : (partitionColumn.split(",")).length;
+        partitionCnt = rs.getInt("PARTITION_CNT");
+
+        totalSize = BigInteger.valueOf(rs.getLong("TOTAL_SIZE"));
+        sizeNumRows = BigInteger.valueOf(rs.getLong("NUM_ROWS"));
+        sizeNumFiles = BigInteger.valueOf(rs.getLong("NUM_FILES"));
+
+        writeFormatDefault = rs.getString("WRITE_FORMAT_DEFAULT");
+        if (writeFormatDefault == null) writeFormatDefault = "null";
+        transactionalProperties = rs.getString("TRANSACTIONAL_PROPERTIES");
+        if (transactionalProperties == null) transactionalProperties = "null";
+
+        // for iceberg tables, overwrite the metadata by the metadata fetched in HMSSummaryIcebergHandler
+        if (fileType != null && fileType.equals("iceberg") && icebergHandler.isEnabled() && icebergTableSummaryMap != null) {
+          // if the new metadata is not null or 0, overwrite the old metadata
+          MetadataTableSummary icebergTableSummary = icebergTableSummaryMap.get(tblName);
+          ctlgName = icebergTableSummary.getCtlgName() != null ? icebergTableSummary.getCtlgName() : ctlgName;
+          dbName = icebergTableSummary.getDbName() != null ? icebergTableSummary.getDbName() : dbName;
+          colCount = icebergTableSummary.getColCount() != 0 ? icebergTableSummary.getColCount() : colCount;
+          partitionColumnCount = icebergTableSummary.getPartitionColumnCount() != 0 ? icebergTableSummary.getPartitionColumnCount() : partitionColumnCount;
+          totalSize = icebergTableSummary.getTotalSize() != null ? icebergTableSummary.getTotalSize() : totalSize;
+          sizeNumRows = icebergTableSummary.getSizeNumRows() != null ? icebergTableSummary.getSizeNumRows(): sizeNumRows;
+          sizeNumFiles = icebergTableSummary.getSizeNumFiles() != null ? icebergTableSummary.getSizeNumFiles(): sizeNumFiles;
+          if (writeFormatDefault.equals("null")){
+            fileType = "parquet";
+          }
+          else {
+            fileType = writeFormatDefault;
+          }
+          tblType = "ICEBERG";
+        }
+
+        if (tblType.equals("EXTERNAL_TABLE")){
+          if (fileType.equals("parquet")){
+            tblType = "HIVE_EXTERNAL";
+          }
+          else if (fileType.equals("jdbc")){
+            tblType = "JDBC";
+          }
+          else if (fileType.equals("kudu")){
+            tblType = "KUDU";
+          }
+          else if (fileType.equals("hbase")){
+            tblType = "HBASE";
+          } else {
+            tblType = "HIVE_EXTERNAL";
+          }
+        }
+
+        if (tblType.equals("MANAGED_TABLE")){
+          if (transactionalProperties == "insert_only"){
+            tblType = "HIVE_ACID_INSERT_ONLY";
+          }
+          else {
+            tblType = "HIVE_ACID_FULL";
+          }
+        }
+
+        MetadataTableSummary summary = new MetadataTableSummary(ctlgName, dbName, tblName, colCount,
+                partitionColumnCount, partitionCnt, totalSize, sizeNumRows, sizeNumFiles, tblType,
+                fileType, compressionType, arrayColCount, structColCount, mapColCount);
+        metadataTableSummaryList.add(summary);
+      }
+    } catch (Exception e) {
+      String msg = "Runtime exception while running the query " + query;
+      LOG.error(msg, e);
+      throw e;
+    } finally {
+      if (rs != null) {
+        rs.close();
+      }
+      if (stmt != null) {
+        stmt.close();
+      }
+    }
+    return metadataTableSummaryList;
+  }
+
+  /**
+   * Helper method for getMetadataSummary. Extracting the format of the file from the long string.
+   * @param fileFormat - fileFormat. A long String which indicates the type of the file.
+   * @return String A short String which indicates the type of the file.
+   */
+  private static String extractFileFormat(String fileFormat) {
+    String lowerCaseFileFormat = null;
+    if (fileFormat == null) {
+      return "NULL";
+    }
+    lowerCaseFileFormat = fileFormat.toLowerCase();
+    if (lowerCaseFileFormat.contains("iceberg")) {
+      fileFormat = "iceberg";
+    } else if (lowerCaseFileFormat.contains("parquet")) {
+      fileFormat = "parquet";
+    } else if (lowerCaseFileFormat.contains("orc")) {
+      fileFormat = "orc";
+    } else if (lowerCaseFileFormat.contains("avro")) {
+      fileFormat = "avro";
+    } else if (lowerCaseFileFormat.contains("json")) {
+      fileFormat = "json";
+    } else if (lowerCaseFileFormat.contains("hbase")) {
+      fileFormat = "hbase";
+    } else if (lowerCaseFileFormat.contains("jdbc")) {
+      fileFormat = "jdbc";
+    } else if (lowerCaseFileFormat.contains("kudu")) {
+      fileFormat = "kudu";
+    } else if ((lowerCaseFileFormat.contains("text")) || (lowerCaseFileFormat.contains("lazysimple"))) {
+      fileFormat = "text";
+    } else if (lowerCaseFileFormat.contains("sequence")) {
+      fileFormat = "sequence";
+    } else if (lowerCaseFileFormat.contains("passthrough")) {
+      fileFormat = "passthrough";
+    } else if (lowerCaseFileFormat.contains("opencsv")) {
+      fileFormat = "openCSV";
+    }
+    return fileFormat;
   }
 
   private void writeMTableColumnStatistics(Table table, MTableColumnStatistics mStatsObj,
