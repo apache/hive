@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte;
+package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
@@ -22,6 +22,7 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rex.RexTableInputRef;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +37,21 @@ public class TableScanToSpoolRule extends RelOptRule {
 
   public TableScanToSpoolRule() {
     super(operand(TableScan.class, none()));
+  }
+
+  @Override
+  public boolean matches(final RelOptRuleCall call) {
+    TableScan scan = call.rel(0);
+    String tableName = scan.getTable().getQualifiedName().toString();
+    if (spools.contains(tableName)) {
+      return false;
+    }
+    Set<RexTableInputRef.RelTableRef> allTables =
+        call.getMetadataQuery().getTableReferences(call.getPlanner().getRoot());
+    if (allTables == null) {
+      return false;
+    }
+    return allTables.stream().filter(t -> t.getQualifiedName().equals(scan.getTable().getQualifiedName())).count() > 1;
   }
 
   @Override

@@ -29,7 +29,6 @@ import com.google.common.collect.Multimap;
 
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -273,8 +272,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingLastValueRewrite;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte.SpoolRemoveRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.cte.TableScanToSpoolRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.TableScanToSpoolRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
@@ -2130,14 +2128,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final RelNode spoolPlan =
           executeProgram(ctePlan, HepProgram.builder().addRuleInstance(new TableScanToSpoolRule()).build(), mdProvider,
               executorProvider, ctes, true);
-      LOG.info("Spool introduction: {}", RelOptUtil.toString(spoolPlan));
-      Map<String, Long> tableCounts =
-          RelOptUtil.findAllTables(spoolPlan).stream().map(t -> t.getQualifiedName().toString())
-              .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-      final RelNode finalCtePlan = executeProgram(spoolPlan, HepProgram.builder().addRuleInstance(new SpoolRemoveRule(tableCounts)).build(), mdProvider, executorProvider);
-      LOG.info("CTE final plan: {}", RelOptUtil.toString(finalCtePlan));
-      if (RelNodeTypeDetector.contains(finalCtePlan, Spool.class)) {
-        return applyPreJoinOrderingTransforms(finalCtePlan, mdProvider, executorProvider);
+      LOG.info("CTE final plan: {}", RelOptUtil.toString(spoolPlan));
+      if (RelNodeTypeDetector.contains(spoolPlan, Spool.class)) {
+        return applyPreJoinOrderingTransforms(spoolPlan, mdProvider, executorProvider);
       } else {
         return basePlan;
       }
