@@ -20,9 +20,9 @@ import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.prepare.RelOptTableImpl;
+import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,19 +37,18 @@ public class TableScanToSpoolRule extends RelOptRule {
     super(operand(TableScan.class, none()));
   }
 
-  @Override public void onMatch(RelOptRuleCall call) {
+  @Override
+  public void onMatch(RelOptRuleCall call) {
     TableScan scan = call.rel(0);
     String tableName = scan.getTable().getQualifiedName().toString();
-    // In this case materializations are the CTEs
     for (RelOptMaterialization cte : call.getPlanner().getMaterializations()) {
       if (tableName.equals(cte.qualifiedTableName.toString()) && spools.add(tableName)) {
         RelOptTableImpl cteTable =
             RelOptTableImpl.create(null, scan.getRowType(), scan.getTable().getQualifiedName(), null);
-        // TODO Use the builder or something more generic to create the spool
+        RelFactories.SpoolFactory factory =
+            RelFactories.Struct.fromContext(call.getPlanner().getContext()).spoolFactory;
         // The Spool types are not used at the moment so choice between LAZY/EAGER does not affect anything
-        call.transformTo(
-            new HiveTableSpool(scan.getCluster(), scan.getCluster().traitSet(), cte.queryRel, Spool.Type.LAZY,
-                Spool.Type.LAZY, cteTable));
+        call.transformTo(factory.createTableSpool(cte.queryRel, Spool.Type.LAZY, Spool.Type.LAZY, cteTable));
       }
     }
   }
