@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.IncrementalRebuildMode.NOT_AVAILABLE;
 
 /**
  * Formats SHOW MATERIALIZED VIEWS results.
@@ -137,17 +138,11 @@ abstract class ShowMaterializedViewsFormatter {
   private static String formatIncrementalRebuildMode(Table materializedView) {
     HiveRelOptMaterialization relOptMaterialization = HiveMaterializedViewsRegistry.get().
         getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
+
     if (relOptMaterialization == null) {
-      return "Not available";
+      return NOT_AVAILABLE.getMessage();
     }
-    switch (relOptMaterialization.getRebuildMode()) {
-      case AVAILABLE:
-        return "Available";
-      case INSERT_ONLY:
-        return "Available for insert operations only";
-      case NOT_AVAILABLE:
-      default:
-        return "Not available";
-    }
+
+    return relOptMaterialization.getRebuildMode().getMessage();
   }
 }

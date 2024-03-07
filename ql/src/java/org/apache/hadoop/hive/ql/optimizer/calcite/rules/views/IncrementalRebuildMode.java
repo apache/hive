@@ -18,7 +18,17 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
 public enum IncrementalRebuildMode {
-  AVAILABLE,
-  INSERT_ONLY,
-  NOT_AVAILABLE
+  AVAILABLE("Available"),
+  INSERT_ONLY("Available for insert operations only"),
+  NOT_AVAILABLE("Not available");
+
+  private final String message;
+
+  IncrementalRebuildMode(String message) {
+    this.message = message;
+  }
+
+  public String getMessage() {
+    return message;
+  }
 }
