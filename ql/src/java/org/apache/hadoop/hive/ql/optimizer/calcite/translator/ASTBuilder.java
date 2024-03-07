@@ -78,12 +78,10 @@ public class ASTBuilder {
     assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
     ASTBuilder tableNameBuilder = ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME");
-    if (RelOptHiveTable.Type.CTE.equals(hTbl.getType())) {
-      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
-    }else {
-      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
-          .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
+    if (!RelOptHiveTable.Type.CTE.equals(hTbl.getType())) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName());
     }
+    tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
     if (hTbl.getHiveTableMD().getMetaTable() != null) {
       tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
     } else if (hTbl.getHiveTableMD().getSnapshotRef() != null) {
