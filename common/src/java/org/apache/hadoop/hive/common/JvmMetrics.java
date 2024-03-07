@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.common;
 
 import static org.apache.hadoop.hive.common.JvmMetricsInfo.*;
 
-import org.apache.hadoop.log.metrics.EventCounter;
+//import org.apache.hadoop.log.metrics.EventCounter;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
@@ -179,9 +179,9 @@ public class JvmMetrics implements MetricsSource {
   }
 
   private void getEventCounters(MetricsRecordBuilder rb) {
-    rb.addCounter(LogFatal, EventCounter.getFatal())
-        .addCounter(LogError, EventCounter.getError())
-        .addCounter(LogWarn, EventCounter.getWarn())
-        .addCounter(LogInfo, EventCounter.getInfo());
+//    rb.addCounter(LogFatal, EventCounter.getFatal())
+//        .addCounter(LogError, EventCounter.getError())
+//        .addCounter(LogWarn, EventCounter.getWarn())
+//        .addCounter(LogInfo, EventCounter.getInfo());
   }
 }
