@@ -1625,10 +1625,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     final List<ColStatistics> colStatsList = tableStats.getColumnStats();
+    if (!mapping.keySet().equals(colStatsList.stream().map(ColStatistics::getColumnName).collect(Collectors.toSet()))) {
+      LOG.warn("The column statistics are inconsistent with the expected column names. Actual = {}, Expected = {}",
+          colStatsList, parentColumnNames);
+      tableStats.setColumnStatsState(Statistics.State.NONE);
+      return tableStats;
+    }
     for (ColStatistics colStats : colStatsList) {
-      if (mapping.containsKey(colStats.getColumnName())) {
-        colStats.setColumnName(mapping.get(colStats.getColumnName()));
-      }
+      colStats.setColumnName(mapping.get(colStats.getColumnName()));
     }
     tableStats.setColumnStats(colStatsList);
     return tableStats;
