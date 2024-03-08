@@ -2117,18 +2117,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
       CommonTableExpressionSuggester suggester = new CommonTableExpressionJoinSuggester();
-      List<RelOptMaterialization> ctes = suggester.suggest(basePlan, conf);
-      if(ctes.isEmpty()) {
+      List<RelNode> ctes = suggester.suggest(basePlan, conf);
+      if (ctes.isEmpty()) {
         return basePlan;
       }
-      final RelOptCluster cluster = basePlan.getCluster();
-      HiveRelCopier copier = new HiveRelCopier(cluster);
-      ctes = ctes.stream().map(copier::copy).collect(Collectors.toList());
-      final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, ctes);
+      List<RelOptMaterialization> cteMVs = new ArrayList<>();
+      for (int i = 0; i < ctes.size(); i++) {
+        cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, ctes.get(i)));
+      }
+      final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
       LOG.info("MV rewrite using CTEs: {}", RelOptUtil.toString(ctePlan));
       final RelNode spoolPlan =
           executeProgram(ctePlan, HepProgram.builder().addRuleInstance(new TableScanToSpoolRule()).build(), mdProvider,
-              executorProvider, ctes, true);
+              executorProvider, cteMVs, true);
       LOG.info("CTE final plan: {}", RelOptUtil.toString(spoolPlan));
       if (RelNodeTypeDetector.contains(spoolPlan, Spool.class)) {
         return applyPreJoinOrderingTransforms(spoolPlan, mdProvider, executorProvider);

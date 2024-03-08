@@ -16,7 +16,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.conf.Configuration;
 
@@ -24,5 +23,5 @@ import java.util.List;
 
 public interface CommonTableExpressionSuggester {
   
-  List<RelOptMaterialization> suggest(RelNode input, Configuration configuration);
+  List<RelNode> suggest(RelNode input, Configuration configuration);
 }
