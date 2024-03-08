@@ -17,7 +17,7 @@ CREATE TABLE depts
 
 INSERT INTO depts VALUES (0, 'Engineering'), (1, 'Support'), (2, 'Sales');
 -- Find employees of the engineering and support department which have the same salary
-set hive.optimize.cte.rewrite.enabled=false;
+set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionEmptySuggester;
 EXPLAIN CBO SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e
@@ -45,7 +45,7 @@ FROM (SELECT e.name, e.salary
       INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
 
-set hive.optimize.cte.rewrite.enabled=true;
+set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionJoinSuggester;
 EXPLAIN CBO SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e

@@ -164,8 +164,8 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionJoinSuggester;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggester;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggesterFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
@@ -210,7 +210,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelCopier;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
@@ -1725,10 +1724,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITING);
-      if (conf.getBoolVar(ConfVars.HIVE_CTE_REWRITE_ENABLED)) {
-        calcitePlan =
-            applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
-      }
+      calcitePlan = applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
 
       // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
@@ -2116,7 +2112,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      CommonTableExpressionSuggester suggester = new CommonTableExpressionJoinSuggester();
+      CommonTableExpressionSuggester suggester = CommonTableExpressionSuggesterFactory.create(conf);
       List<RelNode> ctes = suggester.suggest(basePlan, conf);
       if (ctes.isEmpty()) {
         return basePlan;
