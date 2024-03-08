@@ -321,10 +321,10 @@ HiveProject(name=[$0], name1=[$2])
   HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(name=[$2], salary=[$3])
       HiveFilter(condition=[AND(=($9, _UTF-16LE'Support'), IS NOT NULL($3))])
-        HiveTableScan(table=[[cte, cte_table_suggest_0]], table:alias=[cte_table_suggest_0])
+        HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
     HiveProject(name=[$2], salary=[$3])
       HiveFilter(condition=[AND(IS NOT NULL($3), =($9, _UTF-16LE'Engineering'))])
-        HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_table_suggest_0]])
+        HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
           HiveProject(empid=[$0], deptno=[$1], name=[$2], salary=[$3], BLOCK__OFFSET__INSIDE__FILE=[$4], INPUT__FILE__NAME=[$5], ROW__ID=[$6], ROW__IS__DELETED=[$7], deptno0=[$8], name0=[$9], BLOCK__OFFSET__INSIDE__FILE0=[$10], INPUT__FILE__NAME0=[$11], ROW__ID0=[$12], ROW__IS__DELETED0=[$13])
             HiveJoin(condition=[=($1, $8)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(empid=[$0], deptno=[$1], name=[$2], salary=[$3], BLOCK__OFFSET__INSIDE__FILE=[$4], INPUT__FILE__NAME=[$5], ROW__ID=[$6], ROW__IS__DELETED=[$7])
@@ -543,7 +543,7 @@ FROM (SELECT e.name, e.salary
       INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
 WHERE sup.salary = eng.salary
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cte_table_suggest_0
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@depts
 PREHOOK: Input: default@emps
 #### A masked pattern was here ####
@@ -556,7 +556,7 @@ FROM (SELECT e.name, e.salary
       INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
 WHERE sup.salary = eng.salary
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cte_table_suggest_0
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
@@ -637,7 +637,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.cte_table_suggest_0
+                      name: default.cte_suggestion_0
 
   Stage: Stage-2
     Dependency Collection
@@ -652,7 +652,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: cte_table_suggest_0
+                  alias: cte_suggestion_0
                   filterExpr: ((name0 = 'Support') and salary is not null) (type: boolean)
                   Statistics: Num rows: 6 Data size: 5088 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -674,7 +674,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: cte_table_suggest_0
+                  alias: cte_suggestion_0
                   filterExpr: (salary is not null and (name0 = 'Engineering')) (type: boolean)
                   Statistics: Num rows: 6 Data size: 5088 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -737,11 +737,11 @@ FROM (SELECT e.name, e.salary
       INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
 WHERE sup.salary = eng.salary
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cte_table_suggest_0
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@depts
 PREHOOK: Input: default@emps
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cte_table_suggest_0
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
@@ -752,10 +752,10 @@ FROM (SELECT e.name, e.salary
       INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
 WHERE sup.salary = eng.salary
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cte_table_suggest_0
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cte_table_suggest_0
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 Josh	Rob

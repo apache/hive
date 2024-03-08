@@ -214,7 +214,7 @@ public class PlanModifierForASTConv {
         Spool spool = (Spool) rel;
         RelBuilder b = HiveRelFactories.HIVE_BUILDER.create(spool.getCluster(),null);
         b.push(spool.getInput());
-        b.rename(spool.getTable().getRowType().getFieldNames());
+        b.project(b.fields(), spool.getTable().getRowType().getFieldNames(), true);
         spool.replaceInput(0, b.build());
       }
     }
