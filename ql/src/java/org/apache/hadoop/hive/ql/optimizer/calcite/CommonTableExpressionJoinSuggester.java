@@ -16,8 +16,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.calcite.plan.CommonRelSubExprRule;
-import org.apache.calcite.plan.Context;
+import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
@@ -25,7 +24,6 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
@@ -45,6 +43,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CommonRelSubExprRegisterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.QueryTables;
 
@@ -52,11 +51,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Suggester for join common table expressions that appear more than once in the query plan.
@@ -73,7 +71,7 @@ public class CommonTableExpressionJoinSuggester implements CommonTableExpression
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
           .toRule();
   private static final RelOptRule JOIN_FILTER_TRANSPOSE_RULE = new JoinFilterTransposeRule();
-  private static final RelOptRule JOIN_CTE = new CteRegisterRule(Join.class);
+  private static final RelOptRule JOIN_CTE = new CommonRelSubExprRegisterRule(Join.class);
 
   private int cteId = 0;
 
@@ -81,11 +79,11 @@ public class CommonTableExpressionJoinSuggester implements CommonTableExpression
   public List<RelOptMaterialization> suggest(final RelNode input, final Configuration configuration) {
     List<RelOptRule> rules =
         Arrays.asList(JOIN_FILTER_TRANSPOSE_RULE, JOIN_PROJECT_TRANSPOSE_RULE, PROJECT_FILTER_TRANSPOSE_RULE, JOIN_CTE);
-    CteRegistry cteRegistry = new CteRegistry();
-    HepPlanner planner = new HepPlanner(new HepProgramBuilder().addRuleCollection(rules).build(), cteRegistry);
+    CommonTableExpressionRegistry localRegistry = new CommonTableExpressionRegistry();
+    HepPlanner planner = new HepPlanner(new HepProgramBuilder().addRuleCollection(rules).build(), Contexts.of(localRegistry));
     planner.setRoot(input);
     planner.findBestExp();
-    return cteRegistry.ctes.stream().map(this::wrap).collect(Collectors.toList());
+    return StreamSupport.stream(localRegistry.spliterator(), false).map(this::wrap).collect(Collectors.toList());
   }
 
   private RelOptMaterialization wrap(RelNode input) {
@@ -108,35 +106,6 @@ public class CommonTableExpressionJoinSuggester implements CommonTableExpression
             false);
 
     return new RelOptMaterialization(scan, input, null, tableName);
-  }
-
-  private static final class CteRegisterRule extends CommonRelSubExprRule {
-    public CteRegisterRule(Class<? extends RelNode> node) {
-      super(operand(node, any()));
-    }
-
-    @Override
-    public void onMatch(final RelOptRuleCall call) {
-      CteRegistry reg = call.getPlanner().getContext().unwrap(CteRegistry.class);
-      reg.add(call.rel(0));
-    }
-  }
-
-  private static final class CteRegistry implements Context {
-    private final Set<RelNode> ctes = new HashSet<>();
-
-    void add(RelNode cte) {
-      ctes.add(cte);
-    }
-
-    @Override
-    public <C> C unwrap(final Class<C> aClass) {
-      if (CteRegistry.class.equals(aClass)) {
-        return aClass.cast(this);
-      } else {
-        return null;
-      }
-    }
   }
 
   /**

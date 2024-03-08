@@ -172,6 +172,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CommonRelSubExprRegisterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
@@ -2448,6 +2449,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           programBuilder.addRuleInstance(r);
         }
       }
+      programBuilder.addRuleInstance(new CommonRelSubExprRegisterRule(RelNode.class));
     }
 
     protected RelNode executeProgram(RelNode basePlan, HepProgram program,
