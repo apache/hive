@@ -31,6 +31,8 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
+import org.apache.calcite.plan.hep.HepRelVertex;
+import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -1342,5 +1344,29 @@ public class HiveCalciteUtil {
 
     rexNode.accept(visitor);
     return rexTableInputRefs;
+  }
+
+  public static long countNodes(RelNode root) {
+    long[] count = new long[] { 0 };
+    root.accept(new RelHomogeneousShuttle() {
+      @Override
+      public RelNode visit(final RelNode other) {
+        count[0]++;
+        return super.visit(other);
+      }
+    });
+    return count[0];
+  }
+
+  public static RelNode stripHepVertices(RelNode rel) {
+    if (rel instanceof HepRelVertex) {
+      rel = ((HepRelVertex) rel).getCurrentRel();
+    }
+    List<RelNode> inputs = rel.getInputs();
+    for (int i = 0; i < inputs.size(); ++i) {
+      RelNode child = stripHepVertices(inputs.get(i));
+      rel.replaceInput(i, child);
+    }
+    return rel;
   }
 }

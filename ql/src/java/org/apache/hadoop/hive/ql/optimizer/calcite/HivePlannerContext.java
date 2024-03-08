@@ -29,6 +29,7 @@ public class HivePlannerContext implements Context {
   private CalciteConnectionConfig calciteConfig;
   private HiveConfPlannerContext isCorrelatedColumns;
   private StatsSource statsSource;
+  private final CommonTableExpressionRegistry cteRegistry = new CommonTableExpressionRegistry();
 
   public HivePlannerContext(HiveAlgorithmsConf algoConfig, HiveRulesRegistry registry,
       CalciteConnectionConfig calciteConfig,
@@ -56,6 +57,9 @@ public class HivePlannerContext implements Context {
     }
     if (clazz.isInstance(statsSource)) {
       return clazz.cast(statsSource);
+    }
+    if (clazz.isInstance(cteRegistry)) {
+      return clazz.cast(cteRegistry);
     }
     return null;
   }
