@@ -44,6 +44,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -211,9 +212,10 @@ public class PlanModifierForASTConv {
         }
       } else if (rel instanceof Spool) {
         Spool spool = (Spool) rel;
-        if (!validSpoolChild(spool)) {
-          introduceDerivedTable(spool.getInput(), spool);
-        }
+        RelBuilder b = HiveRelFactories.HIVE_BUILDER.create(spool.getCluster(),null);
+        b.push(spool.getInput());
+        b.rename(spool.getTable().getRowType().getFieldNames());
+        spool.replaceInput(0, b.build());
       }
     }
 
@@ -387,10 +389,6 @@ public class PlanModifierForASTConv {
     }
 
     return validChild;
-  }
-
-  private static boolean validSpoolChild(Spool spoolNode) {
-    return spoolNode.getInput() instanceof Project;
   }
 
   private static boolean validExchangeChild(HiveSortExchange sortNode) {
