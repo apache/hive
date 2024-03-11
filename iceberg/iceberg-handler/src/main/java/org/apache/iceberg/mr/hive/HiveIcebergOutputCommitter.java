@@ -66,6 +66,7 @@ import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.io.FileIO;
@@ -421,11 +422,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     Table table = null;
     String branchName = null;
 
+    Expression filterExpr = Expressions.alwaysTrue();
+
     for (JobContext jobContext : outputTable.jobContexts) {
       JobConf conf = jobContext.getJobConf();
       table = Optional.ofNullable(table).orElse(Catalogs.loadTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
 
+      Expression jobContextFilterExpr = (Expression) SessionStateUtil.getResource(conf, InputFormatConfig.QUERY_FILTERS)
+          .orElse(Expressions.alwaysTrue());
+      if (!filterExpr.equals(jobContextFilterExpr)) {
+        filterExpr = Expressions.and(filterExpr, jobContextFilterExpr);
+      }
+      LOG.debug("Filter Expression :{}", filterExpr);
       LOG.info("Committing job has started for table: {}, using location: {}",
           table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
@@ -458,7 +467,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                 .map(String::valueOf).collect(Collectors.joining(",")));
       } else {
         Long snapshotId = getSnapshotId(outputTable.table, branchName);
-        commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation);
+        commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation, filterExpr);
       }
     } else {
 
@@ -483,12 +492,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   /**
    * Creates and commits an Iceberg change with the provided data and delete files.
    * If there are no delete files then an Iceberg 'append' is created, otherwise Iceberg 'overwrite' is created.
-   * @param table The table we are changing
-   * @param startTime The start time of the commit - used only for logging
-   * @param results The object containing the new files we would like to add to the table
+   * @param table      The table we are changing
+   * @param startTime  The start time of the commit - used only for logging
+   * @param results    The object containing the new files we would like to add to the table
+   * @param filterExpr Filter expression for conflict detection filter
    */
   private void commitWrite(Table table, String branchName, Long snapshotId, long startTime,
-      FilesForCommit results, Operation operation) {
+      FilesForCommit results, Operation operation, Expression filterExpr) {
 
     if (!results.replacedDataFiles().isEmpty()) {
       OverwriteFiles write = table.newOverwrite();
@@ -501,6 +511,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
+      write.conflictDetectionFilter(filterExpr);
       write.validateNoConflictingData();
       write.validateNoConflictingDeletes();
       write.commit();
@@ -525,6 +536,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
+      write.conflictDetectionFilter(filterExpr);
+
       if (!results.dataFiles().isEmpty()) {
         write.validateDeletedFiles();
         write.validateNoConflictingDeleteFiles();
