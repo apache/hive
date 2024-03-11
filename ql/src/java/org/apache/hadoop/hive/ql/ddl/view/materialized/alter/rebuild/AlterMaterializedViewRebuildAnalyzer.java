@@ -353,29 +353,32 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       MaterializedViewRewritingRelVisitor visitor =
           new MaterializedViewRewritingRelVisitor(acidView);
       visitor.go(basePlan);
-      if (visitor.isRewritingAllowed()) {
-        if (!materialization.isSourceTablesUpdateDeleteModified()) {
-          // Trigger rewriting to remove UNION branch with MV
+      switch (visitor.getIncrementalRebuildMode()) {
+        case INSERT_ONLY:
+          if (materialization.isSourceTablesUpdateDeleteModified()) {
+            return calcitePreMVRewritingPlan;
+          }
+
           if (visitor.isContainsAggregate()) {
             return applyAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
           } else {
             return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
           }
-        } else {
-          // count(*) is necessary for determine which rows should be deleted from the view
-          // if view definition does not have it incremental rebuild can not be performed
-          if (acidView && visitor.isContainsAggregate() && visitor.getCountIndex() >= 0) {
-            return applyAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
+        case AVAILABLE:
+          if (!materialization.isSourceTablesUpdateDeleteModified()) {
+            return applyAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
           } else {
-            return calcitePreMVRewritingPlan;
+            return applyAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
           }
-        }
-      } else if (materialization.isSourceTablesUpdateDeleteModified()) {
-        // calcitePreMVRewritingPlan is already got the optimizations by applyPreJoinOrderingTransforms prior calling
-        // applyMaterializedViewRewriting in CalcitePlanner.CalcitePlannerAction.apply
-        return calcitePreMVRewritingPlan;
-      } else {
-        return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+        case NOT_AVAILABLE:
+        default:
+          if (materialization.isSourceTablesUpdateDeleteModified()) {
+            // calcitePreMVRewritingPlan is already got the optimizations by applyPreJoinOrderingTransforms prior to calling
+            // applyMaterializedViewRewriting in CalcitePlanner.CalcitePlannerAction.apply
+            return calcitePreMVRewritingPlan;
+          } else {
+            return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+          }
       }
     }
 

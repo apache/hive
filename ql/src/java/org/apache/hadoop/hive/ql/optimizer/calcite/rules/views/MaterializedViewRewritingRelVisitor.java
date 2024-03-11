@@ -19,17 +19,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Aggregate;
-import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ControlFlowException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is a helper to check whether a materialized view rebuild
@@ -45,18 +39,15 @@ import org.slf4j.LoggerFactory;
  */
 public class MaterializedViewRewritingRelVisitor extends RelVisitor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewRewritingRelVisitor.class);
-
-
   private boolean containsAggregate;
   private final boolean fullAcidView;
-  private boolean rewritingAllowed;
+  private IncrementalRebuildMode incrementalRebuildMode;
   private int countIndex;
 
   public MaterializedViewRewritingRelVisitor(boolean fullAcidView) {
     this.containsAggregate = false;
     this.fullAcidView = fullAcidView;
-    this.rewritingAllowed = false;
+    this.incrementalRebuildMode = IncrementalRebuildMode.NOT_AVAILABLE;
     this.countIndex = -1;
   }
 
@@ -77,42 +68,22 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       // Project operator, we can continue
       super.visit(node, ordinal, parent);
     }
-    throw new ReturnedValue(false);
+    throw new ReturnedValue(IncrementalRebuildMode.NOT_AVAILABLE);
   }
 
   private void check(Union union) {
     // We found the Union
     if (union.getInputs().size() != 2) {
       // Bail out
-      throw new ReturnedValue(false);
+      throw new ReturnedValue(IncrementalRebuildMode.NOT_AVAILABLE);
     }
     // First branch should have the query (with write ID filter conditions)
     RelNode queryBranch = union.getInput(0);
-    new RelVisitor() {
-      @Override
-      public void visit(RelNode node, int ordinal, RelNode parent) {
-        if (node instanceof TableScan ||
-            node instanceof Filter ||
-            node instanceof Project ||
-            node instanceof Join) {
-          // We can continue
-          super.visit(node, ordinal, parent);
-        } else if (node instanceof Aggregate && containsAggregate) {
-          Aggregate aggregate = (Aggregate) node;
-          for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
-            AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
-            if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().size() == 0) {
-              countIndex = i + aggregate.getGroupCount();
-              break;
-            }
-          }
-          // We can continue
-          super.visit(node, ordinal, parent);
-        } else {
-          throw new ReturnedValue(false);
-        }
-      }
-    }.go(queryBranch);
+    MaterializedViewIncrementalRewritingRelVisitor.Result result =
+        new MaterializedViewIncrementalRewritingRelVisitor().go(queryBranch);
+    incrementalRebuildMode = result.getIncrementalRebuildMode();
+    containsAggregate = result.containsAggregate();
+    countIndex = result.getCountStarIndex();
 
     // Second branch should only have the MV
     new RelVisitor() {
@@ -124,23 +95,23 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
           RelOptHiveTable hiveTable = (RelOptHiveTable) node.getTable();
           if (!hiveTable.getHiveTableMD().isMaterializedView()) {
             // If it is not a materialized view, we do not rewrite it
-            throw new ReturnedValue(false);
+            throw new ReturnedValue(IncrementalRebuildMode.NOT_AVAILABLE);
           }
           if (containsAggregate && !fullAcidView) {
             // If it contains an aggregate and it is not a full acid table,
             // we do not rewrite it (we need MERGE support)
-            throw new ReturnedValue(false);
+            throw new ReturnedValue(IncrementalRebuildMode.NOT_AVAILABLE);
           }
         } else if (node instanceof Project) {
           // We can continue
           super.visit(node, ordinal, parent);
         } else {
-          throw new ReturnedValue(false);
+          throw new ReturnedValue(IncrementalRebuildMode.NOT_AVAILABLE);
         }
       }
     }.go(union.getInput(1));
     // We pass all the checks, we can rewrite
-    throw new ReturnedValue(true);
+    throw new ReturnedValue(result.getIncrementalRebuildMode());
   }
 
   /**
@@ -151,7 +122,7 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
       visit(p, 0, null);
     } catch (ReturnedValue e) {
       // Rewriting cannot be performed
-      rewritingAllowed = e.value;
+      incrementalRebuildMode = e.incrementalRebuildMode;
     }
     return p;
   }
@@ -160,8 +131,8 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
     return containsAggregate;
   }
 
-  public boolean isRewritingAllowed() {
-    return rewritingAllowed;
+  public IncrementalRebuildMode getIncrementalRebuildMode() {
+    return incrementalRebuildMode;
   }
 
   public int getCountIndex() {
@@ -171,11 +142,11 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
   /**
    * Exception used to interrupt a visitor walk.
    */
-  private static class ReturnedValue extends ControlFlowException {
-    private final boolean value;
+  private static final class ReturnedValue extends ControlFlowException {
+    private final IncrementalRebuildMode incrementalRebuildMode;
 
-    public ReturnedValue(boolean value) {
-      this.value = value;
+    public ReturnedValue(IncrementalRebuildMode incrementalRebuildMode) {
+      this.incrementalRebuildMode = incrementalRebuildMode;
     }
   }
 }

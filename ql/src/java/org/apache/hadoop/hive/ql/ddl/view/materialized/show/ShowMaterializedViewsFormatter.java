@@ -40,8 +40,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.IncrementalRebuildMode.UNKNOWN;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.IncrementalRebuildMode.NOT_AVAILABLE;
 
 /**
  * Formats SHOW MATERIALIZED VIEWS results.
@@ -136,27 +136,13 @@ abstract class ShowMaterializedViewsFormatter {
 
   @NotNull
   private static String formatIncrementalRebuildMode(Table materializedView) {
-    String incrementalRebuild;
     HiveRelOptMaterialization relOptMaterialization = HiveMaterializedViewsRegistry.get().
-            getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
-    if (relOptMaterialization == null || relOptMaterialization.getRebuildMode() == UNKNOWN) {
-      incrementalRebuild = "Unknown";
-    } else {
-      switch (relOptMaterialization.getRebuildMode()) {
-        case AVAILABLE:
-          incrementalRebuild = "Available";
-          break;
-        case INSERT_ONLY:
-          incrementalRebuild = "Available in presence of insert operations only";
-          break;
-        case NOT_AVAILABLE:
-          incrementalRebuild = "Not available";
-          break;
-        default:
-          incrementalRebuild = "Unknown";
-          break;
-      }
+        getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
+
+    if (relOptMaterialization == null) {
+      return NOT_AVAILABLE.getMessage();
     }
-    return incrementalRebuild;
+
+    return relOptMaterialization.getRebuildMode().getMessage();
   }
 }
