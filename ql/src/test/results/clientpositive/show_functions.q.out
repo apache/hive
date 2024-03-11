@@ -398,7 +398,6 @@ date_format
 date_sub
 datediff
 datetime_legacy_hybrid_calendar
-get_llap_splits
 to_date
 PREHOOK: query: SHOW FUNCTIONS '***'
 PREHOOK: type: SHOWFUNCTIONS
