@@ -225,10 +225,10 @@ STAGE PLANS:
                     Statistics: Num rows: 16616325265 Data size: 1840672207276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
-                      outputColumnNames: ss_ext_list_price
+                      outputColumnNames: _col16
                       Statistics: Num rows: 16616325265 Data size: 1840672207276 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
+                        aggregations: sum(_col16), count(_col16)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
@@ -240,10 +240,10 @@ STAGE PLANS:
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
-                      outputColumnNames: ss_net_paid_inc_tax
+                      outputColumnNames: _col20
                       Statistics: Num rows: 16616325265 Data size: 1840645264444 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
+                        aggregations: sum(_col20), count(_col20)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
@@ -317,10 +317,10 @@ STAGE PLANS:
                     Statistics: Num rows: 16616325265 Data size: 1840672207276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
-                      outputColumnNames: _col16
+                      outputColumnNames: ss_ext_list_price
                       Statistics: Num rows: 16616325265 Data size: 1840672207276 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(_col16), count(_col16)
+                        aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
@@ -332,10 +332,10 @@ STAGE PLANS:
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
-                      outputColumnNames: _col20
+                      outputColumnNames: ss_net_paid_inc_tax
                       Statistics: Num rows: 16616325265 Data size: 1840645264444 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(_col20), count(_col20)
+                        aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
