@@ -27,7 +27,7 @@ import org.apache.calcite.rel.core.Intersect;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 
-public class HiveIntersect extends Intersect {
+public class HiveIntersect extends Intersect implements HiveRelNode {
 
   public HiveIntersect(RelOptCluster cluster, RelTraitSet traits, List<RelNode> inputs, boolean all) {
     super(cluster, traits, inputs, all);
