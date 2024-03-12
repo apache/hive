@@ -16,8 +16,12 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import org.apache.calcite.plan.Contexts;
+import org.apache.calcite.plan.hep.HepPlanner;
+import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CommonRelSubExprRegisterRule;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,15 +36,16 @@ public class CommonTableExpressionRegistrySuggester implements CommonTableExpres
 
   @Override
   public List<RelNode> suggest(final RelNode input, final Configuration configuration) {
-    CommonTableExpressionRegistry r =
-        input.getCluster().getPlanner().getContext().unwrap(CommonTableExpressionRegistry.class);
-    if (r != null) {
-      Optional<RelNode> bestCte =
-          StreamSupport.stream(r.spliterator(), false).max(Comparator.comparing(HiveCalciteUtil::countNodes));
-      return bestCte.map(Collections::singletonList).orElse(Collections.emptyList());
-    } else {
-      return Collections.emptyList();
-    }
+    CommonTableExpressionRegistry localRegistry = new CommonTableExpressionRegistry();
+    HepPlanner planner =
+        new HepPlanner(new HepProgramBuilder().addRuleInstance(new CommonRelSubExprRegisterRule(RelNode.class)).build(),
+            Contexts.of(localRegistry));
+    planner.setRoot(input);
+    planner.findBestExp();
+    Optional<RelNode> bestCte =
+        StreamSupport.stream(localRegistry.spliterator(), false).max(Comparator.comparing(HiveCalciteUtil::countNodes));
+    return bestCte.map(Collections::singletonList).orElse(Collections.emptyList());
+
   }
 
 }

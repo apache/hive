@@ -1700,6 +1700,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           materializationValidator.getAutomaticRewritingValidationResult());
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.VALIDATE_QUERY_MATERIALIZATION);
 
+      calcitePlan = applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
       // 2. Apply pre-join order optimizations
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PREJOIN_ORDERING);
       calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
@@ -2128,7 +2129,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {
         return basePlan;
       } else {
-        return applyPreJoinOrderingTransforms(spoolPlan, mdProvider, executorProvider);
+        return spoolPlan;
       }
     }
 
@@ -2444,7 +2445,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           programBuilder.addRuleInstance(r);
         }
       }
-      programBuilder.addRuleInstance(new CommonRelSubExprRegisterRule(RelNode.class));
     }
 
     protected RelNode executeProgram(RelNode basePlan, HepProgram program,
