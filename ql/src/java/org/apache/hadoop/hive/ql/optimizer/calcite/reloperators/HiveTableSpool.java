@@ -23,13 +23,14 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableSpool;
 
-public class HiveTableSpool extends TableSpool {
+public class HiveTableSpool extends TableSpool implements HiveRelNode {
   public HiveTableSpool(RelOptCluster cluster, RelTraitSet traitSet, RelNode input, Type readType, Type writeType,
       RelOptTable table) {
     super(cluster, traitSet, input, readType, writeType, table);
   }
 
-  @Override protected Spool copy(RelTraitSet traitSet, RelNode input, Type readType, Type writeType) {
+  @Override
+  protected Spool copy(RelTraitSet traitSet, RelNode input, Type readType, Type writeType) {
     return new HiveTableSpool(getCluster(), traitSet, input, readType, writeType, table);
   }
 }
