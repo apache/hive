@@ -18,24 +18,39 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.RelNode;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Stream;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.stream.Collectors;
+/**
+ * A registry of common table expressions for a given query.
+ * <p>The registry is only meant to hold common expressions for a single query.</p>
+ * <p>The class is not thread-safe.</p>
+ */
+public final class CommonTableExpressionRegistry {
+  /**
+   * A collection of common table expressions.
+   * <p>There are no guarantees that entries are unique, but it is usually the case when expressions are
+   * registered via {@link org.apache.calcite.plan.RelOptRule}. Using a {@code Set<RelNode>} would be less efficient
+   * (and less predictive) without additional benefits since {@link org.apache.calcite.rel.AbstractRelNode#equals(Object)}
+   * is using object reference equality.</p>
+   * <p>The expressions may contain internal planning concepts such as {@link org.apache.calcite.plan.hep.HepRelVertex}.
+   * </p>
+   */
+  private final Collection<RelNode> ctes = new ArrayList<>();
 
-public final class CommonTableExpressionRegistry implements Iterable<RelNode> {
-  private final Set<RelNode> ctes = new HashSet<>();
-
+  /**
+   * Adds the specified common table expression to this registry.
+   * @param cte common table expression to be added to the registry.
+   */
   public void add(RelNode cte) {
     this.ctes.add(cte);
   }
 
-  @NotNull
-  @Override
-  public Iterator<RelNode> iterator() {
-    // When is it safe to modify the plan at this stage (in the middle of optimizations?) If we start removing vertices while the HepPlanner is still running the we can possibly ruin the internal stage of the planner. We should find an alternative way to expose this
-    return ctes.stream().map(HiveCalciteUtil::stripHepVertices).collect(Collectors.toList()).iterator();
+  /**
+   * @return a stream with all common table expression entries
+   */
+  public Stream<RelNode> entries() {
+    return ctes.stream().map(HiveCalciteUtil::stripHepVertices);
   }
 }
