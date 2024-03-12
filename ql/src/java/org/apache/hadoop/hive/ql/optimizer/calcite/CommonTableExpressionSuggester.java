@@ -21,6 +21,11 @@ import org.apache.hadoop.conf.Configuration;
 
 import java.util.List;
 
+/**
+ * Is it correct to suggest expressions that do not appear more than once in the query?
+ * Who should check that the suggestions makes sense?
+ * What if the suggester brings back incorrect/invalid equivalences?
+ */
 public interface CommonTableExpressionSuggester {
   
   List<RelNode> suggest(RelNode input, Configuration configuration);
