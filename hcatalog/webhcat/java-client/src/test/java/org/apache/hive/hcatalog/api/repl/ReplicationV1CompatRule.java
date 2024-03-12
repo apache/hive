@@ -18,7 +18,6 @@
  */
 package org.apache.hive.hcatalog.api.repl;
 
-import com.google.common.primitives.Ints;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -151,7 +150,7 @@ public class ReplicationV1CompatRule implements TestRule {
               new EventUtils.MSClientNotificationFetcher(hiveDb);
       EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
               evFetcher, testEventIdBefore,
-              Ints.checkedCast(testEventIdAfter - testEventIdBefore) + 1,
+              Math.toIntExact(testEventIdAfter - testEventIdBefore) + 1,
               evFilter);
       ReplicationTask.resetFactory(null);
       assertTrue("We should have found some events", evIter.hasNext());

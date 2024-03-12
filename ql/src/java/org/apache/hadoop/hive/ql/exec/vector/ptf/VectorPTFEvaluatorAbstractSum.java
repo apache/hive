@@ -36,7 +36,7 @@ public abstract class VectorPTFEvaluatorAbstractSum<T> extends VectorPTFEvaluato
 
   @Override
   public boolean canRunOptimizedCalculation(int rowNum, Range range) {
-    return previousRange != null && !(range.getSize() <= range.getDiff(previousRange));
+    return previousRange != null && range.getSize() > range.getDiff(previousRange);
   }
 
   /**
