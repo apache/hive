@@ -26,7 +26,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: (c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_157_container, bigKeyColName:c_current_addr_sk, smallTablePos:1, keyRatio:0.054623625
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_160_container, bigKeyColName:c_current_addr_sk, smallTablePos:1, keyRatio:0.054623625
                   Statistics: Num rows: 80000000 Data size: 1897611080 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
@@ -94,10 +94,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: (ss_customer_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS_31_c_c_customer_sk_min) AND DynamicValue(RS_31_c_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_31_c_c_customer_sk_bloom_filter))) (type: boolean)
+                  filterExpr: (ss_customer_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS_33_c_c_customer_sk_min) AND DynamicValue(RS_33_c_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_33_c_c_customer_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 82510879939 Data size: 1304615207232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS_31_c_c_customer_sk_min) AND DynamicValue(RS_31_c_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_31_c_c_customer_sk_bloom_filter))) (type: boolean)
+                    predicate: (ss_customer_sk is not null and ss_customer_sk BETWEEN DynamicValue(RS_33_c_c_customer_sk_min) AND DynamicValue(RS_33_c_c_customer_sk_max) and in_bloom_filter(ss_customer_sk, DynamicValue(RS_33_c_c_customer_sk_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 80566020964 Data size: 1273864200864 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_customer_sk (type: bigint), ss_sold_date_sk (type: bigint)
@@ -131,10 +131,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
-                  filterExpr: (ws_bill_customer_sk is not null and ws_bill_customer_sk BETWEEN DynamicValue(RS_34_c_c_customer_sk_min) AND DynamicValue(RS_34_c_c_customer_sk_max) and in_bloom_filter(ws_bill_customer_sk, DynamicValue(RS_34_c_c_customer_sk_bloom_filter))) (type: boolean)
+                  filterExpr: (ws_bill_customer_sk is not null and ws_bill_customer_sk BETWEEN DynamicValue(RS_36_c_c_customer_sk_min) AND DynamicValue(RS_36_c_c_customer_sk_max) and in_bloom_filter(ws_bill_customer_sk, DynamicValue(RS_36_c_c_customer_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 21594638446 Data size: 345492666072 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ws_bill_customer_sk is not null and ws_bill_customer_sk BETWEEN DynamicValue(RS_34_c_c_customer_sk_min) AND DynamicValue(RS_34_c_c_customer_sk_max) and in_bloom_filter(ws_bill_customer_sk, DynamicValue(RS_34_c_c_customer_sk_bloom_filter))) (type: boolean)
+                    predicate: (ws_bill_customer_sk is not null and ws_bill_customer_sk BETWEEN DynamicValue(RS_36_c_c_customer_sk_min) AND DynamicValue(RS_36_c_c_customer_sk_max) and in_bloom_filter(ws_bill_customer_sk, DynamicValue(RS_36_c_c_customer_sk_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 21591944812 Data size: 345449570616 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ws_bill_customer_sk (type: bigint), ws_sold_date_sk (type: bigint)
@@ -266,10 +266,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
-                  filterExpr: (cs_ship_customer_sk is not null and cs_ship_customer_sk BETWEEN DynamicValue(RS_57_c_c_customer_sk_min) AND DynamicValue(RS_57_c_c_customer_sk_max) and in_bloom_filter(cs_ship_customer_sk, DynamicValue(RS_57_c_c_customer_sk_bloom_filter))) (type: boolean)
+                  filterExpr: (cs_ship_customer_sk is not null and cs_ship_customer_sk BETWEEN DynamicValue(RS_60_c_c_customer_sk_min) AND DynamicValue(RS_60_c_c_customer_sk_max) and in_bloom_filter(cs_ship_customer_sk, DynamicValue(RS_60_c_c_customer_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 43005109025 Data size: 687211661648 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cs_ship_customer_sk is not null and cs_ship_customer_sk BETWEEN DynamicValue(RS_57_c_c_customer_sk_min) AND DynamicValue(RS_57_c_c_customer_sk_max) and in_bloom_filter(cs_ship_customer_sk, DynamicValue(RS_57_c_c_customer_sk_bloom_filter))) (type: boolean)
+                    predicate: (cs_ship_customer_sk is not null and cs_ship_customer_sk BETWEEN DynamicValue(RS_60_c_c_customer_sk_min) AND DynamicValue(RS_60_c_c_customer_sk_max) and in_bloom_filter(cs_ship_customer_sk, DynamicValue(RS_60_c_c_customer_sk_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 42896348680 Data size: 685473696576 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cs_ship_customer_sk (type: bigint), cs_sold_date_sk (type: bigint)

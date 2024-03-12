@@ -18,7 +18,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
-                  filterExpr: (ws_item_sk BETWEEN DynamicValue(RS_25_item_i_item_sk_min) AND DynamicValue(RS_25_item_i_item_sk_max) and in_bloom_filter(ws_item_sk, DynamicValue(RS_25_item_i_item_sk_bloom_filter))) (type: boolean)
+                  filterExpr: (ws_item_sk BETWEEN DynamicValue(RS_27_item_i_item_sk_min) AND DynamicValue(RS_27_item_i_item_sk_max) and in_bloom_filter(ws_item_sk, DynamicValue(RS_27_item_i_item_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 21594638446 Data size: 2763810784048 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_ext_discount_amt is not null (type: boolean)
@@ -45,7 +45,7 @@ STAGE PLANS:
                           Statistics: Num rows: 21872348 Data size: 2496761472 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(7,2)), _col2 (type: bigint)
                   Filter Operator
-                    predicate: (ws_item_sk BETWEEN DynamicValue(RS_25_item_i_item_sk_min) AND DynamicValue(RS_25_item_i_item_sk_max) and in_bloom_filter(ws_item_sk, DynamicValue(RS_25_item_i_item_sk_bloom_filter))) (type: boolean)
+                    predicate: (ws_item_sk BETWEEN DynamicValue(RS_27_item_i_item_sk_min) AND DynamicValue(RS_27_item_i_item_sk_max) and in_bloom_filter(ws_item_sk, DynamicValue(RS_27_item_i_item_sk_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 21594638446 Data size: 2763810784048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ws_item_sk (type: bigint), ws_ext_discount_amt (type: decimal(7,2)), ws_sold_date_sk (type: bigint)
