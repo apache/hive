@@ -9,8 +9,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Map 4 <- Map 1 (BROADCAST_EDGE), Map 11 (BROADCAST_EDGE), Map 12 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE), Map 9 (BROADCAST_EDGE), Reducer 10 (BROADCAST_EDGE), Reducer 13 (BROADCAST_EDGE), Reducer 2 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE)
-        Reducer 10 <- Map 9 (SIMPLE_EDGE)
+        Map 4 <- Map 1 (BROADCAST_EDGE), Map 10 (BROADCAST_EDGE), Map 12 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE), Map 9 (BROADCAST_EDGE), Reducer 11 (BROADCAST_EDGE), Reducer 13 (BROADCAST_EDGE), Reducer 2 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE)
+        Reducer 11 <- Map 10 (SIMPLE_EDGE)
         Reducer 13 <- Map 12 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
@@ -56,25 +56,31 @@ STAGE PLANS:
                           Statistics: Num rows: 13333334 Data size: 106666672 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Map 11 
+        Map 10 
             Map Operator Tree:
                 TableScan
-                  alias: promotion
-                  filterExpr: ((p_channel_email = 'Y') or (p_channel_tv = 'Y') or (p_channel_dmail = 'Y')) (type: boolean)
-                  Statistics: Num rows: 2300 Data size: 604900 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: store
+                  filterExpr: (s_gmt_offset = -7) (type: boolean)
+                  Statistics: Num rows: 1704 Data size: 203584 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((p_channel_email = 'Y') or (p_channel_tv = 'Y') or (p_channel_dmail = 'Y')) (type: boolean)
-                    Statistics: Num rows: 2300 Data size: 604900 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (s_gmt_offset = -7) (type: boolean)
+                    Statistics: Num rows: 341 Data size: 40808 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_promo_sk (type: bigint)
+                      expressions: s_store_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2300 Data size: 18400 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 341 Data size: 2728 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 2300 Data size: 18400 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 341 Data size: 2728 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 341 Data size: 2728 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 12 
@@ -166,7 +172,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             outputColumnNames: _col1, _col3, _col4
                             input vertices:
-                              1 Reducer 10
+                              1 Reducer 11
                             Statistics: Num rows: 23754047 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -176,7 +182,7 @@ STAGE PLANS:
                                 1 _col0 (type: bigint)
                               outputColumnNames: _col1, _col4
                               input vertices:
-                                1 Map 11
+                                1 Map 9
                               Statistics: Num rows: 23754047 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                               Map Join Operator
                                 condition map:
@@ -234,7 +240,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             outputColumnNames: _col1, _col3
                             input vertices:
-                              1 Map 9
+                              1 Map 10
                             Statistics: Num rows: 24325812 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -305,31 +311,25 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: store
-                  filterExpr: (s_gmt_offset = -7) (type: boolean)
-                  Statistics: Num rows: 1704 Data size: 203584 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: promotion
+                  filterExpr: ((p_channel_email = 'Y') or (p_channel_tv = 'Y') or (p_channel_dmail = 'Y')) (type: boolean)
+                  Statistics: Num rows: 2300 Data size: 604900 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (s_gmt_offset = -7) (type: boolean)
-                    Statistics: Num rows: 341 Data size: 40808 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((p_channel_email = 'Y') or (p_channel_tv = 'Y') or (p_channel_dmail = 'Y')) (type: boolean)
+                    Statistics: Num rows: 2300 Data size: 604900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: s_store_sk (type: bigint)
+                      expressions: p_promo_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 341 Data size: 2728 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2300 Data size: 18400 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 341 Data size: 2728 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 341 Data size: 2728 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2300 Data size: 18400 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Reducer 10 
+        Reducer 11 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
