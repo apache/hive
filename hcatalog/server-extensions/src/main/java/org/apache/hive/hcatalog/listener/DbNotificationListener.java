@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,6 +72,7 @@ import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterPartitionsMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
@@ -479,6 +480,25 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     event.setDbName(before.getDbName());
     event.setTableName(before.getTableName());
     process(event, partitionEvent);
+  }
+
+  @Override
+  public void onAlterPartitions(AlterPartitionsEvent event) throws MetaException {
+    Table table = event.getTable();
+    Iterator<List<Partition>> iterator = event.getNewPartsIterator(maxBatchSize);
+    while (iterator.hasNext()) {
+      List<Partition> partitions = iterator.next();
+      AlterPartitionsMessage msg = MessageBuilder.getInstance()
+          .buildAlterPartitionsMessage(event.getTable(), partitions,
+              event.getIsTruncateOp(), partitions.get(0).getWriteId());
+      NotificationEvent notification =
+          new NotificationEvent(0, now(), EventType.ALTER_PARTITIONS.toString(),
+              msgEncoder.getSerializer().serialize(msg));
+      notification.setCatName(table.isSetCatName() ? table.getCatName() : getDefaultCatalog(conf));
+      notification.setDbName(table.getDbName());
+      notification.setTableName(table.getTableName());
+      process(notification, event);
+    }
   }
 
   /**

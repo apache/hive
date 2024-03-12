@@ -213,24 +213,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   /**
-   * Internal function to notify listeners for meta config change events
-   */
-  private void notifyMetaListeners(String key, String oldValue, String newValue) throws MetaException {
-    for (MetaStoreEventListener listener : listeners) {
-      listener.onConfigChange(new ConfigChangeEvent(this, key, oldValue, newValue));
-    }
-
-    if (transactionalListeners.size() > 0) {
-      // All the fields of this event are final, so no reason to create a new one for each
-      // listener
-      ConfigChangeEvent cce = new ConfigChangeEvent(this, key, oldValue, newValue);
-      for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-        transactionalListener.onConfigChange(cce);
-      }
-    }
-  }
-
-  /**
    * Internal function to notify listeners to revert back to old values of keys
    * that were modified during setMetaConf. This would get called from HiveMetaStore#cleanupHandlerContext
    */
@@ -246,7 +228,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         String currVal = entry.getValue();
         String oldVal = conf.get(key);
         if (!Objects.equals(oldVal, currVal)) {
-          notifyMetaListeners(key, oldVal, currVal);
+          for (List<MetaStoreEventListener> eventListeners :
+              new List[] { listeners, transactionalListeners }) {
+            MetaStoreListenerNotifier.notifyEvent(eventListeners, EventType.CONFIG_CHANGE,
+                new ConfigChangeEvent(this, key, oldVal, currVal));
+          }
         }
       }
       logAndAudit("Meta listeners shutdown notification completed.");
@@ -518,8 +504,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       HMSHandlerContext.setHMSHandler(this);
     }
     configuration.set(key, value);
-    notifyMetaListeners(key, oldValue, value);
-
+    for (List<MetaStoreEventListener> eventListeners :
+        new List[] { listeners, transactionalListeners }) {
+      MetaStoreListenerNotifier.notifyEvent(eventListeners, EventType.CONFIG_CHANGE,
+          new ConfigChangeEvent(this, key, oldValue, value));
+    }
     if (ConfVars.TRY_DIRECT_SQL == confVar) {
       HMSHandler.LOG.info("Direct SQL optimization = {}",  value);
     }

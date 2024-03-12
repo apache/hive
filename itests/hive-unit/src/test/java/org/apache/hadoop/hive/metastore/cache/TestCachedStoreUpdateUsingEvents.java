@@ -544,7 +544,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     // Read the altered partition via CachedStore
     ptnRead = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal1Alt));
-    Assert.assertEquals(ptn1Atl.getParameters(), ptnRead.getParameters());
+    Assert.assertEquals(null, ptnRead);
 
     ptnRead = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal2));
     Assert.assertEquals(null, ptnRead);
