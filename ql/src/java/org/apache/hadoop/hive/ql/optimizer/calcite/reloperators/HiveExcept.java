@@ -25,7 +25,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Minus;
 import org.apache.calcite.rel.core.SetOp;
 
-public class HiveExcept extends Minus {
+public class HiveExcept extends Minus implements HiveRelNode {
 
   public HiveExcept(RelOptCluster cluster, RelTraitSet traits, List<RelNode> inputs, boolean all) {
     super(cluster, traits, inputs, all);
