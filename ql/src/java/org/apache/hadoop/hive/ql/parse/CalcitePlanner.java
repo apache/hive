@@ -85,7 +85,6 @@ import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.SetOp;
-import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
@@ -185,7 +184,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationVali
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelNodeTypeDetector;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
@@ -2127,10 +2125,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           executeProgram(ctePlan, HepProgram.builder().addRuleInstance(new TableScanToSpoolRule()).build(), mdProvider,
               executorProvider, cteMVs, true);
       LOG.info("CTE final plan: {}", RelOptUtil.toString(spoolPlan));
-      if (RelNodeTypeDetector.contains(spoolPlan, Spool.class)) {
-        return applyPreJoinOrderingTransforms(spoolPlan, mdProvider, executorProvider);
-      } else {
+      if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {
         return basePlan;
+      } else {
+        return applyPreJoinOrderingTransforms(spoolPlan, mdProvider, executorProvider);
       }
     }
 
