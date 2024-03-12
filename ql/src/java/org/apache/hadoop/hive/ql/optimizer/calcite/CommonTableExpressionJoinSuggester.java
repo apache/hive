@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Suggester for join common table expressions that appear more than once in the query plan.
@@ -67,7 +66,7 @@ public class CommonTableExpressionJoinSuggester implements CommonTableExpression
         new HepPlanner(new HepProgramBuilder().addRuleCollection(rules).build(), Contexts.of(localRegistry));
     planner.setRoot(input);
     planner.findBestExp();
-    return StreamSupport.stream(localRegistry.spliterator(), false).collect(Collectors.toList());
+    return localRegistry.entries().collect(Collectors.toList());
   }
 
   /**

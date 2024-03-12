@@ -1362,11 +1362,15 @@ public class HiveCalciteUtil {
     if (rel instanceof HepRelVertex) {
       rel = ((HepRelVertex) rel).getCurrentRel();
     }
-    List<RelNode> inputs = rel.getInputs();
-    for (int i = 0; i < inputs.size(); ++i) {
-      RelNode child = stripHepVertices(inputs.get(i));
-      rel.replaceInput(i, child);
+    List<RelNode> oldInputs = rel.getInputs();
+    List<RelNode> newInputs = new ArrayList<>();
+    for (RelNode oldInput : oldInputs) {
+      newInputs.add(stripHepVertices(oldInput));
     }
-    return rel;
+    if (oldInputs.equals(newInputs)) {
+      return rel;
+    } else {
+      return rel.copy(rel.getTraitSet(), newInputs);
+    }
   }
 }

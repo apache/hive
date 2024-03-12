@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 /**
  * Suggester for join common table expressions that appear more than once in the query plan.
@@ -42,8 +41,7 @@ public class CommonTableExpressionRegistrySuggester implements CommonTableExpres
             Contexts.of(localRegistry));
     planner.setRoot(input);
     planner.findBestExp();
-    Optional<RelNode> bestCte =
-        StreamSupport.stream(localRegistry.spliterator(), false).max(Comparator.comparing(HiveCalciteUtil::countNodes));
+    Optional<RelNode> bestCte = localRegistry.entries().max(Comparator.comparing(HiveCalciteUtil::countNodes));
     return bestCte.map(Collections::singletonList).orElse(Collections.emptyList());
 
   }
