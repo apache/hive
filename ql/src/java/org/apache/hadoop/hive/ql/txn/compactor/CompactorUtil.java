@@ -515,8 +515,9 @@ public class CompactorUtil {
   }
 
   public static CompactionResponse initiateCompactionForPartition(Table table, Partition partition,
-      CompactionRequest compactionRequest, String hostName, TxnStore txnHandler, HiveConf conf) throws MetaException {
+      CompactionRequest compactionRequest, String hostName, TxnStore txnHandler, HiveConf inputConf) throws MetaException {
     ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+    HiveConf conf = new HiveConf(inputConf);
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     CompactionResponse compactionResponse;
     CompactionInfo compactionInfo =
