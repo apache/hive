@@ -2114,9 +2114,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
 
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Plan after view based rewriting:\n{}", RelOptUtil.toString(basePlan));
-      }
       return basePlan;
     }
 
