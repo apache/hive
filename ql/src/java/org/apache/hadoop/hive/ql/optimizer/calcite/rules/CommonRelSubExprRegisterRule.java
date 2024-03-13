@@ -18,12 +18,29 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.CommonRelSubExprRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistry;
 
+import java.util.function.Predicate;
+
 public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
-  public CommonRelSubExprRegisterRule(Class<? extends RelNode> node) {
-    super(operand(node, any()));
+  private static final Predicate<RelNode> NO_SCAN_PREDICATE = rel -> !(rel instanceof TableScan);
+  public static final CommonRelSubExprRegisterRule JOIN = new CommonRelSubExprRegisterRule(operand(Join.class, any()));
+  public static final CommonRelSubExprRegisterRule AGGREGATE =
+      new CommonRelSubExprRegisterRule(operand(Aggregate.class, any()));
+  public static final CommonRelSubExprRegisterRule FILTER =
+      new CommonRelSubExprRegisterRule(operand(Filter.class, any()));
+  public static final CommonRelSubExprRegisterRule PROJECT =
+      new CommonRelSubExprRegisterRule(operand(Project.class, operandJ(RelNode.class, null, NO_SCAN_PREDICATE, any())));
+
+  private CommonRelSubExprRegisterRule(RelOptRuleOperand operand) {
+    super(operand);
   }
 
   @Override

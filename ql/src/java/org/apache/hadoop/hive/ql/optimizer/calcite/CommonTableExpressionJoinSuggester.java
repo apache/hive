@@ -55,7 +55,7 @@ public class CommonTableExpressionJoinSuggester implements CommonTableExpression
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
           .toRule();
   private static final RelOptRule JOIN_FILTER_TRANSPOSE_RULE = new JoinFilterTransposeRule();
-  private static final RelOptRule JOIN_CTE = new CommonRelSubExprRegisterRule(Join.class);
+  private static final RelOptRule JOIN_CTE = CommonRelSubExprRegisterRule.JOIN;
 
   @Override
   public List<RelNode> suggest(final RelNode input, final Configuration configuration) {
