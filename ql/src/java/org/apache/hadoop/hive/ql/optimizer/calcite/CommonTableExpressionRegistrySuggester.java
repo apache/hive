@@ -25,10 +25,9 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CommonRelSubExprRegisterRule;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Suggester for join common table expressions that appear more than once in the query plan.
@@ -50,9 +49,9 @@ public class CommonTableExpressionRegistrySuggester implements CommonTableExpres
     RelMetadataQuery mq = input.getCluster().getMetadataQuery();
     Comparator<RelNode> rowCountCmp = Comparator.comparing(mq::getRowCount).reversed();
     Comparator<RelNode> rowSizeCmp = Comparator.comparing(mq::getAverageRowSize).reversed();
-    Optional<RelNode> bestCte = localRegistry.entries()
-        .max(Comparator.comparing(HiveCalciteUtil::countNodes).thenComparing(rowCountCmp).thenComparing(rowSizeCmp));
-    return bestCte.map(Collections::singletonList).orElse(Collections.emptyList());
+    return localRegistry.entries()
+        .sorted(Comparator.comparing(HiveCalciteUtil::countNodes).thenComparing(rowCountCmp).thenComparing(rowSizeCmp))
+        .collect(Collectors.toList());
   }
 
 }
