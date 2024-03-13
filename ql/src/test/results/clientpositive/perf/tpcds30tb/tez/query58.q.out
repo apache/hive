@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
+Warning: Map Join MAPJOIN[384][bigTable=?] in task 'Map 5' is a cross product
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -110,7 +110,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (d_date is not null or ((d_date = DATE'1998-02-19') and d_week_seq is not null) or (d_date = DATE'1998-02-19')) (type: boolean)
+                  filterExpr: (d_date is not null or (d_date = DATE'1998-02-19')) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 4675136 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: d_date is not null (type: boolean)
@@ -189,21 +189,21 @@ STAGE PLANS:
                             Statistics: Num rows: 67850 Data size: 542800 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 9
                   Filter Operator
-                    predicate: ((d_date = DATE'1998-02-19') and d_week_seq is not null) (type: boolean)
+                    predicate: (d_date = DATE'1998-02-19') (type: boolean)
                     Statistics: Num rows: 36524 Data size: 2191440 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_week_seq (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 36524 Data size: 146096 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Filter Operator
+                        predicate: _col0 is not null (type: boolean)
                         Statistics: Num rows: 36524 Data size: 146096 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (d_date = DATE'1998-02-19') (type: boolean)
-                    Statistics: Num rows: 36524 Data size: 2045344 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 36524 Data size: 146096 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 36524 Data size: 2045344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
