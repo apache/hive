@@ -103,7 +103,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_web_page_sk is null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_129_container, bigKeyColName:ws_item_sk, smallTablePos:1, keyRatio:1.2496236076135138E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_126_container, bigKeyColName:ws_item_sk, smallTablePos:1, keyRatio:1.2496236076135138E-4
                   Statistics: Num rows: 21594638446 Data size: 2936546632992 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_web_page_sk is null (type: boolean)
@@ -163,7 +163,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: cs_warehouse_sk is null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_130_container, bigKeyColName:cs_item_sk, smallTablePos:1, keyRatio:0.0025041257292801387
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_127_container, bigKeyColName:cs_item_sk, smallTablePos:1, keyRatio:0.0025041257292801387
                   Statistics: Num rows: 43005109025 Data size: 5835786558816 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cs_warehouse_sk is null (type: boolean)
@@ -223,7 +223,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_addr_sk is null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_128_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:0.02359494773827757
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_125_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:0.02359494773827757
                   Statistics: Num rows: 82510879939 Data size: 10987909046272 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_addr_sk is null (type: boolean)
