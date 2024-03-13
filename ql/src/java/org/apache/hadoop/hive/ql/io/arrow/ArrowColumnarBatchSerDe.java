@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.arrow;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.complex.impl.UnionListWriter;
@@ -35,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorAssignRow;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -97,7 +97,8 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   StructObjectInspector rowObjectInspector;
   Configuration conf;
 
-  private Serializer serializer;
+  @VisibleForTesting
+  Serializer serializer;
   private Deserializer deserializer;
 
   @Override
@@ -209,14 +210,14 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
         final MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         final TypeInfo keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo();
         final TypeInfo valueTypeInfo = mapTypeInfo.getMapValueTypeInfo();
-        final StructTypeInfo mapStructTypeInfo = new StructTypeInfo();
-        mapStructTypeInfo.setAllStructFieldNames(Lists.newArrayList("keys", "values"));
-        mapStructTypeInfo.setAllStructFieldTypeInfos(
-            Lists.newArrayList(keyTypeInfo, valueTypeInfo));
-        final ListTypeInfo mapListStructTypeInfo = new ListTypeInfo();
-        mapListStructTypeInfo.setListElementTypeInfo(mapStructTypeInfo);
 
-        return toField(name, mapListStructTypeInfo);
+        final List<Field> mapFields = Lists.newArrayList();
+        mapFields.add(toField(name+"_keys", keyTypeInfo));
+        mapFields.add(toField(name+"_values", valueTypeInfo));
+
+        FieldType struct = new FieldType(false, new ArrowType.Struct(), null);
+        List<Field> childrenOfList = Lists.newArrayList(new Field(name, struct, mapFields));
+        return new Field(name, FieldType.nullable(MinorType.LIST.getType()), childrenOfList);
       default:
         throw new IllegalArgumentException();
     }
@@ -224,7 +225,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
 
   static ListTypeInfo toStructListTypeInfo(MapTypeInfo mapTypeInfo) {
     final StructTypeInfo structTypeInfo = new StructTypeInfo();
-    structTypeInfo.setAllStructFieldNames(Lists.newArrayList("keys", "values"));
+    structTypeInfo.setAllStructFieldNames(Lists.newArrayList("key", "value"));
     structTypeInfo.setAllStructFieldTypeInfos(Lists.newArrayList(
         mapTypeInfo.getMapKeyTypeInfo(), mapTypeInfo.getMapValueTypeInfo()));
     final ListTypeInfo structListTypeInfo = new ListTypeInfo();
@@ -242,6 +243,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
     structListVector.childCount = mapVector.childCount;
     structListVector.isRepeating = mapVector.isRepeating;
     structListVector.noNulls = mapVector.noNulls;
+    System.arraycopy(mapVector.isNull, 0, structListVector.isNull, 0, mapVector.childCount);
     System.arraycopy(mapVector.offsets, 0, structListVector.offsets, 0, mapVector.childCount);
     System.arraycopy(mapVector.lengths, 0, structListVector.lengths, 0, mapVector.childCount);
     return structListVector;
@@ -264,11 +266,6 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
       }
     }
     return serializer.serialize(obj, objInspector);
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   @Override

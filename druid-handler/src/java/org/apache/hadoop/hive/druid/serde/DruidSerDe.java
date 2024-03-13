@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -376,11 +375,6 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     }
 
     return new DruidWritable(value);
-  }
-
-  @Override public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
   @Override public Object deserialize(Writable writable) throws SerDeException {

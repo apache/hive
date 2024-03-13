@@ -69,11 +69,6 @@ public class NullStructSerDe extends AbstractSerDe {
   }
 
   @Override
-  public SerDeStats getSerDeStats() {
-    return null;
-  }
-
-  @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
   }
 

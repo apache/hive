@@ -384,9 +384,4 @@ public class TypedBytesSerDe extends AbstractSerDe {
     }
     }
   }
-
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
-  }
 }

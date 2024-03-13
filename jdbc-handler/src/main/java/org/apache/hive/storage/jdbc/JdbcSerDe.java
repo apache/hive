@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -253,12 +252,6 @@ public class JdbcSerDe extends AbstractSerDe {
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     throw new UnsupportedOperationException("Writes are not allowed");
-  }
-
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
 }

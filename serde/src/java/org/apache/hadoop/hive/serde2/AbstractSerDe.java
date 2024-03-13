@@ -84,10 +84,14 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
   public abstract Writable serialize(Object obj, ObjectInspector objInspector)
       throws SerDeException;
 
-  /**
-   * Returns statistics collected when serializing
+   /* Returns statistics collected when serializing.
+   *
+           * @return A SerDeStats object or {@code null} if stats are not supported by
+   *         this SerDe.
    */
-  public abstract SerDeStats getSerDeStats();
+  public SerDeStats getSerDeStats() {
+    return null;
+  }
 
   /**
    * Deserialize an object out of a Writable blob. In most cases, the return

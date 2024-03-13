@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -42,9 +41,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 
 /**
- * A serde class for ORC.
- * It transparently passes the object to/from the ORC file reader/writer.
- */
+ * A serde class for ORC. It transparently passes the object to/from the ORC
+ * file reader/writer. This SerDe does not support statistics, since serialized
+ * size doesn't make sense in the context of ORC files. 
+*/
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, OrcSerde.COMPRESSION})
 public class OrcSerde extends VectorizedSerde {
 
@@ -137,17 +137,6 @@ public class OrcSerde extends VectorizedSerde {
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return inspector;
-  }
-
-  /**
-   * Always returns null, since serialized size doesn't make sense in the
-   * context of ORC files.
-   *
-   * @return null
-   */
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   @Override
