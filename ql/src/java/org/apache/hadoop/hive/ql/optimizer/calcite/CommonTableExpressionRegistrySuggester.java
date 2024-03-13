@@ -20,6 +20,7 @@ import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CommonRelSubExprRegisterRule;
 
@@ -41,9 +42,12 @@ public class CommonTableExpressionRegistrySuggester implements CommonTableExpres
             Contexts.of(localRegistry));
     planner.setRoot(input);
     planner.findBestExp();
-    Optional<RelNode> bestCte = localRegistry.entries().max(Comparator.comparing(HiveCalciteUtil::countNodes));
+    RelMetadataQuery mq = input.getCluster().getMetadataQuery();
+    Comparator<RelNode> rowCountCmp = Comparator.comparing(mq::getRowCount).reversed();
+    Comparator<RelNode> rowSizeCmp = Comparator.comparing(mq::getAverageRowSize).reversed();
+    Optional<RelNode> bestCte = localRegistry.entries()
+        .max(Comparator.comparing(HiveCalciteUtil::countNodes).thenComparing(rowCountCmp).thenComparing(rowSizeCmp));
     return bestCte.map(Collections::singletonList).orElse(Collections.emptyList());
-
   }
 
 }
