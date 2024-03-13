@@ -2122,9 +2122,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
       LOG.info("MV rewrite using CTEs: {}", RelOptUtil.toString(ctePlan));
-      final RelNode spoolPlan =
-          executeProgram(ctePlan, HepProgram.builder().addRuleInstance(new TableScanToSpoolRule()).build(), mdProvider,
-              executorProvider, cteMVs, true);
+      // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
+      final RelNode spoolPlan = executeProgram(ctePlan,
+          HepProgram.builder().addMatchOrder(HepMatchOrder.DEPTH_FIRST).addRuleInstance(new TableScanToSpoolRule())
+              .build(), mdProvider, executorProvider, cteMVs, true);
       LOG.info("CTE final plan: {}", RelOptUtil.toString(spoolPlan));
       if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {
         return basePlan;
