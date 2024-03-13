@@ -18,8 +18,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.RelNode;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -29,28 +29,24 @@ import java.util.stream.Stream;
  */
 public final class CommonTableExpressionRegistry {
   /**
-   * A collection of common table expressions.
-   * <p>There are no guarantees that entries are unique, but it is usually the case when expressions are
-   * registered via {@link org.apache.calcite.plan.RelOptRule}. Using a {@code Set<RelNode>} would be less efficient
-   * (and less predictive) without additional benefits since {@link org.apache.calcite.rel.AbstractRelNode#equals(Object)}
-   * is using object reference equality.</p>
+   * A unique collection of common table expressions.
    * <p>The expressions may contain internal planning concepts such as {@link org.apache.calcite.plan.hep.HepRelVertex}.
    * </p>
    */
-  private final Collection<RelNode> ctes = new ArrayList<>();
+  private final Map<String, RelNode> ctes = new HashMap<>();
 
   /**
    * Adds the specified common table expression to this registry.
    * @param cte common table expression to be added to the registry.
    */
   public void add(RelNode cte) {
-    this.ctes.add(cte);
+    this.ctes.put(cte.getDigest(), cte);
   }
 
   /**
    * @return a stream with all common table expression entries
    */
   public Stream<RelNode> entries() {
-    return ctes.stream().map(HiveCalciteUtil::stripHepVertices);
+    return ctes.values().stream().map(HiveCalciteUtil::stripHepVertices);
   }
 }
