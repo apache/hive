@@ -1701,6 +1701,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.VALIDATE_QUERY_MATERIALIZATION);
 
       calcitePlan = applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
+      }
       // 2. Apply pre-join order optimizations
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PREJOIN_ORDERING);
       calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
@@ -2076,6 +2079,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Add materializations to planner
       for (RelOptMaterialization materialization : materializations) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Adding materialization {} to the planner; the plan is:\n{}", materialization.qualifiedTableName,
+              RelOptUtil.toString(materialization.queryRel));
+        }
         planner.addMaterialization(materialization);
       }
       // Add rule to split aggregate with grouping sets (if any)
@@ -2107,6 +2114,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
 
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after view based rewriting:\n{}", RelOptUtil.toString(basePlan));
+      }
       return basePlan;
     }
 
@@ -2121,12 +2131,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, ctes.get(i)));
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
-      LOG.info("MV rewrite using CTEs: {}", RelOptUtil.toString(ctePlan));
       // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
       final RelNode spoolPlan = executeProgram(ctePlan,
           HepProgram.builder().addMatchOrder(HepMatchOrder.DEPTH_FIRST).addRuleInstance(new TableScanToSpoolRule())
               .build(), mdProvider, executorProvider, cteMVs, true);
-      LOG.info("CTE final plan: {}", RelOptUtil.toString(spoolPlan));
       if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {
         return basePlan;
       } else {
