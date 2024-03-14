@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -89,7 +88,7 @@ public class RelPlanParser {
   private final Map<String, PrunedPartitionList> partitionCache;
   private final Map<String, ColumnStatsList> colStatsCache;
   private final AtomicInteger noColsMissingStats;
-  private final RelJson relJson = new RelJson(null);
+  private final RelJson relJson = new RelJson();
   private final Map<String, RelNode> relMap = new LinkedHashMap<>();
   private RelNode lastRel;
 
