@@ -22,6 +22,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -35,8 +36,11 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TARGET_PREFIX;
@@ -149,8 +153,20 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
         hintStr = null;
       }
       List<String> values = sqlGenerator.getDeleteValues(Context.Operation.MERGE);
-      values.add(insertClause.getValuesClause());
       
+      if (insertClause.getColumnListText() != null) {
+        String[] columnNames = insertClause.getColumnListText()
+            .substring(1, insertClause.getColumnListText().length() - 1).split(",");
+        String[] columnValues = insertClause.getValuesClause().split(",");
+        
+        Map<String, String> columnMap = IntStream.range(0, columnNames.length).boxed().collect(
+            Collectors.toMap(i -> ParseUtils.stripIdentifierQuotes(columnNames[i].trim()), i -> columnValues[i]));
+        for (FieldSchema col : mergeStatement.getTargetTable().getAllCols()) {
+          values.add(columnMap.getOrDefault(col.getName(), "null"));
+        }
+      } else {
+        values.add(insertClause.getValuesClause());
+      }
       sqlGenerator.append(StringUtils.join(values, ","));
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
