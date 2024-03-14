@@ -58,9 +58,12 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -154,15 +157,6 @@ public class RelPlanParser {
         @SuppressWarnings("unchecked")
         List<String> qualifiedName = (List<String>) jsonRel.get("table");
         RelDataType rowType = relJson.toType(cluster.getTypeFactory(), jsonRel.get("rowType"));
-        ImmutableBitSet.Builder partitionColumnsIndexes = ImmutableBitSet.builder();
-        if (jsonRel.get("partitionColumns") != null) {
-          Set<String> partitionColumns = new HashSet<>((List<String>) jsonRel.get("partitionColumns"));
-          for (int idx = 0; idx < rowType.getFieldCount(); idx++) {
-            if (partitionColumns.contains(rowType.getFieldNames().get(idx))) {
-              partitionColumnsIndexes.set(idx);
-            }
-          }
-        }
         String tableAlias = (String) jsonRel.get("table:alias");
         List<ColumnInfo> nonPartitionColumns = new ArrayList<>();
         List<ColumnInfo> partitionColumns = new ArrayList<>();
@@ -175,12 +169,29 @@ public class RelPlanParser {
           }
         }
 
+        Table tbl = qb.getTableForAlias(tableAlias);
+        if (tbl == null && qualifiedName.size() == 2) {
+          String dbName = qualifiedName.get(0);
+          String tableName = qualifiedName.get(1);
+          tbl = tabNameToTabObject.getParsedTable(TableName.getDbTable(dbName, tableName));
+          if (tbl == null) {
+            try {
+              tbl = db.getTable(
+                  dbName, tableName, null,
+                  true, true, false
+              );
+            } catch (HiveException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+
         return new RelOptHiveTable(
             schema,
             cluster.getTypeFactory(),
             qualifiedName,
             rowType,
-            qb.getTableForAlias(tableAlias),
+            tbl,
             nonPartitionColumns,
             partitionColumns,
             virtualColumns,

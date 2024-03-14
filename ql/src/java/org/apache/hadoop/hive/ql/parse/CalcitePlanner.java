@@ -329,7 +329,6 @@ import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
-import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -459,9 +458,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           JdbcProject.class,
           JdbcSort.class,
           JdbcUnion.class);
-
-  private static HashMap<Class<?>, IncrementalObjectSizeEstimator.ObjectEstimator> sizeEstimator =
-          new HashMap<>();
 
 
   public CalcitePlanner(QueryState queryState) throws SemanticException {
