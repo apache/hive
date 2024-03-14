@@ -27,6 +27,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import java.nio.charset.Charset;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
@@ -174,6 +175,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelPlanParser;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
@@ -327,6 +329,7 @@ import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -456,6 +459,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           JdbcProject.class,
           JdbcSort.class,
           JdbcUnion.class);
+
+  private static HashMap<Class<?>, IncrementalObjectSizeEstimator.ObjectEstimator> sizeEstimator =
+          new HashMap<>();
 
 
   public CalcitePlanner(QueryState queryState) throws SemanticException {
@@ -1985,6 +1991,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
+      perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
+      String basePlanJson = HiveRelOptUtil.toJsonString(basePlan, false);
+      perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
+      LOG.debug("Size of calcite plan: {}", basePlanJson.getBytes(Charset.defaultCharset()).length);
+      LOG.debug("JSON plan: \n{}", basePlanJson);
+
+      try {
+        perfLogger.perfLogBegin(this.getClass().getName(), "fromJsonString");
+        RelPlanParser parser =
+            new RelPlanParser(getQB(), relOptSchema, cluster, conf, db, tabNameToTabObject,
+                partitionCache, colStatsCache, noColsMissingStats);
+        RelNode fromJson = parser.parse(basePlanJson);
+        perfLogger.perfLogEnd(this.getClass().getName(), "fromJsonString");
+        LOG.debug("Base plan: \n{}", RelOptUtil.toString(basePlan));
+        LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
+        basePlan = fromJson;
+      } catch (IOException e) {
+        LOG.debug(e.toString());
+      }
+
       return basePlan;
     }
 
@@ -3433,6 +3459,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode subQueryRoot = (ASTNode) next.getChild(1);
             doPhase1(subQueryRoot, qbSQ, ctx1, null);
             getMetaData(qbSQ);
+            qb.getSubqueryMetaDataList().add(qbSQ.getMetaData());
             this.subqueryId++;
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));

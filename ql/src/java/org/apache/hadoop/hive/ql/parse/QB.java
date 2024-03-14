@@ -55,6 +55,7 @@ public class QB {
   private List<String> aliases;
   private QBParseInfo qbp;
   private QBMetaData qbm;
+  private List<QBMetaData> subqueryMetaDataList;
   private QBJoinTree qbjoin;
   private String id;
   private boolean isQuery;
@@ -129,6 +130,7 @@ public class QB {
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
+    subqueryMetaDataList = new ArrayList<>();
     // Must be deterministic order maps - see HIVE-8707
     ptfNodeToSpec = new LinkedHashMap<ASTNode, PTFInvocationSpec>();
     destToWindowingSpec = new LinkedHashMap<String, WindowingSpec>();
@@ -160,6 +162,10 @@ public class QB {
 
   public QBMetaData getMetaData() {
     return qbm;
+  }
+
+  public List<QBMetaData> getSubqueryMetaDataList() {
+    return subqueryMetaDataList;
   }
 
   public void setQBParseInfo(QBParseInfo qbp) {
@@ -251,6 +257,20 @@ public class QB {
 
   public String getTabNameForAlias(String alias) {
     return aliasToTabs.get(alias.toLowerCase());
+  }
+
+  public Table getTableForAlias(String alias) {
+    Table result = qbm.getTableForAlias(alias);
+    if (result == null) {
+      for (QBMetaData qbMetaData : subqueryMetaDataList) {
+        result = qbMetaData.getTableForAlias(alias);
+        if (result != null) {
+          return result;
+        }
+      }
+    }
+
+    return result;
   }
 
   public Map<String, String> getTabPropsForAlias(String alias) {

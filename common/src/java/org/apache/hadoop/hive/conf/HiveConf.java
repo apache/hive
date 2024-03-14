@@ -487,7 +487,7 @@ public class HiveConf extends Configuration {
   public static enum ConfVars {
     MSC_CACHE_ENABLED("hive.metastore.client.cache.v2.enabled", true,
             "This property enables a Caffeine Cache for Metastore client"),
-    MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.v2.maxSize", "1Gb", new SizeValidator(),
+      MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.v2.maxSize", "1Gb", new SizeValidator(),
             "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
                     "Only in effect when the cache is enabled"),
     MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.v2.recordStats", false,

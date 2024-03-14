@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.RelWriter;
@@ -137,6 +138,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
     this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, null);
+  }
+
+  public HiveTableScan(RelInput input) {
+    this(input.getCluster(), input.getTraitSet(), (RelOptHiveTable)input.getTable("table"),
+        (String) input.get("table:alias"), (String) input.get("qbid:alias"),
+        input.get("qbid:alias") != null, input.getBoolean("insideView", false));
   }
 
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
