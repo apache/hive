@@ -21,8 +21,10 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.metadata.RelColumnMapping;
@@ -52,6 +54,12 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
   protected HiveTableFunctionScan(RelOptCluster cluster, RelTraitSet traitSet, List<RelNode> inputs,
       RexNode rexCall, Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings) {
     super(cluster, traitSet, inputs, rexCall, elementType, rowType, columnMappings);
+  }
+
+  public HiveTableFunctionScan(RelInput input) {
+    this(input.getCluster(), input.getTraitSet(), input.getInputs(),
+        input.getExpression("invocation"), (Type) input.get("elementType"),
+        input.getRowType("rowType"), ImmutableSet.of());
   }
 
   public static HiveTableFunctionScan create(RelOptCluster cluster, RelTraitSet traitSet,

@@ -26,6 +26,7 @@ import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
 import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rex.RexNode;
@@ -46,6 +47,21 @@ public final class HiveSortExchange extends SortExchange implements HiveRelNode 
       RelNode input, RelDistribution distribution, RelCollation collation, ImmutableList<RexNode> keys) {
     super(cluster, traitSet, input, distribution, collation);
     this.keys = new ImmutableList.Builder<RexNode>().addAll(keys).build();
+  }
+
+  public HiveSortExchange(RelInput input) {
+    super(input);
+    RelDistribution distribution = RelDistributionTraitDef.INSTANCE.canonize(input.getDistribution());
+    RelCollation collation = RelCollationTraitDef.INSTANCE.canonize(input.getCollation());
+    RelTraitSet traitSet = getTraitSet(input.getCluster(), collation, distribution);
+    RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.of(collation.getFieldCollations()));
+
+    ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
+    for (RelFieldCollation relFieldCollation : canonizedCollation.getFieldCollations()) {
+      int index = relFieldCollation.getFieldIndex();
+      builder.add(input.getCluster().getRexBuilder().makeInputRef(input.getInput(), index));
+    }
+    this.keys = builder.build();
   }
 
   /**
