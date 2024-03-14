@@ -104,25 +104,25 @@ public class TestPartFilterExprUtil {
   @Test
   public void testSingleColInExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(dt) IN (2000-01-01 01:00:00, 2000-01-01 01:42:00)",
-    "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:00:00.0}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:42:00.0}}");
+    "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:00:00}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=2000-01-01 01:42:00}}");
   }
 
   @Test
   public void testSingleColInExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(j) IN (TIMESTAMP'2000-01-01 01:00:00', TIMESTAMP'2000-01-01 01:42:00')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=2000-01-01 01:00:00.0}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=2000-01-01 01:42:00.0}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=2000-01-01 01:00:00}, andOr='OR', rhs=LeafNode{keyName='j', operator='=', value=2000-01-01 01:42:00}}");
   }
 
   @Test
   public void testMultiColInExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct(2000-05-08 01:00:00, 2001-04-08 01:00:00), struct(2000-05-09 01:00:00, 2001-04-09 01:00:00))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00.0}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00.0}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}");
   }
 
   @Test
   public void testMultiColInExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct(TIMESTAMP'2000-05-08 01:00:00',TIMESTAMP'2001-04-08 01:00:00'), struct(TIMESTAMP'2000-05-09 01:00:00',TIMESTAMP'2001-04-09 01:00:00'))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00.0}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00.0}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}");
   }
 
   @Test
@@ -140,13 +140,13 @@ public class TestPartFilterExprUtil {
   @Test
   public void testBetweenExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("dt BETWEEN 2000-01-01 01:00:00 AND 2000-01-01 01:42:00)",
-    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00.0}}");
+    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}");
   }
 
   @Test
   public void testBetweenExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
     checkFilter("dt BETWEEN TIMESTAMP'2000-01-01 01:00:00' AND TIMESTAMP'2000-01-01 01:42:00')",
-    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00.0}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00.0}}");
+    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}");
   }
 
   @Test
@@ -164,13 +164,13 @@ public class TestPartFilterExprUtil {
   @Test
   public void testBinaryExpressionWhenTimeStampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(j = 1990-11-10 01:00:00 or j = 1990-11-11 01:00:24 and j = 1990-11-12 01:42:00)",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00.0}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24.0}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00.0}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}");
   }
 
   @Test
   public void testBinaryExpressionWhenTimeStampLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(j = TIMESTAMP'1990-11-10 01:00:00' or j = TIMESTAMP'1990-11-11 01:00:24' and j = TIMESTAMP'1990-11-12 01:42:00')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00.0}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24.0}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00.0}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}");
   }
 
 

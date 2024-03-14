@@ -20,6 +20,7 @@ package org.apache.hive.hplsql.functions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -132,39 +133,77 @@ public class InMemoryFunctionRegistry implements FunctionRegistry {
   /**
    * Set parameters for user-defined function call
    */
-  public static void setCallParameters(String procName, HplsqlParser.Expr_func_paramsContext actual, ArrayList<Var> actualValues,
-                         HplsqlParser.Create_routine_paramsContext formal,
-                         HashMap<String, Var> out,
-                         Exec exec) {
-    if (actual == null || actual.func_param() == null || actualValues == null) {
+  public static void setCallParameters(String procName, HplsqlParser.Expr_func_paramsContext actual,
+      ArrayList<Var> actualValues, HplsqlParser.Create_routine_paramsContext formal, HashMap<String, Var> out,
+      Exec exec) {
+    // if it is a non-parameter function then just return.
+    if (actual == null && formal == null) {
       return;
     }
-    int actualCnt = actualValues.size();
-    int formalCnt = formal.create_routine_param_item().size();
-    if (formalCnt != actualCnt) {
-      throw new ArityException(actual.getParent(), procName, formalCnt, actualCnt);
+    int actualCnt = (actualValues == null) ? 0 : actualValues.size();
+    List<HplsqlParser.Create_routine_param_itemContext> routineParamItem = formal.create_routine_param_item();
+    int formalCnt = routineParamItem.size();
+    ParserRuleContext ruleContext = (actual == null) ? null : actual.getParent();
+    if (actualCnt > formalCnt) {
+      throw new ArityException(ruleContext, procName, formalCnt, actualCnt);
     }
+    Map<String, Integer> defaultParamNamesVsIndexes = new HashMap<>();
+    if (actualCnt != formalCnt) {
+      populateDefaultParamDetails(routineParamItem, defaultParamNamesVsIndexes);
+    }
+
+    // set the passed params
     for (int i = 0; i < actualCnt; i++) {
-      HplsqlParser.ExprContext a = actual.func_param(i).expr(); 
-      HplsqlParser.Create_routine_param_itemContext p = getCallParameter(actual, formal, i);
-      String name = p.ident().getText();
-      String type = p.dtype().getText();
-      String len = null;
-      String scale = null;   
-      if (p.dtype_len() != null) {
-        len = p.dtype_len().L_INT(0).getText();
-        if (p.dtype_len().L_INT(1) != null) {
-          scale = p.dtype_len().L_INT(1).getText();
-        }
+      HplsqlParser.ExprContext exprContext = actual.func_param(i).expr();
+      HplsqlParser.Create_routine_param_itemContext paramItemContext = getCallParameter(actual, formal, i);
+      Var value = actualValues.get(i);
+      // for any default param value is passed then remove it from default param list
+      defaultParamNamesVsIndexes.remove(paramItemContext.ident().getText());
+      setCallParameter(actual, out, exec, exprContext, paramItemContext, value);
+    }
+    // set the remaining default params
+    for (int index : defaultParamNamesVsIndexes.values()) {
+      HplsqlParser.Create_routine_param_itemContext paramItemContext = formal.create_routine_param_item().get(index);
+      HplsqlParser.ExprContext exprContext = paramItemContext.dtype_default().expr();
+      Var value = exec.evalPop(paramItemContext.dtype_default().expr());
+      setCallParameter(actual, out, exec, exprContext, paramItemContext, value);
+    }
+    // if actual param count + remaining default param count is lesser than formal param count then throw exception as some params are missing
+    if ((actualCnt + defaultParamNamesVsIndexes.size()) != formalCnt) {
+      throw new ArityException(ruleContext, procName, formalCnt, actualCnt);
+    }
+  }
+
+  private static void populateDefaultParamDetails(List<HplsqlParser.Create_routine_param_itemContext> routineParamItem,
+      Map<String, Integer> defaultParamNamesVsIndexes) {
+    int formalCnt = routineParamItem.size();
+    for (int i = 0; i < formalCnt; i++) {
+      HplsqlParser.Create_routine_param_itemContext routineParamItemContext = routineParamItem.get(i);
+      if (routineParamItemContext.dtype_default() != null) {
+        defaultParamNamesVsIndexes.put(routineParamItemContext.ident().getText(), i);
       }
-      Var var = setCallParameter(name, type, len, scale, actualValues.get(i), exec);
-      exec.trace(actual, "SET PARAM " + name + " = " + var.toString());
-      if (out != null && a.expr_atom() != null && a.expr_atom().qident() != null &&
-          (p.T_OUT() != null || p.T_INOUT() != null)) {
-        String actualName = a.expr_atom().qident().getText();
-        if (actualName != null) {
-          out.put(actualName, var);  
-        }         
+    }
+  }
+
+  private static void setCallParameter(HplsqlParser.Expr_func_paramsContext actual, HashMap<String, Var> out, Exec exec,
+      HplsqlParser.ExprContext a, HplsqlParser.Create_routine_param_itemContext p, Var value) {
+    String name = p.ident().getText();
+    String type = p.dtype().getText();
+    String len = null;
+    String scale = null;
+    if (p.dtype_len() != null) {
+      len = p.dtype_len().L_INT(0).getText();
+      if (p.dtype_len().L_INT(1) != null) {
+        scale = p.dtype_len().L_INT(1).getText();
+      }
+    }
+    Var variable = setCallParameter(name, type, len, scale, value, exec);
+    exec.trace(actual, "SET PARAM " + name + " = " + variable.toString());
+    if (out != null && a.expr_atom() != null && a.expr_atom()
+        .qident() != null && (p.T_OUT() != null || p.T_INOUT() != null)) {
+      String actualName = a.expr_atom().qident().getText();
+      if (actualName != null) {
+        out.put(actualName, variable);
       }
     }
   }

@@ -1705,10 +1705,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     assert table != null;
     ExpressionTree.FilterBuilder filterBuilder = new ExpressionTree.FilterBuilder(true);
     Map<String, Object> params = new HashMap<>();
-    exprTree.generateJDOFilterFragment(conf, params, filterBuilder, table.getPartitionKeys());
+    exprTree.accept(new ExpressionTree.JDOFilterGenerator(conf,
+        table.getPartitionKeys(), filterBuilder, params));
     StringBuilder stringBuilder = new StringBuilder(filterBuilder.getFilter());
-    // replace leading &&
-    stringBuilder.replace(0, 4, "");
     params.entrySet().stream().forEach(e -> {
       int index = stringBuilder.indexOf(e.getKey());
       stringBuilder.replace(index, index + e.getKey().length(), "\"" + e.getValue().toString() + "\"");

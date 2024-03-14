@@ -968,6 +968,7 @@ public final class QueryResultsCache {
       switch (event.getEventType()) {
       case MessageBuilder.ADD_PARTITION_EVENT:
       case MessageBuilder.ALTER_PARTITION_EVENT:
+      case MessageBuilder.ALTER_PARTITIONS_EVENT:
       case MessageBuilder.DROP_PARTITION_EVENT:
       case MessageBuilder.ALTER_TABLE_EVENT:
       case MessageBuilder.DROP_TABLE_EVENT:

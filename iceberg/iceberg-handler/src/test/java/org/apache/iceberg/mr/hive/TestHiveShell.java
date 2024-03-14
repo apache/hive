@@ -202,7 +202,7 @@ public class TestHiveShell {
 
     // Speed up test execution
     hiveConf.setLongVar(HiveConf.ConfVars.HIVE_COUNTERS_PULL_INTERVAL, 1L);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     // Resource configuration
     hiveConf.setInt("mapreduce.map.memory.mb", 1024);
