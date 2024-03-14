@@ -1761,6 +1761,29 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
+
+
+      perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
+      String calcitePlanJson = HiveRelOptUtil.toJsonString(calcitePlan, false);
+      perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
+      LOG.debug("Size of calcite plan: {}", calcitePlanJson.getBytes(Charset.defaultCharset()).length);
+      LOG.debug("JSON plan: \n{}", calcitePlanJson);
+
+      try {
+        perfLogger.perfLogBegin(this.getClass().getName(), "fromJsonString");
+        RelPlanParser parser =
+            new RelPlanParser(getQB(), relOptSchema, cluster, conf, db, tabNameToTabObject,
+                partitionCache, colStatsCache, noColsMissingStats);
+        RelNode fromJson = parser.parse(calcitePlanJson);
+        perfLogger.perfLogEnd(this.getClass().getName(), "fromJsonString");
+        LOG.debug("Base plan: \n{}", RelOptUtil.toString(calcitePlan));
+        LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
+        calcitePlan = fromJson;
+      } catch (IOException e) {
+        LOG.debug(e.toString());
+      }
+
       return calcitePlan;
     }
 
@@ -1986,26 +2009,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
-
-      perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
-      String basePlanJson = HiveRelOptUtil.toJsonString(basePlan, false);
-      perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
-      LOG.debug("Size of calcite plan: {}", basePlanJson.getBytes(Charset.defaultCharset()).length);
-      LOG.debug("JSON plan: \n{}", basePlanJson);
-
-      try {
-        perfLogger.perfLogBegin(this.getClass().getName(), "fromJsonString");
-        RelPlanParser parser =
-            new RelPlanParser(getQB(), relOptSchema, cluster, conf, db, tabNameToTabObject,
-                partitionCache, colStatsCache, noColsMissingStats);
-        RelNode fromJson = parser.parse(basePlanJson);
-        perfLogger.perfLogEnd(this.getClass().getName(), "fromJsonString");
-        LOG.debug("Base plan: \n{}", RelOptUtil.toString(basePlan));
-        LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
-        basePlan = fromJson;
-      } catch (IOException e) {
-        LOG.debug(e.toString());
-      }
 
       return basePlan;
     }
