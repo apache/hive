@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelTraitSet;
@@ -29,6 +30,7 @@ import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Join;
@@ -91,6 +93,12 @@ public class HiveJoin extends Join implements HiveRelNode {
             this.getCondition(), joinKeyExprs, filterNulls, null);
     this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
     this.joinAlgorithm = joinAlgo;
+  }
+
+  public HiveJoin(RelInput input) throws InvalidRelException, CalciteSemanticException {
+    this(input.getCluster(), input.getTraitSet(), input.getInputs().get(0),
+        input.getInputs().get(1), input.getExpression("condition"),
+        input.getEnum("joinType", JoinRelType.class), ImmutableSet.of(), DefaultJoinAlgorithm.INSTANCE);
   }
 
   @Override

@@ -25,17 +25,8 @@ import com.google.common.collect.Sets;
 
 import com.google.common.collect.ImmutableList;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
@@ -76,12 +67,15 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1079,13 +1073,21 @@ public class HiveRelOptUtil extends RelOptUtil {
    * to parse the string back.
    */
   public static String toJsonString(final RelNode rel) {
+    return toJsonString(rel, true);
+  }
+
+  public static String toJsonString(final RelNode rel, boolean includeColumnStats) {
     if (rel == null) {
       return null;
     }
 
-    final HiveRelJsonImpl planWriter = new HiveRelJsonImpl();
+    final HiveRelJsonImpl planWriter = new HiveRelJsonImpl(includeColumnStats);
     rel.explain(planWriter);
-    return planWriter.asString();
+    String plan = planWriter.asString();
+    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
+    outJSONObject.put("CBOPlan", plan);
+
+    return outJSONObject.toString();
   }
 
   /**

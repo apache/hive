@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.externalize.RelJsonWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +41,14 @@ public class HiveRelJsonImpl extends RelJsonWriter {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRelJsonImpl.class);
 
+  private boolean includeColumnStats = true;
+
   //~ Constructors -------------------------------------------------------------
 
-  public HiveRelJsonImpl() {
+  public HiveRelJsonImpl(boolean includeColumnStats) {
     super();
 
+    this.includeColumnStats = includeColumnStats;
     // Upgrade to Calcite 1.23.0 to remove this
     try {
       final Field fieldRelJson = RelJsonWriter.class.getDeclaredField("relJson");
@@ -71,22 +78,34 @@ public class HiveRelJsonImpl extends RelJsonWriter {
       if (!list.isEmpty()) {
         map.put("partitionColumns", list);
       }
-      // We also include column stats
-      List<ColStatistics> colStats = table.getColStat(
-          ImmutableBitSet.range(0, table.getNoOfNonVirtualCols()).asList(), true);
       list = jsonBuilder.list();
-      for (ColStatistics cs : colStats) {
-        final Map<String, Object> csMap = jsonBuilder.map();
-        csMap.put("name", cs.getColumnName());
-        csMap.put("ndv", cs.getCountDistint());
-        if (cs.getRange() != null) {
-          csMap.put("minValue", cs.getRange().minValue);
-          csMap.put("maxValue", cs.getRange().maxValue);
-        }
-        list.add(csMap);
-      }
+      list.addAll(
+          table.getVirtualCols()
+              .stream()
+              .map(VirtualColumn::getName)
+              .collect(Collectors.toList())
+      );
       if (!list.isEmpty()) {
-        map.put("colStats", list);
+        map.put("virtualColumns", list);
+      }
+      // We also include column stats
+      if (includeColumnStats) {
+        List<ColStatistics> colStats = table.getColStat(
+                ImmutableBitSet.range(0, table.getNoOfNonVirtualCols()).asList(), true);
+        list = jsonBuilder.list();
+        for (ColStatistics cs : colStats) {
+          final Map<String, Object> csMap = jsonBuilder.map();
+          csMap.put("name", cs.getColumnName());
+          csMap.put("ndv", cs.getCountDistint());
+          if (cs.getRange() != null) {
+            csMap.put("minValue", cs.getRange().minValue);
+            csMap.put("maxValue", cs.getRange().maxValue);
+          }
+          list.add(csMap);
+        }
+        if (!list.isEmpty()) {
+          map.put("colStats", list);
+        }
       }
     }
   }

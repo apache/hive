@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.InvalidRelException;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinInfo;
@@ -69,6 +70,11 @@ public class HiveSemiJoin extends Join implements HiveRelNode {
     }
     this.joinFilter = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, this.getInputs(),
             this.getCondition(), joinKeyExprs, filterNulls, null);
+  }
+
+  public HiveSemiJoin(RelInput input) throws InvalidRelException, CalciteSemanticException {
+    this(input.getCluster(), input.getTraitSet(), input.getInputs().get(0),
+        input.getInputs().get(1), input.getExpression("condition"));
   }
 
   public RexNode getJoinFilter() {
