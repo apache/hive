@@ -1,0 +1,37 @@
+PREHOOK: query: create table t (a int, b int default 1) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a int, b int default 1) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: create table upd_t (a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@upd_t
+POSTHOOK: query: create table upd_t (a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@upd_t
+PREHOOK: query: insert into t values (1,2), (2,4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (1,2), (2,4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: insert into upd_t values (1,3), (3,5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@upd_t
+POSTHOOK: query: insert into upd_t values (1,3), (3,5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@upd_t
+POSTHOOK: Lineage: upd_t.a SCRIPT []
+POSTHOOK: Lineage: upd_t.b SCRIPT []
+FAILED: SemanticException Column schema must have the same length as values (1 vs 2)
