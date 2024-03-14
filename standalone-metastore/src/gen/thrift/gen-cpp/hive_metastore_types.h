@@ -8950,8 +8950,10 @@ void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b);
 std::ostream& operator<<(std::ostream& out, const CurrentNotificationEventId& obj);
 
 typedef struct _NotificationEventsCountRequest__isset {
-  _NotificationEventsCountRequest__isset() : catName(false) {}
+  _NotificationEventsCountRequest__isset() : catName(false), toEventId(false), limit(false) {}
   bool catName :1;
+  bool toEventId :1;
+  bool limit :1;
 } _NotificationEventsCountRequest__isset;
 
 class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
@@ -8959,13 +8961,15 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
 
   NotificationEventsCountRequest(const NotificationEventsCountRequest&);
   NotificationEventsCountRequest& operator=(const NotificationEventsCountRequest&);
-  NotificationEventsCountRequest() : fromEventId(0), dbName(), catName() {
+  NotificationEventsCountRequest() : fromEventId(0), dbName(), catName(), toEventId(0), limit(0) {
   }
 
   virtual ~NotificationEventsCountRequest() noexcept;
   int64_t fromEventId;
   std::string dbName;
   std::string catName;
+  int64_t toEventId;
+  int64_t limit;
 
   _NotificationEventsCountRequest__isset __isset;
 
@@ -8974,6 +8978,10 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
   void __set_dbName(const std::string& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_toEventId(const int64_t val);
+
+  void __set_limit(const int64_t val);
 
   bool operator == (const NotificationEventsCountRequest & rhs) const
   {
@@ -8984,6 +8992,14 @@ class NotificationEventsCountRequest : public virtual ::apache::thrift::TBase {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.toEventId != rhs.__isset.toEventId)
+      return false;
+    else if (__isset.toEventId && !(toEventId == rhs.toEventId))
+      return false;
+    if (__isset.limit != rhs.__isset.limit)
+      return false;
+    else if (__isset.limit && !(limit == rhs.limit))
       return false;
     return true;
   }
