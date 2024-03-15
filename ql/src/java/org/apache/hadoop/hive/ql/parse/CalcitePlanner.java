@@ -1781,7 +1781,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
         calcitePlan = fromJson;
       } catch (IOException e) {
-        LOG.debug(e.toString());
+        throw new RuntimeException(e);
       }
 
       return calcitePlan;
