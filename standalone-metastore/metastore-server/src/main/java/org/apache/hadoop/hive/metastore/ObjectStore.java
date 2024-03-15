@@ -624,6 +624,40 @@ public class ObjectStore implements RawStore, Configurable {
     return result;
   }
 
+  @Override
+  public int updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
+      throws MetaException {
+    String dml = String.format(
+        "UPDATE \"TABLE_PARAMS\" SET \"PARAM_VALUE\" = '%s' " +
+            "WHERE \"TBL_ID\" = %d AND \"PARAM_KEY\" = '%s' AND \"PARAM_VALUE\" = '%s'",
+        newValue,
+        table.getId(),
+        key,
+        expectedValue
+    );
+    JDOConnection jdoConn = null;
+    try {
+      openTransaction();
+      jdoConn = pm.getDataStoreConnection();
+      Object nativeConn = jdoConn.getNativeConnection();
+      if (!(nativeConn instanceof Connection)) {
+        throw new MetaException("Unexpected JDO native connection " + nativeConn.getClass().getName());
+      }
+      Connection dbConn = (Connection) nativeConn;
+      try (Statement statement = dbConn.createStatement()) {
+        int affectedRows = statement.executeUpdate(dml);
+        commitTransaction();
+        return affectedRows;
+      }
+    } catch (SQLException e) {
+      throw new JDOException("Failed to execute direct SQL", e);
+    } finally {
+      if (jdoConn != null) {
+        jdoConn.close();
+      }
+    }
+  }
+
   /**
    * if this is the commit of the first open call then an actual commit is
    * called.
