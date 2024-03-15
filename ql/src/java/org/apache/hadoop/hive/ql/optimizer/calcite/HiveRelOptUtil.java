@@ -1069,9 +1069,8 @@ public class HiveRelOptUtil extends RelOptUtil {
 
     final HiveRelJsonImpl planWriter = new HiveRelJsonImpl(includeColumnStats);
     rel.explain(planWriter);
-    String plan = planWriter.asString();
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
-    outJSONObject.put("CBOPlan", plan);
+    outJSONObject.put("CBOPlan", planWriter.asString());
 
     return outJSONObject.toString();
   }
