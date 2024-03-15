@@ -54,6 +54,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
@@ -64,6 +65,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
@@ -407,13 +409,29 @@ public class RelPlanParser {
     final List<Integer> operands = (List<Integer>) jsonAggCall.get("operands");
     final Integer filterOperand = (Integer) jsonAggCall.get("filter");
     final RelDataType type = relJson.toType(input.getCluster().getTypeFactory(), jsonAggCall.get("type"));
+
+    // GROUPING__ID requires special handling, otherwise this will create different
+    // optimized AST.
+    // tok_selexpr (tok_functionstar grouping__id) grouping__id)
+    // vs
+    // tok_selexpr (tok_table_or_col grouping__id) grouping__id)
+    //
+    // Since we don't have a function grouping__id in FunctionRegistry, the former
+    // AST will fail.
+    if (HiveGroupingID.INSTANCE.getName().equals(jsonAggCall.get("name"))) {
+      return AggregateCall.create(HiveGroupingID.INSTANCE,
+          false, new ImmutableList.Builder<Integer>().build(), -1,
+          this.cluster.getTypeFactory().createSqlType(SqlTypeName.BIGINT),
+          HiveGroupingID.INSTANCE.getName());
+    }
+
     return AggregateCall.create(
         relJson.toAggregation(input, aggName, jsonAggCall),
         distinct,
         operands,
         filterOperand == null ? -1 : filterOperand,
         type,
-        null);
+        (String) jsonAggCall.get("name"));
   }
 
   private RelNode lookupInput(String jsonInput) {
