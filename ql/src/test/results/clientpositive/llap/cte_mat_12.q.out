@@ -1,0 +1,141 @@
+PREHOOK: query: create table t0(col0 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t0
+POSTHOOK: query: create table t0(col0 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t0
+PREHOOK: query: insert into t0(col0) values
+ (1),(2),
+ (100),(100),(100),
+ (200),(200)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t0
+POSTHOOK: query: insert into t0(col0) values
+ (1),(2),
+ (100),(100),(100),
+ (200),(200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t0
+POSTHOOK: Lineage: t0.col0 SCRIPT []
+PREHOOK: query: explain cbo
+select cte1.cnt, cte2.cnt
+from (select count(*) as cnt from t0 where col0 < 10) cte1
+inner join (select count(*) as cnt from t0 where col0 < 10) cte2
+    on cte1.cnt = cte2.cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select cte1.cnt, cte2.cnt
+from (select count(*) as cnt from t0 where col0 < 10) cte1
+inner join (select count(*) as cnt from t0 where col0 < 10) cte2
+    on cte1.cnt = cte2.cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject($f0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
+        HiveProject(cnt=[$0])
+          HiveAggregate(group=[{}], agg#0=[count()])
+            HiveFilter(condition=[<($0, 10)])
+              HiveTableScan(table=[[default, t0]], table:alias=[t0])
+  HiveProject(cnt=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+
+PREHOOK: query: explain cbo
+select cte1.cnt, cte2.cnt, cte1.literal
+from (select count(*) as cnt, 'A' as literal from t0 where col0 < 10) cte1
+inner join (select count(*) as cnt, 'A' as literal from t0 where col0 < 10) cte2
+    on cte1.cnt = cte2.cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select cte1.cnt, cte2.cnt, cte1.literal
+from (select count(*) as cnt, 'A' as literal from t0 where col0 < 10) cte1
+inner join (select count(*) as cnt, 'A' as literal from t0 where col0 < 10) cte2
+    on cte1.cnt = cte2.cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(cnt=[$0], cnt1=[$1], literal=[_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject($f0=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveProject($f0=[$0])
+          HiveAggregate(group=[{}], agg#0=[count()])
+            HiveFilter(condition=[<($0, 10)])
+              HiveTableScan(table=[[default, t0]], table:alias=[t0])
+    HiveProject($f0=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveProject($f0=[$0])
+          HiveAggregate(group=[{}], agg#0=[count()])
+            HiveFilter(condition=[<($0, 10)])
+              HiveTableScan(table=[[default, t0]], table:alias=[t0])
+
+PREHOOK: query: explain cbo
+select cte1.col0, cte2.col0
+from (select col0 from t0 where col0 < 10) cte1
+inner join (select col0 from t0 where col0 < 10) cte2
+    on cte1.col0 = cte2.col0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select cte1.col0, cte2.col0
+from (select col0 from t0 where col0 < 10) cte1
+inner join (select col0 from t0 where col0 < 10) cte2
+    on cte1.col0 = cte2.col0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[<($0, 10)])
+      HiveTableScan(table=[[default, t0]], table:alias=[t0])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[<($0, 10)])
+      HiveTableScan(table=[[default, t0]], table:alias=[t0])
+
+PREHOOK: query: explain cbo
+select cte1.col0, cte2.col0
+from (select col0 from t0 where col0 < 10) cte1
+inner join (select col0 from t0 where col0 < 10) cte2
+    on cte1.col0 = cte2.col0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select cte1.col0, cte2.col0
+from (select col0 from t0 where col0 < 10) cte1
+inner join (select col0 from t0 where col0 < 10) cte2
+    on cte1.col0 = cte2.col0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
+        HiveProject(col0=[$0])
+          HiveFilter(condition=[<($0, 10)])
+            HiveTableScan(table=[[default, t0]], table:alias=[t0])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+

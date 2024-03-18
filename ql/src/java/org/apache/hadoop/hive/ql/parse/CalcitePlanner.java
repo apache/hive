@@ -171,7 +171,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CommonRelSubExprRegisterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
@@ -284,6 +283,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCUnionPushDownR
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
@@ -1656,6 +1656,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Create and set MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+      optCluster.setMetadataQuerySupplier(HiveRelMetadataQuery::new);
       optCluster.invalidateMetadataQuery();
 
       calcitePlan = applyMaterializedViewRewritingByText(
@@ -2125,6 +2126,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       List<RelOptMaterialization> cteMVs = new ArrayList<>();
       for (int i = 0; i < ctes.size(); i++) {
+        if (conf.getBoolVar(ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY) && !isFullAggregate(ctes.get(i))) {
+          LOG.debug("Skipping CTE {} cause its not a full aggregate.", RelOptUtil.toString(ctes.get(i)));
+          continue;
+        }
         cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, ctes.get(i)));
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
@@ -2137,6 +2142,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         return spoolPlan;
       }
+    }
+
+    private boolean isFullAggregate(RelNode rel) {
+      HiveRelMetadataQuery mq = (HiveRelMetadataQuery) rel.getCluster().getMetadataQuery();
+      for (int i = 0; i < rel.getRowType().getFieldCount(); i++) {
+        if (mq.getAggregateOrigins(rel, i) == null) {
+          return false;
+        }
+      }
+      return true;
     }
 
     private boolean isMaterializedViewRewritingByTextEnabled() {
