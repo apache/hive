@@ -1025,15 +1025,11 @@ class MetaStoreDirectSql {
       boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
     // Get most of the fields for the partNames provided.
     // Assume db and table names are the same for all partition, as provided in arguments.
-    List<String> queries = new ArrayList<>();
-    StringBuilder prefix = new StringBuilder();
-    StringBuilder suffix = new StringBuilder();
-
-    List<String> quotedPartNames = partNameList.stream()
+    String quotedPartNames = partNameList.stream()
         .map(DirectSqlUpdatePart::quoteString)
-        .collect(Collectors.toList());
+        .collect(Collectors.joining(","));
 
-    prefix.append(
+    String queryText =
         "select " + PARTITIONS + ".\"PART_ID\"," + SDS + ".\"SD_ID\"," + SDS + ".\"CD_ID\","
         + SERDES + ".\"SERDE_ID\"," + PARTITIONS + ".\"CREATE_TIME\"," + PARTITIONS
         + ".\"LAST_ACCESS_TIME\"," + SDS + ".\"INPUT_FORMAT\"," + SDS + ".\"IS_COMPRESSED\","
@@ -1043,20 +1039,16 @@ class MetaStoreDirectSql {
         + " left outer join " + SDS + " on " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\" "
         + " left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = " + SERDES + ".\"SERDE_ID\" "
         + " inner join " + TBLS + " on " + TBLS + ".\"TBL_ID\" = " + PARTITIONS + ".\"TBL_ID\" "
-        + " inner join " + DBS + " on " + DBS + ".\"DB_ID\" = " + TBLS + ".\"DB_ID\" where ");
-    suffix.append(
-        " and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS
-        + ".\"CTLG_NAME\" = ? order by \"PART_NAME\" asc");
+        + " inner join " + DBS + " on " + DBS + ".\"DB_ID\" = " + TBLS + ".\"DB_ID\" "
+        + " where \"PART_NAME\" in (" + quotedPartNames + ") "
+        + " and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS
+        + ".\"CTLG_NAME\" = ? order by \"PART_NAME\" asc";
 
-    TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix, quotedPartNames,
-       "\"PART_NAME\"", true, false);
     Object[] params = new Object[]{tblName, dbName, catName};
     // Keep order by name, consistent with JDO.
     ArrayList<Partition> orderedResult = new ArrayList<Partition>(partNameList.size());
-    for (String query : queries) {
-      populatePartitionsByQuery(catName, dbName, tblName, isView, query, params, projectionFields,
-          isAcidTable, args, orderedResult);
-    }
+    populatePartitionsByQuery(catName, dbName, tblName, isView, queryText, params, projectionFields,
+        isAcidTable, args, orderedResult);
     return orderedResult;
   }
 
