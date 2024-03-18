@@ -18,15 +18,16 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import org.apache.calcite.linq4j.tree.Types;
 import org.apache.calcite.rel.metadata.Metadata;
+import org.apache.calcite.util.ImmutableBitSet;
 
 import java.lang.reflect.Method;
 
 public enum MetadataMethod {
-  AGGREGATE_ORIGINS(AggregateOrigins.class, "getAggregateOrigins", int.class);
+  AGGREGATED_COLUMNS(AggregatedColumns.class, "areColumnsAggregated", ImmutableBitSet.class);
   private final Method method;
 
-  MetadataMethod(Class<? extends Metadata> metaClass, String name, Class<?> methodArg) {
-    this.method = Types.lookupMethod(metaClass, name, methodArg);
+  MetadataMethod(Class<? extends Metadata> metaClass, String name, Class<?> argClass) {
+    this.method = Types.lookupMethod(metaClass, name, argClass);
   }
 
   public Method method() {

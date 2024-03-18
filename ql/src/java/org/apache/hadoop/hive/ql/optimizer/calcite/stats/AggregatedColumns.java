@@ -21,16 +21,26 @@ import org.apache.calcite.rel.metadata.Metadata;
 import org.apache.calcite.rel.metadata.MetadataDef;
 import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.util.ImmutableBitSet;
 
-public interface AggregateOrigins extends Metadata {
+/**
+ * Metadata about whether a set of columns originates from aggregation functions.
+ */
+public interface AggregatedColumns extends Metadata {
 
-  MetadataDef<AggregateOrigins> DEF =
-      MetadataDef.of(AggregateOrigins.class, AggregateOrigins.Handler.class, MetadataMethod.AGGREGATE_ORIGINS.method());
+  MetadataDef<AggregatedColumns> DEF = MetadataDef.of(AggregatedColumns.class, AggregatedColumns.Handler.class,
+      MetadataMethod.AGGREGATED_COLUMNS.method());
 
-  SqlOperator getAggregateOrigins(int col);
+  /**
+   * Determines whether the specified set of columns originates from aggregation functions.
+   *
+   * @param columns column mask representing a subset of columns for the current relational expression.
+   * @return whether the specified columns originate from aggregate functions or null if there is not enough information
+   * to infer the origin function.
+   */
+  Boolean areColumnsAggregated(final ImmutableBitSet columns);
 
-  interface Handler extends MetadataHandler<AggregateOrigins> {
-    SqlOperator getAggregateOrigins(RelNode r, RelMetadataQuery mq, int col);
+  interface Handler extends MetadataHandler<AggregatedColumns> {
+    Boolean areColumnsAggregated(RelNode r, RelMetadataQuery mq, final ImmutableBitSet columns);
   }
 }
