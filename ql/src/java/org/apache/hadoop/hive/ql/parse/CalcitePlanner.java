@@ -2137,10 +2137,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, cte));
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
-      // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
-      final RelNode spoolPlan = executeProgram(ctePlan,
-          HepProgram.builder().addMatchOrder(HepMatchOrder.DEPTH_FIRST).addRuleInstance(new TableScanToSpoolRule())
-              .build(), mdProvider, executorProvider, cteMVs, true);
+      HepProgram spoolProgram = HepProgram.builder()
+          // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
+          .addMatchOrder(HepMatchOrder.DEPTH_FIRST)
+          .addRuleInstance(new TableScanToSpoolRule(conf.getIntVar(ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD)))
+          .build();
+      final RelNode spoolPlan = executeProgram(ctePlan, spoolProgram, mdProvider, executorProvider, cteMVs, true);
       if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {
         return basePlan;
       } else {
