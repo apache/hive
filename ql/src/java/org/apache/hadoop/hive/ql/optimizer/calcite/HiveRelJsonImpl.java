@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.externalize.RelJsonWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.sql.SqlExplainLevel;
@@ -73,6 +74,11 @@ public class HiveRelJsonImpl extends RelJsonWriter {
       map.put("rowType", relJson.toJson(rel.getRowType()));
       // We also include partition columns information
       RelOptHiveTable table = (RelOptHiveTable) rel.getTable();
+
+      if (table == null) {
+        return;
+      }
+
       List<Object> list = jsonBuilder.list();
       list.addAll(table.getHiveTableMD().getPartColNames());
       if (!list.isEmpty()) {
