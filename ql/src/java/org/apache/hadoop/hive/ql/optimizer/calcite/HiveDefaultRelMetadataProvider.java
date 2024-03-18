@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdAggregateOrigin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
@@ -69,6 +70,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdCollation.SOURCE,
                   HiveRelMdPredicates.SOURCE,
                   HiveRelMdTableReferences.SOURCE,
+                  HiveRelMdAggregateOrigin.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
   private final RelMetadataProvider metadataProvider;
@@ -105,6 +107,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdCollation.SOURCE,
                   HiveRelMdPredicates.SOURCE,
                   HiveRelMdTableReferences.SOURCE,
+                  HiveRelMdAggregateOrigin.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
       if (nodeClasses != null) {
