@@ -6,37 +6,48 @@ package org.apache.hadoop.hive.ql.hooks.proto;
 public final class HiveHookEvents {
   private HiveHookEvents() {}
   public static void registerAllExtensions(
-      com.google.protobuf.ExtensionRegistry registry) {
+      com.google.protobuf.ExtensionRegistryLite registry) {
   }
-  public interface MapFieldEntryOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
 
-    // optional string key = 1;
+  public static void registerAllExtensions(
+      com.google.protobuf.ExtensionRegistry registry) {
+    registerAllExtensions(
+        (com.google.protobuf.ExtensionRegistryLite) registry);
+  }
+  public interface MapFieldEntryOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:MapFieldEntry)
+      com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional string key = 1;</code>
+     * @return Whether the key field is set.
      */
     boolean hasKey();
     /**
      * <code>optional string key = 1;</code>
+     * @return The key.
      */
     java.lang.String getKey();
     /**
      * <code>optional string key = 1;</code>
+     * @return The bytes for key.
      */
     com.google.protobuf.ByteString
         getKeyBytes();
 
-    // optional string value = 2;
     /**
      * <code>optional string value = 2;</code>
+     * @return Whether the value field is set.
      */
     boolean hasValue();
     /**
      * <code>optional string value = 2;</code>
+     * @return The value.
      */
     java.lang.String getValue();
     /**
      * <code>optional string value = 2;</code>
+     * @return The bytes for value.
      */
     com.google.protobuf.ByteString
         getValueBytes();
@@ -45,115 +56,56 @@ public final class HiveHookEvents {
    * Protobuf type {@code MapFieldEntry}
    */
   public static final class MapFieldEntry extends
-      com.google.protobuf.GeneratedMessage
-      implements MapFieldEntryOrBuilder {
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:MapFieldEntry)
+      MapFieldEntryOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use MapFieldEntry.newBuilder() to construct.
-    private MapFieldEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private MapFieldEntry(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private MapFieldEntry(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final MapFieldEntry defaultInstance;
-    public static MapFieldEntry getDefaultInstance() {
-      return defaultInstance;
+    private MapFieldEntry() {
+      key_ = "";
+      value_ = "";
     }
 
-    public MapFieldEntry getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new MapFieldEntry();
     }
-    private MapFieldEntry(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 10: {
-              bitField0_ |= 0x00000001;
-              key_ = input.readBytes();
-              break;
-            }
-            case 18: {
-              bitField0_ |= 0x00000002;
-              value_ = input.readBytes();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
+
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_MapFieldEntry_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_MapFieldEntry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.class, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<MapFieldEntry> PARSER =
-        new com.google.protobuf.AbstractParser<MapFieldEntry>() {
-      public MapFieldEntry parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new MapFieldEntry(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<MapFieldEntry> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
-    // optional string key = 1;
     public static final int KEY_FIELD_NUMBER = 1;
-    private java.lang.Object key_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object key_ = "";
     /**
      * <code>optional string key = 1;</code>
+     * @return Whether the key field is set.
      */
+    @java.lang.Override
     public boolean hasKey() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string key = 1;</code>
+     * @return The key.
      */
+    @java.lang.Override
     public java.lang.String getKey() {
       java.lang.Object ref = key_;
       if (ref instanceof java.lang.String) {
@@ -170,7 +122,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string key = 1;</code>
+     * @return The bytes for key.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getKeyBytes() {
       java.lang.Object ref = key_;
@@ -185,18 +139,22 @@ public final class HiveHookEvents {
       }
     }
 
-    // optional string value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
-    private java.lang.Object value_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object value_ = "";
     /**
      * <code>optional string value = 2;</code>
+     * @return Whether the value field is set.
      */
+    @java.lang.Override
     public boolean hasValue() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string value = 2;</code>
+     * @return The value.
      */
+    @java.lang.Override
     public java.lang.String getValue() {
       java.lang.Object ref = value_;
       if (ref instanceof java.lang.String) {
@@ -213,7 +171,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string value = 2;</code>
+     * @return The bytes for value.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getValueBytes() {
       java.lang.Object ref = value_;
@@ -228,57 +188,101 @@ public final class HiveHookEvents {
       }
     }
 
-    private void initFields() {
-      key_ = "";
-      value_ = "";
-    }
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getKeyBytes());
+      if (((bitField0_ & 0x00000001) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, key_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getValueBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, value_);
       }
       getUnknownFields().writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getKeyBytes());
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, key_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getValueBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, value_);
       }
       size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry other = (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry) obj;
+
+      if (hasKey() != other.hasKey()) return false;
+      if (hasKey()) {
+        if (!getKey()
+            .equals(other.getKey())) return false;
+      }
+      if (hasValue() != other.hasValue()) return false;
+      if (hasValue()) {
+        if (!getValue()
+            .equals(other.getValue())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
     }
 
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasKey()) {
+        hash = (37 * hash) + KEY_FIELD_NUMBER;
+        hash = (53 * hash) + getKey().hashCode();
+      }
+      if (hasValue()) {
+        hash = (37 * hash) + VALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getValue().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -302,46 +306,61 @@ public final class HiveHookEvents {
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
+
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
+
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -349,14 +368,16 @@ public final class HiveHookEvents {
      * Protobuf type {@code MapFieldEntry}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntryOrBuilder {
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:MapFieldEntry)
+        org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_MapFieldEntry_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_MapFieldEntry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -365,44 +386,35 @@ public final class HiveHookEvents {
 
       // Construct using org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
 
+      }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         key_ = "";
-        bitField0_ = (bitField0_ & ~0x00000001);
         value_ = "";
-        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_MapFieldEntry_descriptor;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry getDefaultInstanceForType() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry build() {
         org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry result = buildPartial();
         if (!result.isInitialized()) {
@@ -411,23 +423,61 @@ public final class HiveHookEvents {
         return result;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry buildPartial() {
         org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry result = new org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.key_ = key_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.value_ = value_;
-        result.bitField0_ = to_bitField0_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
+      private void buildPartial0(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.key_ = key_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.value_ = value_;
+          to_bitField0_ |= 0x00000002;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry) {
           return mergeFrom((org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry)other);
@@ -440,59 +490,89 @@ public final class HiveHookEvents {
       public Builder mergeFrom(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry other) {
         if (other == org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.getDefaultInstance()) return this;
         if (other.hasKey()) {
-          bitField0_ |= 0x00000001;
           key_ = other.key_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (other.hasValue()) {
-          bitField0_ |= 0x00000002;
           value_ = other.value_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
         }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                key_ = input.readBytes();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                value_ = input.readBytes();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
 
-      // optional string key = 1;
       private java.lang.Object key_ = "";
       /**
        * <code>optional string key = 1;</code>
+       * @return Whether the key field is set.
        */
       public boolean hasKey() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string key = 1;</code>
+       * @return The key.
        */
       public java.lang.String getKey() {
         java.lang.Object ref = key_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          key_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            key_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -500,6 +580,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string key = 1;</code>
+       * @return The bytes for key.
        */
       public com.google.protobuf.ByteString
           getKeyBytes() {
@@ -516,57 +597,62 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string key = 1;</code>
+       * @param value The key to set.
+       * @return This builder for chaining.
        */
       public Builder setKey(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+        if (value == null) { throw new NullPointerException(); }
         key_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
       /**
        * <code>optional string key = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearKey() {
-        bitField0_ = (bitField0_ & ~0x00000001);
         key_ = getDefaultInstance().getKey();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
       /**
        * <code>optional string key = 1;</code>
+       * @param value The bytes for key to set.
+       * @return This builder for chaining.
        */
       public Builder setKeyBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+        if (value == null) { throw new NullPointerException(); }
         key_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
 
-      // optional string value = 2;
       private java.lang.Object value_ = "";
       /**
        * <code>optional string value = 2;</code>
+       * @return Whether the value field is set.
        */
       public boolean hasValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string value = 2;</code>
+       * @return The value.
        */
       public java.lang.String getValue() {
         java.lang.Object ref = value_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          value_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            value_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -574,6 +660,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string value = 2;</code>
+       * @return The bytes for value.
        */
       public com.google.protobuf.ByteString
           getValueBytes() {
@@ -590,210 +677,288 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string value = 2;</code>
+       * @param value The value to set.
+       * @return This builder for chaining.
        */
       public Builder setValue(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
+        if (value == null) { throw new NullPointerException(); }
         value_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
       /**
        * <code>optional string value = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearValue() {
-        bitField0_ = (bitField0_ & ~0x00000002);
         value_ = getDefaultInstance().getValue();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
       /**
        * <code>optional string value = 2;</code>
+       * @param value The bytes for value to set.
+       * @return This builder for chaining.
        */
       public Builder setValueBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
+        if (value == null) { throw new NullPointerException(); }
         value_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:MapFieldEntry)
     }
 
+    // @@protoc_insertion_point(class_scope:MapFieldEntry)
+    private static final org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry DEFAULT_INSTANCE;
     static {
-      defaultInstance = new MapFieldEntry(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry();
     }
 
-    // @@protoc_insertion_point(class_scope:MapFieldEntry)
+    public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<MapFieldEntry>
+        PARSER = new com.google.protobuf.AbstractParser<MapFieldEntry>() {
+      @java.lang.Override
+      public MapFieldEntry parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<MapFieldEntry> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<MapFieldEntry> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
-  public interface HiveHookEventProtoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface HiveHookEventProtoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:HiveHookEventProto)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string eventType = 1;
     /**
      * <code>optional string eventType = 1;</code>
+     * @return Whether the eventType field is set.
      */
     boolean hasEventType();
     /**
      * <code>optional string eventType = 1;</code>
+     * @return The eventType.
      */
     java.lang.String getEventType();
     /**
      * <code>optional string eventType = 1;</code>
+     * @return The bytes for eventType.
      */
     com.google.protobuf.ByteString
         getEventTypeBytes();
 
-    // optional string hiveQueryId = 2;
     /**
      * <code>optional string hiveQueryId = 2;</code>
+     * @return Whether the hiveQueryId field is set.
      */
     boolean hasHiveQueryId();
     /**
      * <code>optional string hiveQueryId = 2;</code>
+     * @return The hiveQueryId.
      */
     java.lang.String getHiveQueryId();
     /**
      * <code>optional string hiveQueryId = 2;</code>
+     * @return The bytes for hiveQueryId.
      */
     com.google.protobuf.ByteString
         getHiveQueryIdBytes();
 
-    // optional int64 timestamp = 3;
     /**
      * <code>optional int64 timestamp = 3;</code>
+     * @return Whether the timestamp field is set.
      */
     boolean hasTimestamp();
     /**
      * <code>optional int64 timestamp = 3;</code>
+     * @return The timestamp.
      */
     long getTimestamp();
 
-    // optional string executionMode = 4;
     /**
      * <code>optional string executionMode = 4;</code>
+     * @return Whether the executionMode field is set.
      */
     boolean hasExecutionMode();
     /**
      * <code>optional string executionMode = 4;</code>
+     * @return The executionMode.
      */
     java.lang.String getExecutionMode();
     /**
      * <code>optional string executionMode = 4;</code>
+     * @return The bytes for executionMode.
      */
     com.google.protobuf.ByteString
         getExecutionModeBytes();
 
-    // optional string requestUser = 5;
     /**
      * <code>optional string requestUser = 5;</code>
+     * @return Whether the requestUser field is set.
      */
     boolean hasRequestUser();
     /**
      * <code>optional string requestUser = 5;</code>
+     * @return The requestUser.
      */
     java.lang.String getRequestUser();
     /**
      * <code>optional string requestUser = 5;</code>
+     * @return The bytes for requestUser.
      */
     com.google.protobuf.ByteString
         getRequestUserBytes();
 
-    // optional string queue = 6;
     /**
      * <code>optional string queue = 6;</code>
+     * @return Whether the queue field is set.
      */
     boolean hasQueue();
     /**
      * <code>optional string queue = 6;</code>
+     * @return The queue.
      */
     java.lang.String getQueue();
     /**
      * <code>optional string queue = 6;</code>
+     * @return The bytes for queue.
      */
     com.google.protobuf.ByteString
         getQueueBytes();
 
-    // optional string user = 7;
     /**
      * <code>optional string user = 7;</code>
+     * @return Whether the user field is set.
      */
     boolean hasUser();
     /**
      * <code>optional string user = 7;</code>
+     * @return The user.
      */
     java.lang.String getUser();
     /**
      * <code>optional string user = 7;</code>
+     * @return The bytes for user.
      */
     com.google.protobuf.ByteString
         getUserBytes();
 
-    // optional string operationId = 8;
     /**
      * <code>optional string operationId = 8;</code>
+     * @return Whether the operationId field is set.
      */
     boolean hasOperationId();
     /**
      * <code>optional string operationId = 8;</code>
+     * @return The operationId.
      */
     java.lang.String getOperationId();
     /**
      * <code>optional string operationId = 8;</code>
+     * @return The bytes for operationId.
      */
     com.google.protobuf.ByteString
         getOperationIdBytes();
 
-    // repeated string tablesWritten = 9;
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @return A list containing the tablesWritten.
      */
     java.util.List<java.lang.String>
-    getTablesWrittenList();
+        getTablesWrittenList();
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @return The count of tablesWritten.
      */
     int getTablesWrittenCount();
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @param index The index of the element to return.
+     * @return The tablesWritten at the given index.
      */
     java.lang.String getTablesWritten(int index);
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tablesWritten at the given index.
      */
     com.google.protobuf.ByteString
         getTablesWrittenBytes(int index);
 
-    // repeated string tablesRead = 10;
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @return A list containing the tablesRead.
      */
     java.util.List<java.lang.String>
-    getTablesReadList();
+        getTablesReadList();
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @return The count of tablesRead.
      */
     int getTablesReadCount();
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @param index The index of the element to return.
+     * @return The tablesRead at the given index.
      */
     java.lang.String getTablesRead(int index);
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tablesRead at the given index.
      */
     com.google.protobuf.ByteString
         getTablesReadBytes(int index);
 
-    // repeated .MapFieldEntry otherInfo = 50;
     /**
      * <code>repeated .MapFieldEntry otherInfo = 50;</code>
      */
@@ -822,178 +987,66 @@ public final class HiveHookEvents {
    * Protobuf type {@code HiveHookEventProto}
    */
   public static final class HiveHookEventProto extends
-      com.google.protobuf.GeneratedMessage
-      implements HiveHookEventProtoOrBuilder {
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:HiveHookEventProto)
+      HiveHookEventProtoOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use HiveHookEventProto.newBuilder() to construct.
-    private HiveHookEventProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private HiveHookEventProto(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private HiveHookEventProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final HiveHookEventProto defaultInstance;
-    public static HiveHookEventProto getDefaultInstance() {
-      return defaultInstance;
+    private HiveHookEventProto() {
+      eventType_ = "";
+      hiveQueryId_ = "";
+      executionMode_ = "";
+      requestUser_ = "";
+      queue_ = "";
+      user_ = "";
+      operationId_ = "";
+      tablesWritten_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      tablesRead_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      otherInfo_ = java.util.Collections.emptyList();
     }
 
-    public HiveHookEventProto getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new HiveHookEventProto();
     }
-    private HiveHookEventProto(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 10: {
-              bitField0_ |= 0x00000001;
-              eventType_ = input.readBytes();
-              break;
-            }
-            case 18: {
-              bitField0_ |= 0x00000002;
-              hiveQueryId_ = input.readBytes();
-              break;
-            }
-            case 24: {
-              bitField0_ |= 0x00000004;
-              timestamp_ = input.readInt64();
-              break;
-            }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              executionMode_ = input.readBytes();
-              break;
-            }
-            case 42: {
-              bitField0_ |= 0x00000010;
-              requestUser_ = input.readBytes();
-              break;
-            }
-            case 50: {
-              bitField0_ |= 0x00000020;
-              queue_ = input.readBytes();
-              break;
-            }
-            case 58: {
-              bitField0_ |= 0x00000040;
-              user_ = input.readBytes();
-              break;
-            }
-            case 66: {
-              bitField0_ |= 0x00000080;
-              operationId_ = input.readBytes();
-              break;
-            }
-            case 74: {
-              if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
-                tablesWritten_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000100;
-              }
-              tablesWritten_.add(input.readBytes());
-              break;
-            }
-            case 82: {
-              if (!((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
-                tablesRead_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000200;
-              }
-              tablesRead_.add(input.readBytes());
-              break;
-            }
-            case 402: {
-              if (!((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
-                otherInfo_ = new java.util.ArrayList<org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry>();
-                mutable_bitField0_ |= 0x00000400;
-              }
-              otherInfo_.add(input.readMessage(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.PARSER, extensionRegistry));
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
-          tablesWritten_ = new com.google.protobuf.UnmodifiableLazyStringList(tablesWritten_);
-        }
-        if (((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
-          tablesRead_ = new com.google.protobuf.UnmodifiableLazyStringList(tablesRead_);
-        }
-        if (((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
-          otherInfo_ = java.util.Collections.unmodifiableList(otherInfo_);
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
+
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_HiveHookEventProto_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_HiveHookEventProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto.class, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<HiveHookEventProto> PARSER =
-        new com.google.protobuf.AbstractParser<HiveHookEventProto>() {
-      public HiveHookEventProto parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new HiveHookEventProto(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<HiveHookEventProto> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
-    // optional string eventType = 1;
     public static final int EVENTTYPE_FIELD_NUMBER = 1;
-    private java.lang.Object eventType_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object eventType_ = "";
     /**
      * <code>optional string eventType = 1;</code>
+     * @return Whether the eventType field is set.
      */
+    @java.lang.Override
     public boolean hasEventType() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string eventType = 1;</code>
+     * @return The eventType.
      */
+    @java.lang.Override
     public java.lang.String getEventType() {
       java.lang.Object ref = eventType_;
       if (ref instanceof java.lang.String) {
@@ -1010,7 +1063,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string eventType = 1;</code>
+     * @return The bytes for eventType.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getEventTypeBytes() {
       java.lang.Object ref = eventType_;
@@ -1025,18 +1080,22 @@ public final class HiveHookEvents {
       }
     }
 
-    // optional string hiveQueryId = 2;
     public static final int HIVEQUERYID_FIELD_NUMBER = 2;
-    private java.lang.Object hiveQueryId_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object hiveQueryId_ = "";
     /**
      * <code>optional string hiveQueryId = 2;</code>
+     * @return Whether the hiveQueryId field is set.
      */
+    @java.lang.Override
     public boolean hasHiveQueryId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string hiveQueryId = 2;</code>
+     * @return The hiveQueryId.
      */
+    @java.lang.Override
     public java.lang.String getHiveQueryId() {
       java.lang.Object ref = hiveQueryId_;
       if (ref instanceof java.lang.String) {
@@ -1053,7 +1112,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string hiveQueryId = 2;</code>
+     * @return The bytes for hiveQueryId.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getHiveQueryIdBytes() {
       java.lang.Object ref = hiveQueryId_;
@@ -1068,34 +1129,41 @@ public final class HiveHookEvents {
       }
     }
 
-    // optional int64 timestamp = 3;
     public static final int TIMESTAMP_FIELD_NUMBER = 3;
-    private long timestamp_;
+    private long timestamp_ = 0L;
     /**
      * <code>optional int64 timestamp = 3;</code>
+     * @return Whether the timestamp field is set.
      */
+    @java.lang.Override
     public boolean hasTimestamp() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional int64 timestamp = 3;</code>
+     * @return The timestamp.
      */
+    @java.lang.Override
     public long getTimestamp() {
       return timestamp_;
     }
 
-    // optional string executionMode = 4;
     public static final int EXECUTIONMODE_FIELD_NUMBER = 4;
-    private java.lang.Object executionMode_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object executionMode_ = "";
     /**
      * <code>optional string executionMode = 4;</code>
+     * @return Whether the executionMode field is set.
      */
+    @java.lang.Override
     public boolean hasExecutionMode() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string executionMode = 4;</code>
+     * @return The executionMode.
      */
+    @java.lang.Override
     public java.lang.String getExecutionMode() {
       java.lang.Object ref = executionMode_;
       if (ref instanceof java.lang.String) {
@@ -1112,7 +1180,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string executionMode = 4;</code>
+     * @return The bytes for executionMode.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getExecutionModeBytes() {
       java.lang.Object ref = executionMode_;
@@ -1127,18 +1197,22 @@ public final class HiveHookEvents {
       }
     }
 
-    // optional string requestUser = 5;
     public static final int REQUESTUSER_FIELD_NUMBER = 5;
-    private java.lang.Object requestUser_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object requestUser_ = "";
     /**
      * <code>optional string requestUser = 5;</code>
+     * @return Whether the requestUser field is set.
      */
+    @java.lang.Override
     public boolean hasRequestUser() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional string requestUser = 5;</code>
+     * @return The requestUser.
      */
+    @java.lang.Override
     public java.lang.String getRequestUser() {
       java.lang.Object ref = requestUser_;
       if (ref instanceof java.lang.String) {
@@ -1155,7 +1229,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string requestUser = 5;</code>
+     * @return The bytes for requestUser.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getRequestUserBytes() {
       java.lang.Object ref = requestUser_;
@@ -1170,18 +1246,22 @@ public final class HiveHookEvents {
       }
     }
 
-    // optional string queue = 6;
     public static final int QUEUE_FIELD_NUMBER = 6;
-    private java.lang.Object queue_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object queue_ = "";
     /**
      * <code>optional string queue = 6;</code>
+     * @return Whether the queue field is set.
      */
+    @java.lang.Override
     public boolean hasQueue() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <code>optional string queue = 6;</code>
+     * @return The queue.
      */
+    @java.lang.Override
     public java.lang.String getQueue() {
       java.lang.Object ref = queue_;
       if (ref instanceof java.lang.String) {
@@ -1198,7 +1278,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string queue = 6;</code>
+     * @return The bytes for queue.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getQueueBytes() {
       java.lang.Object ref = queue_;
@@ -1213,18 +1295,22 @@ public final class HiveHookEvents {
       }
     }
 
-    // optional string user = 7;
     public static final int USER_FIELD_NUMBER = 7;
-    private java.lang.Object user_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object user_ = "";
     /**
      * <code>optional string user = 7;</code>
+     * @return Whether the user field is set.
      */
+    @java.lang.Override
     public boolean hasUser() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <code>optional string user = 7;</code>
+     * @return The user.
      */
+    @java.lang.Override
     public java.lang.String getUser() {
       java.lang.Object ref = user_;
       if (ref instanceof java.lang.String) {
@@ -1241,7 +1327,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string user = 7;</code>
+     * @return The bytes for user.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getUserBytes() {
       java.lang.Object ref = user_;
@@ -1256,18 +1344,22 @@ public final class HiveHookEvents {
       }
     }
 
-    // optional string operationId = 8;
     public static final int OPERATIONID_FIELD_NUMBER = 8;
-    private java.lang.Object operationId_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object operationId_ = "";
     /**
      * <code>optional string operationId = 8;</code>
+     * @return Whether the operationId field is set.
      */
+    @java.lang.Override
     public boolean hasOperationId() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000080) != 0);
     }
     /**
      * <code>optional string operationId = 8;</code>
+     * @return The operationId.
      */
+    @java.lang.Override
     public java.lang.String getOperationId() {
       java.lang.Object ref = operationId_;
       if (ref instanceof java.lang.String) {
@@ -1284,7 +1376,9 @@ public final class HiveHookEvents {
     }
     /**
      * <code>optional string operationId = 8;</code>
+     * @return The bytes for operationId.
      */
+    @java.lang.Override
     public com.google.protobuf.ByteString
         getOperationIdBytes() {
       java.lang.Object ref = operationId_;
@@ -1299,78 +1393,94 @@ public final class HiveHookEvents {
       }
     }
 
-    // repeated string tablesWritten = 9;
     public static final int TABLESWRITTEN_FIELD_NUMBER = 9;
-    private com.google.protobuf.LazyStringList tablesWritten_;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList tablesWritten_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @return A list containing the tablesWritten.
      */
-    public java.util.List<java.lang.String>
+    public com.google.protobuf.ProtocolStringList
         getTablesWrittenList() {
       return tablesWritten_;
     }
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @return The count of tablesWritten.
      */
     public int getTablesWrittenCount() {
       return tablesWritten_.size();
     }
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @param index The index of the element to return.
+     * @return The tablesWritten at the given index.
      */
     public java.lang.String getTablesWritten(int index) {
       return tablesWritten_.get(index);
     }
     /**
      * <code>repeated string tablesWritten = 9;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tablesWritten at the given index.
      */
     public com.google.protobuf.ByteString
         getTablesWrittenBytes(int index) {
       return tablesWritten_.getByteString(index);
     }
 
-    // repeated string tablesRead = 10;
     public static final int TABLESREAD_FIELD_NUMBER = 10;
-    private com.google.protobuf.LazyStringList tablesRead_;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList tablesRead_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @return A list containing the tablesRead.
      */
-    public java.util.List<java.lang.String>
+    public com.google.protobuf.ProtocolStringList
         getTablesReadList() {
       return tablesRead_;
     }
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @return The count of tablesRead.
      */
     public int getTablesReadCount() {
       return tablesRead_.size();
     }
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @param index The index of the element to return.
+     * @return The tablesRead at the given index.
      */
     public java.lang.String getTablesRead(int index) {
       return tablesRead_.get(index);
     }
     /**
      * <code>repeated string tablesRead = 10;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the tablesRead at the given index.
      */
     public com.google.protobuf.ByteString
         getTablesReadBytes(int index) {
       return tablesRead_.getByteString(index);
     }
 
-    // repeated .MapFieldEntry otherInfo = 50;
     public static final int OTHERINFO_FIELD_NUMBER = 50;
+    @SuppressWarnings("serial")
     private java.util.List<org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry> otherInfo_;
     /**
      * <code>repeated .MapFieldEntry otherInfo = 50;</code>
      */
+    @java.lang.Override
     public java.util.List<org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry> getOtherInfoList() {
       return otherInfo_;
     }
     /**
      * <code>repeated .MapFieldEntry otherInfo = 50;</code>
      */
+    @java.lang.Override
     public java.util.List<? extends org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntryOrBuilder> 
         getOtherInfoOrBuilderList() {
       return otherInfo_;
@@ -1378,77 +1488,69 @@ public final class HiveHookEvents {
     /**
      * <code>repeated .MapFieldEntry otherInfo = 50;</code>
      */
+    @java.lang.Override
     public int getOtherInfoCount() {
       return otherInfo_.size();
     }
     /**
      * <code>repeated .MapFieldEntry otherInfo = 50;</code>
      */
+    @java.lang.Override
     public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry getOtherInfo(int index) {
       return otherInfo_.get(index);
     }
     /**
      * <code>repeated .MapFieldEntry otherInfo = 50;</code>
      */
+    @java.lang.Override
     public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntryOrBuilder getOtherInfoOrBuilder(
         int index) {
       return otherInfo_.get(index);
     }
 
-    private void initFields() {
-      eventType_ = "";
-      hiveQueryId_ = "";
-      timestamp_ = 0L;
-      executionMode_ = "";
-      requestUser_ = "";
-      queue_ = "";
-      user_ = "";
-      operationId_ = "";
-      tablesWritten_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      tablesRead_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      otherInfo_ = java.util.Collections.emptyList();
-    }
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getEventTypeBytes());
+      if (((bitField0_ & 0x00000001) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, eventType_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getHiveQueryIdBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, hiveQueryId_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt64(3, timestamp_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getExecutionModeBytes());
+      if (((bitField0_ & 0x00000008) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, executionMode_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBytes(5, getRequestUserBytes());
+      if (((bitField0_ & 0x00000010) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, requestUser_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeBytes(6, getQueueBytes());
+      if (((bitField0_ & 0x00000020) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, queue_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeBytes(7, getUserBytes());
+      if (((bitField0_ & 0x00000040) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, user_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeBytes(8, getOperationIdBytes());
+      if (((bitField0_ & 0x00000080) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, operationId_);
       }
       for (int i = 0; i < tablesWritten_.size(); i++) {
-        output.writeBytes(9, tablesWritten_.getByteString(i));
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, tablesWritten_.getRaw(i));
       }
       for (int i = 0; i < tablesRead_.size(); i++) {
-        output.writeBytes(10, tablesRead_.getByteString(i));
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, tablesRead_.getRaw(i));
       }
       for (int i = 0; i < otherInfo_.size(); i++) {
         output.writeMessage(50, otherInfo_.get(i));
@@ -1456,49 +1558,41 @@ public final class HiveHookEvents {
       getUnknownFields().writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getEventTypeBytes());
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, eventType_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getHiveQueryIdBytes());
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, hiveQueryId_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, timestamp_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getExecutionModeBytes());
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, executionMode_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(5, getRequestUserBytes());
+      if (((bitField0_ & 0x00000010) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, requestUser_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(6, getQueueBytes());
+      if (((bitField0_ & 0x00000020) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, queue_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(7, getUserBytes());
+      if (((bitField0_ & 0x00000040) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, user_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(8, getOperationIdBytes());
+      if (((bitField0_ & 0x00000080) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, operationId_);
       }
       {
         int dataSize = 0;
         for (int i = 0; i < tablesWritten_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeBytesSizeNoTag(tablesWritten_.getByteString(i));
+          dataSize += computeStringSizeNoTag(tablesWritten_.getRaw(i));
         }
         size += dataSize;
         size += 1 * getTablesWrittenList().size();
@@ -1506,8 +1600,7 @@ public final class HiveHookEvents {
       {
         int dataSize = 0;
         for (int i = 0; i < tablesRead_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeBytesSizeNoTag(tablesRead_.getByteString(i));
+          dataSize += computeStringSizeNoTag(tablesRead_.getRaw(i));
         }
         size += dataSize;
         size += 1 * getTablesReadList().size();
@@ -1517,17 +1610,138 @@ public final class HiveHookEvents {
           .computeMessageSize(50, otherInfo_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto other = (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto) obj;
+
+      if (hasEventType() != other.hasEventType()) return false;
+      if (hasEventType()) {
+        if (!getEventType()
+            .equals(other.getEventType())) return false;
+      }
+      if (hasHiveQueryId() != other.hasHiveQueryId()) return false;
+      if (hasHiveQueryId()) {
+        if (!getHiveQueryId()
+            .equals(other.getHiveQueryId())) return false;
+      }
+      if (hasTimestamp() != other.hasTimestamp()) return false;
+      if (hasTimestamp()) {
+        if (getTimestamp()
+            != other.getTimestamp()) return false;
+      }
+      if (hasExecutionMode() != other.hasExecutionMode()) return false;
+      if (hasExecutionMode()) {
+        if (!getExecutionMode()
+            .equals(other.getExecutionMode())) return false;
+      }
+      if (hasRequestUser() != other.hasRequestUser()) return false;
+      if (hasRequestUser()) {
+        if (!getRequestUser()
+            .equals(other.getRequestUser())) return false;
+      }
+      if (hasQueue() != other.hasQueue()) return false;
+      if (hasQueue()) {
+        if (!getQueue()
+            .equals(other.getQueue())) return false;
+      }
+      if (hasUser() != other.hasUser()) return false;
+      if (hasUser()) {
+        if (!getUser()
+            .equals(other.getUser())) return false;
+      }
+      if (hasOperationId() != other.hasOperationId()) return false;
+      if (hasOperationId()) {
+        if (!getOperationId()
+            .equals(other.getOperationId())) return false;
+      }
+      if (!getTablesWrittenList()
+          .equals(other.getTablesWrittenList())) return false;
+      if (!getTablesReadList()
+          .equals(other.getTablesReadList())) return false;
+      if (!getOtherInfoList()
+          .equals(other.getOtherInfoList())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
     }
 
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasEventType()) {
+        hash = (37 * hash) + EVENTTYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getEventType().hashCode();
+      }
+      if (hasHiveQueryId()) {
+        hash = (37 * hash) + HIVEQUERYID_FIELD_NUMBER;
+        hash = (53 * hash) + getHiveQueryId().hashCode();
+      }
+      if (hasTimestamp()) {
+        hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getTimestamp());
+      }
+      if (hasExecutionMode()) {
+        hash = (37 * hash) + EXECUTIONMODE_FIELD_NUMBER;
+        hash = (53 * hash) + getExecutionMode().hashCode();
+      }
+      if (hasRequestUser()) {
+        hash = (37 * hash) + REQUESTUSER_FIELD_NUMBER;
+        hash = (53 * hash) + getRequestUser().hashCode();
+      }
+      if (hasQueue()) {
+        hash = (37 * hash) + QUEUE_FIELD_NUMBER;
+        hash = (53 * hash) + getQueue().hashCode();
+      }
+      if (hasUser()) {
+        hash = (37 * hash) + USER_FIELD_NUMBER;
+        hash = (53 * hash) + getUser().hashCode();
+      }
+      if (hasOperationId()) {
+        hash = (37 * hash) + OPERATIONID_FIELD_NUMBER;
+        hash = (53 * hash) + getOperationId().hashCode();
+      }
+      if (getTablesWrittenCount() > 0) {
+        hash = (37 * hash) + TABLESWRITTEN_FIELD_NUMBER;
+        hash = (53 * hash) + getTablesWrittenList().hashCode();
+      }
+      if (getTablesReadCount() > 0) {
+        hash = (37 * hash) + TABLESREAD_FIELD_NUMBER;
+        hash = (53 * hash) + getTablesReadList().hashCode();
+      }
+      if (getOtherInfoCount() > 0) {
+        hash = (37 * hash) + OTHERINFO_FIELD_NUMBER;
+        hash = (53 * hash) + getOtherInfoList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1551,46 +1765,61 @@ public final class HiveHookEvents {
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
+
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
+
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1598,14 +1827,16 @@ public final class HiveHookEvents {
      * Protobuf type {@code HiveHookEventProto}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProtoOrBuilder {
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:HiveHookEventProto)
+        org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProtoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_HiveHookEventProto_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_HiveHookEventProto_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1614,67 +1845,52 @@ public final class HiveHookEvents {
 
       // Construct using org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getOtherInfoFieldBuilder();
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
 
+      }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         eventType_ = "";
-        bitField0_ = (bitField0_ & ~0x00000001);
         hiveQueryId_ = "";
-        bitField0_ = (bitField0_ & ~0x00000002);
         timestamp_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000004);
         executionMode_ = "";
-        bitField0_ = (bitField0_ & ~0x00000008);
         requestUser_ = "";
-        bitField0_ = (bitField0_ & ~0x00000010);
         queue_ = "";
-        bitField0_ = (bitField0_ & ~0x00000020);
         user_ = "";
-        bitField0_ = (bitField0_ & ~0x00000040);
         operationId_ = "";
-        bitField0_ = (bitField0_ & ~0x00000080);
-        tablesWritten_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000100);
-        tablesRead_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000200);
+        tablesWritten_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
+        tablesRead_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
         if (otherInfoBuilder_ == null) {
           otherInfo_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
         } else {
+          otherInfo_ = null;
           otherInfoBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.internal_static_HiveHookEventProto_descriptor;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto getDefaultInstanceForType() {
         return org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto build() {
         org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto result = buildPartial();
         if (!result.isInitialized()) {
@@ -1683,56 +1899,18 @@ public final class HiveHookEvents {
         return result;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto buildPartial() {
         org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto result = new org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.eventType_ = eventType_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.hiveQueryId_ = hiveQueryId_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        result.timestamp_ = timestamp_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.executionMode_ = executionMode_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
-        }
-        result.requestUser_ = requestUser_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-          to_bitField0_ |= 0x00000020;
-        }
-        result.queue_ = queue_;
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
-          to_bitField0_ |= 0x00000040;
-        }
-        result.user_ = user_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000080;
-        }
-        result.operationId_ = operationId_;
-        if (((bitField0_ & 0x00000100) == 0x00000100)) {
-          tablesWritten_ = new com.google.protobuf.UnmodifiableLazyStringList(
-              tablesWritten_);
-          bitField0_ = (bitField0_ & ~0x00000100);
-        }
-        result.tablesWritten_ = tablesWritten_;
-        if (((bitField0_ & 0x00000200) == 0x00000200)) {
-          tablesRead_ = new com.google.protobuf.UnmodifiableLazyStringList(
-              tablesRead_);
-          bitField0_ = (bitField0_ & ~0x00000200);
-        }
-        result.tablesRead_ = tablesRead_;
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto result) {
         if (otherInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+          if (((bitField0_ & 0x00000400) != 0)) {
             otherInfo_ = java.util.Collections.unmodifiableList(otherInfo_);
             bitField0_ = (bitField0_ & ~0x00000400);
           }
@@ -1740,11 +1918,87 @@ public final class HiveHookEvents {
         } else {
           result.otherInfo_ = otherInfoBuilder_.build();
         }
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
       }
 
+      private void buildPartial0(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.eventType_ = eventType_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.hiveQueryId_ = hiveQueryId_;
+          to_bitField0_ |= 0x00000002;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.timestamp_ = timestamp_;
+          to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.executionMode_ = executionMode_;
+          to_bitField0_ |= 0x00000008;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.requestUser_ = requestUser_;
+          to_bitField0_ |= 0x00000010;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.queue_ = queue_;
+          to_bitField0_ |= 0x00000020;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.user_ = user_;
+          to_bitField0_ |= 0x00000040;
+        }
+        if (((from_bitField0_ & 0x00000080) != 0)) {
+          result.operationId_ = operationId_;
+          to_bitField0_ |= 0x00000080;
+        }
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          tablesWritten_.makeImmutable();
+          result.tablesWritten_ = tablesWritten_;
+        }
+        if (((from_bitField0_ & 0x00000200) != 0)) {
+          tablesRead_.makeImmutable();
+          result.tablesRead_ = tablesRead_;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto) {
           return mergeFrom((org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto)other);
@@ -1757,47 +2011,47 @@ public final class HiveHookEvents {
       public Builder mergeFrom(org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto other) {
         if (other == org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto.getDefaultInstance()) return this;
         if (other.hasEventType()) {
-          bitField0_ |= 0x00000001;
           eventType_ = other.eventType_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (other.hasHiveQueryId()) {
-          bitField0_ |= 0x00000002;
           hiveQueryId_ = other.hiveQueryId_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (other.hasTimestamp()) {
           setTimestamp(other.getTimestamp());
         }
         if (other.hasExecutionMode()) {
-          bitField0_ |= 0x00000008;
           executionMode_ = other.executionMode_;
+          bitField0_ |= 0x00000008;
           onChanged();
         }
         if (other.hasRequestUser()) {
-          bitField0_ |= 0x00000010;
           requestUser_ = other.requestUser_;
+          bitField0_ |= 0x00000010;
           onChanged();
         }
         if (other.hasQueue()) {
-          bitField0_ |= 0x00000020;
           queue_ = other.queue_;
+          bitField0_ |= 0x00000020;
           onChanged();
         }
         if (other.hasUser()) {
-          bitField0_ |= 0x00000040;
           user_ = other.user_;
+          bitField0_ |= 0x00000040;
           onChanged();
         }
         if (other.hasOperationId()) {
-          bitField0_ |= 0x00000080;
           operationId_ = other.operationId_;
+          bitField0_ |= 0x00000080;
           onChanged();
         }
         if (!other.tablesWritten_.isEmpty()) {
           if (tablesWritten_.isEmpty()) {
             tablesWritten_ = other.tablesWritten_;
-            bitField0_ = (bitField0_ & ~0x00000100);
+            bitField0_ |= 0x00000100;
           } else {
             ensureTablesWrittenIsMutable();
             tablesWritten_.addAll(other.tablesWritten_);
@@ -1807,7 +2061,7 @@ public final class HiveHookEvents {
         if (!other.tablesRead_.isEmpty()) {
           if (tablesRead_.isEmpty()) {
             tablesRead_ = other.tablesRead_;
-            bitField0_ = (bitField0_ & ~0x00000200);
+            bitField0_ |= 0x00000200;
           } else {
             ensureTablesReadIsMutable();
             tablesRead_.addAll(other.tablesRead_);
@@ -1833,7 +2087,7 @@ public final class HiveHookEvents {
               otherInfo_ = other.otherInfo_;
               bitField0_ = (bitField0_ & ~0x00000400);
               otherInfoBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getOtherInfoFieldBuilder() : null;
             } else {
               otherInfoBuilder_.addAllMessages(other.otherInfo_);
@@ -1841,49 +2095,134 @@ public final class HiveHookEvents {
           }
         }
         this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
         }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                eventType_ = input.readBytes();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                hiveQueryId_ = input.readBytes();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 24: {
+                timestamp_ = input.readInt64();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+              case 34: {
+                executionMode_ = input.readBytes();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+              case 42: {
+                requestUser_ = input.readBytes();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
+              case 50: {
+                queue_ = input.readBytes();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
+              case 58: {
+                user_ = input.readBytes();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 58
+              case 66: {
+                operationId_ = input.readBytes();
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 66
+              case 74: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                ensureTablesWrittenIsMutable();
+                tablesWritten_.add(bs);
+                break;
+              } // case 74
+              case 82: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                ensureTablesReadIsMutable();
+                tablesRead_.add(bs);
+                break;
+              } // case 82
+              case 402: {
+                org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry m =
+                    input.readMessage(
+                        org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.PARSER,
+                        extensionRegistry);
+                if (otherInfoBuilder_ == null) {
+                  ensureOtherInfoIsMutable();
+                  otherInfo_.add(m);
+                } else {
+                  otherInfoBuilder_.addMessage(m);
+                }
+                break;
+              } // case 402
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
 
-      // optional string eventType = 1;
       private java.lang.Object eventType_ = "";
       /**
        * <code>optional string eventType = 1;</code>
+       * @return Whether the eventType field is set.
        */
       public boolean hasEventType() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string eventType = 1;</code>
+       * @return The eventType.
        */
       public java.lang.String getEventType() {
         java.lang.Object ref = eventType_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          eventType_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            eventType_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -1891,6 +2230,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string eventType = 1;</code>
+       * @return The bytes for eventType.
        */
       public com.google.protobuf.ByteString
           getEventTypeBytes() {
@@ -1907,57 +2247,62 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string eventType = 1;</code>
+       * @param value The eventType to set.
+       * @return This builder for chaining.
        */
       public Builder setEventType(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+        if (value == null) { throw new NullPointerException(); }
         eventType_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
       /**
        * <code>optional string eventType = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearEventType() {
-        bitField0_ = (bitField0_ & ~0x00000001);
         eventType_ = getDefaultInstance().getEventType();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
       /**
        * <code>optional string eventType = 1;</code>
+       * @param value The bytes for eventType to set.
+       * @return This builder for chaining.
        */
       public Builder setEventTypeBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+        if (value == null) { throw new NullPointerException(); }
         eventType_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
 
-      // optional string hiveQueryId = 2;
       private java.lang.Object hiveQueryId_ = "";
       /**
        * <code>optional string hiveQueryId = 2;</code>
+       * @return Whether the hiveQueryId field is set.
        */
       public boolean hasHiveQueryId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string hiveQueryId = 2;</code>
+       * @return The hiveQueryId.
        */
       public java.lang.String getHiveQueryId() {
         java.lang.Object ref = hiveQueryId_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          hiveQueryId_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            hiveQueryId_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -1965,6 +2310,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string hiveQueryId = 2;</code>
+       * @return The bytes for hiveQueryId.
        */
       public com.google.protobuf.ByteString
           getHiveQueryIdBytes() {
@@ -1981,65 +2327,73 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string hiveQueryId = 2;</code>
+       * @param value The hiveQueryId to set.
+       * @return This builder for chaining.
        */
       public Builder setHiveQueryId(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
+        if (value == null) { throw new NullPointerException(); }
         hiveQueryId_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
       /**
        * <code>optional string hiveQueryId = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearHiveQueryId() {
-        bitField0_ = (bitField0_ & ~0x00000002);
         hiveQueryId_ = getDefaultInstance().getHiveQueryId();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
       /**
        * <code>optional string hiveQueryId = 2;</code>
+       * @param value The bytes for hiveQueryId to set.
+       * @return This builder for chaining.
        */
       public Builder setHiveQueryIdBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
+        if (value == null) { throw new NullPointerException(); }
         hiveQueryId_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
 
-      // optional int64 timestamp = 3;
       private long timestamp_ ;
       /**
        * <code>optional int64 timestamp = 3;</code>
+       * @return Whether the timestamp field is set.
        */
+      @java.lang.Override
       public boolean hasTimestamp() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional int64 timestamp = 3;</code>
+       * @return The timestamp.
        */
+      @java.lang.Override
       public long getTimestamp() {
         return timestamp_;
       }
       /**
        * <code>optional int64 timestamp = 3;</code>
+       * @param value The timestamp to set.
+       * @return This builder for chaining.
        */
       public Builder setTimestamp(long value) {
-        bitField0_ |= 0x00000004;
+
         timestamp_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
        * <code>optional int64 timestamp = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearTimestamp() {
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -2048,23 +2402,27 @@ public final class HiveHookEvents {
         return this;
       }
 
-      // optional string executionMode = 4;
       private java.lang.Object executionMode_ = "";
       /**
        * <code>optional string executionMode = 4;</code>
+       * @return Whether the executionMode field is set.
        */
       public boolean hasExecutionMode() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string executionMode = 4;</code>
+       * @return The executionMode.
        */
       public java.lang.String getExecutionMode() {
         java.lang.Object ref = executionMode_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          executionMode_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            executionMode_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2072,6 +2430,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string executionMode = 4;</code>
+       * @return The bytes for executionMode.
        */
       public com.google.protobuf.ByteString
           getExecutionModeBytes() {
@@ -2088,57 +2447,62 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string executionMode = 4;</code>
+       * @param value The executionMode to set.
+       * @return This builder for chaining.
        */
       public Builder setExecutionMode(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
+        if (value == null) { throw new NullPointerException(); }
         executionMode_ = value;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
       /**
        * <code>optional string executionMode = 4;</code>
+       * @return This builder for chaining.
        */
       public Builder clearExecutionMode() {
-        bitField0_ = (bitField0_ & ~0x00000008);
         executionMode_ = getDefaultInstance().getExecutionMode();
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
       /**
        * <code>optional string executionMode = 4;</code>
+       * @param value The bytes for executionMode to set.
+       * @return This builder for chaining.
        */
       public Builder setExecutionModeBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
+        if (value == null) { throw new NullPointerException(); }
         executionMode_ = value;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
 
-      // optional string requestUser = 5;
       private java.lang.Object requestUser_ = "";
       /**
        * <code>optional string requestUser = 5;</code>
+       * @return Whether the requestUser field is set.
        */
       public boolean hasRequestUser() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional string requestUser = 5;</code>
+       * @return The requestUser.
        */
       public java.lang.String getRequestUser() {
         java.lang.Object ref = requestUser_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          requestUser_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            requestUser_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2146,6 +2510,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string requestUser = 5;</code>
+       * @return The bytes for requestUser.
        */
       public com.google.protobuf.ByteString
           getRequestUserBytes() {
@@ -2162,57 +2527,62 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string requestUser = 5;</code>
+       * @param value The requestUser to set.
+       * @return This builder for chaining.
        */
       public Builder setRequestUser(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000010;
+        if (value == null) { throw new NullPointerException(); }
         requestUser_ = value;
+        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
       /**
        * <code>optional string requestUser = 5;</code>
+       * @return This builder for chaining.
        */
       public Builder clearRequestUser() {
-        bitField0_ = (bitField0_ & ~0x00000010);
         requestUser_ = getDefaultInstance().getRequestUser();
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
         return this;
       }
       /**
        * <code>optional string requestUser = 5;</code>
+       * @param value The bytes for requestUser to set.
+       * @return This builder for chaining.
        */
       public Builder setRequestUserBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000010;
+        if (value == null) { throw new NullPointerException(); }
         requestUser_ = value;
+        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
 
-      // optional string queue = 6;
       private java.lang.Object queue_ = "";
       /**
        * <code>optional string queue = 6;</code>
+       * @return Whether the queue field is set.
        */
       public boolean hasQueue() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000020) != 0);
       }
       /**
        * <code>optional string queue = 6;</code>
+       * @return The queue.
        */
       public java.lang.String getQueue() {
         java.lang.Object ref = queue_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          queue_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            queue_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2220,6 +2590,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string queue = 6;</code>
+       * @return The bytes for queue.
        */
       public com.google.protobuf.ByteString
           getQueueBytes() {
@@ -2236,57 +2607,62 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string queue = 6;</code>
+       * @param value The queue to set.
+       * @return This builder for chaining.
        */
       public Builder setQueue(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000020;
+        if (value == null) { throw new NullPointerException(); }
         queue_ = value;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
       /**
        * <code>optional string queue = 6;</code>
+       * @return This builder for chaining.
        */
       public Builder clearQueue() {
-        bitField0_ = (bitField0_ & ~0x00000020);
         queue_ = getDefaultInstance().getQueue();
+        bitField0_ = (bitField0_ & ~0x00000020);
         onChanged();
         return this;
       }
       /**
        * <code>optional string queue = 6;</code>
+       * @param value The bytes for queue to set.
+       * @return This builder for chaining.
        */
       public Builder setQueueBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000020;
+        if (value == null) { throw new NullPointerException(); }
         queue_ = value;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
 
-      // optional string user = 7;
       private java.lang.Object user_ = "";
       /**
        * <code>optional string user = 7;</code>
+       * @return Whether the user field is set.
        */
       public boolean hasUser() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000040) != 0);
       }
       /**
        * <code>optional string user = 7;</code>
+       * @return The user.
        */
       public java.lang.String getUser() {
         java.lang.Object ref = user_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          user_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            user_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2294,6 +2670,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string user = 7;</code>
+       * @return The bytes for user.
        */
       public com.google.protobuf.ByteString
           getUserBytes() {
@@ -2310,57 +2687,62 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string user = 7;</code>
+       * @param value The user to set.
+       * @return This builder for chaining.
        */
       public Builder setUser(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000040;
+        if (value == null) { throw new NullPointerException(); }
         user_ = value;
+        bitField0_ |= 0x00000040;
         onChanged();
         return this;
       }
       /**
        * <code>optional string user = 7;</code>
+       * @return This builder for chaining.
        */
       public Builder clearUser() {
-        bitField0_ = (bitField0_ & ~0x00000040);
         user_ = getDefaultInstance().getUser();
+        bitField0_ = (bitField0_ & ~0x00000040);
         onChanged();
         return this;
       }
       /**
        * <code>optional string user = 7;</code>
+       * @param value The bytes for user to set.
+       * @return This builder for chaining.
        */
       public Builder setUserBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000040;
+        if (value == null) { throw new NullPointerException(); }
         user_ = value;
+        bitField0_ |= 0x00000040;
         onChanged();
         return this;
       }
 
-      // optional string operationId = 8;
       private java.lang.Object operationId_ = "";
       /**
        * <code>optional string operationId = 8;</code>
+       * @return Whether the operationId field is set.
        */
       public boolean hasOperationId() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000080) != 0);
       }
       /**
        * <code>optional string operationId = 8;</code>
+       * @return The operationId.
        */
       public java.lang.String getOperationId() {
         java.lang.Object ref = operationId_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          operationId_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            operationId_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2368,6 +2750,7 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string operationId = 8;</code>
+       * @return The bytes for operationId.
        */
       public com.google.protobuf.ByteString
           getOperationIdBytes() {
@@ -2384,69 +2767,77 @@ public final class HiveHookEvents {
       }
       /**
        * <code>optional string operationId = 8;</code>
+       * @param value The operationId to set.
+       * @return This builder for chaining.
        */
       public Builder setOperationId(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000080;
+        if (value == null) { throw new NullPointerException(); }
         operationId_ = value;
+        bitField0_ |= 0x00000080;
         onChanged();
         return this;
       }
       /**
        * <code>optional string operationId = 8;</code>
+       * @return This builder for chaining.
        */
       public Builder clearOperationId() {
-        bitField0_ = (bitField0_ & ~0x00000080);
         operationId_ = getDefaultInstance().getOperationId();
+        bitField0_ = (bitField0_ & ~0x00000080);
         onChanged();
         return this;
       }
       /**
        * <code>optional string operationId = 8;</code>
+       * @param value The bytes for operationId to set.
+       * @return This builder for chaining.
        */
       public Builder setOperationIdBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000080;
+        if (value == null) { throw new NullPointerException(); }
         operationId_ = value;
+        bitField0_ |= 0x00000080;
         onChanged();
         return this;
       }
 
-      // repeated string tablesWritten = 9;
-      private com.google.protobuf.LazyStringList tablesWritten_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private com.google.protobuf.LazyStringArrayList tablesWritten_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
       private void ensureTablesWrittenIsMutable() {
-        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
+        if (!tablesWritten_.isModifiable()) {
           tablesWritten_ = new com.google.protobuf.LazyStringArrayList(tablesWritten_);
-          bitField0_ |= 0x00000100;
-         }
+        }
+        bitField0_ |= 0x00000100;
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @return A list containing the tablesWritten.
        */
-      public java.util.List<java.lang.String>
+      public com.google.protobuf.ProtocolStringList
           getTablesWrittenList() {
-        return java.util.Collections.unmodifiableList(tablesWritten_);
+        tablesWritten_.makeImmutable();
+        return tablesWritten_;
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @return The count of tablesWritten.
        */
       public int getTablesWrittenCount() {
         return tablesWritten_.size();
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @param index The index of the element to return.
+       * @return The tablesWritten at the given index.
        */
       public java.lang.String getTablesWritten(int index) {
         return tablesWritten_.get(index);
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the tablesWritten at the given index.
        */
       public com.google.protobuf.ByteString
           getTablesWrittenBytes(int index) {
@@ -2454,92 +2845,109 @@ public final class HiveHookEvents {
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @param index The index to set the value at.
+       * @param value The tablesWritten to set.
+       * @return This builder for chaining.
        */
       public Builder setTablesWritten(
           int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTablesWrittenIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTablesWrittenIsMutable();
         tablesWritten_.set(index, value);
+        bitField0_ |= 0x00000100;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @param value The tablesWritten to add.
+       * @return This builder for chaining.
        */
       public Builder addTablesWritten(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTablesWrittenIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTablesWrittenIsMutable();
         tablesWritten_.add(value);
+        bitField0_ |= 0x00000100;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @param values The tablesWritten to add.
+       * @return This builder for chaining.
        */
       public Builder addAllTablesWritten(
           java.lang.Iterable<java.lang.String> values) {
         ensureTablesWrittenIsMutable();
-        super.addAll(values, tablesWritten_);
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, tablesWritten_);
+        bitField0_ |= 0x00000100;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @return This builder for chaining.
        */
       public Builder clearTablesWritten() {
-        tablesWritten_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000100);
+        tablesWritten_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000100);;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesWritten = 9;</code>
+       * @param value The bytes of the tablesWritten to add.
+       * @return This builder for chaining.
        */
       public Builder addTablesWrittenBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTablesWrittenIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTablesWrittenIsMutable();
         tablesWritten_.add(value);
+        bitField0_ |= 0x00000100;
         onChanged();
         return this;
       }
 
-      // repeated string tablesRead = 10;
-      private com.google.protobuf.LazyStringList tablesRead_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private com.google.protobuf.LazyStringArrayList tablesRead_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
       private void ensureTablesReadIsMutable() {
-        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
+        if (!tablesRead_.isModifiable()) {
           tablesRead_ = new com.google.protobuf.LazyStringArrayList(tablesRead_);
-          bitField0_ |= 0x00000200;
-         }
+        }
+        bitField0_ |= 0x00000200;
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @return A list containing the tablesRead.
        */
-      public java.util.List<java.lang.String>
+      public com.google.protobuf.ProtocolStringList
           getTablesReadList() {
-        return java.util.Collections.unmodifiableList(tablesRead_);
+        tablesRead_.makeImmutable();
+        return tablesRead_;
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @return The count of tablesRead.
        */
       public int getTablesReadCount() {
         return tablesRead_.size();
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @param index The index of the element to return.
+       * @return The tablesRead at the given index.
        */
       public java.lang.String getTablesRead(int index) {
         return tablesRead_.get(index);
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the tablesRead at the given index.
        */
       public com.google.protobuf.ByteString
           getTablesReadBytes(int index) {
@@ -2547,74 +2955,83 @@ public final class HiveHookEvents {
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @param index The index to set the value at.
+       * @param value The tablesRead to set.
+       * @return This builder for chaining.
        */
       public Builder setTablesRead(
           int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTablesReadIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTablesReadIsMutable();
         tablesRead_.set(index, value);
+        bitField0_ |= 0x00000200;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @param value The tablesRead to add.
+       * @return This builder for chaining.
        */
       public Builder addTablesRead(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTablesReadIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTablesReadIsMutable();
         tablesRead_.add(value);
+        bitField0_ |= 0x00000200;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @param values The tablesRead to add.
+       * @return This builder for chaining.
        */
       public Builder addAllTablesRead(
           java.lang.Iterable<java.lang.String> values) {
         ensureTablesReadIsMutable();
-        super.addAll(values, tablesRead_);
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, tablesRead_);
+        bitField0_ |= 0x00000200;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @return This builder for chaining.
        */
       public Builder clearTablesRead() {
-        tablesRead_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000200);
+        tablesRead_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000200);;
         onChanged();
         return this;
       }
       /**
        * <code>repeated string tablesRead = 10;</code>
+       * @param value The bytes of the tablesRead to add.
+       * @return This builder for chaining.
        */
       public Builder addTablesReadBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTablesReadIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTablesReadIsMutable();
         tablesRead_.add(value);
+        bitField0_ |= 0x00000200;
         onChanged();
         return this;
       }
 
-      // repeated .MapFieldEntry otherInfo = 50;
       private java.util.List<org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry> otherInfo_ =
         java.util.Collections.emptyList();
       private void ensureOtherInfoIsMutable() {
-        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
+        if (!((bitField0_ & 0x00000400) != 0)) {
           otherInfo_ = new java.util.ArrayList<org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry>(otherInfo_);
           bitField0_ |= 0x00000400;
          }
       }
 
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.Builder, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntryOrBuilder> otherInfoBuilder_;
 
       /**
@@ -2746,7 +3163,8 @@ public final class HiveHookEvents {
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry> values) {
         if (otherInfoBuilder_ == null) {
           ensureOtherInfoIsMutable();
-          super.addAll(values, otherInfo_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, otherInfo_);
           onChanged();
         } else {
           otherInfoBuilder_.addAllMessages(values);
@@ -2829,48 +3247,100 @@ public final class HiveHookEvents {
            getOtherInfoBuilderList() {
         return getOtherInfoFieldBuilder().getBuilderList();
       }
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.Builder, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntryOrBuilder> 
           getOtherInfoFieldBuilder() {
         if (otherInfoBuilder_ == null) {
-          otherInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          otherInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry.Builder, org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntryOrBuilder>(
                   otherInfo_,
-                  ((bitField0_ & 0x00000400) == 0x00000400),
+                  ((bitField0_ & 0x00000400) != 0),
                   getParentForChildren(),
                   isClean());
           otherInfo_ = null;
         }
         return otherInfoBuilder_;
       }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:HiveHookEventProto)
     }
 
+    // @@protoc_insertion_point(class_scope:HiveHookEventProto)
+    private static final org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto DEFAULT_INSTANCE;
     static {
-      defaultInstance = new HiveHookEventProto(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto();
     }
 
-    // @@protoc_insertion_point(class_scope:HiveHookEventProto)
+    public static org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<HiveHookEventProto>
+        PARSER = new com.google.protobuf.AbstractParser<HiveHookEventProto>() {
+      @java.lang.Override
+      public HiveHookEventProto parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<HiveHookEventProto> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<HiveHookEventProto> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MapFieldEntry_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MapFieldEntry_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_HiveHookEventProto_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_HiveHookEventProto_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
     return descriptor;
   }
-  private static com.google.protobuf.Descriptors.FileDescriptor
+  private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {
@@ -2885,30 +3355,22 @@ public final class HiveHookEvents {
       "%org.apache.hadoop.hive.ql.hooks.protoB\016" +
       "HiveHookEvents"
     };
-    com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_MapFieldEntry_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_MapFieldEntry_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_MapFieldEntry_descriptor,
-              new java.lang.String[] { "Key", "Value", });
-          internal_static_HiveHookEventProto_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_HiveHookEventProto_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_HiveHookEventProto_descriptor,
-              new java.lang.String[] { "EventType", "HiveQueryId", "Timestamp", "ExecutionMode", "RequestUser", "Queue", "User", "OperationId", "TablesWritten", "TablesRead", "OtherInfo", });
-          return null;
-        }
-      };
-    com.google.protobuf.Descriptors.FileDescriptor
+    descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-        }, assigner);
+        });
+    internal_static_MapFieldEntry_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_MapFieldEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_MapFieldEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_HiveHookEventProto_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_HiveHookEventProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_HiveHookEventProto_descriptor,
+        new java.lang.String[] { "EventType", "HiveQueryId", "Timestamp", "ExecutionMode", "RequestUser", "Queue", "User", "OperationId", "TablesWritten", "TablesRead", "OtherInfo", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
