@@ -45,11 +45,12 @@ public class UDFLike extends UDF {
 
   // Doing characters comparison directly instead of regular expression
   // matching for simple patterns like "%abc%".
-  private enum PatternType {
+  public enum PatternType {
     NONE, // "abc"
     BEGIN, // "abc%"
     END, // "%abc"
     MIDDLE, // "%abc%"
+    CHAINED, // "abc%def%ghi%"
     COMPLEX, // all other cases, such as "ab%c_de"
   }
 

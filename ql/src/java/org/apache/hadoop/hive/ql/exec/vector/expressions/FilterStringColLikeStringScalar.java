@@ -57,7 +57,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    */
   private static class BeginCheckerFactory implements CheckerFactory {
     public Checker tryCreate(String pattern) {
-      CheckerPattern checkerPattern = new CheckerPattern(PatternType.BEGIN, pattern);
+      CheckerPattern checkerPattern = new CheckerPattern(UDFLike.PatternType.BEGIN, pattern);
       String matche = checkerPattern.check();
       if (matche != null) {
         return new BeginChecker(matche);
@@ -71,7 +71,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    */
   private static class EndCheckerFactory implements CheckerFactory {
     public Checker tryCreate(String pattern) {
-      CheckerPattern checkerPattern = new CheckerPattern(PatternType.END, pattern);
+      CheckerPattern checkerPattern = new CheckerPattern(UDFLike.PatternType.END, pattern);
       String matche = checkerPattern.check();
       if (matche != null) {
         return new EndChecker(matche);
@@ -85,7 +85,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    */
   private static class MiddleCheckerFactory implements CheckerFactory {
     public Checker tryCreate(String pattern) {
-      CheckerPattern checkerPattern = new CheckerPattern(PatternType.MIDDLE, pattern);
+      CheckerPattern checkerPattern = new CheckerPattern(UDFLike.PatternType.MIDDLE, pattern);
       String matche = checkerPattern.check();
       if (matche != null) {
         return new MiddleChecker(matche);
@@ -99,7 +99,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    */
   private static class NoneCheckerFactory implements CheckerFactory {
     public Checker tryCreate(String pattern) {
-      CheckerPattern checkerPattern = new CheckerPattern(PatternType.NONE, pattern);
+      CheckerPattern checkerPattern = new CheckerPattern(UDFLike.PatternType.NONE, pattern);
       String matche = checkerPattern.check();
       if (matche != null) {
         return new NoneChecker(matche);
@@ -115,7 +115,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    */
   private static class ChainedCheckerFactory implements CheckerFactory {
     public Checker tryCreate(String pattern) {
-      CheckerPattern checkerPattern = new CheckerPattern(PatternType.CHAINED, pattern);
+      CheckerPattern checkerPattern = new CheckerPattern(UDFLike.PatternType.CHAINED, pattern);
       String matche = checkerPattern.check();
       if (matche != null) {
         return new ChainedChecker(matche);
@@ -134,33 +134,24 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
     }
   }
 
-  private enum PatternType {
-    NONE, // "abc"
-    BEGIN, // "abc%"
-    END, // "%abc"
-    MIDDLE, // "%abc%"
-    CHAINED, // "abc%def%ghi%"
-    COMPLEX, // all other cases, such as "ab%c_de"
-  }
-
   /**
    * Check the LIKE pattern..
    */
   private static class CheckerPattern {
     private final String pattern;
-    private final PatternType type;
+    private final UDFLike.PatternType type;
 
-    public CheckerPattern(PatternType type, String pattern) {
+    public CheckerPattern(UDFLike.PatternType type, String pattern) {
       this.type = type;
       this.pattern = pattern;
     }
 
     public String check() {
-      PatternType lastType = PatternType.NONE;
+      UDFLike.PatternType lastType = UDFLike.PatternType.NONE;
       int length = pattern.length();
       int beginIndex = 0;
       int endIndex = length;
-      char lastChar = 'a';
+      char lastChar = 0;
       String strPattern = new String();
       String simplePattern;
 
@@ -175,28 +166,28 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
           }
         } else if (n == '%') {
           if (i == 0) { // such as "%abc"
-            lastType = PatternType.END;
+            lastType = UDFLike.PatternType.END;
             beginIndex = 1;
           } else if (i < length - 1) {
             if (lastChar != '\\') { // such as "a%bc"
-              lastType = PatternType.CHAINED;
+              lastType = UDFLike.PatternType.CHAINED;
             } else if (lastChar == '\\') { // such as "a\%bc"
               strPattern += pattern.substring(beginIndex, i - 1);
               beginIndex = i;
-              if (lastType == PatternType.CHAINED) {
-                lastType = PatternType.COMPLEX;
+              if (lastType == UDFLike.PatternType.CHAINED) {
+                lastType = UDFLike.PatternType.COMPLEX;
               }
             } else {
-              lastType = PatternType.COMPLEX;
+              lastType = UDFLike.PatternType.COMPLEX;
             }
           } else {
             if (lastChar != '\\') {
               endIndex = length - 1;
-              if (lastType == PatternType.END) { // such as "%abc%"
-                lastType = PatternType.MIDDLE;
-              } else if (lastType != PatternType.CHAINED &&
-                         lastType != PatternType.COMPLEX) {
-                lastType = PatternType.BEGIN; // such as "abc%"
+              if (lastType == UDFLike.PatternType.END) { // such as "%abc%"
+                lastType = UDFLike.PatternType.MIDDLE;
+              } else if (lastType != UDFLike.PatternType.CHAINED &&
+                         lastType != UDFLike.PatternType.COMPLEX) {
+                lastType = UDFLike.PatternType.BEGIN; // such as "abc%"
               }
             } else { // such as "abc\%"
               strPattern += pattern.substring(beginIndex, i - 1);
@@ -209,7 +200,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
       }
 
       strPattern += pattern.substring(beginIndex, endIndex);
-      if (lastType == PatternType.CHAINED) {
+      if (lastType == UDFLike.PatternType.CHAINED) {
         simplePattern = pattern;
       } else {
         simplePattern = strPattern;
