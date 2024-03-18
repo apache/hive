@@ -2124,13 +2124,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (ctes.isEmpty()) {
         return basePlan;
       }
+      HiveRelMetadataQuery mq = (HiveRelMetadataQuery) basePlan.getCluster().getMetadataQuery();
+      final boolean checkFullAggregate = conf.getBoolVar(ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY);
       List<RelOptMaterialization> cteMVs = new ArrayList<>();
       for (int i = 0; i < ctes.size(); i++) {
-        if (conf.getBoolVar(ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY) && !isFullAggregate(ctes.get(i))) {
-          LOG.debug("Skipping CTE {} cause its not a full aggregate.", RelOptUtil.toString(ctes.get(i)));
+        final RelNode cte = ctes.get(i);
+        ImmutableBitSet cteOutputColumns = ImmutableBitSet.range(cte.getRowType().getFieldCount());
+        if (checkFullAggregate && !Boolean.TRUE.equals(mq.areColumnsAggregated(cte, cteOutputColumns))) {
+          LOG.debug("Skipping CTE {} cause its not a full aggregate.", cte);
           continue;
         }
-        cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, ctes.get(i)));
+        cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, cte));
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
       // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
@@ -2142,16 +2146,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         return spoolPlan;
       }
-    }
-
-    private boolean isFullAggregate(RelNode rel) {
-      HiveRelMetadataQuery mq = (HiveRelMetadataQuery) rel.getCluster().getMetadataQuery();
-      for (int i = 0; i < rel.getRowType().getFieldCount(); i++) {
-        if (mq.getAggregateOrigins(rel, i) == null) {
-          return false;
-        }
-      }
-      return true;
     }
 
     private boolean isMaterializedViewRewritingByTextEnabled() {

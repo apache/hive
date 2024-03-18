@@ -19,22 +19,30 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.util.ImmutableBitSet;
 
 public class HiveRelMetadataQuery extends RelMetadataQuery {
-  private AggregateOrigins.Handler aggOriginHandler; 
+  private AggregatedColumns.Handler aggOriginHandler; 
   
   public HiveRelMetadataQuery() {
     super();
-    this.aggOriginHandler = initialHandler(AggregateOrigins.Handler.class);
+    this.aggOriginHandler = initialHandler(AggregatedColumns.Handler.class);
   }
 
-  public SqlOperator getAggregateOrigins(RelNode rel, int column) {
+  /**
+   * Returns the {@link AggregatedColumns} statistic.
+   *
+   * @param input the input relational expression
+   * @param columns mask representing a subset of columns for the input relational expression.
+   * @return whether the specified columns originate from aggregate functions or null if there is not enough information
+   * to infer the origin function.
+   */
+  public Boolean areColumnsAggregated(RelNode input, ImmutableBitSet columns) {
     for (;;) {
       try {
-        return aggOriginHandler.getAggregateOrigins(rel, this, column);
+        return aggOriginHandler.areColumnsAggregated(input, this, columns);
       } catch (JaninoRelMetadataProvider.NoHandler e) {
-        aggOriginHandler = revise(e.relClass, AggregateOrigins.DEF);
+        aggOriginHandler = revise(e.relClass, AggregatedColumns.DEF);
       }
     }
   }
