@@ -26,13 +26,13 @@ POSTHOOK: Output: default@bar
 Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: explain vectorization detail
 select count(*) from bar right outer join foo
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from bar right outer join foo
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
@@ -229,7 +229,7 @@ PREHOOK: query: -- = 2
 
 explain vectorization detail
 select count(*) from bar, foo
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
@@ -237,7 +237,7 @@ POSTHOOK: query: -- = 2
 
 explain vectorization detail
 select count(*) from bar, foo
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####

@@ -1,9 +1,9 @@
 PREHOOK: query: explain extended prepare pcount from select count(*) from src where key > ?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended prepare pcount from select count(*) from src where key > ?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
@@ -129,11 +129,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: prepare pcount from select count(*) from src where key > ?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pcount from select count(*) from src where key > ?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -213,11 +213,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 497
 PREHOOK: query: explain prepare p1 from select * from src where key > ? order by key limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare p1 from select * from src where key > ? order by key limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -284,11 +284,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -375,13 +375,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
     prepare pint
     from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
     prepare pint
     from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -461,12 +461,12 @@ STAGE PLANS:
 
 PREHOOK: query: prepare pint
     from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pint
     from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -558,13 +558,13 @@ POSTHOOK: Input: default@alltypesorc
 PREHOOK: query: explain
     prepare psint
     from select count(*) as ag from alltypesorc where ctinyint = ?  and csmallint != ? group by cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
     prepare psint
     from select count(*) as ag from alltypesorc where ctinyint = ?  and csmallint != ? group by cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -637,12 +637,12 @@ STAGE PLANS:
 
 PREHOOK: query: prepare psint
     from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: prepare psint
     from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -746,11 +746,11 @@ POSTHOOK: Output: default@tcharvchar
 POSTHOOK: Lineage: tcharvchar.c SCRIPT []
 POSTHOOK: Lineage: tcharvchar.v SCRIPT []
 PREHOOK: query: explain prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -812,11 +812,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -928,12 +928,12 @@ POSTHOOK: Lineage: tdatets.dc SCRIPT []
 POSTHOOK: Lineage: tdatets.t SCRIPT []
 PREHOOK: query: explain
     prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tdatets
 #### A masked pattern was here ####
 POSTHOOK: query: explain
     prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tdatets
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -995,11 +995,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tdatets
 #### A masked pattern was here ####
 POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tdatets
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1080,11 +1080,11 @@ POSTHOOK: Input: default@tdatets
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tdatets
 PREHOOK: query: explain prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1293,12 +1293,12 @@ POSTHOOK: Input: default@alltypesorc
 NULL	1864027286
 PREHOOK: query: explain prepare pconcat
     from select count(*) from src where key > concat(?, ?)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare pconcat
     from select count(*) from src where key > concat(?, ?)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1361,12 +1361,12 @@ STAGE PLANS:
 
 PREHOOK: query: prepare pconcat
     from select count(*) from src where key > concat(?, ?)
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pconcat
     from select count(*) from src where key > concat(?, ?)
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1474,13 +1474,13 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@daysales@dt=2001-01-03
 POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer SCRIPT []
 PREHOOK: query: explain prepare pPart1 from select count(*) from daysales where dt=? and customer=?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@daysales
 PREHOOK: Input: default@daysales@dt=2001-01-01
 PREHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare pPart1 from select count(*) from daysales where dt=? and customer=?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
 POSTHOOK: Input: default@daysales@dt=2001-01-03
@@ -1544,13 +1544,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@daysales
 PREHOOK: Input: default@daysales@dt=2001-01-01
 PREHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
 POSTHOOK: Input: default@daysales@dt=2001-01-03
@@ -1736,13 +1736,13 @@ POSTHOOK: Lineage: alltypes.v SIMPLE [(testparam)testparam.FieldSchema(name:v, t
 PREHOOK: query: explain prepare palltypesGreater from
 select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
  OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare palltypesGreater from
 select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
  OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1806,13 +1806,13 @@ STAGE PLANS:
 PREHOOK: query: prepare palltypesGreater from
 select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
                                  OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: prepare palltypesGreater from
 select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
                                  OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1889,13 +1889,13 @@ POSTHOOK: Input: default@alltypes
 PREHOOK: query: explain prepare palltypesLess from
 select count(*) from alltypes where c < ? OR v < ? OR d < ? OR dt < ? OR ctinyint < ? OR csmallint < ? OR cint < ?
                                  OR cfloat < ? OR cdouble < ? OR cstring1 < ? OR ctimestamp1 < ? OR cbigint < ?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare palltypesLess from
 select count(*) from alltypes where c < ? OR v < ? OR d < ? OR dt < ? OR ctinyint < ? OR csmallint < ? OR cint < ?
                                  OR cfloat < ? OR cdouble < ? OR cstring1 < ? OR ctimestamp1 < ? OR cbigint < ?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1959,13 +1959,13 @@ STAGE PLANS:
 PREHOOK: query: prepare palltypesGreater from
 select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
                                  OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: prepare palltypesGreater from
 select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
                                  OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2042,13 +2042,13 @@ POSTHOOK: Input: default@alltypes
 PREHOOK: query: explain prepare pequal from
 select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
                                  OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare pequal from
 select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
                                  OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2112,13 +2112,13 @@ STAGE PLANS:
 PREHOOK: query: prepare pequal from
 select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
                                  OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pequal from
 select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
                                  OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2195,13 +2195,13 @@ POSTHOOK: Input: default@alltypes
 PREHOOK: query: explain prepare pin from
 select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
     AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare pin from
 select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
     AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2265,13 +2265,13 @@ STAGE PLANS:
 PREHOOK: query: prepare pin from
 select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
     AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pin from
 select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
     AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2348,13 +2348,13 @@ POSTHOOK: Input: default@alltypes
 PREHOOK: query: explain prepare pbetween from
     select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
     AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: explain prepare pbetween from
     select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
     AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2418,13 +2418,13 @@ STAGE PLANS:
 PREHOOK: query: prepare pbetween from
 select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
     AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
-PREHOOK: type: EXECUTE QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 POSTHOOK: query: prepare pbetween from
 select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
     AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
-POSTHOOK: type: EXECUTE QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

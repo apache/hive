@@ -72,12 +72,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dates_removal_n0
 PREHOOK: query: -- group by key has single primary key
   EXPLAIN SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- group by key has single primary key
   EXPLAIN SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -100,12 +100,12 @@ STAGE PLANS:
 
 PREHOOK: query: -- mix of primary + non-primary keys
   EXPLAIN SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- mix of primary + non-primary keys
   EXPLAIN SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -128,12 +128,12 @@ STAGE PLANS:
 
 PREHOOK: query: -- multiple keys
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- multiple keys
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -157,13 +157,13 @@ STAGE PLANS:
 PREHOOK: query: -- multiple keys + non-keys + different order
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
     order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- multiple keys + non-keys + different order
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_datekey, d_sellingseason
     order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -231,13 +231,13 @@ STAGE PLANS:
 PREHOOK: query: -- multiple keys in different order and mixed with non-keys
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
   d_sellingseason order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- multiple keys in different order and mixed with non-keys
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
   d_sellingseason order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -305,13 +305,13 @@ STAGE PLANS:
 PREHOOK: query: -- same as above but with aggregate
   EXPLAIN SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
   d_sellingseason order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- same as above but with aggregate
   EXPLAIN SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
   d_sellingseason order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -476,12 +476,12 @@ POSTHOOK: Lineage: customer_removal_n0.c_nation SIMPLE []
 POSTHOOK: Lineage: customer_removal_n0.c_phone SIMPLE []
 POSTHOOK: Lineage: customer_removal_n0.c_region SIMPLE []
 PREHOOK: query: EXPLAIN SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d_datekey = c_custkey group by d_datekey, d_id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT d_datekey from dates_removal_n0 join customer_removal_n0 on d_datekey = c_custkey group by d_datekey, d_id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
@@ -571,13 +571,13 @@ POSTHOOK: Input: default@dates_removal_n0
 PREHOOK: query: -- group by keys are not primary keys
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
     order by d_datekey limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- group by keys are not primary keys
   EXPLAIN SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_sellingseason
     order by d_datekey limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -671,14 +671,14 @@ PREHOOK: query: -- negative
   -- with aggregate function
   EXPLAIN SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
     group by c_custkey, c_nation
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 POSTHOOK: query: -- negative
   -- with aggregate function
   EXPLAIN SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
     group by c_custkey, c_nation
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_removal_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -791,12 +791,12 @@ POSTHOOK: Lineage: dest_g21.key1 SCRIPT []
 POSTHOOK: Lineage: dest_g21.value1 SCRIPT []
 PREHOOK: query: -- value1 will removed because it is unused, then whole group by will be removed because key1 is unique
   explain select key1 from dest_g21 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: -- value1 will removed because it is unused, then whole group by will be removed because key1 is unique
   explain select key1 from dest_g21 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -830,12 +830,12 @@ POSTHOOK: Input: default@dest_g21
 6
 PREHOOK: query: -- same query but with filter
   explain select key1 from dest_g21 where value1 > 1 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: -- same query but with filter
   explain select key1 from dest_g21 where value1 > 1 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -868,11 +868,11 @@ POSTHOOK: Input: default@dest_g21
 2
 4
 PREHOOK: query: explain select key1 from dest_g21 where key1 > 1 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key1 from dest_g21 where key1 > 1 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -908,12 +908,12 @@ POSTHOOK: Input: default@dest_g21
 6
 PREHOOK: query: -- only value1 will be removed because there is aggregate call
   explain select count(key1) from dest_g21 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: -- only value1 will be removed because there is aggregate call
   explain select count(key1) from dest_g21 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -995,11 +995,11 @@ POSTHOOK: Input: default@dest_g21
 1
 1
 PREHOOK: query: explain select count(key1) from dest_g21 where value1 > 1 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key1) from dest_g21 where value1 > 1 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1083,12 +1083,12 @@ POSTHOOK: Input: default@dest_g21
 1
 PREHOOK: query: -- t1.key is unique even after join therefore group by = group by (t1.key)
   explain select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: -- t1.key is unique even after join therefore group by = group by (t1.key)
   explain select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1176,11 +1176,11 @@ POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 4
 PREHOOK: query: explain select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1297,12 +1297,12 @@ POSTHOOK: Input: default@dest_g21
 1
 PREHOOK: query: -- both aggregate and one of the key1 should be removed
   explain select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: -- both aggregate and one of the key1 should be removed
   explain select key1 from (select key1, count(key1) from dest_g21 where value1 < 4.5 group by key1, value1) sub
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1337,12 +1337,12 @@ POSTHOOK: Input: default@dest_g21
 4
 PREHOOK: query: -- one of the aggregate will be removed and one of the key1 will be removed
   explain select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: -- one of the aggregate will be removed and one of the key1 will be removed
   explain select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1451,11 +1451,11 @@ POSTHOOK: Lineage: tconst.d_year SCRIPT []
 POSTHOOK: Lineage: tconst.i SCRIPT []
 POSTHOOK: Lineage: tconst.j SCRIPT []
 PREHOOK: query: explain select i, j from tconst where i is not null group by i,j, d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain select i, j from tconst where i is not null group by i,j, d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1531,11 +1531,11 @@ POSTHOOK: Input: default@tconst
 3	3
 2	NULL
 PREHOOK: query: explain select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain select i, j from tconst where i IS NOT NULL and j IS NOT NULL group by i,j, d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1610,11 +1610,11 @@ POSTHOOK: Input: default@tconst
 1	1
 3	3
 PREHOOK: query: explain select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain select i,j from tconst where i is not null OR j IS NOT NULL group by i, j, d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1690,11 +1690,11 @@ POSTHOOK: Input: default@tconst
 3	3
 2	NULL
 PREHOOK: query: explain select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1812,11 +1812,11 @@ POSTHOOK: Input: default@tconst
 1
 3
 PREHOOK: query: explain select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tconst
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tconst
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1949,11 +1949,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g21
 PREHOOK: query: explain select key1 from dest_g21 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key1 from dest_g21 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g21
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1980,11 +1980,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g24
 PREHOOK: query: explain select key1 from dest_g24 group by key1, value1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest_g24
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key1 from dest_g24 group by key1, value1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest_g24
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2218,7 +2218,7 @@ PREHOOK: query: explain cbo
              ,c_birth_country
              ,c_login
              ,c_email_address
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2234,7 +2234,7 @@ POSTHOOK: query: explain cbo
              ,c_birth_country
              ,c_login
              ,c_email_address
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2259,7 +2259,7 @@ PREHOOK: query: explain cbo
                   ,c_birth_country
                   ,c_login
                   ,c_email_address
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2275,7 +2275,7 @@ POSTHOOK: query: explain cbo
                   ,c_birth_country
                   ,c_login
                   ,c_email_address
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2316,7 +2316,7 @@ PREHOOK: query: explain cbo
        where t_s_secyear.sale_type = 's'
      order by t_s_secyear.customer_preferred_cust_flag
     limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2348,7 +2348,7 @@ POSTHOOK: query: explain cbo
        where t_s_secyear.sale_type = 's'
      order by t_s_secyear.customer_preferred_cust_flag
     limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2391,7 +2391,7 @@ PREHOOK: query: explain cbo
            where t_s_secyear.sale_type = 's'
          order by t_s_secyear.customer_preferred_cust_flag
         limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2423,7 +2423,7 @@ POSTHOOK: query: explain cbo
            where t_s_secyear.sale_type = 's'
          order by t_s_secyear.customer_preferred_cust_flag
         limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2539,7 +2539,7 @@ PREHOOK: query: explain cbo
        and t_s_firstyear.year_total > 0
      order by t_s_secyear.customer_preferred_cust_flag
     limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -2581,7 +2581,7 @@ POSTHOOK: query: explain cbo
        and t_s_firstyear.year_total > 0
      order by t_s_secyear.customer_preferred_cust_flag
     limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -2633,7 +2633,7 @@ GROUP BY
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2654,7 +2654,7 @@ GROUP BY
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2683,7 +2683,7 @@ GROUP BY
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2704,7 +2704,7 @@ GROUP BY
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2737,7 +2737,7 @@ GROUP BY
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2757,7 +2757,7 @@ GROUP BY
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2790,7 +2790,7 @@ GROUP BY
 ,	C_PREFERRED_CUST_FLAG
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2810,7 +2810,7 @@ GROUP BY
 ,	C_PREFERRED_CUST_FLAG
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -2832,7 +2832,7 @@ PREHOOK: query: explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by c_first_name,c_customer_sk,d_date
   having count(*) >4) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -2846,7 +2846,7 @@ POSTHOOK: query: explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by c_first_name,c_customer_sk,d_date
   having count(*) >4) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -2877,7 +2877,7 @@ PREHOOK: query: explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk,d_date
   having count(*) >4) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -2891,7 +2891,7 @@ POSTHOOK: query: explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk,d_date
   having count(*) >4) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -2922,7 +2922,7 @@ PREHOOK: query: explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk
   having count(*) >4) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -2936,7 +2936,7 @@ POSTHOOK: query: explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk
   having count(*) >4) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -2968,7 +2968,7 @@ explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by rand(),c_customer_sk,d_date
   having count(*) >4) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -2983,7 +2983,7 @@ explain cbo select c_customer_sk from
     and ss_item_sk = c_customer_sk
   group by rand(),c_customer_sk,d_date
   having count(*) >4) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -3013,7 +3013,7 @@ PREHOOK: query: explain cbo select * from
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),log2(c_customer_sk),d_date
   having count(*) >4) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -3027,7 +3027,7 @@ POSTHOOK: query: explain cbo select * from
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),log2(c_customer_sk),d_date
   having count(*) >4) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -3057,7 +3057,7 @@ PREHOOK: query: -- group by with keys consisting of pk from multiple tables with
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk,d_date, d_date_sk
   having count(*) >4) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -3072,7 +3072,7 @@ POSTHOOK: query: -- group by with keys consisting of pk from multiple tables wit
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk,d_date, d_date_sk
   having count(*) >4) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -3104,7 +3104,7 @@ PREHOOK: query: -- group by with keys consisting of pk from multiple tables with
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk, log2(d_date), d_date_sk
   having count(*) >4) subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@store_sales
@@ -3119,7 +3119,7 @@ POSTHOOK: query: -- group by with keys consisting of pk from multiple tables wit
     and ss_item_sk = c_customer_sk
   group by substr(c_first_name, 1, 30),c_customer_sk, log2(d_date), d_date_sk
   having count(*) >4) subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
@@ -3174,11 +3174,11 @@ POSTHOOK: Lineage: web_sales.ws_item_sk SCRIPT []
 POSTHOOK: Lineage: web_sales.ws_order_number SCRIPT []
 POSTHOOK: Lineage: web_sales.ws_price SCRIPT []
 PREHOOK: query: explain cbo select count(distinct ws_order_number) from web_sales
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select count(distinct ws_order_number) from web_sales
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
@@ -3243,12 +3243,12 @@ POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.i SCRIPT []
 POSTHOOK: Lineage: t2.j SCRIPT []
 PREHOOK: query: explain cbo select i from (select i, j from t1 union all select i,j from t2) subq group by i,j
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select i from (select i, j from t1 union all select i,j from t2) subq group by i,j
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -3277,12 +3277,12 @@ POSTHOOK: Input: default@t2
 2
 4
 PREHOOK: query: explain cbo select i from (select i, j from t1 intersect select i,j from t2) subq group by i,j
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select i from (select i, j from t1 intersect select i,j from t2) subq group by i,j
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

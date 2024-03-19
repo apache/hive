@@ -27,11 +27,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -79,10 +79,10 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t INTO 3 BUCKETS
-PREHOOK: type: ALTERTABLE_BUCKETNUM
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t INTO 3 BUCKETS
-POSTHOOK: type: ALTERTABLE_BUCKETNUM
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -126,11 +126,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t NOT SORTED
-PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t NOT SORTED
-POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -173,11 +173,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t NOT CLUSTERED
-PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t NOT CLUSTERED
-POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -217,11 +217,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
-PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t SKEWED BY (key) ON (("a"), ("b")) STORED AS DIRECTORIES
-POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -266,11 +266,11 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 #### A masked pattern was here ####
-POSTHOOK: type: ALTERTBLPART_SKEWED_LOCATION
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 #### A masked pattern was here ####
@@ -316,11 +316,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t NOT SKEWED
-PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t NOT SKEWED
-POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -360,11 +360,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t SET FILEFORMAT parquet
-PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t SET FILEFORMAT parquet
-POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -406,11 +406,11 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 #### A masked pattern was here ####
-POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 #### A masked pattern was here ####
@@ -453,11 +453,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
-PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t SET SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe"
-POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -498,11 +498,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
-PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t SET SERDEPROPERTIES('property1'='value1', 'property2'='value2')
-POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -548,11 +548,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t UNSET SERDEPROPERTIES('property1')
-PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t UNSET SERDEPROPERTIES('property1')
-POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
