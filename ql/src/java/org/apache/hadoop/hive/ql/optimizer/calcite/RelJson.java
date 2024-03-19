@@ -181,6 +181,28 @@ public class RelJson {
           TimeUnit endUnit = sqlTypeName.getEndUnit();
           return typeFactory.createSqlIntervalType(new SqlIntervalQualifier(startUnit, endUnit, SqlParserPos.ZERO));
         }
+        if (SqlTypeName.ARRAY == sqlTypeName) {
+          final Boolean nullable = (Boolean) map.get("nullable");
+          final Object component = map.get("component");
+          type = toType(typeFactory, component);
+          type = typeFactory.createArrayType(type, -1);
+          if (nullable != null) {
+            type = typeFactory.createTypeWithNullability(type, nullable);
+          }
+          return type;
+        }
+        if (SqlTypeName.MAP == sqlTypeName) {
+          Object key = map.get("key");
+          Object value = map.get("value");
+          final Boolean nullable = (Boolean) map.get("nullable");
+          RelDataType keyType = toType(typeFactory, key);
+          RelDataType valueType = toType(typeFactory, value);
+          type = typeFactory.createMapType(keyType, valueType);
+          if (nullable != null) {
+            type = typeFactory.createTypeWithNullability(type, nullable);
+          }
+          return type;
+        }
         if (precision == null) {
           type = typeFactory.createSqlType(sqlTypeName);
         } else if (scale == null) {
