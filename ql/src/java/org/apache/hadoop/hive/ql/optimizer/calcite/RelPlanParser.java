@@ -159,6 +159,14 @@ public class RelPlanParser {
         List<String> qualifiedName = (List<String>) jsonRel.get("table");
         RelDataType rowType = relJson.toType(cluster.getTypeFactory(), jsonRel.get("rowType"));
         String tableAlias = (String) jsonRel.get("table:alias");
+        if (tableAlias == null && qualifiedName != null && qualifiedName.size() <= 2) {
+          if (qualifiedName.size() == 1) {
+            tableAlias = qualifiedName.get(0);
+          }
+          if (qualifiedName.size() == 2) {
+            tableAlias = qualifiedName.get(1);
+          }
+        }
         List<ColumnInfo> nonPartitionColumns = new ArrayList<>();
         List<ColumnInfo> partitionColumns = new ArrayList<>();
         computeColumnInfos(rowType, tableAlias, partitionColumns, nonPartitionColumns);
@@ -171,7 +179,7 @@ public class RelPlanParser {
         }
 
         Table tbl = qb.getTableForAlias(tableAlias);
-        if (tbl == null && qualifiedName.size() == 2) {
+        if (tbl == null && qualifiedName != null && qualifiedName.size() == 2) {
           String dbName = qualifiedName.get(0);
           String tableName = qualifiedName.get(1);
           tbl = tabNameToTabObject.getParsedTable(TableName.getDbTable(dbName, tableName));

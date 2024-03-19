@@ -260,6 +260,9 @@ public class QB {
   }
 
   public Table getTableForAlias(String alias) {
+    if (alias == null) {
+      return null;
+    }
     Table result = qbm.getTableForAlias(alias);
     if (result == null) {
       for (QBMetaData qbMetaData : subqueryMetaDataList) {
