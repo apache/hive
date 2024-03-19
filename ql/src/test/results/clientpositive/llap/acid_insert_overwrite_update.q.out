@@ -166,11 +166,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 POSTHOOK: Output: default@orc_test_txn
 POSTHOOK: Output: default@orc_test_txn@year=2016

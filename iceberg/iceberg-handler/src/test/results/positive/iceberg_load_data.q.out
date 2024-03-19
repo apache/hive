@@ -15,11 +15,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 Vertex dependency in root stage
@@ -61,19 +61,19 @@ Stage-3
                            Please refer to the previous Select Operator [SEL_12]
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 Vertex dependency in root stage
@@ -115,11 +115,11 @@ Stage-3
                            Please refer to the previous Select Operator [SEL_12]
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 PREHOOK: query: select * from ice_parquet order by intcol
@@ -173,11 +173,11 @@ Stage-0
     table:{"name:":"default.ice_avro"}
 
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@ice_avro__temp_table_for_load_data__
 PREHOOK: Output: default@ice_avro
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@ice_avro__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_avro
 Vertex dependency in root stage

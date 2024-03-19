@@ -7,11 +7,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl
 PREHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds='2008-04-08')
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@ds=2008-04-08
 POSTHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds='2008-04-08')
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 POSTHOOK: Output: default@src_bucket_tbl@ds=2008-04-08
 STAGE DEPENDENCIES:
@@ -82,11 +82,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds='2008-04-08')
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@ds=2008-04-08
 POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds='2008-04-08')
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 POSTHOOK: Output: default@src_bucket_tbl@ds=2008-04-08
 POSTHOOK: Lineage: src_bucket_tbl PARTITION(ds=2008-04-08).key SIMPLE [(src_bucket_tbl__temp_table_for_load_data__)src_bucket_tbl__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -238,11 +238,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl
 PREHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds, hr=10)
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@hr=10
 POSTHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds, hr=10)
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -313,11 +313,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds, hr=10)
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@hr=10
 POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(ds, hr=10)
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 POSTHOOK: Output: default@src_bucket_tbl@hr=10/ds=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: src_bucket_tbl PARTITION(hr=10,ds=__HIVE_DEFAULT_PARTITION__).key SIMPLE [(src_bucket_tbl__temp_table_for_load_data__)src_bucket_tbl__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -469,11 +469,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE src_bucket_tbl partition(hr=20, ds)
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@hr=20
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE src_bucket_tbl partition(hr=20, ds)
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -544,11 +544,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE src_bucket_tbl partition(hr=20, ds)
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@hr=20
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE src_bucket_tbl partition(hr=20, ds)
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 POSTHOOK: Output: default@src_bucket_tbl@hr=20/ds=2008-04-08
 POSTHOOK: Lineage: src_bucket_tbl PARTITION(hr=20,ds=2008-04-08).key SIMPLE [(src_bucket_tbl__temp_table_for_load_data__)src_bucket_tbl__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -700,11 +700,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl
 PREHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(hr=30, ds='2010-05-07')
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@hr=30/ds=2010-05-07
 POSTHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(hr=30, ds='2010-05-07')
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 POSTHOOK: Output: default@src_bucket_tbl@hr=30/ds=2010-05-07
 STAGE DEPENDENCIES:
@@ -776,11 +776,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(hr=30, ds='2010-05-07')
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 PREHOOK: Output: default@src_bucket_tbl@hr=30/ds=2010-05-07
 POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE src_bucket_tbl partition(hr=30, ds='2010-05-07')
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@src_bucket_tbl__temp_table_for_load_data__
 POSTHOOK: Output: default@src_bucket_tbl@hr=30/ds=2010-05-07
 POSTHOOK: Lineage: src_bucket_tbl PARTITION(hr=30,ds=2010-05-07).key SIMPLE [(src_bucket_tbl__temp_table_for_load_data__)src_bucket_tbl__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
