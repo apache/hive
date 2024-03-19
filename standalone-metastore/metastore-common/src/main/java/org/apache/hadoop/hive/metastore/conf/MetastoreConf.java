@@ -94,14 +94,17 @@ public class MetastoreConf {
   static final String METASTORE_DELEGATION_MANAGER_CLASS =
       "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
   @VisibleForTesting
-  static final String ACID_HOUSE_KEEPER_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService";
+  static final String ACID_HOUSEKEEPER_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService";
+  @VisibleForTesting
+  static final String COMPACTION_HOUSEKEEPER_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService";
   @VisibleForTesting
   static final String ACID_TXN_CLEANER_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService";
+      "org.apache.hadoop.hive.metastore.txn.service.AcidTxnCleanerService";
   @VisibleForTesting
   static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
-      "org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService";
+      "org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService";
 
   public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
           "metastore.authentication.ldap.userMembershipKey";
@@ -293,6 +296,9 @@ public class MetastoreConf {
     ACID_HOUSEKEEPER_SERVICE_INTERVAL("metastore.acid.housekeeper.interval",
         "hive.metastore.acid.housekeeper.interval", 60, TimeUnit.SECONDS,
         "Time interval describing how often the acid housekeeper runs."),
+    COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL("metastore.compaction.housekeeper.interval",
+        "hive.metastore.compaction.housekeeper.interval", 300, TimeUnit.SECONDS,
+        "Time interval describing how often the acid compaction housekeeper runs."),
     ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
         "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
         "Time interval describing how often aborted and committed txns are cleaned."),
@@ -580,7 +586,7 @@ public class MetastoreConf {
         "metastore.housekeeping.leader.election",
         "host", new StringSetValidator("host", "lock"),
         "Set to host, HMS will choose the leader by the configured metastore.housekeeping.leader.hostname.\n" +
-        "Set to lock, HMS will use the hive lock to elect the leader."),
+        "Set to lock, HMS will use the Hive lock to elect the leader."),
     METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE("metastore.housekeeping.leader.auditTable",
         "metastore.housekeeping.leader.auditTable", "",
         "Audit the leader election event to a plain json table when configured."),
@@ -593,6 +599,9 @@ public class MetastoreConf {
         "metastore.housekeeping.leader.auditFiles.limit", 10,
         "Limit the number of small audit files when metastore.housekeeping.leader.newAuditFile is true.\n" +
         "If the number of audit files exceeds the limit, then the oldest will be deleted."),
+    METASTORE_HOUSEKEEPING_LEADER_LOCK_NAMESPACE("metastore.housekeeping.leader.lock.namespace",
+        "metastore.housekeeping.leader.lock.namespace", "",
+        "The database where the Hive lock sits when metastore.housekeeping.leader.election is set to lock."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
         "hive.metastore.housekeeping.threads.on", false,
         "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
@@ -1277,6 +1286,12 @@ public class MetastoreConf {
         "hive.notification.sequence.lock.retry.sleep.interval", 10, TimeUnit.SECONDS,
         "Sleep interval between retries to acquire a notification lock as described part of property "
             + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
+    NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED("metastore.alterPartitions.notification.v2.enabled",
+        "hive.metastore.alterPartitions.notification.v2.enabled", true,
+        "Should send a single notification event on alter partitions. " +
+            "This property is for ensuring backward compatibility when it sets to false, " +
+            "HMS will send an old ALTER_PARTITION event per partition, so downstream consumers can " +
+            "still process the ALTER_PARTITION event without making changes."),
     ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
         "hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
         "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +
@@ -1464,7 +1479,8 @@ public class MetastoreConf {
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
     TASK_THREADS_REMOTE_ONLY("metastore.task.threads.remote", "metastore.task.threads.remote",
-        ACID_HOUSE_KEEPER_SERVICE_CLASS + "," +
+        ACID_HOUSEKEEPER_SERVICE_CLASS + "," +
+                COMPACTION_HOUSEKEEPER_SERVICE_CLASS + "," +
             ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
             MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +

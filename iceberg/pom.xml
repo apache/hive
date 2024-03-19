@@ -14,18 +14,18 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-beta-2-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg</artifactId>
-  <version>4.0.0-beta-2-SNAPSHOT</version>
+  <version>4.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Iceberg Modules</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
-    <iceberg.version>1.4.2</iceberg.version>
+    <iceberg.version>1.4.3</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.3</iceberg.avro.version>

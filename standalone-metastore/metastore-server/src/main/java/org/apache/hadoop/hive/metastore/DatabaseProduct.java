@@ -27,8 +27,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
@@ -52,13 +52,19 @@ import com.google.common.base.Preconditions;
  * */
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
-  private static final Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
-          // TODO: collect more unrecoverable SQLExceptions
-          SQLIntegrityConstraintViolationException.class
+  private static final Class<Exception>[] unrecoverableExceptions = new Class[]{
+          // TODO: collect more unrecoverable Exceptions
+          SQLIntegrityConstraintViolationException.class,
+          DeadlineException.class
   };
 
+  /**
+   * Derby specific concurrency control
+   */
+  private static final ReentrantLock derbyLock = new ReentrantLock(true);
+
   public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
-  public DbType dbType;
+  static public DbType dbType;
 
   // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
@@ -164,7 +170,7 @@ public class DatabaseProduct implements Configurable {
   }
 
   public static boolean isRecoverableException(Throwable t) {
-    return Stream.of(unrecoverableSqlExceptions)
+    return Stream.of(unrecoverableExceptions)
                  .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
   }
 
@@ -264,7 +270,9 @@ public class DatabaseProduct implements Configurable {
 
   protected String toTimestamp(String tableValue) {
     if (isORACLE()) {
-      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH:mm:ss')";
+      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH24:mi:ss')";
+    } else if (isSQLSERVER()) {
+      return "CONVERT(DATETIME, " + tableValue + ")";
     } else {
       return "cast(" + tableValue + " as TIMESTAMP)";
     }
@@ -775,5 +783,22 @@ public class DatabaseProduct implements Configurable {
   @Override
   public void setConf(Configuration c) {
     myConf = c;
+  }
+
+  /**
+   * lockInternal() and {@link #unlockInternal()} are used to serialize those operations that require
+   * Select ... For Update to sequence operations properly.  In practice that means when running
+   * with Derby database.  See more notes at class level.
+   */
+  public void lockInternal() {
+    if (isDERBY()) {
+      derbyLock.lock();
+    }
+  }
+
+  public void unlockInternal() {
+    if (isDERBY()) {
+      derbyLock.unlock();
+    }
   }
 }

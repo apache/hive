@@ -181,6 +181,8 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public GetPartitionsByNamesRequest() {
+    this.engine = "hive";
+
     this.id = -1L;
 
   }
@@ -247,7 +249,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.get_col_stats = false;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
-    this.engine = null;
+    this.engine = "hive";
+
     this.validWriteIdList = null;
     setGetFileMetadataIsSet(false);
     this.getFileMetadata = false;

@@ -238,4 +238,18 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
             "ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s", branchName2, branchName1)))
         .isInstanceOf(IllegalArgumentException.class).hasMessageEndingWith("does not exist");
   }
+
+  @Test
+  public void testCreateBranchWithNonLowerCase() throws InterruptedException, IOException {
+    Table table =
+        testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    String branchName = "test_Branch_1";
+    Long snapshotId = table.history().get(0).snapshotId();
+    shell.executeStatement(
+        String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_VERSION AS OF %d", branchName, snapshotId));
+    // Select with non-lower case branch name shouldn't throw exception.
+    shell.executeStatement(String.format("SELECT * FROM default.customers.branch_%s", branchName));
+  }
 }

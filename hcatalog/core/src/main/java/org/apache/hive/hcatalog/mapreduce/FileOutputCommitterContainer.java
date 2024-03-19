@@ -488,7 +488,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   }
 
   /**
-   * Move all of the files from the temp directory to the final location
+   * Move task output from the temp directory to the final location
    * @param srcf the file to move
    * @param srcDir the source directory
    * @param destDir the target directory
@@ -497,7 +497,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
    */
   private void moveTaskOutputs(final Configuration conf, Path srcf, Path srcDir,
       Path destDir, boolean immutable) throws IOException {
-    if(LOG.isDebugEnabled()) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("moveTaskOutputs "
           + srcf + " from: " + srcDir + " to: " + destDir + " immutable: " + immutable);
     }
@@ -516,8 +516,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
     LinkedList<Pair<Path, Path>> moves = new LinkedList<>();
     if (customDynamicLocationUsed) {
-      if (immutable && destFs.exists(destDir) &&
-          !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, destDir)) {
+      if (immutable && destFs.exists(destDir)
+          && !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, destDir)) {
         throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
             "Data already exists in " + destDir
                 + ", duplicate publish not possible.");
@@ -536,19 +536,18 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         FileStatus srcStatus = srcQ.remove();
         Path srcF = srcStatus.getPath();
         final Path finalOutputPath = getFinalPath(destFs, srcF, srcDir, destDir, immutable);
-        if (immutable && destFs.exists(finalOutputPath) &&
-            !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, finalOutputPath)) {
-          throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
-              "Data already exists in " + finalOutputPath
-                  + ", duplicate publish not possible.");
-        }
-        if (srcStatus.isDirectory()) {
+        if (immutable && destFs.exists(finalOutputPath)
+            && !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(destFs, finalOutputPath)) {
+          if (partitionsDiscoveredByPath.containsKey(srcF.toString())) {
+            throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION,
+                "Data already exists in " + finalOutputPath + ", duplicate publish not possible.");
+          }
+          // parent directory may exist for multi-partitions, check lower level partitions
+          Collections.addAll(srcQ, srcFs.listStatus(srcF, HIDDEN_FILES_PATH_FILTER));
+        } else if (srcStatus.isDirectory()) {
           if (canRename && dynamicPartitioningUsed) {
             // If it is partition, move the partition directory instead of each file.
-            // If custom dynamic location provided, need to rename to final output path
-            final Path parentDir = finalOutputPath.getParent();
-            Path dstPath = !customDynamicLocationUsed ? parentDir : finalOutputPath;
-            moves.add(Pair.of(srcF, dstPath));
+            moves.add(Pair.of(srcF, finalOutputPath));
           } else {
             Collections.addAll(srcQ, srcFs.listStatus(srcF, HIDDEN_FILES_PATH_FILTER));
           }
@@ -558,50 +557,69 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       }
     }
 
-    if (moves.isEmpty()) {
+    bulkMoveFiles(conf, srcFs, destFs, moves);
+  }
+
+  /**
+   * Bulk move files from source to destination.
+   * @param srcFs the source filesystem where the source files are
+   * @param destFs the destionation filesystem where the destionation files are
+   * @param pairs list of pairs of <source_path, destination_path>, move source_path to destination_path
+   * @throws java.io.IOException
+   */
+  private void bulkMoveFiles(final Configuration conf, final FileSystem srcFs, final FileSystem destFs,
+      final List<Pair<Path, Path>> pairs) throws IOException {
+    if (pairs.isEmpty()) {
+      return;
+    }
+    final boolean canRename = srcFs.getUri().equals(destFs.getUri());
+    final List<Future<Pair<Path, Path>>> futures = new LinkedList<>();
+    final int moveThreadsCount = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25);
+
+    if (moveThreadsCount <= 0) {
+      for (final Pair<Path, Path> pair: pairs) {
+        Path srcP = pair.getLeft();
+        Path dstP = pair.getRight();
+        if (!moveFile(srcFs, srcP, destFs, dstP, conf, canRename)) {
+          throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
+              "Unable to move from " + srcP + " to " + dstP);
+        }
+      }
       return;
     }
 
-    final List<Future<Pair<Path, Path>>> futures = new LinkedList<>();
-    final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
-        Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
+    final ExecutorService pool = Executors.newFixedThreadPool(moveThreadsCount,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build());
 
-    for (final Pair<Path, Path> pair: moves){
+    for (final Pair<Path, Path> pair: pairs) {
       Path srcP = pair.getLeft();
       Path dstP = pair.getRight();
-      final String msg = "Unable to move source " + srcP + " to destination " + dstP;
-      if (null==pool) {
-        moveFile(srcFs, srcP, destFs, dstP, conf, canRename);
-      } else {
-        futures.add(pool.submit(new Callable<Pair<Path, Path>>() {
-          @Override
-          public Pair<Path, Path> call() throws IOException {
-            if (moveFile(srcFs, srcP, destFs, dstP, conf, canRename)) {
-              return pair;
-            } else {
-              throw new HCatException(ErrorType.ERROR_MOVE_FAILED, msg);
-            }
+      futures.add(pool.submit(new Callable<Pair<Path, Path>>() {
+        @Override
+        public Pair<Path, Path> call() throws IOException {
+          if (moveFile(srcFs, srcP, destFs, dstP, conf, canRename)) {
+            return pair;
+          } else {
+            throw new HCatException(ErrorType.ERROR_MOVE_FAILED,
+                "Unable to move from " + srcP + " to " + dstP);
           }
-        }));
-      }
-    }
-    if (null != pool) {
-      pool.shutdown();
-      for (Future<Pair<Path, Path>> future : futures) {
-        try {
-          Pair<Path, Path> pair = future.get();
-          LOG.debug("Moved src: {}, to dest: {}", pair.getLeft().toString(), pair.getRight().toString());
-        } catch (Exception e) {
-          LOG.error("Failed to move {}", e.getMessage());
-          pool.shutdownNow();
-          throw new HCatException(ErrorType.ERROR_MOVE_FAILED, e.getMessage());
         }
+      }));
+    }
+    pool.shutdown();
+    for (Future<Pair<Path, Path>> future : futures) {
+      try {
+        future.get();
+      } catch (Exception e) {
+        pool.shutdownNow();
+        throw new HCatException(ErrorType.ERROR_MOVE_FAILED, e.getMessage());
       }
     }
   }
 
-  private boolean moveFile(FileSystem srcFs, Path srcf, FileSystem destFs, Path destf, Configuration conf, boolean canRename) throws IOException {
+  private boolean moveFile(final FileSystem srcFs, final Path srcf, final FileSystem destFs, final Path destf,
+      final Configuration conf, final boolean canRename) throws IOException {
+    LOG.debug("Moving src: {}, to dest: {}", srcf, destf);
     boolean moved;
     if (canRename) {
       destFs.mkdirs(destf.getParent());

@@ -594,6 +594,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_EXCEPT", "EXCEPT");
     xlateMap.put("KW_LOAD", "LOAD");
     xlateMap.put("KW_DATA", "DATA");
+    xlateMap.put("KW_OPTIMIZE", "OPTIMIZE");
     xlateMap.put("KW_INPATH", "INPATH");
     xlateMap.put("KW_IS", "IS");
     xlateMap.put("KW_NULL", "NULL");

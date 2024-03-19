@@ -49,7 +49,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
@@ -70,16 +69,17 @@ public class TestReplicationMetricCollector {
 
   HiveConf conf;
 
-  @Mock
   private FailoverMetaData fmd;
 
-  @Mock
   private MetricSink metricSinkInstance;
 
-  static MockedStatic<MetricSink> metricSinkMockedStatic;
+  MockedStatic<MetricSink> metricSinkMockedStatic;
 
   @Before
   public void setup() throws Exception {
+    fmd = Mockito.mock(FailoverMetaData.class);
+    metricSinkInstance = Mockito.mock(MetricSink.class);
+
     conf = new HiveConf();
     conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "repl");
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");

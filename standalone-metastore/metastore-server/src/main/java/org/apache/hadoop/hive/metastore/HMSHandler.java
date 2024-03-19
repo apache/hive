@@ -48,8 +48,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
-import org.apache.hadoop.hive.metastore.leader.HouseKeepingTasks;
-import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -130,11 +128,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public static final Logger LOG = LoggerFactory.getLogger(HMSHandler.class);
   private final Configuration conf; // stores datastore (jpox) properties,
                                    // right now they come from jpox.properties
-
-  // Flag to control that always threads are initialized only once
-  // instead of multiple times
-  private final static AtomicBoolean alwaysThreadsInitialized =
-      new AtomicBoolean(false);
 
   private static String currentUrl;
   private FileMetadataManager fileMetadataManager;
@@ -220,24 +213,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   /**
-   * Internal function to notify listeners for meta config change events
-   */
-  private void notifyMetaListeners(String key, String oldValue, String newValue) throws MetaException {
-    for (MetaStoreEventListener listener : listeners) {
-      listener.onConfigChange(new ConfigChangeEvent(this, key, oldValue, newValue));
-    }
-
-    if (transactionalListeners.size() > 0) {
-      // All the fields of this event are final, so no reason to create a new one for each
-      // listener
-      ConfigChangeEvent cce = new ConfigChangeEvent(this, key, oldValue, newValue);
-      for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-        transactionalListener.onConfigChange(cce);
-      }
-    }
-  }
-
-  /**
    * Internal function to notify listeners to revert back to old values of keys
    * that were modified during setMetaConf. This would get called from HiveMetaStore#cleanupHandlerContext
    */
@@ -253,7 +228,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         String currVal = entry.getValue();
         String oldVal = conf.get(key);
         if (!Objects.equals(oldVal, currVal)) {
-          notifyMetaListeners(key, oldVal, currVal);
+          for (List<MetaStoreEventListener> eventListeners :
+              new List[] { listeners, transactionalListeners }) {
+            MetaStoreListenerNotifier.notifyEvent(eventListeners, EventType.CONFIG_CHANGE,
+                new ConfigChangeEvent(this, key, oldVal, currVal));
+          }
         }
       }
       logAndAudit("Meta listeners shutdown notification completed.");
@@ -391,12 +370,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       partitionValidationPattern = Pattern.compile(partitionValidationRegex);
     }
 
-    // We only initialize once the tasks that need to be run periodically. For remote metastore
-    // these threads are started along with the other housekeeping threads only in the leader
-    // HMS.
-    if (!HiveMetaStore.isMetaStoreRemote()) {
-      startAlwaysTaskThreads(conf, this);
-    }
     expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
     fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
 
@@ -414,20 +387,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     }
     dataconnectorFactory = DataConnectorProviderFactory.getInstance(this);
-  }
-
-  static void startAlwaysTaskThreads(Configuration conf, IHMSHandler handler) throws MetaException {
-    if (alwaysThreadsInitialized.compareAndSet(false, true)) {
-      try {
-        LeaderElectionContext context = new LeaderElectionContext.ContextBuilder(conf)
-            .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS)
-            .addListener(new HouseKeepingTasks(conf, false))
-            .setHMSHandler(handler).build();
-        context.start();
-      } catch (Exception e) {
-        throw newMetaException(e);
-      }
-    }
   }
 
   /**
@@ -545,8 +504,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       HMSHandlerContext.setHMSHandler(this);
     }
     configuration.set(key, value);
-    notifyMetaListeners(key, oldValue, value);
-
+    for (List<MetaStoreEventListener> eventListeners :
+        new List[] { listeners, transactionalListeners }) {
+      MetaStoreListenerNotifier.notifyEvent(eventListeners, EventType.CONFIG_CHANGE,
+          new ConfigChangeEvent(this, key, oldValue, value));
+    }
     if (ConfVars.TRY_DIRECT_SQL == confVar) {
       HMSHandler.LOG.info("Direct SQL optimization = {}",  value);
     }
@@ -5183,8 +5145,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       mustPurge = isMustPurge(envContext, tbl);
       tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
       writeId = getWriteId(envContext);
-
-      int minCount = 0;
+      
+      boolean hasMissingParts = false;
       RequestPartsSpec spec = request.getParts();
       List<String> partNames = null;
       
@@ -5192,7 +5154,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // Dropping by expressions.
         parts = new ArrayList<>(spec.getExprs().size());
         for (DropPartitionsExpr expr : spec.getExprs()) {
-          ++minCount; // At least one partition per expression, if not ifExists
           List<Partition> result = new ArrayList<>();
           boolean hasUnknown = ms.getPartitionsByExpr(catName, dbName, tblName, result,
               new GetPartitionsArgs.GetPartitionsArgsBuilder()
@@ -5213,20 +5174,27 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               }
             }
           }
+          if (result.isEmpty()) {
+            hasMissingParts = true;
+            if (!ifExists) {
+              // fail-fast for missing partition expr
+              break;
+            }
+          }
           parts.addAll(result);
         }
       } else if (spec.isSetNames()) {
         partNames = spec.getNames();
-        minCount = partNames.size();
         parts = ms.getPartitionsByNames(catName, dbName, tblName,
             new GetPartitionsArgs.GetPartitionsArgsBuilder()
                 .partNames(partNames).skipColumnSchemaForPartition(request.isSkipColumnSchemaForPartition())
                 .build());
+        hasMissingParts = (parts.size() != partNames.size());
       } else {
         throw new MetaException("Partition spec is not set");
       }
 
-      if ((parts.size() < minCount) && !ifExists) {
+      if (hasMissingParts && !ifExists) {
         throw new NoSuchObjectException("Some partitions to drop are missing");
       }
 
@@ -5919,7 +5887,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     if (LOG.isInfoEnabled()) {
       for (Partition tmpPart : new_parts) {
-        LOG.info("New partition values:" + tmpPart.getValues());
+        LOG.info("New partition values: catalog: {} database: {} table: {} partition: {}",
+                catName, db_name, tbl_name, tmpPart.getValues());
       }
     }
     // all partitions are altered atomically

@@ -53,6 +53,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_position
 array_remove
 array_slice
 array_union
@@ -681,6 +682,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_position
 array_remove
 array_slice
 array_union

@@ -215,7 +215,7 @@ public class TestJdbcWithMiniHS2 {
   private static void startMiniHS2(HiveConf conf, boolean httpMode) throws Exception {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
-    conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    conf.setBoolVar(ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     // store post-exec hooks calls so we can look at them later
     conf.setVar(ConfVars.POST_EXEC_HOOKS, ReadableHook.class.getName() + "," +
         LineageLogger.class.getName());

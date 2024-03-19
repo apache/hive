@@ -165,22 +165,23 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
 
   private int getPosition(ColumnInfo colInfo, List<RowResolver> rowResolverList)
       throws SemanticException {
-    ColumnInfo tmp;
-    ColumnInfo cInfoToRet = null;
     int position = 0;
-    for (RowResolver rr : rowResolverList) {
-      tmp = rr.get(colInfo.getTabAlias(), colInfo.getAlias());
-      if (tmp != null) {
-        if (cInfoToRet != null) {
-          throw new CalciteSemanticException("Could not resolve column name");
-        }
-        cInfoToRet = tmp;
-        position += rr.getPosition(cInfoToRet.getInternalName());
-      } else if (cInfoToRet == null) {
+
+    for (RowResolver rr: rowResolverList) {
+      ColumnInfo tmp = rr.get(colInfo.getTabAlias(), colInfo.getAlias());
+      if (tmp == null) {
+        // if column is not present in the RR, increment position by size of RR
         position += rr.getColumnInfos().size();
+      } else {
+        // if column is present, increment position by the position of the column in RR
+        // and return early.
+        position += rr.getPosition(tmp.getInternalName());
+        return position;
       }
     }
-    return position;
+
+    // If we are out of the for loop, then the column is not present in any RR
+    throw new CalciteSemanticException("Could not resolve column name");
   }
 
   /**

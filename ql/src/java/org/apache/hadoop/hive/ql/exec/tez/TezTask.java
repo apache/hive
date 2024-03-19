@@ -258,11 +258,11 @@ public class TezTask extends Task<TezWork> {
         LogUtils.putToMDC(LogUtils.DAGID_KEY, dagId);
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters);
+        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters, perfLogger);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
-          this.setException(new HiveException(monitor.getDiagnostics()));
+          this.setException(new TezRuntimeException(dagId, monitor.getDiagnostics()));
         }
 
         try {

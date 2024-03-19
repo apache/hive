@@ -146,7 +146,7 @@ public class TestHs2Hooks {
     hiveConf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK,
         SemanticAnalysisHook.class.getName());
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hiveConf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
 
     hiveServer2 = new HiveServer2();
     hiveServer2.init(hiveConf);

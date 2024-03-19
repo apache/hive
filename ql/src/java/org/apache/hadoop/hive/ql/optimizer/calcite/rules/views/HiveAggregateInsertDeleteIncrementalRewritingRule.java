@@ -30,6 +30,7 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild.AlterMaterializedViewRebuildAnalyzer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRule;
@@ -38,7 +39,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  * This rule will perform a rewriting to prepare the plan for incremental
  * view maintenance in case there exist aggregation operator, so we can
  * avoid the INSERT OVERWRITE and use a MERGE statement instead.
- *
+ * <br>
+ * <pre>
  * In particular, the INSERT OVERWRITE maintenance will look like this
  * (in SQL):
  * INSERT OVERWRITE mv
@@ -52,8 +54,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  *   WHERE TAB_A.ROW_ID &gt; 5
  *   GROUP BY a, b) inner_subq
  * GROUP BY a, b;
- *
+ * </pre>
  * We need to transform that into:
+ * <pre>
  * MERGE INTO mv
  * USING (
  *   SELECT a, b, SUM(x) AS s, COUNT(*) AS c --NEW DATA
@@ -67,8 +70,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  * WHEN MATCHED AND countStar = 0 THEN DELETE
  * WHEN NOT MATCHED
  *   THEN INSERT VALUES (source.a, source.b, s, c);
- *
+ * </pre>
  * To be precise, we need to convert it into a MERGE rewritten as:
+ * <pre>
  * FROM (select *, true flag from mv) mv right outer join _source_ source
  * ON (mv.a &lt;=&gt; source.a AND mv.b &lt;=&gt; source.b)
  * INSERT INTO TABLE mv                                       &lt;- (insert new rows into the view)
@@ -90,8 +94,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
  *   SELECT mv.ROW__ID
  *   WHERE mv.flag AND countStar = 0
  *   SORT BY mv.ROW__ID;
+ * </pre>
  *
- * @see org.apache.hadoop.hive.ql.parse.CalcitePlanner
+ * @see AlterMaterializedViewRebuildAnalyzer
  */
 public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggregateIncrementalRewritingRuleBase<
         HiveAggregateInsertDeleteIncrementalRewritingRule.IncrementalComputePlanWithDeletedRows> {
@@ -116,7 +121,10 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
     aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
     aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate(aggInput);
 
-    int rowIsDeletedIdx = aggInput.getRowType().getFieldCount() - 1;
+    // The row schema has two additional columns after propagation:
+    // rowIsDeleted is the last but one
+    // col0 ... coln, _any_deleted, _any_inserted
+    int rowIsDeletedIdx = aggInput.getRowType().getFieldCount() - 2;
     RexNode rowIsDeletedNode = rexBuilder.makeInputRef(
             aggInput.getRowType().getFieldList().get(rowIsDeletedIdx).getType(), rowIsDeletedIdx);
 
@@ -130,7 +138,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
     List<RelBuilder.AggCall> newAggregateCalls = new ArrayList<>(aggregate.getAggCallList().size());
     for (int i = 0; i < aggregate.getAggCallList().size(); ++i) {
       AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
-      if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().size() == 0) {
+      if (aggregateCall.getAggregation().getKind() == SqlKind.COUNT && aggregateCall.getArgList().isEmpty()) {
         countIdx = i + aggregate.getGroupCount();
       }
 

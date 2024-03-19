@@ -77,7 +77,7 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
-            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction()) {
+            if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER) && ci.isMajorCompaction()) {
                 List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
                 if (!columnList.isEmpty()) {
                     sb.append(" for columns ").append(String.join(",", columnList));

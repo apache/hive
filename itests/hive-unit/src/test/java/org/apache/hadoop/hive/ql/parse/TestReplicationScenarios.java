@@ -221,7 +221,7 @@ public class TestReplicationScenarios {
         "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     hconf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, "/tmp/warehouse/external");
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, true);
-    hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
+    hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
     hconf.setBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET, false);
     hconf.setBoolVar(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS, false);
