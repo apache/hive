@@ -500,6 +500,8 @@ public class RelJson {
           return SqlStdOperatorTable.MINUS;
         }
         return SqlStdOperatorTable.UNARY_MINUS;
+      case "MAP":
+        return SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR;
       default:
         SqlOperator operator = getOperatorFromDefault(op);
         if (operator != null) {
