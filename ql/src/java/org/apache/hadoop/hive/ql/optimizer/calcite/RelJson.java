@@ -307,10 +307,8 @@ public class RelJson {
           // we just interpret the literal
           return toRex(relInput, literal);
         }
-        if (SqlTypeUtil.inCharFamily(type)) {
-          literal = RexNodeExprFactory.makeHiveUnicodeString((String) literal);
-        }
-        return rexBuilder.makeLiteral(literal, type, true);
+
+        return makeLiteral(rexBuilder, literal, type);
       }
       throw new UnsupportedOperationException("cannot convert to rex " + o);
     } else if (o instanceof Boolean) {
@@ -326,6 +324,29 @@ public class RelJson {
       }
     } else {
       throw new UnsupportedOperationException("cannot convert to rex " + o);
+    }
+  }
+
+  private RexNode makeLiteral(RexBuilder rexBuilder, Object literal, RelDataType type) {
+    switch (type.getSqlTypeName()) {
+      case CHAR:
+      case VARCHAR:
+        literal = RexNodeExprFactory.makeHiveUnicodeString((String) literal);
+        return rexBuilder.makeLiteral(literal, type, true);
+
+      case TIMESTAMP:
+        long t;
+        if (literal instanceof Number) {
+          t = ((Number) literal).longValue();
+        } else if (literal instanceof String) {
+          t = Long.valueOf((String) literal);
+        } else {
+          throw new RuntimeException("Cannot create timestamp from parsed literal");
+        }
+        return rexBuilder.makeLiteral(t, type, false);
+
+      default:
+        return rexBuilder.makeLiteral(literal, type, true);
     }
   }
 
