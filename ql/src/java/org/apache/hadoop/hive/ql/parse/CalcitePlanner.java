@@ -339,6 +339,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.Interval;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -1763,7 +1764,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
+      calcitePlan = serializeAndDeserialize(cluster, relOptSchema, perfLogger, calcitePlan);
 
+      return calcitePlan;
+    }
+
+    @Nullable
+    private RelNode serializeAndDeserialize(RelOptCluster cluster, RelOptSchema relOptSchema,
+                                            PerfLogger perfLogger, RelNode calcitePlan) {
+      if (!canSerializeDeserialize(calcitePlan)) {
+        return calcitePlan;
+      }
       perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
       String calcitePlanJson = HiveRelOptUtil.toJsonString(calcitePlan, false);
       perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
@@ -1794,6 +1805,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveSearchRules.PROJECT_SEARCH_EXPAND,
           HiveSearchRules.JOIN_SEARCH_EXPAND));
       return executeProgram(basePlan, searchProgram.build(), mdProvider, executor);
+    }
+
+    private boolean canSerializeDeserialize(RelNode plan) {
+      if (plan.getConvention() != null && plan.getConvention().getName().toLowerCase().contains("jdbc")) {
+        return false;
+      }
+
+      return true;
     }
 
     /**
