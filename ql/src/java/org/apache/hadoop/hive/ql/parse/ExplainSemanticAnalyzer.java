@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
@@ -179,6 +180,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
+    queryState.setAuthorizationCommandType(sem.getQueryState().getHiveOperation());
+    queryState.setCommandType(HiveOperation.EXPLAIN);
     inputs = sem.getInputs();
     outputs = sem.getOutputs();
 

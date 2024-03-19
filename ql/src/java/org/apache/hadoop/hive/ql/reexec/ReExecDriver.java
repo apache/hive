@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -170,6 +171,10 @@ public class ReExecDriver implements IDriver {
   public CommandProcessorResponse run() throws CommandProcessorException {
     executionIndex = 0;
     int maxExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
+
+    if (explainReOptimization) {
+      queryState.setCommandType(HiveOperation.EXPLAIN);
+    }
 
     while (true) {
       executionIndex++;
