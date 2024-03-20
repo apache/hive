@@ -17,11 +17,13 @@
     <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
+
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg</artifactId>
   <version>4.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Iceberg Modules</name>
+
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
@@ -39,14 +41,20 @@
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
     <caffeine.version>2.9.3</caffeine.version>
+    <hive.version>${project.parent.version}</hive.version>
+    <revision>${hive.version}</revision>
   </properties>
+
   <modules>
     <module>patched-iceberg-api</module>
     <module>patched-iceberg-core</module>
+
     <module>iceberg-shading</module>
+
     <module>iceberg-catalog</module>
     <module>iceberg-handler</module>
   </modules>
+
   <dependencies>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -56,46 +64,6 @@
   </dependencies>
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>patched-iceberg-api</artifactId>
-        <version>patched-${iceberg.version}-${project.parent.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>patched-iceberg-core</artifactId>
-        <version>patched-${iceberg.version}-${project.parent.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-api</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-core</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-hive-metastore</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-data</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-parquet</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-orc</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-iceberg-catalog</artifactId>
