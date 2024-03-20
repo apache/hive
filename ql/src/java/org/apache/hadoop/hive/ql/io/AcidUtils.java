@@ -1417,6 +1417,13 @@ public class AcidUtils {
     return directory;
   }
 
+  public static AcidDirectory getAcidState(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf)
+      throws IOException {
+    Path location = new Path(sd.getLocation());
+    FileSystem fs = location.getFileSystem(conf);
+    return getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
+  }
+
   private static void findBestWorkingDeltas(ValidWriteIdList writeIdList, AcidDirectory directory) {
     Collections.sort(directory.getCurrentDirectories());
     //so now, 'current directories' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example

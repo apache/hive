@@ -22,6 +22,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -35,8 +36,11 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TARGET_PREFIX;
@@ -127,6 +131,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
   static class CopyOnWriteMergeWhenClauseSqlGenerator extends MergeRewriter.MergeWhenClauseSqlGenerator {
 
     private final COWWithClauseBuilder cowWithClauseBuilder;
+    private int subQueryCount = 0;
 
     CopyOnWriteMergeWhenClauseSqlGenerator(
       HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
@@ -138,7 +143,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     public void appendWhenNotMatchedInsertClause(MergeStatement.InsertClause insertClause) {
       String targetAlias = mergeStatement.getTargetAlias();
       
-      if (mergeStatement.getWhenClauses().size() > 1) {
+      if (++subQueryCount > 1) {
         sqlGenerator.append("union all\n");
       }
       sqlGenerator.append("    -- insert clause\n").append("SELECT ");
@@ -148,8 +153,20 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
         hintStr = null;
       }
       List<String> values = sqlGenerator.getDeleteValues(Context.Operation.MERGE);
-      values.add(insertClause.getValuesClause());
       
+      if (insertClause.getColumnListText() != null) {
+        String[] columnNames = insertClause.getColumnListText()
+            .substring(1, insertClause.getColumnListText().length() - 1).split(",");
+        String[] columnValues = insertClause.getValuesClause().split(",");
+        
+        Map<String, String> columnMap = IntStream.range(0, columnNames.length).boxed().collect(
+            Collectors.toMap(i -> ParseUtils.stripIdentifierQuotes(columnNames[i].trim()), i -> columnValues[i]));
+        for (FieldSchema col : mergeStatement.getTargetTable().getAllCols()) {
+          values.add(columnMap.getOrDefault(col.getName(), "null"));
+        }
+      } else {
+        values.add(insertClause.getValuesClause());
+      }
       sqlGenerator.append(StringUtils.join(values, ","));
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
@@ -173,7 +190,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       sqlGenerator.append("    -- update clause (insert part)\n").append("SELECT ");
-
+      ++subQueryCount;
+      
       if (isNotBlank(hintStr)) {
         sqlGenerator.append(hintStr);
         hintStr = null;
@@ -206,8 +224,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       List<String> deleteValues = sqlGenerator.getDeleteValues(Context.Operation.DELETE);
 
-      List<MergeStatement.WhenClause> whenClauses = mergeStatement.getWhenClauses();
-      if (whenClauses.size() > 1 || whenClauses.get(0) instanceof MergeStatement.UpdateClause) {
+      if (++subQueryCount > 1) {
         sqlGenerator.append("union all\n");
       }
       sqlGenerator.append("    -- delete clause\n").append("SELECT ");

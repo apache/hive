@@ -252,17 +252,12 @@ public class ClearDanglingScratchDir implements Runnable {
    */
   private void removeLocalTmpFiles(String sessionName, String localTmpdir) {
     File[] files = new File(localTmpdir).listFiles(fn -> fn.getName().startsWith(sessionName));
-    boolean success;
     if (files != null) {
       for (File file : files) {
-        success = false;
-        if (file.canWrite()) {
-          success = file.delete();
-        }
-        if (success) {
+        if (file.canWrite() && file.delete()) {
           consoleMessage("While removing '" + sessionName + "' dangling scratch dir from HDFS, "
                   + "local tmp session file '" + file.getPath() + "' has been cleaned as well.");
-        } else if (file.getName().startsWith(sessionName)) {
+        } else {
           consoleMessage("Even though '" + sessionName + "' is marked as dangling session dir, "
                   + "local tmp session file '" + file.getPath() + "' could not be removed.");
         }

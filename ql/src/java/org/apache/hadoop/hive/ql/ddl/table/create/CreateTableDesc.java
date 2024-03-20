@@ -929,7 +929,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
           StatsSetupConst.FALSE);
       if (!this.isCTAS && !tbl.isPartitioned() && !tbl.isTemporary() &&
-          conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+          conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
         // Put the flag into the dictionary in order not to pollute the table,
         // ObjectDictionary is meant to convey repeatitive messages.
         ObjectDictionary dictionary = tbl.getTTable().isSetDictionary() ?

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -920,23 +921,22 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, writeId, writeIdList);
-      Iterator<Partition> oldPartsIt = oldParts.iterator();
-      for (Partition newPart : new_parts) {
-        Partition oldPart;
-        if (oldPartsIt.hasNext()) {
-          oldPart = oldPartsIt.next();
-        } else {
-          throw new InvalidOperationException("Missing old partition corresponding to new partition " +
-              "when invoking MetaStoreEventListener for alterPartitions event.");
-        }
 
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
-              environmentContext);
+      if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+        boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
+            MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+        if (shouldSendSingleEvent) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
+              new AlterPartitionsEvent(oldParts, new_parts, tbl, false, true, handler), environmentContext);
+        } else {
+          for (Partition newPart : new_parts) {
+            Partition oldPart = oldPartMap.get(newPart.getValues());
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
+                new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
+                environmentContext);
+          }
         }
       }
-
       success = msdb.commitTransaction();
     } catch (InvalidObjectException | NoSuchObjectException e) {
       throw new InvalidOperationException("Alter partition operation failed: " + e);

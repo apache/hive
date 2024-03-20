@@ -17,6 +17,12 @@ when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c);
 
+-- insert clause with a column list
+explain
+merge into target_ice as t using source src ON t.a = src.a
+when matched and t.a > 100 THEN DELETE
+when not matched then insert (a, b) values (src.a, src.b);
+
 merge into target_ice as t using source src ON t.a = src.a
 when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10

@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.metastore.conf;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService;
+import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidTxnCleanerService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.core.StringEndsWith;
@@ -50,8 +51,8 @@ import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
 import org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService;
 
 @Category(MetastoreUnitTest.class)
 public class TestMetastoreConf {
@@ -500,8 +501,10 @@ public class TestMetastoreConf {
         EventCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.METASTORE_DELEGATION_MANAGER_CLASS,
         MetastoreDelegationTokenManager.class.getName());
-    Assert.assertEquals(MetastoreConf.ACID_HOUSE_KEEPER_SERVICE_CLASS,
+    Assert.assertEquals(MetastoreConf.ACID_HOUSEKEEPER_SERVICE_CLASS,
         AcidHouseKeeperService.class.getName());
+    Assert.assertEquals(MetastoreConf.COMPACTION_HOUSEKEEPER_SERVICE_CLASS,
+        CompactionHouseKeeperService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_TXN_CLEANER_SERVICE_CLASS,
         AcidTxnCleanerService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,

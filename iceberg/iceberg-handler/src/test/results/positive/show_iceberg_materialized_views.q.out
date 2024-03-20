@@ -224,12 +224,12 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_aggr_view1     	Yes                 	Manual refresh      	Available in presence of insert operations only
-shtb_aggr_view2     	Yes                 	Manual refresh      	Available in presence of insert operations only
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available in presence of insert operations only
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
-shtb_view_on_native 	Yes                 	Manual refresh      	Available           
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+shtb_view_on_native 	Yes                 	Manual refresh      	Available for insert operations only
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
@@ -245,16 +245,16 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS '%test%'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS '%view2'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS '%view2'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_aggr_view2     	Yes                 	Manual refresh      	Available in presence of insert operations only
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available in presence of insert operations only
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: USE test2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test2
@@ -266,8 +266,8 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS 'shtb_%'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test2_view2    	No                  	Manual refresh      	Unknown             
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test2_view2    	No                  	Manual refresh      	Not available       
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -289,19 +289,19 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_aggr_view1     	Yes                 	Manual refresh      	Available in presence of insert operations only
-shtb_aggr_view2     	Yes                 	Manual refresh      	Available in presence of insert operations only
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available in presence of insert operations only
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
-shtb_view_on_native 	Yes                 	Manual refresh      	Available           
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+shtb_view_on_native 	Yes                 	Manual refresh      	Available for insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test2_view2    	No                  	Manual refresh      	Unknown             
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test2_view2    	No                  	Manual refresh      	Not available       
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
@@ -317,12 +317,12 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_aggr_view1     	Yes                 	Manual refresh      	Available in presence of insert operations only
-shtb_aggr_view2     	Yes                 	Manual refresh      	Available in presence of insert operations only
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available in presence of insert operations only
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
-shtb_view_on_native 	Yes                 	Manual refresh      	Available           
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+shtb_view_on_native 	Yes                 	Manual refresh      	Available for insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN default
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
@@ -342,8 +342,8 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available in presence of insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: DESCRIBE FORMATTED test1.shtb_full_view2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test1@shtb_full_view2
@@ -553,7 +553,7 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-fooview             	Yes                 	Manual refresh (Valid until source tables modified)	Available in presence of insert operations only
+fooview             	Yes                 	Manual refresh (Valid until source tables modified)	Available for insert operations only
 PREHOOK: query: DESCRIBE FORMATTED `database`.`fooview`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: database@fooview

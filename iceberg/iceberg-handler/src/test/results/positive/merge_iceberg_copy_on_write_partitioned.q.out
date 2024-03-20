@@ -551,13 +551,13 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: merge into target_ice as t using source src ON t.a = src.a
-when not matched then insert values (src.a, src.b, src.c)
+when not matched and src.a <= 5 then insert values (src.a, src.b, src.c)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target_ice
 PREHOOK: Output: default@target_ice
 POSTHOOK: query: merge into target_ice as t using source src ON t.a = src.a
-when not matched then insert values (src.a, src.b, src.c)
+when not matched and src.a <= 5 then insert values (src.a, src.b, src.c)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target_ice
@@ -571,7 +571,33 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@target_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	Merged	60
-111	one	55
+2	Merged	61
+3	three	52
+333	two	56
+4	four	53
+5	five	54
+PREHOOK: query: merge into target_ice as t using source src ON t.a = src.a
+when not matched then insert (a, c) values (src.a, src.c)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source
+PREHOOK: Input: default@target_ice
+PREHOOK: Output: default@target_ice
+POSTHOOK: query: merge into target_ice as t using source src ON t.a = src.a
+when not matched then insert (a, c) values (src.a, src.c)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source
+POSTHOOK: Input: default@target_ice
+POSTHOOK: Output: default@target_ice
+PREHOOK: query: select * from target_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from target_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	Merged	60
+111	NULL	55
 2	Merged	61
 3	three	52
 333	two	56

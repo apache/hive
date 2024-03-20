@@ -34,8 +34,8 @@ Stage-3
     limit:-1
     Select Operator [SEL_9]
       Output:["_col0"]
-      TableScan [TS_8]
-        Output:["key"]
+      TableScan [TS_8] (rows=2 width=85)
+        default@q1,q1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
 select *
@@ -92,8 +92,8 @@ Stage-3
     limit:-1
     Select Operator [SEL_9]
       Output:["_col0"]
-      TableScan [TS_8]
-        Output:["key"]
+      TableScan [TS_8] (rows=2 width=85)
+        default@q1,q1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
@@ -136,12 +136,12 @@ Stage-5
       Map 2 vectorized, llap
       File Output Operator [FS_15]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_14] (rows=1 width=184)
+        Select Operator [SEL_14] (rows=2 width=85)
           Output:["_col0"]
-          Filter Operator [FIL_13] (rows=1 width=184)
+          Filter Operator [FIL_13] (rows=2 width=85)
             predicate:(key = '5')
-            TableScan [TS_8] (rows=1 width=184)
-              default@q2,q2,Tbl:COMPLETE,Col:NONE,Output:["key"]
+            TableScan [TS_8] (rows=2 width=85)
+              default@q2,q2,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         Stage-2
           Dependency Collection{}
             Stage-1
@@ -165,8 +165,8 @@ Stage-6
     limit:-1
     Select Operator [SEL_17]
       Output:["_col0"]
-      TableScan [TS_16]
-        Output:["key"]
+      TableScan [TS_16] (rows=2 width=85)
+        default@q1,q1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')

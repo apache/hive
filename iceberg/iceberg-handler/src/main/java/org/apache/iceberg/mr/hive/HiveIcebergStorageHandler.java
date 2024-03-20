@@ -384,8 +384,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
+    Expression filterExpr = (Expression) HiveIcebergInputFormat.getFilterExpr(conf, predicate.pushedPredicate);
+    if (filterExpr != null) {
+      SessionStateUtil.addResource(conf, InputFormatConfig.QUERY_FILTERS, filterExpr);
+    }
     return predicate;
   }
+
 
   @Override
   public boolean canProvideBasicStatistics() {
@@ -748,8 +753,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (jobContextList.isEmpty()) {
       return;
     }
-
-    HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
+    HiveIcebergOutputCommitter committer = getOutputCommitter();
     try {
       committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
@@ -767,6 +771,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       throw new HiveException(
           "Error committing job: " + ids + " for table: " + tableName, e);
     }
+  }
+
+  public HiveIcebergOutputCommitter getOutputCommitter() {
+    return new HiveIcebergOutputCommitter();
   }
 
   @Override
