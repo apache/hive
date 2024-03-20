@@ -212,7 +212,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return super.explainTerms(pw)
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
       .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
-      .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
