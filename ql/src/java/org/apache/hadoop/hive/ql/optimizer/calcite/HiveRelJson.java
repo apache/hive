@@ -62,6 +62,9 @@ public class HiveRelJson extends RelJson {
     if (value instanceof RelDataTypeField) {
       return toJson((RelDataTypeField) value);
     }
+    if (value instanceof RelDataType) {
+      return toJson((RelDataType) value);
+    }
     return super.toJson(value);
   }
 
@@ -122,10 +125,6 @@ public class HiveRelJson extends RelJson {
         map.put("type", toJson(node.getType()));
         return map;
       case INPUT_REF:
-        map = jsonBuilder.map();
-        map.put("input", ((RexSlot) node).getIndex());
-        map.put("name", ((RexSlot) node).getName());
-        return map;
       case LOCAL_REF:
         map = jsonBuilder.map();
         map.put("input", ((RexSlot) node).getIndex());
@@ -149,6 +148,8 @@ public class HiveRelJson extends RelJson {
           map.put("operands", list);
           switch (node.getKind()) {
             case CAST:
+            case MAP_QUERY_CONSTRUCTOR:
+            case MAP_VALUE_CONSTRUCTOR:
               map.put("type", toJson(node.getType()));
           }
           if (call.getOperator() instanceof SqlFunction) {
