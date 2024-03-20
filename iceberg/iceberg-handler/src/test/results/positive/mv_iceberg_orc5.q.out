@@ -36,7 +36,7 @@ POSTHOOK: query: insert into tbl_ice_v2 values (1, 'one v2', 50), (4, 'four v2',
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_v2
-PREHOOK: query: create materialized view mat2 as
+PREHOOK: query: create materialized view mat2 stored by iceberg stored as orc tblproperties ('format-version'='2') as
 select tbl_ice.b, tbl_ice.c, sum(tbl_ice_v2.f), count(tbl_ice_v2.f), avg(tbl_ice_v2.f)
 from tbl_ice
 join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
@@ -46,7 +46,8 @@ PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_v2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat2
-POSTHOOK: query: create materialized view mat2 as
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: create materialized view mat2 stored by iceberg stored as orc tblproperties ('format-version'='2') as
 select tbl_ice.b, tbl_ice.c, sum(tbl_ice_v2.f), count(tbl_ice_v2.f), avg(tbl_ice_v2.f)
 from tbl_ice
 join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
@@ -56,6 +57,7 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: Lineage: mat2._c2 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), ]
 POSTHOOK: Lineage: mat2._c3 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), ]
 POSTHOOK: Lineage: mat2._c4 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), ]
@@ -84,6 +86,7 @@ PREHOOK: Input: default@mat2
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_v2
 PREHOOK: Output: default@mat2
+PREHOOK: Output: default@mat2
 POSTHOOK: query: explain cbo
 alter materialized view mat2 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
@@ -91,22 +94,323 @@ POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat2
+POSTHOOK: Output: default@mat2
 CBO PLAN:
-HiveProject(b=[$0], c=[$1], _o__c2=[$2], _o__c3=[COALESCE($3, 0:BIGINT)], _o__c4=[/(CAST($2):DOUBLE, COALESCE($3, 0:BIGINT))])
-  HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
-    HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
-      HiveUnion(all=[true])
-        HiveProject(b=[$0], c=[$1], $f2=[$2], $f3=[$3])
-          HiveAggregate(group=[{1, 2}], agg#0=[sum($4)], agg#1=[count($4)])
-            HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-              HiveProject(a=[$0], b=[$1], c=[$2])
-                HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
-                  HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice], fromVersion=[#Masked#])
-              HiveProject(d=[$0], f=[$2])
-                HiveFilter(condition=[IS NOT NULL($0)])
-                  HiveTableScan(table=[[default, tbl_ice_v2]], table:alias=[tbl_ice_v2], fromVersion=[#Masked#])
-        HiveProject(b=[$0], c=[$1], _c2=[$2], _c3=[$3])
-          HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+HiveProject(b=[$5], c=[$6], _o__c2=[CASE(IS NULL($2), $7, IS NULL($7), $2, +($7, $2))], _o__c3=[CASE(IS NULL($3), $8, IS NULL($8), $3, +($8, $3))], _o__c4=[/(CAST(CASE(IS NULL($2), $7, IS NULL($7), $2, +($7, $2))):DOUBLE, CASE(IS NULL($3), $8, IS NULL($8), $3, +($8, $3)))])
+  HiveFilter(condition=[OR($4, IS NULL($4))])
+    HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $5), IS NOT DISTINCT FROM($1, $6))], joinType=[right], algorithm=[none], cost=[not available])
+      HiveProject(b=[$0], c=[$1], _c2=[$2], _c3=[$3], $f4=[true])
+        HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+      HiveProject(b=[$0], c=[$1], $f2=[$2], $f3=[$3])
+        HiveAggregate(group=[{1, 2}], agg#0=[sum($4)], agg#1=[count($4)])
+          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(a=[$0], b=[$1], c=[$2])
+              HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice], fromVersion=[#Masked#])
+            HiveProject(d=[$0], f=[$2])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, tbl_ice_v2]], table:alias=[tbl_ice_v2], fromVersion=[#Masked#])
+
+PREHOOK: query: explain
+alter materialized view mat2 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mat2
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Input: default@tbl_ice_v2
+PREHOOK: Output: default@mat2
+PREHOOK: Output: default@mat2
+POSTHOOK: query: explain
+alter materialized view mat2 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mat2
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Input: default@tbl_ice_v2
+POSTHOOK: Output: default@mat2
+POSTHOOK: Output: default@mat2
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-4 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-3
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mat2
+                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: b (type: string), c (type: int), _c2 (type: bigint), _c3 (type: bigint), true (type: boolean), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), _c4 (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                    Statistics: Num rows: 2 Data size: 648 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: int)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                      Statistics: Num rows: 2 Data size: 648 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col2 (type: bigint), _col3 (type: bigint), _col4 (type: boolean), _col5 (type: int), _col6 (type: bigint), _col7 (type: string), _col8 (type: bigint), _col9 (type: double)
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_ice
+                  filterExpr: ((c > 52) and a is not null) (type: boolean)
+                  Statistics: Num rows: 8 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                  Version interval from: #Masked#
+                  Filter Operator
+                    predicate: ((c > 52) and a is not null) (type: boolean)
+                    Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: a (type: int), b (type: string), c (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: int)
+            Execution mode: vectorized
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_ice_v2
+                  filterExpr: d is not null (type: boolean)
+                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                  Version interval from: #Masked#
+                  Filter Operator
+                    predicate: d is not null (type: boolean)
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: d (type: int), f (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col0 (type: string), _col1 (type: int)
+                nullSafes: [true, true]
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 6 Data size: 1620 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col4 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col5 (type: int), _col6 (type: bigint), _col7 (type: string), _col8 (type: bigint), _col0 (type: string), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col9 (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
+                      null sort order: aaaa
+                      sort order: ++++
+                      Statistics: Num rows: 1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col4 (type: string), _col5 (type: int), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: double)
+                Filter Operator
+                  predicate: _col4 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col10 (type: string), _col11 (type: int), CASE WHEN (_col2 is null) THEN (_col12) WHEN (_col12 is null) THEN (_col2) ELSE ((_col12 + _col2)) END (type: bigint), CASE WHEN (_col3 is null) THEN (_col13) WHEN (_col13 is null) THEN (_col3) ELSE ((_col13 + _col3)) END (type: bigint), (UDFToDouble(CASE WHEN (_col2 is null) THEN (_col12) WHEN (_col12 is null) THEN (_col2) ELSE ((_col12 + _col2)) END) / CASE WHEN (_col3 is null) THEN (_col13) WHEN (_col13 is null) THEN (_col3) ELSE ((_col13 + _col3)) END) (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.mat2
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: double)
+                      outputColumnNames: b, c, _c2, _c3, _c4
+                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: max(length(b)), avg(COALESCE(length(b),0)), count(1), count(b), compute_bit_vector_hll(b), min(c), max(c), count(c), compute_bit_vector_hll(c), min(_c2), max(_c2), count(_c2), compute_bit_vector_hll(_c2), min(_c3), max(_c3), count(_c3), compute_bit_vector_hll(_c3), min(_c4), max(_c4), count(_c4), compute_bit_vector_hll(_c4)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                        Statistics: Num rows: 1 Data size: 904 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 904 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: bigint), _col16 (type: binary), _col17 (type: double), _col18 (type: double), _col19 (type: bigint), _col20 (type: binary)
+                Filter Operator
+                  predicate: _col4 is null (type: boolean)
+                  Statistics: Num rows: 4 Data size: 1080 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col10 (type: string), _col11 (type: int), CASE WHEN (_col2 is null) THEN (_col12) WHEN (_col12 is null) THEN (_col2) ELSE ((_col12 + _col2)) END (type: bigint), CASE WHEN (_col3 is null) THEN (_col13) WHEN (_col13 is null) THEN (_col3) ELSE ((_col13 + _col3)) END (type: bigint), (UDFToDouble(CASE WHEN (_col2 is null) THEN (_col12) WHEN (_col12 is null) THEN (_col2) ELSE ((_col12 + _col2)) END) / CASE WHEN (_col3 is null) THEN (_col13) WHEN (_col13 is null) THEN (_col3) ELSE ((_col13 + _col3)) END) (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 4 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.mat2
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: double)
+                      outputColumnNames: b, c, _c2, _c3, _c4
+                      Statistics: Num rows: 4 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: max(length(b)), avg(COALESCE(length(b),0)), count(1), count(b), compute_bit_vector_hll(b), min(c), max(c), count(c), compute_bit_vector_hll(c), min(_c2), max(_c2), count(_c2), compute_bit_vector_hll(_c2), min(_c3), max(_c3), count(_c3), compute_bit_vector_hll(_c3), min(_c4), max(_c4), count(_c4), compute_bit_vector_hll(_c4)
+                        minReductionHashAggr: 0.75
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                        Statistics: Num rows: 1 Data size: 904 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 904 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: bigint), _col16 (type: binary), _col17 (type: double), _col18 (type: double), _col19 (type: bigint), _col20 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), VALUE._col0 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                      serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                      name: default.mat2
+        Reducer 4 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                Statistics: Num rows: 1 Data size: 836 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'LONG' (type: string), _col13 (type: bigint), _col14 (type: bigint), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'DOUBLE' (type: string), _col17 (type: double), _col18 (type: double), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                  Statistics: Num rows: 1 Data size: 1324 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1324 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                Statistics: Num rows: 1 Data size: 836 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'LONG' (type: string), _col13 (type: bigint), _col14 (type: bigint), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'DOUBLE' (type: string), _col17 (type: double), _col18 (type: double), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29
+                  Statistics: Num rows: 1 Data size: 1324 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1324 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 7 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col2, _col4
+                Statistics: Num rows: 6 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col4), count(_col4)
+                  keys: _col1 (type: string), _col2 (type: int)
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 4 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: int)
+                    null sort order: zz
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                    Statistics: Num rows: 4 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: bigint), _col3 (type: bigint)
+        Reducer 8 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: string), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int)
+                  null sort order: zz
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 4 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: bigint), _col3 (type: bigint)
+
+  Stage: Stage-4
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.mat2
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: b, c, _c2, _c3, _c4
+          Column Types: string, int, bigint, bigint, double
+          Table: default.mat2
+
+  Stage: Stage-6
+    Materialized View Update
+      name: default.mat2
+      update creation metadata: true
 
 PREHOOK: query: alter materialized view mat2 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
@@ -114,17 +418,14 @@ PREHOOK: Input: default@mat2
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_v2
 PREHOOK: Output: default@mat2
+PREHOOK: Output: default@mat2
 POSTHOOK: query: alter materialized view mat2 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat2
-POSTHOOK: Lineage: mat2._c2 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), (mat2)default.mat2.FieldSchema(name:_c2, type:bigint, comment:null), ]
-POSTHOOK: Lineage: mat2._c3 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), (mat2)default.mat2.FieldSchema(name:_c3, type:bigint, comment:null), ]
-POSTHOOK: Lineage: mat2._c4 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), (mat2)default.mat2.FieldSchema(name:_c2, type:bigint, comment:null), (mat2)default.mat2.FieldSchema(name:_c3, type:bigint, comment:null), ]
-POSTHOOK: Lineage: mat2.b EXPRESSION [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), (mat2)default.mat2.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: mat2.c EXPRESSION [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), (mat2)default.mat2.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Output: default@mat2
 PREHOOK: query: select * from mat2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat2
