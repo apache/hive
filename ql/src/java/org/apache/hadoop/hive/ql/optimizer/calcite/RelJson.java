@@ -58,6 +58,7 @@ import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ConversionUtil;
+import org.apache.calcite.util.TimestampString;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
@@ -357,15 +358,8 @@ public class RelJson {
         return rexBuilder.makeLiteral(literal, type, true);
 
       case TIMESTAMP:
-        long t;
-        if (literal instanceof Number) {
-          t = ((Number) literal).longValue();
-        } else if (literal instanceof String) {
-          t = Long.valueOf((String) literal);
-        } else {
-          throw new RuntimeException("Cannot create timestamp from parsed literal");
-        }
-        return rexBuilder.makeLiteral(t, type, false);
+      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+        return rexBuilder.makeLiteral(new TimestampString((String) literal), type, false);
 
       default:
         return rexBuilder.makeLiteral(literal, type, true);
