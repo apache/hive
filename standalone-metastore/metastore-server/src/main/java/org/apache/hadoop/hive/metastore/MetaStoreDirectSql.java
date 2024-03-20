@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -1554,30 +1555,18 @@ class MetaStoreDirectSql {
       if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
         Map<String, String> partKeyToVal = new HashMap<>();
         partKeyToVal.put(partCol.getName(), node.value.toString());
-        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
-        if (colType == FilterType.Date) {
-          // Some engines like Pig will record both date and time values, in which case we need
-          // match PART_NAME by like clause.
-          escapedNameFragment += "%";
+        List<String> partVals = new ArrayList<>();
+        for (FieldSchema col : partitionKeys) {
+          String value = partKeyToVal.get(col.getName());
+          partVals.add(value);
         }
+        String escapedNameFragment = Warehouse.makePartName(partitionKeys, partVals, "_%");
         if (colType != FilterType.Date && partColCount == 1) {
           // Case where partition column type is not date and there is no other partition columns
           params.add(escapedNameFragment);
           filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " =? " : " !=? ");
         } else {
-          if (partColCount == 1) {
-            // Case where partition column type is date and there is no other partition columns
-            params.add(escapedNameFragment);
-          } else if (partColIndex + 1 == partColCount) {
-            // Case where the partition column is at the end of the name.
-            params.add("%/" + escapedNameFragment);
-          } else if (partColIndex == 0) {
-            // Case where the partition column is at the beginning of the name.
-            params.add(escapedNameFragment + "/%");
-          } else {
-            // Case where the partition column is in the middle of the name.
-            params.add("%/" + escapedNameFragment + "/%");
-          }
+          params.add(escapedNameFragment);
           filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " like ? " : " not like ? ");
         }
       }
