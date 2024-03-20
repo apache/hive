@@ -108,7 +108,7 @@ POSTHOOK: query: select count(*) from vectortab10k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: t3@vectortab10k
 #### A masked pattern was here ####
-1001
+47
 PREHOOK: query: create table partition_transform_year(t int, ts timestamp) partitioned by spec(year(ts)) stored by iceberg
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:t3

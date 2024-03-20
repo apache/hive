@@ -76,7 +76,7 @@ public class GenericUDFIcebergHour extends GenericUDF {
         Function<Object, Integer> timestampTransform = Transforms.hour().bind(Types.TimestampType.withoutZone());
         evaluator = arg -> {
           TimestampWritableV2 val = (TimestampWritableV2) converter.convert(arg.get());
-          result.set(timestampTransform.apply(val.getSeconds() * 1e6 + val.getNanos() / 1000L));
+          result.set(timestampTransform.apply(Double.valueOf(val.getMicros()).longValue()));
         };
         break;
 
@@ -86,7 +86,7 @@ public class GenericUDFIcebergHour extends GenericUDF {
         Function<Object, Integer> timestampLocalTzTransform = Transforms.hour().bind(Types.TimestampType.withZone());
         evaluator = arg -> {
           TimestampLocalTZWritable val = (TimestampLocalTZWritable) converter.convert(arg.get());
-          result.set(timestampLocalTzTransform.apply(val.getSeconds() * 1e6 + val.getNanos() / 1000L));
+          result.set(timestampLocalTzTransform.apply(Double.valueOf(val.getMicros()).longValue()));
         };
         break;
 
