@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.SupportsNamespaces;
+import org.apache.iceberg.hive.HiveCatalog;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;
@@ -217,7 +218,7 @@ public abstract class HMSTestBase {
   static Map<String, Long> reportMetricCounters(String... apis) {
     Map<String, Long> map = new LinkedHashMap<>();
     com.codahale.metrics.MetricRegistry registry = Metrics.getRegistry();
-    List<String> names = HMSCatalog.getMetricNames(apis);
+    List<String> names = HMSCatalogActor.getMetricNames(apis);
     for(String name : names) {
       Counter counter = registry.counter(name);
       if (counter != null) {
@@ -286,7 +287,7 @@ public abstract class HMSTestBase {
    * @return the server port
    * @throws Exception
    */
-  protected int createCatalogServer(Configuration conf, HMSCatalog catalog) throws Exception {
+  protected int createCatalogServer(Configuration conf, HiveCatalog catalog) throws Exception {
     if (catalogServer == null) {
       catalogServer = HMSCatalogServer.startServer(conf, catalog);
       if (catalogServer == null || !catalogServer.isStarted()) {

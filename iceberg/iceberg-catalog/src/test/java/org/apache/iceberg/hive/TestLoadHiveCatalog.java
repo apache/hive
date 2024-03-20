@@ -49,6 +49,12 @@ public class TestLoadHiveCatalog {
       metastore = null;
     }
   }
+  private static CachedClientPool getPool(HiveActor actor) {
+    if (actor instanceof HiveCatalogActor) {
+      return (CachedClientPool) ((HiveCatalogActor) actor).clientPool();
+    }
+    return null;
+  }
 
   @Test
   public void testCustomCacheKeys() throws Exception {
@@ -67,8 +73,8 @@ public class TestLoadHiveCatalog {
                 Collections.emptyMap(),
                 metastore.hiveConf());
 
-    CachedClientPool clientPool1 = (CachedClientPool) hiveCatalog1.clientPool();
-    CachedClientPool clientPool2 = (CachedClientPool) hiveCatalog2.clientPool();
+    CachedClientPool clientPool1 = getPool(hiveCatalog1.getActor());
+    CachedClientPool clientPool2 = getPool(hiveCatalog2.getActor());
     assertThat(clientPool2.clientPool()).isSameAs(clientPool1.clientPool());
 
     Configuration conf1 = new Configuration(metastore.hiveConf());
@@ -89,8 +95,8 @@ public class TestLoadHiveCatalog {
                 CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
                 ImmutableMap.of(CatalogProperties.CLIENT_POOL_CACHE_KEYS, "conf:any.key"),
                 conf2);
-    clientPool1 = (CachedClientPool) hiveCatalog1.clientPool();
-    clientPool2 = (CachedClientPool) hiveCatalog2.clientPool();
+    clientPool1 = getPool(hiveCatalog1.getActor());
+    clientPool2 = getPool(hiveCatalog2.getActor());
     assertThat(clientPool2.clientPool()).isSameAs(clientPool1.clientPool());
 
     conf2.set("any.key", "any.value2");
@@ -101,7 +107,7 @@ public class TestLoadHiveCatalog {
                 CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
                 ImmutableMap.of(CatalogProperties.CLIENT_POOL_CACHE_KEYS, "conf:any.key"),
                 conf2);
-    clientPool2 = (CachedClientPool) hiveCatalog2.clientPool();
+    clientPool2 = getPool(hiveCatalog2.getActor());
     assertThat(clientPool2.clientPool()).isNotSameAs(clientPool1.clientPool());
   }
 }

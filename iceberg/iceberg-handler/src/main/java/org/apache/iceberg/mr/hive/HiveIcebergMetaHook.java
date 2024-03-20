@@ -103,7 +103,7 @@ import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.hive.CachedClientPool;
+import org.apache.iceberg.hive.HiveActor;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreLock;
@@ -369,7 +369,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           context.getProperties().get(OLD_TABLE_NAME)).toString());
     }
     if (commitLock == null) {
-      commitLock = new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
+      HiveActor actor = HiveActor
+          .createActor(hmsTable.getDbName(), conf)
+          .initialize(Maps.fromProperties(catalogProperties));
+      commitLock = new MetastoreLock(conf, actor,
           catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
     }
 

@@ -21,12 +21,6 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>${caffeine.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-core</artifactId>
       <version>${iceberg.version}</version>
@@ -44,10 +38,18 @@
       <artifactId>iceberg-common</artifactId>
       <version>${iceberg.version}</version>
       <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <!-- in favor of patched-iceberg-api, the original is excluded here -->
+          <groupId>org.apache.iceberg</groupId>
+          <artifactId>iceberg-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>patched-iceberg-api</artifactId>
+      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
@@ -57,6 +59,12 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>${caffeine.version}</version>
       <optional>true</optional>
     </dependency>
   </dependencies>

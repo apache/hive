@@ -2233,6 +2233,10 @@ public class HiveConf extends Configuration {
     HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY("hive.iceberg.allow.datafiles.in.table.location.only", false,
         "If this is set to true, then all the data files being read should be withing the table location"),
 
+    HIVE_ICEBERG_CATALOG_ACTOR_CLASS("hive.iceberg.catalog.actor.class", "org.apache.iceberg.rest.HMSCatalogActor",
+        "Catalog actor implementation class. Default value is an embedded (no-thrift) catalog actor." +
+            "For a thrift-based single-tenant actor, use \"org.apache.iceberg.hive.HiveCatalogActor\".."),
+
     HIVE_USE_EXPLICIT_RCFILE_HEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +

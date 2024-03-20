@@ -20,14 +20,16 @@
 package org.apache.iceberg.rest;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 public class TestHMSCatalog extends TestHiveCatalog {
   public TestHMSCatalog() {
     super();
   }
+
   protected void setCatalogClass(Configuration conf) {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_CLASS, "HMSCatalog");
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_CATALOG_ACTOR_CLASS, "org.apache.iceberg.rest.HMSCatalogActor");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "jwt");
   }
 }

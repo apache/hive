@@ -38,6 +38,7 @@ import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.HiveUtil;
 import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -81,28 +82,27 @@ public class TestHiveCatalog extends HMSTestBase {
     super();
   }
   protected void setCatalogClass(Configuration conf) {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_CLASS, "HiveCatalog");
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_CATALOG_ACTOR_CLASS, "org.apache.iceberg.hive.HiveCatalogActor");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "jwt");
   }
   static TableOperations newTableOperations(Catalog catalog, Configuration conf, ClientPool metaClients, FileIO fileIO, String catalogName, String database, String table) {
-    return catalog instanceof HiveCatalog ?
-        HiveUtil.newTableOperations(conf, null, null, catalogName, database, table)
-        : new HMSTableOperations(conf, null, null, catalogName, database, table);
+    if (catalog instanceof HiveCatalog) {
+      return HiveUtil.newTableOperations(conf, null, null, catalogName, database, table);
+    } else {
+      throw new IllegalArgumentException(table.toString());
+    }
   }
 
   static TableOperations newTableOps(Catalog catalog, TableIdentifier table) {
     if (catalog instanceof HiveCatalog) {
       return ((HiveCatalog) catalog).newTableOps(table);
-    } else if (catalog instanceof HMSCatalog) {
-      return ((HMSCatalog) catalog).newTableOps(table);
     } else {
       throw new IllegalArgumentException(table.toString());
     }
   }
 
   static Database convertToDatabase(Catalog catalog, Namespace ns, Map<String, String> meta) {
-    return catalog instanceof HMSCatalog ? ((HMSCatalog) catalog).convertToDatabase(ns, meta)
-        : catalog instanceof HiveCatalog ? HiveUtil.convertToDatabase((HiveCatalog) catalog, ns, meta)
+    return catalog instanceof HiveCatalog ? HiveUtil.convertToDatabase((HiveCatalog) catalog, ns, meta)
         : null;
   }
 
@@ -111,9 +111,7 @@ public class TestHiveCatalog extends HMSTestBase {
   }
 
   static void setSnapshotSummary(TableOperations ops, Map<String, String> parameters, Snapshot snapshot) {
-    if (ops instanceof HMSTableOperations) {
-      ((HMSTableOperations) ops).setSnapshotSummary(parameters, snapshot);
-    } else if (ops instanceof HiveTableOperations) {
+    if (ops instanceof HiveTableOperations) {
       HiveUtil.setSnapshotSummary((HiveTableOperations) ops, parameters, snapshot);
     } else {
       illegalArgumentException(ops.getClass().getName());
@@ -121,9 +119,7 @@ public class TestHiveCatalog extends HMSTestBase {
   }
 
   static void setSnapshotStats(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
-    if (ops instanceof HMSTableOperations) {
-      ((HMSTableOperations) ops).setSnapshotStats(metadata, parameters);
-    } else if (ops instanceof HiveTableOperations) {
+    if (ops instanceof HiveTableOperations) {
       HiveUtil.setSnapshotStats((HiveTableOperations) ops, metadata, parameters);
     } else {
       illegalArgumentException(ops.getClass().getName());
@@ -131,9 +127,7 @@ public class TestHiveCatalog extends HMSTestBase {
   }
 
   static void setSchema(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
-    if (ops instanceof HMSTableOperations) {
-      ((HMSTableOperations) ops).setSchema(metadata, parameters);
-    } else if (ops instanceof HiveTableOperations) {
+    if (ops instanceof HiveTableOperations) {
       HiveUtil.setSchema((HiveTableOperations) ops, metadata, parameters);
     } else {
       illegalArgumentException(ops.getClass().getName());
@@ -141,9 +135,7 @@ public class TestHiveCatalog extends HMSTestBase {
   }
 
   static void setPartitionSpec(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
-    if (ops instanceof HMSTableOperations) {
-      ((HMSTableOperations) ops).setPartitionSpec(metadata, parameters);
-    } else if (ops instanceof HiveTableOperations) {
+    if (ops instanceof HiveTableOperations) {
       HiveUtil.setPartitionSpec((HiveTableOperations) ops, metadata, parameters);
     } else {
       illegalArgumentException(ops.getClass().getName());
@@ -151,9 +143,7 @@ public class TestHiveCatalog extends HMSTestBase {
   }
 
   static void setSortOrder(TableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
-    if (ops instanceof HMSTableOperations) {
-      ((HMSTableOperations) ops).setSortOrder(metadata, parameters);
-    } else if (ops instanceof HiveTableOperations) {
+    if (ops instanceof HiveTableOperations) {
       HiveUtil.setSortOrder((HiveTableOperations) ops, metadata, parameters);
     } else {
       illegalArgumentException(ops.getClass().getName());
@@ -167,7 +157,7 @@ public class TestHiveCatalog extends HMSTestBase {
     return ops.current().metadataFileLocation();
   }
 
-  private static ImmutableMap meta =
+  private static ImmutableMap<String, String> meta =
       ImmutableMap.of(
           "owner", "apache",
           "group", "iceberg",
@@ -1088,10 +1078,22 @@ public class TestHiveCatalog extends HMSTestBase {
       catalog.dropTable(tableIdent);
     }
   }
+  private static String stripTrailingSlash(String path) {
+    Preconditions.checkArgument(path != null && !path.isEmpty(), "path must not be null or empty");
+    // walk backwards while encountering '/'
+    for(int index = path.length() - 1; index >= 0; --index) {
+      char c = path.charAt(index);
+      if (c != '/') {
+        return path.substring(0, index + 1);
+      }
+    }
+    // whole string was '/...'
+    return "";
+  }
 
   private String defaultUri(Namespace namespace) throws TException {
     String dir = "hive.metastore.warehouse.external.dir";
-    return LocationUtil.stripTrailingSlash(metastoreClient.getConfigValue(dir, ""))
+    return stripTrailingSlash(metastoreClient.getConfigValue(dir, ""))
         + "/"
         + namespace.level(0)
         + ".db";

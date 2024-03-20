@@ -19,22 +19,6 @@
 
 package org.apache.iceberg.rest;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.io.CharStreams;
-import org.apache.hadoop.hive.metastore.SecureServletCaller;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.iceberg.rest.HMSCatalogAdapter.HTTPMethod;
-import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
-import org.apache.iceberg.rest.responses.ErrorResponse;
-import org.apache.iceberg.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -45,12 +29,24 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.hadoop.hive.metastore.SecureServletCaller;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.io.CharStreams;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.iceberg.rest.HMSCatalogAdapter.HTTPMethod;
+import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
+import org.apache.iceberg.rest.responses.ErrorResponse;
+import org.apache.iceberg.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Original @ https://github.com/apache/iceberg/blob/main/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java
- */
-
-/**
  * The RESTCatalogServlet provides a servlet implementation used in combination with a
  * RESTCatalogAdaptor to proxy the REST Spec to any Catalog implementation.
  */

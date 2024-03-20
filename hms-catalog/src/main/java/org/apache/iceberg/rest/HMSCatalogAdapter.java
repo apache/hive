@@ -20,6 +20,10 @@
 package org.apache.iceberg.rest;
 
 import com.codahale.metrics.Counter;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -65,16 +69,10 @@ import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
 /**
  * Original @ https://github.com/apache/iceberg/blob/main/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java
+ * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
-
-/** Adaptor class to translate REST requests into {@link Catalog} API calls. */
 public class HMSCatalogAdapter implements RESTClient {
   private static final Splitter SLASH = Splitter.on('/');
 
@@ -170,7 +168,7 @@ public class HMSCatalogAdapter implements RESTClient {
     static Route byName(String name) {
       try {
         return valueOf(name.toUpperCase());
-      } catch(IllegalArgumentException xill) {
+      } catch (IllegalArgumentException xill) {
         return null;
       }
     }
@@ -245,10 +243,10 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   @SuppressWarnings("MethodLength")
-  public <T extends RESTResponse> T handleRequest(
+   <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body, Class<T> responseType) {
     // update HMS catalog route counter metric
-    final String metricName = HMSCatalog.hmsCatalogMetricCount(route.name());
+    final String metricName = HMSCatalogActor.hmsCatalogMetricCount(route.name());
     Counter counter = Metrics.getOrCreateCounter(metricName);
     if (counter != null) {
       counter.inc();
@@ -440,7 +438,7 @@ public class HMSCatalogAdapter implements RESTClient {
     transactions.forEach(Transaction::commitTransaction);
   }
 
-  public <T extends RESTResponse> T execute(
+  <T extends RESTResponse> T execute(
       HTTPMethod method,
       String path,
       Map<String, String> queryParams,

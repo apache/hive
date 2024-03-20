@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
@@ -139,12 +140,17 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
     metadataV2 = ops.current();
 
     assertThat(ops.current().schema().columns()).hasSize(2);
-
+    HiveActor actor = new HiveCatalogActor("hive", overriddenHiveConf) {
+      @Override
+      protected ClientPool<IMetaStoreClient, TException> createPool(Map<String, String> properties) {
+        return spyCachedClientPool;
+      }
+    };
     spyOps =
         spy(
             new HiveTableOperations(
                 overriddenHiveConf,
-                spyCachedClientPool,
+                actor,
                 ops.io(),
                 catalog.name(),
                 dbName,
@@ -523,12 +529,17 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
   public void testNoLockCallsWithNoLock() throws TException {
     Configuration confWithLock = new Configuration(overriddenHiveConf);
     confWithLock.setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
-
+    HiveActor actor = new HiveCatalogActor("hive", confWithLock) {
+      @Override
+      protected ClientPool<IMetaStoreClient, TException> createPool(Map<String, String> properties) {
+        return spyCachedClientPool;
+      }
+    };
     HiveTableOperations noLockSpyOps =
         spy(
             new HiveTableOperations(
                 confWithLock,
-                spyCachedClientPool,
+                actor,
                 ops.io(),
                 catalog.name(),
                 TABLE_IDENTIFIER.namespace().level(0),

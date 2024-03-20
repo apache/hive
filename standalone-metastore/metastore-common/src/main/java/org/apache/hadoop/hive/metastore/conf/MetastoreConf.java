@@ -1839,9 +1839,6 @@ public class MetastoreConf {
         "hive.metastore.catalog.servlet.auth", "jwt",
         "Catalog servlet authentication method (simple or jwt)."
     ),
-    CATALOG_CLASS("hive.metastore.catalog.class",
-        "hive.metastore.catalog.class", "HiveCatalog",
-        "Catalog implementation class. (HiveCatalog or HMSCatalog)"),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

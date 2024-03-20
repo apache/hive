@@ -19,7 +19,13 @@
 
 package org.apache.iceberg.rest;
 
-import org.apache.hadoop.conf.Configurable;
+import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.SecureServletCaller;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
@@ -33,19 +39,12 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServlet;
-import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.Collections;
-import java.util.Map;
-import java.util.TreeMap;
-
 public class HMSCatalogServer {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServer.class);
   private static Reference<Catalog> catalogRef;
+
   static Catalog getLastCatalog() {
-    return catalogRef != null? catalogRef.get() :  null;
+    return catalogRef != null ? catalogRef.get() :  null;
   }
 
   private HMSCatalogServer() {
@@ -59,24 +58,12 @@ public class HMSCatalogServer {
   }
   
   public static Catalog createCatalog(Configuration configuration) {
-    final String clazz = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_CLASS);
-    final Catalog catalog;
-    final String name;
-    String curi = configuration.get(MetastoreConf.ConfVars.THRIFT_URIS.getVarname());
-    String cwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
-    String cextwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
-    if ("HMSCatalog".equals(clazz)) {
-      name = "hms";
-      catalog = new HMSCatalog(configuration);
-    } else {
-      name = "hive";
-      catalog = new org.apache.iceberg.hive.HiveCatalog();
-      if (catalog instanceof Configurable) {
-        ((HiveCatalog) catalog).setConf(configuration);
-      }
-    }
-    Map<String, String> properties;
-    properties = new TreeMap<>();
+    final String curi = configuration.get(MetastoreConf.ConfVars.THRIFT_URIS.getVarname());
+    final String cwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
+    final String cextwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
+    final HiveCatalog catalog = new org.apache.iceberg.hive.HiveCatalog();
+    catalog.setConf(configuration);
+    Map<String, String> properties = new TreeMap<>();
     if (curi != null) {
       properties.put("uri", curi);
     }
@@ -86,7 +73,7 @@ public class HMSCatalogServer {
     if (cextwarehouse != null) {
       properties.put("external-warehouse", cextwarehouse);
     }
-    catalog.initialize(name, properties);
+    catalog.initialize("hive", properties);
     return catalog;
   }
 
@@ -109,8 +96,7 @@ public class HMSCatalogServer {
    * @return the server instance
    * @throws Exception if servlet initialization fails
    */
-
-  public static Server startServer(Configuration conf, HMSCatalog catalog) throws Exception {
+  public static Server startServer(Configuration conf, HiveCatalog catalog) throws Exception {
     int port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT);
     if (port < 0) {
       return null;
