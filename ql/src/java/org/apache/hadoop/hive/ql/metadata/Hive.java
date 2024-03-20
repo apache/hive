@@ -5290,7 +5290,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return srcHdfsEncryptionShim != null
           && destHdfsEncryptionShim != null
-          && (srcHdfsEncryptionShim.isPathEncrypted(srcf) || destHdfsEncryptionShim.isPathEncrypted(destf))
+          && (srcFs.exists(srcf) && srcHdfsEncryptionShim.isPathEncrypted(srcf)
+          || destFs.exists(destf) && destHdfsEncryptionShim.isPathEncrypted(destf))
           && !srcHdfsEncryptionShim.arePathsOnSameEncryptionZone(srcf, destf, destHdfsEncryptionShim);
     } catch (IOException e) {
       throw new HiveException(e);
