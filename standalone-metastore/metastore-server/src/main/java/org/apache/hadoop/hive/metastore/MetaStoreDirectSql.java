@@ -739,8 +739,7 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
-        return getPartitionsByNames(catName, dbName, tblName, null,
-                partNames, Collections.emptyList(), false, args);
+        return getPartitionsByNames(catName, dbName, tblName, partNames, false, args);
       }
     });
   }
@@ -764,8 +763,7 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsFromPartitionIds(catName, dbName,
-            tableName, null, input, Collections.emptyList(), isAcidTable, args);
+        return getPartitionsByPartitionIds(catName, dbName, tableName, input, isAcidTable, args);
       }
     });
   }
@@ -919,7 +917,7 @@ class MetaStoreDirectSql {
     List<Partition> result = Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsFromPartitionIds(catName, dbName, tblName, null, input, Collections.emptyList(), false, args);
+        return getPartitionsByPartitionIds(catName, dbName, tblName, input, false, args);
       }
     });
     return result;
@@ -1021,8 +1019,8 @@ class MetaStoreDirectSql {
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<Partition> getPartitionsByNames(String catName, String dbName,
-      String tblName, Boolean isView, List<String> partNameList, List<String> projectionFields,
-      boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
+      String tblName, List<String> partNameList, boolean isAcidTable, GetPartitionsArgs args)
+      throws MetaException {
     // Get most of the fields for the partNames provided.
     // Assume db and table names are the same for all partition, as provided in arguments.
     String quotedPartNames = partNameList.stream()
@@ -1045,17 +1043,12 @@ class MetaStoreDirectSql {
         + ".\"CTLG_NAME\" = ? order by \"PART_NAME\" asc";
 
     Object[] params = new Object[]{tblName, dbName, catName};
-    // Keep order by name, consistent with JDO.
-    ArrayList<Partition> orderedResult = new ArrayList<Partition>(partNameList.size());
-    populatePartitionsByQuery(catName, dbName, tblName, isView, queryText, params, projectionFields,
-        isAcidTable, args, orderedResult);
-    return orderedResult;
+    return getPartitionsByQuery(catName, dbName, tblName, queryText, params, isAcidTable, args);
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
-  private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
-      Boolean isView, List<Long> partIdList, List<String> projectionFields,
-      boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
+  private List<Partition> getPartitionsByPartitionIds(String catName, String dbName, String tblName,
+      List<Long> partIdList, boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
     // Get most of the fields for the IDs provided.
     // Assume db and table names are the same for all partition, as provided in arguments.
     String partIds = getIdListForIn(partIdList);
@@ -1070,16 +1063,12 @@ class MetaStoreDirectSql {
             + ".\"SD_ID\" " + "  left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = "
             + SERDES + ".\"SERDE_ID\" " + "where \"PART_ID\" in (" + partIds
             + ") order by \"PART_NAME\" asc";
-    // Keep order by name, consistent with JDO.
-    ArrayList<Partition> orderedResult = new ArrayList<Partition>(partIdList.size());
-    populatePartitionsByQuery(catName, dbName, tblName, isView, queryText, null, projectionFields,
-        isAcidTable, args, orderedResult);
-    return orderedResult;
+    return getPartitionsByQuery(catName, dbName, tblName, queryText, null, isAcidTable, args);
   }
 
-  private void populatePartitionsByQuery(String catName, String dbName, String tblName,
-      Boolean isView, String queryText, Object[] params, List<String> projectionFields,
-      boolean isAcidTable, GetPartitionsArgs args, List<Partition> result) throws MetaException {
+  private List<Partition> getPartitionsByQuery(String catName, String dbName, String tblName,
+      String queryText, Object[] params, boolean isAcidTable, GetPartitionsArgs args)
+      throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
 
     // Read all the fields and create partitions, SDs and serdes.
@@ -1087,6 +1076,8 @@ class MetaStoreDirectSql {
     TreeMap<Long, StorageDescriptor> sds = new TreeMap<Long, StorageDescriptor>();
     TreeMap<Long, SerDeInfo> serdes = new TreeMap<Long, SerDeInfo>();
     TreeMap<Long, List<FieldSchema>> colss = new TreeMap<Long, List<FieldSchema>>();
+    // Keep order by name, consistent with JDO.
+    ArrayList<Partition> orderedResult;
 
     // Prepare StringBuilder-s for "in (...)" lists to use in one-to-many queries.
     StringBuilder sdSb = new StringBuilder(), serdeSb = new StringBuilder();
@@ -1101,6 +1092,7 @@ class MetaStoreDirectSql {
       List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), params, queryText);
       long queryTime = doTrace ? System.nanoTime() : 0;
       Deadline.checkTimeout();
+      orderedResult = new ArrayList<>(sqlResult.size());
 
       for (Object[] fields : sqlResult) {
         // Here comes the ugly part...
@@ -1110,7 +1102,7 @@ class MetaStoreDirectSql {
         Long serdeId = MetastoreDirectSqlUtils.extractSqlLong(fields[3]);
 
         Partition part = new Partition();
-        result.add(part);
+        orderedResult.add(part);
         // Set the collection fields; some code might not check presence before accessing them.
         part.setParameters(new HashMap<>());
         part.setValues(new ArrayList<String>());
@@ -1204,7 +1196,7 @@ class MetaStoreDirectSql {
     // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
     if (sdSb.length() == 0) {
       assert serdeSb.length() == 0 && colsSb.length() == 0;
-      return; // No SDs, probably a view.
+      return orderedResult; // No SDs, probably a view.
     }
 
     String sdIds = trimCommaList(sdSb);
@@ -1249,6 +1241,8 @@ class MetaStoreDirectSql {
     if (!isAcidTable) {
       MetastoreDirectSqlUtils.setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
     }
+
+    return orderedResult;
   }
 
   public int getNumPartitionsViaSqlFilter(SqlFilterForPushdown filter) throws MetaException {
