@@ -80,6 +80,7 @@ alterTableStatementSuffix
     | alterStatementSuffixCreateTag
     | alterStatementSuffixDropTag
     | alterStatementSuffixConvert
+    | alterStatementSuffixRenameBranch
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -503,6 +504,13 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS KW_RETAIN $numToRetain)
     | KW_EXECUTE KW_DELETE KW_ORPHAN_FILES (KW_OLDER KW_THAN LPAREN (timestamp=StringLiteral) RPAREN)?
     -> ^(TOK_ALTERTABLE_EXECUTE KW_ORPHAN_FILES $timestamp?)
+    ;
+
+alterStatementSuffixRenameBranch
+@init { gParent.pushMsg("alter table rename branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_RENAME KW_BRANCH sourceBranch=identifier KW_TO targetBranch=identifier
+    -> ^(TOK_ALTERTABLE_RENAME_BRANCH $sourceBranch $targetBranch)
     ;
 
 alterStatementSuffixDropBranch
