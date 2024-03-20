@@ -27,6 +27,15 @@ merge into target_ice as t using source src ON t.a = src.a
 when not matched then insert values (src.a, src.b, src.c);
 
 merge into target_ice as t using source src ON t.a = src.a
-when not matched then insert values (src.a, src.b, src.c);
+when not matched and src.a <= 5 then insert values (src.a, src.b, src.c);
 
 select * from target_ice;
+
+-- insert clause with a column list
+merge into target_ice as t using source src ON t.a = src.a
+when not matched then insert (a, c) values (src.a, src.c);
+
+select * from target_ice;
+
+
+
