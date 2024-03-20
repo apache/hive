@@ -28,6 +28,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
+import org.apache.calcite.rex.RexDigestIncludeType;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -35,6 +36,7 @@ import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSlot;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.JsonBuilder;
 
@@ -118,9 +120,15 @@ public class HiveRelJson extends RelJson {
         map.put("expr", toJson(fieldAccess.getReferenceExpr()));
         return map;
       case LITERAL:
-        final RexLiteral literal = (RexLiteral) node;
-        final Object value = literal.getValue3();
         map = jsonBuilder.map();
+        final RexLiteral literal = (RexLiteral) node;
+        final Object value;
+        if (SqlTypeFamily.TIMESTAMP == literal.getTypeName().getFamily()) {
+          // Had to do this to prevent millis or nanos from getting trimmed
+          value = literal.computeDigest(RexDigestIncludeType.NO_TYPE);
+        } else {
+          value = literal.getValue3();
+        }
         map.put("literal", RelEnumTypes.fromEnum(value));
         map.put("type", toJson(node.getType()));
         return map;
