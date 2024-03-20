@@ -20,15 +20,14 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
@@ -64,10 +63,14 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
     } else {
       Table table = IcebergTableUtil.getTable(context.getConf(), context.getTable());
       PartitionData partitionData = DataFiles.data(table.spec(), partSpec);
-      context.getConf().set(Context.compactPartition, partSpec);
-      compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) select * from %1$s where %3$s",
-          compactTableName, partDataToSQL(partitionData, partSpec, ","),
-          partDataToSQL(partitionData, partSpec, " and "));
+      context.getConf().set(AlterTableCompactOperation.compactPartition, partSpec);
+      try {
+        compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) select * from %1$s where %3$s",
+            compactTableName, partDataToSQL(partitionData, partSpec, ","),
+            partDataToSQL(partitionData, partSpec, " and "));
+      } catch (MetaException e) {
+        throw new HiveException("Failed constructing compaction query with partition spec", e);
+      }
       rewritePolicy = RewritePolicy.SINGLE_PARTITION;
     }
 
@@ -87,12 +90,9 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
     return true;
   }
 
-  private String partDataToSQL(PartitionData partitionData, String partSpec, String delimiter) {
+  private String partDataToSQL(PartitionData partitionData, String partSpec, String delimiter) throws MetaException {
+    Map<String, String> partSpecMap = Warehouse.makeSpecFromName(partSpec);
     StringBuilder sb = new StringBuilder();
-    List<String> values = Arrays
-        .stream(partSpec.split("/"))
-        .map(x -> x.split("=")[1])
-        .collect(Collectors.toList());
 
     for (int i = 0; i < partitionData.size(); ++i) {
       if (i > 0) {
@@ -111,7 +111,7 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       sb.append(partitionData.getSchema().getFields().get(i).name())
           .append("=")
           .append(quoteOpt)
-          .append(values.get(i))
+          .append(partSpecMap.get(partitionData.getPartitionType().fields().get(i).name()))
            .append(quoteOpt);
     }
 

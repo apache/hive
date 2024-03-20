@@ -8835,8 +8835,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ExprNodeDesc> expressions = new ArrayList<>(outColumnCnt);
 
     AtomicBoolean convert = new AtomicBoolean(false);
-    if (inColumnCnt + staticPartitionColumnCnt != outColumnCnt &&
-        !(table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned())) {
+    if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+      if (inColumnCnt != outColumnCnt || staticPartitionColumnCnt > inColumnCnt){
+        String reason = "Always unpartitioned table " + dest + " has " + outColumnCnt
+            + " columns, but query has " + inColumnCnt + " columns.";
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(),
+            qb.getParseInfo().getDestForClause(dest), reason));
+      }
+    }
+    else if (inColumnCnt + staticPartitionColumnCnt != outColumnCnt) {
       String reason = "Table " + dest + " has " + outColumnCnt
               + " columns, but query has " + (inColumnCnt + staticPartitionColumnCnt) + " columns.";
       throw new SemanticException(ASTErrorUtils.getMsg(

@@ -117,7 +117,6 @@ public class Context {
   protected String optimizedSql;
   protected String calcitePlan;
   protected String cmd = "";
-  public static String compactPartition = "hive.iceberg.compaction.partition";
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
   // referenced by the query. This is used to rewrite the view AST

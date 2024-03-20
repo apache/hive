@@ -160,18 +160,25 @@ public final class PartitionUtils {
     }
   }
 
-  public static Partition getPartitionFromNonNativeTable(Table table, Map<String, String> partitionSpec) throws SemanticException {
+  public static List<Partition> getPartitions(Hive db, Table table, Map<String, String> partitionSpec) 
+      throws SemanticException {
+    List<Partition> partitions = new ArrayList<>();
     if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
       table.getStorageHandler().validatePartSpec(table, partitionSpec);
       try {
         String partName = Warehouse.makePartName(partitionSpec, false);
-        return new DummyPartition(table, partName, partitionSpec);
+        partitions.add(new DummyPartition(table, partName, partitionSpec));
+        return partitions;
       } catch (MetaException e) {
         throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
       }
     }
     else {
-      throw new SemanticException("Unable to construct a dummy partition for a native table.");
+      try {
+        return db.getPartitions(table, partitionSpec);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
     }
   }
 }

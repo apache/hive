@@ -43,9 +43,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
+import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactOperation;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -482,10 +482,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
           .orElse(RewritePolicy.DEFAULT.name()));
 
-      String partitionSpec = outputTable.jobContexts.stream()
+      List<String> partitionSpec = Arrays.asList(outputTable.jobContexts.stream()
           .findAny()
-          .map(x -> x.getJobConf().get(Context.compactPartition))
-          .orElse(StringUtils.EMPTY);
+          .map(x -> x.getJobConf().get(AlterTableCompactOperation.compactPartition))
+          .orElse(StringUtils.EMPTY));
 
       commitOverwrite(table, branchName, startTime, filesForCommit, rewritePolicy, partitionSpec);
     }
@@ -575,7 +575,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param rewritePolicy The rewrite policy to use for the insert overwrite commit
    */
   private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results,
-      RewritePolicy rewritePolicy, String partitionSpec) {
+      RewritePolicy rewritePolicy, List<String> partitionSpec) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
       Transaction transaction = table.newTransaction();
@@ -585,7 +585,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         delete.commit();
       } else if (rewritePolicy == RewritePolicy.SINGLE_PARTITION) {
         try {
-          HiveIcebergMetaHook.truncatePartitionBySpec(table, Arrays.asList(partitionSpec), transaction.newDelete());
+          HiveIcebergMetaHook.truncatePartitionBySpec(table, partitionSpec, transaction.newDelete());
         } catch (Exception e) {
           throw new RuntimeException("Failed truncating partitions", e);
         }

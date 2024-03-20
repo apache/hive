@@ -641,7 +641,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     this.catalogProperties = getCatalogProperties(table);
     this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
     truncatePartitionBySpec(icebergTable, partNames, icebergTable.newDelete());
-    context.putToProperties("truncateSkipDataDeletion", "true");
+    context.putToProperties(HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION, "true");
   }
 
   public static void truncatePartitionBySpec(Table table, List<String> partNames, DeleteFiles delete)

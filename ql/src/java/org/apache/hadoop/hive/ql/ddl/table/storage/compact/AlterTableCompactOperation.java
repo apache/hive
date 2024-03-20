@@ -53,6 +53,8 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftTyp
  */
 public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
 
+  public static String compactPartition = "hive.iceberg.compaction.partition";
+
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
     super(context, desc);
   }
@@ -134,12 +136,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       }
     } else {
       Map<String, String> partitionSpec = desc.getPartitionSpec();
-      if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
-        Partition partition = PartitionUtils.getPartitionFromNonNativeTable(table, partitionSpec);
-        partitions.add(partition);
-      } else {
-        partitions = context.getDb().getPartitions(table, partitionSpec);
-      }
+      partitions.addAll(PartitionUtils.getPartitions(context.getDb(), table, partitionSpec));
       if (partitions.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       } else if (partitions.isEmpty()) {
