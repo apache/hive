@@ -1784,7 +1784,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       try {
         perfLogger.perfLogBegin(this.getClass().getName(), "fromJsonString");
         RelPlanParser parser =
-            new RelPlanParser(getQB(), relOptSchema, cluster, conf, db, tabNameToTabObject,
+            new RelPlanParser(ctx, getQB(), relOptSchema, cluster, conf, db, tabNameToTabObject,
                 partitionCache, colStatsCache, noColsMissingStats);
         RelNode fromJson = parser.parse(calcitePlanJson);
         perfLogger.perfLogEnd(this.getClass().getName(), "fromJsonString");
