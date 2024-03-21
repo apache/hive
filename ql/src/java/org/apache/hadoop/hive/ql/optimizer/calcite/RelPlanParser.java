@@ -36,9 +36,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
@@ -60,6 +63,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -81,6 +85,7 @@ public class RelPlanParser {
       new TypeReference<LinkedHashMap<String, Object>>() {
       };
 
+  private final Context ctx;
   private final RelOptCluster cluster;
   private final QB qb;
   private final RelOptSchema schema;
@@ -94,9 +99,10 @@ public class RelPlanParser {
   private final Map<String, RelNode> relMap = new LinkedHashMap<>();
   private RelNode lastRel;
 
-  public RelPlanParser(QB qb, RelOptSchema schema, RelOptCluster cluster, HiveConf hiveConf, Hive db,
+  public RelPlanParser(Context ctx, QB qb, RelOptSchema schema, RelOptCluster cluster, HiveConf hiveConf, Hive db,
                        ParsedQueryTables tabNameToTabObject, Map<String, PrunedPartitionList> partitionCache,
                        Map<String, ColumnStatsList> colStatsCache, AtomicInteger noColsMissingStats) {
+    this.ctx = ctx;
     this.qb = qb;
     this.schema = schema;
     this.cluster = cluster;
@@ -159,14 +165,9 @@ public class RelPlanParser {
         List<String> qualifiedName = (List<String>) jsonRel.get("table");
         RelDataType rowType = relJson.toType(cluster.getTypeFactory(), jsonRel.get("rowType"));
         String tableAlias = (String) jsonRel.get("table:alias");
-        if (tableAlias == null && qualifiedName != null && qualifiedName.size() <= 2) {
-          if (qualifiedName.size() == 1) {
-            tableAlias = qualifiedName.get(0);
-          }
-          if (qualifiedName.size() == 2) {
-            tableAlias = qualifiedName.get(1);
-          }
-        }
+        String dbName = qualifiedName.get(0);
+        String tableName = qualifiedName.get(1);
+
         List<ColumnInfo> nonPartitionColumns = new ArrayList<>();
         List<ColumnInfo> partitionColumns = new ArrayList<>();
         computeColumnInfos(rowType, tableAlias, partitionColumns, nonPartitionColumns);
@@ -178,22 +179,7 @@ public class RelPlanParser {
           }
         }
 
-        Table tbl = qb.getTableForAlias(tableAlias);
-        if (tbl == null && qualifiedName != null && qualifiedName.size() == 2) {
-          String dbName = qualifiedName.get(0);
-          String tableName = qualifiedName.get(1);
-          tbl = tabNameToTabObject.getParsedTable(TableName.getDbTable(dbName, tableName));
-          if (tbl == null) {
-            try {
-              tbl = db.getTable(
-                  dbName, tableName, null,
-                  true, true, false
-              );
-            } catch (HiveException e) {
-              throw new RuntimeException(e);
-            }
-          }
-        }
+        Table tbl = getTable(tableAlias, dbName, tableName);
 
         return new RelOptHiveTable(
             schema,
@@ -211,6 +197,40 @@ public class RelPlanParser {
             colStatsCache,
             noColsMissingStats
         );
+      }
+
+      private Table getTable(String alias, String dbName, String tableName) {
+        String fullTableName = TableName.getDbTable(dbName, tableName);
+        // Look in QB
+        Table result = qb.getTableForAlias(alias);
+
+        // Look in ctx if it's a materialized table
+        if (result == null && jsonRel.containsKey("materializedTable") && (boolean) jsonRel.get("materializedTable")) {
+          result = getTableUsing(ctx::getMaterializedTable, alias, tableName, fullTableName);
+        }
+
+        // Look in tabNameToTabObject
+        if (result == null) {
+          result = getTableUsing(tabNameToTabObject::getParsedTable, tableName, fullTableName);
+        }
+
+        // Finally try HMS
+        if (result == null) {
+          try {
+            result = db.getTable(
+                dbName, tableName, null,
+                true, true, false
+            );
+          } catch (HiveException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        return result;
+      }
+
+      private Table getTableUsing(Function<String, Table> function, String ... names) {
+        return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
       }
 
       private void computeColumnInfos(RelDataType rowType, String tableAlias,
