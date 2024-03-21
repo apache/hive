@@ -1558,7 +1558,7 @@ class MetaStoreDirectSql {
         List<String> partVals = new ArrayList<>();
         for (FieldSchema col : partitionKeys) {
           String value = partKeyToVal.get(col.getName());
-          if (colType == FilterType.Date) {
+          if (partCol.getName().equals(col.getName()) && colType == FilterType.Date) {
             // Some engines like Pig will record both date and time values, in which case we need
             // match PART_NAME by like clause.
             value += "%";
