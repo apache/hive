@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import static org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg.sargToKryo;
-import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -97,7 +96,6 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -1841,8 +1839,8 @@ public class TestInputOutputFormat {
   @Test
   public void testInOutFormat() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(serdeConstants.LIST_COLUMNS, "x,y");
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int:int");
+    properties.setProperty("columns", "x,y");
+    properties.setProperty("columns.types", "int:int");
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -1996,8 +1994,8 @@ public class TestInputOutputFormat {
         serde.serialize(new NestedRow(7,8,9), inspector));
     writer.close(Reporter.NULL);
     serde = new OrcSerde();
-    properties.setProperty(serdeConstants.LIST_COLUMNS, "z,r");
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int:struct<x:int,y:int>");
+    properties.setProperty("columns", "z,r");
+    properties.setProperty("columns.types", "int:struct<x:int,y:int>");
     serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
@@ -2005,8 +2003,8 @@ public class TestInputOutputFormat {
     InputSplit[] splits = in.getSplits(conf, 1);
     assertEquals(1, splits.length);
     ColumnProjectionUtils.appendReadColumns(conf, Collections.singletonList(1));
-    conf.set(serdeConstants.LIST_COLUMNS, "z,r");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "int:struct<x:int,y:int>");
+    conf.set("columns", "z,r");
+    conf.set("columns.types", "int:struct<x:int,y:int>");
     org.apache.hadoop.mapred.RecordReader reader =
         in.getRecordReader(splits[0], conf, Reporter.NULL);
     Object key = reader.createKey();
@@ -2035,8 +2033,8 @@ public class TestInputOutputFormat {
   @Test
   public void testEmptyFile() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(serdeConstants.LIST_COLUMNS, "x,y");
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int:int");
+    properties.setProperty("columns", "x,y");
+    properties.setProperty("columns.types", "int:int");
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
     org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
@@ -2100,8 +2098,8 @@ public class TestInputOutputFormat {
   @Test
   public void testDefaultTypes() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(serdeConstants.LIST_COLUMNS, "str,str2");
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string:string");
+    properties.setProperty("columns", "str,str2");
+    properties.setProperty("columns.types", "string:string");
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -2130,8 +2128,8 @@ public class TestInputOutputFormat {
     assertEquals(1, splits.length);
 
     // read the whole file
-    conf.set(serdeConstants.LIST_COLUMNS, StringRow.getColumnNamesProperty());
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, StringRow.getColumnTypesProperty());
+    conf.set("columns", StringRow.getColumnNamesProperty());
+    conf.set("columns.types", StringRow.getColumnTypesProperty());
     org.apache.hadoop.mapred.RecordReader reader =
         in.getRecordReader(splits[0], conf, Reporter.NULL);
     Object key = reader.createKey();
@@ -2223,16 +2221,16 @@ public class TestInputOutputFormat {
     }
     conf.set("hive.io.file.readcolumn.ids", columnIds.toString());
     conf.set("partition_columns", "p");
-    conf.set(serdeConstants.LIST_COLUMNS, columnNames.toString());
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypes.toString());
+    conf.set("columns", columnNames.toString());
+    conf.set("columns.types", columnTypes.toString());
     MockFileSystem fs = (MockFileSystem) warehouseDir.getFileSystem(conf);
     fs.clear();
 
     Properties tblProps = new Properties();
     tblProps.put("name", tableName);
-    tblProps.put(SERIALIZATION_LIB, OrcSerde.class.getName());
-    tblProps.put(serdeConstants.LIST_COLUMNS, columnNames.toString());
-    tblProps.put(serdeConstants.LIST_COLUMN_TYPES, columnTypes.toString());
+    tblProps.put("serialization.lib", OrcSerde.class.getName());
+    tblProps.put("columns", columnNames.toString());
+    tblProps.put("columns.types", columnTypes.toString());
     TableDesc tbl = new TableDesc(OrcInputFormat.class, OrcOutputFormat.class,
         tblProps);
 
@@ -2673,8 +2671,8 @@ public class TestInputOutputFormat {
   @Test
   public void testSplitElimination() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(serdeConstants.LIST_COLUMNS, "z,r");
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int:struct<x:int,y:int>");
+    properties.setProperty("columns", "z,r");
+    properties.setProperty("columns.types", "int:struct<x:int,y:int>");
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -2737,8 +2735,8 @@ public class TestInputOutputFormat {
             .build();
     conf.set("sarg.pushdown", sargToKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z");
-    properties.setProperty(serdeConstants.LIST_COLUMNS, "z");
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string");
+    properties.setProperty("columns", "z");
+    properties.setProperty("columns.types", "string");
     serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
@@ -3775,8 +3773,8 @@ public class TestInputOutputFormat {
   @Test
   public void testRowNumberUniquenessInDifferentSplits() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(serdeConstants.LIST_COLUMNS, "x,y");
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int:int");
+    properties.setProperty("columns", "x,y");
+    properties.setProperty("columns.types", "int:int");
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)

@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -76,8 +75,8 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
     );
 
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "intCol");
-    conf.set(serdeConstants.LIST_COLUMNS, "intCol");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "int");
+    conf.set("columns", "intCol");
+    conf.set("columns.types", "int");
 
     // create Parquet file with specific data
     Path testPath = writeDirect("RowGroupFilterTakeEffect", fileSchema,

@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -116,7 +117,7 @@ public class VectorizedBatchUtil {
     typeName = typeName.toLowerCase();
 
     // Allow undecorated CHAR and VARCHAR to support scratch column type names.
-    if (typeName.equals("char") || typeName.equals("varchar")) {
+    if (typeName.equals(serdeConstants.CHAR_TYPE_NAME) || typeName.equals(serdeConstants.VARCHAR_TYPE_NAME)) {
       return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     }
 

@@ -692,8 +692,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     // Create 3 original files with 3 rows each
     Properties properties = new Properties();
-    properties.setProperty(serdeConstants.LIST_COLUMNS, DummyOriginalRow.getColumnNamesProperty());
-    properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, DummyOriginalRow.getColumnTypesProperty());
+    properties.setProperty("columns", DummyOriginalRow.getColumnNamesProperty());
+    properties.setProperty("columns.types", DummyOriginalRow.getColumnTypesProperty());
 
     OrcFile.WriterOptions writerOptions = OrcFile.writerOptions(properties, conf);
     writerOptions.inspector(originalInspector);

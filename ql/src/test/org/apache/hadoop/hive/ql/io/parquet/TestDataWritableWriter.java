@@ -19,7 +19,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriter;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -190,8 +189,8 @@ public class TestDataWritableWriter {
 
   private ParquetHiveRecord getParquetWritable(String columnNames, String columnTypes, ArrayWritable record) throws SerDeException {
     Properties recordProperties = new Properties();
-    recordProperties.setProperty(serdeConstants.LIST_COLUMNS, columnNames);
-    recordProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, columnTypes);
+    recordProperties.setProperty("columns", columnNames);
+    recordProperties.setProperty("columns.types", columnTypes);
 
     ParquetHiveSerDe serDe = new ParquetHiveSerDe();
     serDe.initialize(conf, recordProperties, null);

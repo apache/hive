@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -106,8 +105,8 @@ public class TestOrcSplitElimination {
   public void openFileSystem() throws Exception {
     conf = new JobConf();
     // all columns
-    conf.set(serdeConstants.LIST_COLUMNS, "userid,string1,subtype,decimal1,ts");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "bigint,string,double,decimal,timestamp");
+    conf.set("columns", "userid,string1,subtype,decimal1,ts");
+    conf.set("columns.types", "bigint,string,double,decimal,timestamp");
     // needed columns
     conf.set(ColumnProjectionUtils.READ_ALL_COLUMNS, "false");
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2");

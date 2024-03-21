@@ -144,8 +144,8 @@ public class TestParquetSerDe {
     final Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(serdeConstants.LIST_COLUMNS, "abyte,ashort,aint,along,adouble,astring,abinary,amap,alist");
-    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+    tbl.setProperty("columns", "abyte,ashort,aint,along,adouble,astring,abinary,amap,alist");
+    tbl.setProperty("columns.types",
       "tinyint:smallint:int:bigint:double:string:binary:map<string,int>:array<string>");
     tbl.setProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
     return tbl;

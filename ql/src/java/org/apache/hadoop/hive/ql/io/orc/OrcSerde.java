@@ -97,7 +97,7 @@ public class OrcSerde extends AbstractSerDe implements SchemaInference {
   }
 
   /**
-   * NOTE: if "columns.types" is missing, all columns will be of String type.
+   * NOTE: if {@link serdeConstants#LIST_COLUMN_TYPES} is missing, all columns will be of String type.
    */
   @Override
   protected List<TypeInfo> parseColumnTypes() {
