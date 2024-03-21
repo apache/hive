@@ -382,10 +382,10 @@ public class VectorRandomRowSource {
   };
 
   private static String[] possibleHiveComplexTypeNames = {
-          "array",
-          "struct",
-          "uniontype",
-          "map"
+      "array",
+      "struct",
+      "uniontype",
+      "map"
   };
 
   public static String getRandomTypeName(Random random, SupportedTypes supportedTypes,

@@ -3329,7 +3329,7 @@ import com.google.common.annotations.VisibleForTesting;
               DataTypePhysicalVariation.NONE;
       return createVectorExpression(CastStringToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
           returnType, dataTypePhysicalVariation);
-    } else if (inputType.equals("timestamp")) {
+    } else if (inputType.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       return createVectorExpression(CastTimestampToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION,
           returnType, DataTypePhysicalVariation.NONE);
     }
