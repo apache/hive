@@ -53,6 +53,7 @@ import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexLiteral;
@@ -331,6 +332,12 @@ public class RelPlanParser {
       }
 
       public Object get(String tag) {
+        if ("getJoinInputsForHiveMultiJoin".equals(tag)) {
+          return getJoinInputsForHiveMultiJoin();
+        }
+        if ("getJoinTypesForHiveMultiJoin".equals(tag)) {
+          return getJoinTypesForHiveMultiJoin();
+        }
         return jsonRel.get(tag);
       }
 
@@ -413,6 +420,34 @@ public class RelPlanParser {
         }
         return builder.build();
       }
+
+      public List<Pair<Integer,Integer>> getJoinInputsForHiveMultiJoin() {
+        List<Pair<Integer,Integer>> result = new ArrayList<>();
+        List<String> joinsDescription = getStringList("joinsDescription");
+        if (joinsDescription == null || joinsDescription.isEmpty()) {
+          return result;
+        }
+
+        return joinsDescription.stream()
+            .map(s -> s.split(" : ", 2)[0])
+            .map(s -> s.split(" - ", 2))
+            .map(s -> Pair.of(Integer.valueOf(s[0]), Integer.valueOf(s[1])))
+            .collect(Collectors.toList());
+      }
+
+      public List<JoinRelType> getJoinTypesForHiveMultiJoin() {
+        List<JoinRelType> result = new ArrayList<>();
+        List<String> joinsDescription = getStringList("joinsDescription");
+        if (joinsDescription == null || joinsDescription.isEmpty()) {
+          return result;
+        }
+
+        return joinsDescription.stream()
+            .map(s -> s.split(" : ", 2)[1])
+            .map(s -> Util.enumVal(JoinRelType.class, s))
+            .collect(Collectors.toList());
+      }
+
     };
     try {
       final HiveRelNode rel = (HiveRelNode) constructor.newInstance(input);

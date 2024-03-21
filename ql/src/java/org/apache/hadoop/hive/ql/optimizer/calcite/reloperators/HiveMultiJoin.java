@@ -24,12 +24,14 @@ import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.AbstractRelNode;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -42,7 +44,7 @@ import com.google.common.collect.Lists;
 /**
  * A HiveMultiJoin represents a succession of binary joins.
  */
-public final class HiveMultiJoin extends AbstractRelNode {
+public final class HiveMultiJoin extends AbstractRelNode implements HiveRelNode{
 
   private final List<RelNode> inputs;
   private final RexNode condition;
@@ -113,6 +115,18 @@ public final class HiveMultiJoin extends AbstractRelNode {
     this(cluster, Lists.newArrayList(inputs), condition, rowType, joinInputs, joinTypes, filters, null);
   }
 
+  public HiveMultiJoin(RelInput input) {
+    this(
+        input.getCluster(),
+        input.getInputs(),
+        input.getExpression("condition"),
+        input.getRowType("rowType"),
+        (List<Pair<Integer, Integer>>) input.get("getJoinInputsForHiveMultiJoin"),
+        (List<JoinRelType>) input.get("getJoinTypesForHiveMultiJoin"),
+        input.getExpressionList("filters")
+    );
+  }
+
   @Override
   public void replaceInput(int ordinalInParent, RelNode p) {
     inputs.set(ordinalInParent, p);
@@ -146,7 +160,9 @@ public final class HiveMultiJoin extends AbstractRelNode {
       pw.input("input#" + ord.i, ord.e);
     }
     return pw.item("condition", condition)
-        .item("joinsDescription", joinsString);
+        .item("joinsDescription", joinsString)
+        .itemIf("filters", filters, pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
+        .itemIf("rowType", rowType, pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES);
   }
 
   @Override
