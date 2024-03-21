@@ -102,7 +102,7 @@ POSTHOOK: Output: default@mat1
 CBO PLAN:
 HiveProject($f0=[$3], $f1=[CASE(IS NULL($1), $4, IS NULL($4), $1, +($4, $1))])
   HiveFilter(condition=[OR($2, IS NULL($2))])
-    HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[right], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[right], algorithm=[BucketJoin], cost=[not available])
       HiveProject(a=[$0], _c1=[$1], $f2=[true])
         HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
       HiveProject(a=[$0], $f1=[$1])
