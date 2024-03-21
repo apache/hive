@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -169,9 +170,11 @@ public class RelPlanParser {
         String dbName = qualifiedName.get(0);
         String tableName = qualifiedName.get(1);
 
-        List<ColumnInfo> nonPartitionColumns = new ArrayList<>();
-        List<ColumnInfo> partitionColumns = new ArrayList<>();
-        computeColumnInfos(rowType, tableAlias, partitionColumns, nonPartitionColumns);
+        Map<Boolean, List<ColumnInfo>> columnInfo = computeColumnInfos(rowType, tableAlias);
+        List<ColumnInfo> nonPartitionColumns = columnInfo.getOrDefault(false, new ArrayList<>());
+        List<ColumnInfo> partitionColumns = columnInfo.getOrDefault(true, new ArrayList<>());
+
+//        computeColumnInfos(rowType, tableAlias, partitionColumns, nonPartitionColumns);
 
         List<VirtualColumn> virtualColumns = new ArrayList<>();
         if (jsonRel.get("virtualColumns") != null) {
@@ -234,38 +237,31 @@ public class RelPlanParser {
         return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
       }
 
-      private void computeColumnInfos(RelDataType rowType, String tableAlias,
-                                      List<ColumnInfo> partitionColumns, List<ColumnInfo> nonPartitionColumns) {
-        if (!jsonRel.containsKey("partitionColumns")) {
-          nonPartitionColumns.addAll(
-              rowType.getFieldList().stream()
-                  .map(f ->
-                      new ColumnInfo(
-                          f.getName(),
-                          TypeConverter.convertPrimitiveType(f.getType()),
-                          f.getType().isNullable(), tableAlias, false)
-                  )
-                  .collect(Collectors.toList())
-          );
-          return;
+      private Map<Boolean, List<ColumnInfo>> computeColumnInfos(RelDataType rowType, String tableAlias) {
+        Set<String> partColsSet = new HashSet<>();
+        if (jsonRel.containsKey("partitionColumns")) {
+          partColsSet.addAll((List<String>) jsonRel.get("partitionColumns"));
         }
 
-        Set<String> partColsSet = new HashSet<>((List<String>) jsonRel.get("partitionColumns"));
-        for (RelDataTypeField field: rowType.getFieldList()) {
-          String fieldName = field.getName();
-          RelDataType type = field.getType();
-          if (partColsSet.contains(fieldName)) {
-            partitionColumns.add(
-                new ColumnInfo(fieldName,
-                    TypeConverter.convertPrimitiveType(type), type.isNullable(), tableAlias, true)
-            );
-          } else {
-            nonPartitionColumns.add(
-                new ColumnInfo(fieldName,
-                    TypeConverter.convertPrimitiveType(type), type.isNullable(), tableAlias, false)
-            );
-          }
-        }
+        Predicate<RelDataTypeField> notVirtualColumn = f -> !VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(f.getName());
+
+        // MAP of
+        // true -> list of partition columns
+        // false -> list of non partition columns
+        return rowType.getFieldList().stream()
+            .filter(notVirtualColumn)
+            .map(f -> {
+                  boolean isPartitionedColumn = partColsSet.contains(f.getName());
+                  return new ColumnInfo(
+                      f.getName(),
+                      TypeConverter.convert(f.getType()),
+                      f.getType().isNullable(),
+                      tableAlias,
+                      isPartitionedColumn
+                  );
+                }
+            )
+            .collect(Collectors.partitioningBy(ColumnInfo::getIsVirtualCol));
       }
 
       public RelNode getInput() {
