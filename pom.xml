@@ -165,7 +165,6 @@
     <jline.version>2.12</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.8.1</joda.version>
-    <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>3.0.3</kryo.version>
@@ -1120,6 +1119,7 @@
 	    <exclude>**/sit</exclude>
         <exclude>**/test/queries/**/*.sql</exclude>
         <exclude>**/PriorityBlockingDeque.java</exclude>
+        <exclude>**/ql/io/parquet/timestamp/datetime/**</exclude>
 	  </excludes>
 	</configuration>
       </plugin>

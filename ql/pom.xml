@@ -326,11 +326,6 @@
       <version>${groovy.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jodd</groupId>
-      <artifactId>jodd-core</artifactId>
-      <version>${jodd.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>${jackson.version}</version>
@@ -879,7 +874,6 @@
                   <include>javax.jdo:jdo-api</include>
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
-                  <include>org.jodd:jodd-core</include>
                   <include>com.tdunning:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
