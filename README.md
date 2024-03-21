@@ -90,6 +90,7 @@ Hadoop
 
 - Hadoop 1.x, 2.x
 - Hadoop 3.x (Hive 3.x)
+- Hadoop 3.3.6 (Hive 4.x)
 
 
 Upgrading from older versions of Hive
