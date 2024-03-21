@@ -45,7 +45,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
@@ -167,6 +170,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               LOG.info("CommitTask found no serialized table in config for table: {}.", output);
             }
           }, IOException.class);
+
+      cleanMergeTaskInputFiles(jobConf, tableExecutor, context);
     } finally {
       if (tableExecutor != null) {
         tableExecutor.shutdown();
@@ -739,6 +744,67 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       return (FilesForCommit) ois.readObject();
     } catch (ClassNotFoundException | IOException e) {
       throw new NotFoundException("Can not read or parse committed file: %s", fileForCommitLocation);
+    }
+  }
+
+  public List<FileStatus> getOutputFiles(List<JobContext> jobContexts) throws IOException {
+    List<OutputTable> outputs = collectOutputs(jobContexts);
+    ExecutorService fileExecutor = fileExecutor(jobContexts.get(0).getJobConf());
+    ExecutorService tableExecutor = tableExecutor(jobContexts.get(0).getJobConf(), outputs.size());
+    Collection<FileStatus> dataFiles = new ConcurrentLinkedQueue<>();
+    try {
+      Tasks.foreach(outputs.stream().flatMap(kv -> kv.jobContexts.stream()
+                      .map(jobContext -> new SimpleImmutableEntry<>(kv.table, jobContext))))
+              .suppressFailureWhenFinished()
+              .executeWith(tableExecutor)
+              .onFailure((output, exc) -> LOG.warn("Failed to retrieve merge input file for the table {}", output, exc))
+              .run(output -> {
+                JobContext jobContext = output.getValue();
+                JobConf jobConf = jobContext.getJobConf();
+                LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
+
+                Table table = output.getKey();
+                FileSystem fileSystem = new Path(table.location()).getFileSystem(jobConf);
+                String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+                // list jobLocation to get number of forCommit files
+                // we do this because map/reduce num in jobConf is unreliable
+                // and we have no access to vertex status info
+                int numTasks = listForCommits(jobConf, jobLocation).size();
+                FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
+                        table.io(), false);
+                for (DataFile dataFile : results.dataFiles()) {
+                  FileStatus fileStatus = fileSystem.getFileStatus(new Path(dataFile.path().toString()));
+                  dataFiles.add(fileStatus);
+                }
+              }, IOException.class);
+    } finally {
+      fileExecutor.shutdown();
+      if (tableExecutor != null) {
+        tableExecutor.shutdown();
+      }
+    }
+    return Lists.newArrayList(dataFiles);
+  }
+
+  private void cleanMergeTaskInputFiles(JobConf jobConf,
+                                        ExecutorService tableExecutor,
+                                        TaskAttemptContext context) throws IOException {
+    // Merge task has merged several files into one. Hence we need to remove the stale files.
+    // At this stage the file is written and task-committed, but the old files are still present.
+    if (jobConf.getInputFormat().getClass().isAssignableFrom(CombineHiveInputFormat.class)) {
+      MapWork mrwork = Utilities.getMapWork(jobConf);
+      if (mrwork != null) {
+        List<Path> mergedPaths = mrwork.getInputPaths();
+        if (mergedPaths != null) {
+          Tasks.foreach(mergedPaths)
+                  .retry(3)
+                  .executeWith(tableExecutor)
+                  .run(path -> {
+                    FileSystem fs = path.getFileSystem(context.getJobConf());
+                    fs.delete(path, true);
+                  }, IOException.class);
+        }
+      }
     }
   }
 }

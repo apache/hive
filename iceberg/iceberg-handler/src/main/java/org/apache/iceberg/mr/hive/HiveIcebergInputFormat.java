@@ -191,7 +191,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
 
   @Override
   public boolean shouldSkipCombine(Path path, Configuration conf) {
-    return true;
+    return false;
   }
 
   @Override

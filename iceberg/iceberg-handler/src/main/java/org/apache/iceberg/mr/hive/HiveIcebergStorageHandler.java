@@ -45,6 +45,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -107,6 +108,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -2028,5 +2030,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
+  }
+
+  @Override
+  public boolean supportsMergeFiles() {
+    return true;
+  }
+
+  @Override
+  public List<FileStatus> getMergeTaskInputFiles(Properties properties) throws IOException {
+    String tableName = properties.getProperty(Catalogs.NAME);
+    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
+    Configuration configuration = SessionState.getSessionConf();
+    List<JobContext> originalContextList = generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> jobContextList = originalContextList.stream()
+            .map(TezUtil::enrichContextWithVertexId)
+            .collect(Collectors.toList());
+    if (jobContextList.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return new HiveIcebergOutputCommitter().getOutputFiles(jobContextList);
+  }
+
+  @Override
+  public MergeTaskProperties getMergeTaskProperties(Properties properties) {
+    return new IcebergMergeTaskProperties(properties);
   }
 }
