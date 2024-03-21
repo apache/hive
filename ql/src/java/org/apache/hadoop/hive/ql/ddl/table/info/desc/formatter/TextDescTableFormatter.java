@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -284,7 +285,13 @@ class TextDescTableFormatter extends DescTableFormatter {
   private static MaterializationSnapshotFormatter createMaterializationSnapshotFormatter(
           MaterializationSnapshot snapshot) {
     if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
-      return qualifiedTableName -> Objects.toString(snapshot.getTableSnapshots().get(qualifiedTableName), "Unknown");
+      return qualifiedTableName -> {
+        SnapshotContext snapshotContext = snapshot.getTableSnapshots().get(qualifiedTableName);
+        if (snapshotContext == null) {
+          return "Unknown";
+        }
+        return String.format("SnapshotContext{snapshotId=%d}", snapshotContext.getSnapshotId());
+      };
     } else if (snapshot != null && snapshot.getValidTxnList() != null) {
       ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(snapshot.getValidTxnList());
       return qualifiedTableName -> {
