@@ -1652,6 +1652,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return Long.parseLong(textValue);
   }
 
+  @Override
   public Iterable<SnapshotContext> getSnapshots(
       org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
 
