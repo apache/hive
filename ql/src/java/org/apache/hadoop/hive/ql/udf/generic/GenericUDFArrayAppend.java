@@ -32,8 +32,7 @@ import java.util.stream.Collectors;
  * GenericUDFArrayAppend.
  */
 @Description(name = "array_append", value = "_FUNC_(array, element) - Returns an array appended by element.",
-    extended = "Example:\n" + "  > SELECT _FUNC_(array(1,3,4), 2) FROM src;\n"
-    + "  [1,3,4,2]")
+    extended = "Example:\n" + "  > SELECT _FUNC_(array(1,3,4), 2) FROM src;\n" + "  [1,3,4,2]")
 public class GenericUDFArrayAppend extends AbstractGenericUDFArrayBase {
   private static final String FUNC_NAME = "ARRAY_APPEND";
   private static final int ELEMENT_IDX = 1;
@@ -45,7 +44,7 @@ public class GenericUDFArrayAppend extends AbstractGenericUDFArrayBase {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     ObjectInspector defaultOI = super.initialize(arguments);
-    checkValueAndListElementTypes(arrayElementOI, FUNC_NAME, arguments[ELEMENT_IDX],ELEMENT_IDX);
+    checkValueAndListElementTypes(arrayElementOI, FUNC_NAME, arguments[ELEMENT_IDX], ELEMENT_IDX);
     return defaultOI;
   }
 

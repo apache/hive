@@ -40,7 +40,8 @@ import static java.util.Arrays.asList;
 public class TestGenericUDFArrayAppend {
   private final GenericUDFArrayAppend udf = new GenericUDFArrayAppend();
 
-  @Test public void testPrimitive() throws HiveException {
+  @Test
+  public void testPrimitive() throws HiveException {
     ObjectInspector[] inputOIs = { ObjectInspectorFactory.getStandardListObjectInspector(
         PrimitiveObjectInspectorFactory.writableIntObjectInspector),
         PrimitiveObjectInspectorFactory.writableIntObjectInspector };
@@ -59,10 +60,11 @@ public class TestGenericUDFArrayAppend {
     i4 = new FloatWritable(2.20f);
     i5 = new FloatWritable(5.20f);
     runAndVerify(asList(i1, i2, i3, i4), i5, asList(i1, i2, i3, i4, i5));
-    runAndVerify(asList(i1, i2, i3, i4),null,asList(i1, i2, i3, i4,null)); //Test null element
+    runAndVerify(asList(i1, i2, i3, i4), null, asList(i1, i2, i3, i4, null)); //Test null element
   }
 
-  @Test public void testList() throws HiveException {
+  @Test
+  public void testList() throws HiveException {
     ObjectInspector[] inputOIs = { ObjectInspectorFactory.getStandardListObjectInspector(
         ObjectInspectorFactory.getStandardListObjectInspector(
             PrimitiveObjectInspectorFactory.writableStringObjectInspector)),
@@ -77,7 +79,8 @@ public class TestGenericUDFArrayAppend {
     runAndVerify(asList(i1, i2, i2, i3, i4), i4, asList(i1, i2, i2, i3, i4, i4));
   }
 
-  @Test public void testStruct() throws HiveException {
+  @Test
+  public void testStruct() throws HiveException {
     ObjectInspector[] inputOIs = { ObjectInspectorFactory.getStandardListObjectInspector(
         ObjectInspectorFactory.getStandardStructObjectInspector(asList("f1", "f2", "f3", "f4"),
             asList(PrimitiveObjectInspectorFactory.writableStringObjectInspector,
@@ -108,7 +111,8 @@ public class TestGenericUDFArrayAppend {
     runAndVerify(asList(i1, i3, i2, i3, i4), i2, asList(i1, i3, i2, i3, i4, i2));
   }
 
-  @Test public void testxMap() throws HiveException {
+  @Test
+  public void testMap() throws HiveException {
     ObjectInspector[] inputOIs = { ObjectInspectorFactory.getStandardListObjectInspector(
         ObjectInspectorFactory.getStandardMapObjectInspector(
             PrimitiveObjectInspectorFactory.writableStringObjectInspector,
@@ -138,14 +142,13 @@ public class TestGenericUDFArrayAppend {
     runAndVerify(asList(m1, m3, m2, m3, m1), m2, asList(m1, m3, m2, m3, m1, m2));
   }
 
-  private void runAndVerify(List<Object> actual, Object element, List<Object> expected)
-      throws HiveException {
-    GenericUDF.DeferredJavaObject[] args = { new GenericUDF.DeferredJavaObject(actual), new GenericUDF.DeferredJavaObject(element) };
+  private void runAndVerify(List<Object> actual, Object element, List<Object> expected) throws HiveException {
+    GenericUDF.DeferredJavaObject[] args =
+        { new GenericUDF.DeferredJavaObject(actual), new GenericUDF.DeferredJavaObject(element) };
     List<Object> result = (List<Object>) udf.evaluate(args);
-    if(expected == null){
-      Assert.assertEquals(result,null);
-    }
-    else {
+    if (expected == null) {
+      Assert.assertNull(result);
+    } else {
       Assert.assertArrayEquals("Check content", expected.toArray(), result.toArray());
     }
   }
