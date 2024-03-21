@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.0.0</version>
   <packaging>pom</packaging>
   <name>Hive</name>
   <url>https://hive.apache.org</url>
@@ -61,7 +61,7 @@
     <module>kafka-handler</module>
   </modules>
   <properties>
-    <standalone-metastore.version>4.0.0-SNAPSHOT</standalone-metastore.version>
+    <standalone-metastore.version>4.0.0</standalone-metastore.version>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -197,7 +197,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.0.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.0.0</storage-api.version>
     <tez.version>0.10.3</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>

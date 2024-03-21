@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.0.0</version>
   <packaging>pom</packaging>
   <name>Hive Standalone Metastore</name>
   <modules>
@@ -30,7 +30,7 @@
     <module>metastore-tools</module>
   </modules>
   <properties>
-    <hive.version>4.0.0-SNAPSHOT</hive.version>
+    <hive.version>4.0.0</hive.version>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <standalone.metastore.path.to.root>.</standalone.metastore.path.to.root>
     <!-- Build properties -->
@@ -95,7 +95,7 @@
     <sqlline.version>1.9.0</sqlline.version>
     <jline.version>2.14.6</jline.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.0.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.0.0</storage-api.version>
     <beanutils.version>1.9.4</beanutils.version>
     <hamcrest.version>1.3</hamcrest.version>
     <curator.version>5.2.0</curator.version>
