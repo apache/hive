@@ -1808,7 +1808,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private boolean canSerializeDeserialize(RelNode plan) {
-      if (plan.getConvention() != null && plan.getConvention().getName().toLowerCase().contains("jdbc")) {
+      if (plan instanceof HiveJdbcConverter ||
+          (plan.getConvention() != null && plan.getConvention().getName().toLowerCase().contains("jdbc"))) {
         return false;
       }
 
