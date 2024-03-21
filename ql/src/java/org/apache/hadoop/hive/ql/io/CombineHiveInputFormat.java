@@ -33,9 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,12 +56,15 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
+
+import static jodd.util.ClassUtil.isAssignableFrom;
 
 
 /**
@@ -370,8 +371,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();
-      if ((tableDesc != null) && tableDesc.isNonNative()) {
-        return super.getSplits(job, numSplits);
+      if (tableDesc != null) {
+        boolean useDefaultFileFormat = part.getInputFileFormatClass()
+                .isAssignableFrom(tableDesc.getInputFileFormatClass());
+        if (tableDesc.isNonNative() && useDefaultFileFormat) {
+          return super.getSplits(job, numSplits);
+        }
       }
 
       // Use HiveInputFormat if any of the paths is not splittable

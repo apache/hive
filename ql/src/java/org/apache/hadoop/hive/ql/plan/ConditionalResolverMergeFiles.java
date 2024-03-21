@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -37,12 +38,17 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +75,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     private String dir;
     private DynamicPartitionCtx dpCtx; // merge task could be after dynamic partition insert
     private ListBucketingCtx lbCtx;
+    private Properties properties;
+    private String storageHandlerClass;
 
     public ConditionalResolverMergeFilesCtx() {
     }
@@ -125,6 +133,22 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     public void setLbCtx(ListBucketingCtx lbCtx) {
       this.lbCtx = lbCtx;
     }
+
+    public void setTaskProperties(Properties properties) {
+      this.properties = properties;
+    }
+
+    public Properties getTaskProperties() {
+      return properties;
+    }
+
+    public void setStorageHandlerClass(String className) {
+      this.storageHandlerClass = className;
+    }
+
+    public String getStorageHandlerClass() {
+      return storageHandlerClass;
+    }
   }
 
   public List<Task<?>> getTasks(HiveConf conf, Object objCtx) {
@@ -147,18 +171,21 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       Path dirPath = new Path(dirName);
       FileSystem inpFs = dirPath.getFileSystem(conf);
       DynamicPartitionCtx dpCtx = ctx.getDPCtx();
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, ctx.getStorageHandlerClass());
+      boolean dirExists = inpFs.exists(dirPath);
+      boolean useCustomStorageHandler = storageHandler != null && storageHandler.supportsMergeFiles();
 
-      if (inpFs.exists(dirPath)) {
-        // For each dynamic partition, check if it needs to be merged.
-        MapWork work;
-        if (mrTask.getWork() instanceof MapredWork) {
-          work = ((MapredWork) mrTask.getWork()).getMapWork();
-        } else if (mrTask.getWork() instanceof TezWork){
-          work = (MapWork) ((TezWork) mrTask.getWork()).getAllWork().get(0);
-        } else {
-          work = (MapWork) mrTask.getWork();
-        }
+      MapWork work = null;
+      // For each dynamic partition, check if it needs to be merged.
+      if (mrTask.getWork() instanceof MapredWork) {
+        work = ((MapredWork) mrTask.getWork()).getMapWork();
+      } else if (mrTask.getWork() instanceof TezWork){
+        work = (MapWork) ((TezWork) mrTask.getWork()).getAllWork().get(0);
+      } else {
+        work = (MapWork) mrTask.getWork();
+      }
 
+      if (dirExists) {
         int lbLevel = (ctx.getLbCtx() == null) ? 0 : ctx.getLbCtx().calculateListBucketingLevel();
         boolean manifestFilePresent = false;
         FileSystem manifestFs = dirPath.getFileSystem(conf);
@@ -182,11 +209,11 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           int dpLbLevel = numDPCols + lbLevel;
 
           generateActualTasks(conf, resTsks, trgtSize, avgConditionSize, mvTask, mrTask,
-              mrAndMvTask, dirPath, inpFs, ctx, work, dpLbLevel, manifestFilePresent);
+              mrAndMvTask, dirPath, inpFs, ctx, work, dpLbLevel, manifestFilePresent, storageHandler);
         } else { // no dynamic partitions
           if(lbLevel == 0) {
             // static partition without list bucketing
-            List<FileStatus> manifestFilePaths = new ArrayList<>();
+            List<FileStatus> manifestFilePaths = Lists.newArrayList();
             long totalSize;
             if (manifestFilePresent) {
               manifestFilePaths = getManifestFilePaths(conf, dirPath);
@@ -208,15 +235,20 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           } else {
             // static partition and list bucketing
             generateActualTasks(conf, resTsks, trgtSize, avgConditionSize, mvTask, mrTask,
-                mrAndMvTask, dirPath, inpFs, ctx, work, lbLevel, manifestFilePresent);
+                mrAndMvTask, dirPath, inpFs, ctx, work, lbLevel, manifestFilePresent, storageHandler);
           }
         }
+      } else if (useCustomStorageHandler) {
+        generateActualTasks(conf, resTsks, trgtSize, avgConditionSize, mvTask, mrTask,
+                mrAndMvTask, dirPath, inpFs, ctx, work, 0, false, storageHandler);
       } else {
         Utilities.FILE_OP_LOGGER.info("Resolver returning movetask for " + dirPath);
         resTsks.add(mvTask);
       }
     } catch (IOException e) {
       LOG.warn("Exception while getting tasks", e);
+    } catch (ClassNotFoundException | HiveException e) {
+      throw new RuntimeException("Failed to load storage handler: {}" + e.getMessage());
     }
 
     // Only one of the tasks should ever be added to resTsks
@@ -254,18 +286,26 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       long trgtSize, long avgConditionSize, Task<?> mvTask,
       Task<?> mrTask, Task<?> mrAndMvTask, Path dirPath,
       FileSystem inpFs, ConditionalResolverMergeFilesCtx ctx, MapWork work, int dpLbLevel,
-      boolean manifestFilePresent)
-      throws IOException {
+      boolean manifestFilePresent, HiveStorageHandler storageHandler)
+      throws IOException, ClassNotFoundException {
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
     List<FileStatus> statusList;
-    Map<FileStatus, List<FileStatus>> manifestDirToFile = new HashMap<>();
+    Map<FileStatus, List<FileStatus>> parentDirToFile = new HashMap<>();
+    boolean useCustomStorageHandler = storageHandler != null && storageHandler.supportsMergeFiles();
+    MergeTaskProperties mergeProperties = useCustomStorageHandler ?
+            storageHandler.getMergeTaskProperties(ctx.getTaskProperties()) : null;
     if (manifestFilePresent) {
       // Get the list of files from manifest file.
       List<FileStatus> fileStatuses = getManifestFilePaths(conf, dirPath);
       // Setup the work to include all the files present in the manifest.
       setupWorkWhenUsingManifestFile(work, fileStatuses, dirPath, false);
-      manifestDirToFile = getManifestDirs(inpFs, fileStatuses);
-      statusList = new ArrayList<>(manifestDirToFile.keySet());
+      parentDirToFile = getParentDirToFileMap(inpFs, fileStatuses);
+      statusList = Lists.newArrayList(parentDirToFile.keySet());
+    } else if (useCustomStorageHandler) {
+      List<FileStatus> fileStatuses = storageHandler.getMergeTaskInputFiles(ctx.getTaskProperties());
+      setupWorkWithCustomHandler(work, dirPath, mergeProperties);
+      parentDirToFile = getParentDirToFileMap(inpFs, fileStatuses);
+      statusList = Lists.newArrayList(parentDirToFile.keySet());
     } else {
       statusList = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
     }
@@ -295,8 +335,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     List<Path> toMerge = new ArrayList<>();
     for (int i = 0; i < status.length; ++i) {
       long len;
-      if (manifestFilePresent) {
-        len = getMergeSize(manifestDirToFile.get(status[i]), avgConditionSize);
+      if (manifestFilePresent || useCustomStorageHandler) {
+        len = getMergeSize(parentDirToFile.get(status[i]), avgConditionSize);
       } else {
         len = getMergeSize(inpFs, status[i].getPath(), avgConditionSize);
       }
@@ -309,12 +349,15 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           Utilities.FILE_OP_LOGGER.warn("merger ignoring invalid DP path " + status[i].getPath());
           continue;
         }
+        if (useCustomStorageHandler) {
+          updatePartDescProperties(pDesc, mergeProperties);
+        }
         Utilities.FILE_OP_LOGGER.debug("merge resolver will merge " + status[i].getPath());
         work.resolveDynamicPartitionStoredAsSubDirsMerge(conf, status[i].getPath(), tblDesc,
             aliases, pDesc);
         // Do not add input file since its already added when the manifest file is present.
-        if (manifestFilePresent) {
-          toMerge.addAll(manifestDirToFile.get(status[i])
+        if (manifestFilePresent || useCustomStorageHandler) {
+          toMerge.addAll(parentDirToFile.get(status[i])
               .stream().map(FileStatus::getPath).collect(Collectors.toList()));
         } else {
           toMerge.add(status[i].getPath());
@@ -512,7 +555,30 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     mapWork.setUseInputPathsDirectly(true);
   }
 
-  private Map<FileStatus, List<FileStatus>> getManifestDirs(FileSystem inpFs, List<FileStatus> fileStatuses)
+  private void setupWorkWithCustomHandler(MapWork mapWork, Path dirPath,
+                                          MergeTaskProperties mergeProperties) throws IOException, ClassNotFoundException {
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
+    Map<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
+    Operator<? extends OperatorDesc> op = aliasToWork.get(dirPath.toString());
+    PartitionDesc partitionDesc = pathToPartitionInfo.get(dirPath);
+    Path tmpDir = mergeProperties.getTmpLocation();
+    if (op != null) {
+      aliasToWork.remove(dirPath.toString());
+      aliasToWork.put(tmpDir.toString(), op);
+      mapWork.setAliasToWork(aliasToWork);
+    }
+    if (partitionDesc != null) {
+      updatePartDescProperties(partitionDesc, mergeProperties);
+      pathToPartitionInfo.remove(dirPath);
+      pathToPartitionInfo.put(tmpDir, partitionDesc);
+      mapWork.setPathToPartitionInfo(pathToPartitionInfo);
+    }
+    mapWork.removePathToAlias(dirPath);
+    mapWork.addPathToAlias(tmpDir, tmpDir.toString());
+    mapWork.setUseInputPathsDirectly(true);
+  }
+
+  private Map<FileStatus, List<FileStatus>> getParentDirToFileMap(FileSystem inpFs, List<FileStatus> fileStatuses)
       throws IOException {
     Map<FileStatus, List<FileStatus>> manifestDirsToPaths = new HashMap<>();
     for (FileStatus fileStatus : fileStatuses) {
@@ -526,5 +592,23 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       }
     }
     return manifestDirsToPaths;
+  }
+
+  private void updatePartDescProperties(PartitionDesc partitionDesc,
+                                        MergeTaskProperties mergeProperties) throws IOException, ClassNotFoundException {
+    if (mergeProperties != null) {
+      String inputFileFormatClassName = mergeProperties.getStorageFormatDescriptor().getInputFormat();
+      String outputFileFormatClassName = mergeProperties.getStorageFormatDescriptor().getOutputFormat();
+      String serdeClassName = mergeProperties.getStorageFormatDescriptor().getSerde();
+      if (inputFileFormatClassName != null) {
+        partitionDesc.setInputFileFormatClass(JavaUtils.loadClass(inputFileFormatClassName));
+      }
+      if (outputFileFormatClassName != null) {
+        partitionDesc.setOutputFileFormatClass(JavaUtils.loadClass(outputFileFormatClassName));
+      }
+      if (serdeClassName != null) {
+        partitionDesc.getTableDesc().getProperties().setProperty(serdeConstants.SERIALIZATION_LIB, serdeClassName);
+      }
+    }
   }
 }

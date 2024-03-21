@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.parse.UpdateSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -745,6 +748,20 @@ public interface HiveStorageHandler extends Configurable {
   default List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc desc)
           throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions by expression " +
+            "for a table.");
+  }
+
+  default boolean supportsMergeFiles() {
+    return false;
+  }
+
+  default List<FileStatus> getMergeTaskInputFiles(Properties properties) throws IOException {
+    throw new UnsupportedOperationException("Storage handler does not support getting merge input files " +
+            "for a table.");
+  }
+
+  default MergeTaskProperties getMergeTaskProperties(Properties properties) {
+    throw new UnsupportedOperationException("Storage handler does not support getting merge input files " +
             "for a table.");
   }
 }
