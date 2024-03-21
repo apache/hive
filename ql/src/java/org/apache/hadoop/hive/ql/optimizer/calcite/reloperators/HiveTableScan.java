@@ -218,7 +218,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("tableScanTrait", this.tableScanTrait,
           pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
-          isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
+          isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()))
+      .itemIf("materializedTable", ((RelOptHiveTable) table).getHiveTableMD().isMaterializedTable(),
+            pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES);
+
   }
 
   @Override
