@@ -58,6 +58,7 @@ import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ConversionUtil;
+import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.TimestampString;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
@@ -155,7 +156,19 @@ public class RelJson {
   }
 
   public RelDistribution toDistribution(Object o) {
-    return RelDistributions.ANY; // TODO:
+    if (o instanceof Map) {
+      Map<String, Object> map = (Map<String, Object>) o;
+      final RelDistribution.Type type =
+          Util.enumVal(RelDistribution.Type.class,
+              (String) map.get("type"));
+
+      List<Integer> keys = new ArrayList<>();
+      if (map.containsKey("keys")) {
+        keys = (List<Integer>) map.get("keys");
+      }
+      return RelDistributions.of(type, ImmutableIntList.copyOf(keys));
+    }
+    return RelDistributions.ANY;
   }
 
   public RelDataType toType(RelDataTypeFactory typeFactory, Object o) {
