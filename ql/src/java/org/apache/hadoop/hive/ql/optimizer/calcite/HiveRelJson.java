@@ -158,6 +158,8 @@ public class HiveRelJson extends RelJson {
             case CAST:
             case MAP_QUERY_CONSTRUCTOR:
             case MAP_VALUE_CONSTRUCTOR:
+            case ARRAY_QUERY_CONSTRUCTOR:
+            case ARRAY_VALUE_CONSTRUCTOR:
               map.put("type", toJson(node.getType()));
           }
           if (call.getOperator() instanceof SqlFunction) {
