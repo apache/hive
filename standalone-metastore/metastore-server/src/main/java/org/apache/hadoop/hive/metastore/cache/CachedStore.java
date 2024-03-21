@@ -323,6 +323,12 @@ public class CachedStore implements RawStore, Configurable {
         updateStatsForAlterPart(rawStore, alterPartitionMessage.getTableObj(), catalogName, dbName, tableName,
             alterPartitionMessage.getPtnObjAfter());
         break;
+      case MessageBuilder.ALTER_PARTITIONS_EVENT:
+        AlterPartitionsMessage alterPtnsMessage = deserializer.getAlterPartitionsMessage(message);
+        List<List<String>> part_vals = new ArrayList<>();
+        alterPtnsMessage.getPartitionObjs().forEach(part -> part_vals.add(part.getValues()));
+        sharedCache.removePartitionsFromCache(catalogName, dbName, tableName, part_vals);
+        break;
       case MessageBuilder.DROP_PARTITION_EVENT:
         DropPartitionMessage dropPartitionMessage = deserializer.getDropPartitionMessage(message);
         for (Map<String, String> partMap : dropPartitionMessage.getPartitions()) {
@@ -1543,7 +1549,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
-    // TODO fucntionCache
+    // TODO functionCache
     return rawStore.getAllMaterializedViewObjectsForRewriting(catName);
   }
 
@@ -2574,34 +2580,34 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createFunction(Function func) throws InvalidObjectException, MetaException {
-    // TODO fucntionCache
+    // TODO functionCache
     rawStore.createFunction(func);
   }
 
   @Override public void alterFunction(String catName, String dbName, String funcName, Function newFunction)
       throws InvalidObjectException, MetaException {
-    // TODO fucntionCache
+    // TODO functionCache
     rawStore.alterFunction(catName, dbName, funcName, newFunction);
   }
 
   @Override public void dropFunction(String catName, String dbName, String funcName)
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
-    // TODO fucntionCache
+    // TODO functionCache
     rawStore.dropFunction(catName, dbName, funcName);
   }
 
   @Override public Function getFunction(String catName, String dbName, String funcName) throws MetaException {
-    // TODO fucntionCache
+    // TODO functionCache
     return rawStore.getFunction(catName, dbName, funcName);
   }
 
   @Override public List<Function> getAllFunctions(String catName) throws MetaException {
-    // TODO fucntionCache
+    // TODO functionCache
     return rawStore.getAllFunctions(catName);
   }
 
   @Override public List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException {
-    // TODO fucntionCache
+    // TODO functionCache
     return rawStore.getFunctions(catName, dbName, pattern);
   }
 

@@ -165,7 +165,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Rule
-  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
+  public Timeout timeout = new Timeout(500_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {

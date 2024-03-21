@@ -43,7 +43,7 @@ public class TestHivePushdownSnapshotFilterRule extends TestRuleBase {
 
   @Test
   public void testFilterIsRemovedAndVersionIntervalFromIsSetWhenFilterHasSnapshotIdPredicate() {
-    RelNode tableScan = createT2IcebergTS();
+    RelNode tableScan = createNonNativeTSSupportingSnapshots();
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
     RelNode root = relBuilder.push(tableScan)
@@ -64,7 +64,7 @@ public class TestHivePushdownSnapshotFilterRule extends TestRuleBase {
 
   @Test
   public void testFilterLeftIntactWhenItDoesNotHaveSnapshotIdPredicate() {
-    RelNode tableScan = createT2IcebergTS();
+    RelNode tableScan = createNonNativeTS();
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
     RelNode root = relBuilder.push(tableScan)

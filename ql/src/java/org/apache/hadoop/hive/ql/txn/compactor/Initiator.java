@@ -51,7 +51,7 @@ import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NA
  * A class to initiate compactions.  This will run in a separate thread.
  * It's critical that there exactly 1 of these in a given warehouse.
  */
-public class Initiator extends InitiatorBase {
+public class Initiator extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
@@ -153,11 +153,11 @@ public class Initiator extends InitiatorBase {
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
               String tableName = ci.getFullTableName();
               String partition = ci.getFullPartitionName();
-
+              ci.initiatorVersion = this.runtimeVersion;
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
                           CompactorUtil.ThrowingRunnable.unchecked(() ->
-                              scheduleCompactionIfRequired(ci, t, p, runAs, metricsEnabled)), compactionExecutor)
+                                  CompactorUtil.scheduleCompactionIfRequired(ci, t, p, runAs, metricsEnabled, hostName, txnHandler, conf)), compactionExecutor)
                       .exceptionally(exc -> {
                         LOG.error("Error while running scheduling the compaction on the table {} / partition {}.", tableName, partition, exc);
                         return null;

@@ -1600,26 +1600,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("{} will be materialized into {}", cteName, location);
     cte.source = analyzer;
 
-    ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp(), table));
+    ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp()));
 
     return table;
   }
 
-  static Statistics getMaterializedTableStats(Operator<?> sinkOp, Table table) {
+  protected Statistics getMaterializedTableStats(Operator<?> sinkOp) {
     final Statistics tableStats = sinkOp.getStatistics().clone();
-    final List<ColStatistics> sourceColStatsList = tableStats.getColumnStats();
-    final List<String> colNames = table.getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
-    if (sourceColStatsList.size() != colNames.size()) {
-      throw new IllegalStateException(String.format(
-          "The size of col stats must be equal to that of schema. Stats = %s, Schema = %s",
-          sourceColStatsList, colNames));
+    if (tableStats.getColumnStatsState() == Statistics.State.NONE || sinkOp.getNumParent() == 0) {
+      return tableStats;
     }
-    final List<ColStatistics> colStatsList = new ArrayList<>(sourceColStatsList.size());
-    for (int i = 0; i < sourceColStatsList.size(); i++) {
-      final ColStatistics colStats = sourceColStatsList.get(i);
-      // FileSinkOperator stores column stats with internal names such as "_col1"
-      colStats.setColumnName(colNames.get(i));
-      colStatsList.add(colStats);
+
+    final List<String> parentColumnNames = sinkOp.getParentOperators().get(0).getSchema().getColumnNames();
+    final List<String> childColumnNames = sinkOp.getSchema().getColumnNames();
+    if (parentColumnNames.size() != childColumnNames.size()) {
+      LOG.warn("The number of columns of FileSinkOperator is inconsistent. Parent = {}, Child = {}",
+          parentColumnNames, childColumnNames);
+      tableStats.setColumnStatsState(Statistics.State.NONE);
+      return tableStats;
+    }
+    final Map<String, String> mapping = new HashMap<>(parentColumnNames.size());
+    for (int i = 0; i < parentColumnNames.size(); i++) {
+      mapping.put(parentColumnNames.get(i), childColumnNames.get(i));
+    }
+
+    final List<ColStatistics> colStatsList = tableStats.getColumnStats();
+    if (!mapping.keySet().equals(colStatsList.stream().map(ColStatistics::getColumnName).collect(Collectors.toSet()))) {
+      LOG.warn("The column statistics are inconsistent with the expected column names. Actual = {}, Expected = {}",
+          colStatsList, parentColumnNames);
+      tableStats.setColumnStatsState(Statistics.State.NONE);
+      return tableStats;
+    }
+    for (ColStatistics colStats : colStatsList) {
+      colStats.setColumnName(mapping.get(colStats.getColumnName()));
     }
     tableStats.setColumnStats(colStatsList);
     return tableStats;

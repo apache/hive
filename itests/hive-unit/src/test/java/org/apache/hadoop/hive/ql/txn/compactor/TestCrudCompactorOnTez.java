@@ -77,7 +77,6 @@ import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -602,7 +601,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test
-  @Ignore("HIVE-27848")
   public void secondCompactionShouldBeRefusedBeforeEnqueueing() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
 
@@ -636,6 +634,52 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       driver.run("ALTER TABLE " + tableName + " COMPACT 'major'");
     } catch (CommandProcessorException e) {
       String errorMessage = ErrorMsg.COMPACTION_REFUSED.format(dbName, tableName, "",
+          "Compaction is already scheduled with state='ready for cleaning' and id=" + resp.getId());
+      Assert.assertEquals(errorMessage, e.getCauseMessage());
+      Assert.assertEquals(ErrorMsg.COMPACTION_REFUSED.getErrorCode(), e.getErrorCode());
+    }
+
+    //Check if the first compaction is in 'ready for cleaning'
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+  }
+
+  @Test
+  public void secondCompactionShouldBeRefusedBeforeEnqueueingForPartition() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+
+    final String dbName = "default";
+    final String tableName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(id string, value string) partitioned by(pt string) CLUSTERED BY(id) "
+        + "INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+    executeStatementOnDriver("alter table " + tableName + " add partition(pt='test')",driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " partition(pt='test') values ('1','one'),('2','two'),('3','three'),"
+        + "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten'),"
+        + "('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen'),"
+        + "('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+
+    executeStatementOnDriver("insert into " + tableName + " partition(pt='test') values ('21', 'value21'),('84', 'value84'),"
+        + "('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver(
+        "insert into " + tableName + " partition(pt='test') values ('22', 'value22'),('34', 'value34')," + "('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + tableName + " partition(pt='test') values ('75', 'value75'),('99', 'value99')", driver);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    //Do a compaction directly and wait for it to finish
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    rqst.setPartitionname("pt=test");
+    CompactionResponse resp = txnHandler.compact(rqst);
+    runWorker(conf);
+
+    //Try to do a second compaction on the same table before the cleaner runs.
+    try {
+      driver.run("ALTER TABLE " + tableName + " partition(pt='test') COMPACT 'major'");
+    } catch (CommandProcessorException e) {
+      String errorMessage = ErrorMsg.COMPACTION_REFUSED.format(dbName, tableName, " partition(pt=test)",
           "Compaction is already scheduled with state='ready for cleaning' and id=" + resp.getId());
       Assert.assertEquals(errorMessage, e.getCauseMessage());
       Assert.assertEquals(ErrorMsg.COMPACTION_REFUSED.getErrorCode(), e.getErrorCode());

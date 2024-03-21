@@ -6,18 +6,26 @@ package org.apache.hadoop.hive.llap.plugin.rpc;
 public final class LlapPluginProtocolProtos {
   private LlapPluginProtocolProtos() {}
   public static void registerAllExtensions(
-      com.google.protobuf.ExtensionRegistry registry) {
+      com.google.protobuf.ExtensionRegistryLite registry) {
   }
-  public interface UpdateQueryRequestProtoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
 
-    // optional int32 guaranteed_task_count = 1;
+  public static void registerAllExtensions(
+      com.google.protobuf.ExtensionRegistry registry) {
+    registerAllExtensions(
+        (com.google.protobuf.ExtensionRegistryLite) registry);
+  }
+  public interface UpdateQueryRequestProtoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:UpdateQueryRequestProto)
+      com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional int32 guaranteed_task_count = 1;</code>
+     * @return Whether the guaranteedTaskCount field is set.
      */
     boolean hasGuaranteedTaskCount();
     /**
      * <code>optional int32 guaranteed_task_count = 1;</code>
+     * @return The guaranteedTaskCount.
      */
     int getGuaranteedTaskCount();
   }
@@ -25,155 +33,90 @@ public final class LlapPluginProtocolProtos {
    * Protobuf type {@code UpdateQueryRequestProto}
    */
   public static final class UpdateQueryRequestProto extends
-      com.google.protobuf.GeneratedMessage
-      implements UpdateQueryRequestProtoOrBuilder {
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:UpdateQueryRequestProto)
+      UpdateQueryRequestProtoOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use UpdateQueryRequestProto.newBuilder() to construct.
-    private UpdateQueryRequestProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private UpdateQueryRequestProto(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private UpdateQueryRequestProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final UpdateQueryRequestProto defaultInstance;
-    public static UpdateQueryRequestProto getDefaultInstance() {
-      return defaultInstance;
+    private UpdateQueryRequestProto() {
     }
 
-    public UpdateQueryRequestProto getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UpdateQueryRequestProto();
     }
-    private UpdateQueryRequestProto(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              guaranteedTaskCount_ = input.readInt32();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
+
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryRequestProto_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryRequestProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto.class, org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<UpdateQueryRequestProto> PARSER =
-        new com.google.protobuf.AbstractParser<UpdateQueryRequestProto>() {
-      public UpdateQueryRequestProto parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new UpdateQueryRequestProto(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<UpdateQueryRequestProto> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
-    // optional int32 guaranteed_task_count = 1;
     public static final int GUARANTEED_TASK_COUNT_FIELD_NUMBER = 1;
-    private int guaranteedTaskCount_;
+    private int guaranteedTaskCount_ = 0;
     /**
      * <code>optional int32 guaranteed_task_count = 1;</code>
+     * @return Whether the guaranteedTaskCount field is set.
      */
+    @java.lang.Override
     public boolean hasGuaranteedTaskCount() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional int32 guaranteed_task_count = 1;</code>
+     * @return The guaranteedTaskCount.
      */
+    @java.lang.Override
     public int getGuaranteedTaskCount() {
       return guaranteedTaskCount_;
     }
 
-    private void initFields() {
-      guaranteedTaskCount_ = 0;
-    }
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeInt32(1, guaranteedTaskCount_);
       }
       getUnknownFields().writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(1, guaranteedTaskCount_);
       }
       size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      memoizedSize = size;
       return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
     }
 
     @java.lang.Override
@@ -186,25 +129,22 @@ public final class LlapPluginProtocolProtos {
       }
       org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto other = (org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto) obj;
 
-      boolean result = true;
-      result = result && (hasGuaranteedTaskCount() == other.hasGuaranteedTaskCount());
+      if (hasGuaranteedTaskCount() != other.hasGuaranteedTaskCount()) return false;
       if (hasGuaranteedTaskCount()) {
-        result = result && (getGuaranteedTaskCount()
-            == other.getGuaranteedTaskCount());
+        if (getGuaranteedTaskCount()
+            != other.getGuaranteedTaskCount()) return false;
       }
-      result = result &&
-          getUnknownFields().equals(other.getUnknownFields());
-      return result;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
     }
 
-    private int memoizedHashCode = 0;
     @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasGuaranteedTaskCount()) {
         hash = (37 * hash) + GUARANTEED_TASK_COUNT_FIELD_NUMBER;
         hash = (53 * hash) + getGuaranteedTaskCount();
@@ -214,6 +154,17 @@ public final class LlapPluginProtocolProtos {
       return hash;
     }
 
+    public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -237,46 +188,61 @@ public final class LlapPluginProtocolProtos {
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
+
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
+
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -284,14 +250,16 @@ public final class LlapPluginProtocolProtos {
      * Protobuf type {@code UpdateQueryRequestProto}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProtoOrBuilder {
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:UpdateQueryRequestProto)
+        org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProtoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryRequestProto_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryRequestProto_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -300,42 +268,34 @@ public final class LlapPluginProtocolProtos {
 
       // Construct using org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
 
+      }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         guaranteedTaskCount_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryRequestProto_descriptor;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto getDefaultInstanceForType() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto build() {
         org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto result = buildPartial();
         if (!result.isInitialized()) {
@@ -344,19 +304,57 @@ public final class LlapPluginProtocolProtos {
         return result;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto buildPartial() {
         org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto result = new org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.guaranteedTaskCount_ = guaranteedTaskCount_;
-        result.bitField0_ = to_bitField0_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
+      private void buildPartial0(org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.guaranteedTaskCount_ = guaranteedTaskCount_;
+          to_bitField0_ |= 0x00000001;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto) {
           return mergeFrom((org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto)other);
@@ -372,57 +370,85 @@ public final class LlapPluginProtocolProtos {
           setGuaranteedTaskCount(other.getGuaranteedTaskCount());
         }
         this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
         }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                guaranteedTaskCount_ = input.readInt32();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
 
-      // optional int32 guaranteed_task_count = 1;
       private int guaranteedTaskCount_ ;
       /**
        * <code>optional int32 guaranteed_task_count = 1;</code>
+       * @return Whether the guaranteedTaskCount field is set.
        */
+      @java.lang.Override
       public boolean hasGuaranteedTaskCount() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional int32 guaranteed_task_count = 1;</code>
+       * @return The guaranteedTaskCount.
        */
+      @java.lang.Override
       public int getGuaranteedTaskCount() {
         return guaranteedTaskCount_;
       }
       /**
        * <code>optional int32 guaranteed_task_count = 1;</code>
+       * @param value The guaranteedTaskCount to set.
+       * @return This builder for chaining.
        */
       public Builder setGuaranteedTaskCount(int value) {
-        bitField0_ |= 0x00000001;
+
         guaranteedTaskCount_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
       /**
        * <code>optional int32 guaranteed_task_count = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearGuaranteedTaskCount() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -430,143 +456,135 @@ public final class LlapPluginProtocolProtos {
         onChanged();
         return this;
       }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:UpdateQueryRequestProto)
     }
 
+    // @@protoc_insertion_point(class_scope:UpdateQueryRequestProto)
+    private static final org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto DEFAULT_INSTANCE;
     static {
-      defaultInstance = new UpdateQueryRequestProto(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto();
     }
 
-    // @@protoc_insertion_point(class_scope:UpdateQueryRequestProto)
+    public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<UpdateQueryRequestProto>
+        PARSER = new com.google.protobuf.AbstractParser<UpdateQueryRequestProto>() {
+      @java.lang.Override
+      public UpdateQueryRequestProto parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<UpdateQueryRequestProto> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UpdateQueryRequestProto> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
-  public interface UpdateQueryResponseProtoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface UpdateQueryResponseProtoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:UpdateQueryResponseProto)
+      com.google.protobuf.MessageOrBuilder {
   }
   /**
    * Protobuf type {@code UpdateQueryResponseProto}
    */
   public static final class UpdateQueryResponseProto extends
-      com.google.protobuf.GeneratedMessage
-      implements UpdateQueryResponseProtoOrBuilder {
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:UpdateQueryResponseProto)
+      UpdateQueryResponseProtoOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use UpdateQueryResponseProto.newBuilder() to construct.
-    private UpdateQueryResponseProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private UpdateQueryResponseProto(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private UpdateQueryResponseProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final UpdateQueryResponseProto defaultInstance;
-    public static UpdateQueryResponseProto getDefaultInstance() {
-      return defaultInstance;
+    private UpdateQueryResponseProto() {
     }
 
-    public UpdateQueryResponseProto getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UpdateQueryResponseProto();
     }
-    private UpdateQueryResponseProto(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
+
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryResponseProto_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryResponseProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto.class, org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<UpdateQueryResponseProto> PARSER =
-        new com.google.protobuf.AbstractParser<UpdateQueryResponseProto>() {
-      public UpdateQueryResponseProto parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new UpdateQueryResponseProto(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<UpdateQueryResponseProto> getParserForType() {
-      return PARSER;
-    }
-
-    private void initFields() {
-    }
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       getUnknownFields().writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
+    @java.lang.Override
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      memoizedSize = size;
       return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
     }
 
     @java.lang.Override
@@ -579,25 +597,33 @@ public final class LlapPluginProtocolProtos {
       }
       org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto other = (org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto) obj;
 
-      boolean result = true;
-      result = result &&
-          getUnknownFields().equals(other.getUnknownFields());
-      return result;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
     }
 
-    private int memoizedHashCode = 0;
     @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
+    public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -621,46 +647,61 @@ public final class LlapPluginProtocolProtos {
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
+
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
+
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -668,14 +709,16 @@ public final class LlapPluginProtocolProtos {
      * Protobuf type {@code UpdateQueryResponseProto}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProtoOrBuilder {
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:UpdateQueryResponseProto)
+        org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProtoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryResponseProto_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryResponseProto_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -684,40 +727,32 @@ public final class LlapPluginProtocolProtos {
 
       // Construct using org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
 
+      }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         return this;
       }
 
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.internal_static_UpdateQueryResponseProto_descriptor;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto getDefaultInstanceForType() {
         return org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto build() {
         org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto result = buildPartial();
         if (!result.isInitialized()) {
@@ -726,12 +761,46 @@ public final class LlapPluginProtocolProtos {
         return result;
       }
 
+      @java.lang.Override
       public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto buildPartial() {
         org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto result = new org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto(this);
         onBuilt();
         return result;
       }
 
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto) {
           return mergeFrom((org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto)other);
@@ -744,40 +813,108 @@ public final class LlapPluginProtocolProtos {
       public Builder mergeFrom(org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto other) {
         if (other == org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto.getDefaultInstance()) return this;
         this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
         }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
         return this;
       }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:UpdateQueryResponseProto)
     }
 
+    // @@protoc_insertion_point(class_scope:UpdateQueryResponseProto)
+    private static final org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto DEFAULT_INSTANCE;
     static {
-      defaultInstance = new UpdateQueryResponseProto(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto();
     }
 
-    // @@protoc_insertion_point(class_scope:UpdateQueryResponseProto)
+    public static org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<UpdateQueryResponseProto>
+        PARSER = new com.google.protobuf.AbstractParser<UpdateQueryResponseProto>() {
+      @java.lang.Override
+      public UpdateQueryResponseProto parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<UpdateQueryResponseProto> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UpdateQueryResponseProto> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   /**
@@ -1012,22 +1149,22 @@ public final class LlapPluginProtocolProtos {
     // @@protoc_insertion_point(class_scope:LlapPluginProtocol)
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_UpdateQueryRequestProto_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_UpdateQueryRequestProto_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_UpdateQueryResponseProto_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_UpdateQueryResponseProto_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
     return descriptor;
   }
-  private static com.google.protobuf.Descriptors.FileDescriptor
+  private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {
@@ -1039,30 +1176,22 @@ public final class LlapPluginProtocolProtos {
       "toBH\n&org.apache.hadoop.hive.llap.plugin" +
       ".rpcB\030LlapPluginProtocolProtos\210\001\001\240\001\001"
     };
-    com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_UpdateQueryRequestProto_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_UpdateQueryRequestProto_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_UpdateQueryRequestProto_descriptor,
-              new java.lang.String[] { "GuaranteedTaskCount", });
-          internal_static_UpdateQueryResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_UpdateQueryResponseProto_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_UpdateQueryResponseProto_descriptor,
-              new java.lang.String[] { });
-          return null;
-        }
-      };
-    com.google.protobuf.Descriptors.FileDescriptor
+    descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-        }, assigner);
+        });
+    internal_static_UpdateQueryRequestProto_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_UpdateQueryRequestProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_UpdateQueryRequestProto_descriptor,
+        new java.lang.String[] { "GuaranteedTaskCount", });
+    internal_static_UpdateQueryResponseProto_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_UpdateQueryResponseProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_UpdateQueryResponseProto_descriptor,
+        new java.lang.String[] { });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

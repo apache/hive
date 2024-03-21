@@ -445,8 +445,8 @@ public class TezJobMonitor {
       //llap IO summary
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.LLAP_IO_ENABLED, false)) {
         new LLAPioSummary(progressMap, dagClient).print(console);
-        new FSCountersSummary(progressMap, dagClient).print(console);
       }
+      new FSCountersSummary(progressMap, dagClient).print(console);
       String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
       if (wmQueue != null && !wmQueue.isEmpty()) {
         new LlapWmSummary(progressMap, dagClient).print(console);

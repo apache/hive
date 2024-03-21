@@ -24,6 +24,7 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.IncrementalRebuildMode;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 
 import java.util.EnumSet;
@@ -36,13 +37,6 @@ import static org.apache.commons.collections.CollectionUtils.intersection;
  * Hive extension of {@link RelOptMaterialization}.
  */
 public class HiveRelOptMaterialization extends RelOptMaterialization {
-
-  public enum IncrementalRebuildMode {
-    AVAILABLE,
-    INSERT_ONLY,
-    NOT_AVAILABLE,
-    UNKNOWN
-  }
 
   private final Set<RewriteAlgorithm> scope;
   private final boolean sourceTablesUpdateDeleteModified;
