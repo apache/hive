@@ -150,7 +150,7 @@
                 <configuration>
                   <finalName>hmsbench-jar-with-dependencies</finalName>
                   <transformers>
-                    <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
+                    <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                       <mainClass>org.apache.hadoop.hive.metastore.tools.BenchmarkTool</mainClass>
                     </transformer>
@@ -170,9 +170,9 @@
             </executions>
             <dependencies>
               <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
-                <version>0.1.0</version>
+                <groupId>com.github.edwgiz</groupId>
+                <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
+                <version>2.1</version>
               </dependency>
             </dependencies>
           </plugin>
