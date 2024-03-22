@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Suggester for join common table expressions that appear more than once in the query plan.
+ * Suggester for common table expressions that appear as is (identical trees) more than once in the query plan.
  */
-public class CommonTableExpressionRegistrySuggester implements CommonTableExpressionSuggester {
+public class CommonTableExpressionIdentitySuggester implements CommonTableExpressionSuggester {
 
   @Override
   public List<RelNode> suggest(final RelNode input, final Configuration configuration) {
