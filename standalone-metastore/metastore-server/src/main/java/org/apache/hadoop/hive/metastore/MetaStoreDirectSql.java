@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -1555,17 +1556,27 @@ class MetaStoreDirectSql {
       if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
         Map<String, String> partKeyToVal = new HashMap<>();
         partKeyToVal.put(partCol.getName(), node.value.toString());
-        List<String> partVals = new ArrayList<>();
-        for (FieldSchema col : partitionKeys) {
-          String value = partKeyToVal.get(col.getName());
-          if (partCol.getName().equals(col.getName()) && colType == FilterType.Date) {
-            // Some engines like Pig will record both date and time values, in which case we need
-            // match PART_NAME by like clause.
-            value += "%";
-          }
-          partVals.add(value);
+        String escapedNameFragmentPart = Warehouse.makePartName(partKeyToVal, false);
+        if (colType == FilterType.Date) {
+          // Some engines like Pig will record both date and time values, in which case we need
+          // match PART_NAME by like clause.
+          escapedNameFragmentPart += "%";
         }
-        String escapedNameFragment = Warehouse.makePartName(partitionKeys, partVals, "_%");
+        StringBuilder sbFilter = new StringBuilder();
+        for (int i = 0; i < partitionKeys.size(); i++) {
+          FieldSchema col = partitionKeys.get(i);
+          if (i > 0) {
+            sbFilter.append(Path.SEPARATOR);
+          }
+          if (partCol.getName().equals(col.getName())) {
+            sbFilter.append(escapedNameFragmentPart);
+          } else {
+            sbFilter.append(FileUtils.escapePathName(col.getName().toLowerCase(), "_%"));
+            sbFilter.append('=');
+            sbFilter.append(FileUtils.escapePathName(null, "_%"));
+          }
+        }
+        String escapedNameFragment = sbFilter.toString();
         if (colType != FilterType.Date && partColCount == 1) {
           // Case where partition column type is not date and there is no other partition columns
           params.add(escapedNameFragment);
