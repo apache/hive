@@ -22,10 +22,10 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rex.RexTableInputRef;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories.HIVE_SPOOL_FACTORY;
@@ -36,9 +36,12 @@ public class TableScanToSpoolRule extends RelOptRule {
    */
   private final Set<String> spools = new HashSet<>();
   private final int referenceThreshold;
-  public TableScanToSpoolRule(int referenceThreshold) {
+  private final Map<List<String>, Long> tableOccurrences;
+  public TableScanToSpoolRule(Map<List<String>, Long> tableOccurrences, int referenceThreshold) {
     super(operand(TableScan.class, none()));
     this.referenceThreshold = referenceThreshold;
+    this.tableOccurrences = tableOccurrences;
+    assert referenceThreshold > 0;
   }
 
   @Override
@@ -48,12 +51,7 @@ public class TableScanToSpoolRule extends RelOptRule {
     if (spools.contains(tableName.toString())) {
       return false;
     }
-    Set<RexTableInputRef.RelTableRef> allTables =
-        call.getMetadataQuery().getTableReferences(call.getPlanner().getRoot());
-    if (allTables == null) {
-      return false;
-    }
-    return allTables.stream().filter(t -> t.getQualifiedName().equals(tableName)).count() > referenceThreshold;
+    return tableOccurrences.getOrDefault(tableName, 0L) > referenceThreshold;
   }
 
   @Override
