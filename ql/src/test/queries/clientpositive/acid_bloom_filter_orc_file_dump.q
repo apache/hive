@@ -1,4 +1,5 @@
 --! qt:replace:/(File Version:)(.+)/$1#Masked#/
+-- SORT_QUERY_RESULTS
 SET hive.vectorized.execution.enabled=FALSE;
 SET hive.mapred.mode=nonstrict;
 
