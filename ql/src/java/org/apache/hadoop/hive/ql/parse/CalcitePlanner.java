@@ -1776,7 +1776,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return calcitePlan;
       }
       perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
-      String calcitePlanJson = HiveRelOptUtil.toJsonString(calcitePlan, false);
+      String calcitePlanJson = HiveRelOptUtil.asJSONObjectString(calcitePlan, false);
       perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
       LOG.debug("Size of calcite plan: {}", calcitePlanJson.getBytes(Charset.defaultCharset()).length);
       LOG.debug("JSON plan: \n{}", calcitePlanJson);
