@@ -369,11 +369,11 @@ public class RelJson {
       case VARCHAR:
         literal = RexNodeExprFactory.makeHiveUnicodeString((String) literal);
         return rexBuilder.makeLiteral(literal, type, true);
-
       case TIMESTAMP:
       case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
         return rexBuilder.makeLiteral(new TimestampString((String) literal), type, false);
-
+      case SYMBOL:
+        return rexBuilder.makeLiteral(HiveRelEnumTypes.toEnum((String) literal), type, true);
       default:
         return rexBuilder.makeLiteral(literal, type, true);
     }
