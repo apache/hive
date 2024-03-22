@@ -1001,9 +1001,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         IcebergBranchExec.dropBranch(icebergTable, dropBranchSpec);
         break;
       case RENAME_BRANCH:
-        AlterTableSnapshotRefSpec.RenameBranchSpec renameBranchSpec =
-            (AlterTableSnapshotRefSpec.RenameBranchSpec) alterTableSnapshotRefSpec.getOperationParams();
-        IcebergBranchExec.renameBranch(icebergTable, renameBranchSpec);
+        AlterTableSnapshotRefSpec.RenameSnapshotrefSpec renameSnapshotrefSpec =
+            (AlterTableSnapshotRefSpec.RenameSnapshotrefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergBranchExec.renameBranch(icebergTable, renameSnapshotrefSpec);
         break;
       case DROP_TAG:
         AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec =

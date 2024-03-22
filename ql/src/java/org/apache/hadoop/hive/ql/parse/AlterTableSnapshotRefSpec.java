@@ -123,7 +123,7 @@ public class AlterTableSnapshotRefSpec<T> {
     }
   }
 
-  public static class RenameBranchSpec {
+  public static class RenameSnapshotrefSpec {
 
     private final String sourceBranch;
     private final String targetBranch;
@@ -136,7 +136,7 @@ public class AlterTableSnapshotRefSpec<T> {
       return targetBranch;
     }
 
-    public RenameBranchSpec(String sourceBranch, String targetBranch) {
+    public RenameSnapshotrefSpec(String sourceBranch, String targetBranch) {
       this.sourceBranch = sourceBranch;
       this.targetBranch = targetBranch;
     }

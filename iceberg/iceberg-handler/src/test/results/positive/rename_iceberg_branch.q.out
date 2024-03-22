@@ -77,7 +77,7 @@ STAGE PLANS:
   Stage: Stage-0
     SnapshotRef Operation
       table name: default.ice01
-      spec: AlterTableSnapshotRefSpec{operationType=RENAME_BRANCH, operationParams=RenameBranchSpec{sourceBranch=source, targetBranch=target}}
+      spec: AlterTableSnapshotRefSpec{operationType=RENAME_BRANCH, operationParams=RenameSnapshotrefSpec{sourceBranch=source, targetBranch=target}}
 
 PREHOOK: query: alter table ice01 rename branch source to target
 PREHOOK: type: ALTERTABLE_RENAMEBRANCH

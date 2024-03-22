@@ -37,11 +37,11 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 @DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_RENAME_BRANCH)
-public class AlterTableRenameBranchAnalyzer extends AbstractAlterTableAnalyzer {
+public class AlterTableRenameSnapshotRefAnalyzer extends AbstractAlterTableAnalyzer {
 
   protected AlterTableType alterTableType;
 
-  public AlterTableRenameBranchAnalyzer(QueryState queryState) throws SemanticException {
+  public AlterTableRenameSnapshotRefAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
     alterTableType = AlterTableType.RENAME_BRANCH;
   }
@@ -56,10 +56,10 @@ public class AlterTableRenameBranchAnalyzer extends AbstractAlterTableAnalyzer {
     String sourceBranch = command.getChild(0).getText();
     String targetBranch = command.getChild(1).getText();
 
-    AlterTableSnapshotRefSpec.RenameBranchSpec renameBranchSpec =
-        new AlterTableSnapshotRefSpec.RenameBranchSpec(sourceBranch, targetBranch);
-    AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.RenameBranchSpec> alterTableSnapshotRefSpec =
-        new AlterTableSnapshotRefSpec(alterTableType, renameBranchSpec);
+    AlterTableSnapshotRefSpec.RenameSnapshotrefSpec renameSnapshotrefSpec =
+        new AlterTableSnapshotRefSpec.RenameSnapshotrefSpec(sourceBranch, targetBranch);
+    AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.RenameSnapshotrefSpec> alterTableSnapshotRefSpec =
+        new AlterTableSnapshotRefSpec(alterTableType, renameSnapshotrefSpec);
     AbstractAlterTableDesc alterTableDesc =
         new AlterTableSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
