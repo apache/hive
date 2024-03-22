@@ -1091,8 +1091,8 @@
 	    <exclude>bin/**</exclude>
 	    <exclude>itests/**</exclude>
 	    <exclude>docs/**</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/*.iml</exclude>
+        <exclude>**/README.md</exclude>
+        <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
 	    <exclude>**/*.arcconfig</exclude>
@@ -1118,7 +1118,8 @@
 	    <exclude>**/xmlReport.pl</exclude>
 	    <exclude>**/*.html</exclude>
 	    <exclude>**/sit</exclude>
-      <exclude>**/test/queries/**/*.sql</exclude>
+        <exclude>**/test/queries/**/*.sql</exclude>
+        <exclude>**/PriorityBlockingDeque.java</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
