@@ -29,6 +29,7 @@ import com.google.common.collect.Multimap;
 
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -60,6 +61,7 @@ import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptSchema;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.hep.HepMatchOrder;
@@ -2120,6 +2122,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
+      final int referenceThreshold = conf.getIntVar(ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD);
+      if (referenceThreshold <= 0) {
+        return basePlan;
+      }
       CommonTableExpressionSuggester suggester = CommonTableExpressionSuggesterFactory.create(conf);
       List<RelNode> ctes = suggester.suggest(basePlan, conf);
       if (ctes.isEmpty()) {
@@ -2138,11 +2144,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
         cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, cte));
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
+      Map<List<String>, Long> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
+          .map(RelOptTable::getQualifiedName)
+          .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
       HepProgram spoolProgram = HepProgram.builder()
           // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
           .addMatchOrder(HepMatchOrder.DEPTH_FIRST)
-          .addRuleInstance(new TableScanToSpoolRule(conf.getIntVar(ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD)))
-          .addRuleInstance(new RemoveUnusedCteRule(conf.getIntVar(ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD)))
+          .addRuleInstance(new TableScanToSpoolRule(tableOccurrences, referenceThreshold))
+          .addRuleInstance(new RemoveUnusedCteRule(tableOccurrences, referenceThreshold))
           .build();
       final RelNode spoolPlan = executeProgram(ctePlan, spoolProgram, mdProvider, executorProvider, cteMVs, true);
       if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {

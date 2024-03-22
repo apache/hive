@@ -20,30 +20,26 @@ import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rex.RexTableInputRef;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class RemoveUnusedCteRule extends RelOptRule {
 
   private final int referenceThreshold;
+  private final Map<List<String>, Long> tableOccurrences;
 
-  public RemoveUnusedCteRule(int referenceThreshold) {
+  public RemoveUnusedCteRule(Map<List<String>, Long> tableOccurrences, int referenceThreshold) {
     super(operand(TableScan.class, none()));
+    this.tableOccurrences = tableOccurrences;
     this.referenceThreshold = referenceThreshold;
+    assert referenceThreshold > 0;
   }
 
   @Override
   public boolean matches(final RelOptRuleCall call) {
     TableScan scan = call.rel(0);
-    List<String> tableName = scan.getTable().getQualifiedName();
-    Set<RexTableInputRef.RelTableRef> allTables =
-        call.getMetadataQuery().getTableReferences(call.getPlanner().getRoot());
-    if (allTables == null) {
-      return false;
-    }
-    return allTables.stream().filter(t -> t.getQualifiedName().equals(tableName)).count() <= referenceThreshold;
+    return tableOccurrences.getOrDefault(scan.getTable().getQualifiedName(), 0L) <= referenceThreshold;
   }
 
   @Override
