@@ -17,79 +17,119 @@ CREATE TABLE depts
 
 INSERT INTO depts VALUES (0, 'Engineering'), (1, 'Support'), (2, 'Sales');
 -- Find employees of the engineering and support department which have the same salary
-set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionEmptySuggester;
-EXPLAIN CBO SELECT sup.name, eng.name
-FROM (SELECT e.name, e.salary
-      FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
-     (SELECT e.name, e.salary
-      FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
-WHERE sup.salary = eng.salary;
-
-EXPLAIN SELECT sup.name, eng.name
-FROM (SELECT e.name, e.salary
-      FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
-     (SELECT e.name, e.salary
-      FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
-WHERE sup.salary = eng.salary;
-
 SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
      (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
+
+set hive.optimize.cte.materialize.threshold=1;
+set hive.optimize.cte.materialize.full.aggregate.only=false;
 
 set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionJoinSuggester;
 EXPLAIN CBO SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
      (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
 
 EXPLAIN SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
      (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
 
 SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
      (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
 
-set hive.optimize.cte.materialize.threshold=0;
-set hive.optimize.cte.materialize.full.aggregate.only=false;
+set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistrySuggester;
+EXPLAIN CBO SELECT sup.name, eng.name
+FROM (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
+     (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
+WHERE sup.salary = eng.salary;
 
 EXPLAIN SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
      (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
 
 SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Engineering') eng,
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
      (SELECT e.name, e.salary
       FROM emps e
-      INNER JOIN depts d ON e.deptno = d.deptno AND d.name = 'Support') sup
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
+WHERE sup.salary = eng.salary;
+
+set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionEmptySuggester;
+
+EXPLAIN CBO SELECT sup.name, eng.name
+FROM (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
+     (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
+WHERE sup.salary = eng.salary;
+
+EXPLAIN SELECT sup.name, eng.name
+FROM (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
+     (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
+WHERE sup.salary = eng.salary;
+
+SELECT sup.name, eng.name
+FROM (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Engineering') eng,
+     (SELECT e.name, e.salary
+      FROM emps e
+      INNER JOIN depts d ON e.deptno = d.deptno
+      WHERE d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
