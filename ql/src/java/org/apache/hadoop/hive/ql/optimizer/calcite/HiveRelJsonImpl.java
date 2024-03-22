@@ -23,10 +23,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.externalize.RelJsonWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -42,14 +40,14 @@ public class HiveRelJsonImpl extends RelJsonWriter {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRelJsonImpl.class);
 
-  private boolean includeColumnStats = true;
+  private boolean includeTableAndColumnStats = true;
 
   //~ Constructors -------------------------------------------------------------
 
-  public HiveRelJsonImpl(boolean includeColumnStats) {
+  public HiveRelJsonImpl(boolean includeTableAndColumnStats) {
     super();
 
-    this.includeColumnStats = includeColumnStats;
+    this.includeTableAndColumnStats = includeTableAndColumnStats;
     // Upgrade to Calcite 1.23.0 to remove this
     try {
       final Field fieldRelJson = RelJsonWriter.class.getDeclaredField("relJson");
@@ -69,8 +67,6 @@ public class HiveRelJsonImpl extends RelJsonWriter {
     Map<String, Object> map = (Map<String, Object>) relList.get(relList.size() - 1);
     map.put("rowCount", mq.getRowCount(rel));
     if (rel.getInputs().size() == 0) {
-      // This is a leaf, we will print the average row size and schema
-      map.put("avgRowSize", mq.getAverageRowSize(rel));
       map.put("rowType", relJson.toJson(rel.getRowType()));
       // We also include partition columns information
       RelOptHiveTable table = (RelOptHiveTable) rel.getTable();
@@ -94,8 +90,11 @@ public class HiveRelJsonImpl extends RelJsonWriter {
       if (!list.isEmpty()) {
         map.put("virtualColumns", list);
       }
+
+      // This is a leaf, we will print the average row size and schema
       // We also include column stats
-      if (includeColumnStats) {
+      if (includeTableAndColumnStats) {
+        map.put("avgRowSize", mq.getAverageRowSize(rel));
         List<ColStatistics> colStats = table.getColStat(
                 ImmutableBitSet.range(0, table.getNoOfNonVirtualCols()).asList(), true);
         list = jsonBuilder.list();
