@@ -19,16 +19,9 @@
 
 package org.apache.iceberg.rest;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.HMSHandlerProxyFactory;
@@ -48,20 +41,21 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.hive.HiveActor;
 import org.apache.thrift.TException;
+import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.hive.HiveLock;
+import org.apache.iceberg.hive.MetastoreLock;
 
-
-public class HMSCatalogActor extends HiveActor {
-  /**
-   * The metric names prefix.
-   */
-  static final String HMS_METRIC_PREFIX = "hmscatalog.";
+public class HMSCatalogActor implements HiveActor {
+  /** The actor name (catalog). */
+  private final String name;
+  /** The configuration (the Hadoop).  */
+  private final Configuration conf;
   private IHMSHandler hmsHandler;
   private RawStore rawStore;
-  /** The locks in this catalog. */
-  private final ConcurrentMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
 
   public HMSCatalogActor(String name, Configuration configuration) {
-    super(name, configuration);
+    this.name = name;
+    this.conf = configuration;
   }
 
   @Override
@@ -70,71 +64,71 @@ public class HMSCatalogActor extends HiveActor {
   }
 
   @Override
-  protected void alterDatabase(Namespace namespace, Database database) throws TException {
+  public void alterDatabase(Namespace namespace, Database database) throws TException {
     getMS().alterDatabase(name, namespace.level(0), database);
   }
 
   @Override
-  protected void alterTable(String databaseName, String tableName, Table table) throws TException {
+  public void alterTable(String databaseName, String tableName, Table table) throws TException {
     getMS().alterTable(name, databaseName, tableName, table, null);
   }
 
   @Override
-  protected void alterTable(String databaseName, String tableName, Table hmsTable, String metadataLocation)
+  public void alterTable(String databaseName, String tableName, Table hmsTable, String metadataLocation)
       throws TException {
     getMS().alterTable(name, databaseName, tableName, hmsTable, metadataLocation);
   }
 
   @Override
-  protected Database getDatabase(Namespace namespace) throws TException {
+  public Database getDatabase(Namespace namespace) throws TException {
     return getMS().getDatabase(name, namespace.level(0));
   }
 
   @Override
-  protected List<String> listTableNames(String database) throws TException {
+  public List<String> listTableNames(String database) throws TException {
     return getMS().getAllTables(name, database);
   }
 
   @Override
-  protected List<Table> listTables(String database, List<String> tableNames) throws TException {
+  public List<Table> listTables(String database, List<String> tableNames) throws TException {
     return tableNames.isEmpty() ? Collections.emptyList() : getMS().getTableObjectsByName(name, database, tableNames);
   }
 
   @Override
-  protected void createTable(Table table) throws TException {
+  public void createTable(Table table) throws TException {
     getMS().createTable(table);
   }
 
   @Override
-  protected void dropTable(String databaseName, String tableName) throws TException {
+  public void dropTable(String databaseName, String tableName) throws TException {
     getMS().dropTable(name, databaseName, tableName);
   }
 
   @Override
-  protected Table getTable(String databaseName, String tableName) throws TException {
+  public Table getTable(String databaseName, String tableName) throws TException {
     return getMS().getTable(name, databaseName, tableName);
   }
 
   @Override
-  protected void createNamespace(Database database) throws TException {
+  public void createNamespace(Database database) throws TException {
     final IHMSHandler handler = getHandler();
     handler.create_database(database);
   }
 
   @Override
-  protected List<String> listNamespaceNames() throws TException {
+  public List<String> listNamespaceNames() throws TException {
     return  getMS().getAllDatabases(name);
   }
 
   @Override
-  protected void dropNamespace(Namespace namespace) throws TException {
+  public void dropNamespace(Namespace namespace) throws TException {
     String dbName = MetaStoreUtils.prependNotNullCatToDbName(name, namespace.level(0));
     IHMSHandler handler = getHandler();
     handler.drop_database(dbName, false, false);
   }
 
   @Override
-  protected void heartbeat(long txnId, long lockId) throws TException, InterruptedException {
+  public void heartbeat(long txnId, long lockId) throws TException {
     final IHMSHandler handler = getHandler();
     HeartbeatRequest request = new HeartbeatRequest();
     request.setLockid(lockId);
@@ -143,56 +137,32 @@ public class HMSCatalogActor extends HiveActor {
   }
 
   @Override
-  protected LockResponse checkLock(long lockId) throws TException, InterruptedException {
+  public HiveLock newLock(TableMetadata metadata, String catalogName, String database, String tableName) {
+    return new MetastoreLock(conf, this, catalogName, database, tableName);
+  }
+
+  @Override
+  public LockResponse checkLock(long lockId) throws TException {
     final IHMSHandler handler = getHandler();
     return handler.check_lock(new CheckLockRequest(lockId));
   }
 
   @Override
-  protected LockResponse lock(LockRequest request) throws TException, InterruptedException {
+  public LockResponse lock(LockRequest request) throws TException {
     final IHMSHandler handler = getHandler();
     return handler.lock(request);
   }
 
   @Override
-  protected void unlock(long lockId) throws TException, InterruptedException {
+  public void unlock(long lockId) throws TException {
     final IHMSHandler handler = getHandler();
     handler.unlock(new UnlockRequest(lockId));
   }
 
   @Override
-  protected ShowLocksResponse showLocks(ShowLocksRequest request) throws TException, InterruptedException {
+  public ShowLocksResponse showLocks(ShowLocksRequest request) throws TException {
     final IHMSHandler handler = getHandler();
     return handler.show_locks(request);
-  }
-
-  /**
-   * @param route a route/api-call name
-   * @return the metric counter name for the api-call
-   */
-  static String hmsCatalogMetricCount(String route) {
-    return HMS_METRIC_PREFIX + route.toLowerCase() + ".count";
-  }
-
-  /**
-   * @param apis an optional list of known api call names
-   * @return the list of metric names for the HMSCatalog class
-   */
-  public static List<String> getMetricNames(String... apis) {
-    final List<HMSCatalogAdapter.Route> routes;
-    if (apis != null && apis.length > 0) {
-      routes = Arrays.stream(apis)
-          .map(HMSCatalogAdapter.Route::byName)
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-    } else {
-      routes = Arrays.asList(HMSCatalogAdapter.Route.values());
-    }
-    final List<String> metricNames = new ArrayList<>(routes.size());
-    for (HMSCatalogAdapter.Route route : routes) {
-      metricNames.add(hmsCatalogMetricCount(route.name()));
-    }
-    return metricNames;
   }
 
   private IHMSHandler getHandler() throws MetaException {

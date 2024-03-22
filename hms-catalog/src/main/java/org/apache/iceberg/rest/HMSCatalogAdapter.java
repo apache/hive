@@ -21,9 +21,14 @@ package org.apache.iceberg.rest;
 
 import com.codahale.metrics.Counter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -74,6 +79,8 @@ import org.apache.iceberg.util.PropertyUtil;
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements RESTClient {
+  /**  The metric names prefix. */
+  static final String HMS_METRIC_PREFIX = "hmscatalog.";
   private static final Splitter SLASH = Splitter.on('/');
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
@@ -241,12 +248,40 @@ public class HMSCatalogAdapter implements RESTClient {
       return responseClass;
     }
   }
+  /**
+   * @param route a route/api-call name
+   * @return the metric counter name for the api-call
+   */
+  static String hmsCatalogMetricCount(String route) {
+    return HMS_METRIC_PREFIX + route.toLowerCase() + ".count";
+  }
+
+  /**
+   * @param apis an optional list of known api call names
+   * @return the list of metric names for the HMSCatalog class
+   */
+  public static List<String> getMetricNames(String... apis) {
+    final List<Route> routes;
+    if (apis != null && apis.length > 0) {
+      routes = Arrays.stream(apis)
+          .map(HMSCatalogAdapter.Route::byName)
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+    } else {
+      routes = Arrays.asList(HMSCatalogAdapter.Route.values());
+    }
+    final List<String> metricNames = new ArrayList<>(routes.size());
+    for (HMSCatalogAdapter.Route route : routes) {
+      metricNames.add(hmsCatalogMetricCount(route.name()));
+    }
+    return metricNames;
+  }
 
   @SuppressWarnings("MethodLength")
    <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body, Class<T> responseType) {
     // update HMS catalog route counter metric
-    final String metricName = HMSCatalogActor.hmsCatalogMetricCount(route.name());
+    final String metricName = hmsCatalogMetricCount(route.name());
     Counter counter = Metrics.getOrCreateCounter(metricName);
     if (counter != null) {
       counter.inc();

@@ -89,7 +89,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
    * @param properties the properties
    */
   protected void initializeActor(String inputName, Map<String, String> properties) {
-    this.actor = HiveActor.createActor(inputName, conf).initialize(properties);
+    this.actor = HiveActorFactory.createActor(inputName, conf).initialize(properties);
   }
 
   public void initialize(String inputName, Map<String, String> properties) {

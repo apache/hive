@@ -19,12 +19,8 @@
 
 package org.apache.iceberg.hive;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -38,90 +34,43 @@ import org.apache.thrift.TException;
 /**
  * Acts as the Hive client for the HiveCatalog benefit.
  */
-public abstract class HiveActor {
-  /**
-   * The actor class name property key.
-   */
-  public static final String ACTOR_CLASSNAME = "hive.metastore.catalog.actor.class";
-  /**
-   * The actor name (catalog).
-   */
-  @SuppressWarnings("checkstyle:VisibilityModifier")
-  protected final String name;
-  /**
-   * The configuration (the Hadoop).
-   */
-  @SuppressWarnings("checkstyle:VisibilityModifier")
-  protected final Configuration conf;
+public interface HiveActor {
+  HiveActor initialize(Map<String, String> properties);
 
-  public HiveActor(String name, Configuration configuration) {
-    this.name = name;
-    this.conf = configuration;
-  }
+  Database getDatabase(Namespace namespace) throws TException, InterruptedException;
 
-  /**
-   * The method to create an actor.
-   * @param name the actor name
-   * @param conf the actor configuration
-   * @return an actor instance
-   * @throws RuntimeException if instantiation fails
-   */
-  public static HiveActor createActor(String name, Configuration conf) {
-    String clazzName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_CATALOG_ACTOR_CLASS);
-    if (clazzName == null || HiveActor.class.getName().equals(clazzName)) {
-      return new HiveCatalogActor(name, conf);
-    }
-    try {
-      @SuppressWarnings("unchecked")
-      Class<? extends HiveActor> clazz = (Class<? extends HiveActor>) Class.forName(clazzName);
-      Constructor<? extends HiveActor> ctor = clazz.getConstructor(String.class, Configuration.class);
-      return ctor.newInstance(name, conf);
-    } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
-             InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  void alterDatabase(Namespace namespace, Database database) throws TException, InterruptedException;
 
-  public abstract HiveActor initialize(Map<String, String> properties);
+  List<String> listTableNames(String database) throws TException, InterruptedException;
 
-  protected abstract Database getDatabase(Namespace namespace) throws TException, InterruptedException;
+  Table getTable(String fromDatabase, String fromName) throws TException, InterruptedException;
 
-  protected abstract void alterDatabase(Namespace namespace, Database database) throws TException, InterruptedException;
+  List<Table> listTables(String database, List<String> tableNames) throws TException, InterruptedException;
 
-  protected abstract List<String> listTableNames(String database) throws TException, InterruptedException;
+  void alterTable(String fromDatabase, String fromName, Table table) throws TException, InterruptedException;
 
-  protected abstract Table getTable(String fromDatabase, String fromName) throws TException, InterruptedException;
-
-  protected abstract List<Table> listTables(String database, List<String> tableNames)
+  void alterTable(String database, String tableName, Table hmsTable, String expectedMetadataLocation)
       throws TException, InterruptedException;
 
-  protected abstract void alterTable(String fromDatabase, String fromName, Table table)
-      throws TException, InterruptedException;
+  void createTable(Table table) throws TException, InterruptedException;
 
-  protected abstract void alterTable(String database, String tableName, Table hmsTable, String expectedMetadataLocation)
-      throws TException, InterruptedException;
+  void dropTable(String databaseName, String tableName) throws TException, InterruptedException;
 
-  protected abstract void createTable(Table table) throws TException, InterruptedException;
+  void createNamespace(Database database)  throws TException, InterruptedException;
 
-  protected abstract void dropTable(String databaseName, String tableName) throws TException, InterruptedException;
+  List<String> listNamespaceNames() throws TException, InterruptedException;
 
-  protected abstract void createNamespace(Database database) throws TException, InterruptedException;
+  void dropNamespace(Namespace namespace) throws TException, InterruptedException;
 
-  protected abstract List<String> listNamespaceNames() throws TException, InterruptedException;
+  HiveLock newLock(TableMetadata metadata, String catalogName, String database, String tableName);
 
-  protected abstract void dropNamespace(Namespace namespace) throws TException, InterruptedException;
+  void heartbeat(long txnId, long lockId) throws TException, InterruptedException;
 
-  protected HiveLock newLock(TableMetadata metadata, String catalogName, String database, String tableName) {
-    return new MetastoreLock(conf, this, catalogName, database, tableName);
-  }
+  LockResponse checkLock(long lockId) throws TException, InterruptedException;
 
-  protected abstract void heartbeat(long txnId, long lockId) throws TException, InterruptedException;
+  LockResponse lock(LockRequest request) throws TException, InterruptedException;
 
-  protected abstract LockResponse checkLock(long lockId) throws TException, InterruptedException;
+  void unlock(long lockId) throws TException, InterruptedException;
 
-  protected abstract LockResponse lock(LockRequest request) throws TException, InterruptedException;
-
-  protected abstract void unlock(long lockId) throws TException, InterruptedException;
-
-  protected abstract ShowLocksResponse showLocks(ShowLocksRequest request) throws TException, InterruptedException;
+  ShowLocksResponse showLocks(ShowLocksRequest request) throws TException, InterruptedException;
 }

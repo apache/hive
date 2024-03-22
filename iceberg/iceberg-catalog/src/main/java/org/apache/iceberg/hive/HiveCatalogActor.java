@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -39,17 +40,34 @@ import org.apache.thrift.TException;
 /**
  * Acts as the Hive client for the HiveCatalog benefit.
  */
-public class HiveCatalogActor extends HiveActor {
+public class HiveCatalogActor implements HiveActor {
+  /** The actor name (catalog). */
+  private final String name;
+  /** The configuration (the Hadoop).  */
+  private final Configuration conf;
   /** The client pool. */
   private ClientPool<IMetaStoreClient, TException> clients;
 
   public HiveCatalogActor(String name, Configuration configuration) {
-    super(name, configuration);
+    this.name = name;
+    this.conf = configuration;
+  }
+
+  @Override public String toString() {
+    return getClass().getSimpleName() + "{" + name + "}";
   }
 
   @VisibleForTesting
   ClientPool<IMetaStoreClient, TException> clientPool() {
     return clients;
+  }
+
+  protected ClientPool<IMetaStoreClient, TException> createPool(Map<String, String> properties) {
+    return new CachedClientPool(conf, properties);
+  }
+
+  protected Configuration getConf() {
+    return conf;
   }
 
   @Override
@@ -58,17 +76,13 @@ public class HiveCatalogActor extends HiveActor {
     return this;
   }
 
-  protected  ClientPool<IMetaStoreClient, TException> createPool(Map<String, String> properties) {
-    return new CachedClientPool(conf, properties);
-  }
-
   @Override
-  protected Database getDatabase(Namespace namespace) throws TException, InterruptedException {
+  public Database getDatabase(Namespace namespace) throws TException, InterruptedException {
     return clients.run(client -> client.getDatabase(namespace.level(0)));
   }
 
   @Override
-  protected void alterDatabase(Namespace namespace, Database database) throws TException, InterruptedException {
+  public void alterDatabase(Namespace namespace, Database database) throws TException, InterruptedException {
     clients.run(client -> {
       client.alterDatabase(namespace.level(0), database);
       return null;
@@ -76,23 +90,23 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected List<String> listTableNames(String database) throws TException, InterruptedException {
+  public List<String> listTableNames(String database) throws TException, InterruptedException {
     return clients.run(client -> client.getAllTables(database));
   }
 
   @Override
-  protected Table getTable(String fromDatabase, String fromName) throws TException, InterruptedException {
+  public Table getTable(String fromDatabase, String fromName) throws TException, InterruptedException {
     return clients.run(client -> client.getTable(fromDatabase, fromName));
   }
 
   @Override
-  protected List<Table> listTables(String database, List<String> tableNames)
+  public List<Table> listTables(String database, List<String> tableNames)
       throws TException, InterruptedException {
     return clients.run(client -> client.getTableObjectsByName(database, tableNames));
   }
 
   @Override
-  protected void alterTable(String fromDatabase, String fromName, Table table)
+  public void alterTable(String fromDatabase, String fromName, Table table)
       throws TException, InterruptedException {
     clients.run(client -> {
       MetastoreUtil.alterTable(client, fromDatabase, fromName, table);
@@ -101,7 +115,7 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected void alterTable(String database, String tableName, Table hmsTable, String expectedMetadataLocation)
+  public void alterTable(String database, String tableName, Table hmsTable, String expectedMetadataLocation)
       throws TException, InterruptedException {
     clients.run(
         client -> {
@@ -122,7 +136,7 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected void createTable(Table table) throws TException, InterruptedException {
+  public void createTable(Table table) throws TException, InterruptedException {
     clients.run(client -> {
       client.createTable(table);
       return null;
@@ -130,7 +144,7 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected void dropTable(String databaseName, String tableName) throws TException, InterruptedException {
+  public void dropTable(String databaseName, String tableName) throws TException, InterruptedException {
     clients.run(client -> {
       client.dropTable(databaseName, tableName,
           false /* do not delete data */,
@@ -140,7 +154,7 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected void createNamespace(Database database)
+  public void createNamespace(Database database)
       throws TException, InterruptedException {
     clients.run(client -> {
       client.createDatabase(database);
@@ -149,12 +163,12 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected List<String> listNamespaceNames() throws TException, InterruptedException {
+  public List<String> listNamespaceNames() throws TException, InterruptedException {
     return clients.run(IMetaStoreClient::getAllDatabases);
   }
 
   @Override
-  protected void dropNamespace(Namespace namespace) throws TException, InterruptedException {
+  public void dropNamespace(Namespace namespace) throws TException, InterruptedException {
     clients.run(client -> {
       client.dropDatabase(namespace.level(0),
           false /* deleteData */,
@@ -165,7 +179,7 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected void heartbeat(long txnId, long lockId) throws TException, InterruptedException  {
+  public void heartbeat(long txnId, long lockId) throws TException, InterruptedException {
     clients.run(
         client -> {
           client.heartbeat(txnId, lockId);
@@ -174,17 +188,22 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected LockResponse checkLock(long lockId) throws TException, InterruptedException {
+  public HiveLock newLock(TableMetadata metadata, String catalogName, String database, String tableName) {
+    return new MetastoreLock(conf, this, catalogName, database, tableName);
+  }
+
+  @Override
+  public LockResponse checkLock(long lockId) throws TException, InterruptedException {
     return clients.run(client -> client.checkLock(lockId));
   }
 
   @Override
-  protected LockResponse lock(LockRequest request) throws TException, InterruptedException {
+  public LockResponse lock(LockRequest request) throws TException, InterruptedException {
     return clients.run(client -> client.lock(request));
   }
 
   @Override
-  protected void unlock(long lockId) throws TException, InterruptedException {
+  public void unlock(long lockId) throws TException, InterruptedException {
     clients.run(client -> {
       client.unlock(lockId);
       return null;
@@ -192,7 +211,7 @@ public class HiveCatalogActor extends HiveActor {
   }
 
   @Override
-  protected ShowLocksResponse showLocks(ShowLocksRequest request) throws TException, InterruptedException {
+  public ShowLocksResponse showLocks(ShowLocksRequest request) throws TException, InterruptedException {
     return clients.run(client -> client.showLocks(request));
   }
 }

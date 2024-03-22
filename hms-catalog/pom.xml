@@ -257,6 +257,41 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <phase>generate-test-sources</phase>
+            <configuration>
+              <target>
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite='true' verbose='true'>
+                  <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/test/java/org/apache/hadoop/hive/metastore/utils">
+                    <include name="TestTxnDbUtil.java"/>
+                  </fileset>
+                </copy>
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite='true' verbose='true'>
+                  <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/test/java/org/apache/hadoop/hive/metastore">
+                    <include name="MetaStoreTestUtils.java"/>
+                  </fileset>
+                </copy>
+                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite='true' verbose='true'>
+                  <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/main/sql/derby">
+                    <include name="hive-schema-4.1.0.derby.sql"/>
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
+            <id>copy</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 

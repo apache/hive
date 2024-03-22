@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -130,11 +132,11 @@ public abstract class HMSTestBase {
   protected HiveMetaStoreClient metastoreClient;
 
   protected int createMetastoreServer(Configuration conf) throws Exception {
-    return HMSTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
   protected void stopMetastoreServer(int port) {
-    HMSTestUtils.close(port);
+    MetaStoreTestUtils.close(port);
   }
 
   protected abstract void setCatalogClass(Configuration conf);
@@ -143,7 +145,7 @@ public abstract class HMSTestBase {
   public void setUp() throws Exception {
     NS = "hms" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
-    HMSTestUtils.setConfForStandloneMode(conf);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), true);
 
     // "hive.metastore.warehouse.dir"
@@ -218,7 +220,7 @@ public abstract class HMSTestBase {
   static Map<String, Long> reportMetricCounters(String... apis) {
     Map<String, Long> map = new LinkedHashMap<>();
     com.codahale.metrics.MetricRegistry registry = Metrics.getRegistry();
-    List<String> names = HMSCatalogActor.getMetricNames(apis);
+    List<String> names = HMSCatalogAdapter.getMetricNames(apis);
     for(String name : names) {
       Counter counter = registry.counter(name);
       if (counter != null) {
