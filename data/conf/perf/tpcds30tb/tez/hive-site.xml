@@ -213,6 +213,6 @@
     </property>
     <property>
         <name>hive.optimize.cte.suggester.class</name>
-        <value>org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistrySuggester</value>
+        <value>org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester</value>
     </property>
 </configuration>

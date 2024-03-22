@@ -65,7 +65,7 @@ FROM (SELECT e.name, e.salary
       WHERE d.name = 'Support') sup
 WHERE sup.salary = eng.salary;
 
-set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistrySuggester;
+set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester;
 EXPLAIN CBO SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary
       FROM emps e

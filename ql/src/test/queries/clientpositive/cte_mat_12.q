@@ -5,7 +5,7 @@ insert into t0(col0) values
  (200),(200);
 
 
-set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistrySuggester;
+set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester;
 set hive.optimize.cte.materialize.threshold=1;
 
 set hive.optimize.cte.materialize.full.aggregate.only=true;
