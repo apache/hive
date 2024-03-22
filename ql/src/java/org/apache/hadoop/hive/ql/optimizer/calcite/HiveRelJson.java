@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.externalize.RelEnumTypes;
 import org.apache.calcite.rel.externalize.RelJson;
 import org.apache.calcite.rel.type.RelDataType;
@@ -67,7 +68,16 @@ public class HiveRelJson extends RelJson {
     if (value instanceof RelDataType) {
       return toJson((RelDataType) value);
     }
+    if (value instanceof AggregateCall) {
+      return toJson((AggregateCall) value);
+    }
     return super.toJson(value);
+  }
+
+  public Object toJson(AggregateCall node) {
+    final Map<String, Object> map = (Map<String, Object>) super.toJson(node);
+    map.put("type", toJson(node.getType()));
+    return map;
   }
 
   private Object toJson(RelDataTypeField node) {
