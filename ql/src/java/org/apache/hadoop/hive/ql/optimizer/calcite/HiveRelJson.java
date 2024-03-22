@@ -159,6 +159,7 @@ public class HiveRelJson extends RelJson {
           final RexCall call = (RexCall) node;
           map = jsonBuilder.map();
           map.put("op", toJson(call.getOperator()));
+          map.put("type", toJson(call.getType()));
           final List<Object> list = jsonBuilder.list();
           for (RexNode operand : call.getOperands()) {
             list.add(toJson(operand));
