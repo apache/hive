@@ -5607,8 +5607,7 @@ public class HiveConf extends Configuration {
             "hive.zookeeper.ssl.truststore.location," +
             "hive.zookeeper.ssl.truststore.password," +
             "hive.zookeeper.ssl.truststore.type," +
-            "hive.iceberg.allow.datafiles.in.table.location.only," +
-            "hive.rewrite.data.policy",
+            "hive.iceberg.allow.datafiles.in.table.location.only",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -5768,10 +5767,7 @@ public class HiveConf extends Configuration {
 
     HIVE_ADDITIONAL_CONFIG_FILES("hive.additional.config.files", "",
             "The names of additional config files, such as ldap-site.xml," +
-                    "tez-site.xml, etc in comma separated list."),
-
-    REWRITE_POLICY("hive.rewrite.data.policy", "DEFAULT", 
-        "Defines the rewrite policy, the valid values are those defined in RewritePolicy enum"); 
+                    "tez-site.xml, etc in comma separated list.");
 
     public final String varname;
     public final String altName;

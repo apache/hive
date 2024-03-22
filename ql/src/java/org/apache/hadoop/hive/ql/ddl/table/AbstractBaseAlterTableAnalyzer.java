@@ -99,7 +99,7 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
 
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
         // Fully specified partition spec
-        partition = PartitionUtils.getPartitions(db, table, partitionSpec).get(0);
+        partition = PartitionUtils.getPartitions(db, table, partitionSpec, true).get(0);
         outputs.add(new WriteEntity(partition, writeType));
       } else {
         // Partial partition spec supplied. Make sure this is allowed.

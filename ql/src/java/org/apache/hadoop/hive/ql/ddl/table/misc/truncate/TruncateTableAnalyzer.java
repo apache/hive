@@ -163,7 +163,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
-        Partition partition = PartitionUtils.getPartitions(db, table, partitionSpec).get(0);
+        Partition partition = PartitionUtils.getPartitions(db, table, partitionSpec, true).get(0);
         outputs.add(new WriteEntity(partition, writeType));
       } else {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, false);

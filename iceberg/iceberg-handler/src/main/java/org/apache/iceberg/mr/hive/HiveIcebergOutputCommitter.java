@@ -42,14 +42,13 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context.Operation;
-import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactOperation;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
@@ -476,18 +475,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation, filterExpr);
       }
     } else {
-
-      RewritePolicy rewritePolicy = RewritePolicy.fromString(outputTable.jobContexts.stream()
-          .findAny()
-          .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
-          .orElse(RewritePolicy.DEFAULT.name()));
-
-      List<String> partitionSpec = Arrays.asList(outputTable.jobContexts.stream()
-          .findAny()
-          .map(x -> x.getJobConf().get(AlterTableCompactOperation.compactPartition))
-          .orElse(StringUtils.EMPTY));
-
-      commitOverwrite(table, branchName, startTime, filesForCommit, rewritePolicy, partitionSpec);
+      commitOverwrite(table, branchName, startTime, filesForCommit);
     }
   }
 
@@ -572,20 +560,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param table The table we are changing
    * @param startTime The start time of the commit - used only for logging
    * @param results The object containing the new files
-   * @param rewritePolicy The rewrite policy to use for the insert overwrite commit
    */
-  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results,
-      RewritePolicy rewritePolicy, List<String> partitionSpec) {
+  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
       Transaction transaction = table.newTransaction();
-      if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
+      String partitionSpec = SessionState.get().getConf().get(AlterTableCompactOperation.compactPartition);
+      if (partitionSpec == null || partitionSpec.isEmpty()) {
         DeleteFiles delete = transaction.newDelete();
         delete.deleteFromRowFilter(Expressions.alwaysTrue());
         delete.commit();
-      } else if (rewritePolicy == RewritePolicy.SINGLE_PARTITION) {
+      } else {
         try {
-          HiveIcebergMetaHook.truncatePartitionBySpec(table, partitionSpec, transaction.newDelete());
+          HiveIcebergMetaHook.truncatePartitionBySpec(table, Arrays.asList(partitionSpec), transaction.newDelete());
         } catch (Exception e) {
           throw new RuntimeException("Failed truncating partitions", e);
         }

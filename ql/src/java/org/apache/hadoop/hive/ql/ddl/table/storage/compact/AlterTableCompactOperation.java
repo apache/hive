@@ -136,7 +136,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       }
     } else {
       Map<String, String> partitionSpec = desc.getPartitionSpec();
-      partitions.addAll(PartitionUtils.getPartitions(context.getDb(), table, partitionSpec));
+      partitions.addAll(PartitionUtils.getPartitions(context.getDb(), table, partitionSpec, false));
       if (partitions.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       } else if (partitions.isEmpty()) {

@@ -21,11 +21,8 @@ package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
 import java.util.Map;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -54,16 +51,15 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
 
     String partSpec = context.getCompactionInfo().partName;
     String compactionQuery;
-    RewritePolicy rewritePolicy;
+    SessionState sessionState = setupQueryCompactionSession(context.getConf(),
+        context.getCompactionInfo(), tblProperties);
 
     if (partSpec == null) {
       compactionQuery = String.format("insert overwrite table %s select * from %<s",
           compactTableName);
-      rewritePolicy = RewritePolicy.ALL_PARTITIONS;
     } else {
       Table table = IcebergTableUtil.getTable(context.getConf(), context.getTable());
       PartitionData partitionData = DataFiles.data(table.spec(), partSpec);
-      context.getConf().set(AlterTableCompactOperation.compactPartition, partSpec);
       try {
         compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) select * from %1$s where %3$s",
             compactTableName, partDataToSQL(partitionData, partSpec, ","),
@@ -71,20 +67,17 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       } catch (MetaException e) {
         throw new HiveException("Failed constructing compaction query with partition spec", e);
       }
-      rewritePolicy = RewritePolicy.SINGLE_PARTITION;
     }
 
-    SessionState sessionState = setupQueryCompactionSession(context.getConf(),
-        context.getCompactionInfo(), tblProperties);
-    HiveConf.setVar(context.getConf(), ConfVars.REWRITE_POLICY, rewritePolicy.name());
     try {
       DriverUtils.runOnDriver(context.getConf(), sessionState, compactionQuery);
       LOG.info("Completed compaction for table {}", compactTableName);
     } catch (HiveException e) {
-      LOG.error("Error doing query based {} compaction", rewritePolicy.name(), e);
+      LOG.error("Error doing query based compaction", e);
       throw new RuntimeException(e);
     } finally {
       sessionState.setCompaction(false);
+      sessionState.getConf().unset(AlterTableCompactOperation.compactPartition);
     }
 
     return true;

@@ -112,7 +112,19 @@ public final class PartitionUtils {
       boolean throwException) throws SemanticException {
     List<Partition> partitions;
     try {
-      partitions = partitionSpec == null ? db.getPartitions(table) : db.getPartitions(table, partitionSpec);
+      if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+        table.getStorageHandler().validatePartSpec(table, partitionSpec);
+        try {
+          String partName = Warehouse.makePartName(partitionSpec, false);
+          partitions = new ArrayList<>();
+          partitions.add(new DummyPartition(table, partName, partitionSpec));
+          return partitions;
+        } catch (MetaException e) {
+          throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+        }
+      } else {
+        partitions = partitionSpec == null ? db.getPartitions(table) : db.getPartitions(table, partitionSpec); 
+      }
     } catch (Exception e) {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partitionSpec), e);
     }
@@ -156,28 +168,6 @@ public final class PartitionUtils {
       for (Partition p : parts) {
         // Don't request any locks here, as the table has already been locked.
         outputs.add(new WriteEntity(p, writeType));
-      }
-    }
-  }
-
-  public static List<Partition> getPartitions(Hive db, Table table, Map<String, String> partitionSpec) 
-      throws SemanticException {
-    List<Partition> partitions = new ArrayList<>();
-    if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
-      table.getStorageHandler().validatePartSpec(table, partitionSpec);
-      try {
-        String partName = Warehouse.makePartName(partitionSpec, false);
-        partitions.add(new DummyPartition(table, partName, partitionSpec));
-        return partitions;
-      } catch (MetaException e) {
-        throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
-      }
-    }
-    else {
-      try {
-        return db.getPartitions(table, partitionSpec);
-      } catch (HiveException e) {
-        throw new SemanticException(e);
       }
     }
   }
