@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>hive</artifactId>
     <groupId>org.apache.hive</groupId>
@@ -149,28 +147,28 @@
       </exclusions>
     </dependency>
     <dependency>
-    <groupId>org.apache.hadoop</groupId>
-    <artifactId>hadoop-hdfs-client</artifactId>
-    <version>${hadoop.version}</version>
-    <exclusions>
-      <exclusion>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-      </exclusion>
-      <exclusion>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-reload4j</artifactId>
-      </exclusion>
-      <exclusion>
-        <groupId>ch.qos.reload4j</groupId>
-        <artifactId>reload4j</artifactId>
-      </exclusion>
-      <exclusion>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-      </exclusion>
-    </exclusions>
-  </dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs-client</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
@@ -258,17 +256,17 @@
             <phase>generate-test-sources</phase>
             <configuration>
               <target>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite='true' verbose='true'>
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite="true" verbose="true">
                   <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/test/java/org/apache/hadoop/hive/metastore/utils">
                     <include name="TestTxnDbUtil.java"/>
                   </fileset>
                 </copy>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite='true' verbose='true'>
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite="true" verbose="true">
                   <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/test/java/org/apache/hadoop/hive/metastore">
                     <include name="MetaStoreTestUtils.java"/>
                   </fileset>
                 </copy>
-                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite='true' verbose='true'>
+                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite="true" verbose="true">
                   <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/main/sql/derby">
                     <include name="hive-schema-4.1.0.derby.sql"/>
                   </fileset>
