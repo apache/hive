@@ -12,7 +12,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache</groupId>
@@ -177,9 +178,9 @@
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
-
+    <!--
     <thrift.home>/usr/local</thrift.home>
-
+    -->
     <log4j2.version>2.18.0</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
@@ -1830,9 +1831,11 @@
                   <workingDirectory>${basedir}</workingDirectory>
                   <arguments>
                     <argument>-c</argument>
-                    <argument>${thrift.home}/bin/thrift -version | fgrep 'Thrift version ${libthrift.version}' &amp;&amp; exit 0;
+                    <argument>${thrift.home}/bin/thrift -version | fgrep 'Thrift version ${libthrift.version}' &amp;&amp;
+                      exit 0;
                       echo "=================================================================================";
-                      echo "========== [FATAL] Build is configured to require Thrift version ${libthrift.version} =========";
+                      echo "========== [FATAL] Build is configured to require Thrift version ${libthrift.version}
+                      =========";
                       echo "========== Currently installed: ";
                       ${thrift.home}/bin/thrift -version;
                       echo "=================================================================================";
@@ -1852,8 +1855,10 @@
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" classpathref="maven.plugin.classpath"/>
-                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
+                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
+                             classpathref="maven.plugin.classpath"/>
+                    <property name="thrift.args"
+                              value="-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
                     <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
                     <delete dir="${thrift.gen.dir}"/>
                     <mkdir dir="${thrift.gen.dir}"/>
@@ -1864,7 +1869,8 @@
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
                         <exec executable="${thrift.home}/bin/thrift" failonerror="true" dir=".">
-                          <arg line="${thrift.args} -strict -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
+                          <arg
+                              line="${thrift.args} -strict -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
                         </exec>
                       </sequential>
                     </for>

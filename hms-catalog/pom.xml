@@ -8,10 +8,8 @@
     <version>4.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
   <artifactId>hms-catalog</artifactId>
   <version>1.0.1-SNAPSHOT</version>
-
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <maven.compiler.source>8</maven.compiler.source>
@@ -22,7 +20,6 @@
     <revision>${hive.version}</revision>
   </properties>
   <dependencies>
-
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
@@ -58,7 +55,6 @@
       <artifactId>iceberg-bundled-guava</artifactId>
       <version>${iceberg.version}</version>
     </dependency>
-
     <!-- Intellij dislikes shaded Iceberg: uncomment the following block helps when coding/debugging -->
     <!--
     <dependency>
@@ -74,7 +70,6 @@
       <optional>true</optional>
     </dependency>
     -->
-
     <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5</artifactId>
@@ -85,7 +80,6 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-jre8-standalone</artifactId>
@@ -226,7 +220,6 @@
   </dependencies>
   <build>
     <plugins>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -238,7 +231,6 @@
           </includes>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -257,7 +249,6 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -291,9 +282,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
-
-
 </project>
