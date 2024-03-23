@@ -10,7 +10,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-iceberg</artifactId>
@@ -23,18 +24,17 @@
   <packaging>jar</packaging>
   <name>Hive Iceberg Shading</name>
   <description>
-        This module collects all required Iceberg modules and their dependencies, and shades them.
-        Consuming modules only need to mark this module as their dependency to get any required Iceberg libs.
-        This module has no sources of its own, only the built jar file contains the gathered and shaded libs.
-        For Intellij this module is recommended to be ignored, to avoid the dependent modules considering this as a
-        module dependency, they should see this as a library dependency instead.
-    </description>
+    This module collects all required Iceberg modules and their dependencies, and shades them.
+    Consuming modules only need to mark this module as their dependency to get any required Iceberg libs.
+    This module has no sources of its own, only the built jar file contains the gathered and shaded libs.
+    For Intellij this module is recommended to be ignored, to avoid the dependent modules considering this as a
+    module dependency, they should see this as a library dependency instead.
+  </description>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <path.to.iceberg.root>..</path.to.iceberg.root>
     <shade.relocation.package.prefix>org.apache.hive.iceberg</shade.relocation.package.prefix>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -61,7 +61,6 @@
       <optional>true</optional>
     </dependency>
   </dependencies>
-
   <profiles>
     <profile>
       <id>shaded-build</id>

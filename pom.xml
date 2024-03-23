@@ -1709,7 +1709,8 @@
             <!-- required for hive-exec jar path and tests which reference a jar -->
             <maven.local.repository>${maven.repo.local}</maven.local.repository>
             <mapred.job.tracker>local</mapred.job.tracker>
-            <log4j.configurationFile>${test.log4j.scheme}${test.conf.dir}/hive-log4j2.properties</log4j.configurationFile>
+            <log4j.configurationFile>${test.log4j.scheme}${test.conf.dir}/hive-log4j2.properties
+            </log4j.configurationFile>
             <hive.test.console.log.level>${test.console.log.level}</hive.test.console.log.level>
             <log4j.debug>true</log4j.debug>
             <!-- don't dirty up /tmp -->

@@ -10,20 +10,19 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
     <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg</artifactId>
   <version>4.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Iceberg Modules</name>
-
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
@@ -44,17 +43,13 @@
     <hive.version>${project.parent.version}</hive.version>
     <revision>${hive.version}</revision>
   </properties>
-
   <modules>
     <module>patched-iceberg-api</module>
     <module>patched-iceberg-core</module>
-
     <module>iceberg-shading</module>
-
     <module>iceberg-catalog</module>
     <module>iceberg-handler</module>
   </modules>
-
   <dependencies>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -220,7 +215,7 @@
             <removeUnusedImports/>
             <importOrder>
               <!-- normal imports, static imports -->
-              <order>,\# </order>
+              <order>,\#</order>
             </importOrder>
             <trimTrailingWhitespace/>
             <endWithNewline/>
@@ -248,7 +243,8 @@
           <skip>${validate.skip}</skip>
           <propertyExpansion>config_loc=${basedir}/${path.to.iceberg.root}/checkstyle/</propertyExpansion>
           <configLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle.xml</configLocation>
-          <suppressionsLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+          <suppressionsLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle-suppressions.xml
+          </suppressionsLocation>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
           <encoding>UTF-8</encoding>
           <consoleOutput>true</consoleOutput>
@@ -280,7 +276,9 @@
               <compilerArgs>
                 <arg>-XDcompilePolicy=simple</arg>
                 <arg>-Xplugin:ErrorProne -Xep:BanSerializableRead:WARN</arg>
-                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar</arg>
+                <arg>
+                  -J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar
+                </arg>
               </compilerArgs>
               <annotationProcessorPaths>
                 <path>
