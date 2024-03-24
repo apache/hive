@@ -58,12 +58,12 @@ public class GenericUDFIcebergHour extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 1) {
       throw new UDFArgumentLengthException(
-        "ICEBERG_YEAR requires 1 arguments (value), but got " + arguments.length);
+        "ICEBERG_HOUR requires 1 arguments (value), but got " + arguments.length);
     }
 
     if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentException(
-        "ICEBERG_YEAR first argument takes primitive types, got " + argumentOI.getTypeName());
+        "ICEBERG_HOUR first argument takes primitive types, got " + argumentOI.getTypeName());
     }
     argumentOI = (PrimitiveObjectInspector) arguments[0];
 
@@ -76,7 +76,7 @@ public class GenericUDFIcebergHour extends GenericUDF {
         Function<Object, Integer> timestampTransform = Transforms.hour().bind(Types.TimestampType.withoutZone());
         evaluator = arg -> {
           TimestampWritableV2 val = (TimestampWritableV2) converter.convert(arg.get());
-          result.set(timestampTransform.apply(val.getNanos() / 1000L));
+          result.set(timestampTransform.apply(Double.valueOf(val.getMicros()).longValue()));
         };
         break;
 
@@ -86,7 +86,7 @@ public class GenericUDFIcebergHour extends GenericUDF {
         Function<Object, Integer> timestampLocalTzTransform = Transforms.hour().bind(Types.TimestampType.withZone());
         evaluator = arg -> {
           TimestampLocalTZWritable val = (TimestampLocalTZWritable) converter.convert(arg.get());
-          result.set(timestampLocalTzTransform.apply(val.getNanos() / 1000L));
+          result.set(timestampLocalTzTransform.apply(Double.valueOf(val.getMicros()).longValue()));
         };
         break;
 

@@ -534,6 +534,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @SuppressWarnings("rawtypes")
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     final Operator sinkOp;
+    PerfLogger perfLogger = SessionState.getPerfLogger();
 
     if (!runCBO) {
       sinkOp = super.genOPTree(ast, plannerCtx);
@@ -567,8 +568,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         try {
           // 0. Gen Optimized Plan
+          perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.GENERATE_LOGICAL_PLAN);
           RelNode newPlan = logicalPlan();
+          perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.GENERATE_LOGICAL_PLAN);
 
+          perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.GENERATE_OPERATOR_TREE);
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
@@ -665,6 +669,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               LOG.trace(newAST.dump());
             }
           }
+          perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.GENERATE_OPERATOR_TREE);
         } catch (Exception e) {
           LOG.error("CBO failed, skipping CBO. ", e);
 
@@ -1602,6 +1607,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     @Override
     public RelNode apply(RelOptCluster cluster, RelOptSchema relOptSchema, SchemaPlus rootSchema) {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PLAN_GENERATION);
       RelNode calcitePlan;
       subqueryId = -1;
 
@@ -1616,7 +1623,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       this.relOptSchema = relOptSchema;
       this.functionHelper = new HiveFunctionHelper(rexBuilder);
 
-      PerfLogger perfLogger = SessionState.getPerfLogger();
       // 1. Gen Calcite Plan
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
@@ -1632,12 +1638,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         semanticException = e;
         throw new RuntimeException(e);
       }
-      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.PLAN_GENERATION);
 
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();
       calcitePlan.getCluster().getPlanner().setExecutor(executorProvider);
@@ -1654,8 +1661,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       HiveRelFieldTrimmer.get()
           .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
               calcitePlan, this.columnAccessInfo, this.viewProjectToTableSchema);
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
 
       //Remove subquery
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.REMOVING_SUBQUERY);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calcitePlan));
       }
@@ -1663,10 +1672,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after removing subquery:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.REMOVING_SUBQUERY);
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.DECORRELATION);
       calcitePlan = HiveRelDecorrelator.decorrelateQuery(calcitePlan);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.DECORRELATION);
 
       // Validate query materialization for query results caching. This check needs
       // to occur before constant folding, which may remove some function calls
@@ -1675,21 +1687,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // for rewriting, it should pass all checks done for query results caching
       // and on top of that we should check that it only contains operators that
       // are supported by the rewriting algorithm.
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.VALIDATE_QUERY_MATERIALIZATION);
       HiveRelOptMaterializationValidator materializationValidator = new HiveRelOptMaterializationValidator();
       materializationValidator.validate(calcitePlan);
       setInvalidResultCacheReason(
           materializationValidator.getResultCacheInvalidReason());
       setMaterializationValidationResult(
           materializationValidator.getAutomaticRewritingValidationResult());
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.VALIDATE_QUERY_MATERIALIZATION);
 
       // 2. Apply pre-join order optimizations
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PREJOIN_ORDERING);
       calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after pre-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.PREJOIN_ORDERING);
       // 3. Materialized view based rewriting
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.MV_REWRITING);
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
                getQB().hasTableDefined() &&
@@ -1700,10 +1717,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.debug("Plan after view-based rewriting:\n" + RelOptUtil.toString(calcitePlan));
         }
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITING);
 
       // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
       //    the rest of optimizations
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.JOIN_REORDERING);
       if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
         calcitePlan = applyJoinOrderingTransform(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
         if (LOG.isDebugEnabled()) {
@@ -1712,12 +1731,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         disableSemJoinReordering = false;
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.JOIN_REORDERING);
 
       // 5. Apply post-join order optimizations
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.POSTJOIN_ORDERING);
       calcitePlan = applyPostJoinOrderingTransform(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.POSTJOIN_ORDERING);
+      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.HIVE_SORT_PREDICATES);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         calcitePlan = calcitePlan.accept(new HiveFilterSortPredicates(noColsMissingStats));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.HIVE_SORT_PREDICATES);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
@@ -1739,9 +1763,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
-
-      PerfLogger perfLogger = SessionState.getPerfLogger();
-
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
       final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
       final boolean allowDisjunctivePredicates = conf.getBoolVar(ConfVars.HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN);
@@ -1939,10 +1960,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE);
 
       // Trigger program
-      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
-      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-          "Calcite: Prejoin ordering transformation");
 
       return basePlan;
     }
@@ -1959,7 +1977,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     protected RelNode applyMaterializedViewRewriting(RelOptPlanner planner, RelNode basePlan,
         RelMetadataProvider mdProvider, RexExecutor executorProvider) {
       final RelOptCluster optCluster = basePlan.getCluster();
-      final PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final boolean useMaterializedViewsRegistry =
           !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname).equals("DUMMY");
@@ -1992,8 +2009,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // There are no materializations, we can return the original plan
         return calcitePreMVRewritingPlan;
       }
-
-      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
       // We need to expand IN/BETWEEN expressions when materialized view rewriting
       // is triggered since otherwise this may prevent some rewritings from happening
@@ -2042,8 +2057,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Restore default cost model
       optCluster.invalidateMetadataQuery();
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
-
-      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
 
       List<Table> materializedViewsUsedOriginalPlan = getMaterializedViewsUsed(calcitePreMVRewritingPlan);
       List<Table> materializedViewsUsedAfterRewrite = getMaterializedViewsUsed(basePlan);
@@ -2140,7 +2153,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * @return
      */
     private RelNode applyJoinOrderingTransform(RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final HepProgramBuilder program = new HepProgramBuilder();
       // Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin.
@@ -2165,7 +2177,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
           new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
 
-      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       RelNode calciteOptimizedPlan;
       try {
         calciteOptimizedPlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
@@ -2179,7 +2190,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           throw e;
         }
       }
-      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Join Reordering");
 
       return calciteOptimizedPlan;
     }
@@ -2196,7 +2206,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * @return
      */
     private RelNode applyPostJoinOrderingTransform(RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final HepProgramBuilder program = new HepProgramBuilder();
 
@@ -2321,10 +2330,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // Trigger program
-      perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
-      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-          "Calcite: Postjoin ordering transformation");
 
       return basePlan;
     }

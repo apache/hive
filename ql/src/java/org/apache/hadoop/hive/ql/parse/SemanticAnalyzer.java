@@ -181,6 +181,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.MaterializationValidationResult;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -13118,6 +13119,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("checkstyle:methodlength")
   void analyzeInternal(ASTNode ast, Supplier<PlannerContext> pcf) throws SemanticException {
     LOG.info("Starting Semantic Analysis");
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.GENERATE_RESOLVED_PARSETREE);
     // 1. Generate Resolved Parse tree from syntax tree
     boolean needsTransform = needsTransform();
     //change the location of position alias process here
@@ -13168,8 +13171,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       astForMasking = ast;
     }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.GENERATE_RESOLVED_PARSETREE);
 
     // 2. Gen OP Tree from resolved Parse Tree
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.LOGICALPLAN_AND_HIVE_OPERATOR_TREE);
     sinkOp = genOPTree(ast, plannerCtx);
 
     boolean usesMasking = false;
@@ -13216,8 +13221,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return;
       }
     }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.LOGICALPLAN_AND_HIVE_OPERATOR_TREE);
 
     // 3. Deduce Resultset Schema
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.DEDUCE_RESULTSET_SCHEMA);
     if ((forViewCreation || createVwDesc != null) && !this.ctx.isCboSucceeded()) {
       resultSchema = convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
     } else {
@@ -13232,8 +13239,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       }
     }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.DEDUCE_RESULTSET_SCHEMA);
 
     // 4. Generate Parse Context for Optimizer & Physical compiler
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PARSE_CONTEXT_GENERATION);
     copyInfoToQueryProperties(queryProperties);
     ParseContext pCtx = new ParseContext(queryState, opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
@@ -13267,8 +13276,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.PARSE_CONTEXT_GENERATION);
 
     // 5. Take care of view creation
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.SAVE_AND_VALIDATE_VIEW);
     if (createVwDesc != null) {
       if (ctx.getExplainAnalyze() == AnalyzeState.RUNNING) {
         return;
@@ -13284,9 +13295,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       createVwDesc.setTablesUsed(pCtx.getTablesUsed());
     }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.SAVE_AND_VALIDATE_VIEW);
 
     // If we're creating views and ColumnAccessInfo is already created, we should not run these, since
     // it means that in step 2, the ColumnAccessInfo was already created
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.LOGICAL_OPTIMIZATION);
     if (!forViewCreation ||  getColumnAccessInfo() == null) {
       // 6. Generate table access stats if required
       if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS)) {
@@ -13321,6 +13334,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
       }
     }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.LOGICAL_OPTIMIZATION);
 
     if (forViewCreation) {
       return;
@@ -13328,9 +13342,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
     // TEZ..)
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PHYSICAL_OPTIMIZATION);
     compilePlan(pCtx);
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.PHYSICAL_OPTIMIZATION);
 
     //find all Acid FileSinkOperatorS
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.POST_PROCESSING);
     new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
 
     // 10. Attach CTAS/Insert-Commit-hooks for Storage Handlers
@@ -13372,6 +13389,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.POST_PROCESSING);
   }
 
   private void putAccessedColumnsToReadEntity(Set<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {

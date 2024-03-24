@@ -87,7 +87,7 @@ public class GenericUDFIcebergDay extends GenericUDF {
         Function<Object, Integer> timestampTransform = Transforms.day().bind(Types.TimestampType.withoutZone());
         evaluator = arg -> {
           TimestampWritableV2 val = (TimestampWritableV2) converter.convert(arg.get());
-          result.set(timestampTransform.apply(val.getNanos() / 1000L));
+          result.set(timestampTransform.apply(Double.valueOf(val.getMicros()).longValue()));
         };
         break;
 
@@ -97,7 +97,7 @@ public class GenericUDFIcebergDay extends GenericUDF {
         Function<Object, Integer> timestampLocalTzTransform = Transforms.day().bind(Types.TimestampType.withZone());
         evaluator = arg -> {
           TimestampLocalTZWritable val = (TimestampLocalTZWritable) converter.convert(arg.get());
-          result.set(timestampLocalTzTransform.apply(val.getNanos() / 1000L));
+          result.set(timestampLocalTzTransform.apply(Double.valueOf(val.getMicros()).longValue()));
         };
         break;
 
