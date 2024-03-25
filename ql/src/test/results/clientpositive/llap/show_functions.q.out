@@ -46,6 +46,7 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
 array_contains
 array_distinct
 array_except
@@ -675,6 +676,7 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
 array_contains
 array_distinct
 array_except
