@@ -89,4 +89,12 @@ public class IcebergBranchExec {
       table.manageSnapshots().removeBranch(branchName).commit();
     }
   }
+
+  public static void renameBranch(Table table, AlterTableSnapshotRefSpec.RenameSnapshotrefSpec renameSnapshotrefSpec) {
+    String sourceBranch = renameSnapshotrefSpec.getSourceBranchName();
+    String targetBranch = renameSnapshotrefSpec.getTargetBranchName();
+
+    LOG.info("Renaming branch {} to {} on iceberg table {}", sourceBranch, targetBranch, table.name());
+    table.manageSnapshots().renameBranch(sourceBranch, targetBranch).commit();
+  }
 }
