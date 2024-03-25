@@ -107,7 +107,7 @@ POSTHOOK: Input: default@simple_table
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(mycol=[$6])
-  HiveFilter(condition=[=(CAST($6):DOUBLE, 1)])
+  HiveFilter(condition=[=(CAST($6):DOUBLE, 1E0)])
     HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) mytable.mycol)])
       HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
 
