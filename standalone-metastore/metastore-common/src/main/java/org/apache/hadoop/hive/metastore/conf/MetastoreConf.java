@@ -2242,9 +2242,8 @@ public class MetastoreConf {
    * @return value, or default value if value not in config file
    */
   public static String getVar(Configuration conf, ConfVars var) {
-    assert var.defaultVal.getClass() == String.class;
     String val = conf.get(var.varname);
-    return val == null ? conf.get(var.hiveName, (String)var.defaultVal) : val;
+    return val == null ? conf.get(var.hiveName, var.defaultVal.toString()) : val;
   }
 
   /**
@@ -2267,10 +2266,9 @@ public class MetastoreConf {
    * @return collection of strings.  If the value is unset it will return an empty collection.
    */
   public static Collection<String> getStringCollection(Configuration conf, ConfVars var) {
-    assert var.defaultVal.getClass() == String.class;
     String val = conf.get(var.varname);
     if (val == null) {
-      val = conf.get(var.hiveName, (String)var.defaultVal);
+      val = conf.get(var.hiveName, var.defaultVal.toString());
     }
     if (val == null) {
       return Collections.emptySet();
