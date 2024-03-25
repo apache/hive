@@ -16,6 +16,10 @@ CREATE TABLE depts
 );
 
 INSERT INTO depts VALUES (0, 'Engineering'), (1, 'Support'), (2, 'Sales');
+
+-- Disable CommonTableExpressionAutoTuningHook
+set hive.query.lifetime.hooks=;
+
 -- Find employees of the engineering and support department which have the same salary
 SELECT sup.name, eng.name
 FROM (SELECT e.name, e.salary

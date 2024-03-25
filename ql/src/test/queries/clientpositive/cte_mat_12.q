@@ -4,6 +4,8 @@ insert into t0(col0) values
  (100),(100),(100),
  (200),(200);
 
+-- Disable CommonTableExpressionAutoTuningHook
+set hive.query.lifetime.hooks=;
 
 set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester;
 set hive.optimize.cte.materialize.threshold=1;
