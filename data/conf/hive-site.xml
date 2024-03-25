@@ -369,8 +369,4 @@
     <name>hive.async.cleanup.service.thread.count</name>
     <value>4</value>
   </property>
-  <property>
-    <name>hive.optimize.cte.suggester.class</name>
-    <value>org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester</value>
-  </property>
 </configuration>
