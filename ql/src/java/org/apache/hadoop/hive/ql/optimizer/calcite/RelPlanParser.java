@@ -174,8 +174,6 @@ public class RelPlanParser {
         List<ColumnInfo> nonPartitionColumns = columnInfo.getOrDefault(false, new ArrayList<>());
         List<ColumnInfo> partitionColumns = columnInfo.getOrDefault(true, new ArrayList<>());
 
-//        computeColumnInfos(rowType, tableAlias, partitionColumns, nonPartitionColumns);
-
         List<VirtualColumn> virtualColumns = new ArrayList<>();
         if (jsonRel.get("virtualColumns") != null) {
           for (String colName: (List<String>) jsonRel.get("virtualColumns")) {
