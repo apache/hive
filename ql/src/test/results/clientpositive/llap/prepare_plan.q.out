@@ -128,11 +128,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pcount from select count(*) from src where key > ?
+PREHOOK: query: explain execute pcount using '200'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pcount from select count(*) from src where key > ?
+POSTHOOK: query: explain execute pcount using '200'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -194,20 +194,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pcount from select count(*) from src where key > ?
+PREHOOK: query: execute pcount using '200'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pcount from select count(*) from src where key > ?
+POSTHOOK: query: execute pcount using '200'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 378
-PREHOOK: query: prepare pcount from select count(*) from src where key > ?
+PREHOOK: query: execute pcount using '0'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pcount from select count(*) from src where key > ?
+POSTHOOK: query: execute pcount using '0'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -283,11 +283,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+PREHOOK: query: explain execute p1 using '100'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+POSTHOOK: query: explain execute p1 using '100'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -354,11 +354,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+PREHOOK: query: execute p1 using '100'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: prepare p1 from select * from src where key > ? order by key limit 10
+POSTHOOK: query: execute p1 using '100'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -459,13 +459,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pint
-    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+PREHOOK: query: explain
+    execute pint using 100, 5000000, 0.023, 0.0
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pint
-    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+POSTHOOK: query: explain
+    execute pint using 100, 5000000, 0.023, 0.0
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -544,13 +544,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pint
-    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+PREHOOK: query: execute pint using 100, 5000000,0.023, 0.0
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pint
-    from select avg(ctinyint) as ag from alltypesorc where cint <= ?  and cbigint <= ? and cfloat != ? group by ctinyint having ag < ?
+POSTHOOK: query: execute pint using 100, 5000000,0.023, 0.0
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -635,13 +633,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare psint
-    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+PREHOOK: query: explain
+    execute psint using 3, 10
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: prepare psint
-    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+POSTHOOK: query: explain
+    execute psint using 3, 10
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -713,13 +711,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare psint
-    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+PREHOOK: query: execute psint using 3, 10
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: prepare psint
-    from select count(*) as ag from alltypesorc where ctinyint <= ?  and csmallint != ? group by cint
+POSTHOOK: query: execute psint using 3, 10
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -811,11 +807,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+PREHOOK: query: explain
+    execute pcharv using 'c1', 'v1'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+POSTHOOK: query: explain
+    execute pcharv using 'c1', 'v1'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
@@ -877,11 +875,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+PREHOOK: query: execute pcharv using 'c1', 'v1'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pcharv  from select count(*) from tcharvchar where c = ? and v != ?
+POSTHOOK: query: execute pcharv using 'c1', 'v1'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@tcharvchar
 #### A masked pattern was here ####
@@ -994,11 +992,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+PREHOOK: query: explain
+    execute ptsd using '2012-01-01 00:01:01', '2020-01-01', 1.00
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@tdatets
 #### A masked pattern was here ####
-POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+POSTHOOK: query: explain
+    execute ptsd using '2012-01-01 00:01:01', '2020-01-01', 1.00
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@tdatets
 #### A masked pattern was here ####
@@ -1060,11 +1060,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+PREHOOK: query: execute ptsd using '2012-01-01 00:01:01', '2020-01-01', 1.00
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@tdatets
 #### A masked pattern was here ####
-POSTHOOK: query: prepare ptsd from select count(*) from tdatets where t != ? and d != ? and dc > ?
+POSTHOOK: query: execute ptsd using '2012-01-01 00:01:01', '2020-01-01', 1.00
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@tdatets
 #### A masked pattern was here ####
@@ -1155,11 +1155,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
+PREHOOK: query: execute p2 using 0, 1, 2
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: prepare p2 from select min(ctinyint), max(cbigint) from alltypesorc where cint > (? + ? + ?) group by ctinyint
+POSTHOOK: query: execute p2 using 0, 1, 2
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -1359,13 +1359,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pconcat
-    from select count(*) from src where key > concat(?, ?)
+PREHOOK: query: explain
+    execute pconcat using '1','20'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pconcat
-    from select count(*) from src where key > concat(?, ?)
+POSTHOOK: query: explain
+    execute pconcat using '1','20'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -1427,13 +1427,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pconcat
-    from select count(*) from src where key > concat(?, ?)
+PREHOOK: query: execute pconcat using '1','20'
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pconcat
-    from select count(*) from src where key > concat(?, ?)
+POSTHOOK: query: execute pconcat using '1','20'
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -1543,13 +1541,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: query: explain execute pPart1 using '2001-01-01',1
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@daysales
 PREHOOK: Input: default@daysales@dt=2001-01-01
 PREHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: query: explain execute pPart1 using '2001-01-01',1
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
@@ -1613,26 +1611,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: query: execute pPart1 using '2001-01-01',1
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@daysales
 PREHOOK: Input: default@daysales@dt=2001-01-01
 PREHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: query: execute pPart1 using '2001-01-01',1
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
 POSTHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
 1
-PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: query: execute pPart1 using '2001-01-03', 1
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@daysales
 PREHOOK: Input: default@daysales@dt=2001-01-01
 PREHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: query: execute pPart1 using '2001-01-03', 1
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
@@ -1803,15 +1801,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: query: explain execute palltypesGreater using 'a','v',1000.00,'1954-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: query: explain execute palltypesGreater using 'a','v',1000.00,'1954-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -1873,15 +1867,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: query: execute palltypesGreater using 'a','v',1000.00,'1954-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: query: execute palltypesGreater using 'a','v',1000.00,'1954-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -1956,15 +1946,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: query: explain execute palltypesGreater using 'd','z',10000.00,'1995-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: query: explain execute palltypesGreater using 'd','z',10000.00,'1995-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2026,15 +2012,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+PREHOOK: query: execute palltypesGreater using 'd','z',10000.00,'1995-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare palltypesGreater from
-select count(*) from alltypes where c > ? OR v > ? OR d > ? OR dt > ? OR ctinyint > ? OR csmallint > ? OR cint > ?
-                                 OR cfloat > ? OR cdouble > ? OR cstring1 > ? OR ctimestamp1 > ? OR cbigint > ?
+POSTHOOK: query: execute palltypesGreater using 'd','z',10000.00,'1995-12-12',0,7476,528534766,24.00,5780.3,'cvLH6Eat2yFsyy','1968-12-31 15:59:46.674',0
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2109,15 +2091,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pequal from
-select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
-                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+PREHOOK: query: explain execute pequal using 'ch1','var1',1000.34,'1947-12-12',11,0,529436599,1.0,1.400,'xTlDv24JYv4s','1969-12-31 16:00:02.351',133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pequal from
-select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
-                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+POSTHOOK: query: explain execute pequal using 'ch1','var1',1000.34,'1947-12-12',11,0,529436599,1.0,1.400,'xTlDv24JYv4s','1969-12-31 16:00:02.351',133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2179,15 +2157,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pequal from
-select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
-                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+PREHOOK: query: execute pequal using 'ch1','var1',1000.34,'1947-12-12',11,0,529436599,1.0,1.400,'xTlDv24JYv4s','1969-12-31 16:00:02.351',133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pequal from
-select count(*) from alltypes where c = ? OR v = ? OR d = ? OR dt = ? OR ctinyint = ? OR csmallint = ? OR cint = ?
-                                 OR cfloat = ? OR cdouble = ? OR cstring1 = ? OR ctimestamp1 = ? OR cbigint = ?
+POSTHOOK: query: execute pequal using 'ch1','var1',1000.34,'1947-12-12',11,0,529436599,1.0,1.400,'xTlDv24JYv4s','1969-12-31 16:00:02.351',133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2262,15 +2236,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pin from
-select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
-    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+PREHOOK: query: explain execute pin using 'ch1','ch2','var1', 'var2',1000.34,2000.00, '1947-12-12',11 ,15601,0,1,788564623,78856,23,1.0,18.00,0,15601.0,23.1,'xTlDv24JYv4s','str1','stre','1969-12-31 16:00:02.351',133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pin from
-select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
-    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+POSTHOOK: query: explain execute pin using 'ch1','ch2','var1', 'var2',1000.34,2000.00, '1947-12-12',11 ,15601,0,1,788564623,78856,23,1.0,18.00,0,15601.0,23.1,'xTlDv24JYv4s','str1','stre','1969-12-31 16:00:02.351',133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2332,15 +2302,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pin from
-select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
-    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+PREHOOK: query: execute pin using 'ch1','ch2','var1', 'var2',1000.34,2000.00, '1947-12-12',11 ,15601,0,1,788564623,78856,23,1.0,18.00,0,15601.0,23.1,'xTlDv24JYv4s','str1','stre','1969-12-31 16:00:02.351',133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pin from
-select count(*) from alltypes where c IN(?,?) AND  v IN(?, ?) AND d IN (?,?) AND dt IN (?) OR ctinyint IN (?) AND csmallint IN(?,?,?) AND cint IN(?,?,?)
-    AND cfloat IN(?,?) AND cdouble IN(?,?,?) OR cstring1 IN (?,?,?)  AND ctimestamp1 IN (?) OR cbigint IN (?)
+POSTHOOK: query: execute pin using 'ch1','ch2','var1', 'var2',1000.34,2000.00, '1947-12-12',11 ,15601,0,1,788564623,78856,23,1.0,18.00,0,15601.0,23.1,'xTlDv24JYv4s','str1','stre','1969-12-31 16:00:02.351',133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2415,15 +2381,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pbetween from
-select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
-    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+PREHOOK: query: explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pbetween from
-select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
-    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+POSTHOOK: query: explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2485,15 +2447,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pbetween from
-select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
-    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+PREHOOK: query: execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pbetween from
-select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
-    AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?)
+POSTHOOK: query: execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
