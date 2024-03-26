@@ -11,7 +11,7 @@ insert overwrite table tmptable_n12
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                             select 'tst2' as key, count(1) as value from src s2) unionsrc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tmptable_n12
 POSTHOOK: query: explain 
@@ -19,7 +19,7 @@ insert overwrite table tmptable_n12
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                             select 'tst2' as key, count(1) as value from src s2) unionsrc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmptable_n12
 STAGE DEPENDENCIES:

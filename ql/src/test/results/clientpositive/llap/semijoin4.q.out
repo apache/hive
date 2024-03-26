@@ -36,7 +36,7 @@ WHERE (t2.tinyint_col_21) IN (
         FROM table_1 tt1 INNER JOIN table_18 tt2
         ON (tt2.decimal1911_col_16) = (tt1.decimal1309_col_65)
         WHERE (tt1.timestamp_col_66) = (tt2.timestamp_col_19))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_1
 PREHOOK: Input: default@table_18
 #### A masked pattern was here ####
@@ -57,7 +57,7 @@ WHERE (t2.tinyint_col_21) IN (
         FROM table_1 tt1 INNER JOIN table_18 tt2
         ON (tt2.decimal1911_col_16) = (tt1.decimal1309_col_65)
         WHERE (tt1.timestamp_col_66) = (tt2.timestamp_col_19))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_1
 POSTHOOK: Input: default@table_18
 #### A masked pattern was here ####

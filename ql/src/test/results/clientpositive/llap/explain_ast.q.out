@@ -6,7 +6,7 @@ JOIN
 (SELECT src.key as c3, src.value as c4 from src where src.key > '2' ) src2
 ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FORMATTED AST
@@ -17,7 +17,7 @@ JOIN
 (SELECT src.key as c3, src.value as c4 from src where src.key > '2' ) src2
 ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 ABSTRACT SYNTAX TREE:

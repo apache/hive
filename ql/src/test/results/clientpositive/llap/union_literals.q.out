@@ -8,7 +8,7 @@ SELECT * FROM (
          (12, 'indigo'),
          (20, 'violet'))
    AS Colors
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -21,7 +21,7 @@ SELECT * FROM (
          (12, 'indigo'),
          (20, 'violet'))
    AS Colors
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -59,7 +59,7 @@ union all
   select 2,'2'
 union all
   select 2,'2'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -76,7 +76,7 @@ union all
   select 2,'2'
 union all
   select 2,'2'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -206,7 +206,7 @@ union all
   select 2, 2
 union all
   select 3, 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -215,7 +215,7 @@ union all
   select 2, 2
 union all
   select 3, 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -280,7 +280,7 @@ PREHOOK: query: explain cbo
   select cast(a as integer) from t
 union all
   select cast(1 as integer)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -288,7 +288,7 @@ POSTHOOK: query: explain cbo
   select cast(a as integer) from t
 union all
   select cast(1 as integer)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -305,7 +305,7 @@ union all
   select cast(1 as integer)
 union all
   select cast(2 as integer)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -315,7 +315,7 @@ union all
   select cast(1 as integer)
 union all
   select cast(2 as integer)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -335,7 +335,7 @@ union all
   select cast(2 as integer)
 union all
   select cast(3 as integer)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -347,7 +347,7 @@ union all
   select cast(2 as integer)
 union all
   select cast(3 as integer)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####

@@ -100,7 +100,7 @@ OR              ((a5.int_col_3) IN (a4.int_col, 10))
 where
   a1.STRING_COL_7='500'
 ORDER BY        int_col DESC nulls last limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@u_table_19
 PREHOOK: Input: default@u_table_4
 PREHOOK: Input: default@u_table_7
@@ -133,7 +133,7 @@ OR              ((a5.int_col_3) IN (a4.int_col, 10))
 where
   a1.STRING_COL_7='500'
 ORDER BY        int_col DESC nulls last limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@u_table_19
 POSTHOOK: Input: default@u_table_4
 POSTHOOK: Input: default@u_table_7

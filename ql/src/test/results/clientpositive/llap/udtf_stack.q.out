@@ -4,11 +4,11 @@ POSTHOOK: query: DESCRIBE FUNCTION stack
 POSTHOOK: type: DESCFUNCTION
 stack(n, cols...) - turns k columns into n rows of size k/n each
 PREHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -46,11 +46,11 @@ STAGE PLANS:
                       ListSink
 
 PREHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -109,12 +109,12 @@ x	[1]
 z	[4]
 PREHOOK: query: EXPLAIN
 SELECT stack(1, "en", "dbpedia", NULL )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT stack(1, "en", "dbpedia", NULL )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -148,11 +148,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 en	dbpedia	NULL
 PREHOOK: query: EXPLAIN SELECT STACK(2, 'a', 'b', 'c', 'd', 'e')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT STACK(2, 'a', 'b', 'c', 'd', 'e')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -25,12 +25,12 @@ unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 PREHOOK: query: explain cbo
 SELECT * FROM EMPS WHERE BIRTH_EPOCH_SECS <= UNIX_TIMESTAMP()
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM EMPS WHERE BIRTH_EPOCH_SECS <= UNIX_TIMESTAMP()
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
 CBO PLAN:

@@ -1,11 +1,11 @@
 PREHOOK: query: explain
 select count (distinct cint) from alltypesorc where !cstring1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count (distinct cint) from alltypesorc where !cstring1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -100,12 +100,12 @@ POSTHOOK: Input: default@alltypesorc
 0
 PREHOOK: query: explain
 select count (distinct cint) from alltypesorc where cint and cstring1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count (distinct cint) from alltypesorc where cint and cstring1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -200,12 +200,12 @@ POSTHOOK: Input: default@alltypesorc
 6041
 PREHOOK: query: explain
 select count (distinct cint) from alltypesorc where cfloat or cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count (distinct cint) from alltypesorc where cfloat or cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -300,12 +300,12 @@ POSTHOOK: Input: default@alltypesorc
 6082
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where !cstring1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where !cstring1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -474,12 +474,12 @@ POSTHOOK: Input: default@alltypesorc
 0
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cint and cstring1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cint and cstring1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -648,12 +648,12 @@ POSTHOOK: Input: default@alltypesorc
 6041
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cfloat or cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cfloat or cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

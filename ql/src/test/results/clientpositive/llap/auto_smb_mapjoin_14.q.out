@@ -42,7 +42,7 @@ PREHOOK: query: explain
 select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -50,7 +50,7 @@ POSTHOOK: query: explain
 select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -157,7 +157,7 @@ select count(*) from
   ) subq1
   group by key
 ) subq2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -170,7 +170,7 @@ select count(*) from
   ) subq1
   group by key
 ) subq2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -318,7 +318,7 @@ join
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -338,7 +338,7 @@ join
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -565,7 +565,7 @@ select count(*) from
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
   on subq1.key = subq2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -575,7 +575,7 @@ select count(*) from
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
   on subq1.key = subq2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -688,7 +688,7 @@ select count(*) from
   ) subq2
   join tbl2 b
   on subq2.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -703,7 +703,7 @@ select count(*) from
   ) subq2
   join tbl2 b
   on subq2.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -833,7 +833,7 @@ select count(*) from
   where key < 6
   ) subq4
   on subq2.key = subq4.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -854,7 +854,7 @@ select count(*) from
   where key < 6
   ) subq4
   on subq2.key = subq4.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -983,7 +983,7 @@ select count(*) from
     join
   (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
   on subq1.key = subq2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -993,7 +993,7 @@ select count(*) from
     join
   (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
   on subq1.key = subq2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1101,7 +1101,7 @@ select count(*) from
     join
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
   on subq1.key = subq2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1111,7 +1111,7 @@ select count(*) from
     join
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
   on subq1.key = subq2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1236,7 +1236,7 @@ PREHOOK: query: explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join tbl2 a on subq1.key = a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1244,7 +1244,7 @@ POSTHOOK: query: explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join tbl2 a on subq1.key = a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1351,7 +1351,7 @@ select count(*) from
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
   on (subq1.key = subq3.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1364,7 +1364,7 @@ select count(*) from
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
   on (subq1.key = subq3.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1523,7 +1523,7 @@ select count(*) from (
   ) subq2
 join tbl2 b
 on subq2.key = b.key) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1539,7 +1539,7 @@ select count(*) from (
   ) subq2
 join tbl2 b
 on subq2.key = b.key) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 #### A masked pattern was here ####
@@ -1675,7 +1675,7 @@ from (
 ) subq1
 insert overwrite table dest1_n2 select key, val1
 insert overwrite table dest2_n0 select key, val1, val2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 PREHOOK: Output: default@dest1_n2
@@ -1686,7 +1686,7 @@ from (
 ) subq1
 insert overwrite table dest1_n2 select key, val1
 insert overwrite table dest2_n0 select key, val1, val2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@dest1_n2
@@ -1984,7 +1984,7 @@ from (
 ) subq1
 insert overwrite table dest1_n2 select key, val1
 insert overwrite table dest2_n0 select key, count(*) group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 PREHOOK: Output: default@dest1_n2
@@ -1995,7 +1995,7 @@ from (
 ) subq1
 insert overwrite table dest1_n2 select key, val1
 insert overwrite table dest2_n0 select key, count(*) group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@dest1_n2

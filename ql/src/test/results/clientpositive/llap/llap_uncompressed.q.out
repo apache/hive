@@ -110,12 +110,12 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: database:default
 PREHOOK: query: explain
 select * from orc_llap_n0 where cint > 10 and cbigint is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from orc_llap_n0 where cint > 10 and cbigint is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -173,12 +173,12 @@ POSTHOOK: Input: default@llap_temp_table
 212787774304
 PREHOOK: query: explain
 select * from orc_llap_n0 where cint > 10 and cint < 5000000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from orc_llap_n0 where cint > 10 and cint < 5000000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

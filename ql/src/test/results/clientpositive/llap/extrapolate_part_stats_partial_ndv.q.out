@@ -257,7 +257,7 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_1d_n0
 PREHOOK: Input: default@loc_orc_1d_n0@year=2000
 PREHOOK: Input: default@loc_orc_1d_n0@year=2001
@@ -265,7 +265,7 @@ PREHOOK: Input: default@loc_orc_1d_n0@year=2002
 PREHOOK: Input: default@loc_orc_1d_n0@year=2003
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_1d_n0
 POSTHOOK: Input: default@loc_orc_1d_n0@year=2000
 POSTHOOK: Input: default@loc_orc_1d_n0@year=2001
@@ -914,7 +914,7 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_1d_n0
 PREHOOK: Input: default@loc_orc_1d_n0@year=2000
 PREHOOK: Input: default@loc_orc_1d_n0@year=2001
@@ -922,7 +922,7 @@ PREHOOK: Input: default@loc_orc_1d_n0@year=2002
 PREHOOK: Input: default@loc_orc_1d_n0@year=2003
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_1d_n0
 POSTHOOK: Input: default@loc_orc_1d_n0@year=2000
 POSTHOOK: Input: default@loc_orc_1d_n0@year=2001
@@ -1457,7 +1457,7 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_2d_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_2d_n0
 PREHOOK: Input: default@loc_orc_2d_n0@zip=43201/year=2001
 PREHOOK: Input: default@loc_orc_2d_n0@zip=43201/year=2002
@@ -1472,7 +1472,7 @@ PREHOOK: Input: default@loc_orc_2d_n0@zip=94087/year=2002
 PREHOOK: Input: default@loc_orc_2d_n0@zip=94087/year=2003
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_2d_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_2d_n0
 POSTHOOK: Input: default@loc_orc_2d_n0@zip=43201/year=2001
 POSTHOOK: Input: default@loc_orc_2d_n0@zip=43201/year=2002

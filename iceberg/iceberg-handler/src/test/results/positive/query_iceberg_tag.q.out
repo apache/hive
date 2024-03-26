@@ -21,11 +21,11 @@ POSTHOOK: query: alter table ice01 create tag test1
 POSTHOOK: type: ALTERTABLE_CREATETAG
 POSTHOOK: Input: default@ice01
 PREHOOK: query: explain select * from default.ice01.tag_test1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from default.ice01.tag_test1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -56,11 +56,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 111	one	55
 2	two	51
 PREHOOK: query: explain select * from default.ice01.tag_test1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from default.ice01.tag_test1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

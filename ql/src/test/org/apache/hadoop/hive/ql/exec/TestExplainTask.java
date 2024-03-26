@@ -320,6 +320,7 @@ public class TestExplainTask {
   public void testCollectAuthRelatedEntitiesJsonShouldMatch() throws Exception {
     QueryState qs = mock(QueryState.class);
     when(qs.getHiveOperation()).thenReturn(HiveOperation.EXPLAIN);
+    when(qs.getAuthorizationCommandType()).thenReturn(HiveOperation.EXPLAIN);
     uut.queryState = qs;
 
     SessionState.start(new HiveConf(ExplainTask.class));

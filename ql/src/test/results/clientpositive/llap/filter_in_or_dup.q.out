@@ -3,7 +3,7 @@ SELECT f.key
 FROM cbo_t1 f
 WHERE (f.key = '1' OR f.key='2')
 AND f.key IN ('1', '2')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -12,7 +12,7 @@ SELECT f.key
 FROM cbo_t1 f
 WHERE (f.key = '1' OR f.key='2')
 AND f.key IN ('1', '2')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -39,7 +39,7 @@ SELECT f.key
 FROM cbo_t1 f
 WHERE (f.key = '1' OR f.key = '2')
 AND f.key IN ('1', '2', '3')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -48,7 +48,7 @@ SELECT f.key
 FROM cbo_t1 f
 WHERE (f.key = '1' OR f.key = '2')
 AND f.key IN ('1', '2', '3')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -75,7 +75,7 @@ SELECT f.key
 FROM cbo_t1 f
 WHERE (f.key = '1' OR f.key='2' OR f.key='3')
 AND f.key IN ('1', '2')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
@@ -84,7 +84,7 @@ SELECT f.key
 FROM cbo_t1 f
 WHERE (f.key = '1' OR f.key='2' OR f.key='3')
 AND f.key IN ('1', '2')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####

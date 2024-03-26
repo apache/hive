@@ -13,10 +13,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n6
 PREHOOK: query: EXPLAIN LOCKS MSCK TABLE repairtable_n6
-PREHOOK: type: MSCK
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@repairtable_n6
 POSTHOOK: query: EXPLAIN LOCKS MSCK TABLE repairtable_n6
-POSTHOOK: type: MSCK
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@repairtable_n6
 LOCK INFORMATION:
 default.repairtable_n6 -> SHARED_READ
@@ -33,10 +33,10 @@ POSTHOOK: query: show partitions repairtable_n6
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n6
 PREHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6
-PREHOOK: type: MSCK
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@repairtable_n6
 POSTHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6
-POSTHOOK: type: MSCK
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@repairtable_n6
 LOCK INFORMATION:
 default.repairtable_n6 -> EXCLUSIVE
@@ -58,10 +58,10 @@ p1=a/p2=b
 p1=c/p2=d
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6 DROP PARTITIONS
-PREHOOK: type: MSCK
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@repairtable_n6
 POSTHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6 DROP PARTITIONS
-POSTHOOK: type: MSCK
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@repairtable_n6
 LOCK INFORMATION:
 default.repairtable_n6 -> EXCLUSIVE

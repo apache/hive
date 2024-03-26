@@ -1,6 +1,6 @@
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain authorization select * from src join srcpart
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -9,7 +9,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain authorization select * from src join srcpart
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -32,7 +32,7 @@ OPERATION:
   QUERY
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain formatted authorization select * from src join srcpart
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -41,7 +41,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain formatted authorization select * from src join srcpart
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -50,10 +50,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 PREHOOK: query: explain authorization use default
-PREHOOK: type: SWITCHDATABASE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: database:default
 POSTHOOK: query: explain authorization use default
-POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: database:default
 INPUTS: 
   database:default
@@ -63,9 +63,9 @@ CURRENT_USER:
 OPERATION: 
   SWITCHDATABASE
 PREHOOK: query: explain formatted authorization use default
-PREHOOK: type: SWITCHDATABASE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: database:default
 POSTHOOK: query: explain formatted authorization use default
-POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: database:default
 {"INPUTS":["database:default"],"OUTPUTS":[],"CURRENT_USER":"hive_test_user","OPERATION":"SWITCHDATABASE"}

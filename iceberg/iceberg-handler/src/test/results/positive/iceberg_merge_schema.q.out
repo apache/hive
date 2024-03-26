@@ -98,7 +98,7 @@ WHEN MATCHED THEN
   UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1') 
 WHEN NOT MATCHED THEN 
   INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@calls
 PREHOOK: Input: default@display
 PREHOOK: Output: default@display
@@ -138,7 +138,7 @@ WHEN MATCHED THEN
   UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1') 
 WHEN NOT MATCHED THEN 
   INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@calls
 POSTHOOK: Input: default@display
 POSTHOOK: Output: default@display

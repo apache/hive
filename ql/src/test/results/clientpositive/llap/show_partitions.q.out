@@ -116,10 +116,10 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: db1@srcpart
 POSTHOOK: Output: db1@srcpart@ds=4/hr=5
 PREHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(hr='11')
-PREHOOK: type: SHOWPARTITIONS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 POSTHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(hr='11')
-POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -148,10 +148,10 @@ POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-09/hr=11
 PREHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
-PREHOOK: type: SHOWPARTITIONS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 POSTHOOK: query: EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12')
-POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

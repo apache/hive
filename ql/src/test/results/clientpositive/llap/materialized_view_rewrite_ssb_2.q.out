@@ -631,7 +631,7 @@ where
     and d_year = 1993
     and lo_discount between 1 and 3
     and lo_quantity < 25
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_mv
@@ -646,7 +646,7 @@ where
     and d_year = 1993
     and lo_discount between 1 and 3
     and lo_quantity < 25
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_mv
@@ -721,7 +721,7 @@ where
     and d_yearmonthnum = 199401
     and lo_discount between 4 and 6
     and lo_quantity between 26 and 35
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_mv
@@ -736,7 +736,7 @@ where
     and d_yearmonthnum = 199401
     and lo_discount between 4 and 6
     and lo_quantity between 26 and 35
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_mv
@@ -812,7 +812,7 @@ where
     and d_year = 1994
     and lo_discount between 5 and 7
     and lo_quantity between 26 and 35
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_mv
@@ -828,7 +828,7 @@ where
     and d_year = 1994
     and lo_discount between 5 and 7
     and lo_quantity between 26 and 35
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_mv
@@ -908,7 +908,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_mv
@@ -930,7 +930,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_mv
@@ -1034,7 +1034,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_mv
@@ -1056,7 +1056,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_mv
@@ -1160,7 +1160,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_mv
@@ -1182,7 +1182,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_mv
@@ -1288,7 +1288,7 @@ group by
     c_nation, s_nation, d_year
 order by 
     d_year asc, lo_revenue desc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
@@ -1312,7 +1312,7 @@ group by
     c_nation, s_nation, d_year
 order by 
     d_year asc, lo_revenue desc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
@@ -1417,7 +1417,7 @@ group by
     c_city, s_city, d_year
 order by 
     d_year asc, lo_revenue desc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
@@ -1440,7 +1440,7 @@ group by
     c_city, s_city, d_year
 order by 
     d_year asc, lo_revenue desc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
@@ -1545,7 +1545,7 @@ group by
     c_city, s_city, d_year
 order by 
     d_year asc, lo_revenue desc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
@@ -1568,7 +1568,7 @@ group by
     c_city, s_city, d_year
 order by 
     d_year asc, lo_revenue desc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
@@ -1673,7 +1673,7 @@ group by
     c_city, s_city, d_year
 order by 
     d_year asc, lo_revenue desc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
@@ -1696,7 +1696,7 @@ group by
     c_city, s_city, d_year
 order by 
     d_year asc, lo_revenue desc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
@@ -1803,7 +1803,7 @@ group by
     d_year, c_nation
 order by 
     d_year, c_nation
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
@@ -1829,7 +1829,7 @@ group by
     d_year, c_nation
 order by 
     d_year, c_nation
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
@@ -1934,7 +1934,7 @@ group by
     d_year, s_nation, p_category
 order by 
     d_year, s_nation, p_category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
@@ -1961,7 +1961,7 @@ group by
     d_year, s_nation, p_category
 order by 
     d_year, s_nation, p_category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
@@ -2066,7 +2066,7 @@ group by
     d_year, s_city, p_brand1
 order by 
     d_year, s_city, p_brand1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
@@ -2093,7 +2093,7 @@ group by
     d_year, s_city, p_brand1
 order by 
     d_year, s_city, p_brand1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder

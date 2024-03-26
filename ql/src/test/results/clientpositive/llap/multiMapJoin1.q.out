@@ -165,7 +165,7 @@ select count(*) FROM
 ) firstjoin
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bigtbl
 PREHOOK: Input: default@smalltbl1
 PREHOOK: Input: default@smalltbl2
@@ -178,7 +178,7 @@ select count(*) FROM
 ) firstjoin
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
@@ -340,7 +340,7 @@ select count(*) FROM
 ) firstjoin
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bigtbl
 PREHOOK: Input: default@smalltbl1
 PREHOOK: Input: default@smalltbl2
@@ -353,7 +353,7 @@ select count(*) FROM
 ) firstjoin
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
@@ -516,7 +516,7 @@ select count(*) FROM
 JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bigtbl
 PREHOOK: Input: default@smalltbl1
 PREHOOK: Input: default@smalltbl2
@@ -530,7 +530,7 @@ select count(*) FROM
 JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
@@ -812,7 +812,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bigtbl
 PREHOOK: Input: default@smalltbl1
 PREHOOK: Input: default@smalltbl2
@@ -851,7 +851,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
@@ -1160,7 +1160,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bigtbl
 PREHOOK: Input: default@smalltbl1
 PREHOOK: Input: default@smalltbl2
@@ -1199,7 +1199,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
@@ -1508,7 +1508,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bigtbl
 PREHOOK: Input: default@smalltbl1
 PREHOOK: Input: default@smalltbl2
@@ -1547,7 +1547,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
@@ -1890,7 +1890,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bigtbl
 PREHOOK: Input: default@smalltbl1
 PREHOOK: Input: default@smalltbl2
@@ -1929,7 +1929,7 @@ FROM (SELECT join2.key1 as key1,
             JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2

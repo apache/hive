@@ -39,7 +39,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e_n0
 PREHOOK: query: explain select * from a_n0 join b_n0 on a_n0.val1=b_n0.val1 join c_n0 on a_n0.val1=c_n0.val1 join d_n0 on a_n0.val1=d_n0.val1 join e_n0 on a_n0.val2=e_n0.val2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n0
 PREHOOK: Input: default@b_n0
 PREHOOK: Input: default@c_n0
@@ -47,7 +47,7 @@ PREHOOK: Input: default@d_n0
 PREHOOK: Input: default@e_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from a_n0 join b_n0 on a_n0.val1=b_n0.val1 join c_n0 on a_n0.val1=c_n0.val1 join d_n0 on a_n0.val1=d_n0.val1 join e_n0 on a_n0.val2=e_n0.val2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n0
 POSTHOOK: Input: default@b_n0
 POSTHOOK: Input: default@c_n0
@@ -259,11 +259,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from src a_n0 join src b_n0 on a_n0.key=b_n0.key left outer join src c_n0 on b_n0.key=c_n0.key and b_n0.key<10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from src a_n0 join src b_n0 on a_n0.key=b_n0.key left outer join src c_n0 on b_n0.key=c_n0.key and b_n0.key<10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

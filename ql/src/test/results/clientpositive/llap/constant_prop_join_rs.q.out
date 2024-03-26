@@ -124,7 +124,7 @@ LEFT OUTER JOIN t2 ON ( t1.c13 = t2.c21)
 LEFT OUTER JOIN
   (SELECT c30 FROM t3) s0 ON datediff (CURRENT_TIMESTAMP, t0.c03) = datediff (CURRENT_TIMESTAMP, s0.c30)
 WHERE t1.c13 = 'test1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t0
 PREHOOK: Input: default@t0@c02=test0
 PREHOOK: Input: default@t1
@@ -140,7 +140,7 @@ LEFT OUTER JOIN t2 ON ( t1.c13 = t2.c21)
 LEFT OUTER JOIN
   (SELECT c30 FROM t3) s0 ON datediff (CURRENT_TIMESTAMP, t0.c03) = datediff (CURRENT_TIMESTAMP, s0.c30)
 WHERE t1.c13 = 'test1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t0
 POSTHOOK: Input: default@t0@c02=test0
 POSTHOOK: Input: default@t1

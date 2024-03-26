@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -74,12 +74,12 @@ POSTHOOK: Input: default@src
 10	val_10
 PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -148,12 +148,12 @@ POSTHOOK: Input: default@src
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -222,12 +222,12 @@ POSTHOOK: Input: default@src
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -296,12 +296,12 @@ POSTHOOK: Input: default@src
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -370,12 +370,12 @@ POSTHOOK: Input: default@src
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -444,12 +444,12 @@ POSTHOOK: Input: default@src
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -518,12 +518,12 @@ POSTHOOK: Input: default@src
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -592,12 +592,12 @@ POSTHOOK: Input: default@src
 20	val_20
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -702,12 +702,12 @@ POSTHOOK: Input: default@src
 20	val_20	20
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -813,12 +813,12 @@ POSTHOOK: Input: default@src
 20	val_20	20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -924,12 +924,12 @@ POSTHOOK: Input: default@src
 20	val_20	20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1040,7 +1040,7 @@ FROM (
   FROM src SELECT src.* WHERE src.key > 100
 ) unioninput
 CLUSTER BY unioninput.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -1051,7 +1051,7 @@ FROM (
   FROM src SELECT src.* WHERE src.key > 100
 ) unioninput
 CLUSTER BY unioninput.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

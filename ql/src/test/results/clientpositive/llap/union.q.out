@@ -5,7 +5,7 @@ FROM (
   FROM src SELECT src.* WHERE src.key > 100
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.* ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -15,7 +15,7 @@ FROM (
   FROM src SELECT src.* WHERE src.key > 100
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.* ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

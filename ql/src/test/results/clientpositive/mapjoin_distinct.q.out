@@ -3,7 +3,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -13,7 +13,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -163,7 +163,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -173,7 +173,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -298,7 +298,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -308,7 +308,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -452,7 +452,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -462,7 +462,7 @@ FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

@@ -91,7 +91,7 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 9	val_9	2008-04-09	12
 4	val_4	2008-04-09	12
 PREHOOK: query: explain select key from srcpartbucket tablesample (bucket 2 out of 4 on key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpartbucket
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
@@ -99,7 +99,7 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from srcpartbucket tablesample (bucket 2 out of 4 on key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpartbucket
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
@@ -229,7 +229,7 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 4
 PREHOOK: query: explain
         select key from srcpartbucket tablesample (bucket 2 out of 4 on key) group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpartbucket
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
@@ -238,7 +238,7 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: explain
         select key from srcpartbucket tablesample (bucket 2 out of 4 on key) group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpartbucket
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12

@@ -24,7 +24,7 @@ SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
        POWER(-1, 0.5), POWER(-1, 2), POWER(CAST (1 AS DECIMAL), CAST (0 AS INT)),
        POWER(CAST (2 AS DECIMAL), CAST (3 AS INT)), 
        POW(CAST (2 AS DECIMAL), CAST(3 AS INT)) FROM dest1_n111
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n111
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -36,7 +36,7 @@ SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
        POWER(-1, 0.5), POWER(-1, 2), POWER(CAST (1 AS DECIMAL), CAST (0 AS INT)),
        POWER(CAST (2 AS DECIMAL), CAST (3 AS INT)), 
        POW(CAST (2 AS DECIMAL), CAST(3 AS INT)) FROM dest1_n111
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n111
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

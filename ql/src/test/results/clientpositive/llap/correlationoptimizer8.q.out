@@ -6,7 +6,7 @@ FROM
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -18,7 +18,7 @@ FROM
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -214,7 +214,7 @@ FROM
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -226,7 +226,7 @@ FROM
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -422,7 +422,7 @@ FROM
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -434,7 +434,7 @@ FROM
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -642,7 +642,7 @@ FROM
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -654,7 +654,7 @@ FROM
   SELECT x1.value as key, count(1) as cnt from src1 x1 where x1.key > 100 group by x1.value
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -862,7 +862,7 @@ FROM
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key, x1.value
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -874,7 +874,7 @@ FROM
   SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key, x1.value
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1041,7 +1041,7 @@ FROM
   SELECT count(1) as key, cast(x1.key as INT) as value from src x1 where x1.key > 100 group by x1.key
 ) subq1
 FULL OUTER JOIN src1 x ON (x.key = subq1.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1053,7 +1053,7 @@ FROM
   SELECT count(1) as key, cast(x1.key as INT) as value from src x1 where x1.key > 100 group by x1.key
 ) subq1
 FULL OUTER JOIN src1 x ON (x.key = subq1.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

@@ -18,7 +18,7 @@ WHERE  (((cdouble > ctinyint)
         OR ((cbigint < ctinyint)
             OR ((cint > cbigint)
                 OR (cboolean1 < 0))))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -41,7 +41,7 @@ WHERE  (((cdouble > ctinyint)
         OR ((cbigint < ctinyint)
             OR ((cint > cbigint)
                 OR (cboolean1 < 0))))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

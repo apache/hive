@@ -14,11 +14,11 @@ Example: > SELECT base64(aes_encrypt('ABC', '1234567890123456'));
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFAesEncrypt
 Function type:BUILTIN
 PREHOOK: query: explain select aes_encrypt('ABC', '1234567890123456')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select aes_encrypt('ABC', '1234567890123456')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -1,13 +1,13 @@
 PREHOOK: query: EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

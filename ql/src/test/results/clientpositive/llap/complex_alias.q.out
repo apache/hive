@@ -39,7 +39,7 @@ FROM   (SELECT Sum(agg1.col2) AS a1
              GROUP  BY alias.a2,
                        alias.a1) single_use_subq11
          ON ( single_use_subq11.a0 = single_use_subq11.a0 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@agg1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -63,7 +63,7 @@ FROM   (SELECT Sum(agg1.col2) AS a1
              GROUP  BY alias.a2,
                        alias.a1) single_use_subq11
          ON ( single_use_subq11.a0 = single_use_subq11.a0 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@agg1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

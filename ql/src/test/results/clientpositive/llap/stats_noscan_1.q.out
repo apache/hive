@@ -36,14 +36,14 @@ POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-09,hr=12).key SIMPLE 
 POSTHOOK: Lineage: analyze_srcpart_n0 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_srcpart_n0
 PREHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
 PREHOOK: Output: default@analyze_srcpart_n0
 PREHOOK: Output: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
 POSTHOOK: query: explain
 analyze table analyze_srcpart_n0 PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_srcpart_n0
 POSTHOOK: Input: default@analyze_srcpart_n0@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@analyze_srcpart_n0
@@ -310,7 +310,7 @@ POSTHOOK: Lineage: analyze_srcpart_partial PARTITION(ds=2008-04-09,hr=12).key SI
 POSTHOOK: Lineage: analyze_srcpart_partial PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 analyze table analyze_srcpart_partial PARTITION(ds='2008-04-08') compute statistics noscan
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_srcpart_partial
 PREHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
 PREHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
@@ -319,7 +319,7 @@ PREHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
 PREHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
 POSTHOOK: query: explain
 analyze table analyze_srcpart_partial PARTITION(ds='2008-04-08') compute statistics noscan
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_srcpart_partial
 POSTHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=12

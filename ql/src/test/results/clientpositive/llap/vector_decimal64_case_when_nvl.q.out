@@ -35,11 +35,11 @@ POSTHOOK: Lineage: vector_decimal64_case_when_tmp.ss_ext_list_price SIMPLE [(vec
 POSTHOOK: Lineage: vector_decimal64_case_when_tmp.ss_ext_sales_price EXPRESSION [(vector_decimal64_case_when)vector_decimal64_case_when.FieldSchema(name:ss_ext_sales_price, type:double, comment:null), ]
 POSTHOOK: Lineage: vector_decimal64_case_when_tmp.ss_ext_wholesale_cost SIMPLE [(vector_decimal64_case_when)vector_decimal64_case_when.FieldSchema(name:ss_ext_wholesale_cost, type:decimal(19,1), comment:null), ]
 PREHOOK: query: explain vectorization detail select sum(case when (ss_ext_discount_amt=101) then ss_ext_list_price else null end) from vector_decimal64_case_when_tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(case when (ss_ext_discount_amt=101) then ss_ext_list_price else null end) from vector_decimal64_case_when_tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -169,11 +169,11 @@ POSTHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 3000.00
 PREHOOK: query: explain vectorization detail select sum(NVL(ss_ext_list_price, 1.1)) from vector_decimal64_case_when_tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(NVL(ss_ext_list_price, 1.1)) from vector_decimal64_case_when_tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -303,11 +303,11 @@ POSTHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 3001.10
 PREHOOK: query: explain vectorization detail select sum(NVL(ss_ext_list_price, 1.1BD)) from vector_decimal64_case_when_tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select sum(NVL(ss_ext_list_price, 1.1BD)) from vector_decimal64_case_when_tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_decimal64_case_when_tmp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

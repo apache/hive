@@ -83,13 +83,13 @@ POSTHOOK: Lineage: tjoin4.id SIMPLE [(tjoin4stage)tjoin4stage.FieldSchema(name:i
 tjoin4stage.code_name	tjoin4stage.id
 PREHOOK: query: explain vectorization detail
 select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin3
 PREHOOK: Input: default@tjoin4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin3
 POSTHOOK: Input: default@tjoin4
 #### A masked pattern was here ####
@@ -1236,13 +1236,13 @@ tjoin3.id	tjoin3.name
 1050	testname
 PREHOOK: query: explain vectorization detail
 select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N') limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin3
 PREHOOK: Input: default@tjoin4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select TJOIN3.id,TJOIN3.name from TJOIN3 left outer join ( select code_name, id from TJOIN4) s3 on (TJOIN3.name = s3.code_name and TJOIN3.flag='N') limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin3
 POSTHOOK: Input: default@tjoin4
 #### A masked pattern was here ####

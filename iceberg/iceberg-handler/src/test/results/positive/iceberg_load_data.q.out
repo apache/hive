@@ -15,11 +15,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 Vertex dependency in root stage
@@ -61,19 +61,19 @@ Stage-3
                            Please refer to the previous Select Operator [SEL_12]
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 Vertex dependency in root stage
@@ -115,11 +115,11 @@ Stage-3
                            Please refer to the previous Select Operator [SEL_12]
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 PREHOOK: query: select * from ice_parquet order by intcol
@@ -153,9 +153,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_avro
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 Stage-0
   Move Operator
     table:{"name:":"default.ice_avro"}
@@ -165,19 +165,19 @@ PREHOOK: type: LOAD
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
 POSTHOOK: type: LOAD
 PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 Stage-0
   Move Operator
     table:{"name:":"default.ice_avro"}
 
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_avro__temp_table_for_load_data__
 PREHOOK: Output: default@ice_avro
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_avro__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_avro
 Vertex dependency in root stage
@@ -267,9 +267,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 Stage-0
   Move Operator
     table:{"name:":"default.ice_orc"}
@@ -279,9 +279,9 @@ PREHOOK: type: LOAD
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
 POSTHOOK: type: LOAD
 PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 Stage-0
   Move Operator
     table:{"name:":"default.ice_orc"}
@@ -443,10 +443,10 @@ BB	20	200
 CC	30	300
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE ice_parquet_partitioned
 PARTITION (pcol='300')
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE ice_parquet_partitioned
 PARTITION (pcol='300')
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 Stage-0
   Move Operator
     table:{"name:":"default.ice_parquet_partitioned"}
@@ -472,10 +472,10 @@ BB	20	200
 CC	30	300
 PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
         ice_parquet_partitioned PARTITION (pcol='200')
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
         ice_parquet_partitioned PARTITION (pcol='200')
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 Stage-0
   Move Operator
     table:{"name:":"default.ice_parquet_partitioned"}

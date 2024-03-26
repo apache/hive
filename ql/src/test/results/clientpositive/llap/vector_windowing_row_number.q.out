@@ -55,7 +55,7 @@ PREHOOK: query: explain vectorization detail select
         row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
         row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10 -- cast both
         from row_number_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@row_number_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select
@@ -63,7 +63,7 @@ POSTHOOK: query: explain vectorization detail select
         row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
         row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10 -- cast both
         from row_number_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@row_number_test
 #### A masked pattern was here ####
 Explain
@@ -381,7 +381,7 @@ PREHOOK: query: explain select
         row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
         col
         from row_number_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@row_number_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select
@@ -397,7 +397,7 @@ POSTHOOK: query: explain select
         row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
         col
         from row_number_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@row_number_test
 #### A masked pattern was here ####
 Explain
@@ -882,7 +882,7 @@ PREHOOK: query: explain select
         row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
         col
         from row_number_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@row_number_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select
@@ -898,7 +898,7 @@ POSTHOOK: query: explain select
         row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10, -- cast both
         col
         from row_number_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@row_number_test
 #### A masked pattern was here ####
 Explain

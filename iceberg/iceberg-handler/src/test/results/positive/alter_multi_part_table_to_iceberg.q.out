@@ -154,10 +154,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 14	four	Saturday
 15	four	Sunday
 PREHOOK: query: explain alter table tbl_orc convert to iceberg
-PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_orc
 POSTHOOK: query: explain alter table tbl_orc convert to iceberg
-POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_orc
 Stage-0
   Convert operation{"table name:":"default.tbl_orc","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
@@ -421,10 +421,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 14	four	Saturday
 15	four	Sunday
 PREHOOK: query: explain alter table tbl_parquet convert to iceberg
-PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_parquet
 POSTHOOK: query: explain alter table tbl_parquet convert to iceberg
-POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_parquet
 Stage-0
   Convert operation{"table name:":"default.tbl_parquet","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
@@ -688,10 +688,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 14	four	Saturday
 15	four	Sunday
 PREHOOK: query: explain alter table tbl_avro convert to iceberg
-PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_avro
 POSTHOOK: query: explain alter table tbl_avro convert to iceberg
-POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_avro
 Stage-0
   Convert operation{"table name:":"default.tbl_avro","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}

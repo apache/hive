@@ -8,7 +8,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket
 PREHOOK: query: explain
 insert into table src_bucket select key,value from srcpart
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -17,7 +17,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@src_bucket
 POSTHOOK: query: explain
 insert into table src_bucket select key,value from srcpart
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

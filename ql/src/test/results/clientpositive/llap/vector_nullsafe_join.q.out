@@ -27,11 +27,11 @@ POSTHOOK: Output: default@myinput1
 POSTHOOK: Lineage: myinput1.key SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: myinput1.value SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -168,11 +168,11 @@ NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -388,11 +388,11 @@ POSTHOOK: Input: default@myinput1
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -612,11 +612,11 @@ NULL	NULL	NULL	NULL	NULL	10
 NULL	NULL	NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -829,11 +829,11 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 NULL	10	10	NULL	NULL	10
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1046,12 +1046,12 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL DEBUG
 SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL DEBUG
 SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1252,11 +1252,11 @@ NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1393,11 +1393,11 @@ NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1611,11 +1611,11 @@ POSTHOOK: Input: default@myinput1
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1835,11 +1835,11 @@ NULL	NULL	NULL	NULL	NULL	10
 NULL	NULL	NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2052,11 +2052,11 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 NULL	10	10	NULL	NULL	10
 PREHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2269,12 +2269,12 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL DEBUG
 SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL DEBUG
 SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

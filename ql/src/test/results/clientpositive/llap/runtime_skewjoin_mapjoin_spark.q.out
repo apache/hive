@@ -20,7 +20,7 @@ SELECT COUNT(*) FROM
 JOIN
   (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1_n94
 #### A masked pattern was here ####
@@ -30,7 +30,7 @@ SELECT COUNT(*) FROM
 JOIN
   (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_n94
 #### A masked pattern was here ####

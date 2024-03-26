@@ -319,11 +319,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_lrl
 POSTHOOK: Lineage: test_lrl.c SCRIPT []
 PREHOOK: query: explain select count(*) from test_lrl where c='1900-01-01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from test_lrl where c='1900-01-01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -403,11 +403,11 @@ POSTHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 1
 PREHOOK: query: explain select * from test_lrl where c=cast('1900-01-01' as date)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from test_lrl where c=cast('1900-01-01' as date)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -446,11 +446,11 @@ POSTHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 1900-01-01
 PREHOOK: query: explain select count(*) from test_lrl where c LIKE '1900-01-01%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from test_lrl where c LIKE '1900-01-01%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_lrl
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

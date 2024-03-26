@@ -1,11 +1,11 @@
 PREHOOK: query: explain
 select *, sum(key) from src group by key, value order by key, value limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select *, sum(key) from src group by key, value order by key, value limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -111,12 +111,12 @@ POSTHOOK: Input: default@src
 114	val_114	114.0
 PREHOOK: query: explain
 select *, sum(key) from src where key < 100 group by key, value order by key, value limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select *, sum(key) from src where key < 100 group by key, value order by key, value limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -222,12 +222,12 @@ POSTHOOK: Input: default@src
 20	val_20	20.0
 PREHOOK: query: explain
 select *, sum(key) from (select key from src where key < 100) a group by key order by key limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select *, sum(key) from (select key from src where key < 100) a group by key order by key limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -334,13 +334,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select a.*, sum(src.key) from (select key from src where key < 100) a 
 inner join src on a.key = src.key group by a.key order by a.key limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.*, sum(src.key) from (select key from src where key < 100) a 
 inner join src on a.key = src.key group by a.key order by a.key limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

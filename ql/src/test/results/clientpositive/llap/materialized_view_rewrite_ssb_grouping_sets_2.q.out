@@ -635,7 +635,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_n4
 PREHOOK: Input: default@lineorder_n4
 PREHOOK: Input: default@ssb_mv_n4
@@ -657,7 +657,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_n4
 POSTHOOK: Input: default@lineorder_n4
 POSTHOOK: Input: default@ssb_mv_n4
@@ -686,7 +686,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_n4
 PREHOOK: Input: default@lineorder_n4
 PREHOOK: Input: default@ssb_mv_n4
@@ -708,7 +708,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_n4
 POSTHOOK: Input: default@lineorder_n4
 POSTHOOK: Input: default@ssb_mv_n4
@@ -737,7 +737,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dates_n4
 PREHOOK: Input: default@lineorder_n4
 PREHOOK: Input: default@ssb_mv_n4
@@ -759,7 +759,7 @@ group by
     d_year, p_brand1
 order by 
     d_year, p_brand1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dates_n4
 POSTHOOK: Input: default@lineorder_n4
 POSTHOOK: Input: default@ssb_mv_n4

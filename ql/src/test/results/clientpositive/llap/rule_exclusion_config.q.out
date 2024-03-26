@@ -4,7 +4,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -13,7 +13,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
@@ -35,7 +35,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -44,7 +44,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Excluded rules: HiveJoinPushTransitivePredicatesRule
@@ -69,7 +69,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -78,7 +78,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Excluded rules: HiveJoinPushTransitivePredicatesRule|HiveJoinAddNotNullRule
@@ -101,7 +101,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -110,7 +110,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Excluded rules: HiveJoin.*Rule
@@ -133,7 +133,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -142,7 +142,7 @@ FROM src src1
   JOIN src src2 ON (src1.key = src2.key)
   JOIN src src3 ON (src1.key = src3.key)
 WHERE src1.key > 10 and src1.key < 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Excluded rules: .*

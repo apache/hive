@@ -59,7 +59,7 @@ INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n3
 PREHOOK: Input: default@test_table1_n3@ds=1
 PREHOOK: Input: default@test_table2_n3
@@ -70,7 +70,7 @@ INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n3
 POSTHOOK: Input: default@test_table1_n3@ds=1
 POSTHOOK: Input: default@test_table2_n3
@@ -300,7 +300,7 @@ SELECT a.key, a.key2, concat(a.value, b.value) as value
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n3
 PREHOOK: Input: default@test_table1_n3@ds=1
 PREHOOK: Input: default@test_table2_n3
@@ -314,7 +314,7 @@ SELECT a.key, a.key2, concat(a.value, b.value) as value
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n3
 POSTHOOK: Input: default@test_table1_n3@ds=1
 POSTHOOK: Input: default@test_table2_n3
@@ -547,7 +547,7 @@ INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key2, a.key, concat(a.value, b.value) 
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n3
 PREHOOK: Input: default@test_table1_n3@ds=1
 PREHOOK: Input: default@test_table2_n3
@@ -558,7 +558,7 @@ INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key2, a.key, concat(a.value, b.value) 
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n3
 POSTHOOK: Input: default@test_table1_n3@ds=1
 POSTHOOK: Input: default@test_table2_n3
@@ -723,7 +723,7 @@ SELECT a.key, a.key2, concat(a.value, b.value) as value
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n3
 PREHOOK: Input: default@test_table1_n3@ds=1
 PREHOOK: Input: default@test_table2_n3
@@ -737,7 +737,7 @@ SELECT a.key, a.key2, concat(a.value, b.value) as value
 FROM test_table1_n3 a JOIN test_table2_n3 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n3
 POSTHOOK: Input: default@test_table1_n3@ds=1
 POSTHOOK: Input: default@test_table2_n3
@@ -905,7 +905,7 @@ FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n3
 PREHOOK: Input: default@test_table1_n3@ds=1
 PREHOOK: Input: default@test_table2_n3
@@ -922,7 +922,7 @@ FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n3
 POSTHOOK: Input: default@test_table1_n3@ds=1
 POSTHOOK: Input: default@test_table2_n3
@@ -1167,7 +1167,7 @@ FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n3
 PREHOOK: Input: default@test_table1_n3@ds=1
 PREHOOK: Input: default@test_table2_n3
@@ -1184,7 +1184,7 @@ FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n3
 POSTHOOK: Input: default@test_table1_n3@ds=1
 POSTHOOK: Input: default@test_table2_n3
@@ -1439,7 +1439,7 @@ FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n3
 PREHOOK: Input: default@test_table1_n3@ds=1
 PREHOOK: Input: default@test_table2_n3
@@ -1456,7 +1456,7 @@ FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n3
 POSTHOOK: Input: default@test_table1_n3@ds=1
 POSTHOOK: Input: default@test_table2_n3

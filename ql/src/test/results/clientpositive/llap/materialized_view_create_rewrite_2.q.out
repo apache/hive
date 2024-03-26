@@ -43,12 +43,12 @@ POSTHOOK: Output: default@cmv_mat_view_n9
 POSTHOOK: Lineage: cmv_mat_view_n9.b SIMPLE [(cmv_basetable_n9)cmv_basetable_n9.FieldSchema(name:b, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -142,12 +142,12 @@ POSTHOOK: Lineage: cmv_mat_view_2.b SIMPLE [(cmv_basetable_n9)cmv_basetable_n9.F
 POSTHOOK: Lineage: cmv_mat_view_2.c SIMPLE [(cmv_basetable_n9)cmv_basetable_n9.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -242,13 +242,13 @@ POSTHOOK: Lineage: cmv_mat_view_3.b SIMPLE [(cmv_basetable_n9)cmv_basetable_n9.F
 POSTHOOK: Lineage: cmv_mat_view_3.c SIMPLE [(cmv_basetable_n9)cmv_basetable_n9.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Input: default@cmv_mat_view_3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n9
 POSTHOOK: Input: default@cmv_mat_view_3
 #### A masked pattern was here ####
@@ -345,13 +345,13 @@ POSTHOOK: Lineage: cmv_mat_view_4.a SIMPLE [(cmv_basetable_n9)cmv_basetable_n9.F
 POSTHOOK: Lineage: cmv_mat_view_4.b SIMPLE [(cmv_basetable_n9)cmv_basetable_n9.FieldSchema(name:b, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select b from cmv_basetable_n9 group by b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Input: default@cmv_mat_view_4
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 group by b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n9
 POSTHOOK: Input: default@cmv_mat_view_4
 #### A masked pattern was here ####
@@ -478,7 +478,7 @@ select cmv_basetable_n9.a
 from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a, cmv_basetable_2_n4.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n4
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Input: default@cmv_mat_view_5
@@ -488,7 +488,7 @@ select cmv_basetable_n9.a
 from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a, cmv_basetable_2_n4.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n4
 POSTHOOK: Input: default@cmv_basetable_n9
 POSTHOOK: Input: default@cmv_mat_view_5
@@ -536,7 +536,7 @@ select cmv_basetable_n9.a
 from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n4
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Input: default@cmv_mat_view_5
@@ -546,7 +546,7 @@ select cmv_basetable_n9.a
 from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n4
 POSTHOOK: Input: default@cmv_basetable_n9
 POSTHOOK: Input: default@cmv_mat_view_5

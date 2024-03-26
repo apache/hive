@@ -14,7 +14,7 @@ FROM (
   CLUSTER BY tkey LIMIT 20
 ) tmap
 INSERT OVERWRITE TABLE dest1_n13 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n13
 POSTHOOK: query: EXPLAIN
@@ -25,7 +25,7 @@ FROM (
   CLUSTER BY tkey LIMIT 20
 ) tmap
 INSERT OVERWRITE TABLE dest1_n13 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n13
 STAGE DEPENDENCIES:

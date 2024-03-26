@@ -39,11 +39,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@catalog_Sales
 PREHOOK: query: explain vectorization detail select max((((cs_ext_list_price - cs_ext_wholesale_cost) - cs_ext_discount_amt) + cs_ext_sales_price) / 2) from catalog_sales
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@catalog_sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select max((((cs_ext_list_price - cs_ext_wholesale_cost) - cs_ext_discount_amt) + cs_ext_sales_price) / 2) from catalog_sales
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@catalog_sales
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

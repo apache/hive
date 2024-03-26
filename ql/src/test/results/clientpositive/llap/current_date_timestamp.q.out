@@ -12,11 +12,11 @@ true	true
 true	true
 true	true
 PREHOOK: query: explain cbo select current_timestamp() from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select current_timestamp() from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
@@ -52,11 +52,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1
 PREHOOK: query: explain extended select current_timestamp() from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select current_timestamp() from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(TIMESTAMP '2012-01-01 01:02:03.000000000' AS TIMESTAMP) AS `_o__c0`

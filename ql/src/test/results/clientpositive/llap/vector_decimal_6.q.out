@@ -120,12 +120,12 @@ POSTHOOK: Lineage: decimal_6_2.key SIMPLE [(decimal_6_2_txt)decimal_6_2_txt.Fiel
 POSTHOOK: Lineage: decimal_6_2.value SIMPLE [(decimal_6_2_txt)decimal_6_2_txt.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_1 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_6_1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_1 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_6_1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -265,12 +265,12 @@ NULL	4
 NULL	1234567890
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_2 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_2 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -414,7 +414,7 @@ SELECT T.key from (
   UNION ALL
   SELECT key, value from DECIMAL_6_2
 ) T order by T.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_6_1
 PREHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
@@ -424,7 +424,7 @@ SELECT T.key from (
   UNION ALL
   SELECT key, value from DECIMAL_6_2
 ) T order by T.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_6_1
 POSTHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
@@ -651,13 +651,13 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_6_1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DECIMAL_6_3
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_6_1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_6_3

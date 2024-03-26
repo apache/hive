@@ -17,12 +17,12 @@ POSTHOOK: Output: default@parquet_decimal64
 POSTHOOK: Lineage: parquet_decimal64.salary SCRIPT []
 PREHOOK: query: explain select * from parquet_decimal64 
     where cast(salary as decimal(12, 2)) <= 100 and cast(salary as decimal(12, 2)) >= 0.0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parquet_decimal64
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from parquet_decimal64 
     where cast(salary as decimal(12, 2)) <= 100 and cast(salary as decimal(12, 2)) >= 0.0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parquet_decimal64
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

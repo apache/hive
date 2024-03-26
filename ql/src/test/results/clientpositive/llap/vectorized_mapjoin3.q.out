@@ -162,7 +162,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.decimal0801_col
 FROM table_19 t1
 WHERE (SELECT max(tt1.int_col_0) AS int_col FROM table_6 tt1) IN (t1.int_col_1) AND decimal0801_col is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_19
 PREHOOK: Input: default@table_6
 #### A masked pattern was here ####
@@ -170,7 +170,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.decimal0801_col
 FROM table_19 t1
 WHERE (SELECT max(tt1.int_col_0) AS int_col FROM table_6 tt1) IN (t1.int_col_1) AND decimal0801_col is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_19
 POSTHOOK: Input: default@table_6
 #### A masked pattern was here ####
@@ -376,7 +376,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.decimal0801_col
 FROM table_19 t1
 WHERE (t1.int_col_1) IN (SELECT max(tt1.int_col_0) AS int_col FROM table_6 tt1) AND decimal0801_col is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_19
 PREHOOK: Input: default@table_6
 #### A masked pattern was here ####
@@ -384,7 +384,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.decimal0801_col
 FROM table_19 t1
 WHERE (t1.int_col_1) IN (SELECT max(tt1.int_col_0) AS int_col FROM table_6 tt1) AND decimal0801_col is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_19
 POSTHOOK: Input: default@table_6
 #### A masked pattern was here ####
@@ -603,7 +603,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.decimal0801_col
 FROM table_19 t1
 WHERE (SELECT max(tt1.int_col_0) AS int_col FROM table_6 tt1) = (t1.int_col_1) AND decimal0801_col is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_19
 PREHOOK: Input: default@table_6
 #### A masked pattern was here ####
@@ -611,7 +611,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT t1.decimal0801_col
 FROM table_19 t1
 WHERE (SELECT max(tt1.int_col_0) AS int_col FROM table_6 tt1) = (t1.int_col_1) AND decimal0801_col is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_19
 POSTHOOK: Input: default@table_6
 #### A masked pattern was here ####
@@ -823,7 +823,7 @@ SELECT
   JOIN
   (SELECT 'TEST-1' id, 'TEST' r_type UNION ALL SELECT 'TEST-2' id, 'TEST' r_type) t3
   ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@table_27
 #### A masked pattern was here ####
@@ -836,7 +836,7 @@ SELECT
   JOIN
   (SELECT 'TEST-1' id, 'TEST' r_type UNION ALL SELECT 'TEST-2' id, 'TEST' r_type) t3
   ON (t3.r_type = t1.type and t3.id in ('TEST-1', 'TEST-2'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@table_27
 #### A masked pattern was here ####

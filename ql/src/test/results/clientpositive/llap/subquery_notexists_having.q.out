@@ -7,7 +7,7 @@ having not exists
   from src a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -19,7 +19,7 @@ having not exists
   from src a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -161,7 +161,7 @@ having not exists
   from src a 
   where b.value = a.value and a.value > 'val_12'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -173,7 +173,7 @@ having not exists
   from src a 
   where b.value = a.value and a.value > 'val_12'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -72,7 +72,7 @@ from sorted_mod_4 s
 left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@small_table
 PREHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -82,7 +82,7 @@ from sorted_mod_4 s
 left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -111,7 +111,7 @@ from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@small_table
 PREHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -121,7 +121,7 @@ from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -150,7 +150,7 @@ from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@small_table
 PREHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -160,7 +160,7 @@ from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -189,7 +189,7 @@ from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@small_table
 PREHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -199,7 +199,7 @@ from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -230,7 +230,7 @@ left outer join small_table sm
 left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@small_table
 PREHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -242,7 +242,7 @@ left outer join small_table sm
 left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
@@ -341,7 +341,7 @@ from mod_8_mod_4 s
 left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mod_8_mod_4
 PREHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -351,7 +351,7 @@ from mod_8_mod_4 s
 left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -380,7 +380,7 @@ from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mod_8_mod_4
 PREHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -390,7 +390,7 @@ from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -419,7 +419,7 @@ from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mod_8_mod_4
 PREHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -429,7 +429,7 @@ from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -458,7 +458,7 @@ from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mod_8_mod_4
 PREHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -468,7 +468,7 @@ from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -499,7 +499,7 @@ left outer join small_table2 sm
 left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mod_8_mod_4
 PREHOOK: Input: default@small_table2
 #### A masked pattern was here ####
@@ -511,7 +511,7 @@ left outer join small_table2 sm
 left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####

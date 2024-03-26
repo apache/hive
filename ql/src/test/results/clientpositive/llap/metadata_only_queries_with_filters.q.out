@@ -154,12 +154,12 @@ POSTHOOK: Output: default@stats_tbl_part_n0@dt=2014
 #### A masked pattern was here ####
 PREHOOK: query: explain 
 select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -183,12 +183,12 @@ POSTHOOK: Input: default@stats_tbl_part_n0
 2322	2322	2322	2322	2322	2322	2322	65791	4294967296	99.98	0.03
 PREHOOK: query: explain 
 select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

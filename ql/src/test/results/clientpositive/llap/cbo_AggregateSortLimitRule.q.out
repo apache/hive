@@ -7,11 +7,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@person
 PREHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@person
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@person
 #### A masked pattern was here ####
 CBO PLAN:
@@ -21,11 +21,11 @@ HiveSortLimit(sort0=[$1], dir0=[ASC-nulls-first], fetch=[5])
       HiveTableScan(table=[[default, person]], table:alias=[person])
 
 PREHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@person
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@person
 #### A masked pattern was here ####
 CBO PLAN:

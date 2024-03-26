@@ -1,11 +1,11 @@
 PREHOOK: query: explain
 select key,value from src order by key limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key,value from src order by key limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -97,12 +97,12 @@ POSTHOOK: Input: default@src
 119	val_119
 PREHOOK: query: explain
 select key,value from src order by key desc limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key,value from src order by key desc limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -194,12 +194,12 @@ POSTHOOK: Input: default@src
 82	val_82
 PREHOOK: query: explain
 select value, sum(key + 1) as sum from src group by value order by value limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key + 1) as sum from src group by value order by value limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -315,12 +315,12 @@ val_129	260.0
 val_131	132.0
 PREHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -440,12 +440,12 @@ val_129	130.0
 val_131	132.0
 PREHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -557,12 +557,12 @@ POSTHOOK: Input: default@alltypesorc
 -16243.0
 PREHOOK: query: explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -681,12 +681,12 @@ POSTHOOK: Input: default@alltypesorc
 -45	24
 PREHOOK: query: explain 
 select ctinyint, count(cdouble) from (select ctinyint, cdouble from alltypesorc group by ctinyint, cdouble) t1 group by ctinyint order by ctinyint limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select ctinyint, count(cdouble) from (select ctinyint, cdouble from alltypesorc group by ctinyint, cdouble) t1 group by ctinyint order by ctinyint limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -805,12 +805,12 @@ POSTHOOK: Input: default@alltypesorc
 -45	24
 PREHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -934,12 +934,12 @@ POSTHOOK: Input: default@alltypesorc
 -45	3	24
 PREHOOK: query: explain
 select key,value from src order by key limit 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key,value from src order by key limit 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -962,12 +962,12 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1083,12 +1083,12 @@ val_18	36.0
 val_41	41.0
 PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1197,12 +1197,12 @@ val_129	258.0
 val_131	131.0
 PREHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1374,12 +1374,12 @@ POSTHOOK: Input: default@src
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 PREHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

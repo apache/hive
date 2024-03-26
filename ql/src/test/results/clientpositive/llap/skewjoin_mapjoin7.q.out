@@ -39,7 +39,7 @@ select * from
     union all 	
   select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n157
 PREHOOK: Input: default@t2_n92
 #### A masked pattern was here ####
@@ -50,7 +50,7 @@ select * from
     union all 	
   select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n157
 POSTHOOK: Input: default@t2_n92
 #### A masked pattern was here ####

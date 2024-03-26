@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN
 SELECT src.key as c3 from src where src.key > '2'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src.key as c3 from src where src.key > '2'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -417,12 +417,12 @@ POSTHOOK: Input: default@src
 97
 PREHOOK: query: EXPLAIN
 SELECT src.key as c3 from src where src.key > '2'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src.key as c3 from src where src.key > '2'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

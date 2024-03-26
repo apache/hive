@@ -63,7 +63,7 @@ order by
 o_totalprice desc,
 o_orderdate
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: tpch_0_001@customer
 PREHOOK: Input: tpch_0_001@lineitem
 PREHOOK: Input: tpch_0_001@orders
@@ -98,7 +98,7 @@ order by
 o_totalprice desc,
 o_orderdate
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: tpch_0_001@customer
 POSTHOOK: Input: tpch_0_001@lineitem
 POSTHOOK: Input: tpch_0_001@orders
@@ -217,7 +217,7 @@ order by
 o_totalprice desc,
 o_orderdate
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: tpch_0_001@customer
 PREHOOK: Input: tpch_0_001@lineitem
 PREHOOK: Input: tpch_0_001@orders
@@ -252,7 +252,7 @@ order by
 o_totalprice desc,
 o_orderdate
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: tpch_0_001@customer
 POSTHOOK: Input: tpch_0_001@lineitem
 POSTHOOK: Input: tpch_0_001@orders
@@ -316,7 +316,7 @@ order by
 o_totalprice desc,
 o_orderdate
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: tpch_0_001@customer
 PREHOOK: Input: tpch_0_001@lineitem
 PREHOOK: Input: tpch_0_001@orders
@@ -351,7 +351,7 @@ order by
 o_totalprice desc,
 o_orderdate
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: tpch_0_001@customer
 POSTHOOK: Input: tpch_0_001@lineitem
 POSTHOOK: Input: tpch_0_001@orders

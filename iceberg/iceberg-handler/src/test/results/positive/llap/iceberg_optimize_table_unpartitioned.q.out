@@ -213,11 +213,11 @@ OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: explain optimize table ice_orc rewrite data
-PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: explain optimize table ice_orc rewrite data
-POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 STAGE DEPENDENCIES:

@@ -365,9 +365,9 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 Activate a resource plan to enable workload management!
 PREHOOK: query: EXPLAIN ENABLE WORKLOAD MANAGEMENT
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN ENABLE WORKLOAD MANAGEMENT
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
 
 STAGE PLANS:
@@ -382,10 +382,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: EXPLAIN SHOW RESOURCE PLANS
-PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN SHOW RESOURCE PLANS
-POSTHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -407,10 +407,10 @@ POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1	DISABLED	 
 PREHOOK: query: EXPLAIN SHOW RESOURCE PLAN plan_1
-PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN SHOW RESOURCE PLAN plan_1
-POSTHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -444,10 +444,10 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
-PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
-POSTHOOK: type: CREATE RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -463,10 +463,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -576,10 +576,10 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -605,10 +605,10 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 ENABLE
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 ENABLE
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -624,10 +624,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -763,10 +763,10 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: EXPLAIN DISABLE WORKLOAD MANAGEMENT
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN DISABLE WORKLOAD MANAGEMENT
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -870,10 +870,10 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_2	default	ACTIVE	10	default
 plan_3	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN DROP RESOURCE PLAN plan_2
-PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN DROP RESOURCE PLAN plan_2
-POSTHOOK: type: DROP RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -969,10 +969,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: EXPLAIN CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
-PREHOOK: type: CREATE TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
-POSTHOOK: type: CREATE TRIGGER
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1036,10 +1036,10 @@ POSTHOOK: Input: sys@wm_triggers
 plan_1	default	trigger_1	BYTES_READ > '10kb'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: EXPLAIN ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
-PREHOOK: type: ALTER TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
-POSTHOOK: type: ALTER TRIGGER
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1067,10 +1067,10 @@ POSTHOOK: Input: sys@wm_triggers
 plan_1	default	trigger_1	BYTES_READ > '1GB'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: EXPLAIN DROP TRIGGER plan_1.trigger_1
-PREHOOK: type: DROP TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN DROP TRIGGER plan_1.trigger_1
-POSTHOOK: type: DROP TRIGGER
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1229,11 +1229,11 @@ table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: EXPLAIN CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
-PREHOOK: type: CREATE POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
-POSTHOOK: type: CREATE POOL
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1288,10 +1288,10 @@ POSTHOOK: query: CREATE POOL plan_2.default.c2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 VALIDATE
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 VALIDATE
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -1318,10 +1318,10 @@ PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:ResourcePlan: plan_2 is invalid: [Sum of children pools' alloc fraction should be less than 1 got: 1.05 for pool: default])
 PREHOOK: query: EXPLAIN ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
-PREHOOK: type: ALTER POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
-POSTHOOK: type: ALTER POOL
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1414,10 +1414,10 @@ plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
 table	default	default	1.0	4	NULL
 PREHOOK: query: EXPLAIN DROP POOL plan_2.default
-PREHOOK: type: DROP POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN DROP POOL plan_2.default
-POSTHOOK: type: DROP POOL
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1575,10 +1575,10 @@ plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
 table	default	DISABLED	1	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1606,10 +1606,10 @@ plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
 table	default	DISABLED	2	table.pool
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1679,10 +1679,10 @@ plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
 table	default	DISABLED	1	NULL
 PREHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
-PREHOOK: type: ALTER POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
-POSTHOOK: type: ALTER POOL
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1815,10 +1815,10 @@ table	default	table.pool.child1	table
 table	default	table.pool.child1	trigger1
 table	default	table.pool.child2	trigger2
 PREHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
-PREHOOK: type: ALTER POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
-POSTHOOK: type: ALTER POOL
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1859,10 +1859,10 @@ POSTHOOK: Input: sys@wm_pools_to_triggers
 plan_2	default	def.c2	trigger_1
 table	default	table	table
 PREHOOK: query: EXPLAIN CREATE USER MAPPING "user1" IN plan_2 TO def
-PREHOOK: type: CREATE MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN CREATE USER MAPPING "user1" IN plan_2 TO def
-POSTHOOK: type: CREATE MAPPING
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1900,10 +1900,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE GROUP MAPPING 'group2' IN plan_2 TO def.c2 WITH ORDER 1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: EXPLAIN CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
-PREHOOK: type: CREATE MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
-POSTHOOK: type: CREATE MAPPING
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1921,10 +1921,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: EXPLAIN ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
-PREHOOK: type: ALTER MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
-POSTHOOK: type: ALTER MAPPING
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1977,10 +1977,10 @@ PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Please remove all mappings for this pool.)
 PREHOOK: query: EXPLAIN DROP USER MAPPING "user2" in plan_2
-PREHOOK: type: DROP MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN DROP USER MAPPING "user2" in plan_2
-POSTHOOK: type: DROP MAPPING
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1997,10 +1997,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP USER MAPPING "user2" in plan_2
 POSTHOOK: type: DROP MAPPING
 PREHOOK: query: EXPLAIN DROP GROUP MAPPING "group2" in plan_2
-PREHOOK: type: DROP MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN DROP GROUP MAPPING "group2" in plan_2
-POSTHOOK: type: DROP MAPPING
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -2236,10 +2236,10 @@ POSTHOOK: Input: sys@wm_mappings
 plan_4a	default	USER	user1	pool1	0
 plan_4b	default	USER	user1	pool1	0
 PREHOOK: query: EXPLAIN REPLACE RESOURCE PLAN plan_4a WITH plan_4b
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN REPLACE RESOURCE PLAN plan_4a WITH plan_4b
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -2329,10 +2329,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_4a.pool3 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

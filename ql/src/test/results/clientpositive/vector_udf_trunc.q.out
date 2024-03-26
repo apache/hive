@@ -76,11 +76,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@trunc_number
 POSTHOOK: Lineage: trunc_number.c EXPRESSION []
 PREHOOK: query: explain vectorization detail select trunc(ctimestamp1, 'MM') from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select trunc(ctimestamp1, 'MM') from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -198,11 +198,11 @@ POSTHOOK: Input: default@alltypesorc
 1969-01-01	1969-12-31 15:59:43.637
 1969-01-01	1969-12-31 15:59:43.64
 PREHOOK: query: explain vectorization detail select trunc(CAST(ctimestamp1 AS STRING), 'MM') from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select trunc(CAST(ctimestamp1 AS STRING), 'MM') from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -320,11 +320,11 @@ POSTHOOK: Input: default@alltypesorc
 1969-01-01	1969-12-31 15:59:43.637
 1969-01-01	1969-12-31 15:59:43.64
 PREHOOK: query: explain vectorization detail select trunc(CAST(ctimestamp1 AS DATE), 'MM') from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select trunc(CAST(ctimestamp1 AS DATE), 'MM') from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -461,12 +461,12 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: explain vectorization detail
 select c, trunc(c,0) from trunc_number order by c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select c, trunc(c,0) from trunc_number order by c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -584,12 +584,12 @@ POSTHOOK: Input: default@trunc_number
 NULL	1	NULL
 PREHOOK: query: explain vectorization detail
 select c, trunc(CAST (c AS FLOAT), 0) from trunc_number order by c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select c, trunc(CAST (c AS FLOAT), 0) from trunc_number order by c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -707,12 +707,12 @@ POSTHOOK: Input: default@trunc_number
 NULL	1	NULL
 PREHOOK: query: explain vectorization detail
 select c, trunc(CAST (c AS DECIMAL(10,5)), 0) from trunc_number order by c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select c, trunc(CAST (c AS DECIMAL(10,5)), 0) from trunc_number order by c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -830,12 +830,12 @@ POSTHOOK: Input: default@trunc_number
 NULL	1	NULL
 PREHOOK: query: explain vectorization detail
 select c, trunc(c) from trunc_number order by c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select c, trunc(c) from trunc_number order by c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -929,12 +929,12 @@ POSTHOOK: Input: default@trunc_number
 NULL	NULL
 PREHOOK: query: explain vectorization detail
 select c, trunc(CAST (c AS DECIMAL(10,5))) from trunc_number order by c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select c, trunc(CAST (c AS DECIMAL(10,5))) from trunc_number order by c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@trunc_number
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

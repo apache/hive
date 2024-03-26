@@ -26,12 +26,12 @@ POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
 select category, count(distinct id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select category, count(distinct id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

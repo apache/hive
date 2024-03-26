@@ -134,11 +134,11 @@ POSTHOOK: Input: default@decimal_5
 200.00000
 NULL
 PREHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_5
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_5
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

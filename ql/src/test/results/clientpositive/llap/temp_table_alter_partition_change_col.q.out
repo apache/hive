@@ -257,10 +257,10 @@ Tom	-12.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	235.0000	__HIVE_DEFAULT_PARTITION__	123
 PREHOOK: query: explain alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
-PREHOOK: type: ALTERTABLE_PARTCOLTYPE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: query: explain alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
-POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alter_partition_change_col1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

@@ -15,7 +15,7 @@ SELECT CASE src_thrift.lint[0]
         ELSE NULL
        END)[0]
 FROM src_thrift tablesample (3 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -35,7 +35,7 @@ SELECT CASE src_thrift.lint[0]
         ELSE NULL
        END)[0]
 FROM src_thrift tablesample (3 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -25,12 +25,12 @@ POSTHOOK: Input: default@testjfs3
 POSTHOOK: Output: default@testjfs3
 PREHOOK: query: EXPLAIN
 SELECT * FROM testjfs3 WHERE i = -1591211872
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testjfs3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM testjfs3 WHERE i = -1591211872
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testjfs3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -62,12 +62,12 @@ POSTHOOK: Input: default@testjfs3
 -1.5912119E9
 PREHOOK: query: EXPLAIN
 SELECT * FROM testjfs3 WHERE i = -1591211872
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testjfs3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM testjfs3 WHERE i = -1591211872
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testjfs3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

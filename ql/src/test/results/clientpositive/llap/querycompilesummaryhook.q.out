@@ -58,12 +58,12 @@ Total Compilation Time#Masked#
 ----------------------------------------------------------------------------------------------
 PREHOOK: query: explain
 select n, t from tbl_n1 where n = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select n, t from tbl_n1 where n = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

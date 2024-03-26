@@ -11,7 +11,7 @@ PREHOOK: query: EXPLAIN
   FROM src1 src2 group by src2.key
  ) b 
  ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -28,7 +28,7 @@ POSTHOOK: query: EXPLAIN
   FROM src1 src2 group by src2.key
  ) b 
  ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

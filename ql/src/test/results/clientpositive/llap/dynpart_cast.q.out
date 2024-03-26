@@ -16,14 +16,14 @@ PREHOOK: query: EXPLAIN
 INSERT INTO TABLE dynpart_cast PARTITION (static_part=03, dyn_part)
 SELECT 1,
 '002'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dynpart_cast@static_part=3
 POSTHOOK: query: EXPLAIN
 INSERT INTO TABLE dynpart_cast PARTITION (static_part=03, dyn_part)
 SELECT 1,
 '002'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

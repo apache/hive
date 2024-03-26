@@ -12,11 +12,11 @@ Split text into key-value pairs using two delimiters. The first delimiter separa
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFStringToMap
 Function type:BUILTIN
 PREHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -48,11 +48,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 PREHOOK: query: explain select str_to_map('a:1,b:2,c:3') from src limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3') from src limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -84,11 +84,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":"1","b":"2","c":"3"}
 {"a":"1","b":"2","c":"3"}
 PREHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -122,13 +122,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

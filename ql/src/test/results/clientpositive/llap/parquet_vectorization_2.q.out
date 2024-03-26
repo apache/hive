@@ -20,7 +20,7 @@ WHERE  (((ctimestamp1 < ctimestamp2)
         OR ((cdouble < ctinyint)
             AND ((-10669 != ctimestamp2)
                  OR (359 > cint))))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -45,7 +45,7 @@ WHERE  (((ctimestamp1 < ctimestamp2)
         OR ((cdouble < ctinyint)
             AND ((-10669 != ctimestamp2)
                  OR (359 > cint))))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

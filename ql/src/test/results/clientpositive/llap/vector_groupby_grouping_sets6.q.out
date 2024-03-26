@@ -32,14 +32,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 Explain
@@ -181,14 +181,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
 (SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 Explain

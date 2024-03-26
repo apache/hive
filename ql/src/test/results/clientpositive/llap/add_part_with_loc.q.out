@@ -16,12 +16,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@supply
 PREHOOK: query: explain alter table supply add partition (day=20110102) location 
 	'hdfs://### HDFS PATH ###'
-PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: default@supply
 POSTHOOK: query: explain alter table supply add partition (day=20110102) location 
 	'hdfs://### HDFS PATH ###'
-POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@supply
 STAGE DEPENDENCIES:

@@ -35,12 +35,12 @@ POSTHOOK: Output: default@test_update_bucketed
 POSTHOOK: Lineage: test_update_bucketed.id SCRIPT []
 POSTHOOK: Lineage: test_update_bucketed.value SCRIPT []
 PREHOOK: query: explain locks CREATE TABLE IF NOT EXISTS test_update_orc_ctas_locks STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_update_bucketed
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_update_orc_ctas_locks
 POSTHOOK: query: explain locks CREATE TABLE IF NOT EXISTS test_update_orc_ctas_locks STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_orc_ctas_locks
@@ -48,13 +48,13 @@ LOCK INFORMATION:
 default.test_update_bucketed -> SHARED_READ
 default -> SHARED_READ
 PREHOOK: query: explain locks CREATE TABLE IF NOT EXISTS test_update_orc_ctas_rename STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_update_bucketed
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_update_orc_ctas_rename
 PREHOOK: Output: default@test_update_orc_ctas_rename
 POSTHOOK: query: explain locks CREATE TABLE IF NOT EXISTS test_update_orc_ctas_rename STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_orc_ctas_rename

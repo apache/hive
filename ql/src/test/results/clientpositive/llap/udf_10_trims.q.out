@@ -11,7 +11,7 @@ INSERT OVERWRITE TABLE dest1_n5
 SELECT trim(trim(trim(trim(trim(trim(trim(trim(trim(trim( '  abc  '))))))))))
 FROM src
 WHERE src.key = 86
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n5
 POSTHOOK: query: EXPLAIN
@@ -19,7 +19,7 @@ INSERT OVERWRITE TABLE dest1_n5
 SELECT trim(trim(trim(trim(trim(trim(trim(trim(trim(trim( '  abc  '))))))))))
 FROM src
 WHERE src.key = 86
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n5
 STAGE DEPENDENCIES:

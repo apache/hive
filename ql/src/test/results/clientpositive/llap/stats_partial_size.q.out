@@ -40,13 +40,13 @@ POSTHOOK: Input: default@sample
 POSTHOOK: Output: default@sample
 #### A masked pattern was here ####
 PREHOOK: query: explain select sample_partitioned.x from sample_partitioned, sample where sample.y = sample_partitioned.y
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sample
 PREHOOK: Input: default@sample_partitioned
 PREHOOK: Input: default@sample_partitioned@y=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select sample_partitioned.x from sample_partitioned, sample where sample.y = sample_partitioned.y
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sample
 POSTHOOK: Input: default@sample_partitioned
 POSTHOOK: Input: default@sample_partitioned@y=1

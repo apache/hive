@@ -94,7 +94,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -102,7 +102,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -321,7 +321,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -329,7 +329,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -571,7 +571,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -579,7 +579,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -797,7 +797,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -805,7 +805,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1046,7 +1046,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1054,7 +1054,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1273,7 +1273,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1281,7 +1281,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1523,7 +1523,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1531,7 +1531,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1749,7 +1749,7 @@ PREHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_table
 PREHOOK: Input: default@target_table
 #### A masked pattern was here ####
@@ -1757,7 +1757,7 @@ POSTHOOK: query: explain extended
 select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####

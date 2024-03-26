@@ -103,12 +103,12 @@ POSTHOOK: Input: default@sketch_input
 WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain
 select id,'rewrite',ntile(4) over (partition by category order by id) from sketch_input order by category,id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select id,'rewrite',ntile(4) over (partition by category order by id) from sketch_input order by category,id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

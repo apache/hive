@@ -29,11 +29,11 @@ POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@t2
 #### A masked pattern was here ####
 PREHOOK: query: explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -90,11 +90,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -151,11 +151,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a from t2 where b IN ('A3', 'ABC', 'AXZ') order by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a from t2 where b IN ('A3', 'ABC', 'AXZ') order by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -212,11 +212,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a from t2 where b IN ('A3', 'B1', 'B5') order by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a from t2 where b IN ('A3', 'B1', 'B5') order by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

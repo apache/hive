@@ -20,13 +20,13 @@ _col0	_col1
 PREHOOK: query: explain cbo
 with cte1(a, b) as (select int_col x, bigint_col y from t1)
 select a, b from cte1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 with cte1(a, b) as (select int_col x, bigint_col y from t1)
 select a, b from cte1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 Explain

@@ -7,11 +7,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: EXPLAIN ALTER TABLE t SET TBLPROPERTIES('a'='x', 'b'='y')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t SET TBLPROPERTIES('a'='x', 'b'='y')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:
@@ -55,11 +55,11 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
 POSTHOOK: query: EXPLAIN ALTER TABLE t UNSET TBLPROPERTIES('a', 'b')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
 STAGE DEPENDENCIES:

@@ -54,12 +54,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table3_n0
 POSTHOOK: Lineage: table3_n0.id SCRIPT []
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
@@ -113,13 +113,13 @@ POSTHOOK: Input: default@table3_n0
 3	t1val01	val104
 3	t1val01	val106
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table2_n6
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table2_n6
 POSTHOOK: Input: default@table3_n0
@@ -191,13 +191,13 @@ POSTHOOK: Input: default@table3_n0
 3	t1val01	t2val203
 3	t1val01	t2val203
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table2_n6
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table2_n6
 POSTHOOK: Input: default@table3_n0
@@ -269,12 +269,12 @@ POSTHOOK: Input: default@table3_n0
 3	t1val01	t2val203
 3	t1val01	t2val203
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
@@ -296,12 +296,12 @@ POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
@@ -348,12 +348,12 @@ POSTHOOK: Input: default@table3_n0
 1	t1val01	val101
 3	t1val01	val104
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
@@ -375,12 +375,12 @@ POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
@@ -428,12 +428,12 @@ POSTHOOK: Input: default@table3_n0
 3	t1val01	val104
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
 #### A masked pattern was here ####

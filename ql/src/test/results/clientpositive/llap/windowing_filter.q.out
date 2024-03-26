@@ -45,7 +45,7 @@ from (
   from testtable_n1000
   group by s_state) tmp1
 where ranking <= 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testtable_n1000
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -57,7 +57,7 @@ from (
   from testtable_n1000
   group by s_state) tmp1
 where ranking <= 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testtable_n1000
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

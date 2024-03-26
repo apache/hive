@@ -73,7 +73,7 @@ JOIN `orderpayment_small` `deal` ON `deal`.`dealid` = `orderpayment`.`dealid`
 JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`.`cityid`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orderpayment_small
 PREHOOK: Input: default@user_small
 #### A masked pattern was here ####
@@ -86,7 +86,7 @@ JOIN `orderpayment_small` `deal` ON `deal`.`dealid` = `orderpayment`.`dealid`
 JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`.`cityid`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orderpayment_small
 POSTHOOK: Input: default@user_small
 #### A masked pattern was here ####

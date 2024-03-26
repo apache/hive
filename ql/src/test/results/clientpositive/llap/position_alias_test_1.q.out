@@ -34,7 +34,7 @@ PREHOOK: query: explain
                          left join
                          alias_test_03 alias03
                          on alias01.a = alias03.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alias_test_01
 PREHOOK: Input: default@alias_test_02
 PREHOOK: Input: default@alias_test_03
@@ -50,7 +50,7 @@ POSTHOOK: query: explain
                          left join
                          alias_test_03 alias03
                          on alias01.a = alias03.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alias_test_01
 POSTHOOK: Input: default@alias_test_02
 POSTHOOK: Input: default@alias_test_03

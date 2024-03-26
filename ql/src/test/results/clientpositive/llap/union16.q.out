@@ -29,7 +29,7 @@ SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src) src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -63,7 +63,7 @@ SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src) src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

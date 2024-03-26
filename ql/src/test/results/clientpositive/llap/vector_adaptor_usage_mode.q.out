@@ -156,7 +156,7 @@ select
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -165,7 +165,7 @@ select
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -236,7 +236,7 @@ select
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -245,7 +245,7 @@ select
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -316,7 +316,7 @@ select
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -325,7 +325,7 @@ select
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -392,12 +392,12 @@ NULL	NULL	NULL
 replaced_238	replaced_238	true
 PREHOOK: query: explain vectorization expression
 select count(*) from tbl_dates where to_date(concat(year, '-', month, '-', day)) between to_date('2018-12-01') and to_date('2021-03-01')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_dates
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from tbl_dates where to_date(concat(year, '-', month, '-', day)) between to_date('2018-12-01') and to_date('2021-03-01')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_dates
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -514,7 +514,7 @@ select
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -523,7 +523,7 @@ select
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -594,7 +594,7 @@ select
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -603,7 +603,7 @@ select
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -687,7 +687,7 @@ select
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -696,7 +696,7 @@ select
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -775,11 +775,11 @@ POSTHOOK: Input: default@varchar_udf_1_n0
 NULL	NULL	NULL
 replaced_238	replaced_238	true
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -879,7 +879,7 @@ SELECT
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF_n1 WHERE key = 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -888,7 +888,7 @@ SELECT
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF_n1 WHERE key = 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -957,11 +957,11 @@ POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1061,7 +1061,7 @@ SELECT
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF_n1 WHERE key = 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -1070,7 +1070,7 @@ SELECT
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF_n1 WHERE key = 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1140,12 +1140,12 @@ POSTHOOK: Input: default@decimal_udf_n1
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
 PREHOOK: query: explain vectorization expression
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@count_case_groupby
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@count_case_groupby
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1273,12 +1273,12 @@ key4	1
 key5	0
 PREHOOK: query: explain vectorization expression
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@count_case_groupby
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@count_case_groupby
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

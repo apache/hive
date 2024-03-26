@@ -234,7 +234,7 @@ left outer join small_alltypesorc_a_n0 cd
 left outer join small_alltypesorc_a_n0 hd
   on hd.cbigint = c.cbigint
 ) t1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@small_alltypesorc_a_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -245,7 +245,7 @@ left outer join small_alltypesorc_a_n0 cd
 left outer join small_alltypesorc_a_n0 hd
   on hd.cbigint = c.cbigint
 ) t1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@small_alltypesorc_a_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

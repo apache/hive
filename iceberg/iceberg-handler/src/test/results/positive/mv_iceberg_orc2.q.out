@@ -27,7 +27,7 @@ POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: explain
 create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
@@ -35,7 +35,7 @@ PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
@@ -182,12 +182,12 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Output: default@mat1
 PREHOOK: query: explain cbo
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain cbo
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
@@ -205,13 +205,13 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Output: default@mat1
 PREHOOK: query: explain cbo
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain cbo
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -228,12 +228,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@mat1
 CBO PLAN:

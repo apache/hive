@@ -35,7 +35,7 @@ select
   c2 LIKE 'xval_%',
   c3 LIKE '%x38'
 from varchar_udf_2 limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_udf_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -47,7 +47,7 @@ select
   c2 LIKE 'xval_%',
   c3 LIKE '%x38'
 from varchar_udf_2 limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_udf_2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -165,12 +165,12 @@ POSTHOOK: Output: default@hive_14349
 POSTHOOK: Lineage: hive_14349.a SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from HIVE_14349 where a LIKE 'XYZ%a%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_14349
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from HIVE_14349 where a LIKE 'XYZ%a%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_14349
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -257,12 +257,12 @@ POSTHOOK: Output: default@hive_14349
 POSTHOOK: Lineage: hive_14349.a SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from HIVE_14349 where a LIKE 'XYZ%a_'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_14349
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from HIVE_14349 where a LIKE 'XYZ%a_'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_14349
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

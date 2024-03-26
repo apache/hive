@@ -53,14 +53,14 @@ POSTHOOK: Output: default@src_union_view
 POSTHOOK: Lineage: src_union_view.key EXPRESSION [(src_union_1)src_union_1.FieldSchema(name:key, type:int, comment:null), (src_union_2)src_union_2.FieldSchema(name:key, type:int, comment:null), (src_union_3)src_union_3.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: src_union_view.value EXPRESSION [(src_union_1)src_union_1.FieldSchema(name:value, type:string, comment:null), (src_union_2)src_union_2.FieldSchema(name:value, type:string, comment:null), (src_union_3)src_union_3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_union_1
 PREHOOK: Input: default@src_union_2
 PREHOOK: Input: default@src_union_3
 PREHOOK: Input: default@src_union_view
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_union_1
 POSTHOOK: Input: default@src_union_2
 POSTHOOK: Input: default@src_union_3
@@ -168,14 +168,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_union_1
 PREHOOK: Input: default@src_union_2
 PREHOOK: Input: default@src_union_3
 PREHOOK: Input: default@src_union_view
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_union_1
 POSTHOOK: Input: default@src_union_2
 POSTHOOK: Input: default@src_union_3

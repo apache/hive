@@ -23,11 +23,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@orc_merge5_n5
 PREHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_merge5_n5
 PREHOOK: Output: default@orc_merge5b_n0
 POSTHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_merge5_n5
 POSTHOOK: Output: default@orc_merge5b_n0
 STAGE DEPENDENCIES:
@@ -158,11 +158,11 @@ POSTHOOK: Input: default@orc_merge5b_n0
 2	foo	0.8	1	1969-12-31 16:00:00
 5	eat	0.8	6	1969-12-31 16:00:20
 PREHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_merge5_n5
 PREHOOK: Output: default@orc_merge5b_n0
 POSTHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_merge5_n5
 POSTHOOK: Output: default@orc_merge5b_n0
 STAGE DEPENDENCIES:
@@ -369,11 +369,11 @@ POSTHOOK: Input: default@orc_merge5b_n0
 2	foo	0.8	1	1969-12-31 16:00:00
 5	eat	0.8	6	1969-12-31 16:00:20
 PREHOOK: query: explain alter table orc_merge5b_n0 concatenate
-PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_merge5b_n0
 PREHOOK: Output: default@orc_merge5b_n0
 POSTHOOK: query: explain alter table orc_merge5b_n0 concatenate
-POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 STAGE DEPENDENCIES:

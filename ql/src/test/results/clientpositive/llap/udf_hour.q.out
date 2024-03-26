@@ -21,13 +21,13 @@ Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07')
 FROM src WHERE key = 86
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07')
 FROM src WHERE key = 86
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

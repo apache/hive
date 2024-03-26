@@ -1,9 +1,9 @@
 PREHOOK: query: EXPLAIN SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -69,11 +69,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@sampletable
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sampletable
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sampletable
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -126,11 +126,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@sampletable1
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sampletable1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sampletable1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -183,11 +183,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@sampletable2
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sampletable2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sampletable2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -240,11 +240,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@sampletable3
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sampletable3
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sampletable3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -297,11 +297,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@sampletable4
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sampletable4
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sampletable4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

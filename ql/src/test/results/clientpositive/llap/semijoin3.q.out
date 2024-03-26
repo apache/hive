@@ -33,7 +33,7 @@ left semi join
   from t2_n37
   where key = 0) t2_n37
 on 1 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n59
 PREHOOK: Input: default@t2_n37
 #### A masked pattern was here ####
@@ -48,7 +48,7 @@ left semi join
   from t2_n37
   where key = 0) t2_n37
 on 1 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n59
 POSTHOOK: Input: default@t2_n37
 #### A masked pattern was here ####

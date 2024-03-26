@@ -16,12 +16,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1_n81
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n81 group by a, b with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n81
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n81 group by a, b with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n81
 #### A masked pattern was here ####
 Explain
@@ -110,12 +110,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n81 group by cube(a, b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n81
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1_n81 group by cube(a, b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n81
 #### A masked pattern was here ####
 Explain
@@ -228,12 +228,12 @@ NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, sum(c) from T1_n81 group by a, b with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n81
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, sum(c) from T1_n81 group by a, b with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n81
 #### A masked pattern was here ####
 Explain
@@ -369,12 +369,12 @@ POSTHOOK: Lineage: t2_n50.d EXPRESSION [(t1_n81)t1_n81.FieldSchema(name:c, type:
 _col0	_col1	_col2	_col3
 PREHOOK: query: EXPLAIN
 SELECT a, b, sum(c+d) from T2_n50 group by a, b with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2_n50
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, sum(c+d) from T2_n50 group by a, b with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2_n50
 #### A masked pattern was here ####
 Explain

@@ -49,13 +49,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp_n1_temp@ds=2008-04-08/hr=11
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1_temp partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp_n1_temp where ds='2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_merge_dp_n1_temp
 PREHOOK: Input: default@srcpart_merge_dp_n1_temp@ds=2008-04-08/hr=11
 PREHOOK: Output: default@merge_dynamic_part_n1_temp@ds=2008-04-08
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1_temp partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp_n1_temp where ds='2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_merge_dp_n1_temp
 POSTHOOK: Input: default@srcpart_merge_dp_n1_temp@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
@@ -668,13 +668,13 @@ minFileSize:5812
 
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1_temp partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp_n1_temp where ds='2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_merge_dp_n1_temp
 PREHOOK: Input: default@srcpart_merge_dp_n1_temp@ds=2008-04-08/hr=11
 PREHOOK: Output: default@merge_dynamic_part_n1_temp@ds=2008-04-08/hr=11
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1_temp partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp_n1_temp where ds='2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_merge_dp_n1_temp
 POSTHOOK: Input: default@srcpart_merge_dp_n1_temp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@merge_dynamic_part_n1_temp@ds=2008-04-08/hr=11
@@ -1316,13 +1316,13 @@ minFileSize:5812
 
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1_temp partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n1_temp where ds='2008-04-08' and hr=11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart_merge_dp_n1_temp
 PREHOOK: Input: default@srcpart_merge_dp_n1_temp@ds=2008-04-08/hr=11
 PREHOOK: Output: default@merge_dynamic_part_n1_temp
 POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part_n1_temp partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n1_temp where ds='2008-04-08' and hr=11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart_merge_dp_n1_temp
 POSTHOOK: Input: default@srcpart_merge_dp_n1_temp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@merge_dynamic_part_n1_temp

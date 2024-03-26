@@ -46,7 +46,7 @@ FROM (
   UNION ALL
   SELECT key, count(1) as `values` from inputTbl1_n13 group by key
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n13
 PREHOOK: Output: default@outputtbl1_n19@ds=2004
 POSTHOOK: query: explain
@@ -57,7 +57,7 @@ FROM (
   UNION ALL
   SELECT key, count(1) as `values` from inputTbl1_n13 group by key
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n13
 POSTHOOK: Output: default@outputtbl1_n19@ds=2004
 STAGE DEPENDENCIES:
@@ -223,7 +223,7 @@ FROM (
   UNION ALL
   select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -236,7 +236,7 @@ FROM (
   UNION ALL
   select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -392,7 +392,7 @@ FROM (
   UNION ALL
   select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -404,7 +404,7 @@ FROM (
   UNION ALL
   select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

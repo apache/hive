@@ -182,9 +182,9 @@ POSTHOOK: query: USE test1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test1
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -212,9 +212,9 @@ shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Availa
 shtb_test1_view1    	No                  	Manual refresh      	Not available       
 shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -266,9 +266,9 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -303,9 +303,9 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 shtb_test1_view1    	No                  	Manual refresh      	Not available       
 shtb_test2_view2    	No                  	Manual refresh      	Not available       
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -337,9 +337,9 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
-PREHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
-POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

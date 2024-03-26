@@ -21,12 +21,12 @@ POSTHOOK: Output: default@t1_n18@ds=1
 POSTHOOK: Lineage: t1_n18 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1_n18 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN select count(distinct key) from T1_n18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n18
 PREHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(distinct key) from T1_n18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n18
 POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
@@ -103,12 +103,12 @@ POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 6
 PREHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n18
 PREHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n18
 POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
@@ -183,12 +183,12 @@ POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 6	10	10	28.0
 PREHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n18
 PREHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n18
 POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
@@ -274,12 +274,12 @@ POSTHOOK: Input: default@t1_n18@ds=1
 1	3	3	0.0
 1	3	3	5.0
 PREHOOK: query: EXPLAIN select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n18
 PREHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n18 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n18
 POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
@@ -361,12 +361,12 @@ POSTHOOK: Input: default@t1_n18@ds=1
 8	1	1	1	8.0
 9	1	1	1	9.0
 PREHOOK: query: EXPLAIN select count(distinct key+key) from T1_n18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n18
 PREHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(distinct key+key) from T1_n18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n18
 POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
@@ -459,12 +459,12 @@ POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 6
 PREHOOK: query: EXPLAIN select count(distinct 1) from T1_n18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n18
 PREHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(distinct 1) from T1_n18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n18
 POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
@@ -557,12 +557,12 @@ POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 1
 PREHOOK: query: EXPLAIN select count(distinct key) from T1_n18
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n18
 PREHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(distinct key) from T1_n18
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n18
 POSTHOOK: Input: default@t1_n18@ds=1
 #### A masked pattern was here ####

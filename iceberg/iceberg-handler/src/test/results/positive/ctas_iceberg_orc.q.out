@@ -49,7 +49,7 @@ POSTHOOK: Lineage: source.vc SCRIPT []
 PREHOOK: query: explain
 create external table tbl_ice stored by iceberg stored as orc tblproperties ('format-version'='2') as
 select i, s, vc,c, t, si from source
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice
@@ -57,7 +57,7 @@ PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 create external table tbl_ice stored by iceberg stored as orc tblproperties ('format-version'='2') as
 select i, s, vc,c, t, si from source
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice
@@ -196,13 +196,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 insert into tbl_ice
 select * from source
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: explain
 insert into tbl_ice
 select * from source
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:
@@ -318,13 +318,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 insert overwrite table tbl_ice
 select * from source
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: explain
 insert overwrite table tbl_ice
 select * from source
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:

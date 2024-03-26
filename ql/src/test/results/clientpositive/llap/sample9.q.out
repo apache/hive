@@ -1,13 +1,13 @@
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

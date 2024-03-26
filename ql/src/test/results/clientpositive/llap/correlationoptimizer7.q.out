@@ -5,7 +5,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -16,7 +16,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -180,7 +180,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -191,7 +191,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -355,7 +355,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -366,7 +366,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -530,7 +530,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -541,7 +541,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
       GROUP BY x.key) xx
 JOIN src1 yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

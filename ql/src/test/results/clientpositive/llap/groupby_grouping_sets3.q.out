@@ -24,12 +24,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1_n118
 PREHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 Explain
@@ -101,12 +101,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by cube(a, b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by cube(a, b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 Explain
@@ -203,12 +203,12 @@ NULL	3	5.0	2
 NULL	NULL	3.8333333333333335	12
 PREHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 Explain

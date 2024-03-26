@@ -40,11 +40,11 @@ POSTHOOK: query: alter table ice01 create branch test1
 POSTHOOK: type: ALTERTABLE_CREATEBRANCH
 POSTHOOK: Input: default@ice01
 PREHOOK: query: explain select * from default.ice01.branch_test1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from default.ice01.branch_test1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -86,11 +86,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 111	one	55
 2	two	51
 PREHOOK: query: explain insert into default.ice01.branch_test1 values(22, 'three', 44), (33, 'three', 66)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice01
 POSTHOOK: query: explain insert into default.ice01.branch_test1 values(22, 'three', 44), (33, 'three', 66)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
 STAGE DEPENDENCIES:
@@ -210,11 +210,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 22	three	44
 33	three	66
 PREHOOK: query: explain delete from default.ice01.branch_test1 where a=22
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
 POSTHOOK: query: explain delete from default.ice01.branch_test1 where a=22
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 STAGE DEPENDENCIES:
@@ -306,12 +306,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	two	51
 33	three	66
 PREHOOK: query: explain update default.ice01.branch_test1 set a=33 where c=66
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
 PREHOOK: Output: default@ice01
 POSTHOOK: query: explain update default.ice01.branch_test1 set a=33 where c=66
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 POSTHOOK: Output: default@ice01
@@ -426,7 +426,7 @@ merge into default.ice01.branch_test1 as t using source01 src ON t.a = src.a
 when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Input: default@source01
 PREHOOK: Output: default@ice01
@@ -437,7 +437,7 @@ merge into default.ice01.branch_test1 as t using source01 src ON t.a = src.a
 when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Input: default@source01
 POSTHOOK: Output: default@ice01
@@ -714,11 +714,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	four	53
 5	five	54
 PREHOOK: query: explain insert overwrite table default.ice01.branch_test1 values (77, 'one', 88)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice01
 POSTHOOK: query: explain insert overwrite table default.ice01.branch_test1 values (77, 'one', 88)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
 STAGE DEPENDENCIES:
@@ -834,11 +834,11 @@ POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 77	one	88
 PREHOOK: query: explain select * from default.ice01.branch_test1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from default.ice01.branch_test1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

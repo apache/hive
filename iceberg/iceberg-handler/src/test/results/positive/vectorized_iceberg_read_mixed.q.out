@@ -23,11 +23,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_mixed
 PREHOOK: query: explain vectorization only detail  select b, max(a) from tbl_ice_mixed group by b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization only detail  select b, max(a) from tbl_ice_mixed group by b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
@@ -141,11 +141,11 @@ POSTHOOK: Input: default@tbl_ice_mixed
 POSTHOOK: Output: default@tbl_ice_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select b, max(a) from tbl_ice_mixed group by b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select b, max(a) from tbl_ice_mixed group by b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -172,11 +172,11 @@ Stage-0
                   default@tbl_ice_mixed,tbl_ice_mixed,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
 PREHOOK: query: explain vectorization only detail  select b, max(a) from tbl_ice_mixed group by b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization only detail  select b, max(a) from tbl_ice_mixed group by b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
@@ -324,13 +324,13 @@ POSTHOOK: Output: default@tbl_ice_mixed_all_types
 PREHOOK: query: explain vectorization only detail select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string,
                                          t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
 group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed_all_types
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization only detail select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string,
                                          t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
 group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed_all_types
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
@@ -440,13 +440,13 @@ POSTHOOK: Output: default@tbl_ice_mixed_all_types
 PREHOOK: query: explain vectorization only detail select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string,
 t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
 group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed_all_types
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization only detail select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string,
 t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
 group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed_all_types
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
@@ -539,12 +539,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
     group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed_all_types
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
     group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed_all_types
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -606,12 +606,12 @@ POSTHOOK: Lineage: t1.t_string SIMPLE [(tbl_ice_mixed_all_types)tbl_ice_mixed_al
 POSTHOOK: Lineage: t1.t_timestamp SIMPLE [(tbl_ice_mixed_all_types)tbl_ice_mixed_all_types.FieldSchema(name:t_timestamp, type:timestamp, comment:null), ]
 PREHOOK: query: explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
     group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed_all_types
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
     group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed_all_types
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
@@ -767,11 +767,11 @@ p2                  	string
 p1                  	IDENTITY            	 
 p2                  	IDENTITY            	 
 PREHOOK: query: explain vectorization only detail select p1, a, min(b) from tbl_ice_mixed_parted group by p1, a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice_mixed_parted
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization only detail select p1, a, min(b) from tbl_ice_mixed_parted group by p1, a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice_mixed_parted
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:

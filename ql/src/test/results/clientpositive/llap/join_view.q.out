@@ -43,13 +43,13 @@ POSTHOOK: Lineage: v.ds SIMPLE [(invites2)invites2.FieldSchema(name:ds, type:str
 POSTHOOK: Lineage: v.foo SIMPLE [(invites2)invites2.FieldSchema(name:foo, type:int, comment:null), ]
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from v where ds='2011-09-01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@invites
 PREHOOK: Input: default@invites2
 PREHOOK: Input: default@v
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from v where ds='2011-09-01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@invites
 POSTHOOK: Input: default@invites2
 POSTHOOK: Input: default@v

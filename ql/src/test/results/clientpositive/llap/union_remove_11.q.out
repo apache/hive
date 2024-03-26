@@ -34,7 +34,7 @@ select * FROM (
   SELECT key, 3 as `values` from inputTbl1_n14
 ) a
 )b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n14
 PREHOOK: Output: default@outputtbl1_n21
 POSTHOOK: query: explain
@@ -49,7 +49,7 @@ select * FROM (
   SELECT key, 3 as `values` from inputTbl1_n14
 ) a
 )b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n14
 POSTHOOK: Output: default@outputtbl1_n21
 STAGE DEPENDENCIES:

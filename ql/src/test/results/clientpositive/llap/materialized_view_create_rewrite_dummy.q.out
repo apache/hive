@@ -103,13 +103,13 @@ totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select a, c from cmv_basetable_n0 where a = 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n0
 PREHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select a, c from cmv_basetable_n0 where a = 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
@@ -142,12 +142,12 @@ POSTHOOK: Input: default@cmv_mat_view2
 3	978.76
 PREHOOK: query: explain
 alter materialized view cmv_mat_view2 disable rewrite
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_mat_view2
 PREHOOK: Output: default@cmv_mat_view2
 POSTHOOK: query: explain
 alter materialized view cmv_mat_view2 disable rewrite
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_mat_view2
 POSTHOOK: Output: default@cmv_mat_view2
 STAGE DEPENDENCIES:
@@ -180,7 +180,7 @@ select * from (
   join
   (select a, c from cmv_basetable_n0 where d = 3) table2
   on table1.a = table2.a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -189,7 +189,7 @@ select * from (
   join
   (select a, c from cmv_basetable_n0 where d = 3) table2
   on table1.a = table2.a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -294,12 +294,12 @@ POSTHOOK: Input: default@cmv_basetable_n0
 3	978.76	3	978.76
 PREHOOK: query: explain
 alter materialized view cmv_mat_view2 enable rewrite
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_mat_view2
 PREHOOK: Output: default@cmv_mat_view2
 POSTHOOK: query: explain
 alter materialized view cmv_mat_view2 enable rewrite
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_mat_view2
 POSTHOOK: Output: default@cmv_mat_view2
 STAGE DEPENDENCIES:
@@ -332,7 +332,7 @@ select * from (
   join
   (select a, c from cmv_basetable_n0 where d = 3) table2
   on table1.a = table2.a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n0
 PREHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
@@ -342,7 +342,7 @@ select * from (
   join
   (select a, c from cmv_basetable_n0 where d = 3) table2
   on table1.a = table2.a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
@@ -459,7 +459,7 @@ select * from (
   join
   (select a, c from cmv_basetable_n0 where d = 3) table2
   on table1.a = table2.a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -468,7 +468,7 @@ select * from (
   join
   (select a, c from cmv_basetable_n0 where d = 3) table2
   on table1.a = table2.a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

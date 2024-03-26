@@ -46,7 +46,7 @@ PREHOOK: query: explain cbo
 select col0 from
   (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
 where col0 < 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -54,7 +54,7 @@ POSTHOOK: query: explain cbo
 select col0 from
   (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
 where col0 < 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -68,7 +68,7 @@ select col0 from
 where col0 < 100
 ) sub2
 where col0 = 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -79,7 +79,7 @@ select col0 from
 where col0 < 100
 ) sub2
 where col0 = 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -95,7 +95,7 @@ select col0 from (
     where col0 < 100
 ) sub2
 where col0 = 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -106,7 +106,7 @@ select col0 from (
     where col0 < 100
 ) sub2
 where col0 = 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -121,7 +121,7 @@ select col0 from t1 where col0 in (
     (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
 where col0 < 100
 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat2
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -131,7 +131,7 @@ select col0 from t1 where col0 in (
     (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
 where col0 < 100
 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

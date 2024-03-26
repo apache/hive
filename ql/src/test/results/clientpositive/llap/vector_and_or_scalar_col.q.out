@@ -58,11 +58,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 *** OR ***
 PREHOOK: query: explain vectorization detail select null or dt1 is not null from vector_and_or
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select null or dt1 is not null from vector_and_or
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -170,11 +170,11 @@ true
 true
 NULL
 PREHOOK: query: explain vectorization detail select false or dt1 is not null from vector_and_or
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select false or dt1 is not null from vector_and_or
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -282,11 +282,11 @@ true
 true
 false
 PREHOOK: query: explain vectorization detail select dt1 = dt1 from vector_and_or
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select dt1 = dt1 from vector_and_or
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -403,11 +403,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 *** AND ***
 PREHOOK: query: explain vectorization detail select null and dt1 is null from vector_and_or
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select null and dt1 is null from vector_and_or
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -515,11 +515,11 @@ false
 false
 NULL
 PREHOOK: query: explain vectorization detail select true and dt1 is null from vector_and_or
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select true and dt1 is null from vector_and_or
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -627,11 +627,11 @@ false
 false
 true
 PREHOOK: query: explain vectorization detail select dt1 != dt1 from vector_and_or
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select dt1 != dt1 from vector_and_or
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

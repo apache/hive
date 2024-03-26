@@ -250,7 +250,7 @@ UNION  ALL
     UNION ALL
 
         select 'avg' as key,  avg(c_int) as value from "cbo_/t3////" s3) unionsrc order by unionsrc.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@cbo_/t3////
 #### A masked pattern was here ####
 POSTHOOK: query: explain select unionsrc.key FROM (select 'max' as key, max(c_int) as value from "cbo_/t3////" s1
@@ -262,7 +262,7 @@ UNION  ALL
     UNION ALL
 
         select 'avg' as key,  avg(c_int) as value from "cbo_/t3////" s3) unionsrc order by unionsrc.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@cbo_/t3////
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -441,13 +441,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select "c/b/o_t1".key from "c/b/o_t1" join "cbo_/t3////"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 PREHOOK: Input: db~!@@#$%^&*(),<>@cbo_/t3////
 #### A masked pattern was here ####
 POSTHOOK: query: explain select "c/b/o_t1".key from "c/b/o_t1" join "cbo_/t3////"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@cbo_/t3////
@@ -513,14 +513,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select "c/b/o_t1".c_int, "//cbo_t2".c_int from "c/b/o_t1" join "//cbo_t2" on "c/b/o_t1".key="//cbo_t2".key where ("c/b/o_t1".c_int + "//cbo_t2".c_int == 2) and ("c/b/o_t1".c_int > 0 or "//cbo_t2".c_float >= 0)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select "c/b/o_t1".c_int, "//cbo_t2".c_int from "c/b/o_t1" join "//cbo_t2" on "c/b/o_t1".key="//cbo_t2".key where ("c/b/o_t1".c_int + "//cbo_t2".c_int == 2) and ("c/b/o_t1".c_int > 0 or "//cbo_t2".c_float >= 0)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
@@ -607,12 +607,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from "c/b/o_t1" group by c_float, "c/b/o_t1".c_int, key order by x limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, (c_int+1)+2 as x, sum(c_int) from "c/b/o_t1" group by c_float, "c/b/o_t1".c_int, key order by x limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
@@ -704,14 +704,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select "c/b/o_t1".c_int           from "c/b/o_t1" left semi join   "//cbo_t2" on "c/b/o_t1".key="//cbo_t2".key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select "c/b/o_t1".c_int           from "c/b/o_t1" left semi join   "//cbo_t2" on "c/b/o_t1".key="//cbo_t2".key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
@@ -804,12 +804,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from "c/b/o_t1" as "c/b/o_t1"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from "c/b/o_t1" as "c/b/o_t1"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
@@ -829,12 +829,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from "c/b/o_t1" as "c/b/o_t1"  where "c/b/o_t1".c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from "c/b/o_t1" as "c/b/o_t1"  where "c/b/o_t1".c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
@@ -857,12 +857,12 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from (select * from "c/b/o_t1" where "c/b/o_t1".c_int >= 0) as "c/b/o_t1"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select * from "c/b/o_t1" where "c/b/o_t1".c_int >= 0) as "c/b/o_t1"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
@@ -885,11 +885,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select null from "cbo_/t3////"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@cbo_/t3////
 #### A masked pattern was here ####
 POSTHOOK: query: explain select null from "cbo_/t3////"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@cbo_/t3////
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -908,12 +908,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select key from "c/b/o_t1" where c_int = -6  or c_int = +6
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key from "c/b/o_t1" where c_int = -6  or c_int = +6
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
@@ -936,14 +936,14 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select count("c/b/o_t1".dt) from "c/b/o_t1" join "//cbo_t2" on "c/b/o_t1".dt  = "//cbo_t2".dt  where "c/b/o_t1".dt = '2014'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count("c/b/o_t1".dt) from "c/b/o_t1" join "//cbo_t2" on "c/b/o_t1".dt  = "//cbo_t2".dt  where "c/b/o_t1".dt = '2014'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
@@ -1054,13 +1054,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select "c/b/o_t1".value from "c/b/o_t1" join "//cbo_t2" on "c/b/o_t1".key = "//cbo_t2".key where "c/b/o_t1".dt = '10' and "c/b/o_t1".c_boolean = true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select "c/b/o_t1".value from "c/b/o_t1" join "//cbo_t2" on "c/b/o_t1".key = "//cbo_t2".key where "c/b/o_t1".dt = '10' and "c/b/o_t1".c_boolean = true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
@@ -1154,7 +1154,7 @@ where not exists
   where b.value = a.value and a.value > 'val_2'
 
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -1170,7 +1170,7 @@ where not exists
   where b.value = a.value and a.value > 'val_2'
 
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1280,7 +1280,7 @@ having not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
 
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -1298,7 +1298,7 @@ having not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
 
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1468,7 +1468,7 @@ from (select *
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 
      ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -1486,7 +1486,7 @@ from (select *
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 
      ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1589,7 +1589,7 @@ from (select b.key, count(*)
     )
 
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -1611,7 +1611,7 @@ from (select b.key, count(*)
     )
 
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1717,7 +1717,7 @@ PREHOOK: query: explain select *
 from "src/_/cbo"
 
 where "src/_/cbo".key in (select key from "src/_/cbo" s1 where s1.key > '9') order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -1725,7 +1725,7 @@ POSTHOOK: query: explain select *
 from "src/_/cbo"
 
 where "src/_/cbo".key in (select key from "src/_/cbo" s1 where s1.key > '9') order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1837,7 +1837,7 @@ where b.key in
          where b.value = a.value and a.key > '9'
 
         ) order by b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -1853,7 +1853,7 @@ where b.key in
          where b.value = a.value and a.key > '9'
 
         ) order by b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1969,7 +1969,7 @@ where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from "line/item" where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 
  order by p.p_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@line/item
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p.p_partkey, li.l_suppkey
@@ -1981,7 +1981,7 @@ where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from "line/item" where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 
  order by p.p_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@line/item
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2134,7 +2134,7 @@ where b.key in (select key from "src/_/cbo" where "src/_/cbo".key > '8')
 group by key, value
 
 having count(*) in (select count(*) from "src/_/cbo" s1 where s1.key > '9' group by s1.key ) order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, value, count(*)
@@ -2146,7 +2146,7 @@ where b.key in (select key from "src/_/cbo" where "src/_/cbo".key > '8')
 group by key, value
 
 having count(*) in (select count(*) from "src/_/cbo" s1 where s1.key > '9' group by s1.key ) order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2350,7 +2350,7 @@ group by p_mfgr, p_name
 having p_name in
 
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from "p/a/r/t") order by p_mfgr
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_mfgr, p_name, avg(p_size)
@@ -2362,7 +2362,7 @@ group by p_mfgr, p_name
 having p_name in
 
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from "p/a/r/t") order by p_mfgr
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2522,7 +2522,7 @@ where "src/_/cbo".key not in
     where s1.key > '2'
 
   ) order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select *
@@ -2536,7 +2536,7 @@ where "src/_/cbo".key not in
     where s1.key > '2'
 
   ) order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2698,7 +2698,7 @@ where b.p_name not in
   where r < 10 and b.p_mfgr = a.p_mfgr
 
   ) order by p_mfgr,p_size
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_mfgr, b.p_name, p_size
@@ -2714,7 +2714,7 @@ where b.p_name not in
   where r < 10 and b.p_mfgr = a.p_mfgr
 
   ) order by p_mfgr,p_size
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2876,7 +2876,7 @@ from
   where p_size < 10
 
   ) order by p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_name, p_size
@@ -2892,7 +2892,7 @@ from
   where p_size < 10
 
   ) order by p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3060,7 +3060,7 @@ from "p/a/r/t" b where b.p_size not in
   where p_size < 10 and b.p_mfgr = a.p_mfgr
 
   ) order by  p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select p_mfgr, p_name, p_size
@@ -3074,7 +3074,7 @@ from "p/a/r/t" b where b.p_size not in
   where p_size < 10 and b.p_mfgr = a.p_mfgr
 
   ) order by  p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3294,7 +3294,7 @@ where li.l_linenumber = 1 and
   li.l_orderkey not in (select l_orderkey from "line/item" where l_shipmode = 'AIR')
 
 group by li.l_partkey order by li.l_partkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@line/item
 #### A masked pattern was here ####
 POSTHOOK: query: explain select li.l_partkey, count(*)
@@ -3306,7 +3306,7 @@ where li.l_linenumber = 1 and
   li.l_orderkey not in (select l_orderkey from "line/item" where l_shipmode = 'AIR')
 
 group by li.l_partkey order by li.l_partkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@line/item
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3496,7 +3496,7 @@ having b.p_mfgr not in
   )
 
   order by b.p_mfgr
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select b.p_mfgr, min(p_retailprice)
@@ -3516,7 +3516,7 @@ having b.p_mfgr not in
   )
 
   order by b.p_mfgr
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3766,7 +3766,7 @@ having b.p_mfgr not in
   )
 
   order by b.p_mfgr
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select b.p_mfgr, min(p_retailprice)
@@ -3788,7 +3788,7 @@ having b.p_mfgr not in
   )
 
   order by b.p_mfgr
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@p/a/r/t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4024,12 +4024,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from "c/b/o_t1") "c/b/o_t1"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from "c/b/o_t1") "c/b/o_t1"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
@@ -4094,14 +4094,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from (select * from "c/b/o_t1" order by key, c_boolean, value, dt)a union all select * from (select * from "//cbo_t2" order by key, c_boolean, value, dt)b
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 PREHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select * from "c/b/o_t1" order by key, c_boolean, value, dt)a union all select * from (select * from "//cbo_t2" order by key, c_boolean, value, dt)b
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2
 POSTHOOK: Input: db~!@@#$%^&*(),<>@//cbo_t2@dt=2014
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
@@ -4458,12 +4458,12 @@ POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: db~!@@#$%^&*(),<>@v4_n0
 POSTHOOK: Output: db~!@@#$%^&*(),<>@v4_n0
 PREHOOK: query: explain select count(c_int) over(partition by c_float order by key), sum(c_float) over(partition by c_float order by key), max(c_int) over(partition by c_float order by key), min(c_int) over(partition by c_float order by key), row_number() over(partition by c_float order by key) as rn, rank() over(partition by c_float order by key), dense_rank() over(partition by c_float order by key), round(percent_rank() over(partition by c_float order by key), 2), lead(c_int, 2, c_int) over(partition by c_float order by key), lag(c_float, 2, c_float) over(partition by c_float order by key) from "c/b/o_t1" order by rn
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 PREHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(c_int) over(partition by c_float order by key), sum(c_float) over(partition by c_float order by key), max(c_int) over(partition by c_float order by key), min(c_int) over(partition by c_float order by key), row_number() over(partition by c_float order by key) as rn, rank() over(partition by c_float order by key), dense_rank() over(partition by c_float order by key), round(percent_rank() over(partition by c_float order by key), 2), lead(c_int, 2, c_int) over(partition by c_float order by key), lag(c_float, 2, c_float) over(partition by c_float order by key) from "c/b/o_t1" order by rn
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1
 POSTHOOK: Input: db~!@@#$%^&*(),<>@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
@@ -4622,11 +4622,11 @@ POSTHOOK: Output: db~!@@#$%^&*(),<>@src/_/cbo
 POSTHOOK: Lineage: src/_/cbo.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src/_/cbo.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select * from "src/_/cbo" limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from "src/_/cbo" limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4657,11 +4657,11 @@ POSTHOOK: Output: db~!@@#$%^&*(),<>@src/_/cbo
 POSTHOOK: Lineage: src/_/cbo.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src/_/cbo.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select * from "src/_/cbo" limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from "src/_/cbo" limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@src/_/cbo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -4722,11 +4722,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db~!@@#$%^&*(),<>@t//
 POSTHOOK: Output: db~!@@#$%^&*(),<>@t//
 PREHOOK: query: explain select * from "t//"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db~!@@#$%^&*(),<>@t//
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from "t//"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db~!@@#$%^&*(),<>@t//
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

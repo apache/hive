@@ -17,14 +17,14 @@ POSTHOOK: Output: default@target2
 PREHOOK: query: EXPLAIN FROM (SELECT 100 as sa, 200 as sb) source
 INSERT OVERWRITE TABLE target1 SELECT sa WHERE sb > 0 GROUP BY sa
 INSERT OVERWRITE TABLE target2 SELECT sa GROUP BY sa
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@target1
 PREHOOK: Output: default@target2
 POSTHOOK: query: EXPLAIN FROM (SELECT 100 as sa, 200 as sb) source
 INSERT OVERWRITE TABLE target1 SELECT sa WHERE sb > 0 GROUP BY sa
 INSERT OVERWRITE TABLE target2 SELECT sa GROUP BY sa
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@target1
 POSTHOOK: Output: default@target2

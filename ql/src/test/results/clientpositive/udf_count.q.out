@@ -15,11 +15,11 @@ count(DISTINCT expr[, expr...]) - Returns the number of rows for which the suppl
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount
 Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT count(key) FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(key) FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -42,11 +42,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 500
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key) FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(DISTINCT key) FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -136,11 +136,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 309
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key, value) FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(DISTINCT key, value) FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -200,11 +200,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 309
 PREHOOK: query: EXPLAIN SELECT count(*) FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -227,11 +227,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 500
 PREHOOK: query: EXPLAIN SELECT count(1) FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(1) FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

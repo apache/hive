@@ -183,7 +183,7 @@ PREHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
@@ -193,7 +193,7 @@ POSTHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
@@ -269,7 +269,7 @@ PREHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
@@ -279,7 +279,7 @@ POSTHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
@@ -355,7 +355,7 @@ PREHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
@@ -365,7 +365,7 @@ POSTHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
 group by empid, depts_n00.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
@@ -443,7 +443,7 @@ PREHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno, emps_n00.empid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
@@ -454,7 +454,7 @@ POSTHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno, emps_n00.empid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
@@ -541,7 +541,7 @@ PREHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
 PREHOOK: Input: default@mv1_part_n0
@@ -552,7 +552,7 @@ POSTHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
 group by depts_n00.deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00
 POSTHOOK: Input: default@mv1_part_n0
@@ -733,7 +733,7 @@ join dependents_n00 on (depts_n00.name = dependents_n00.name)
 join emps_n00 on (emps_n00.deptno = depts_n00.deptno)
 where depts_n00.deptno > 10
 group by dependents_n00.empid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents_n00
 PREHOOK: Input: default@depts_n00
 PREHOOK: Input: default@emps_n00
@@ -748,7 +748,7 @@ join dependents_n00 on (depts_n00.name = dependents_n00.name)
 join emps_n00 on (emps_n00.deptno = depts_n00.deptno)
 where depts_n00.deptno > 10
 group by dependents_n00.empid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents_n00
 POSTHOOK: Input: default@depts_n00
 POSTHOOK: Input: default@emps_n00

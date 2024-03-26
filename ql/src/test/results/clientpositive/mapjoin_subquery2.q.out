@@ -76,7 +76,7 @@ FROM
 (SELECT x.id as key1, x.name as value1, y.id as key2, y.name as value2 
  FROM y JOIN x ON (x.id = y.id)) subq
  JOIN z ON (subq.key1 = z.id)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x
 PREHOOK: Input: default@y
 PREHOOK: Input: default@z
@@ -87,7 +87,7 @@ FROM
 (SELECT x.id as key1, x.name as value1, y.id as key2, y.name as value2 
  FROM y JOIN x ON (x.id = y.id)) subq
  JOIN z ON (subq.key1 = z.id)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x
 POSTHOOK: Input: default@y
 POSTHOOK: Input: default@z

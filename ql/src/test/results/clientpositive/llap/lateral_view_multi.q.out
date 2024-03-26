@@ -67,7 +67,7 @@ lateral view explode(orders) v as c47
 lateral view explode(orders) v as c48
 lateral view explode(orders) v as c49
 lateral view explode(orders) v as c50
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL SELECT c1
@@ -122,7 +122,7 @@ lateral view explode(orders) v as c47
 lateral view explode(orders) v as c48
 lateral view explode(orders) v as c49
 lateral view explode(orders) v as c50
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 #### A masked pattern was here ####
 LOGICAL PLAN:

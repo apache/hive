@@ -35,14 +35,14 @@ Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select a from t,t2,t3 where
  (a>3 and null between 0 and 10) is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a from t,t2,t3 where
  (a>3 and null between 0 and 10) is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
@@ -150,7 +150,7 @@ STAGE PLANS:
 PREHOOK: query: explain select a from t,t2,t3 where
  (a>5 or null between 0 and 10) and (a*a < 101)
  and t.a=t2.b and t.a=t3.c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
@@ -158,7 +158,7 @@ PREHOOK: Input: default@t3
 POSTHOOK: query: explain select a from t,t2,t3 where
  (a>5 or null between 0 and 10) and (a*a < 101)
  and t.a=t2.b and t.a=t3.c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3

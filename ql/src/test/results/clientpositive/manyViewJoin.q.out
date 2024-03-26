@@ -23689,7 +23689,7 @@ join test_hive_1911 t44 on t1.test_hive_112 = t44.test_hive_450
 join test_hive_1939 t45 on t1.test_hive_113 = t45.test_hive_451
 join test_hive_2014 t46 on t1.test_hive_114 = t46.test_hive_457
 join test_hive_2028 t47 on t1.test_hive_115 = t47.test_hive_458
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_hive_1036
 PREHOOK: Input: default@test_hive_1037
 PREHOOK: Input: default@test_hive_1038
@@ -24032,7 +24032,7 @@ join test_hive_1911 t44 on t1.test_hive_112 = t44.test_hive_450
 join test_hive_1939 t45 on t1.test_hive_113 = t45.test_hive_451
 join test_hive_2014 t46 on t1.test_hive_114 = t46.test_hive_457
 join test_hive_2028 t47 on t1.test_hive_115 = t47.test_hive_458
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_hive_1036
 POSTHOOK: Input: default@test_hive_1037
 POSTHOOK: Input: default@test_hive_1038

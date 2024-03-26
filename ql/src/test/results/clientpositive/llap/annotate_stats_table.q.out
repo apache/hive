@@ -29,11 +29,11 @@ POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 PREHOOK: query: explain select * from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -70,11 +70,11 @@ POSTHOOK: Output: default@emp_orc
 POSTHOOK: Lineage: emp_orc.deptid SIMPLE [(emp_staging)emp_staging.FieldSchema(name:deptid, type:int, comment:null), ]
 POSTHOOK: Lineage: emp_orc.lastname SIMPLE [(emp_staging)emp_staging.FieldSchema(name:lastname, type:string, comment:null), ]
 PREHOOK: query: explain select * from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -101,11 +101,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 PREHOOK: query: explain select * from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -134,11 +134,11 @@ POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -157,11 +157,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select deptid from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select deptid from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -190,11 +190,11 @@ POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -213,11 +213,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select lastname from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select lastname from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -236,11 +236,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select deptid from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select deptid from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -259,11 +259,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select lastname,deptid from emp_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select lastname,deptid from emp_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -293,12 +293,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_n0
 POSTHOOK: Lineage: tmp_n0._c0 SIMPLE []
 PREHOOK: query: explain create table tmp_n0 as select 1
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_n0
 POSTHOOK: query: explain create table tmp_n0 as select 1
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_n0

@@ -47,7 +47,7 @@ join
 (
     select a from test_join_2
 )t3 on t1.a = t3.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_join_1
 PREHOOK: Input: default@test_join_2
 #### A masked pattern was here ####
@@ -72,7 +72,7 @@ join
 (
     select a from test_join_2
 )t3 on t1.a = t3.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_join_1
 POSTHOOK: Input: default@test_join_2
 #### A masked pattern was here ####

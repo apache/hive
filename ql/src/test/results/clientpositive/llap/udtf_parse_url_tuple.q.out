@@ -63,12 +63,12 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDTFParseUrlTuple
 Function type:BUILTIN
 PREHOOK: query: explain 
 select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@url_t
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -166,12 +166,12 @@ POSTHOOK: Input: default@url_t
 6	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain 
 select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@url_t
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -247,12 +247,12 @@ sites.google.com	/a/example.com/site/page	NULL	NULL	ftp	/a/example.com/site/page
 www.socs.uts.edu.au	/MosaicDocs-old/url-primer.html	k1=tps	chapter1	https	/MosaicDocs-old/url-primer.html?k1=tps	www.socs.uts.edu.au:80	NULL	tps
 PREHOOK: query: explain
 select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@url_t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -350,12 +350,12 @@ POSTHOOK: Input: default@url_t
 6	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain
 select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@url_t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@url_t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -1,11 +1,11 @@
 PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x SORT BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x SORT BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -568,12 +568,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x SORT BY 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x SORT BY 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

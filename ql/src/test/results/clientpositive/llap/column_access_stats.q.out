@@ -76,7 +76,7 @@ Table:default@t4_n16
 Columns:p,val
 
 PREHOOK: query: EXPLAIN SELECT key FROM (SELECT key, val FROM T1_n127) subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -108,7 +108,7 @@ Columns:key
 8
 8
 PREHOOK: query: EXPLAIN SELECT k FROM (SELECT key as k, val as v FROM T1_n127) subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -171,7 +171,7 @@ SELECT key as c FROM T1_n127
  UNION ALL
 SELECT val as c FROM T1_n127
 ) subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -261,7 +261,7 @@ SELECT key as c FROM T1_n127
  UNION ALL
 SELECT key as c FROM T1_n127
 ) subq1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -378,7 +378,7 @@ PREHOOK: query: EXPLAIN
 SELECT T1_n127.key
 FROM T1_n127 JOIN T2_n75
 ON T1_n127.key = T2_n75.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
@@ -516,7 +516,7 @@ PREHOOK: query: EXPLAIN
 SELECT *
 FROM T1_n127 JOIN T2_n75
 ON T1_n127.key = T2_n75.key AND T1_n127.val = 3 and T2_n75.val = 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
@@ -625,7 +625,7 @@ JOIN
   SELECT val FROM T2_n75 WHERE key = 6
 ) subq2 
 ON subq1.val = subq2.val
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
@@ -745,7 +745,7 @@ FROM
 ) T4_n16
 JOIN T3_n29
 ON T3_n29.key = T4_n16.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n127
 PREHOOK: Input: default@t2_n75
 PREHOOK: Input: default@t3_n29

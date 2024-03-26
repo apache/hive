@@ -15,11 +15,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@foo
 PREHOOK: query: explain select col, count(*) from foo where col like '%fg%' group by col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select col, count(*) from foo where col like '%fg%' group by col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

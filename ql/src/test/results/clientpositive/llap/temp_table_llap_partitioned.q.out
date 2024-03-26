@@ -1617,7 +1617,7 @@ POSTHOOK: Output: database:default
 PREHOOK: query: explain vectorization detail
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part_temp oft
   INNER JOIN orc_llap_dim_part_temp od ON oft.ctinyint = od.ctinyint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_llap_dim_part_temp
 PREHOOK: Input: default@orc_llap_dim_part_temp@ctinyint=11
 PREHOOK: Input: default@orc_llap_dim_part_temp@ctinyint=12
@@ -1762,7 +1762,7 @@ PREHOOK: Input: default@orc_llap_part_temp@ctinyint=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: query: explain vectorization detail
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part_temp oft
   INNER JOIN orc_llap_dim_part_temp od ON oft.ctinyint = od.ctinyint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_llap_dim_part_temp
 POSTHOOK: Input: default@orc_llap_dim_part_temp@ctinyint=11
 POSTHOOK: Input: default@orc_llap_dim_part_temp@ctinyint=12
@@ -2356,12 +2356,12 @@ POSTHOOK: Lineage: llap_temp_table_n0_temp.ctinyint SIMPLE [(orc_llap_part_temp)
 POSTHOOK: Lineage: llap_temp_table_n0_temp.cvchar1 SIMPLE [(orc_llap_part_temp)oft.FieldSchema(name:cvchar1, type:varchar(255), comment:null), ]
 PREHOOK: query: explain vectorization detail
 select sum(hash(*)) from llap_temp_table_n0_temp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@llap_temp_table_n0_temp
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(hash(*)) from llap_temp_table_n0_temp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@llap_temp_table_n0_temp
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

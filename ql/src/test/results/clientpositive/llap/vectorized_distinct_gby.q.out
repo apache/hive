@@ -18,12 +18,12 @@ POSTHOOK: Lineage: dtest.a SCRIPT []
 POSTHOOK: Lineage: dtest.b SIMPLE []
 PREHOOK: query: explain vectorization detail
 select sum(distinct a), count(distinct a) from dtest
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dtest
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(distinct a), count(distinct a) from dtest
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dtest
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -166,12 +166,12 @@ POSTHOOK: Input: default@dtest
 300	1
 PREHOOK: query: explain vectorization detail
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -376,7 +376,7 @@ select ctinyint, count(distinct cint), sum(( CASE WHEN ( ( cstring1 LIKE'test%1'
  OR ( cstring1 LIKE 'test%2' ) ) THEN 1 ELSE 0 END )) AS s,
 max(( CASE WHEN ( ( cstring1 LIKE 'test%3' ) OR ( cstring1 LIKE '%test%5' ) )
 THEN cstring1 ELSE 'XXXXX' END )) AS maxVal from alltypesorc group by ctinyint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -384,7 +384,7 @@ select ctinyint, count(distinct cint), sum(( CASE WHEN ( ( cstring1 LIKE'test%1'
  OR ( cstring1 LIKE 'test%2' ) ) THEN 1 ELSE 0 END )) AS s,
 max(( CASE WHEN ( ( cstring1 LIKE 'test%3' ) OR ( cstring1 LIKE '%test%5' ) )
 THEN cstring1 ELSE 'XXXXX' END )) AS maxVal from alltypesorc group by ctinyint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

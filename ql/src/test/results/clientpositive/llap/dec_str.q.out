@@ -8,11 +8,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 WARNING: Comparing decimal(3,1) and string may result in loss of information.
 PREHOOK: query: explain select * from t1 where a = '22.3'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1 where a = '22.3'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -35,11 +35,11 @@ STAGE PLANS:
 
 WARNING: Comparing decimal(3,1) and string may result in loss of information.
 PREHOOK: query: explain select * from t1 where a = '2.3'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1 where a = '2.3'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -62,11 +62,11 @@ STAGE PLANS:
 
 WARNING: Comparing decimal(3,1) and string may result in loss of information.
 PREHOOK: query: explain select * from t1 where a = '213.223'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1 where a = '213.223'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -89,11 +89,11 @@ STAGE PLANS:
 
 WARNING: Comparing decimal(3,1) and string may result in loss of information.
 PREHOOK: query: explain select * from t1 where a = ''
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1 where a = ''
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -108,11 +108,11 @@ STAGE PLANS:
 
 WARNING: Comparing decimal(3,1) and string may result in loss of information.
 PREHOOK: query: explain select * from t1 where a = 'ab'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1 where a = 'ab'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

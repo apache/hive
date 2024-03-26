@@ -67,14 +67,14 @@ Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 PREHOOK: query: explain cbo
 select col0 from t2 where exists (
  select col0 from t1 where col0 = 3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select col0 from t2 where exists (
  select col0 from t1 where col0 = 3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -91,14 +91,14 @@ HiveSemiJoin(condition=[true], joinType=[semi])
 Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select col0 from t2 where exists (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select col0 from t2 where exists (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -114,14 +114,14 @@ HiveSemiJoin(condition=[true], joinType=[semi])
 
 PREHOOK: query: explain cbo
 select col0 from t2 where col0 in (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select col0 from t2 where col0 in (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

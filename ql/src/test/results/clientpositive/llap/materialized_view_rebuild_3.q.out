@@ -39,10 +39,10 @@ POSTHOOK: Lineage: mat1.col0 SIMPLE [(t1)t1.FieldSchema(name:col0, type:int, com
 Materialized view default.mat1 is up to date. Skipping rebuild.
 PREHOOK: query: explain
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
 
 STAGE PLANS:
@@ -63,13 +63,13 @@ POSTHOOK: Lineage: t1.col0 SCRIPT []
 POSTHOOK: Lineage: t1.col1 SCRIPT []
 PREHOOK: query: explain
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mat1

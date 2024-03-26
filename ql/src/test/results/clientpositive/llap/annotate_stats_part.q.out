@@ -41,11 +41,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc_orc_n4
 PREHOOK: query: explain select * from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -80,13 +80,13 @@ POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=__HIVE_DEFAULT_PARTITION__).locid S
 POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=__HIVE_DEFAULT_PARTITION__).state SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:state, type:string, comment:null), ]
 POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=__HIVE_DEFAULT_PARTITION__).zip SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: explain select * from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -117,12 +117,12 @@ POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4@year=2001
 PREHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
@@ -143,13 +143,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -170,12 +170,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc_n4 where year='2001'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4 where year='2001'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
@@ -208,12 +208,12 @@ POSTHOOK: Output: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4@year=2001
 POSTHOOK: Output: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
@@ -234,13 +234,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -261,13 +261,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc_n4 where year='2001' or year='__HIVE_DEFAULT_PARTITION__'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4 where year='2001' or year='__HIVE_DEFAULT_PARTITION__'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -289,11 +289,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc_n4 where year='2001' and year='__HIVE_DEFAULT_PARTITION__'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4 where year='2001' and year='__HIVE_DEFAULT_PARTITION__'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -321,13 +321,13 @@ POSTHOOK: Output: default@loc_orc_n4
 POSTHOOK: Output: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
 PREHOOK: query: explain select zip from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select zip from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -348,13 +348,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select state from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -375,13 +375,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select year from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select year from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -402,13 +402,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -429,12 +429,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n4 where year='2001'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n4 where year='2001'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
@@ -455,12 +455,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n4 where year!='2001'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n4 where year!='2001'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
@@ -481,13 +481,13 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 PREHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 POSTHOOK: Input: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
@@ -508,12 +508,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select locid from loc_orc_n4 where locid>0 and year='2001'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: explain select locid from loc_orc_n4 where locid>0 and year='2001'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
@@ -536,12 +536,12 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select locid,year from loc_orc_n4 where locid>0 and year='2001'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: explain select locid,year from loc_orc_n4 where locid>0 and year='2001'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
@@ -564,12 +564,12 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from (select locid,year from loc_orc_n4) test where locid>0 and year='2001'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n4
 PREHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from (select locid,year from loc_orc_n4) test where locid>0 and year='2001'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n4
 POSTHOOK: Input: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####

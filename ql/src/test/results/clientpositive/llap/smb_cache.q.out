@@ -192,7 +192,7 @@ t1.userid,
   fa.userid   as  fa_userid 
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bug_201_input_a
 PREHOOK: Input: default@bug_201_input_b
 #### A masked pattern was here ####
@@ -202,7 +202,7 @@ t1.userid,
   fa.userid   as  fa_userid 
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bug_201_input_a
 POSTHOOK: Input: default@bug_201_input_b
 #### A masked pattern was here ####
@@ -303,7 +303,7 @@ t1.userid,
   fa.userid   as  fa_userid 
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bug_201_input_a
 PREHOOK: Input: default@bug_201_input_b
 #### A masked pattern was here ####
@@ -313,7 +313,7 @@ t1.userid,
   fa.userid   as  fa_userid 
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bug_201_input_a
 POSTHOOK: Input: default@bug_201_input_b
 #### A masked pattern was here ####

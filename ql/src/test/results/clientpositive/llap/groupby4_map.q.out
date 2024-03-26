@@ -8,12 +8,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n40
 PREHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1_n40 SELECT count(1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n40
 POSTHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1_n40 SELECT count(1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n40
 STAGE DEPENDENCIES:

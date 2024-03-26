@@ -78,14 +78,14 @@ POSTHOOK: Lineage: nonskewtable.key SCRIPT []
 POSTHOOK: Lineage: nonskewtable.value SCRIPT []
 PREHOOK: query: EXPLAIN
 CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@nonskewtable
 PREHOOK: Input: default@skewtable
 PREHOOK: Output: database:default
 PREHOOK: Output: default@result_n1
 POSTHOOK: query: EXPLAIN
 CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@nonskewtable
 POSTHOOK: Input: default@skewtable
 POSTHOOK: Output: database:default

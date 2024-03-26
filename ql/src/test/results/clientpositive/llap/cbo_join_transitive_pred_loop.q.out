@@ -18,7 +18,7 @@ PREHOOK: query: EXPLAIN SELECT A.VALUE_DATE
 FROM A, B
 WHERE A.VALUE_DATE = BUSINESS_DATE
   AND A.VALUE_DATE = TRUNC(BUSINESS_DATE, 'MONTH')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
 #### A masked pattern was here ####
@@ -26,7 +26,7 @@ POSTHOOK: query: EXPLAIN SELECT A.VALUE_DATE
 FROM A, B
 WHERE A.VALUE_DATE = BUSINESS_DATE
   AND A.VALUE_DATE = TRUNC(BUSINESS_DATE, 'MONTH')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
 #### A masked pattern was here ####

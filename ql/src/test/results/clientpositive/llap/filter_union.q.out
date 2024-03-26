@@ -10,7 +10,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m >2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended 
@@ -25,7 +25,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m >2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, COUNT(`key`) AS `c`, 3 AS `m`
@@ -279,7 +279,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -294,7 +294,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -373,7 +373,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -388,7 +388,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -467,7 +467,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
@@ -482,7 +482,7 @@ union all
 select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m = 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

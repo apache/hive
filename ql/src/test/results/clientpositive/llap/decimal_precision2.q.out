@@ -1,9 +1,9 @@
 PREHOOK: query: explain select 100.001BD
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 100.001BD
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -23,11 +23,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select 100.000BD
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 100.000BD
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -47,11 +47,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select 0.000BD
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 0.000BD
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -71,11 +71,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select 0.100BD
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 0.100BD
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -95,11 +95,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select 0.010BD
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 0.010BD
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -119,11 +119,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select cast(0.010 as decimal(6,3))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select cast(0.010 as decimal(6,3))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -143,11 +143,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select 0.09765625BD * 0.09765625BD * 0.0125BD * 578992BD
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 0.09765625BD * 0.09765625BD * 0.0125BD * 578992BD
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

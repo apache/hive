@@ -36,13 +36,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2_n35
 PREHOOK: query: EXPLAIN
 SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n57
 PREHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n57
 POSTHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
@@ -147,13 +147,13 @@ POSTHOOK: Input: default@t2_n35
 8	28	8	18
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n57
 PREHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n57
 POSTHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
@@ -265,14 +265,14 @@ POSTHOOK: Output: default@DEST1_n58
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE DEST1_n58
 SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n57
 PREHOOK: Input: default@t2_n35
 PREHOOK: Output: default@dest1_n58
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE DEST1_n58
 SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n57
 POSTHOOK: Input: default@t2_n35
 POSTHOOK: Output: default@dest1_n58
@@ -401,14 +401,14 @@ POSTHOOK: Input: default@dest1_n58
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE DEST1_n58
 SELECT * FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n57
 PREHOOK: Input: default@t2_n35
 PREHOOK: Output: default@dest1_n58
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE DEST1_n58
 SELECT * FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n57
 POSTHOOK: Input: default@t2_n35
 POSTHOOK: Output: default@dest1_n58

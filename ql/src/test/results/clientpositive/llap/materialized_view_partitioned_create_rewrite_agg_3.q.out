@@ -105,7 +105,7 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN CBO
 ALTER MATERIALIZED VIEW mat1 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@mat1@a=1
 PREHOOK: Input: default@mat1@a=2
@@ -114,7 +114,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: EXPLAIN CBO
 ALTER MATERIALIZED VIEW mat1 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@mat1@a=1
 POSTHOOK: Input: default@mat1@a=2
@@ -141,7 +141,7 @@ HiveProject(b=[$0], sumc=[$2], a=[$1])
 
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW mat1 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@mat1@a=1
 PREHOOK: Input: default@mat1@a=2
@@ -150,7 +150,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW mat1 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@mat1@a=1
 POSTHOOK: Input: default@mat1@a=2

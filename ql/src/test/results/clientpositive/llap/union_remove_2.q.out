@@ -32,7 +32,7 @@ FROM (
   UNION ALL
   SELECT key, 2 as `values` from inputTbl1_n8
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n8
 PREHOOK: Output: default@outputtbl1_n11
 POSTHOOK: query: explain
@@ -45,7 +45,7 @@ FROM (
   UNION ALL
   SELECT key, 2 as `values` from inputTbl1_n8
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n8
 POSTHOOK: Output: default@outputtbl1_n11
 STAGE DEPENDENCIES:

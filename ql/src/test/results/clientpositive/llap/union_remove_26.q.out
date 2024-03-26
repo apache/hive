@@ -126,7 +126,7 @@ PREHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
@@ -137,7 +137,7 @@ POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
@@ -313,7 +313,7 @@ PREHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
@@ -324,7 +324,7 @@ POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
@@ -368,7 +368,7 @@ PREHOOK: query: explain
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
@@ -379,7 +379,7 @@ POSTHOOK: query: explain
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
@@ -557,7 +557,7 @@ PREHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
@@ -568,7 +568,7 @@ POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
@@ -734,7 +734,7 @@ PREHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
@@ -745,7 +745,7 @@ POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3

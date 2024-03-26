@@ -39,7 +39,7 @@ CAST(1 AS SMALLINT) ^ CAST(3 AS SMALLINT),
 CAST(1 AS BIGINT) ^ CAST(3 AS BIGINT)
 
 FROM dest1_n149
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n149
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -66,7 +66,7 @@ CAST(1 AS SMALLINT) ^ CAST(3 AS SMALLINT),
 CAST(1 AS BIGINT) ^ CAST(3 AS BIGINT)
 
 FROM dest1_n149
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n149
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

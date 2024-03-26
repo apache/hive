@@ -15,7 +15,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -23,7 +23,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -100,7 +100,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -108,7 +108,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -126,7 +126,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -134,7 +134,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -207,7 +207,7 @@ union all
 select key from s_n3 b
 order by key
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -216,7 +216,7 @@ union all
 select key from s_n3 b
 order by key
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -316,7 +316,7 @@ from src src1 left outer join src src2
 on src1.key = src2.key
 limit 10)subq2
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -332,7 +332,7 @@ from src src1 left outer join src src2
 on src1.key = src2.key
 limit 10)subq2
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -504,7 +504,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -512,7 +512,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -589,7 +589,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -597,7 +597,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -615,7 +615,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -623,7 +623,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -734,7 +734,7 @@ union all
 select key from s_n3 b
 order by key
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -743,7 +743,7 @@ union all
 select key from s_n3 b
 order by key
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -885,7 +885,7 @@ from src src1 left outer join src src2
 on src1.key = src2.key
 limit 10)subq2
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -901,7 +901,7 @@ from src src1 left outer join src src2
 on src1.key = src2.key
 limit 10)subq2
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1085,7 +1085,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1093,7 +1093,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1165,7 +1165,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1173,7 +1173,7 @@ select key from s_n3 a
 union all
 select key from s_n3 b
 limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

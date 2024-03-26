@@ -1182,12 +1182,12 @@ POSTHOOK: Input: sys@role_map
 hive_admin_user	admin
 PREHOOK: query: explain vectorization detail
 select count(*) from sds
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: sys@sds
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from sds
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1556,11 +1556,11 @@ num_falses          	bigint              	from deserializer
 last_analyzed       	bigint              	from deserializer   
 engine              	string              	from deserializer   
 PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

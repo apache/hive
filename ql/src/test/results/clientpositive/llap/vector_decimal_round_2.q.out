@@ -32,7 +32,7 @@ SELECT
   round(`dec`, -1), round(`dec`, -2), round(`dec`, -3), round(`dec`, -4),
   round(`dec`, -5), round(`dec`, -6), round(`dec`, -7), round(`dec`, -8)
 FROM decimal_tbl_1_orc ORDER BY d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_tbl_1_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -41,7 +41,7 @@ SELECT
   round(`dec`, -1), round(`dec`, -2), round(`dec`, -3), round(`dec`, -4),
   round(`dec`, -5), round(`dec`, -6), round(`dec`, -7), round(`dec`, -8)
 FROM decimal_tbl_1_orc ORDER BY d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_tbl_1_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -202,7 +202,7 @@ SELECT
   round(neg, 1), round(neg, 2), round(neg, 3), round(neg, 4),
   round(neg, -1), round(neg, -2), round(neg, -3), round(neg, -4)
 FROM decimal_tbl_2_orc ORDER BY p
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_tbl_2_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -214,7 +214,7 @@ SELECT
   round(neg, 1), round(neg, 2), round(neg, 3), round(neg, 4),
   round(neg, -1), round(neg, -2), round(neg, -3), round(neg, -4)
 FROM decimal_tbl_2_orc ORDER BY p
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_tbl_2_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -391,7 +391,7 @@ SELECT
   round(`dec`, 13), round(`dec`, 14),
   round(`dec`, 15), round(`dec`, 16)
 FROM decimal_tbl_3_orc ORDER BY d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_tbl_3_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -414,7 +414,7 @@ SELECT
   round(`dec`, 13), round(`dec`, 14),
   round(`dec`, 15), round(`dec`, 16)
 FROM decimal_tbl_3_orc ORDER BY d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_tbl_3_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -597,13 +597,13 @@ POSTHOOK: Input: default@decimal_tbl_4_orc
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT round(pos, 9) as p, round(neg, 9), round(1809242.3151111344BD, 9), round(-1809242.3151111344BD, 9)
 FROM decimal_tbl_4_orc ORDER BY p
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_tbl_4_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT round(pos, 9) as p, round(neg, 9), round(1809242.3151111344BD, 9), round(-1809242.3151111344BD, 9)
 FROM decimal_tbl_4_orc ORDER BY p
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_tbl_4_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

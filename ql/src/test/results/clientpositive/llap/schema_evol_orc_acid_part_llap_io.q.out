@@ -150,13 +150,13 @@ POSTHOOK: Lineage: part_add_int_string_permute_select_n5 PARTITION(part=1).inser
 col1	col2	col3	col4	col5
 PREHOOK: query: explain vectorization only detail
 select insert_num,part,a,b,c,d from part_add_int_string_permute_select_n5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_add_int_string_permute_select_n5
 PREHOOK: Input: default@part_add_int_string_permute_select_n5@part=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only detail
 select insert_num,part,a,b,c,d from part_add_int_string_permute_select_n5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_add_int_string_permute_select_n5
 POSTHOOK: Input: default@part_add_int_string_permute_select_n5@part=1
 #### A masked pattern was here ####

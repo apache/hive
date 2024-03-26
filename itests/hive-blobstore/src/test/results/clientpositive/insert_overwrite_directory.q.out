@@ -61,11 +61,11 @@ POSTHOOK: Output: ### test.blobstore.path ###/table2.dir
 k1
 k2
 PREHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1
 PREHOOK: Output: ### test.blobstore.path ###/table1.dir
 POSTHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: ### test.blobstore.path ###/table1.dir
 OPTIMIZED SQL: SELECT `id`, `key`
@@ -284,14 +284,14 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED FROM table1
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT id
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table2.dir/' SELECT key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1
 PREHOOK: Output: ### test.blobstore.path ###/table1.dir
 PREHOOK: Output: ### test.blobstore.path ###/table2.dir
 POSTHOOK: query: EXPLAIN EXTENDED FROM table1
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT id
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table2.dir/' SELECT key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: ### test.blobstore.path ###/table1.dir
 POSTHOOK: Output: ### test.blobstore.path ###/table2.dir

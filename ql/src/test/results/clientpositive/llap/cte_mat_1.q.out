@@ -4,7 +4,7 @@ with q1(srcKey, srcValue) as (select * from src where key= '5')
 select a.srcKey
 from q1 a join q1 b
 on a.srcKey=b.srcKey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -12,7 +12,7 @@ with q1(srcKey, srcValue) as (select * from src where key= '5')
 select a.srcKey
 from q1 a join q1 b
 on a.srcKey=b.srcKey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.

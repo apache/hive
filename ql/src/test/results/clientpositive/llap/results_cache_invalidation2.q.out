@@ -79,11 +79,11 @@ POSTHOOK: Input: default@tab2
 test.comment="Cached entry should be used"
 PREHOOK: query: explain
 select count(*) from tab1 where key > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tab1
 POSTHOOK: query: explain
 select count(*) from tab1 where key > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tab1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -106,12 +106,12 @@ POSTHOOK: Input: default@tab1
 test.comment="Cached entry should be used"
 PREHOOK: query: explain
 select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tab1
 PREHOOK: Input: default@tab2
 POSTHOOK: query: explain
 select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tab1
 POSTHOOK: Input: default@tab2
 STAGE DEPENDENCIES:
@@ -137,11 +137,11 @@ POSTHOOK: Input: default@tab2
 test.comment="Cached entry should be used"
 PREHOOK: query: explain
 select count(*) from tab2 where key > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tab2
 POSTHOOK: query: explain
 select count(*) from tab2 where key > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tab2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -183,12 +183,12 @@ null
 test.comment="Cached entry should be invalidated - query should not use cache"
 PREHOOK: query: explain
 select count(*) from tab1 where key > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tab1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1 where key > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tab1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -261,13 +261,13 @@ POSTHOOK: Input: default@tab1
 test.comment="Cached entry should be invalidated - query should not use cache"
 PREHOOK: query: explain
 select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tab1
 PREHOOK: Input: default@tab2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tab1
 POSTHOOK: Input: default@tab2
 #### A masked pattern was here ####
@@ -383,11 +383,11 @@ POSTHOOK: Input: default@tab2
 test.comment="tab2 was not modified, this query should still use cache"
 PREHOOK: query: explain
 select count(*) from tab2 where key > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tab2
 POSTHOOK: query: explain
 select count(*) from tab2 where key > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tab2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

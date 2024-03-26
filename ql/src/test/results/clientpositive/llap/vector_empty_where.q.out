@@ -1,11 +1,11 @@
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cstring1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cstring1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -174,12 +174,12 @@ POSTHOOK: Input: default@alltypesorc
 6041
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -340,12 +340,12 @@ POSTHOOK: Input: default@alltypesorc
 6082
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cfloat
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where cfloat
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -514,12 +514,12 @@ POSTHOOK: Input: default@alltypesorc
 3022
 PREHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where ctimestamp1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count (distinct cint) from alltypesorc where ctimestamp1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

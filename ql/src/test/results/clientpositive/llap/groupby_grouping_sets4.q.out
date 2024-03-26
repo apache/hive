@@ -20,7 +20,7 @@ SELECT * FROM
 join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n143
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -29,7 +29,7 @@ SELECT * FROM
 join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n143
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -158,7 +158,7 @@ SELECT * FROM
 join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by cube(a, b) ) subq2
 on subq1.a = subq2.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n143
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -167,7 +167,7 @@ SELECT * FROM
 join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by cube(a, b) ) subq2
 on subq1.a = subq2.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n143
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -325,7 +325,7 @@ SELECT * FROM
 join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n143
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -334,7 +334,7 @@ SELECT * FROM
 join
 (SELECT a, b, count(*) from T1_n143 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n143
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

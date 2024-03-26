@@ -475,7 +475,7 @@ percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC),
 percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS FIRST),
 percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS LAST)
 FROM t_test
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_test
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
@@ -491,7 +491,7 @@ percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC),
 percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS FIRST),
 percentile_cont(0.2) WITHIN GROUP (ORDER BY value DESC NULLS LAST)
 FROM t_test
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -39,13 +39,13 @@ POSTHOOK: Input: default@extract_udf_n0
 PREHOOK: query: explain
 select floor_day(t)
 from extract_udf_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select floor_day(t)
 from extract_udf_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -77,13 +77,13 @@ POSTHOOK: Input: default@extract_udf_n0
 PREHOOK: query: explain
 select floor(t to day)
 from extract_udf_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select floor(t to day)
 from extract_udf_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

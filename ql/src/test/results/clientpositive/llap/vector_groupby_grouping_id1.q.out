@@ -29,12 +29,12 @@ POSTHOOK: Lineage: t1_n17.val SIMPLE [(t1_text)t1_text.FieldSchema(name:val, typ
 t1_text.key	t1_text.val
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID from T1_n17 group by key, val with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID from T1_n17 group by key, val with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 Explain
@@ -194,12 +194,12 @@ NULL	28	2
 NULL	NULL	3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID from T1_n17 group by cube(key, val)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID from T1_n17 group by cube(key, val)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 Explain
@@ -359,12 +359,12 @@ NULL	28	2
 NULL	NULL	3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT GROUPING__ID, key, val from T1_n17 group by key, val with rollup
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT GROUPING__ID, key, val from T1_n17 group by key, val with rollup
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 Explain
@@ -518,12 +518,12 @@ grouping__id	key	val
 3	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT GROUPING__ID, key, val from T1_n17 group by rollup (key, val)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT GROUPING__ID, key, val from T1_n17 group by rollup (key, val)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 Explain
@@ -677,12 +677,12 @@ grouping__id	key	val
 3	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by key, val with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by key, val with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 Explain
@@ -843,12 +843,12 @@ NULL	28	2	2
 NULL	NULL	3	3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by cube(key, val)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by cube(key, val)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 Explain

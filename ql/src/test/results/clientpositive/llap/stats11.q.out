@@ -32,12 +32,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_n16
 PREHOOK: query: explain
 load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n16 partition(ds='2008-04-08')
-PREHOOK: type: LOAD
+PREHOOK: type: EXPLAIN
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_n16
 POSTHOOK: query: explain
 load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n16 partition(ds='2008-04-08')
-POSTHOOK: type: LOAD
+POSTHOOK: type: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_n16
 STAGE DEPENDENCIES:
@@ -292,7 +292,7 @@ insert overwrite table bucketmapjoin_tmp_result_n7
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n15 a join srcbucket_mapjoin_part_n16 b 
 on a.key=b.key where b.ds="2008-04-08"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket_mapjoin_n15
 PREHOOK: Input: default@srcbucket_mapjoin_part_n16
 PREHOOK: Input: default@srcbucket_mapjoin_part_n16@ds=2008-04-08
@@ -302,7 +302,7 @@ insert overwrite table bucketmapjoin_tmp_result_n7
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n15 a join srcbucket_mapjoin_part_n16 b 
 on a.key=b.key where b.ds="2008-04-08"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket_mapjoin_n15
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n16
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n16@ds=2008-04-08
@@ -710,7 +710,7 @@ insert overwrite table bucketmapjoin_tmp_result_n7
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n15 a join srcbucket_mapjoin_part_n16 b 
 on a.key=b.key where b.ds="2008-04-08"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket_mapjoin_n15
 PREHOOK: Input: default@srcbucket_mapjoin_part_n16
 PREHOOK: Input: default@srcbucket_mapjoin_part_n16@ds=2008-04-08
@@ -720,7 +720,7 @@ insert overwrite table bucketmapjoin_tmp_result_n7
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_n15 a join srcbucket_mapjoin_part_n16 b 
 on a.key=b.key where b.ds="2008-04-08"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket_mapjoin_n15
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n16
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n16@ds=2008-04-08

@@ -12,7 +12,7 @@ PARTITION (ds='2010-01-01') location 'A'
 PARTITION (ds='2010-02-01') location 'B'
 PARTITION (ds='2010-03-01')
 PARTITION (ds='2010-04-01') location 'C'
-PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: type: EXPLAIN
 #### A masked pattern was here ####
 PREHOOK: Output: default@add_part_test_n1
 POSTHOOK: query: explain
@@ -21,7 +21,7 @@ PARTITION (ds='2010-01-01') location 'A'
 PARTITION (ds='2010-02-01') location 'B'
 PARTITION (ds='2010-03-01')
 PARTITION (ds='2010-04-01') location 'C'
-POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: type: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: Output: default@add_part_test_n1
 STAGE DEPENDENCIES:

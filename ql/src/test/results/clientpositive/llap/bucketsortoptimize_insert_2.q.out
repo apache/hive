@@ -81,7 +81,7 @@ INSERT OVERWRITE TABLE test_table3_n0 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n0 a JOIN test_table2_n0 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n0
 PREHOOK: Input: default@test_table1_n0@ds=1
 PREHOOK: Input: default@test_table2_n0
@@ -92,7 +92,7 @@ INSERT OVERWRITE TABLE test_table3_n0 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n0 a JOIN test_table2_n0 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n0
 POSTHOOK: Input: default@test_table1_n0@ds=1
 POSTHOOK: Input: default@test_table2_n0
@@ -305,7 +305,7 @@ INSERT OVERWRITE TABLE test_table3_n0 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n0 a JOIN test_table2_n0 b 
 ON a.key = b.key WHERE a.ds is not null and b.ds = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n0
 PREHOOK: Input: default@test_table1_n0@ds=1
 PREHOOK: Input: default@test_table1_n0@ds=2
@@ -317,7 +317,7 @@ INSERT OVERWRITE TABLE test_table3_n0 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n0 a JOIN test_table2_n0 b 
 ON a.key = b.key WHERE a.ds is not null and b.ds = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n0
 POSTHOOK: Input: default@test_table1_n0@ds=1
 POSTHOOK: Input: default@test_table1_n0@ds=2
@@ -555,7 +555,7 @@ INSERT OVERWRITE TABLE test_table3_n0 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n0 a JOIN test_table2_n0 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n0
 PREHOOK: Input: default@test_table1_n0@ds=1
 PREHOOK: Input: default@test_table2_n0
@@ -567,7 +567,7 @@ INSERT OVERWRITE TABLE test_table3_n0 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1_n0 a JOIN test_table2_n0 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n0
 POSTHOOK: Input: default@test_table1_n0@ds=1
 POSTHOOK: Input: default@test_table2_n0
@@ -808,7 +808,7 @@ FROM
 JOIN 
 (select key, value from test_table2_n0 where ds = '1') b 
 ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n0
 PREHOOK: Input: default@test_table1_n0@ds=1
 PREHOOK: Input: default@test_table2_n0
@@ -822,7 +822,7 @@ FROM
 JOIN 
 (select key, value from test_table2_n0 where ds = '1') b 
 ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n0
 POSTHOOK: Input: default@test_table1_n0@ds=1
 POSTHOOK: Input: default@test_table2_n0
@@ -1044,7 +1044,7 @@ FROM
 JOIN 
 (select key, concat(value, value) as v2 from test_table2_n0 where ds = '1') b 
 ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n0
 PREHOOK: Input: default@test_table1_n0@ds=1
 PREHOOK: Input: default@test_table2_n0
@@ -1058,7 +1058,7 @@ FROM
 JOIN 
 (select key, concat(value, value) as v2 from test_table2_n0 where ds = '1') b 
 ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n0
 POSTHOOK: Input: default@test_table1_n0@ds=1
 POSTHOOK: Input: default@test_table2_n0
@@ -1280,7 +1280,7 @@ FROM
 JOIN 
 (select key, value from test_table2_n0 where ds = '1') b 
 ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n0
 PREHOOK: Input: default@test_table1_n0@ds=1
 PREHOOK: Input: default@test_table2_n0
@@ -1294,7 +1294,7 @@ FROM
 JOIN 
 (select key, value from test_table2_n0 where ds = '1') b 
 ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n0
 POSTHOOK: Input: default@test_table1_n0@ds=1
 POSTHOOK: Input: default@test_table2_n0

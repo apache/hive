@@ -14,11 +14,11 @@ Levenshtein distance is a string metric for measuring the difference between two
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLevenshtein
 Function type:BUILTIN
 PREHOOK: query: explain select levenshtein('Test String1', 'Test String2')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select levenshtein('Test String1', 'Test String2')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

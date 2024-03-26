@@ -71,12 +71,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@book
 PREHOOK: query: EXPLAIN CBO JOINCOST SELECT a.lname, b.title FROM author a JOIN book b ON a.id=b.author
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@author
 PREHOOK: Input: default@book
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO JOINCOST SELECT a.lname, b.title FROM author a JOIN book b ON a.id=b.author
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####

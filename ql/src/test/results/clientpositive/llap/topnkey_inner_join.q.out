@@ -93,12 +93,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 positive: order by columns are coming from child table
 PREHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -203,12 +203,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, orders.amount limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, orders.amount limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -319,12 +319,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from customer join orders on orders.customer_id = customer.id order by orders.amount, orders.customer_id limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from customer join orders on orders.customer_id = customer.id order by orders.amount, orders.customer_id limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -477,12 +477,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 negative: order by columns are coming from referenced table
 PREHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by customer.name limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by customer.name limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -587,12 +587,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by customer.email, customer.name limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by customer.email, customer.name limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -732,12 +732,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 negative: 1st order by columns is coming from referenced table
 PREHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by customer.name, orders.amount limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by customer.name, orders.amount limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -864,12 +864,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 mixed/positive: 1st n order by columns are coming from child table
 PREHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, customer.name limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from orders join customer on customer.id = orders.customer_id order by orders.customer_id, customer.name limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -1002,12 +1002,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 negative: nulls first
 PREHOOK: query: explain select * from customer join orders on orders.customer_id = customer.id order by customer_id nulls first limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from customer join orders on orders.customer_id = customer.id order by customer_id nulls first limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -1148,12 +1148,12 @@ POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: Input: default@orders
 POSTHOOK: Output: default@orders
 PREHOOK: query: explain select * from customer join orders on customer.id = orders.customer_id order by customer.id limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from customer join orders on customer.id = orders.customer_id order by customer.id limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
@@ -1300,12 +1300,12 @@ POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: Input: default@orders
 POSTHOOK: Output: default@orders
 PREHOOK: query: explain select * from customer join orders on customer.id = orders.customer_id order by customer.id limit 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 PREHOOK: Input: default@orders
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from customer join orders on customer.id = orders.customer_id order by customer.id limit 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####

@@ -46,12 +46,12 @@ POSTHOOK: Output: default@orc_decimal
 POSTHOOK: Lineage: orc_decimal.id SIMPLE [(staging_n1)staging_n1.FieldSchema(name:id, type:decimal(18,0), comment:null), ]
 PREHOOK: query: explain vectorization expression
 select * from orc_decimal where id in ('100000000', '200000000')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_decimal
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from orc_decimal where id in ('100000000', '200000000')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_decimal
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

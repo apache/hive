@@ -17,11 +17,11 @@ POSTHOOK: Output: default@person
 POSTHOOK: Lineage: person.birthdate SCRIPT []
 POSTHOOK: Lineage: person.fname SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT * FROM person p1 INNER JOIN person p2 ON p1.birthDate=p2.birthDate
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@person
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT * FROM person p1 INNER JOIN person p2 ON p1.birthDate=p2.birthDate
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@person
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

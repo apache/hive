@@ -88,7 +88,7 @@ from store_sales
 JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@household_demographics
 PREHOOK: Input: default@store
 PREHOOK: Input: default@store_sales
@@ -99,7 +99,7 @@ from store_sales
 JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@household_demographics
 POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_sales

@@ -113,7 +113,7 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 (COUNT(s1.discount) <= 822) AND
 (SUM(customer_balance) <= 4074689.000000041)
 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -121,7 +121,7 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 (COUNT(s1.discount) <= 822) AND
 (SUM(customer_balance) <= 4074689.000000041)
 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -196,7 +196,7 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 (SUM(customer_balance) <= 4074689.000000041)
 AND (COUNT(s1.discount) <= 822)
 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -204,7 +204,7 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 (SUM(customer_balance) <= 4074689.000000041)
 AND (COUNT(s1.discount) <= 822)
 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -282,7 +282,7 @@ HAVING (
 AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
@@ -294,7 +294,7 @@ HAVING (
 AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
@@ -418,7 +418,7 @@ HAVING (
 AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
@@ -430,7 +430,7 @@ HAVING (
 AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
@@ -558,7 +558,7 @@ HAVING (
 AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####
@@ -570,7 +570,7 @@ HAVING (
 AND (AVG(s1.discount) <= 822)
 AND (COUNT(s2.value) > 4)
 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@testv1_staples
 #### A masked pattern was here ####

@@ -42,7 +42,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table3_n1
 PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE test_table3_n1 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n1 a JOIN test_table2_n1 b ON a.key = b.key AND a.ds = '1' AND b.ds = '1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n1
 PREHOOK: Input: default@test_table1_n1@ds=1
 PREHOOK: Input: default@test_table2_n1
@@ -50,7 +50,7 @@ PREHOOK: Input: default@test_table2_n1@ds=1
 PREHOOK: Output: default@test_table3_n1@ds=1
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE test_table3_n1 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n1 a JOIN test_table2_n1 b ON a.key = b.key AND a.ds = '1' AND b.ds = '1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n1
 POSTHOOK: Input: default@test_table1_n1@ds=1
 POSTHOOK: Input: default@test_table2_n1
@@ -1897,12 +1897,12 @@ POSTHOOK: Input: default@test_table3_n1@ds=1
 498	val_498	1
 498	val_498	1
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_table1_n1 TABLESAMPLE(BUCKET 2 OUT OF 16)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n1
 PREHOOK: Input: default@test_table1_n1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_table1_n1 TABLESAMPLE(BUCKET 2 OUT OF 16)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n1
 POSTHOOK: Input: default@test_table1_n1@ds=1
 #### A masked pattern was here ####
@@ -2006,12 +2006,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_table3_n1 TABLESAMPLE(BUCKET 2 OUT OF 16)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table3_n1
 PREHOOK: Input: default@test_table3_n1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_table3_n1 TABLESAMPLE(BUCKET 2 OUT OF 16)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table3_n1
 POSTHOOK: Input: default@test_table3_n1@ds=1
 #### A masked pattern was here ####

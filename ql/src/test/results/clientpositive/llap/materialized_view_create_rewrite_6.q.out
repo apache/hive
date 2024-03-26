@@ -112,7 +112,7 @@ PREHOOK: query: explain cbo
 select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -121,7 +121,7 @@ POSTHOOK: query: explain cbo
 select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -206,7 +206,7 @@ PREHOOK: query: explain cbo
 select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -214,7 +214,7 @@ POSTHOOK: query: explain cbo
 select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -231,7 +231,7 @@ HiveProject(a=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[CAST(/($1, $2)):DECIMAL(11
 
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -239,7 +239,7 @@ PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain cbo
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -264,7 +264,7 @@ HiveProject(a=[$5], _o__c1=[CAST(CASE(IS NULL($1), $6, IS NULL($6), $1, +($6, $1
 
 PREHOOK: query: explain
 alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -272,7 +272,7 @@ PREHOOK: Output: default@mat1
 PREHOOK: Output: default@mat1
 POSTHOOK: query: explain
 alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -688,7 +688,7 @@ PREHOOK: query: explain cbo
 select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -697,7 +697,7 @@ POSTHOOK: query: explain cbo
 select t1.a, sum(t1.b), count(t1.b), avg(t1.b), count(*) from t1
 join t2 on (t1.a = t2.a)
 group by t1.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

@@ -57,7 +57,7 @@ POSTHOOK: Output: default@part3_n2
 PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p1.p_name = p2_name and p2_name = p3_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part2_n5
 PREHOOK: Input: default@part3_n2
@@ -65,7 +65,7 @@ PREHOOK: Input: default@part3_n2
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p1.p_name = p2_name and p2_name = p3_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part2_n5
 POSTHOOK: Input: default@part3_n2
@@ -199,7 +199,7 @@ STAGE PLANS:
 PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_name = p1.p_name and p3_name = p2_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part2_n5
 PREHOOK: Input: default@part3_n2
@@ -207,7 +207,7 @@ PREHOOK: Input: default@part3_n2
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_name = p1.p_name and p3_name = p2_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part2_n5
 POSTHOOK: Input: default@part3_n2
@@ -342,7 +342,7 @@ Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Sta
 PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey + p1.p_partkey = p1.p_partkey and p3_name = p2_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part2_n5
 PREHOOK: Input: default@part3_n2
@@ -350,7 +350,7 @@ PREHOOK: Input: default@part3_n2
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey + p1.p_partkey = p1.p_partkey and p3_name = p2_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part2_n5
 POSTHOOK: Input: default@part3_n2
@@ -478,7 +478,7 @@ Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Sta
 PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey = 1 and p3_name = p2_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 PREHOOK: Input: default@part2_n5
 PREHOOK: Input: default@part3_n2
@@ -486,7 +486,7 @@ PREHOOK: Input: default@part3_n2
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey = 1 and p3_name = p2_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part2_n5
 POSTHOOK: Input: default@part3_n2

@@ -50,7 +50,7 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1_n13 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1_n0 x JOIN tmp2_n0 y ON (x.key = y.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tmp1_n0
 PREHOOK: Input: default@tmp2_n0
 PREHOOK: Output: default@dest_j1_n13
@@ -58,7 +58,7 @@ POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1_n13 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1_n0 x JOIN tmp2_n0 y ON (x.key = y.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tmp1_n0
 POSTHOOK: Input: default@tmp2_n0
 POSTHOOK: Output: default@dest_j1_n13

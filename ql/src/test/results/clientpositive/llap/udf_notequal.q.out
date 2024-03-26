@@ -28,14 +28,14 @@ PREHOOK: query: EXPLAIN
 SELECT key, value
 FROM src
 WHERE key <> '302'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, value
 FROM src
 WHERE key <> '302'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -571,14 +571,14 @@ PREHOOK: query: EXPLAIN
 SELECT key, value
 FROM src
 WHERE key != '302'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, value
 FROM src
 WHERE key != '302'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

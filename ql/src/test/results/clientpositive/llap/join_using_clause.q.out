@@ -86,13 +86,13 @@ POSTHOOK: Input: default@test
 PREHOOK: query: explain cbo select * from test t1
 join test t2 using(a)
 join test t3 using(a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from test t1
 join test t2 using(a)
 join test t3 using(a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 CBO PLAN:
@@ -125,13 +125,13 @@ POSTHOOK: Input: default@test1
 PREHOOK: query: explain cbo select * from test1 t1
 join test1 t2 using(a)
 join test1 t3 using(b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from test1 t1
 join test1 t2 using(a)
 join test1 t3 using(b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -168,7 +168,7 @@ POSTHOOK: Input: default@test2
 PREHOOK: query: explain cbo select * from test1 t1
 join test t2 using(a)
 join test2 t3 using(b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test2
@@ -176,7 +176,7 @@ PREHOOK: Input: default@test2
 POSTHOOK: query: explain cbo select * from test1 t1
 join test t2 using(a)
 join test2 t3 using(b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
@@ -218,7 +218,7 @@ PREHOOK: query: explain cbo select * from test t1
 join test1 t2 using(a)
 join test2 t3 using(b)
 join test2 t4 using(c)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test2
@@ -227,7 +227,7 @@ POSTHOOK: query: explain cbo select * from test t1
 join test1 t2 using(a)
 join test2 t3 using(b)
 join test2 t4 using(c)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
@@ -274,7 +274,7 @@ PREHOOK: query: explain cbo select * from test1 t1
 join test2 t2 using(a, b)
 join test2 t3 using(c, b)
 join test t4 using(a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test2
@@ -283,7 +283,7 @@ POSTHOOK: query: explain cbo select * from test1 t1
 join test2 t2 using(a, b)
 join test2 t3 using(c, b)
 join test t4 using(a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
@@ -327,7 +327,7 @@ POSTHOOK: Input: default@test2
 PREHOOK: query: explain cbo select * from test1
 join test using(a)
 join test2 using(b)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test2
@@ -335,7 +335,7 @@ PREHOOK: Input: default@test2
 POSTHOOK: query: explain cbo select * from test1
 join test using(a)
 join test2 using(b)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2

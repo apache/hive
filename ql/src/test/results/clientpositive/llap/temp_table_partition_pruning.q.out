@@ -101,13 +101,13 @@ POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
 #### A masked pattern was here ####
 3	2001-01-03
 PREHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, false)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@daysales_temp
 PREHOOK: Input: default@daysales_temp@dt=2001-01-01
 PREHOOK: Input: default@daysales_temp@dt=2001-01-03
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' and customer=1, false)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@daysales_temp
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
@@ -205,13 +205,13 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@daysales_temp
 PREHOOK: Input: default@daysales_temp@dt=2001-01-01
 PREHOOK: Input: default@daysales_temp@dt=2001-01-03
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@daysales_temp
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
@@ -309,13 +309,13 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@daysales_temp
 PREHOOK: Input: default@daysales_temp@dt=2001-01-01
 PREHOOK: Input: default@daysales_temp@dt=2001-01-03
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from daysales_temp where nvl(dt='2001-01-01' or customer=3, false)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@daysales_temp
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-03

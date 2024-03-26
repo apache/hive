@@ -57,7 +57,7 @@ join foo2
 join foo3
   on foo.x = foo3.z
 where x > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 PREHOOK: Input: default@foo2
 PREHOOK: Input: default@foo3
@@ -70,7 +70,7 @@ join foo2
 join foo3
   on foo.x = foo3.z
 where x > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 POSTHOOK: Input: default@foo2
 POSTHOOK: Input: default@foo3
@@ -223,7 +223,7 @@ join foo2
 join foo3
   on foo.x = foo3.z
 where x > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 PREHOOK: Input: default@foo2
 PREHOOK: Input: default@foo3
@@ -236,7 +236,7 @@ join foo2
 join foo3
   on foo.x = foo3.z
 where x > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 POSTHOOK: Input: default@foo2
 POSTHOOK: Input: default@foo3
@@ -389,7 +389,7 @@ join foo2
 join foo3
   on foo.x = foo3.z
 where x > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 PREHOOK: Input: default@foo2
 PREHOOK: Input: default@foo3
@@ -402,7 +402,7 @@ join foo2
 join foo3
   on foo.x = foo3.z
 where x > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 POSTHOOK: Input: default@foo2
 POSTHOOK: Input: default@foo3

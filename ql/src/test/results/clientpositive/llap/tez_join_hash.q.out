@@ -18,13 +18,13 @@ POSTHOOK: Lineage: orc_src.key SIMPLE [(src)src.FieldSchema(name:key, type:strin
 POSTHOOK: Lineage: orc_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 SELECT count(*) FROM src, orc_src where src.key=orc_src.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_src
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT count(*) FROM src, orc_src where src.key=orc_src.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_src
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -142,7 +142,7 @@ select  key, count(*) from (select x.key as key, y.value as value from
 srcpart x join srcpart y on (x.key = y.key)
 union all
 select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -155,7 +155,7 @@ select  key, count(*) from (select x.key as key, y.value as value from
 srcpart x join srcpart y on (x.key = y.key)
 union all
 select key, value from srcpart z) a join src b on (a.value = b.value) group by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11

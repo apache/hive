@@ -20,7 +20,7 @@ FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -29,7 +29,7 @@ FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -127,7 +127,7 @@ FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -136,7 +136,7 @@ FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

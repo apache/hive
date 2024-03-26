@@ -2,7 +2,7 @@ PREHOOK: query: explain
 select srcpart.key, src1.value from
 ((srcpart inner join src on srcpart.key = src.key))
 inner join src src1 on src1.value =srcpart.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -14,7 +14,7 @@ POSTHOOK: query: explain
 select srcpart.key, src1.value from
 ((srcpart inner join src on srcpart.key = src.key))
 inner join src src1 on src1.value =srcpart.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -142,7 +142,7 @@ PREHOOK: query: explain
 select srcpart.key, src1.value from
 (srcpart inner join src on srcpart.key = src.key)
 inner join src src1 on src1.value =srcpart.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -154,7 +154,7 @@ POSTHOOK: query: explain
 select srcpart.key, src1.value from
 (srcpart inner join src on srcpart.key = src.key)
 inner join src src1 on src1.value =srcpart.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -282,7 +282,7 @@ PREHOOK: query: explain
 select srcpart.key, src1.value from
 ((srcpart inner join src on srcpart.key = src.key)
 inner join src src1 on src1.value =srcpart.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -294,7 +294,7 @@ POSTHOOK: query: explain
 select srcpart.key, src1.value from
 ((srcpart inner join src on srcpart.key = src.key)
 inner join src src1 on src1.value =srcpart.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -423,7 +423,7 @@ select srcpart.key, src1.value from
 ((srcpart inner join src on srcpart.key = src.key)
 inner join src src1 on src1.value =srcpart.value)
 inner join src src2 on src2.key = src1.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -436,7 +436,7 @@ select srcpart.key, src1.value from
 ((srcpart inner join src on srcpart.key = src.key)
 inner join src src1 on src1.value =srcpart.value)
 inner join src src2 on src2.key = src1.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11

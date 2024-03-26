@@ -405,7 +405,7 @@ SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
 (SELECT key, COUNT(*) AS value FROM srcpart
 WHERE ds = '2008-04-08'
 GROUP BY key) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -416,7 +416,7 @@ SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
 (SELECT key, COUNT(*) AS value FROM srcpart
 WHERE ds = '2008-04-08'
 GROUP BY key) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12

@@ -194,14 +194,14 @@ POSTHOOK: Lineage: mv1.salary SIMPLE [(emps)emps.FieldSchema(name:salary, type:f
 PREHOOK: query: explain
 select salary, sum(empid) + 1 as s
 from emps where deptno > 10 group by salary
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps
 PREHOOK: Input: default@mv1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select salary, sum(empid) + 1 as s
 from emps where deptno > 10 group by salary
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps
 POSTHOOK: Input: default@mv1
 #### A masked pattern was here ####
@@ -316,14 +316,14 @@ POSTHOOK: Lineage: mv1.salary SIMPLE [(emps)emps.FieldSchema(name:salary, type:f
 PREHOOK: query: explain
 select salary + 1, sum(empid) + 1 as s
 from emps where deptno > 15 group by salary
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps
 PREHOOK: Input: default@mv1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select salary + 1, sum(empid) + 1 as s
 from emps where deptno > 15 group by salary
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps
 POSTHOOK: Input: default@mv1
 #### A masked pattern was here ####
@@ -440,7 +440,7 @@ select dependents.empid
 from emps
 join depts on (emps.deptno = depts.deptno)
 join dependents on (depts.name = dependents.name)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents
 PREHOOK: Input: default@depts
 PREHOOK: Input: default@emps
@@ -451,7 +451,7 @@ select dependents.empid
 from emps
 join depts on (emps.deptno = depts.deptno)
 join dependents on (depts.name = dependents.name)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents
 POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
@@ -594,7 +594,7 @@ from depts
 join dependents on (depts.name = dependents.name)
 join locations on (locations.name = dependents.name)
 join emps on (emps.deptno = depts.deptno)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents
 PREHOOK: Input: default@depts
 PREHOOK: Input: default@emps
@@ -607,7 +607,7 @@ from depts
 join dependents on (depts.name = dependents.name)
 join locations on (locations.name = dependents.name)
 join emps on (emps.deptno = depts.deptno)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents
 POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
@@ -797,7 +797,7 @@ from emps
 join dependents on (emps.empid = dependents.empid)
 join depts a on (emps.deptno=a.deptno)
 where emps.name = 'Bill'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dependents
 PREHOOK: Input: default@depts
 PREHOOK: Input: default@emps
@@ -809,7 +809,7 @@ from emps
 join dependents on (emps.empid = dependents.empid)
 join depts a on (emps.deptno=a.deptno)
 where emps.name = 'Bill'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dependents
 POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps

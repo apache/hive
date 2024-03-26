@@ -20,12 +20,12 @@ POSTHOOK: Lineage: s_n129.key SIMPLE []
 POSTHOOK: Lineage: s_n129.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain FROM S_n129
 INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@s_n129
 PREHOOK: Output: default@dest1_n52
 POSTHOOK: query: explain FROM S_n129
 INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@s_n129
 POSTHOOK: Output: default@dest1_n52
 STAGE DEPENDENCIES:

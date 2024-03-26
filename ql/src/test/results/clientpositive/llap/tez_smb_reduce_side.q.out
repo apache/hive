@@ -60,7 +60,7 @@ FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
       FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
         RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
           ON (a.key = b.key)) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1_10
 PREHOOK: Input: default@src_10
 #### A masked pattern was here ####
@@ -70,7 +70,7 @@ FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
       FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
         RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
           ON (a.key = b.key)) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1_10
 POSTHOOK: Input: default@src_10
 #### A masked pattern was here ####
@@ -607,12 +607,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.c1 SCRIPT []
 PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -810,12 +810,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.c1 SCRIPT []
 PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

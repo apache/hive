@@ -90,7 +90,7 @@ POSTHOOK: Lineage: cmv_basetable_2_n2.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n2.d SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
@@ -98,7 +98,7 @@ PREHOOK: Output: default@cmv_mat_view_n5
 PREHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
@@ -434,7 +434,7 @@ SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 #### A masked pattern was here ####
@@ -443,7 +443,7 @@ SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 #### A masked pattern was here ####

@@ -10,7 +10,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
@@ -25,7 +25,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
@@ -255,7 +255,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
@@ -270,7 +270,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
@@ -500,7 +500,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
@@ -515,7 +515,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
@@ -744,7 +744,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
@@ -759,7 +759,7 @@ from src
 group by key
 ) b
 on a.key=b.key and b.k1 < 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`

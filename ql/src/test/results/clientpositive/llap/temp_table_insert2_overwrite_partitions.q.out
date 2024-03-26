@@ -45,13 +45,13 @@ POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@destinTable_temp
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable_temp PARTITION (ds='2011-11-11')
   SELECT one,two FROM db1.sourceTable_temp WHERE ds='2011-11-11' order by one desc, two desc limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@sourcetable_temp
 PREHOOK: Input: db1@sourcetable_temp@ds=2011-11-11
 PREHOOK: Output: db2@destintable_temp@ds=2011-11-11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable_temp PARTITION (ds='2011-11-11')
   SELECT one,two FROM db1.sourceTable_temp WHERE ds='2011-11-11' order by one desc, two desc limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@sourcetable_temp
 POSTHOOK: Input: db1@sourcetable_temp@ds=2011-11-11
 POSTHOOK: Output: db2@destintable_temp@ds=2011-11-11
@@ -204,13 +204,13 @@ POSTHOOK: Input: db2@destintable_temp@ds=2011-11-11
 97	val_97
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable_temp PARTITION (ds='2011-11-11')
   SELECT one,two FROM db1.sourceTable_temp WHERE ds='2011-11-11' order by one desc, two desc limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: db1@sourcetable_temp
 PREHOOK: Input: db1@sourcetable_temp@ds=2011-11-11
 PREHOOK: Output: db2@destintable_temp@ds=2011-11-11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable_temp PARTITION (ds='2011-11-11')
   SELECT one,two FROM db1.sourceTable_temp WHERE ds='2011-11-11' order by one desc, two desc limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: db1@sourcetable_temp
 POSTHOOK: Input: db1@sourcetable_temp@ds=2011-11-11
 POSTHOOK: Output: db2@destintable_temp@ds=2011-11-11

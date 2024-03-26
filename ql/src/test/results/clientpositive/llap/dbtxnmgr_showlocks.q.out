@@ -14,9 +14,9 @@ POSTHOOK: query: show locks default
 POSTHOOK: type: SHOWLOCKS
 Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Heartbeat	Acquired At	User	Hostname	Agent Info
 PREHOOK: query: explain show transactions
-PREHOOK: type: SHOW TRANSACTIONS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain show transactions
-POSTHOOK: type: SHOW TRANSACTIONS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -45,9 +45,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_acid_table
 PREHOOK: query: explain show locks database default
-PREHOOK: type: SHOWLOCKS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain show locks database default
-POSTHOOK: type: SHOWLOCKS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -84,9 +84,9 @@ POSTHOOK: query: show locks partitioned_acid_table partition (p='abc')
 POSTHOOK: type: SHOWLOCKS
 Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Heartbeat	Acquired At	User	Hostname	Agent Info
 PREHOOK: query: explain show locks partitioned_acid_table partition (p='abc') extended
-PREHOOK: type: SHOWLOCKS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain show locks partitioned_acid_table partition (p='abc') extended
-POSTHOOK: type: SHOWLOCKS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -128,9 +128,9 @@ POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_acid_table
 POSTHOOK: Output: default@partitioned_acid_table@p=abc
 PREHOOK: query: explain show compactions
-PREHOOK: type: SHOW COMPACTIONS
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: explain show compactions
-POSTHOOK: type: SHOW COMPACTIONS
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

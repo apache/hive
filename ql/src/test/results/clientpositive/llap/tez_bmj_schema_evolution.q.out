@@ -66,14 +66,14 @@ p                   	int
 # col_name            	data_type           	comment             
 p                   	int                 	                    
 PREHOOK: query: explain select test_n1.key, test_n1.value from test_n1 join test1 on (test_n1.key = test1.key) order by test_n1.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test_n1
 PREHOOK: Input: default@test_n1@p=1
 PREHOOK: Input: default@test_n1@p=2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select test_n1.key, test_n1.value from test_n1 join test1 on (test_n1.key = test1.key) order by test_n1.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test_n1
 POSTHOOK: Input: default@test_n1@p=1

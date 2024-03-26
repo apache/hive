@@ -152,12 +152,12 @@ POSTHOOK: Input: default@testacid1
 #### A masked pattern was here ####
 3
 PREHOOK: query: explain update testacid1 set id = '206' where id = '0128'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testacid1
 PREHOOK: Output: default@testacid1
 PREHOOK: Output: default@testacid1
 POSTHOOK: query: explain update testacid1 set id = '206' where id = '0128'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testacid1
 POSTHOOK: Output: default@testacid1
 POSTHOOK: Output: default@testacid1

@@ -17,12 +17,12 @@ POSTHOOK: Output: default@dest1_n14
 POSTHOOK: Lineage: dest1_n14.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1_n14
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1_n14
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -51,12 +51,12 @@ POSTHOOK: Input: default@dest1_n14
 2008-11-11 15:32:20	2008-11-11	1	11	2008	1	11	2008
 PREHOOK: query: EXPLAIN
 SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -85,12 +85,12 @@ POSTHOOK: Input: default@dest1_n14
 01/13/10 11:57:40	2010-01-13 11:57:40
 PREHOOK: query: EXPLAIN
 SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/uu HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/uu HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

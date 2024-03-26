@@ -164,11 +164,11 @@ POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 2
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE key = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE key = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -244,11 +244,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE int16 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE int16 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -324,11 +324,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE int32 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE int32 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -404,11 +404,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE int64 = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE int64 = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -484,11 +484,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE bool = true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE bool = true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -561,11 +561,11 @@ POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 2
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `string` = "one"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `string` = "one"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -641,11 +641,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `binary` = cast ('one' as binary)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `binary` = cast ('one' as binary)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -723,11 +723,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `timestamp` = '2001-01-01 01:11:11'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `timestamp` = '2001-01-01 01:11:11'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -803,11 +803,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `float` = 1.1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `float` = 1.1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -883,11 +883,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `double` = 1.1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `double` = 1.1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -963,11 +963,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `decimal` = 1.111
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `decimal` = 1.111
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1043,11 +1043,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `null` IS NOT NULL
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `null` IS NOT NULL
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1105,11 +1105,11 @@ POSTHOOK: Input: default@all_types_table
 2
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `null` IS NULL AND key < 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE `null` IS NULL AND key < 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1140,11 +1140,11 @@ POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 1
 PREHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE key = 1 OR `string` = "one"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key FROM all_types_table WHERE key = 1 OR `string` = "one"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1231,11 +1231,11 @@ POSTHOOK: Input: default@all_types_table
 POSTHOOK: Output: default@all_types_table
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN SELECT * FROM all_types_table
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM all_types_table
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@all_types_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

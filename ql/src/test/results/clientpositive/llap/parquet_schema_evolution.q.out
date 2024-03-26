@@ -296,11 +296,11 @@ POSTHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 1	aaaa
 PREHOOK: query: explain select * from parq_test where age='b'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from parq_test where age='b'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -322,11 +322,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from parq_test where age='1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from parq_test where age='1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -348,11 +348,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from parq_test where age=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from parq_test where age=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -374,11 +374,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain vectorization expression select * from parq_test where age='b'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from parq_test where age='b'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -404,11 +404,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain vectorization expression select * from parq_test where age='1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from parq_test where age='1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -434,11 +434,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain vectorization expression select * from parq_test where age=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from parq_test where age=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@parq_test
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

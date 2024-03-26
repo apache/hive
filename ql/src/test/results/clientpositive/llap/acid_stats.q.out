@@ -17,11 +17,11 @@ POSTHOOK: Output: default@stats_part@p=101
 POSTHOOK: Lineage: stats_part PARTITION(p=101).key SCRIPT []
 POSTHOOK: Lineage: stats_part PARTITION(p=101).value SCRIPT []
 PREHOOK: query: explain select count(key) from stats_part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -45,11 +45,11 @@ POSTHOOK: Output: default@stats_part@p=102
 POSTHOOK: Lineage: stats_part PARTITION(p=102).key SCRIPT []
 POSTHOOK: Lineage: stats_part PARTITION(p=102).value SCRIPT []
 PREHOOK: query: explain select count(key) from stats_part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -71,11 +71,11 @@ POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@stats_part
 POSTHOOK: Output: default@stats_part@p=102
 PREHOOK: query: explain select count(key) from stats_part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(key) from stats_part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@stats_part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -34,7 +34,7 @@ SELECT TRANSFORM(*)
     )
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n109
 POSTHOOK: query: EXPLAIN EXTENDED
@@ -49,7 +49,7 @@ SELECT TRANSFORM(*)
     )
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n109
 STAGE DEPENDENCIES:

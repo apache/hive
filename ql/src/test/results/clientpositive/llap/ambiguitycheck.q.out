@@ -702,11 +702,11 @@ POSTHOOK: Input: default@src
 96	val_96	1
 97	val_97	2
 PREHOOK: query: explain extended select int(1.2) from src limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select int(1.2) from src limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(1.2 AS INT) AS `_o__c0`
@@ -814,10 +814,10 @@ POSTHOOK: Input: default@src
 NULL
 NULL
 PREHOOK: query: explain extended desc default.src key
-PREHOOK: type: DESCTABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 POSTHOOK: query: explain extended desc default.src key
-POSTHOOK: type: DESCTABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

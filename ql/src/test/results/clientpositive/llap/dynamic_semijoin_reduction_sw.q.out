@@ -166,7 +166,7 @@ JOIN (
   JOIN alltypesorc_int_n0
     ON (srcpart_small_n2.key1 = alltypesorc_int_n0.cstring)) b
 ON ('1' = '1')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_int_n0
 PREHOOK: Input: default@srcpart_date_n6
 PREHOOK: Input: default@srcpart_date_n6@ds=2008-04-08
@@ -191,7 +191,7 @@ JOIN (
   JOIN alltypesorc_int_n0
     ON (srcpart_small_n2.key1 = alltypesorc_int_n0.cstring)) b
 ON ('1' = '1')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_int_n0
 POSTHOOK: Input: default@srcpart_date_n6
 POSTHOOK: Input: default@srcpart_date_n6@ds=2008-04-08

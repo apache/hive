@@ -29,11 +29,11 @@ POSTHOOK: Input: ### test.blobstore.path ###/write_final_output_blobstore
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@blobstore_table
 PREHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hdfs_table
 PREHOOK: Output: default@blobstore_table
 POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hdfs_table
 POSTHOOK: Output: default@blobstore_table
 OPTIMIZED SQL: SELECT `key`
@@ -285,11 +285,11 @@ STAGE PLANS:
           Is Table Level Stats: true
 
 PREHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hdfs_table
 PREHOOK: Output: default@blobstore_table
 POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hdfs_table
 POSTHOOK: Output: default@blobstore_table
 OPTIMIZED SQL: SELECT `key`

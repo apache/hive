@@ -55,14 +55,14 @@ POSTHOOK: Output: default@d2
 PREHOOK: query: explain from (select key from src cluster by key) a
   insert overwrite table d1 select a.key
   insert overwrite table d2 select a.key cluster by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@d1
 PREHOOK: Output: default@d2
 POSTHOOK: query: explain from (select key from src cluster by key) a
   insert overwrite table d1 select a.key
   insert overwrite table d2 select a.key cluster by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@d1
 POSTHOOK: Output: default@d2

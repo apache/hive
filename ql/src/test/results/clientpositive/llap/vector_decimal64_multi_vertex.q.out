@@ -76,7 +76,7 @@ select  s_store_id brand_id, s_rec_start_date brand, s_rec_end_date, s_closed_da
           s_rec_start_date,
           s_rec_end_date,
           s_closed_date_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@store
 PREHOOK: Input: default@store_sales
 #### A masked pattern was here ####
@@ -89,7 +89,7 @@ select  s_store_id brand_id, s_rec_start_date brand, s_rec_end_date, s_closed_da
           s_rec_start_date,
           s_rec_end_date,
           s_closed_date_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####

@@ -7,13 +7,13 @@ POSTHOOK: Output: example_iden
 PREHOOK: query: EXPLAIN
 SELECT example_iden(key)
 FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT example_iden(key)
 FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -15,12 +15,12 @@ POSTHOOK: query: USE db1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db1
 PREHOOK: query: EXPLAIN CREATE TABLE table_db1 AS SELECT * FROM default.src
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@table_db1
 POSTHOOK: query: EXPLAIN CREATE TABLE table_db1 AS SELECT * FROM default.src
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@table_db1

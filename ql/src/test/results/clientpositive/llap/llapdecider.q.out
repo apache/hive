@@ -1,9 +1,9 @@
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -92,11 +92,11 @@ POSTHOOK: Output: default@src_orc_n2
 POSTHOOK: Lineage: src_orc_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_orc_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -174,11 +174,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -266,11 +266,11 @@ POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -348,12 +348,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -451,11 +451,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -554,12 +554,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -658,11 +658,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -758,11 +758,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -858,11 +858,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -960,11 +960,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -1060,11 +1060,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -1169,11 +1169,11 @@ POSTHOOK: query: CREATE TEMPORARY FUNCTION test_udf_get_java_string AS 'org.apac
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_udf_get_java_string
 PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(key as int) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(key as int) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -1237,11 +1237,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -1304,11 +1304,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -1371,11 +1371,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

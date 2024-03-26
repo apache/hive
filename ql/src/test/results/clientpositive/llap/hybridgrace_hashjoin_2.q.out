@@ -20,7 +20,7 @@ PREHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -33,7 +33,7 @@ POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -182,7 +182,7 @@ PREHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -195,7 +195,7 @@ POSTHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN src y ON (y.key = x.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -345,7 +345,7 @@ PREHOOK: query: EXPLAIN  ANALYZE SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -358,7 +358,7 @@ POSTHOOK: query: EXPLAIN  ANALYZE SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -546,7 +546,7 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -560,7 +560,7 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -741,7 +741,7 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -755,7 +755,7 @@ SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
 JOIN srcpart w ON (x.key = w.key)
 JOIN src y ON (y.key = x.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -948,7 +948,7 @@ UNION
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -965,7 +965,7 @@ UNION
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -1232,7 +1232,7 @@ UNION
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -1249,7 +1249,7 @@ UNION
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.value = z.value)
 JOIN src y ON (y.value = x.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -1526,7 +1526,7 @@ JOIN srcpart z2 ON (x.value = z2.value)
 JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -1544,7 +1544,7 @@ JOIN srcpart z2 ON (x.value = z2.value)
 JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
@@ -1768,7 +1768,7 @@ JOIN srcpart z2 ON (x.value = z2.value)
 JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
@@ -1786,7 +1786,7 @@ JOIN srcpart z2 ON (x.value = z2.value)
 JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart

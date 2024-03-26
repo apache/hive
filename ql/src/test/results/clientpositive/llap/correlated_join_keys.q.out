@@ -71,11 +71,11 @@ POSTHOOK: Input: default@customer_address_n0
 POSTHOOK: Output: default@customer_address_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_address_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_address_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -177,11 +177,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer_address_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@customer_address_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

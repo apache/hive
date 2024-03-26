@@ -39,7 +39,7 @@ SELECT cint,
     FROM decimal_vgby
     GROUP BY cint
     HAVING COUNT(*) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_vgby
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -49,7 +49,7 @@ SELECT cint,
     FROM decimal_vgby
     GROUP BY cint
     HAVING COUNT(*) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_vgby
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -224,7 +224,7 @@ SELECT cint,
     FROM decimal_vgby
     GROUP BY cint
     HAVING COUNT(*) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_vgby
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -234,7 +234,7 @@ SELECT cint,
     FROM decimal_vgby
     GROUP BY cint
     HAVING COUNT(*) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_vgby
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -445,7 +445,7 @@ SELECT cint,
     FROM decimal_vgby_small
     GROUP BY cint
     HAVING COUNT(*) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_vgby_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -455,7 +455,7 @@ SELECT cint,
     FROM decimal_vgby_small
     GROUP BY cint
     HAVING COUNT(*) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_vgby_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -649,7 +649,7 @@ SELECT cint,
     FROM decimal_vgby_small
     GROUP BY cint
     HAVING COUNT(*) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_vgby_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -659,7 +659,7 @@ SELECT cint,
     FROM decimal_vgby_small
     GROUP BY cint
     HAVING COUNT(*) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_vgby_small
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

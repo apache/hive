@@ -3,7 +3,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -12,7 +12,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -165,7 +165,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -174,7 +174,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -327,7 +327,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -336,7 +336,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -483,7 +483,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -492,7 +492,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -651,7 +651,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -660,7 +660,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -819,7 +819,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -828,7 +828,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -977,7 +977,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -986,7 +986,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1135,7 +1135,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1144,7 +1144,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1293,7 +1293,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1302,7 +1302,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1450,7 +1450,7 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, y.value, count(1) AS cnt
 FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key AND x.value = y.value)
 GROUP BY x.key, y.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1458,7 +1458,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, y.value, count(1) AS cnt
 FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key AND x.value = y.value)
 GROUP BY x.key, y.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1595,7 +1595,7 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, y.value, count(1) AS cnt
 FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key AND x.value = y.value)
 GROUP BY x.key, y.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1603,7 +1603,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, y.value, count(1) AS cnt
 FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key AND x.value = y.value)
 GROUP BY x.key, y.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1741,7 +1741,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1750,7 +1750,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1899,7 +1899,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -1908,7 +1908,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2057,7 +2057,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2066,7 +2066,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2215,7 +2215,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2224,7 +2224,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2373,7 +2373,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2382,7 +2382,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2527,7 +2527,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2536,7 +2536,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2681,7 +2681,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2690,7 +2690,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2835,7 +2835,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2844,7 +2844,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2989,7 +2989,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.value)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, x.value AS value, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key, x.value) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -2998,7 +2998,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.value)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, x.value AS value, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key, x.value) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3152,7 +3152,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.value)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, x.value AS value, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key, x.value) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3161,7 +3161,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.value)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, x.value AS value, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key, x.value) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3315,7 +3315,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key AND x.value = y.value)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3324,7 +3324,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key AND x.value = y.value)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3477,7 +3477,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key AND x.value = y.value)
       GROUP BY x.key) tmp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -3486,7 +3486,7 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key AND x.value = y.value)
       GROUP BY x.key) tmp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

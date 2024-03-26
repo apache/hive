@@ -84,13 +84,13 @@ POSTHOOK: Lineage: tjoin2.rnum SIMPLE [(tjoin2stage)tjoin2stage.FieldSchema(name
 tjoin2stage.rnum	tjoin2stage.c1	tjoin2stage.c2
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
@@ -191,13 +191,13 @@ NULL	NULL	NULL	15	DD
 NULL	NULL	NULL	NULL	EE
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
@@ -298,13 +298,13 @@ NULL	NULL	NULL	15	DD
 NULL	NULL	NULL	NULL	EE
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
@@ -464,13 +464,13 @@ NULL	NULL	NULL	15	DD
 NULL	NULL	NULL	NULL	EE
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
@@ -630,13 +630,13 @@ NULL	NULL	NULL	15	DD
 NULL	NULL	NULL	NULL	EE
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
@@ -796,13 +796,13 @@ NULL	NULL	NULL	15	DD
 NULL	NULL	NULL	NULL	EE
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c1 as c1j2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
@@ -962,13 +962,13 @@ NULL	NULL	NULL	15	DD
 NULL	NULL	NULL	NULL	EE
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
@@ -1132,13 +1132,13 @@ NULL	NULL	NULL	DD
 NULL	NULL	NULL	EE
 PREHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tjoin1
 PREHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2 from tjoin1 full outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####

@@ -25,7 +25,7 @@ union all
 
 select key, value from src
 ) aa
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@union_subq_union_n2
 POSTHOOK: query: explain
@@ -47,7 +47,7 @@ union all
 
 select key, value from src
 ) aa
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_subq_union_n2
 STAGE DEPENDENCIES:

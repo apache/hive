@@ -5,7 +5,7 @@ FROM
 JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -15,7 +15,7 @@ FROM
 JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -134,7 +134,7 @@ FROM table_16 a1
         COALESCE(a1.timestamp_col_19, CAST('2013-07-01 00:00:00' AS TIMESTAMP)),
         COALESCE(a1.timestamp_col_29, CAST('2028-06-18 00:00:00' AS TIMESTAMP)))
     )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_10
 PREHOOK: Input: default@table_16
 PREHOOK: Input: default@table_7
@@ -163,7 +163,7 @@ FROM table_16 a1
         COALESCE(a1.timestamp_col_19, CAST('2013-07-01 00:00:00' AS TIMESTAMP)),
         COALESCE(a1.timestamp_col_29, CAST('2028-06-18 00:00:00' AS TIMESTAMP)))
     )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_10
 POSTHOOK: Input: default@table_16
 POSTHOOK: Input: default@table_7

@@ -8,11 +8,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@shcol_test
 PREHOOK: query: EXPLAIN
 SHOW COLUMNS from shcol_test
-PREHOOK: type: SHOWCOLUMNS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@shcol_test
 POSTHOOK: query: EXPLAIN
 SHOW COLUMNS from shcol_test
-POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@shcol_test
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -65,10 +65,10 @@ POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test_db
 PREHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7
-PREHOOK: type: SHOWCOLUMNS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7
-POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: test_db@foo_n7
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -101,10 +101,10 @@ a
 b                   
 c                   
 PREHOOK: query: EXPLAIN SHOW COLUMNS in foo_n7
-PREHOOK: type: SHOWCOLUMNS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: EXPLAIN SHOW COLUMNS in foo_n7
-POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: test_db@foo_n7
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -185,10 +185,10 @@ cola
 colb                
 colc                
 PREHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 "col1|cola"
-PREHOOK: type: SHOWCOLUMNS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 "col1|cola"
-POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: test_db@foo_n7
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -286,10 +286,10 @@ POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: EXPLAIN SHOW COLUMNS from test_db.foo_n7
-PREHOOK: type: SHOWCOLUMNS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: EXPLAIN SHOW COLUMNS from test_db.foo_n7
-POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: test_db@foo_n7
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -349,10 +349,10 @@ cola
 colb                
 colc                
 PREHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 from test_db like 'col*'
-PREHOOK: type: SHOWCOLUMNS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 from test_db like 'col*'
-POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: test_db@foo_n7
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

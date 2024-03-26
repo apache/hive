@@ -56,7 +56,7 @@ a.k1 = b.k1 and a.ds='1'
 where a.k1 > 20
 )
 subq
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@dst_union22
 PREHOOK: Input: default@dst_union22@ds=1
 PREHOOK: Input: default@dst_union22_delta
@@ -74,7 +74,7 @@ a.k1 = b.k1 and a.ds='1'
 where a.k1 > 20
 )
 subq
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@dst_union22
 POSTHOOK: Input: default@dst_union22@ds=1
 POSTHOOK: Input: default@dst_union22_delta

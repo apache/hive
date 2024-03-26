@@ -7,11 +7,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: explain select not ((a>0) is not true) from t group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select not ((a>0) is not true) from t group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -76,11 +76,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select not ((a>0) is not false) from t group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select not ((a>0) is not false) from t group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -145,11 +145,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select not ((a>0) is not null) from t group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select not ((a>0) is not null) from t group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -214,11 +214,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select not ((a>0) is true) from t group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select not ((a>0) is true) from t group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -283,11 +283,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select not ((a>0) is false) from t group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select not ((a>0) is false) from t group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -352,11 +352,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select not ((a>0) is null) from t group by a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain select not ((a>0) is null) from t group by a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

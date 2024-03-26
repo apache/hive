@@ -23,12 +23,12 @@ POSTHOOK: Output: default@predicate_fold_tb
 POSTHOOK: Lineage: predicate_fold_tb.value SCRIPT []
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value = 3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value = 3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -64,12 +64,12 @@ NULL
 5
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value >= 3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value >= 3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -103,12 +103,12 @@ NULL
 2
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <= 3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <= 3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -142,12 +142,12 @@ NULL
 5
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -182,12 +182,12 @@ NULL
 3
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value < 3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value < 3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -222,12 +222,12 @@ NULL
 5
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <> 3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value <> 3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -260,12 +260,12 @@ NULL
 3
 PREHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 1 AND value <=3)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM predicate_fold_tb WHERE not(value IS NOT NULL AND value > 1 AND value <=3)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@predicate_fold_tb
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

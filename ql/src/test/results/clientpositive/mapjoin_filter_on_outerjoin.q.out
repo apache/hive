@@ -41,7 +41,7 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -50,7 +50,7 @@ SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -212,7 +212,7 @@ SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -221,7 +221,7 @@ SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

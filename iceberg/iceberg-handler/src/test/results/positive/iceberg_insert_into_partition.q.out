@@ -15,11 +15,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet_int
 PREHOOK: query: explain insert into table ice_parquet_int partition(pcol = 1) values ('ABC', 1), ('DEF', 2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_int@pcol=1
 POSTHOOK: query: explain insert into table ice_parquet_int partition(pcol = 1) values ('ABC', 1), ('DEF', 2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_int@pcol=1
 STAGE DEPENDENCIES:
@@ -126,11 +126,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_int@pcol=1
 PREHOOK: query: explain insert into table ice_parquet_int partition(pCOL = 2) values ('ABC', 1), ('DEF', 2)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_int@pcol=2
 POSTHOOK: query: explain insert into table ice_parquet_int partition(pCOL = 2) values ('ABC', 1), ('DEF', 2)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_int@pcol=2
 STAGE DEPENDENCIES:
@@ -237,11 +237,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_int@pcol=2
 PREHOOK: query: explain insert into table ice_parquet_int partition(pcol = 3) select strcol, intcol from ice_parquet_int where pcol = 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_int
 PREHOOK: Output: default@ice_parquet_int@pcol=3
 POSTHOOK: query: explain insert into table ice_parquet_int partition(pcol = 3) select strcol, intcol from ice_parquet_int where pcol = 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_int
 POSTHOOK: Output: default@ice_parquet_int@pcol=3
 STAGE DEPENDENCIES:
@@ -345,11 +345,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_int
 POSTHOOK: Output: default@ice_parquet_int@pcol=3
 PREHOOK: query: explain insert into table ice_parquet_int partition(pcol = 04) select strcol, intcol from ice_parquet_int where pcol = 2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_int
 PREHOOK: Output: default@ice_parquet_int@pcol=04
 POSTHOOK: query: explain insert into table ice_parquet_int partition(pcol = 04) select strcol, intcol from ice_parquet_int where pcol = 2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_int
 POSTHOOK: Output: default@ice_parquet_int@pcol=04
 STAGE DEPENDENCIES:
@@ -529,11 +529,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet_string
 PREHOOK: query: explain insert into ice_parquet_string partition (state='CA', country='USA') values ('John Doe', 23), ('Jane Doe', 22)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_string@country=USA/state=CA
 POSTHOOK: query: explain insert into ice_parquet_string partition (state='CA', country='USA') values ('John Doe', 23), ('Jane Doe', 22)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_string@country=USA/state=CA
 STAGE DEPENDENCIES:
@@ -640,11 +640,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_string@country=USA/state=CA
 PREHOOK: query: explain insert into ice_parquet_string partition (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_string@country=USA/state=CA
 POSTHOOK: query: explain insert into ice_parquet_string partition (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_string@country=USA/state=CA
 STAGE DEPENDENCIES:
@@ -751,11 +751,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_string@country=USA/state=CA
 PREHOOK: query: explain insert into ice_parquet_string partition (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_string@country=USA/state=TX
 POSTHOOK: query: explain insert into ice_parquet_string partition (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_string@country=USA/state=TX
 STAGE DEPENDENCIES:
@@ -876,11 +876,11 @@ Maria Full	50	USA	TX
 Mark Cage	38	USA	CA
 Mirna Cage	37	USA	CA
 PREHOOK: query: explain insert into table ice_parquet_string partition(country, state) select * from ice_parquet_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_string
 PREHOOK: Output: default@ice_parquet_string
 POSTHOOK: query: explain insert into table ice_parquet_string partition(country, state) select * from ice_parquet_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string
 STAGE DEPENDENCIES:
@@ -995,11 +995,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string
 PREHOOK: query: explain insert into table ice_parquet_string partition(country='USA', state) select name, age, state from ice_parquet_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_string
 PREHOOK: Output: default@ice_parquet_string
 POSTHOOK: query: explain insert into table ice_parquet_string partition(country='USA', state) select name, age, state from ice_parquet_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string
 STAGE DEPENDENCIES:
@@ -1114,11 +1114,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string
 PREHOOK: query: explain insert into table ice_parquet_string partition(state='CA', country) select name, age, country from ice_parquet_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_string
 PREHOOK: Output: default@ice_parquet_string
 POSTHOOK: query: explain insert into table ice_parquet_string partition(state='CA', country) select name, age, country from ice_parquet_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string
 STAGE DEPENDENCIES:
@@ -1233,11 +1233,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string
 PREHOOK: query: explain insert into table ice_parquet_string partition(state='TX') select name, age, country from ice_parquet_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_string
 PREHOOK: Output: default@ice_parquet_string@state=TX
 POSTHOOK: query: explain insert into table ice_parquet_string partition(state='TX') select name, age, country from ice_parquet_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string@state=TX
 STAGE DEPENDENCIES:
@@ -1352,11 +1352,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string@state=TX
 PREHOOK: query: explain insert into table ice_parquet_string partition(country='India') select name, age, state from ice_parquet_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_string
 PREHOOK: Output: default@ice_parquet_string@country=India
 POSTHOOK: query: explain insert into table ice_parquet_string partition(country='India') select name, age, state from ice_parquet_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string@country=India
 STAGE DEPENDENCIES:
@@ -1471,11 +1471,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string@country=India
 PREHOOK: query: explain insert into table ice_parquet_string partition(country='India') select name, '0054', state from ice_parquet_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_string
 PREHOOK: Output: default@ice_parquet_string@country=India
 POSTHOOK: query: explain insert into table ice_parquet_string partition(country='India') select name, '0054', state from ice_parquet_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_string
 POSTHOOK: Output: default@ice_parquet_string@country=India
 STAGE DEPENDENCIES:
@@ -2052,11 +2052,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet_date
 PREHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_date@pcol=1999-12-31
 POSTHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-31
 STAGE DEPENDENCIES:
@@ -2163,11 +2163,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-31
 PREHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_date@pcol=1999-12-26
 POSTHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-26
 STAGE DEPENDENCIES:
@@ -2274,11 +2274,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-26
 PREHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_date@pcol=1999-12-12
 POSTHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-12
 STAGE DEPENDENCIES:
@@ -2399,11 +2399,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3456789012345678	4	1999-12-12
 34567890123456789	6	1999-12-12
 PREHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_date
 PREHOOK: Output: default@ice_parquet_date@pcol=1999-12-13
 POSTHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_date
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-13
 STAGE DEPENDENCIES:
@@ -2503,11 +2503,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_date
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-13
 PREHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_date
 PREHOOK: Output: default@ice_parquet_date@pcol=1999-12-02
 POSTHOOK: query: explain insert into table ice_parquet_date partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_date
 POSTHOOK: Output: default@ice_parquet_date@pcol=1999-12-02
 STAGE DEPENDENCIES:
@@ -2709,11 +2709,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet_bigint
 PREHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 34567890123456787) values ('2022-08-07', 2), ('2022-08-09', 4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_bigint@pcol=34567890123456787
 POSTHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 34567890123456787) values ('2022-08-07', 2), ('2022-08-09', 4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=34567890123456787
 STAGE DEPENDENCIES:
@@ -2820,11 +2820,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=34567890123456787
 PREHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 12346577399277578) values ('2022-08-16', 3), ('2022-07-09', 5)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_bigint@pcol=12346577399277578
 POSTHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 12346577399277578) values ('2022-08-16', 3), ('2022-07-09', 5)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=12346577399277578
 STAGE DEPENDENCIES:
@@ -2931,11 +2931,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=12346577399277578
 PREHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 45637829068876994) values ('2022-07-21', 4), ('2022-05-29', 6)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_bigint@pcol=45637829068876994
 POSTHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 45637829068876994) values ('2022-07-21', 4), ('2022-05-29', 6)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=45637829068876994
 STAGE DEPENDENCIES:
@@ -3056,11 +3056,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2022-08-09	4	34567890123456787
 2022-08-16	3	12346577399277578
 PREHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 45637829068876994) select datecol, intcol from ice_parquet_bigint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_bigint
 PREHOOK: Output: default@ice_parquet_bigint@pcol=45637829068876994
 POSTHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 45637829068876994) select datecol, intcol from ice_parquet_bigint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_bigint
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=45637829068876994
 STAGE DEPENDENCIES:
@@ -3160,11 +3160,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_bigint
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=45637829068876994
 PREHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 12346577399277578) select '2022-01-25', intcol from ice_parquet_bigint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_bigint
 PREHOOK: Output: default@ice_parquet_bigint@pcol=12346577399277578
 POSTHOOK: query: explain insert into table ice_parquet_bigint partition (pcol = 12346577399277578) select '2022-01-25', intcol from ice_parquet_bigint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_bigint
 POSTHOOK: Output: default@ice_parquet_bigint@pcol=12346577399277578
 STAGE DEPENDENCIES:
@@ -3364,11 +3364,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet_double
 PREHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.14786) values ('2022-08-07', 2), ('2022-08-09', 4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_double@pcol=3.14786
 POSTHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.14786) values ('2022-08-07', 2), ('2022-08-09', 4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_double@pcol=3.14786
 STAGE DEPENDENCIES:
@@ -3475,11 +3475,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_double@pcol=3.14786
 PREHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.189) values ('2022-08-16', 3), ('2022-07-09', 5)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_double@pcol=3.189
 POSTHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.189) values ('2022-08-16', 3), ('2022-07-09', 5)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_double@pcol=3.189
 STAGE DEPENDENCIES:
@@ -3586,11 +3586,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_double@pcol=3.189
 PREHOOK: query: explain insert into table ice_parquet_double partition (pcol = 45.789) values ('2022-07-21', 4), ('2022-05-29', 6)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_double@pcol=45.789
 POSTHOOK: query: explain insert into table ice_parquet_double partition (pcol = 45.789) values ('2022-07-21', 4), ('2022-05-29', 6)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_double@pcol=45.789
 STAGE DEPENDENCIES:
@@ -3711,11 +3711,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2022-08-09	4	3.14786
 2022-08-16	3	3.189
 PREHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.14786) select datecol, intcol from ice_parquet_double
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_double
 PREHOOK: Output: default@ice_parquet_double@pcol=3.14786
 POSTHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.14786) select datecol, intcol from ice_parquet_double
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_double
 POSTHOOK: Output: default@ice_parquet_double@pcol=3.14786
 STAGE DEPENDENCIES:
@@ -3815,11 +3815,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_double
 POSTHOOK: Output: default@ice_parquet_double@pcol=3.14786
 PREHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.189) select '2022-01-25', intcol from ice_parquet_double
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_double
 PREHOOK: Output: default@ice_parquet_double@pcol=3.189
 POSTHOOK: query: explain insert into table ice_parquet_double partition (pcol = 3.189) select '2022-01-25', intcol from ice_parquet_double
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_double
 POSTHOOK: Output: default@ice_parquet_double@pcol=3.189
 STAGE DEPENDENCIES:
@@ -4019,11 +4019,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet_decimal
 PREHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.14786) values ('2022-08-07', 2), ('2022-08-09', 4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_decimal@pcol=3.14786
 POSTHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.14786) values ('2022-08-07', 2), ('2022-08-09', 4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=3.14786
 STAGE DEPENDENCIES:
@@ -4130,11 +4130,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=3.14786
 PREHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.189) values ('2022-08-16', 3), ('2022-07-09', 5)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_decimal@pcol=3.189
 POSTHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.189) values ('2022-08-16', 3), ('2022-07-09', 5)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=3.189
 STAGE DEPENDENCIES:
@@ -4241,11 +4241,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=3.189
 PREHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 45.789) values ('2022-07-21', 4), ('2022-05-29', 6)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_parquet_decimal@pcol=45.789
 POSTHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 45.789) values ('2022-07-21', 4), ('2022-05-29', 6)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=45.789
 STAGE DEPENDENCIES:
@@ -4366,11 +4366,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2022-08-09	4	3.147860
 2022-08-16	3	3.189000
 PREHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.14786) select datecol, intcol from ice_parquet_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_decimal
 PREHOOK: Output: default@ice_parquet_decimal@pcol=3.14786
 POSTHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.14786) select datecol, intcol from ice_parquet_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_decimal
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=3.14786
 STAGE DEPENDENCIES:
@@ -4470,11 +4470,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet_decimal
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=3.14786
 PREHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.189) select '2022-01-25', intcol from ice_parquet_decimal
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice_parquet_decimal
 PREHOOK: Output: default@ice_parquet_decimal@pcol=3.189
 POSTHOOK: query: explain insert into table ice_parquet_decimal partition (pcol = 3.189) select '2022-01-25', intcol from ice_parquet_decimal
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice_parquet_decimal
 POSTHOOK: Output: default@ice_parquet_decimal@pcol=3.189
 STAGE DEPENDENCIES:

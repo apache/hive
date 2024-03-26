@@ -17,12 +17,12 @@ POSTHOOK: Output: default@t_n19
 POSTHOOK: Lineage: t_n19.col SCRIPT []
 PREHOOK: query: explain
 select array("b", "d", "c", "a") FROM t_n19
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select array("b", "d", "c", "a") FROM t_n19
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -42,12 +42,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select array("b", "d", "c", col) FROM t_n19
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select array("b", "d", "c", col) FROM t_n19
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -67,12 +67,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t_n19
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t_n19
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -92,12 +92,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select sort_array(array("b", "d", "c", col)),array("1","2") FROM t_n19
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select sort_array(array("b", "d", "c", col)),array("1","2") FROM t_n19
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_n19
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

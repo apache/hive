@@ -15,11 +15,11 @@ POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: Input: default@claims
 POSTHOOK: Output: default@claims
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM claims WHERE typ_c=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@claims
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM claims WHERE typ_c=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@claims
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
@@ -145,11 +145,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM claims WHERE typ_c=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@claims
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM claims WHERE typ_c=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@claims
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`

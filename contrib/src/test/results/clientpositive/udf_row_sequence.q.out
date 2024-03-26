@@ -21,14 +21,14 @@ PREHOOK: query: explain
 select key, row_sequence() as r
 from (select key from src order by key) x
 order by r
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, row_sequence() as r
 from (select key from src order by key) x
 order by r
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -30,13 +30,13 @@ POSTHOOK: Lineage: event.username SCRIPT []
 PREHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 ABSTRACT SYNTAX TREE:
@@ -83,13 +83,13 @@ TOK_QUERY
 PREHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -180,13 +180,13 @@ john	buy	25	3
 PREHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 ABSTRACT SYNTAX TREE:
@@ -233,13 +233,13 @@ TOK_QUERY
 PREHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -330,13 +330,13 @@ john	buy	NULL	3
 PREHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS LAST)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS LAST)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 ABSTRACT SYNTAX TREE:
@@ -383,13 +383,13 @@ TOK_QUERY
 PREHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS LAST)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS LAST)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -480,13 +480,13 @@ john	buy	NULL	3
 PREHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS FIRST)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN AST
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS FIRST)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 ABSTRACT SYNTAX TREE:
@@ -533,13 +533,13 @@ TOK_QUERY
 PREHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS FIRST)
 FROM event
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@event
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT username, action, amount, row_number() OVER (PARTITION BY username, action ORDER BY action DESC, amount DESC NULLS FIRST)
 FROM event
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@event
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

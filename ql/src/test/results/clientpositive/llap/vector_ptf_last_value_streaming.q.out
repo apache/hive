@@ -18,11 +18,11 @@ POSTHOOK: Lineage: test2.event_dt SCRIPT []
 POSTHOOK: Lineage: test2.id SCRIPT []
 POSTHOOK: Lineage: test2.name SCRIPT []
 PREHOOK: query: explain vectorization detail SELECT name, event_dt, last_value(event_dt) over (PARTITION BY name ORDER BY event_dt desc ROWS BETWEEN unbounded preceding and unbounded following) last_event_dt FROM test2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test2
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail SELECT name, event_dt, last_value(event_dt) over (PARTITION BY name ORDER BY event_dt desc ROWS BETWEEN unbounded preceding and unbounded following) last_event_dt FROM test2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

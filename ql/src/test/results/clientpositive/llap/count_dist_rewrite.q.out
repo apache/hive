@@ -1,9 +1,9 @@
 PREHOOK: query: explain select count(distinct key) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(distinct key) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -93,11 +93,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 309
 PREHOOK: query: explain select max(key), count(distinct key) B1_CNTD from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key), count(distinct key) B1_CNTD from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -189,11 +189,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 98	309
 PREHOOK: query: explain select max(key), count(distinct key), min(key) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key), count(distinct key), min(key) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -285,11 +285,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 98	309	0
 PREHOOK: query: explain select max(key), count(distinct key), min(key), avg(key) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key), count(distinct key), min(key), avg(key) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -385,11 +385,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 98	309	0	260.182
 PREHOOK: query: explain select count(1), count(distinct key) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1), count(distinct key) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -487,7 +487,7 @@ PREHOOK: query: explain select
   max(value) as max_ss_store_sk,
   max(key) as max_ss_promo_sk
 from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select 
@@ -497,7 +497,7 @@ POSTHOOK: query: explain select
   max(value) as max_ss_store_sk,
   max(key) as max_ss_promo_sk
 from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -601,11 +601,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 500	500	309	val_98	98
 PREHOOK: query: explain select count(1), count(distinct key), cast(STDDEV(key) as int) from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(1), count(distinct key), cast(STDDEV(key) as int) from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -719,7 +719,7 @@ PREHOOK: query: explain SELECT
   cast(stddev_samp(substr(src.value,5)) as int),
   cast(variance(substr(src.value,5)) as int),
   cast(var_samp(substr(src.value,5)) as int)  from src
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT
@@ -732,7 +732,7 @@ POSTHOOK: query: explain SELECT
   cast(stddev_samp(substr(src.value,5)) as int),
   cast(variance(substr(src.value,5)) as int),
   cast(var_samp(substr(src.value,5)) as int)  from src
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -846,11 +846,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 130091.0	260.182	309	98	0	142	143	20428	20469
 PREHOOK: query: explain select max(key), count(distinct key), min(key), avg(key) from src group by value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select max(key), count(distinct key), min(key), avg(key) from src group by value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

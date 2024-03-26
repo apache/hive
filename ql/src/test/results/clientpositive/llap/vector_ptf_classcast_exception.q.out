@@ -50,7 +50,7 @@ sum(ss_ext_sales_price)*100 / sum(sum(ss_ext_sales_price)) over (partition by i_
 from store_sales_repro, item_repro
 where ss_item_sk = i_item_sk
 group by i_class, ss_ext_sales_price
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@item_repro
 PREHOOK: Input: default@store_sales_repro
 #### A masked pattern was here ####
@@ -60,7 +60,7 @@ sum(ss_ext_sales_price)*100 / sum(sum(ss_ext_sales_price)) over (partition by i_
 from store_sales_repro, item_repro
 where ss_item_sk = i_item_sk
 group by i_class, ss_ext_sales_price
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@item_repro
 POSTHOOK: Input: default@store_sales_repro
 #### A masked pattern was here ####

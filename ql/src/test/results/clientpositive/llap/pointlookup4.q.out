@@ -47,7 +47,7 @@ select key, value, ds1, ds2
 from pcr_t1_n0
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
 order by key, value, ds1, ds2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n0
 PREHOOK: Input: default@pcr_t1_n0@ds1=2000-04-08/ds2=2001-04-08
 PREHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09
@@ -57,7 +57,7 @@ select key, value, ds1, ds2
 from pcr_t1_n0
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
 order by key, value, ds1, ds2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n0
 POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09
@@ -247,7 +247,7 @@ select key, value, ds1, ds2
 from pcr_t1_n0
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
 order by key, value, ds1, ds2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pcr_t1_n0
 PREHOOK: Input: default@pcr_t1_n0@ds1=2000-04-08/ds2=2001-04-08
 PREHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09
@@ -257,7 +257,7 @@ select key, value, ds1, ds2
 from pcr_t1_n0
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
 order by key, value, ds1, ds2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pcr_t1_n0
 POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09

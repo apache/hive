@@ -1,10 +1,10 @@
 PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
@@ -21,12 +21,12 @@ Stage-0
           Output:["key","value"]
 
 PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
@@ -43,12 +43,12 @@ Stage-0
           Output:["key","value"]
 
 PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####

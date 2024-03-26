@@ -217,7 +217,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   if (cboolean1, null, ctimestamp2)
 FROM alltypesorc_string
 ORDER BY c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -240,7 +240,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   if (cboolean1, null, ctimestamp2)
 FROM alltypesorc_string
 ORDER BY c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -440,7 +440,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   second(stimestamp1)
 FROM alltypesorc_string
 ORDER BY c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -455,7 +455,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   second(stimestamp1)
 FROM alltypesorc_string
 ORDER BY c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -639,7 +639,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   second(ctimestamp1) = second(stimestamp1)
 FROM alltypesorc_string
 ORDER BY c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -654,7 +654,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   second(ctimestamp1) = second(stimestamp1)
 FROM alltypesorc_string
 ORDER BY c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -838,7 +838,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   second(stimestamp1)
 FROM alltypesorc_wrong
 ORDER BY c1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_wrong
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -853,7 +853,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   second(stimestamp1)
 FROM alltypesorc_wrong
 ORDER BY c1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_wrong
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -982,7 +982,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   count(ctimestamp1),
   count(*)
 FROM alltypesorc_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -991,7 +991,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   count(ctimestamp1),
   count(*)
 FROM alltypesorc_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1118,13 +1118,13 @@ POSTHOOK: Input: default@alltypesorc_string
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1261,7 +1261,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(stddev_pop(ctimestamp1), 3),
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -1274,7 +1274,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(stddev_pop(ctimestamp1), 3),
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

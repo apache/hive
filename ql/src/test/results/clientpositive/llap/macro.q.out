@@ -14,11 +14,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0.8807970779778823
 PREHOOK: query: EXPLAIN SELECT SIGMOID(2) FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SIGMOID(2) FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -39,11 +39,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT SIGMOID(2) FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT SIGMOID(2) FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(0.8807970779778823 AS DOUBLE) AS `_o__c0`
@@ -89,11 +89,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2
 PREHOOK: query: EXPLAIN SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -114,11 +114,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT FIXED_NUMBER() + 1 FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(2 AS INT) AS `_o__c0`
@@ -191,11 +191,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 10
 PREHOOK: query: EXPLAIN SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -216,11 +216,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT SIMPLE_ADD(1, 9) FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(10 AS INT) AS `_o__c0`

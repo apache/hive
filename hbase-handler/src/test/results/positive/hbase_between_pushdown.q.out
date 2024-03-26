@@ -29,11 +29,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hbase_pushdown
 PREHOOK: query: explain select * from hbase_pushdown where key >= 90 and key <= 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key >= 90 and key <= 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -70,11 +70,11 @@ POSTHOOK: Input: default@hbase_pushdown
 98	val_98
 100	val_100
 PREHOOK: query: explain select * from hbase_pushdown where key >= -5 and key <= 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key >= -5 and key <= 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -125,11 +125,11 @@ POSTHOOK: Input: default@hbase_pushdown
 -5	NegativeValue5
 -2	NegativeValue2
 PREHOOK: query: explain select * from hbase_pushdown where key = -5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key = -5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -160,11 +160,11 @@ POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 -5	NegativeValue5
 PREHOOK: query: explain select * from hbase_pushdown where key >= 90 and key <= 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_pushdown where key >= 90 and key <= 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_pushdown
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

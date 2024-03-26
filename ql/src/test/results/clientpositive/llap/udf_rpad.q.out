@@ -24,7 +24,7 @@ PREHOOK: query: EXPLAIN SELECT
   rpad('hi', 5, '.'),
   rpad('hi', 6, '123')
 FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
@@ -32,7 +32,7 @@ POSTHOOK: query: EXPLAIN SELECT
   rpad('hi', 5, '.'),
   rpad('hi', 6, '123')
 FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

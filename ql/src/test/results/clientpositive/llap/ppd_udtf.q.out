@@ -4,7 +4,7 @@ SELECT value from (
     select * FROM src WHERE key > 400
   ) A
 ) B WHERE value < 450
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -13,7 +13,7 @@ SELECT value from (
     select * FROM src WHERE key > 400
   ) A
 ) B WHERE value < 450
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

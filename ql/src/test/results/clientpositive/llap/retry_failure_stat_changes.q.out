@@ -36,25 +36,25 @@ POSTHOOK: Lineage: px.a SCRIPT []
 POSTHOOK: Lineage: px.p SCRIPT []
 PREHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@px
 PREHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@px
 POSTHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 PREHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@px
 PREHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@px
 POSTHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
@@ -111,13 +111,13 @@ POSTHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@px
 PREHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@px
 POSTHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
@@ -174,13 +174,13 @@ POSTHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@px
 PREHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select sum(u*p) from tx_n2 join px on (u=p) where u<10 and p>2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@px
 POSTHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
@@ -224,13 +224,13 @@ Stage-0
 
 PREHOOK: query: explain
 select assert_true_oom(1 > sum(u*p)) from tx_n2 join px on (tx_n2.a=px.a) where u<10 and p>2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@px
 PREHOOK: Input: default@tx_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select assert_true_oom(1 > sum(u*p)) from tx_n2 join px on (tx_n2.a=px.a) where u<10 and p>2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@px
 POSTHOOK: Input: default@tx_n2
 #### A masked pattern was here ####

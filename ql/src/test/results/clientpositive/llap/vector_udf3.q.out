@@ -5,11 +5,11 @@ POSTHOOK: query: CREATE TEMPORARY FUNCTION rot13 as 'hive.it.custom.udfs.Generic
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: rot13
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:

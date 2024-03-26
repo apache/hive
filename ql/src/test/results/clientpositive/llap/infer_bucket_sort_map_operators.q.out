@@ -48,12 +48,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_out_n0
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n14
 PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n14
 POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
@@ -219,7 +219,7 @@ SELECT a.key, a.value FROM (
  	SELECT key, value FROM src
 ) b
 ON (a.value = b.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@test_table1_n14
 PREHOOK: Output: default@test_table_out_n0@part=1
@@ -230,7 +230,7 @@ SELECT a.key, a.value FROM (
  	SELECT key, value FROM src
 ) b
 ON (a.value = b.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@test_table1_n14
 POSTHOOK: Output: default@test_table_out_n0@part=1
@@ -449,13 +449,13 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n14
 PREHOOK: Input: default@test_table2_n13
 PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n14
 POSTHOOK: Input: default@test_table2_n13
 POSTHOOK: Output: default@test_table_out_n0@part=1
@@ -628,14 +628,14 @@ Storage Desc Params:
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n14
 PREHOOK: Input: default@test_table2_n13
 PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n14
 POSTHOOK: Input: default@test_table2_n13
 POSTHOOK: Output: default@test_table_out_n0@part=1

@@ -35,12 +35,12 @@ POSTHOOK: Lineage: testvec.greg_dt SCRIPT []
 POSTHOOK: Lineage: testvec.id SCRIPT []
 PREHOOK: query: explain vectorization detail
 select max(dt), max(greg_dt) from testvec where id=5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testvec
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select max(dt), max(greg_dt) from testvec where id=5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testvec
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

@@ -121,12 +121,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key=b.key sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key=b.key sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -246,12 +246,12 @@ POSTHOOK: Input: default@t2_n33
 4	val_4
 8	val_8
 PREHOOK: query: explain select * from t2_n33 a left semi join t1_n55 b on b.key=a.key sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t2_n33 a left semi join t1_n55 b on b.key=a.key sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -373,12 +373,12 @@ POSTHOOK: Input: default@t2_n33
 4	val_2
 8	val_4
 PREHOOK: query: explain select * from t1_n55 a left semi join t4_n5 b on b.key=a.key sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t4_n5 b on b.key=a.key sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
@@ -492,12 +492,12 @@ POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.value from t1_n55 a left semi join t3_n12 b on (b.key = a.key and b.key < '15') sort by a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join t3_n12 b on (b.key = a.key and b.key < '15') sort by a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
@@ -626,12 +626,12 @@ val_5
 val_8
 val_9
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -748,12 +748,12 @@ POSTHOOK: Input: default@t2_n33
 0	val_0
 0	val_0
 PREHOOK: query: explain select a.value from t1_n55 a left semi join (select key from t3_n12 where key > 5) b on a.key = b.key sort by a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join (select key from t3_n12 where key > 5) b on a.key = b.key sort by a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
@@ -874,12 +874,12 @@ val_10
 val_8
 val_9
 PREHOOK: query: explain select a.value from t1_n55 a left semi join (select key , value from t2_n33 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join (select key , value from t2_n33 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -997,12 +997,12 @@ POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t2_n33 a left semi join (select key , value from t1_n55 where key > 2) b on a.key = b.key sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t2_n33 a left semi join (select key , value from t1_n55 where key > 2) b on a.key = b.key sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1121,12 +1121,12 @@ POSTHOOK: Input: default@t2_n33
 4	val_2
 8	val_4
 PREHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
@@ -1258,12 +1258,12 @@ POSTHOOK: Input: default@t3_n12
 8
 9
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = 2*b.key sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = 2*b.key sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
@@ -1381,13 +1381,13 @@ POSTHOOK: Input: default@t2_n33
 0	val_0
 8	val_8
 PREHOOK: query: explain select * from t1_n55 a join t2_n33 b on a.key = b.key left semi join t3_n12 c on b.key = c.key sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a join t2_n33 b on a.key = b.key left semi join t3_n12 c on b.key = c.key sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -1560,12 +1560,12 @@ POSTHOOK: Input: default@t3_n12
 4	val_4	4	val_2
 8	val_8	8	val_4
 PREHOOK: query: explain select * from t3_n12 a left semi join t1_n55 b on a.key = b.key and a.value=b.value sort by a.key, a.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from t3_n12 a left semi join t1_n55 b on a.key = b.key and a.value=b.value sort by a.key, a.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
@@ -1692,13 +1692,13 @@ POSTHOOK: Input: default@t3_n12
 8	val_8
 9	val_9
 PREHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key left semi join t2_n33 c on a.key = c.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key left semi join t2_n33 c on a.key = c.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -1873,13 +1873,13 @@ POSTHOOK: Input: default@t3_n12
 8
 8
 PREHOOK: query: explain select a.key from t3_n12 a left outer join t1_n55 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left outer join t1_n55 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -2061,13 +2061,13 @@ POSTHOOK: Input: default@t3_n12
 8
 8
 PREHOOK: query: explain select a.key from t1_n55 a right outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a right outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -2252,13 +2252,13 @@ NULL
 NULL
 NULL
 PREHOOK: query: explain select a.key from t1_n55 a full outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a full outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -2443,13 +2443,13 @@ NULL
 NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.key = c.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.key = c.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -2633,13 +2633,13 @@ POSTHOOK: Input: default@t3_n12
 8
 8
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key right outer join t1_n55 c on a.key = c.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key right outer join t1_n55 c on a.key = c.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -2821,13 +2821,13 @@ NULL
 NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key full outer join t2_n33 c on a.key = c.key sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key full outer join t2_n33 c on a.key = c.key sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -3020,13 +3020,13 @@ NULL
 NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.value = c.value sort by a.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n55
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.value = c.value sort by a.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
@@ -3218,12 +3218,12 @@ POSTHOOK: Input: default@t3_n12
 8
 8
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.value = b.value where a.key > 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t2_n33
 PREHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.value = b.value where a.key > 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
@@ -3327,13 +3327,13 @@ Warning: Shuffle Join MERGEJOIN[57][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reduc
 PREHOOK: query: explain select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3471,11 +3471,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: explain cbo select pp.p_partkey from (select distinct p_name from part) p join part pp on pp.p_name = p.p_name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select pp.p_partkey from (select distinct p_name from part) p join part pp on pp.p_name = p.p_name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -3528,7 +3528,7 @@ with ss as
             part group by p_partkey ,p_name
             having count(1) > 1)
 select count(1) from part pp where pp.p_partkey IN (select p_partkey from ss)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -3537,7 +3537,7 @@ with ss as
             part group by p_partkey ,p_name
             having count(1) > 1)
 select count(1) from part pp where pp.p_partkey IN (select p_partkey from ss)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:

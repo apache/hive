@@ -58,13 +58,13 @@ POSTHOOK: Lineage: mv1.sale_date SIMPLE [(sales)sales.FieldSchema(name:sale_date
 POSTHOOK: Lineage: mv1.store_id SIMPLE [(sales)sales.FieldSchema(name:store_id, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select prod_id, cust_id  from sales where cust_id in (1,2,3,4,5)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: expr2@mv1
 PREHOOK: Input: expr2@sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select prod_id, cust_id  from sales where cust_id in (1,2,3,4,5)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: expr2@mv1
 POSTHOOK: Input: expr2@sales
 #### A masked pattern was here ####
@@ -74,13 +74,13 @@ HiveProject(prod_id=[$0], cust_id=[$1])
 
 PREHOOK: query: explain cbo
 select prod_id, cust_id  from sales where cust_id in (5,1,2,3,4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: expr2@mv1
 PREHOOK: Input: expr2@sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select prod_id, cust_id  from sales where cust_id in (5,1,2,3,4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: expr2@mv1
 POSTHOOK: Input: expr2@sales
 #### A masked pattern was here ####
@@ -146,13 +146,13 @@ POSTHOOK: Lineage: mv2.state SIMPLE [(census_pop)census_pop.FieldSchema(name:sta
 POSTHOOK: Lineage: mv2.year SIMPLE [(census_pop)census_pop.FieldSchema(name:year, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year IN (2010, 2018) group by state, year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: in_pred@census_pop
 PREHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year IN (2010, 2018) group by state, year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
@@ -161,13 +161,13 @@ HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
 
 PREHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year = 2010 group by state, year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: in_pred@census_pop
 PREHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year = 2010 group by state, year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
@@ -179,13 +179,13 @@ HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
 
 PREHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year in (2010) group by state, year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: in_pred@census_pop
 PREHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year in (2010) group by state, year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
@@ -263,13 +263,13 @@ POSTHOOK: Lineage: mv3.sale_date SIMPLE [(sales)sales.FieldSchema(name:sale_date
 POSTHOOK: Lineage: mv3.store_id SIMPLE [(sales)sales.FieldSchema(name:store_id, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select  * from sales where cust_id >= 1 and  prod_id < 31
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: expr9@mv3
 PREHOOK: Input: expr9@sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select  * from sales where cust_id >= 1 and  prod_id < 31
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: expr9@mv3
 POSTHOOK: Input: expr9@sales
 #### A masked pattern was here ####
@@ -278,13 +278,13 @@ HiveTableScan(table=[[expr9, mv3]], table:alias=[expr9.mv3])
 
 PREHOOK: query: explain cbo
 select  * from sales where cust_id between 1 and 20 and prod_id < 31
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: expr9@mv3
 PREHOOK: Input: expr9@sales
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select  * from sales where cust_id between 1 and 20 and prod_id < 31
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: expr9@mv3
 POSTHOOK: Input: expr9@sales
 #### A masked pattern was here ####

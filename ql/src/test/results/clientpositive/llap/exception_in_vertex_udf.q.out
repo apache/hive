@@ -3,7 +3,7 @@ SELECT exception_in_vertex_udf (src1.value, "Map 1", 0, "*")
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
 LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -11,7 +11,7 @@ SELECT exception_in_vertex_udf (src1.value, "Map 1", 0, "*")
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
 LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -181,7 +181,7 @@ SELECT exception_in_vertex_udf (src2.value, "Map 3", 0, 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
 LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -189,7 +189,7 @@ SELECT exception_in_vertex_udf (src2.value, "Map 3", 0, 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
 LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -298,14 +298,14 @@ PREHOOK: query: EXPLAIN
 SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 2", 0, 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 2", 0, 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -481,14 +481,14 @@ PREHOOK: query: EXPLAIN
 SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 3", 0, 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 3", 0, 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -613,7 +613,7 @@ SELECT exception_in_vertex_udf (src1.value, "Map 1")
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
 LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -621,7 +621,7 @@ SELECT exception_in_vertex_udf (src1.value, "Map 1")
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
 LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

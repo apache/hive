@@ -26,14 +26,14 @@ PREHOOK: query: explain cbo
 select z, count(distinct y), count(distinct a)
 from tabw4intcols
 group by z
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select z, count(distinct y), count(distinct a)
 from tabw4intcols
 group by z
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
@@ -63,14 +63,14 @@ PREHOOK: query: explain cbo
 select z, x, count(distinct y), count(distinct a)
 from tabw4intcols
 group by z, x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select z, x, count(distinct y), count(distinct a)
 from tabw4intcols
 group by z, x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
@@ -102,14 +102,14 @@ PREHOOK: query: explain cbo
 select x, z, count(distinct y), count(distinct a)
 from tabw4intcols
 group by z, x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select x, z, count(distinct y), count(distinct a)
 from tabw4intcols
 group by z, x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
@@ -142,14 +142,14 @@ PREHOOK: query: explain cbo
 select x, a, y, count(distinct z)
 from tabw4intcols
 group by a, x, y
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select x, a, y, count(distinct z)
 from tabw4intcols
 group by a, x, y
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
@@ -185,14 +185,14 @@ PREHOOK: query: explain cbo
 select x, count(distinct y), z, count(distinct a)
 from tabw4intcols
 group by z, x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select x, count(distinct y), z, count(distinct a)
 from tabw4intcols
 group by z, x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
@@ -225,14 +225,14 @@ PREHOOK: query: explain cbo
 select count(distinct y), x, z, count(distinct a)
 from tabw4intcols
 group by z, x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select count(distinct y), x, z, count(distinct a)
 from tabw4intcols
 group by z, x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:

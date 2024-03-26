@@ -92,7 +92,7 @@ SELECT
   dt, datetime_legacy_hybrid_calendar(dt) AS dtp,
   ts, datetime_legacy_hybrid_calendar(ts) AS tsp
 FROM datetime_legacy_hybrid_calendar
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@datetime_legacy_hybrid_calendar
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -100,7 +100,7 @@ SELECT
   dt, datetime_legacy_hybrid_calendar(dt) AS dtp,
   ts, datetime_legacy_hybrid_calendar(ts) AS tsp
 FROM datetime_legacy_hybrid_calendar
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@datetime_legacy_hybrid_calendar
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

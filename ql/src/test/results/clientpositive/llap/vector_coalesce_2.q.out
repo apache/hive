@@ -31,7 +31,7 @@ SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -39,7 +39,7 @@ SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -180,13 +180,13 @@ y	0.0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -266,7 +266,7 @@ SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -274,7 +274,7 @@ SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -415,13 +415,13 @@ y	0.0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

@@ -3,7 +3,7 @@ SELECT /*+MAPJOIN(a)*/
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cat
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
@@ -12,7 +12,7 @@ SELECT /*+MAPJOIN(a)*/
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1143,7 +1143,7 @@ SELECT /*+STREAMTABLE(a)*/
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cat
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
@@ -1152,7 +1152,7 @@ SELECT /*+STREAMTABLE(a)*/
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###

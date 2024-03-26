@@ -47,13 +47,13 @@ POSTHOOK: Lineage: alltypesparquet_part_n0 PARTITION(ds=2012).ctimestamp1 SIMPLE
 POSTHOOK: Lineage: alltypesparquet_part_n0 PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesparquet_part_n0 PARTITION(ds=2012).ctinyint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesparquet_part_n0 order by c1 limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesparquet_part_n0
 PREHOOK: Input: default@alltypesparquet_part_n0@ds=2011
 PREHOOK: Input: default@alltypesparquet_part_n0@ds=2012
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesparquet_part_n0 order by c1 limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesparquet_part_n0
 POSTHOOK: Input: default@alltypesparquet_part_n0@ds=2011
 POSTHOOK: Input: default@alltypesparquet_part_n0@ds=2012

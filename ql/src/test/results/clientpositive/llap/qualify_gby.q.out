@@ -32,7 +32,7 @@ select a, b, c, count(*)
   from t1
 group by a, b, c
 qualify row_number() over (partition by b order by c) = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -40,7 +40,7 @@ select a, b, c, count(*)
   from t1
 group by a, b, c
 qualify row_number() over (partition by b order by c) = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:

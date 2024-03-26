@@ -62,12 +62,12 @@ true
 true
 true
 PREHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_params_xin
 PREHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_params_xin
 POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
@@ -136,12 +136,12 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_params_xin
 PREHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_params_xin
 POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
@@ -207,12 +207,12 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part_params_xin
 PREHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part_params_xin
 POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####

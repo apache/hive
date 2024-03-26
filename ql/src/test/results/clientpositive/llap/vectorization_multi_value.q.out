@@ -33,11 +33,11 @@ POSTHOOK: Input: default@cond_vector
 {"a":"b"}
 {"a":"b"}
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", "b"), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", "b"), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -115,11 +115,11 @@ POSTHOOK: Input: default@cond_vector
 {"a":{"b":"c"}}
 {"a":{"b":"c"}}
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b","c")), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b","c")), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -197,11 +197,11 @@ POSTHOOK: Input: default@cond_vector
 {"a":"a/b"}
 {"a":"c/d"}
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", a), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", a), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -279,11 +279,11 @@ POSTHOOK: Input: default@cond_vector
 {"a":{"b":"a/b"}}
 {"a":{"b":"c/d"}}
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b", a)), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b", a)), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -361,11 +361,11 @@ POSTHOOK: Input: default@cond_vector
 ["a","b"]
 ["a","b"]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", "b"), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", "b"), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -443,11 +443,11 @@ POSTHOOK: Input: default@cond_vector
 [["a","b"],["c","d"]]
 [["a","b"],["c","d"]]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", "b"), ARRAY("c", "d")), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", "b"), ARRAY("c", "d")), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -525,11 +525,11 @@ POSTHOOK: Input: default@cond_vector
 ["a","a/b"]
 ["a","c/d"]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", a), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", a), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -607,11 +607,11 @@ POSTHOOK: Input: default@cond_vector
 [["a","a/b"],["b","c"]]
 [["a","c/d"],["b","c"]]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", a), ARRAY("b", "c")), NULL) FROM cond_vector
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", a), ARRAY("b", "c")), NULL) FROM cond_vector
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@cond_vector
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

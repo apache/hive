@@ -53,11 +53,11 @@ POSTHOOK: Lineage: loc_orc_n1.state SIMPLE [(loc_staging_n1)loc_staging_n1.Field
 POSTHOOK: Lineage: loc_orc_n1.year SIMPLE [(loc_staging_n1)loc_staging_n1.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc_n1.zip SIMPLE [(loc_staging_n1)loc_staging_n1.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: explain select * from loc_orc_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -91,7 +91,7 @@ from ( select state as a, locid as b, count(*) as c
        group by state,locid
      ) sq1
 group by a,c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a, c, min(b)
@@ -100,7 +100,7 @@ from ( select state as a, locid as b, count(*) as c
        group by state,locid
      ) sq1
 group by a,c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -198,11 +198,11 @@ POSTHOOK: Input: default@loc_orc_n1
 POSTHOOK: Output: default@loc_orc_n1
 #### A masked pattern was here ####
 PREHOOK: query: explain select year from loc_orc_n1 group by year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select year from loc_orc_n1 group by year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -263,11 +263,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -328,11 +328,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -394,11 +394,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -460,11 +460,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -526,11 +526,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -592,11 +592,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -658,11 +658,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -724,11 +724,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -790,11 +790,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select year from loc_orc_n1 group by year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select year from loc_orc_n1 group by year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -855,11 +855,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -921,11 +921,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,zip from loc_orc_n1 group by state,zip
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,zip from loc_orc_n1 group by state,zip
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -986,11 +986,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1052,11 +1052,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1118,11 +1118,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1184,11 +1184,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1250,11 +1250,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1316,11 +1316,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1382,11 +1382,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1448,11 +1448,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select year from loc_orc_n1 group by year
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select year from loc_orc_n1 group by year
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1513,11 +1513,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -19,7 +19,7 @@ SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_test_smb_bucket1
 PREHOOK: Input: default@hive_test_smb_bucket2
 #### A masked pattern was here ####
@@ -28,7 +28,7 @@ SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_test_smb_bucket1
 POSTHOOK: Input: default@hive_test_smb_bucket2
 #### A masked pattern was here ####
@@ -115,7 +115,7 @@ SELECT /*+ MAPJOIN(a) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_test_smb_bucket1
 PREHOOK: Input: default@hive_test_smb_bucket2
 #### A masked pattern was here ####
@@ -124,7 +124,7 @@ SELECT /*+ MAPJOIN(a) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_test_smb_bucket1
 POSTHOOK: Input: default@hive_test_smb_bucket2
 #### A masked pattern was here ####
@@ -232,7 +232,7 @@ SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN 
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive_test_smb_bucket1
 PREHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
 PREHOOK: Input: default@hive_test_smb_bucket2
@@ -245,7 +245,7 @@ SELECT /*+ MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN 
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive_test_smb_bucket1
 POSTHOOK: Input: default@hive_test_smb_bucket1@ds=2010-10-15
 POSTHOOK: Input: default@hive_test_smb_bucket2

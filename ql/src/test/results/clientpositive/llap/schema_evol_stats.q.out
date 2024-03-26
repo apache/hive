@@ -174,11 +174,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select count(c) from partitioned1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partitioned1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(c) from partitioned1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partitioned1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -386,11 +386,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select count(c) from partitioned1_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@partitioned1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(c) from partitioned1_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@partitioned1_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

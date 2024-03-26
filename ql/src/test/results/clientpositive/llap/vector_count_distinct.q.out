@@ -1228,7 +1228,7 @@ POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_web_page_sk SIMPLE [
 POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_wholesale_cost SIMPLE [(web_sales_txt)web_sales_txt.FieldSchema(name:ws_wholesale_cost, type:decimal(7,2), comment:null), ]
 PREHOOK: query: explain vectorization expression
 select count(distinct ws_order_number) from web_sales
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@web_sales
 PREHOOK: Input: default@web_sales@ws_web_site_sk=1
 PREHOOK: Input: default@web_sales@ws_web_site_sk=10
@@ -1263,7 +1263,7 @@ PREHOOK: Input: default@web_sales@ws_web_site_sk=9
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(distinct ws_order_number) from web_sales
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Input: default@web_sales@ws_web_site_sk=1
 POSTHOOK: Input: default@web_sales@ws_web_site_sk=10

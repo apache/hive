@@ -22,7 +22,7 @@ select
 	coalesce(s1, 'null_value' )=coalesce(s2, 'null_value' ),
 	case when coalesce(s1, 'null_value' )=coalesce(s2, 'null_value' ) then 'eq' else 'noteq' end
 from t
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -31,7 +31,7 @@ select
 	coalesce(s1, 'null_value' )=coalesce(s2, 'null_value' ),
 	case when coalesce(s1, 'null_value' )=coalesce(s2, 'null_value' ) then 'eq' else 'noteq' end
 from t
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -21,11 +21,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: explain analyze insert into analyze_acid_table values (1),(2),(3),(4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: explain analyze insert into analyze_acid_table values (1),(2),(3),(4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@analyze_acid_table
 STAGE DEPENDENCIES:
@@ -167,12 +167,12 @@ POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: explain analyze update analyze_acid_table set id=11 where id=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: explain analyze update analyze_acid_table set id=11 where id=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -320,11 +320,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: explain analyze delete from analyze_acid_table where id=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: explain analyze delete from analyze_acid_table where id=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 STAGE DEPENDENCIES:
@@ -479,11 +479,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table
 POSTHOOK: Output: default@analyze_part_table
 PREHOOK: query: explain analyze insert into analyze_part_table select * from tmp_table
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tmp_table
 PREHOOK: Output: default@analyze_part_table
 POSTHOOK: query: explain analyze insert into analyze_part_table select * from tmp_table
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tmp_table
 POSTHOOK: Output: default@analyze_part_table
 STAGE DEPENDENCIES:
@@ -653,13 +653,13 @@ POSTHOOK: Input: default@analyze_part_table@b=3
 POSTHOOK: Output: default@analyze_part_table
 POSTHOOK: Output: default@analyze_part_table@b=3
 PREHOOK: query: explain analyze update analyze_part_table set a=11 where b=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=3
 PREHOOK: Output: default@analyze_part_table
 PREHOOK: Output: default@analyze_part_table@b=3
 POSTHOOK: query: explain analyze update analyze_part_table set a=11 where b=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=3
 POSTHOOK: Output: default@analyze_part_table
@@ -797,12 +797,12 @@ POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Output: default@analyze_part_table@b=1
 PREHOOK: query: explain analyze delete from analyze_part_table where b=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Output: default@analyze_part_table@b=1
 POSTHOOK: query: explain analyze delete from analyze_part_table where b=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Output: default@analyze_part_table@b=1
@@ -1009,11 +1009,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: explain analyze insert into analyze_acid_table values (1),(2),(3),(4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: explain analyze insert into analyze_acid_table values (1),(2),(3),(4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@analyze_acid_table
 STAGE DEPENDENCIES:
@@ -1155,12 +1155,12 @@ POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: explain analyze update analyze_acid_table set id=11 where id=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: explain analyze update analyze_acid_table set id=11 where id=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -1308,11 +1308,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: explain analyze delete from analyze_acid_table where id=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: explain analyze delete from analyze_acid_table where id=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
 STAGE DEPENDENCIES:
@@ -1449,11 +1449,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table
 POSTHOOK: Output: default@analyze_part_table
 PREHOOK: query: explain analyze insert into analyze_part_table select * from tmp_table
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tmp_table
 PREHOOK: Output: default@analyze_part_table
 POSTHOOK: query: explain analyze insert into analyze_part_table select * from tmp_table
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tmp_table
 POSTHOOK: Output: default@analyze_part_table
 STAGE DEPENDENCIES:
@@ -1623,13 +1623,13 @@ POSTHOOK: Input: default@analyze_part_table@b=3
 POSTHOOK: Output: default@analyze_part_table
 POSTHOOK: Output: default@analyze_part_table@b=3
 PREHOOK: query: explain analyze update analyze_part_table set a=11 where b=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=3
 PREHOOK: Output: default@analyze_part_table
 PREHOOK: Output: default@analyze_part_table@b=3
 POSTHOOK: query: explain analyze update analyze_part_table set a=11 where b=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=3
 POSTHOOK: Output: default@analyze_part_table
@@ -1767,12 +1767,12 @@ POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Output: default@analyze_part_table@b=1
 PREHOOK: query: explain analyze delete from analyze_part_table where b=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Output: default@analyze_part_table@b=1
 POSTHOOK: query: explain analyze delete from analyze_part_table where b=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Output: default@analyze_part_table@b=1

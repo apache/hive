@@ -12,12 +12,12 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMap
 Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT map(), map(1, "a", 2, "b", 3, "c"), map(1, 2, "a", "b"), 
 map(1, "a", 2, "b", 3, "c")[2],  map(1, 2, "a", "b")["a"], map(1, array("a"))[1][0] FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT map(), map(1, "a", 2, "b", 3, "c"), map(1, 2, "a", "b"), 
 map(1, "a", 2, "b", 3, "c")[2],  map(1, 2, "a", "b")["a"], map(1, array("a"))[1][0] FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

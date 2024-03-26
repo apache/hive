@@ -37,13 +37,13 @@ POSTHOOK: Output: default@decimal_part@nr_bank=8801
 POSTHOOK: Lineage: decimal_part PARTITION(nr_bank=8801).foo SCRIPT []
 POSTHOOK: Lineage: decimal_part PARTITION(nr_bank=8801).id SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT count(*), nr_bank FROM decimal_part GROUP BY nr_bank
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@decimal_part
 PREHOOK: Input: default@decimal_part@nr_bank=88
 PREHOOK: Input: default@decimal_part@nr_bank=8801
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT count(*), nr_bank FROM decimal_part GROUP BY nr_bank
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@decimal_part
 POSTHOOK: Input: default@decimal_part@nr_bank=88
 POSTHOOK: Input: default@decimal_part@nr_bank=8801

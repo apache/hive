@@ -64,10 +64,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":33}
 {"a":null}
 PREHOOK: query: explain truncate table test_ice_int partition (a = 22)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_int@a=22
 POSTHOOK: query: explain truncate table test_ice_int partition (a = 22)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_int@a=22
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -167,10 +167,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":33}
 {"a":null}
 PREHOOK: query: explain truncate table test_ice_int partition (a = 33)
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_int@a=33
 POSTHOOK: query: explain truncate table test_ice_int partition (a = 33)
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_int@a=33
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -275,10 +275,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":3367849937755673}
 {"a":null}
 PREHOOK: query: explain truncate table test_ice_bigint partition (a = 226784902765739)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_bigint@a=226784902765739
 POSTHOOK: query: explain truncate table test_ice_bigint partition (a = 226784902765739)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_bigint@a=226784902765739
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -378,10 +378,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":3367849937755673}
 {"a":null}
 PREHOOK: query: explain truncate table test_ice_bigint partition (a = 3367849937755673)
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_bigint@a=3367849937755673
 POSTHOOK: query: explain truncate table test_ice_bigint partition (a = 3367849937755673)
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_bigint@a=3367849937755673
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -512,10 +512,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"rrfdfdf"}
 {"b":null}
 PREHOOK: query: explain truncate table test_ice_str partition (b = 'ddd')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_str@b=ddd
 POSTHOOK: query: explain truncate table test_ice_str partition (b = 'ddd')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_str@b=ddd
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -625,10 +625,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"rrfdfdf"}
 {"b":null}
 PREHOOK: query: explain truncate table test_ice_str partition (b = 'rrfdfdf')
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_str@b=rrfdfdf
 POSTHOOK: query: explain truncate table test_ice_str partition (b = 'rrfdfdf')
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_str@b=rrfdfdf
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -769,10 +769,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"2022-08-09"}
 {"b":null}
 PREHOOK: query: explain truncate table test_ice_date partition (b = '2022-02-07')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_date@b=2022-02-07
 POSTHOOK: query: explain truncate table test_ice_date partition (b = '2022-02-07')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_date@b=2022-02-07
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -868,10 +868,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"2022-08-09"}
 {"b":null}
 PREHOOK: query: explain truncate table test_ice_date partition (b = '2022-08-09')
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_date@b=2022-08-09
 POSTHOOK: query: explain truncate table test_ice_date partition (b = '2022-08-09')
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_date@b=2022-08-09
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -973,10 +973,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":3.367849937755674E7}
 {"a":null}
 PREHOOK: query: explain truncate table test_ice_double partition (a = 115674892756.67590946)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_double@a=115674892756.67590946
 POSTHOOK: query: explain truncate table test_ice_double partition (a = 115674892756.67590946)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_double@a=115674892756.67590946
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1076,10 +1076,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":3.367849937755674E7}
 {"a":null}
 PREHOOK: query: explain truncate table test_ice_double partition (a = 33678499.377556738)
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_double@a=33678499.377556738
 POSTHOOK: query: explain truncate table test_ice_double partition (a = 33678499.377556738)
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_double@a=33678499.377556738
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1171,10 +1171,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":3.367849937755674E7,"b":"2022-08-09"}
 {"a":null,"b":null}
 PREHOOK: query: explain truncate table test_ice_double_date partition (a = 115674892756.67590946, b = '2022-02-07')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_double_date@a=115674892756.67590946/b=2022-02-07
 POSTHOOK: query: explain truncate table test_ice_double_date partition (a = 115674892756.67590946, b = '2022-02-07')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_double_date@a=115674892756.67590946/b=2022-02-07
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1269,10 +1269,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":3.367849937755674E7,"b":"2022-08-09"}
 {"a":null,"b":null}
 PREHOOK: query: explain truncate table test_ice_double_date partition (a = 33678499.377556738, b = '2022-08-09')
-PREHOOK: type: TRUNCATETABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: default@test_ice_double_date@a=33678499.377556738/b=2022-08-09
 POSTHOOK: query: explain truncate table test_ice_double_date partition (a = 33678499.377556738, b = '2022-08-09')
-POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Output: default@test_ice_double_date@a=33678499.377556738/b=2022-08-09
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

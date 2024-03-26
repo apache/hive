@@ -51,7 +51,7 @@ PREHOOK: query: explain vectorization detail
 select
 c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, c1*2,
 sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23 from testdatatypetable limit 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testdatatypetable
 PREHOOK: Input: default@testdatatypetable@dt=20090619
 #### A masked pattern was here ####
@@ -59,7 +59,7 @@ POSTHOOK: query: explain vectorization detail
 select
 c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, c1*2,
 sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23 from testdatatypetable limit 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testdatatypetable
 POSTHOOK: Input: default@testdatatypetable@dt=20090619
 #### A masked pattern was here ####

@@ -12,7 +12,7 @@ FROM   alltypesorc
 WHERE  ((cstring2 = cstring1)
         OR ((ctimestamp1 IS NULL)
             AND (cstring1 LIKE '%a')))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -29,7 +29,7 @@ FROM   alltypesorc
 WHERE  ((cstring2 = cstring1)
         OR ((ctimestamp1 IS NULL)
             AND (cstring1 LIKE '%a')))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

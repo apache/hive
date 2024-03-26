@@ -49,7 +49,7 @@ PREHOOK: query: EXPLAIN
     STORED AS RCFILE AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rcfile_createas1a
 PREHOOK: Input: default@rcfile_createas1a@ds=1
 PREHOOK: Input: default@rcfile_createas1a@ds=2
@@ -60,7 +60,7 @@ POSTHOOK: query: EXPLAIN
     STORED AS RCFILE AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rcfile_createas1a
 POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2

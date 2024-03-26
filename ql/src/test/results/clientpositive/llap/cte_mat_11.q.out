@@ -47,7 +47,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -61,7 +61,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -271,7 +271,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -285,7 +285,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -309,7 +309,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -323,7 +323,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -492,7 +492,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -506,7 +506,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -575,7 +575,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -589,7 +589,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -799,7 +799,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -813,7 +813,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -837,7 +837,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -851,7 +851,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1020,7 +1020,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -1034,7 +1034,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -1115,7 +1115,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -1129,7 +1129,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1339,7 +1339,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -1353,7 +1353,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -1377,7 +1377,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -1391,7 +1391,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1560,7 +1560,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -1574,7 +1574,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -1655,7 +1655,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -1669,7 +1669,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1879,7 +1879,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -1893,7 +1893,7 @@ materialized_cte2 AS (
 SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
@@ -1917,7 +1917,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
@@ -1931,7 +1931,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2100,7 +2100,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
@@ -2114,7 +2114,7 @@ materialized_cte2 AS (
 SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:

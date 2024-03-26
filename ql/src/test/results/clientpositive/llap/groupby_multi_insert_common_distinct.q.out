@@ -18,7 +18,7 @@ PREHOOK: query: explain
 from src
 insert overwrite table dest1_n99 select key, count(distinct value) group by key
 insert overwrite table dest2_n27 select key+key, count(distinct value) group by key+key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n99
 PREHOOK: Output: default@dest2_n27
@@ -26,7 +26,7 @@ POSTHOOK: query: explain
 from src
 insert overwrite table dest1_n99 select key, count(distinct value) group by key
 insert overwrite table dest2_n27 select key+key, count(distinct value) group by key+key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n99
 POSTHOOK: Output: default@dest2_n27

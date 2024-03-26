@@ -31,7 +31,7 @@ FROM (
   UNION ALL
   SELECT key, count(1) as `values` from inputTbl1_n25 group by key
 ) subq2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@inputtbl1_n25
 PREHOOK: Output: default@outputtbl1_n34
 POSTHOOK: query: explain
@@ -43,7 +43,7 @@ FROM (
   UNION ALL
   SELECT key, count(1) as `values` from inputTbl1_n25 group by key
 ) subq2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@inputtbl1_n25
 POSTHOOK: Output: default@outputtbl1_n34
 STAGE DEPENDENCIES:

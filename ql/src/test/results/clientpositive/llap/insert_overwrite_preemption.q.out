@@ -31,11 +31,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable partition (one) SELECT one,two FROM sourceTable
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sourcetable
 PREHOOK: Output: default@destintable
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable partition (one) SELECT one,two FROM sourceTable
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sourcetable
 POSTHOOK: Output: default@destintable
 STAGE DEPENDENCIES:

@@ -42,13 +42,13 @@ WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -203,12 +203,12 @@ rewrite; mv matching	14	21
 rewrite; mv matching	15	22
 PREHOOK: query: explain
 select 'no rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'no rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -344,12 +344,12 @@ WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -516,13 +516,13 @@ rewrite; no mv matching	15	43
 rewrite; no mv matching	15	43
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 alter materialized view mv_1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
@@ -717,13 +717,13 @@ WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', id, rank() over (order by id) from sketch_input order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -901,13 +901,13 @@ rewrite; mv matching	15	43
 WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, id, rank() over (partition by category order by id) from sketch_input order by category,id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', category, id, rank() over (partition by category order by id) from sketch_input order by category,id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####

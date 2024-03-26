@@ -35,12 +35,12 @@ POSTHOOK: Output: default@tbl_2
 POSTHOOK: Lineage: tbl_2.i2 SCRIPT []
 POSTHOOK: Lineage: tbl_2.j2 SCRIPT []
 PREHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -69,12 +69,12 @@ POSTHOOK: Input: default@tbl_2
 45	68	45	68
 NULL	200	NULL	NULL
 PREHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -103,12 +103,12 @@ POSTHOOK: Input: default@tbl_2
 45	68	45	68
 NULL	NULL	NULL	200
 PREHOOK: query: explain cbo select * from tbl_1 full outer join tbl_2 on tbl_1.i1 = tbl_2.i2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from tbl_1 full outer join tbl_2 on tbl_1.i1 = tbl_2.i2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -137,12 +137,12 @@ POSTHOOK: Input: default@tbl_2
 NULL	NULL	NULL	200
 NULL	200	NULL	NULL
 PREHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -169,12 +169,12 @@ POSTHOOK: Input: default@tbl_2
 45	68	45	68
 NULL	200	NULL	NULL
 PREHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -201,12 +201,12 @@ NULL	NULL	1	NULL
 45	68	45	68
 NULL	NULL	NULL	200
 PREHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -233,12 +233,12 @@ POSTHOOK: Input: default@tbl_2
 45	68	NULL	NULL
 NULL	200	NULL	NULL
 PREHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -274,7 +274,7 @@ FROM
     SELECT i2 as col0, j2 as col1 FROM tbl_2
   ) AS t1
 ON t0.col0 = t1.col0 AND t0.col1 = t1.col1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_1
 PREHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
@@ -288,7 +288,7 @@ FROM
     SELECT i2 as col0, j2 as col1 FROM tbl_2
   ) AS t1
 ON t0.col0 = t1.col0 AND t0.col1 = t1.col1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####

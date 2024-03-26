@@ -2,14 +2,14 @@ PREHOOK: query: explain
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                     UNION  ALL  
                                       select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                     UNION  ALL  
                                       select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

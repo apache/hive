@@ -367,7 +367,7 @@ col0
 ,col87
 ,COALESCE(col88,'-99') AS col88
 FROM cpn.mytable_1000_n
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: cpn@mytable_1000_n
 PREHOOK: Output: cpn_view@myview_1000_n
 PREHOOK: Output: database:cpn_view
@@ -474,7 +474,7 @@ col0
 ,col87
 ,COALESCE(col88,'-99') AS col88
 FROM cpn.mytable_1000_n
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: cpn@mytable_1000_n
 POSTHOOK: Output: cpn_view@myview_1000_n
 POSTHOOK: Output: database:cpn_view

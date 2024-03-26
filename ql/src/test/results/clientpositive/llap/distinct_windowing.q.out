@@ -52,7 +52,7 @@ PREHOOK: query: EXPLAIN
             FROM over10k_n15) sq
 ORDER BY fv
    LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -61,7 +61,7 @@ POSTHOOK: query: EXPLAIN
             FROM over10k_n15) sq
 ORDER BY fv
    LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -210,7 +210,7 @@ PREHOOK: query: EXPLAIN
             FROM over10k_n15) sq
 ORDER BY lv 
    LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -219,7 +219,7 @@ POSTHOOK: query: EXPLAIN
             FROM over10k_n15) sq
 ORDER BY lv 
    LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -368,7 +368,7 @@ PREHOOK: query: EXPLAIN
             FROM over10k_n15) sq
 ORDER BY lv, fv
    LIMIT 50
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -378,7 +378,7 @@ POSTHOOK: query: EXPLAIN
             FROM over10k_n15) sq
 ORDER BY lv, fv
    LIMIT 50
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@over10k_n15
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

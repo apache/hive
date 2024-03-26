@@ -44,7 +44,7 @@ POSTHOOK: Input: default@src
 key                 	string              	default             
 value               	string              	default             
 POSTHOOK: query: EXPLAIN SELECT * FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

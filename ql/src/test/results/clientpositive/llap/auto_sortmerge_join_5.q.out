@@ -67,12 +67,12 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big_n0
 PREHOOK: query: explain extended select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n0
 PREHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n0
 POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
@@ -283,12 +283,12 @@ POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 19
 PREHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n0
 PREHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n0
 POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
@@ -499,12 +499,12 @@ POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 19
 PREHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n0
 PREHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n0
 POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####

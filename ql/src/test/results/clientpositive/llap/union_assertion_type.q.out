@@ -42,7 +42,7 @@ SELECT column1, column2, column3 FROM union_table_test_n0
 UNION ALL
 SELECT column1, column2, '5' as column3 FROM union_table_test_n1) x
 WHERE x.column3 < '5'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@union_table_test_n0
 PREHOOK: Input: default@union_table_test_n1
 #### A masked pattern was here ####
@@ -52,7 +52,7 @@ SELECT column1, column2, column3 FROM union_table_test_n0
 UNION ALL
 SELECT column1, column2, '5' as column3 FROM union_table_test_n1) x
 WHERE x.column3 < '5'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@union_table_test_n0
 POSTHOOK: Input: default@union_table_test_n1
 #### A masked pattern was here ####
@@ -100,7 +100,7 @@ SELECT column1, column2, '5' as column3 FROM union_table_test_n1
 UNION ALL
 SELECT column1, column2, '5' as column3 FROM union_table_test_n0) x
 WHERE x.column3 < '5'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@union_table_test_n0
 PREHOOK: Input: default@union_table_test_n1
 #### A masked pattern was here ####
@@ -110,7 +110,7 @@ SELECT column1, column2, '5' as column3 FROM union_table_test_n1
 UNION ALL
 SELECT column1, column2, '5' as column3 FROM union_table_test_n0) x
 WHERE x.column3 < '5'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@union_table_test_n0
 POSTHOOK: Input: default@union_table_test_n1
 #### A masked pattern was here ####
@@ -219,7 +219,7 @@ SELECT u0.k as key, u0.d1 as data0, u0.d2 as data2 FROM (
   UNION ALL
   SELECT k,'' as d1,'' as d2 FROM union_table_test_n4) u0
 LEFT OUTER JOIN union_table_test_n5 tx1 ON (u0.k = tx1.k AND tx1.k != d1) AND u0.k!=1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@union_table_test_n3
 PREHOOK: Input: default@union_table_test_n4
 PREHOOK: Input: default@union_table_test_n5
@@ -230,7 +230,7 @@ SELECT u0.k as key, u0.d1 as data0, u0.d2 as data2 FROM (
   UNION ALL
   SELECT k,'' as d1,'' as d2 FROM union_table_test_n4) u0
 LEFT OUTER JOIN union_table_test_n5 tx1 ON (u0.k = tx1.k AND tx1.k != d1) AND u0.k!=1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@union_table_test_n3
 POSTHOOK: Input: default@union_table_test_n4
 POSTHOOK: Input: default@union_table_test_n5

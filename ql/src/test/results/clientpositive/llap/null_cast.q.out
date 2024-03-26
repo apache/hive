@@ -3,7 +3,7 @@ PREHOOK: query: EXPLAIN SELECT ARRAY(NULL, 0),
                ARRAY(NULL, MAP()),
                ARRAY(NULL, STRUCT(0))
         FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT ARRAY(NULL, 0), 
@@ -11,7 +11,7 @@ POSTHOOK: query: EXPLAIN SELECT ARRAY(NULL, 0),
                ARRAY(NULL, MAP()),
                ARRAY(NULL, STRUCT(0))
         FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

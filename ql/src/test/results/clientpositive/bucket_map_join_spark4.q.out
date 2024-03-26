@@ -61,7 +61,7 @@ POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 PREHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n0
 PREHOOK: Input: default@tbl2_n0
 PREHOOK: Input: default@tbl3
@@ -69,7 +69,7 @@ PREHOOK: Input: default@tbl3
 POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n0
 POSTHOOK: Input: default@tbl2_n0
 POSTHOOK: Input: default@tbl3
@@ -401,7 +401,7 @@ POSTHOOK: Input: default@tbl3
 PREHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl1_n0
 PREHOOK: Input: default@tbl2_n0
 PREHOOK: Input: default@tbl3
@@ -409,7 +409,7 @@ PREHOOK: Input: default@tbl3
 POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl1_n0
 POSTHOOK: Input: default@tbl2_n0
 POSTHOOK: Input: default@tbl3

@@ -18,7 +18,7 @@ SELECT size(src_thrift.lint),
        size(null)
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -29,7 +29,7 @@ SELECT size(src_thrift.lint),
        size(null)
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

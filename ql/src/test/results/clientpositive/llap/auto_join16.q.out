@@ -5,7 +5,7 @@ FROM
 JOIN src tab 
 ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
 where tab.value < 200
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -15,7 +15,7 @@ FROM
 JOIN src tab 
 ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
 where tab.value < 200
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

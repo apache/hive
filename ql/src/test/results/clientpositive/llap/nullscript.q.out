@@ -24,12 +24,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: explain
 select transform(key) using 'cat' as key1 from nullscript
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@nullscript
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select transform(key) using 'cat' as key1 from nullscript
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@nullscript
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

@@ -18,11 +18,11 @@ Example: expr is an integer column withs values 1, 10, 20, 30.
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFWidthBucket
 Function type:BUILTIN
 PREHOOK: query: explain select width_bucket(10, 5, 25, 4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select width_bucket(10, 5, 25, 4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

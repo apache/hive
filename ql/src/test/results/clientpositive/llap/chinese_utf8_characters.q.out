@@ -42,11 +42,11 @@ POSTHOOK: Output: default@tbl_chinese_chars_multidelimitserde
 POSTHOOK: Lineage: tbl_chinese_chars_multidelimitserde.col1 SCRIPT []
 POSTHOOK: Lineage: tbl_chinese_chars_multidelimitserde.col2 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars where b='北京'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_chinese_chars
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars where b='北京'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_chinese_chars
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -77,11 +77,11 @@ POSTHOOK: Input: default@tbl_chinese_chars
 #### A masked pattern was here ####
 2	北京	海淀
 PREHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars where b='北京'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_chinese_chars
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars where b='北京'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_chinese_chars
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -141,11 +141,11 @@ POSTHOOK: Input: default@tbl_chinese_chars_multidelimitserde
 #### A masked pattern was here ####
 测试1	测试2
 PREHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars_multidelimitserde where col1 = '测试1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_chinese_chars_multidelimitserde
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars_multidelimitserde where col1 = '测试1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_chinese_chars_multidelimitserde
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -185,11 +185,11 @@ POSTHOOK: Input: default@tbl_chinese_chars_multidelimitserde
 #### A masked pattern was here ####
 测试1	测试2
 PREHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars_multidelimitserde where col1 = '测试1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_chinese_chars_multidelimitserde
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM default.tbl_chinese_chars_multidelimitserde where col1 = '测试1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_chinese_chars_multidelimitserde
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

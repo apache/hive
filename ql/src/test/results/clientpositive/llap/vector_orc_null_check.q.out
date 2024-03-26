@@ -34,12 +34,12 @@ POSTHOOK: Output: default@listtable_orc_n0
 POSTHOOK: Lineage: listtable_orc_n0.l SIMPLE [(listtable_n0)listtable_n0.FieldSchema(name:l, type:array<string>, comment:null), ]
 PREHOOK: query: explain vectorization expression
 select size(l) from listtable_orc_n0 limit 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@listtable_orc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select size(l) from listtable_orc_n0 limit 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@listtable_orc_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

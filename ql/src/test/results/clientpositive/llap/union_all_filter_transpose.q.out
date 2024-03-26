@@ -68,7 +68,7 @@ SELECT * FROM (
    CAST(NULL AS string)
    FROM t) AS t2
 WHERE a = 1000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
@@ -83,7 +83,7 @@ SELECT * FROM (
    CAST(NULL AS string)
    FROM t) AS t2
 WHERE a = 1000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 Excluded rules: ReduceExpressionsRule\(Project\)

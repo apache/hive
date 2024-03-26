@@ -59,12 +59,12 @@ POSTHOOK: Lineage: table_add_int_permute_select_n0.insert_num SCRIPT []
 col1	col2	col3	col4
 PREHOOK: query: explain vectorization only detail
 select insert_num,a,b,c from table_add_int_permute_select_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table_add_int_permute_select_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only detail
 select insert_num,a,b,c from table_add_int_permute_select_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table_add_int_permute_select_n0
 #### A masked pattern was here ####
 Explain

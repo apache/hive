@@ -5,12 +5,12 @@ POSTHOOK: type: DESCFUNCTION
 current_database() - returns currently using database name
 PREHOOK: query: explain
 select current_database()
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select current_database()
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -52,12 +52,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:xxx
 PREHOOK: query: explain
 select current_database()
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select current_database()
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -93,12 +93,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: explain
 select current_database()
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select current_database()
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -134,12 +134,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:xxx
 PREHOOK: query: explain
 select current_database()
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select current_database()
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

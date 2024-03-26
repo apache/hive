@@ -40,13 +40,13 @@ POSTHOOK: Lineage: mv_1._c1 EXPRESSION [(sketch_input)sketch_input.FieldSchema(n
 POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -98,12 +98,12 @@ rewrite; mv matching	a	2.0
 rewrite; mv matching	b	7.0
 PREHOOK: query: explain
 select 'no rewrite; no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'no rewrite; no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -196,12 +196,12 @@ POSTHOOK: Lineage: sketch_input.category SCRIPT []
 POSTHOOK: Lineage: sketch_input.id SCRIPT []
 PREHOOK: query: explain
 select 'rewrite; but no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; but no mv usage', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -280,13 +280,13 @@ rewrite; but no mv usage	a	2.0
 rewrite; but no mv usage	b	7.0
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 PREHOOK: Output: default@mv_1
 POSTHOOK: query: explain
 alter materialized view mv_1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: default@mv_1
@@ -479,13 +479,13 @@ POSTHOOK: Lineage: mv_1._c1 EXPRESSION [(sketch_input)sketch_input.FieldSchema(n
 POSTHOOK: Lineage: mv_1.category EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), (mv_1)default.mv_1.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
@@ -537,13 +537,13 @@ rewrite; mv matching	a	2.0
 rewrite; mv matching	b	7.0
 PREHOOK: query: explain
 select 'rewrite;mv matching with rollup',percentile_disc(0.2) within group (order by id) from sketch_input
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mv_1
 PREHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'rewrite;mv matching with rollup',percentile_disc(0.2) within group (order by id) from sketch_input
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####

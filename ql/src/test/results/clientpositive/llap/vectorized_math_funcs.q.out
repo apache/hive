@@ -49,7 +49,7 @@ from alltypesorc
 where cbigint % 500 = 0
 
 and sin(cfloat) >= -1.0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -103,7 +103,7 @@ from alltypesorc
 where cbigint % 500 = 0
 
 and sin(cfloat) >= -1.0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

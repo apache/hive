@@ -29,11 +29,11 @@ POSTHOOK: Lineage: test_bucket.age SCRIPT []
 POSTHOOK: Lineage: test_bucket.dept SCRIPT []
 POSTHOOK: Lineage: test_bucket.name SCRIPT []
 PREHOOK: query: explain vectorization detail select age, name, count(*) from test_bucket group by  age, name having count(*) > 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_bucket
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail select age, name, count(*) from test_bucket group by  age, name having count(*) > 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_bucket
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

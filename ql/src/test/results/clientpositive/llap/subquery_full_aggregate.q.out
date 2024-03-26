@@ -45,7 +45,7 @@ WHERE t1.bigint_col > 1 AND NOT EXISTS
    FROM alltypestiny
    WHERE t1.date_string_col = string_col AND t1.timestamp_col = timestamp_col)
 GROUP BY t1.bigint_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -56,7 +56,7 @@ WHERE t1.bigint_col > 1 AND NOT EXISTS
    FROM alltypestiny
    WHERE t1.date_string_col = string_col AND t1.timestamp_col = timestamp_col)
 GROUP BY t1.bigint_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
 CBO PLAN:
@@ -90,7 +90,7 @@ WHERE EXISTS
    FROM alltypestiny
    WHERE t1.date_string_col = string_col AND t1.timestamp_col = timestamp_col)
 GROUP BY t1.bigint_col
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -101,7 +101,7 @@ WHERE EXISTS
    FROM alltypestiny
    WHERE t1.date_string_col = string_col AND t1.timestamp_col = timestamp_col)
 GROUP BY t1.bigint_col
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
 CBO PLAN:

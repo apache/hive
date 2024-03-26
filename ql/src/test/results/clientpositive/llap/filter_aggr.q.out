@@ -6,7 +6,7 @@ union all
 select key, c, 2 as m from (select key, count(key) as c from src group by key)s2
 )sub
 where m = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended 
@@ -17,7 +17,7 @@ union all
 select key, c, 2 as m from (select key, count(key) as c from src group by key)s2
 )sub
 where m = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, COUNT(`key`) AS `c`, 1 AS `m`

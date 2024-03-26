@@ -152,7 +152,7 @@ PREHOOK: query: explain analyze select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'AAAAAAAAAAAAAAAA'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@rx0
 PREHOOK: Input: default@sr0
 #### A masked pattern was here ####
@@ -160,7 +160,7 @@ POSTHOOK: query: explain analyze select 1
 from default.sr0  store_returns , default.rx0 reason
             where sr_reason_sk = r_reason_sk
               and r_reason_id = 'AAAAAAAAAAAAAAAA'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@rx0
 POSTHOOK: Input: default@sr0
 #### A masked pattern was here ####

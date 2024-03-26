@@ -42,7 +42,7 @@ INSERT OVERWRITE TABLE src_5
   select *  
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_4
 PREHOOK: Output: default@src_5
@@ -59,7 +59,7 @@ INSERT OVERWRITE TABLE src_5
   select *  
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_4
 POSTHOOK: Output: default@src_5
@@ -557,7 +557,7 @@ INSERT OVERWRITE TABLE src_5
   select *  
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_4
 PREHOOK: Output: default@src_5
@@ -574,7 +574,7 @@ INSERT OVERWRITE TABLE src_5
   select *  
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_4
 POSTHOOK: Output: default@src_5

@@ -26,7 +26,7 @@ insert overwrite table src_x1
 select key,"" where a.key > 0 AND a.key < 50
 insert overwrite table src_x2
 select value,"" where a.key > 50 AND a.key < 100
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_x1
 PREHOOK: Output: default@src_x2
@@ -36,7 +36,7 @@ insert overwrite table src_x1
 select key,"" where a.key > 0 AND a.key < 50
 insert overwrite table src_x2
 select value,"" where a.key > 50 AND a.key < 100
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_x1
 POSTHOOK: Output: default@src_x2

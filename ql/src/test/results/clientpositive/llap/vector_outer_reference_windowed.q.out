@@ -248,12 +248,12 @@ POSTHOOK: Output: default@e011_03_small
 columntype0	min0	max0	countnulls0	numdistinctvalues0	ndvbitvector0	columntype1	min1	max1	countnulls1	numdistinctvalues1	ndvbitvector1
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_n0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_n0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
 Explain
@@ -470,7 +470,7 @@ select sum(sum(c1)) over(
   partition by c2 order by c1)
   from e011_01_n0
   group by e011_01_n0.c1, e011_01_n0.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -478,7 +478,7 @@ select sum(sum(c1)) over(
   partition by c2 order by c1)
   from e011_01_n0
   group by e011_01_n0.c1, e011_01_n0.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
 Explain
@@ -712,7 +712,7 @@ select sum(sum(e011_01_n0.c1)) over(
   from e011_01_n0 
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_01_n0.c1, e011_01_n0.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_n0
 PREHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
@@ -722,7 +722,7 @@ select sum(sum(e011_01_n0.c1)) over(
   from e011_01_n0 
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_01_n0.c1, e011_01_n0.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_n0
 POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
@@ -1035,7 +1035,7 @@ select sum(sum(e011_01_n0.c1)) over(
   from e011_01_n0 
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c1, e011_03_n0.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_n0
 PREHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
@@ -1045,7 +1045,7 @@ select sum(sum(e011_01_n0.c1)) over(
   from e011_01_n0 
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c1, e011_03_n0.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_n0
 POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
@@ -1358,7 +1358,7 @@ select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
   from e011_01_n0
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c2, e011_01_n0.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_n0
 PREHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
@@ -1368,7 +1368,7 @@ select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
   from e011_01_n0
   join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
   group by e011_03_n0.c2, e011_01_n0.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_n0
 POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
@@ -1606,12 +1606,12 @@ NULL
 NULL
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_small
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_small
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(sum(c1)) over() from e011_01_small
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_small
 #### A masked pattern was here ####
 Explain
@@ -1828,7 +1828,7 @@ select sum(sum(c1)) over(
   partition by c2 order by c1)
   from e011_01_small
   group by e011_01_small.c1, e011_01_small.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_small
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
@@ -1836,7 +1836,7 @@ select sum(sum(c1)) over(
   partition by c2 order by c1)
   from e011_01_small
   group by e011_01_small.c1, e011_01_small.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_small
 #### A masked pattern was here ####
 Explain
@@ -2070,7 +2070,7 @@ select sum(sum(e011_01_small.c1)) over(
   from e011_01_small 
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_01_small.c1, e011_01_small.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_small
 PREHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
@@ -2080,7 +2080,7 @@ select sum(sum(e011_01_small.c1)) over(
   from e011_01_small 
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_01_small.c1, e011_01_small.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
@@ -2393,7 +2393,7 @@ select sum(sum(e011_01_small.c1)) over(
   from e011_01_small
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c1, e011_03_small.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_small
 PREHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
@@ -2403,7 +2403,7 @@ select sum(sum(e011_01_small.c1)) over(
   from e011_01_small
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c1, e011_03_small.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
@@ -2716,7 +2716,7 @@ select sum(corr(e011_01_small.c1, e011_03_small.c1))
   from e011_01_small
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c2, e011_01_small.c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@e011_01_small
 PREHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####
@@ -2726,7 +2726,7 @@ select sum(corr(e011_01_small.c1, e011_03_small.c1))
   from e011_01_small
   join e011_03_small on e011_01_small.c1 = e011_03_small.c1
   group by e011_03_small.c2, e011_01_small.c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Input: default@e011_03_small
 #### A masked pattern was here ####

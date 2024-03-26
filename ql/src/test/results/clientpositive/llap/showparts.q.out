@@ -1,10 +1,10 @@
 PREHOOK: query: EXPLAIN
 SHOW PARTITIONS srcpart
-PREHOOK: type: SHOWPARTITIONS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 POSTHOOK: query: EXPLAIN
 SHOW PARTITIONS srcpart
-POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

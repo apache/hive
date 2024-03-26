@@ -33,12 +33,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bar
 POSTHOOK: Lineage: bar.key SCRIPT []
 PREHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
@@ -157,12 +157,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
@@ -310,12 +310,12 @@ POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 1
 PREHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
@@ -437,12 +437,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bar
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bar
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####

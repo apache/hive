@@ -15,7 +15,7 @@ FROM
   SELECT x1.key as key, x1.value as value from src x1 where x1.key > 100
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@dest_j1_n1
@@ -28,7 +28,7 @@ FROM
   SELECT x1.key as key, x1.value as value from src x1 where x1.key > 100
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1_n1

@@ -24,12 +24,12 @@ POSTHOOK: Lineage: testorc1.id SCRIPT []
 POSTHOOK: Lineage: testorc1.name SCRIPT []
 PREHOOK: query: explain
 select id, UDFHelloTest(name) from testorc1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testorc1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select id, UDFHelloTest(name) from testorc1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testorc1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

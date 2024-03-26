@@ -1810,7 +1810,7 @@ select DISTINCT p_mfgr, p_name, p_size,
 sum(p_size) over w1 as s
 from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -1818,7 +1818,7 @@ select DISTINCT p_mfgr, p_name, p_size,
 sum(p_size) over w1 as s
 from part
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

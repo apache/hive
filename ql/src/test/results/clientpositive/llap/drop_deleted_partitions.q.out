@@ -30,11 +30,11 @@ POSTHOOK: Input: dmp@mp
 b=1/c=1
 #### A masked pattern was here ####
 PREHOOK: query: explain extended alter table dmp.mp drop partition (b='1')
-PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: dmp@mp
 PREHOOK: Output: dmp@mp@b=1/c=1
 POSTHOOK: query: explain extended alter table dmp.mp drop partition (b='1')
-POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: dmp@mp
 POSTHOOK: Output: dmp@mp@b=1/c=1
 STAGE DEPENDENCIES:

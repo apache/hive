@@ -37,14 +37,14 @@ POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@join_rc1
 PREHOOK: Input: default@join_rc2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@join_rc1
 POSTHOOK: Input: default@join_rc2
 #### A masked pattern was here ####

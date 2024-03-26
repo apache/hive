@@ -35,11 +35,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: explain select * from hbase_table where c1 and c2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_table where c1 and c2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -85,11 +85,11 @@ POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 Alex	true	true
 PREHOOK: query: explain select * from hbase_table where c1=true and c2=true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from hbase_table where c1=true and c2=true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

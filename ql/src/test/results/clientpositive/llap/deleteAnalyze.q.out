@@ -150,7 +150,7 @@ coalesce(d.amount,0) as sales,
 coalesce(d.sales_tax,0) as tax
 from testdeci2_n0 s join testdeci2_n0 d
 on s.item=d.item and d.id=2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testdeci2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -159,7 +159,7 @@ coalesce(d.amount,0) as sales,
 coalesce(d.sales_tax,0) as tax
 from testdeci2_n0 s join testdeci2_n0 d
 on s.item=d.item and d.id=2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testdeci2_n0
 #### A masked pattern was here ####
 Plan optimized by CBO.

@@ -74,7 +74,7 @@ where exists
   (select sum(int_col) over (partition by bool_col)
    from alltypestiny b
    where a.id = b.id)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -85,7 +85,7 @@ where exists
   (select sum(int_col) over (partition by bool_col)
    from alltypestiny b
    where a.id = b.id)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -105,7 +105,7 @@ where exists
   (select sum(int_col) over (partition by bool_col)
    from alltypestiny b
    where a.id = b.id)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -116,7 +116,7 @@ where exists
   (select sum(int_col) over (partition by bool_col)
    from alltypestiny b
    where a.id = b.id)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -233,7 +233,7 @@ select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
    from alltypesagg a where t.id = a.int_col)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -242,7 +242,7 @@ select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
    from alltypesagg a where t.id = a.int_col)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -259,7 +259,7 @@ select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
    from alltypesagg a where t.id = a.int_col)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesagg
 PREHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
@@ -268,7 +268,7 @@ select id, int_col from alltypestiny t
 where not exists
   (select sum(int_col) over (partition by bool_col)
    from alltypesagg a where t.id = a.int_col)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####

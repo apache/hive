@@ -18,12 +18,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_with_list
 PREHOOK: query: explain vectorization detail
 insert overwrite table table_with_list select id, split(str, '#') from source
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source
 PREHOOK: Output: default@table_with_list
 POSTHOOK: query: explain vectorization detail
 insert overwrite table table_with_list select id, split(str, '#') from source
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source
 POSTHOOK: Output: default@table_with_list
 PLAN VECTORIZATION:
@@ -169,14 +169,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_partitioned
 PREHOOK: query: explain vectorization detail
 insert overwrite table table_partitioned select id, split(str, '#')[2], part from source_partitioned
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@source_partitioned
 PREHOOK: Input: default@source_partitioned@part=a
 PREHOOK: Input: default@source_partitioned@part=b
 PREHOOK: Output: default@table_partitioned
 POSTHOOK: query: explain vectorization detail
 insert overwrite table table_partitioned select id, split(str, '#')[2], part from source_partitioned
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@source_partitioned
 POSTHOOK: Input: default@source_partitioned@part=a
 POSTHOOK: Input: default@source_partitioned@part=b

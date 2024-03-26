@@ -15,14 +15,14 @@ POSTHOOK: Lineage: masking_test_n_mv.value SIMPLE [(src)src.FieldSchema(name:val
 PREHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n_mv
 PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_view_n_mv
 POSTHOOK: query: explain
 create materialized view `masking_test_view_n_mv` as
 select key from `masking_test_n_mv`
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv

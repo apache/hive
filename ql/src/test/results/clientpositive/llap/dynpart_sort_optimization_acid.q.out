@@ -76,13 +76,13 @@ POSTHOOK: Input: default@acid_part@ds=2008-04-08
 #### A masked pattern was here ####
 1001
 PREHOOK: query: explain update acid_part set value = 'bar' where key = 'foo' and ds='2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_part
 PREHOOK: Input: default@acid_part@ds=2008-04-08
 PREHOOK: Output: default@acid_part
 PREHOOK: Output: default@acid_part@ds=2008-04-08
 POSTHOOK: query: explain update acid_part set value = 'bar' where key = 'foo' and ds='2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_part
 POSTHOOK: Input: default@acid_part@ds=2008-04-08
 POSTHOOK: Output: default@acid_part
@@ -234,13 +234,13 @@ POSTHOOK: Input: default@acid_part@ds=2008-04-08
 #### A masked pattern was here ####
 1001
 PREHOOK: query: explain update acid_part set value = 'bar' where key = 'foo' and ds in ('2008-04-08')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_part
 PREHOOK: Input: default@acid_part@ds=2008-04-08
 PREHOOK: Output: default@acid_part
 PREHOOK: Output: default@acid_part@ds=2008-04-08
 POSTHOOK: query: explain update acid_part set value = 'bar' where key = 'foo' and ds in ('2008-04-08')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_part
 POSTHOOK: Input: default@acid_part@ds=2008-04-08
 POSTHOOK: Output: default@acid_part
@@ -490,13 +490,13 @@ POSTHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 #### A masked pattern was here ####
 1001
 PREHOOK: query: explain update acid_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_part_sdpo
 PREHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 PREHOOK: Output: default@acid_part_sdpo
 PREHOOK: Output: default@acid_part_sdpo@ds=2008-04-08
 POSTHOOK: query: explain update acid_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_part_sdpo
 POSTHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 POSTHOOK: Output: default@acid_part_sdpo
@@ -648,13 +648,13 @@ POSTHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 #### A masked pattern was here ####
 1001
 PREHOOK: query: explain update acid_part_sdpo set value = 'bar' where key = 'foo' and ds in ('2008-04-08')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_part_sdpo
 PREHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 PREHOOK: Output: default@acid_part_sdpo
 PREHOOK: Output: default@acid_part_sdpo@ds=2008-04-08
 POSTHOOK: query: explain update acid_part_sdpo set value = 'bar' where key = 'foo' and ds in ('2008-04-08')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_part_sdpo
 POSTHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 POSTHOOK: Output: default@acid_part_sdpo
@@ -913,13 +913,13 @@ POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 501
 PREHOOK: query: explain update acid_2L_part set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part
 PREHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 PREHOOK: Output: default@acid_2l_part
 PREHOOK: Output: default@acid_2l_part@ds=2008-04-08/hr=11
 POSTHOOK: query: explain update acid_2L_part set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part
 POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@acid_2l_part
@@ -1073,7 +1073,7 @@ POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 501
 PREHOOK: query: explain update acid_2L_part set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part
 PREHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 PREHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=12
@@ -1081,7 +1081,7 @@ PREHOOK: Output: default@acid_2l_part
 PREHOOK: Output: default@acid_2l_part@ds=2008-04-08/hr=11
 PREHOOK: Output: default@acid_2l_part@ds=2008-04-08/hr=12
 POSTHOOK: query: explain update acid_2L_part set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part
 POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=12
@@ -1265,7 +1265,7 @@ POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 500
 PREHOOK: query: explain
 delete from acid_2L_part where value = 'bar'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part
 PREHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 PREHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=12
@@ -1277,7 +1277,7 @@ PREHOOK: Output: default@acid_2l_part@ds=2008-04-09/hr=11
 PREHOOK: Output: default@acid_2l_part@ds=2008-04-09/hr=12
 POSTHOOK: query: explain
 delete from acid_2L_part where value = 'bar'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part
 POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=12
@@ -1487,13 +1487,13 @@ POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 501
 PREHOOK: query: explain update acid_2L_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part_sdpo
 PREHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 PREHOOK: Output: default@acid_2l_part_sdpo
 PREHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 POSTHOOK: query: explain update acid_2L_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part_sdpo
 POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@acid_2l_part_sdpo
@@ -1647,7 +1647,7 @@ POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 501
 PREHOOK: query: explain update acid_2L_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part_sdpo
 PREHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 PREHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=12
@@ -1655,7 +1655,7 @@ PREHOOK: Output: default@acid_2l_part_sdpo
 PREHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 PREHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-08/hr=12
 POSTHOOK: query: explain update acid_2L_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part_sdpo
 POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=12
@@ -1838,7 +1838,7 @@ POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 500
 PREHOOK: query: explain
 delete from acid_2L_part_sdpo where value = 'bar'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part_sdpo
 PREHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 PREHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=12
@@ -1850,7 +1850,7 @@ PREHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-09/hr=11
 PREHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-09/hr=12
 POSTHOOK: query: explain
 delete from acid_2L_part_sdpo where value = 'bar'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part_sdpo
 POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=12
@@ -2059,13 +2059,13 @@ POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 501
 PREHOOK: query: explain update acid_2L_part_sdpo_no_cp set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part_sdpo_no_cp
 PREHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 PREHOOK: Output: default@acid_2l_part_sdpo_no_cp
 PREHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 POSTHOOK: query: explain update acid_2L_part_sdpo_no_cp set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp
 POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@acid_2l_part_sdpo_no_cp
@@ -2219,7 +2219,7 @@ POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 501
 PREHOOK: query: explain update acid_2L_part_sdpo_no_cp set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_2l_part_sdpo_no_cp
 PREHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 PREHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=12
@@ -2227,7 +2227,7 @@ PREHOOK: Output: default@acid_2l_part_sdpo_no_cp
 PREHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 PREHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=12
 POSTHOOK: query: explain update acid_2L_part_sdpo_no_cp set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp
 POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=12

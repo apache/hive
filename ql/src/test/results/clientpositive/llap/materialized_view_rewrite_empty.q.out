@@ -37,13 +37,13 @@ POSTHOOK: Lineage: emps_mv_rewrite_empty_mv1.name SIMPLE [(emps_mv_rewrite_empty
 POSTHOOK: Lineage: emps_mv_rewrite_empty_mv1.salary SIMPLE [(emps_mv_rewrite_empty)emps_mv_rewrite_empty.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select * from emps_mv_rewrite_empty where empid < 120
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_mv_rewrite_empty
 PREHOOK: Input: default@emps_mv_rewrite_empty_mv1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from emps_mv_rewrite_empty where empid < 120
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_mv_rewrite_empty
 POSTHOOK: Input: default@emps_mv_rewrite_empty_mv1
 #### A masked pattern was here ####

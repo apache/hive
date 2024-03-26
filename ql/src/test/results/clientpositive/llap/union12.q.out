@@ -13,7 +13,7 @@ insert overwrite table tmptable_n10
                                             select 'tst2' as key, count(1) as value from src1 s2
                                         UNION ALL
                                             select 'tst3' as key, count(1) as value from srcbucket s3) unionsrc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcbucket
@@ -25,7 +25,7 @@ insert overwrite table tmptable_n10
                                             select 'tst2' as key, count(1) as value from src1 s2
                                         UNION ALL
                                             select 'tst3' as key, count(1) as value from srcbucket s3) unionsrc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcbucket

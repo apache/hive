@@ -100,12 +100,12 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}
 PREHOOK: query: explain
 select 'stats: FIL ~0 read',count(1) from d1 where d < '2010-03-01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@d1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'stats: FIL ~0 read',count(1) from d1 where d < '2010-03-01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@d1
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -135,12 +135,12 @@ Stage-0
 
 PREHOOK: query: explain
 select 'stats: FIL estimate some read',count(1) from d1 where d < '2010-10-03'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@d1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'stats: FIL estimate some read',count(1) from d1 where d < '2010-10-03'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@d1
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -170,12 +170,12 @@ Stage-0
 
 PREHOOK: query: explain
 select 'stats: FIL estimate all read',count(1) from d1 where d < '2010-11-03'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@d1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'stats: FIL estimate all read',count(1) from d1 where d < '2010-11-03'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@d1
 #### A masked pattern was here ####
 Plan optimized by CBO.

@@ -27,7 +27,7 @@ from src
 insert overwrite table src_multi1_n2 select key, count(1) group by key order by key
 insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1_n2
 PREHOOK: Output: default@src_multi2_n3
@@ -37,7 +37,7 @@ from src
 insert overwrite table src_multi1_n2 select key, count(1) group by key order by key
 insert overwrite table src_multi2_n3 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_multi1_n2
 POSTHOOK: Output: default@src_multi2_n3

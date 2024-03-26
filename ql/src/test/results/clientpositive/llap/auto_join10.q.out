@@ -5,7 +5,7 @@ JOIN
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -15,7 +15,7 @@ JOIN
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

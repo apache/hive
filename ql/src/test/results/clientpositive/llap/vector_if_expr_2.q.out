@@ -24,12 +24,12 @@ POSTHOOK: Lineage: foo.x SCRIPT []
 POSTHOOK: Lineage: foo.y SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 select x, IF(x > 0,y,0) from foo order by x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 select x, IF(x > 0,y,0) from foo order by x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

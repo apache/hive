@@ -146,13 +146,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Warning: Shuffle Join MERGEJOIN[44][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -339,13 +339,13 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[44][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t3
 where age not in (select distinct(ages) ages from t5 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t5
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from t3
 where age not in (select distinct(ages) ages from t5 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t5
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -532,13 +532,13 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[46][tables = [t3, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t3
         where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t5
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from t3
         where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t5
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -741,7 +741,7 @@ from t3 b where b.age not in
  from (select id, age from t3) a
  where age < 10 and b.age = a.age)
  order by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select id, name, age
@@ -750,7 +750,7 @@ from t3 b where b.age not in
  from (select id, age from t3) a
  where age < 10 and b.age = a.age)
  order by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -1023,13 +1023,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from t3
         where age not in (select distinct(age) age from t4)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1211,13 +1211,13 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t3
 where age not in (select distinct(ages) ages from t5 )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t5
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from t3
 where age not in (select distinct(ages) ages from t5 )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t5
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1399,13 +1399,13 @@ STAGE PLANS:
 Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t3
         where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t5
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from t3
         where age not in (select distinct(ages) ages from t5 where t5.ages is not null)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t5
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1578,7 +1578,7 @@ PREHOOK: query: explain select id, name, age
           from (select id, age from t3) a
           where age < 10 and b.age = a.age)
           order by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select id, name, age
@@ -1587,7 +1587,7 @@ POSTHOOK: query: explain select id, name, age
           from (select id, age from t3) a
           where age < 10 and b.age = a.age)
           order by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

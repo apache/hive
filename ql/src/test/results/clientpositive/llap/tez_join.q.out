@@ -30,7 +30,7 @@ join
 (select rt2_n26.id from
 (select t2_n26.id, t2_n26.od from t2_n26 order by t2_n26.id, t2_n26.od) rt2_n26) vt2_n26
 where vt1_n42.id=vt2_n26.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n42
 PREHOOK: Input: default@t2_n26
 #### A masked pattern was here ####
@@ -42,7 +42,7 @@ join
 (select rt2_n26.id from
 (select t2_n26.id, t2_n26.od from t2_n26 order by t2_n26.id, t2_n26.od) rt2_n26) vt2_n26
 where vt1_n42.id=vt2_n26.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n42
 POSTHOOK: Input: default@t2_n26
 #### A masked pattern was here ####

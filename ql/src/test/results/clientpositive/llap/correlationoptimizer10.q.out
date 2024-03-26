@@ -4,7 +4,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 LEFT SEMI JOIN src yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -14,7 +14,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 LEFT SEMI JOIN src yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -207,7 +207,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 LEFT SEMI JOIN src yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -217,7 +217,7 @@ FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 LEFT SEMI JOIN src yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -414,7 +414,7 @@ LEFT SEMI JOIN
  WHERE x.key < 200 AND
        y.key > 20) yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -428,7 +428,7 @@ LEFT SEMI JOIN
  WHERE x.key < 200 AND
        y.key > 20) yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -599,7 +599,7 @@ LEFT SEMI JOIN
  WHERE x.key < 200 AND
        y.key > 20) yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -613,7 +613,7 @@ LEFT SEMI JOIN
  WHERE x.key < 200 AND
        y.key > 20) yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
@@ -783,7 +783,7 @@ LEFT SEMI JOIN
  FROM src x JOIN src y ON (x.key = y.key)
  WHERE x.key < 200 AND x.key > 180) yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -795,7 +795,7 @@ LEFT SEMI JOIN
  FROM src x JOIN src y ON (x.key = y.key)
  WHERE x.key < 200 AND x.key > 180) yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -967,7 +967,7 @@ LEFT SEMI JOIN
  FROM src x JOIN src y ON (x.key = y.key)
  WHERE x.key < 200 AND x.key > 180) yy
 ON xx.key=yy.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -979,7 +979,7 @@ LEFT SEMI JOIN
  FROM src x JOIN src y ON (x.key = y.key)
  WHERE x.key < 200 AND x.key > 180) yy
 ON xx.key=yy.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

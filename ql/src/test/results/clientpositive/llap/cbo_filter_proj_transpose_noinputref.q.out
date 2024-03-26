@@ -27,7 +27,7 @@ FROM (
   FROM test1
   WHERE substr(from_unixtime(unix_timestamp(), 'yyyy-MM-dd'), 1, 1) = '2') c
 JOIN test2 d ON c.m = d.m
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test2
 #### A masked pattern was here ####
@@ -37,7 +37,7 @@ FROM (
   FROM test1
   WHERE substr(from_unixtime(unix_timestamp(), 'yyyy-MM-dd'), 1, 1) = '2') c
 JOIN test2 d ON c.m = d.m
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####

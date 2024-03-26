@@ -18,12 +18,12 @@ POSTHOOK: Lineage: ax.s SCRIPT []
 POSTHOOK: Lineage: ax.t SCRIPT []
 PREHOOK: query: explain
 select 'expected 1',count(*) from ax where s = 'a' and t = 'a'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'expected 1',count(*) from ax where s = 'a' and t = 'a'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -99,12 +99,12 @@ POSTHOOK: Input: default@ax
 expected 1	1
 PREHOOK: query: explain
 select 'expected 2',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select 'expected 2',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -90,11 +90,11 @@ POSTHOOK: Lineage: alltypes_orc_n4.ti1 SIMPLE [(alltypes_n4)alltypes_n4.FieldSch
 POSTHOOK: Lineage: alltypes_orc_n4.ts1 SIMPLE [(alltypes_n4)alltypes_n4.FieldSchema(name:ts1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc_n4.vc1 SIMPLE [(alltypes_n4)alltypes_n4.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 PREHOOK: query: explain select * from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -142,11 +142,11 @@ POSTHOOK: Input: default@alltypes_orc_n4
 POSTHOOK: Output: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -184,11 +184,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select bo1 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select bo1 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -226,11 +226,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select i1 as int1 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select i1 as int1 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -268,11 +268,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select s1 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select s1 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -310,11 +310,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select m1 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select m1 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -352,11 +352,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -394,11 +394,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select null from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select null from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -459,11 +459,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select 11 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select 11 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -524,11 +524,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select 11L from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select 11L from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -589,11 +589,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select 11.0 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select 11.0 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -654,11 +654,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select "hello" from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select "hello" from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -719,11 +719,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select cast("hello" as char(5)) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("hello" as char(5)) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -784,11 +784,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select cast("hello" as varchar(5)) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("hello" as varchar(5)) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -849,11 +849,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select unbase64("0xe23") from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select unbase64("0xe23") from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -914,11 +914,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -979,11 +979,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1044,11 +1044,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1109,11 +1109,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select cast("58.174" as DECIMAL) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("58.174" as DECIMAL) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1174,11 +1174,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select array(1,2,3) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select array(1,2,3) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1239,11 +1239,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1304,11 +1304,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1369,11 +1369,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select CREATE_UNION(0, "hello") from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select CREATE_UNION(0, "hello") from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1434,11 +1434,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select count(*) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select count(*) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1456,11 +1456,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select count(1) from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select count(1) from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1478,11 +1478,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select *,11 from alltypes_orc_n4
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select *,11 from alltypes_orc_n4
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1543,11 +1543,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select i1 from (select i1 from alltypes_orc_n4 limit 10) temp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select i1 from (select i1 from alltypes_orc_n4 limit 10) temp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1613,11 +1613,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select i1 from (select i1,11 from alltypes_orc_n4 limit 10) temp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select i1 from (select i1,11 from alltypes_orc_n4 limit 10) temp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1683,11 +1683,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select i1,"hello" from (select i1,11 from alltypes_orc_n4 limit 10) temp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select i1,"hello" from (select i1,11 from alltypes_orc_n4 limit 10) temp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1790,11 +1790,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select x from (select i1,11.0 as x from alltypes_orc_n4 limit 10) temp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select x from (select i1,11.0 as x from alltypes_orc_n4 limit 10) temp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -1894,11 +1894,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc_n4 limit 10) temp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc_n4 limit 10) temp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2001,11 +2001,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc_n4 limit 10) in1 limit 10) in2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc_n4 limit 10) in1 limit 10) in2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2105,11 +2105,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where bo1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where bo1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -2176,11 +2176,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where !bo1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where !bo1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

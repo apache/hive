@@ -39,7 +39,7 @@ where
 ws1.ws_order_number in (select wr_order_number
                             from web_returns,ws_wh
                             where wr_order_number = ws_wh.ws_order_number)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@web_returns
 PREHOOK: Input: default@web_sales
 #### A masked pattern was here ####
@@ -56,7 +56,7 @@ where
 ws1.ws_order_number in (select wr_order_number
                             from web_returns,ws_wh
                             where wr_order_number = ws_wh.ws_order_number)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@web_returns
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####

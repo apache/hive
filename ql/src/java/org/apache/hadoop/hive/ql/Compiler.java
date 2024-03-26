@@ -420,11 +420,15 @@ public class Compiler {
     if (!sem.skipAuthorization()) {
       try {
         perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        if (driverContext.getQueryState().getHiveOperation() != HiveOperation.EXPLAIN) {
+          driverContext.getQueryState().setAuthorizationCommandType(driverContext.getQueryState().getHiveOperation());
+        }
         // Authorization check for kill query will be in KillQueryImpl
         // As both admin or operation owner can perform the operation.
         // Which is not directly supported in authorizer
         if (driverContext.getQueryState().getHiveOperation() != HiveOperation.KILL_QUERY) {
-          CommandAuthorizer.doAuthorization(driverContext.getQueryState().getHiveOperation(), sem, context.getCmd());
+          CommandAuthorizer.doAuthorization(driverContext.getQueryState().getAuthorizationCommandType(), sem,
+              context.getCmd());
         }
       } catch (AuthorizationException authExp) {
         CONSOLE.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");

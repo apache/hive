@@ -17,7 +17,7 @@ lateral view explode(orders) v as c6
 lateral view explode(orders) v as c7
 lateral view explode(orders) v as c8
 lateral view explode(orders) v as c9
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@customer
 #### A masked pattern was here ####
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.ExplainTask. LVJ[53] reached hive.explain.node.visit.limit(256)

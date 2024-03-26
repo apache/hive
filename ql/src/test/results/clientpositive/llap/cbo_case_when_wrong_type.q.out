@@ -47,11 +47,11 @@ POSTHOOK: Input: default@t
 1
 1
 PREHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
@@ -70,11 +70,11 @@ POSTHOOK: Input: default@t
 1
 1
 PREHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:

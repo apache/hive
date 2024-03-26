@@ -2,14 +2,14 @@ PREHOOK: query: EXPLAIN SELECT null + 7, 1.0 - null, null + null,
                CAST(21 AS BIGINT) % CAST(5 AS TINYINT),
                CAST(21 AS BIGINT) % CAST(21 AS BIGINT),
                9 % "3" FROM src LIMIT 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT null + 7, 1.0 - null, null + null,
                CAST(21 AS BIGINT) % CAST(5 AS TINYINT),
                CAST(21 AS BIGINT) % CAST(21 AS BIGINT),
                9 % "3" FROM src LIMIT 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

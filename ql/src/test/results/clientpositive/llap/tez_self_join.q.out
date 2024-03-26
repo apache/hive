@@ -57,7 +57,7 @@ from
 join tez_self_join2
 on s.id1=tez_self_join2.id1
 where s.id2='ab'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tez_self_join1
 PREHOOK: Input: default@tez_self_join2
 #### A masked pattern was here ####
@@ -71,7 +71,7 @@ from
 join tez_self_join2
 on s.id1=tez_self_join2.id1
 where s.id2='ab'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tez_self_join1
 POSTHOOK: Input: default@tez_self_join2
 #### A masked pattern was here ####

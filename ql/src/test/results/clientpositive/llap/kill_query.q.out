@@ -1,8 +1,8 @@
 PREHOOK: query: explain kill query 'query_1244656'
-PREHOOK: type: KILL QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain kill query 'query_1244656'
-POSTHOOK: type: KILL QUERY
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -12,10 +12,10 @@ STAGE PLANS:
       Query IDs: query_1244656
 
 PREHOOK: query: explain kill query 'query_123456677' 'query_1238503495'
-PREHOOK: type: KILL QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain kill query 'query_123456677' 'query_1238503495'
-POSTHOOK: type: KILL QUERY
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

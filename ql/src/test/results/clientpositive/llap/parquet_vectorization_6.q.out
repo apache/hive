@@ -18,7 +18,7 @@ WHERE  ((ctinyint != 0)
           OR ((cbigint IS NOT NULL)
               AND ((cstring2 LIKE '%a')
                    OR (cfloat <= -257))))))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -41,7 +41,7 @@ WHERE  ((ctinyint != 0)
           OR ((cbigint IS NOT NULL)
               AND ((cstring2 LIKE '%a')
                    OR (cfloat <= -257))))))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

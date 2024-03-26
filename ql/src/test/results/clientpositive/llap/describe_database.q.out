@@ -5,10 +5,10 @@ POSTHOOK: query: CREATE DATABASE test_db WITH dbproperties ('key1' = 'value1', '
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test_db
 PREHOOK: query: EXPLAIN DESC DATABASE test_db
-PREHOOK: type: DESCDATABASE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: database:test_db
 POSTHOOK: query: EXPLAIN DESC DATABASE test_db
-POSTHOOK: type: DESCDATABASE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: database:test_db
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -33,10 +33,10 @@ POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:test_db
 test_db		location/in/test		hive_test_user	USER		
 PREHOOK: query: EXPLAIN DESC DATABASE EXTENDED test_db
-PREHOOK: type: DESCDATABASE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: database:test_db
 POSTHOOK: query: EXPLAIN DESC DATABASE EXTENDED test_db
-POSTHOOK: type: DESCDATABASE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: database:test_db
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

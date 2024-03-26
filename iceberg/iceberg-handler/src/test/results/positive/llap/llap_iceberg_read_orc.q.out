@@ -324,7 +324,7 @@ PREHOOK: query: explain select sum(quantity)
                 or
             (o.quantity > 70 )
         )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@llap_items
 PREHOOK: Input: default@llap_orders
 #### A masked pattern was here ####
@@ -339,7 +339,7 @@ POSTHOOK: query: explain select sum(quantity)
                 or
             (o.quantity > 70 )
         )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@llap_items
 POSTHOOK: Input: default@llap_orders
 #### A masked pattern was here ####

@@ -34,13 +34,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable_temp
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sourcetable_temp
 PREHOOK: Input: default@sourcetable_temp@ds=2011-11-11/hr=11
 PREHOOK: Output: default@destintable_temp@ds=2011-11-11/hr=11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sourcetable_temp
 POSTHOOK: Input: default@sourcetable_temp@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable_temp@ds=2011-11-11/hr=11
@@ -194,10 +194,10 @@ POSTHOOK: Input: default@destintable_temp@ds=2011-11-11/hr=11
 96	val_96
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 STAGE DEPENDENCIES:
 
 STAGE PLANS:
@@ -241,12 +241,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable_temp
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sourcetable_temp
 PREHOOK: Input: default@sourcetable_temp@ds=2011-11-11/hr=11
 PREHOOK: Output: default@destintable_temp
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sourcetable_temp
 POSTHOOK: Input: default@sourcetable_temp@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable_temp
@@ -382,13 +382,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destinTable_temp
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sourcetable_temp
 PREHOOK: Input: default@sourcetable_temp@ds=2011-11-11/hr=11
 PREHOOK: Output: default@destintable_temp@ds=2011-11-11/hr=11
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable_temp PARTITION (ds='2011-11-11', hr='11') if not exists
   SELECT one,two FROM sourceTable_temp WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@sourcetable_temp
 POSTHOOK: Input: default@sourcetable_temp@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable_temp@ds=2011-11-11/hr=11

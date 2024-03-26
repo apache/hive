@@ -17,12 +17,12 @@ POSTHOOK: Output: default@test_n4
 POSTHOOK: Lineage: test_n4.x,y SCRIPT []
 PREHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` >=2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` >=2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -58,12 +58,12 @@ POSTHOOK: Input: default@test_n4
 2
 PREHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` >=2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` >=2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -151,12 +151,12 @@ POSTHOOK: Output: default@test_n4
 POSTHOOK: Lineage: test_n4.x,y SCRIPT []
 PREHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` <2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` <2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -192,12 +192,12 @@ POSTHOOK: Input: default@test_n4
 1
 PREHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` <2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
 select `x,y` from test_n4 where `x,y` <2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_n4
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

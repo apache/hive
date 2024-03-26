@@ -37,7 +37,7 @@ FROM
     )t
   ) master_table
 ) a GROUP BY key, value
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@tmp_srcpart
@@ -61,7 +61,7 @@ FROM
     )t
   ) master_table
 ) a GROUP BY key, value
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@tmp_srcpart

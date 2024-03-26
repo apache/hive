@@ -29,12 +29,12 @@ POSTHOOK: Output: default@testpd@partitiondate=2023-01-02
 POSTHOOK: Lineage: testpd PARTITION(partitiondate=2023-01-02).col1 SCRIPT []
 POSTHOOK: Lineage: testpd PARTITION(partitiondate=2023-01-02).col2 SCRIPT []
 PREHOOK: query: explain extended select * from testpd where PartitionDate = '2023-01-01'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testpd
 PREHOOK: Input: default@testpd@partitiondate=2023-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from testpd where PartitionDate = '2023-01-01'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testpd
 POSTHOOK: Input: default@testpd@partitiondate=2023-01-01
 #### A masked pattern was here ####
@@ -136,12 +136,12 @@ POSTHOOK: Output: default@testpt@partitiontimestamp=2023-01-02 20%3A30%3A40
 POSTHOOK: Lineage: testpt PARTITION(partitiontimestamp=2023-01-02 20:30:40).col1 SCRIPT []
 POSTHOOK: Lineage: testpt PARTITION(partitiontimestamp=2023-01-02 20:30:40).col2 SCRIPT []
 PREHOOK: query: explain extended select * from testpt where PartitionTimestamp = '2023-01-01 10:20:30'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@testpt
 PREHOOK: Input: default@testpt@partitiontimestamp=2023-01-01 10%3A20%3A30
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended select * from testpt where PartitionTimestamp = '2023-01-01 10:20:30'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@testpt
 POSTHOOK: Input: default@testpt@partitiontimestamp=2023-01-01 10%3A20%3A30
 #### A masked pattern was here ####

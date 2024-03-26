@@ -36,12 +36,12 @@ POSTHOOK: Lineage: masking_test_n_masking_temp.id SIMPLE [(masking_test_n_maskin
 POSTHOOK: Lineage: masking_test_n_masking_temp.key SIMPLE [(masking_test_n_masking_reserved)masking_test_n_masking_reserved.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: masking_test_n_masking_temp.value EXPRESSION [(masking_test_n_masking_reserved)masking_test_n_masking_reserved.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain select a.`etad`, b.value from keyword_test_off a join masking_test_n_masking_reserved b on b.id = a.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@keyword_test_off
 PREHOOK: Input: default@masking_test_n_masking_reserved
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.`etad`, b.value from keyword_test_off a join masking_test_n_masking_reserved b on b.id = a.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@keyword_test_off
 POSTHOOK: Input: default@masking_test_n_masking_reserved
 #### A masked pattern was here ####
@@ -141,12 +141,12 @@ POSTHOOK: Input: default@keyword_test_off
 POSTHOOK: Input: default@masking_test_n_masking_reserved
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.`date`, b.value from keyword_test_on a join masking_test_n_masking_reserved b on b.id = a.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@keyword_test_on
 PREHOOK: Input: default@masking_test_n_masking_reserved
 #### A masked pattern was here ####
 POSTHOOK: query: explain select a.`date`, b.value from keyword_test_on a join masking_test_n_masking_reserved b on b.id = a.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@keyword_test_on
 POSTHOOK: Input: default@masking_test_n_masking_reserved
 #### A masked pattern was here ####

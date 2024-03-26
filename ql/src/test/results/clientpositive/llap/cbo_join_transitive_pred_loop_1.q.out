@@ -36,7 +36,7 @@ FROM
   FROM test2
   WHERE month = 202110) c
 JOIN test3 d ON c.month = d.mth
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test1
 PREHOOK: Input: default@test2
 PREHOOK: Input: default@test3
@@ -52,7 +52,7 @@ FROM
   FROM test2
   WHERE month = 202110) c
 JOIN test3 d ON c.month = d.mth
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 POSTHOOK: Input: default@test3

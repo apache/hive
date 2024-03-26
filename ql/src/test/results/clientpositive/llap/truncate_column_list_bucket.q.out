@@ -50,12 +50,12 @@ POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Input: default@test_tab_n3
 POSTHOOK: Output: default@test_tab_n3@part=1
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_tab_n3
 PREHOOK: Input: default@test_tab_n3@part=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_tab_n3
 POSTHOOK: Input: default@test_tab_n3@part=1
 #### A masked pattern was here ####
@@ -129,12 +129,12 @@ POSTHOOK: Input: default@test_tab_n3@part=1
 #### A masked pattern was here ####
 484	NULL	1
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_tab_n3
 PREHOOK: Input: default@test_tab_n3@part=1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_tab_n3
 POSTHOOK: Input: default@test_tab_n3@part=1
 #### A masked pattern was here ####

@@ -47,13 +47,13 @@ POSTHOOK: Input: default@t1_mm@ds=1
 8	28	1
 PREHOOK: query: explain
 select count(distinct key) from T1_mm
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_mm
 PREHOOK: Input: default@t1_mm@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(distinct key) from T1_mm
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_mm
 POSTHOOK: Input: default@t1_mm@ds=1
 #### A masked pattern was here ####

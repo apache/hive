@@ -5,7 +5,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -15,7 +15,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -147,7 +147,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -156,7 +156,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -282,7 +282,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by a.csmallint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -293,7 +293,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by a.csmallint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -446,7 +446,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -456,7 +456,7 @@ from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -597,7 +597,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -606,7 +606,7 @@ select
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -740,7 +740,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by a.csmallint
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -751,7 +751,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by a.csmallint
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

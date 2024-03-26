@@ -46,12 +46,12 @@ POSTHOOK: Lineage: test_vector_bround.v0 EXPRESSION []
 POSTHOOK: Lineage: test_vector_bround.v1 EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select bround(v0), bround(v1, 1) from test_vector_bround
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_vector_bround
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select bround(v0), bround(v1, 1) from test_vector_bround
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_vector_bround
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

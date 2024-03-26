@@ -416,13 +416,13 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"
 PREHOOK: query: EXPLAIN SELECT COUNT(*)
 FROM test_stats t1 JOIN test_stats t2 ON (t1.a = t2.a)
 WHERE t1.b BETWEEN 3 AND 5 AND t2.c > 6.0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COUNT(*)
 FROM test_stats t1 JOIN test_stats t2 ON (t1.a = t2.a)
 WHERE t1.b BETWEEN 3 AND 5 AND t2.c > 6.0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -537,11 +537,11 @@ POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 1
 PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b < 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b < 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -612,11 +612,11 @@ POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 8
 PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b >= 7
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b >= 7
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -687,11 +687,11 @@ POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 1
 PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE d NOT BETWEEN 3 AND 7 AND e > 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE d NOT BETWEEN 3 AND 7 AND e > 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -762,11 +762,11 @@ POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 8
 PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE f >= "2020-11-7" AND g >= "2020-11-7"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE f >= "2020-11-7" AND g >= "2020-11-7"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -837,11 +837,11 @@ POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 1
 PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE f BETWEEN "2020-11-01" AND "2020-11-06" AND g >= "2020-11-01"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE f BETWEEN "2020-11-01" AND "2020-11-06" AND g >= "2020-11-01"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -104,7 +104,7 @@ JOIN acct ON A_n11.id = acct.aid
 WHERE
   L.id = 4436
   and acct.brn is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@a_n11
 PREHOOK: Input: default@acct
 PREHOOK: Input: default@fr
@@ -124,7 +124,7 @@ JOIN acct ON A_n11.id = acct.aid
 WHERE
   L.id = 4436
   and acct.brn is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@a_n11
 POSTHOOK: Input: default@acct
 POSTHOOK: Input: default@fr

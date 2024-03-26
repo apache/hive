@@ -9,13 +9,13 @@ POSTHOOK: Output: default@dest1_n27
 PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 PREHOOK: Output: default@dest1_n27
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: default@dest1_n27
 STAGE DEPENDENCIES:
@@ -499,12 +499,12 @@ POSTHOOK: Input: default@dest1_n27
 497	val_498
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -908,12 +908,12 @@ POSTHOOK: Input: default@srcbucket
 494	val_495
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1541,12 +1541,12 @@ POSTHOOK: Input: default@srcbucket
 498	val_498
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2055,12 +2055,12 @@ POSTHOOK: Input: default@srcbucket
 497	val_498
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2508,12 +2508,12 @@ POSTHOOK: Input: default@srcbucket
 490	val_491
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -2888,12 +2888,12 @@ POSTHOOK: Input: default@srcbucket2
 498	val_498
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -3159,12 +3159,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty_bucket
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@empty_bucket
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@empty_bucket
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

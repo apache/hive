@@ -17,7 +17,7 @@ SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
        hash(1, 2, 3)
 FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -27,7 +27,7 @@ SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
        hash(1, 2, 3)
 FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

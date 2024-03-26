@@ -40,7 +40,7 @@ PREHOOK: query: EXPLAIN
 SELECT *
 FROM test_list1 INNER JOIN test_list2
 ON (test_list1.value=test_list2.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_list1
 PREHOOK: Input: default@test_list2
 #### A masked pattern was here ####
@@ -48,7 +48,7 @@ POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test_list1 INNER JOIN test_list2
 ON (test_list1.value=test_list2.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_list1
 POSTHOOK: Input: default@test_list2
 #### A masked pattern was here ####
@@ -160,7 +160,7 @@ PREHOOK: query: EXPLAIN
 SELECT *
 FROM test_struct1  INNER JOIN test_struct2
 ON (test_struct1.value=test_struct2.value)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_struct1
 PREHOOK: Input: default@test_struct2
 #### A masked pattern was here ####
@@ -168,7 +168,7 @@ POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test_struct1  INNER JOIN test_struct2
 ON (test_struct1.value=test_struct2.value)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_struct1
 POSTHOOK: Input: default@test_struct2
 #### A masked pattern was here ####

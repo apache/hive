@@ -109,7 +109,7 @@ insert overwrite table bucketmapjoin_tmp_result_n9
 select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16
 PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_n19
@@ -120,7 +120,7 @@ insert overwrite table bucketmapjoin_tmp_result_n9
 select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n19
@@ -538,7 +538,7 @@ insert overwrite table bucketmapjoin_tmp_result_n9
 select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16
 PREHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_n19
@@ -549,7 +549,7 @@ insert overwrite table bucketmapjoin_tmp_result_n9
 select a.key, a.value, b.value
 from srcbucket_mapjoin_part_n19 a join srcbucket_mapjoin_part_2_n16 b
 on a.key=b.key and b.ds="2008-04-08"
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n16@ds=2008-04-08
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n19

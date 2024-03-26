@@ -65,14 +65,14 @@ census.ssn	census.name	census.city	census.email
 Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 UPDATE census_clus SET name = 'updated name' where ssn=100 and   EXISTS (select distinct ssn from census where ssn=census_clus.ssn)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@census
 PREHOOK: Input: default@census_clus
 PREHOOK: Output: default@census_clus
 PREHOOK: Output: default@census_clus
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 UPDATE census_clus SET name = 'updated name' where ssn=100 and   EXISTS (select distinct ssn from census where ssn=census_clus.ssn)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@census
 POSTHOOK: Input: default@census_clus
 POSTHOOK: Output: default@census_clus

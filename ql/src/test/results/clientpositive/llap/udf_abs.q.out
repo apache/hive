@@ -22,7 +22,7 @@ PREHOOK: query: EXPLAIN SELECT
   abs(-9223372036854775807),
   abs(9223372036854775807)
 FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
@@ -32,7 +32,7 @@ POSTHOOK: query: EXPLAIN SELECT
   abs(-9223372036854775807),
   abs(9223372036854775807)
 FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -77,7 +77,7 @@ PREHOOK: query: EXPLAIN SELECT
   abs(-3.14159265),
   abs(3.14159265)
 FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
@@ -85,7 +85,7 @@ POSTHOOK: query: EXPLAIN SELECT
   abs(-3.14159265),
   abs(3.14159265)
 FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

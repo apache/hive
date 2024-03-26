@@ -20,7 +20,7 @@ PREHOOK: query: EXPLAIN SELECT
   space(-1),
   space(-100)
 FROM src tablesample (1 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
@@ -30,7 +30,7 @@ POSTHOOK: query: EXPLAIN SELECT
   space(-1),
   space(-100)
 FROM src tablesample (1 rows)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

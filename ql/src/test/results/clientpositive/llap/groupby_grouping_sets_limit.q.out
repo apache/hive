@@ -16,12 +16,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1_n141
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b WITH CUBE ORDER BY a, b, GROUPING__ID LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b WITH CUBE ORDER BY a, b, GROUPING__ID LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -132,12 +132,12 @@ POSTHOOK: Input: default@t1_n141
 8	1	1
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) ORDER BY a, b, GROUPING__ID LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) ORDER BY a, b, GROUPING__ID LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -248,12 +248,12 @@ POSTHOOK: Input: default@t1_n141
 8	1	1
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) ORDER BY a, b, GROUPING__ID LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1_n141 GROUP BY a, b GROUPING SETS (a, (a, b)) ORDER BY a, b, GROUPING__ID LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -364,12 +364,12 @@ POSTHOOK: Input: default@t1_n141
 8	1	1
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) ORDER BY a, b, c, GROUPING__ID LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a, b, c GROUPING SETS (a, b, c) ORDER BY a, b, c, GROUPING__ID LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -476,12 +476,12 @@ NULL
 NULL
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) ORDER BY a LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a FROM T1_n141 GROUP BY a GROUPING SETS ((a), (a)) ORDER BY a LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -578,12 +578,12 @@ POSTHOOK: Input: default@t1_n141
 8
 PREHOOK: query: EXPLAIN
 SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a + b) ORDER BY a + b LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a + b, count(*) FROM T1_n141 GROUP BY a + b GROUPING SETS (a + b) ORDER BY a + b LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n141
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -216,7 +216,7 @@ select * from
         )        pa12
           on         (pa11.D_DATE = pa12.D_DATE and
         pa11.S_ID = pa12.S_ID)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@item
 PREHOOK: Input: default@lday
 PREHOOK: Input: default@odetail
@@ -253,7 +253,7 @@ select * from
         )        pa12
           on         (pa11.D_DATE = pa12.D_DATE and
         pa11.S_ID = pa12.S_ID)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@item
 POSTHOOK: Input: default@lday
 POSTHOOK: Input: default@odetail

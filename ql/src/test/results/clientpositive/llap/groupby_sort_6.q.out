@@ -17,13 +17,13 @@ POSTHOOK: Output: default@outputTbl1_n15
 PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n15
 SELECT key, count(1) FROM T1_n61 where ds = '1' GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n61
 PREHOOK: Output: default@outputtbl1_n15
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n15
 SELECT key, count(1) FROM T1_n61 where ds = '1' GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n61
 POSTHOOK: Output: default@outputtbl1_n15
 OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
@@ -243,13 +243,13 @@ POSTHOOK: Output: default@t1_n61@ds=2
 PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n15
 SELECT key, count(1) FROM T1_n61 where ds = '1' GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n61
 PREHOOK: Output: default@outputtbl1_n15
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n15
 SELECT key, count(1) FROM T1_n61 where ds = '1' GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n61
 POSTHOOK: Output: default@outputtbl1_n15
 OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
@@ -460,14 +460,14 @@ POSTHOOK: Input: default@outputtbl1_n15
 PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n15
 SELECT key, count(1) FROM T1_n61 where ds = '2' GROUP BY key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1_n61
 PREHOOK: Input: default@t1_n61@ds=2
 PREHOOK: Output: default@outputtbl1_n15
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1_n15
 SELECT key, count(1) FROM T1_n61 where ds = '2' GROUP BY key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1_n61
 POSTHOOK: Input: default@t1_n61@ds=2
 POSTHOOK: Output: default@outputtbl1_n15

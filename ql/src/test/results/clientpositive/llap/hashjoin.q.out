@@ -75,13 +75,13 @@ POSTHOOK: Lineage: t_hashjoin_small.cint SCRIPT []
 POSTHOOK: Lineage: t_hashjoin_small.cvarchar SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_hashjoin_big
 PREHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_hashjoin_big
 POSTHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
@@ -182,13 +182,13 @@ POSTHOOK: Input: default@t_hashjoin_small
 5	one	2.8	8	5	one	1.1
 PREHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cvarchar = z.cvarchar)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_hashjoin_big
 PREHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cvarchar = z.cvarchar)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_hashjoin_big
 POSTHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
@@ -284,13 +284,13 @@ POSTHOOK: Input: default@t_hashjoin_small
 5	one	2.8	8	5	one	1.1
 PREHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_hashjoin_big
 PREHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_hashjoin_big
 POSTHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
@@ -382,13 +382,13 @@ POSTHOOK: Input: default@t_hashjoin_small
 5	one	2.8	8	5	one	1.1
 PREHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x LEFT OUTER JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_hashjoin_big
 PREHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x LEFT OUTER JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_hashjoin_big
 POSTHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
@@ -477,13 +477,13 @@ NULL	NULL	NULL	NULL	NULL	NULL	NULL
 5	one	2.8	8	5	one	1.1
 PREHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cdouble = z.cdouble)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t_hashjoin_big
 PREHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cdouble = z.cdouble)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t_hashjoin_big
 POSTHOOK: Input: default@t_hashjoin_small
 #### A masked pattern was here ####

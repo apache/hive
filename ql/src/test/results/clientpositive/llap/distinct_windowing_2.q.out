@@ -70,7 +70,7 @@ select distinct c as c_alias,
        rank() over (order by b) as rank_alias
 from t1
 order by c
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -78,7 +78,7 @@ select distinct c as c_alias,
        rank() over (order by b) as rank_alias
 from t1
 order by c
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
@@ -94,7 +94,7 @@ select distinct b + d as b_plus_d,
 from t1
 join t2 on t1.a = t2.c
 order by b + d
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -104,7 +104,7 @@ select distinct b + d as b_plus_d,
 from t1
 join t2 on t1.a = t2.c
 order by b + d
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

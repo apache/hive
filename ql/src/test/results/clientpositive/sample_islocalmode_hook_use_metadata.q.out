@@ -99,7 +99,7 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain select count(1) from sih_src_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -118,7 +118,7 @@ PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 1500
 PREHOOK: query: explain select count(1) from sih_src_n1 tablesample(1 percent)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -172,7 +172,7 @@ PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 25
 PREHOOK: query: explain select count(1) from sih_src_n1 tablesample(10 rows)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

@@ -72,7 +72,7 @@ select b1.id, b1.tag, a1.tag, c.tag
 from b1
 full outer join a1 on b1.id = a1.id
 full outer join c on c.id = c.id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@b1
 PREHOOK: Input: default@b2
 PREHOOK: Input: default@cte_mat_9_a
@@ -104,7 +104,7 @@ select b1.id, b1.tag, a1.tag, c.tag
 from b1
 full outer join a1 on b1.id = a1.id
 full outer join c on c.id = c.id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@b1
 POSTHOOK: Input: default@b2
 POSTHOOK: Input: default@cte_mat_9_a

@@ -54,14 +54,14 @@ PREHOOK: query: explain
 select ts from timestamp_test_n123.onecolumntable
 where ts >= cast('2015-01-02 00:00:00' as timestamp)
   and ts <= cast('2015-01-04 00:00:00' as timestamp)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: timestamp_test_n123@onecolumntable
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select ts from timestamp_test_n123.onecolumntable
 where ts >= cast('2015-01-02 00:00:00' as timestamp)
   and ts <= cast('2015-01-04 00:00:00' as timestamp)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: timestamp_test_n123@onecolumntable
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -106,14 +106,14 @@ PREHOOK: query: explain
 select ts from timestamp_test_n123.onecolumntable
 where ts >= cast('2015-01-02 00:00:00' as timestamp)
   and ts <= cast('2015-01-03 00:00:00' as timestamp)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: timestamp_test_n123@onecolumntable
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select ts from timestamp_test_n123.onecolumntable
 where ts >= cast('2015-01-02 00:00:00' as timestamp)
   and ts <= cast('2015-01-03 00:00:00' as timestamp)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: timestamp_test_n123@onecolumntable
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -158,14 +158,14 @@ PREHOOK: query: explain
 select ts from timestamp_test_n123.onecolumntable
 where ts >= cast('2015-01-01 00:00:00' as timestamp)
   and ts <= cast('2015-01-08 00:00:00' as timestamp)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: timestamp_test_n123@onecolumntable
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select ts from timestamp_test_n123.onecolumntable
 where ts >= cast('2015-01-01 00:00:00' as timestamp)
   and ts <= cast('2015-01-08 00:00:00' as timestamp)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: timestamp_test_n123@onecolumntable
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

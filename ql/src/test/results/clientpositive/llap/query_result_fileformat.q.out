@@ -39,12 +39,12 @@ POSTHOOK: Input: default@nzhang_test1
 1
 PREHOOK: query: explain vectorization detail
 select * from nzhang_test1 where key='key1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@nzhang_test1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from nzhang_test1 where key='key1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@nzhang_test1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -104,12 +104,12 @@ POSTHOOK: Input: default@nzhang_test1
 1
 PREHOOK: query: explain vectorization detail
 select * from nzhang_test1 where key='key1'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@nzhang_test1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from nzhang_test1 where key='key1'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@nzhang_test1
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

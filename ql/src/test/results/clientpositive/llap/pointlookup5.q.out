@@ -44,7 +44,7 @@ select * from t,t2 where
 		(a in (1,2) and b in (1,2) ) or 
 		(a in (2,3) and b in (2,3) )
 			)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -60,7 +60,7 @@ select * from t,t2 where
 		(a in (1,2) and b in (1,2) ) or 
 		(a in (2,3) and b in (2,3) )
 			)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

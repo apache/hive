@@ -53,11 +53,11 @@ POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(na
 POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
 PREHOOK: query: explain select * from loc_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -76,11 +76,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc where state='OH'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where state='OH'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -112,11 +112,11 @@ POSTHOOK: Input: default@loc_orc
 POSTHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from loc_orc where state='OH'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where state='OH'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -138,11 +138,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where state!='OH'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where state!='OH'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -164,11 +164,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where state<>'OH'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where state<>'OH'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -190,11 +190,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where zip is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where zip is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -216,11 +216,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where !(zip is not null)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where !(zip is not null)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -242,11 +242,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where zip is not null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where zip is not null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -268,11 +268,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where !(zip is null)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where !(zip is null)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -294,11 +294,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where !false
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where !false
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -317,11 +317,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc where !true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where !true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -335,11 +335,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from loc_orc where true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -358,11 +358,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc where 'foo'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where 'foo'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -381,11 +381,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc where true = true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where true = true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -404,11 +404,11 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: explain select * from loc_orc where false = true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where false = true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -422,11 +422,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from loc_orc where 'foo' = 'bar'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where 'foo' = 'bar'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -440,11 +440,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from loc_orc where false
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where false
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -458,11 +458,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from loc_orc where state='OH' or state='CA'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where state='OH' or state='CA'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -484,11 +484,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where year=2001 and year is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where year=2001 and year is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -502,11 +502,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from loc_orc where year=2001 and state='OH' and state='FL'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where year=2001 and state='OH' and state='FL'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -520,11 +520,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select * from loc_orc where (year=2001 and year is null) or (state='CA')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where (year=2001 and year is null) or (state='CA')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -546,11 +546,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where (year=2001 or year is null) and (state='CA')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where (year=2001 or year is null) and (state='CA')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -572,11 +572,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid < 30
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid < 30
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -598,11 +598,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid > 30
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid > 30
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -624,11 +624,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid <= 30
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid <= 30
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -650,11 +650,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid >= 30
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid >= 30
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -676,11 +676,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid < 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid < 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -702,11 +702,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid > 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid > 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -728,11 +728,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid <= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid <= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -754,11 +754,11 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: explain select * from loc_orc where locid >= 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from loc_orc where locid >= 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

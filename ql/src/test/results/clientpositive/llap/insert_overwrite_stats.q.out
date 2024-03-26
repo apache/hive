@@ -76,7 +76,7 @@ POSTHOOK: Output: default@test_stats_2
 POSTHOOK: Output: default@test_stats_2@j=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: test_stats_2 PARTITION(j=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(test_stats)test_stats.FieldSchema(name:i, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT i, count(*) as c FROM test_stats_2 GROUP BY i ORDER BY c DESC LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_stats_2
 PREHOOK: Input: default@test_stats_2@j=1
 PREHOOK: Input: default@test_stats_2@j=2
@@ -85,7 +85,7 @@ PREHOOK: Input: default@test_stats_2@j=4
 PREHOOK: Input: default@test_stats_2@j=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT i, count(*) as c FROM test_stats_2 GROUP BY i ORDER BY c DESC LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_stats_2
 POSTHOOK: Input: default@test_stats_2@j=1
 POSTHOOK: Input: default@test_stats_2@j=2

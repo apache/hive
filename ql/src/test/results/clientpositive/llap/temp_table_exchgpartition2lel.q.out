@@ -180,11 +180,11 @@ POSTHOOK: Input: default@t4_n7_temp@d1=1/d2=1
 #### A masked pattern was here ####
 100	1	1
 PREHOOK: query: EXPLAIN ALTER TABLE t6_n2_temp EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5_n3_temp
-PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t5_n3_temp
 PREHOOK: Output: default@t6_n2_temp
 POSTHOOK: query: EXPLAIN ALTER TABLE t6_n2_temp EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5_n3_temp
-POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t5_n3_temp
 POSTHOOK: Output: default@t6_n2_temp
 STAGE DEPENDENCIES:

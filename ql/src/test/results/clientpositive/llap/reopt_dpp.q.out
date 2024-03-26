@@ -122,7 +122,7 @@ select   count(*) cnt
 	1=1
 	and s.ss_sold_date_sk = d.d_date_sk
 	and d.d_year=2000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
@@ -137,7 +137,7 @@ select   count(*) cnt
 	1=1
 	and s.ss_sold_date_sk = d.d_date_sk
 	and d.d_year=2000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
@@ -192,7 +192,7 @@ select   count(*) cnt
 	1=1
 	and s.ss_sold_date_sk = d.d_date_sk
 	and d.d_year=2000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
@@ -207,7 +207,7 @@ select   count(*) cnt
 	1=1
 	and s.ss_sold_date_sk = d.d_date_sk
 	and d.d_year=2000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
@@ -222,7 +222,7 @@ select   count(*) cnt
 	1=1
 	and s.ss_sold_date_sk = d.d_date_sk
 	and d.d_year=2000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
@@ -237,7 +237,7 @@ select   count(*) cnt
 	1=1
 	and s.ss_sold_date_sk = d.d_date_sk
 	and d.d_year=2000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1

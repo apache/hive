@@ -123,7 +123,7 @@ PREHOOK: query: EXPLAIN SELECT
     		+ INTERVAL '10' minute
     		+ INTERVAL '9' second
     	AND Cast(d3.d_date AS date) < Cast(d1.d_date AS date) + INTERVAL '1-2' YEAR TO MONTH
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@date_dim_d1
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
@@ -140,7 +140,7 @@ POSTHOOK: query: EXPLAIN SELECT
     		+ INTERVAL '10' minute
     		+ INTERVAL '9' second
     	AND Cast(d3.d_date AS date) < Cast(d1.d_date AS date) + INTERVAL '1-2' YEAR TO MONTH
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@date_dim_d1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

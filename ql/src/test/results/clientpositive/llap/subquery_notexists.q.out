@@ -6,7 +6,7 @@ where not exists
   from src a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_2'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -17,7 +17,7 @@ where not exists
   from src a 
   where b.value = a.value  and a.key = b.key and a.value > 'val_2'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -248,7 +248,7 @@ where not exists
   from src a 
   where b.value = a.value and a.value > 'val_2'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -259,7 +259,7 @@ where not exists
   from src a 
   where b.value = a.value and a.value > 'val_2'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -505,7 +505,7 @@ where not exists
   from src a
   where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
   )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -516,7 +516,7 @@ where not exists
   from src a
   where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
   )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -629,12 +629,12 @@ POSTHOOK: Input: default@src
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
@@ -652,12 +652,12 @@ HiveProject(p_name=[$0])
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1475,12 +1475,12 @@ POSTHOOK: Lineage: tschema.id SCRIPT []
 POSTHOOK: Lineage: tschema.name SCRIPT []
 PREHOOK: query: explain cbo select distinct 'empno' as eid, a.id from tschema a
     where NOT EXISTS (select c.id from tschema c where a.id=c.id)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tschema
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo select distinct 'empno' as eid, a.id from tschema a
     where NOT EXISTS (select c.id from tschema c where a.id=c.id)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tschema
 #### A masked pattern was here ####
 CBO PLAN:

@@ -18,12 +18,12 @@ POSTHOOK: Lineage: emp.age SCRIPT []
 POSTHOOK: Lineage: emp.name SCRIPT []
 PREHOOK: query: explain ast
 select emp.age > 10 is true, (emp.age > 10) is true, not emp.age > 10 is true, not emp.age > 10 is not true from emp
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emp
 #### A masked pattern was here ####
 POSTHOOK: query: explain ast
 select emp.age > 10 is true, (emp.age > 10) is true, not emp.age > 10 is true, not emp.age > 10 is not true from emp
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emp
 #### A masked pattern was here ####
 ABSTRACT SYNTAX TREE:

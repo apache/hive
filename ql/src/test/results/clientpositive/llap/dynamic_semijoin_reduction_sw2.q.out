@@ -159,7 +159,7 @@ SELECT count(*)
     JOIN (SELECT * FROM srcpart_small_n2) `srcpart_small_n2`
       ON (alltypesorc_int_n0.cstring = srcpart_small_n2.key1)) b
     ON (srcpart_small_n2.key1 = b.cstring)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc_int_n0
 PREHOOK: Input: default@srcpart_date_n6
 PREHOOK: Input: default@srcpart_date_n6@ds=2008-04-09
@@ -178,7 +178,7 @@ SELECT count(*)
     JOIN (SELECT * FROM srcpart_small_n2) `srcpart_small_n2`
       ON (alltypesorc_int_n0.cstring = srcpart_small_n2.key1)) b
     ON (srcpart_small_n2.key1 = b.cstring)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc_int_n0
 POSTHOOK: Input: default@srcpart_date_n6
 POSTHOOK: Input: default@srcpart_date_n6@ds=2008-04-09

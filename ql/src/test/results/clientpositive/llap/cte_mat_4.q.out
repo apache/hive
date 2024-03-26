@@ -28,7 +28,7 @@ with q1 as (select * from src where key= '5')
 select a.key
 from q1 a join q1 b
 on a.key=b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@q1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -36,7 +36,7 @@ with q1 as (select * from src where key= '5')
 select a.key
 from q1 a join q1 b
 on a.key=b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@q1
 #### A masked pattern was here ####
 Plan optimized by CBO.
@@ -152,7 +152,7 @@ with q1 as (select * from src where key= '5')
 select a.key
 from q1 a join q1 b
 on a.key=b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@q1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -160,7 +160,7 @@ with q1 as (select * from src where key= '5')
 select a.key
 from q1 a join q1 b
 on a.key=b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@q1
 #### A masked pattern was here ####
 Plan optimized by CBO.

@@ -24,12 +24,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@string_fields_n0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@string_fields_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@string_fields_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -139,12 +139,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@char_fields_n0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@char_fields_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@char_fields_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -254,12 +254,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@varchar_fields_n0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_fields_n0
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_fields_n0
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

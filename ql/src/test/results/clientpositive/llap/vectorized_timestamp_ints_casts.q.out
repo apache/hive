@@ -15,7 +15,7 @@ select
 from alltypesorc
 
 where cbigint % 250 = 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -35,7 +35,7 @@ select
 from alltypesorc
 
 where cbigint % 250 = 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:
@@ -184,7 +184,7 @@ select
 from alltypesorc
 
 where cbigint % 250 = 0
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
@@ -204,7 +204,7 @@ select
 from alltypesorc
 
 where cbigint % 250 = 0
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 PLAN VECTORIZATION:

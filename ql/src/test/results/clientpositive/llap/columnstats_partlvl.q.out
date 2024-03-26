@@ -34,7 +34,7 @@ POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=4000.0
 PREHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0
 PREHOOK: Output: default@employee_part
@@ -42,7 +42,7 @@ PREHOOK: Output: default@employee_part@employeesalary=2000.0
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 POSTHOOK: Output: default@employee_part
@@ -117,7 +117,7 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0
 PREHOOK: Output: default@employee_part
@@ -125,7 +125,7 @@ PREHOOK: Output: default@employee_part@employeesalary=2000.0
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 POSTHOOK: Output: default@employee_part
@@ -321,7 +321,7 @@ Storage Desc Params:
 	serialization.format	|                   
 PREHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=4000.0
 PREHOOK: Output: default@employee_part
@@ -329,7 +329,7 @@ PREHOOK: Output: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0
 POSTHOOK: Output: default@employee_part
@@ -404,7 +404,7 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=4000.0
 PREHOOK: Output: default@employee_part
@@ -412,7 +412,7 @@ PREHOOK: Output: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0
 POSTHOOK: Output: default@employee_part
@@ -570,7 +570,7 @@ POSTHOOK: Output: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
 PREHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0
 PREHOOK: Output: default@employee_part
@@ -578,7 +578,7 @@ PREHOOK: Output: default@employee_part@employeesalary=2000.0
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 POSTHOOK: Output: default@employee_part
@@ -703,7 +703,7 @@ bit_vector          	HL
 comment             	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0
 PREHOOK: Input: default@employee_part@employeesalary=4000.0
@@ -713,7 +713,7 @@ PREHOOK: Output: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0
@@ -843,7 +843,7 @@ bit_vector          	HL
 comment             	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0
 PREHOOK: Input: default@employee_part@employeesalary=4000.0
@@ -853,7 +853,7 @@ PREHOOK: Output: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0

@@ -302,7 +302,7 @@ last_value(p_retailprice) over(partition by p_mfgr) as lv,
 lead(p_retailprice) over(partition by p_mfgr) as lead1,
 lag(p_retailprice) over(partition by p_mfgr) as lag1
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
@@ -330,7 +330,7 @@ last_value(p_retailprice) over(partition by p_mfgr) as lv,
 lead(p_retailprice) over(partition by p_mfgr) as lead1,
 lag(p_retailprice) over(partition by p_mfgr) as lag1
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -1626,7 +1626,7 @@ last_value(p_retailprice) over(partition by p_mfgr) as lv,
 lead(p_retailprice) over(partition by p_mfgr) as lead1,
 lag(p_retailprice) over(partition by p_mfgr) as lag1
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, rowindex, p_date, p_retailprice,
@@ -1653,7 +1653,7 @@ last_value(p_retailprice) over(partition by p_mfgr) as lv,
 lead(p_retailprice) over(partition by p_mfgr) as lead1,
 lag(p_retailprice) over(partition by p_mfgr) as lag1
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -2223,14 +2223,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_mfgr order by p_name range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_name range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
 count(*) over(partition by p_mfgr order by p_name range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_name range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -2447,14 +2447,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_name) as cs,
 sum(p_retailprice) over(partition by p_name) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
 count(*) over(partition by p_name) as cs,
 sum(p_retailprice) over(partition by p_name) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -2692,7 +2692,7 @@ count(*) over(partition by p_name) as cs,
 sum(p_retailprice) over(partition by p_name) as s
 from vector_ptf_part_simple_orc
 where p_name = 'almond antique chartreuse lavender yellow'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
@@ -2700,7 +2700,7 @@ count(*) over(partition by p_name) as cs,
 sum(p_retailprice) over(partition by p_name) as s
 from vector_ptf_part_simple_orc
 where p_name = 'almond antique chartreuse lavender yellow'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -2946,14 +2946,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_mfgr order by p_timestamp range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_timestamp range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
 count(*) over(partition by p_mfgr order by p_timestamp range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_timestamp range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -3170,14 +3170,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_timestamp) as cs,
 sum(p_retailprice) over(partition by p_timestamp) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
 count(*) over(partition by p_timestamp) as cs,
 sum(p_retailprice) over(partition by p_timestamp) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -3394,7 +3394,7 @@ count(*) over(partition by p_timestamp) as cs,
 sum(p_retailprice) over(partition by p_timestamp) as s
 from vector_ptf_part_simple_orc
 where p_timestamp = '1970-01-03 00:00:00.0'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
@@ -3402,7 +3402,7 @@ count(*) over(partition by p_timestamp) as cs,
 sum(p_retailprice) over(partition by p_timestamp) as s
 from vector_ptf_part_simple_orc
 where p_timestamp = '1970-01-03 00:00:00.0'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -3671,14 +3671,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_mfgr order by p_date range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_date range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
 count(*) over(partition by p_mfgr order by p_date range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_date range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -3895,14 +3895,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_date) as cs,
 sum(p_retailprice) over(partition by p_date) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
 count(*) over(partition by p_date) as cs,
 sum(p_retailprice) over(partition by p_date) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -4119,7 +4119,7 @@ count(*) over(partition by p_date) as cs,
 sum(p_retailprice) over(partition by p_date) as s
 from vector_ptf_part_simple_orc
 where p_date = '1970-01-03'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,
@@ -4127,7 +4127,7 @@ count(*) over(partition by p_date) as cs,
 sum(p_retailprice) over(partition by p_date) as s
 from vector_ptf_part_simple_orc
 where p_date = '1970-01-03'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -4396,14 +4396,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_mfgr order by p_int range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_int range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_int,
 count(*) over(partition by p_mfgr order by p_int range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_int range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -4620,14 +4620,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_int) as cs,
 sum(p_retailprice) over(partition by p_int) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_int,
 count(*) over(partition by p_int) as cs,
 sum(p_retailprice) over(partition by p_int) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -4844,7 +4844,7 @@ count(*) over(partition by p_int) as cs,
 sum(p_retailprice) over(partition by p_int) as s
 from vector_ptf_part_simple_orc
 where p_date = 115200
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_int,
@@ -4852,7 +4852,7 @@ count(*) over(partition by p_int) as cs,
 sum(p_retailprice) over(partition by p_int) as s
 from vector_ptf_part_simple_orc
 where p_date = 115200
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -5119,14 +5119,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_mfgr order by p_decimal range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_decimal range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_decimal, p_retailprice,
 count(*) over(partition by p_mfgr order by p_decimal range between 3 preceding and current row) as cs,
 sum(p_retailprice) over(partition by p_mfgr order by p_decimal range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -5343,14 +5343,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
 count(*) over(partition by p_decimal) as cs,
 sum(p_retailprice) over(partition by p_decimal) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_decimal, p_retailprice,
 count(*) over(partition by p_decimal) as cs,
 sum(p_retailprice) over(partition by p_decimal) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -5567,7 +5567,7 @@ count(*) over(partition by p_decimal) as cs,
 sum(p_retailprice) over(partition by p_decimal) as s
 from vector_ptf_part_simple_orc
 where p_decimal = 1800.7000
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_decimal, p_retailprice,
@@ -5575,7 +5575,7 @@ count(*) over(partition by p_decimal) as cs,
 sum(p_retailprice) over(partition by p_decimal) as s
 from vector_ptf_part_simple_orc
 where p_decimal = 1800.7000
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -5842,7 +5842,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     current row) as cs,
                                     sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
@@ -5850,7 +5850,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp
                                     current row) as cs,
                                     sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -6067,14 +6067,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     count(*) over(partition by p_char) as cs,
                                     sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
                                     count(*) over(partition by p_char) as cs,
                                     sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -6291,7 +6291,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
 where p_char = 'D'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
@@ -6299,7 +6299,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp
                                     sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
 where p_char = 'D'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -6573,14 +6573,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     count(*) over(partition by p_mfgr order by p_varchar range between 3 preceding and current row) as cs,
                                     sum(p_retailprice) over(partition by p_mfgr order by p_varchar range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_varchar,
                                     count(*) over(partition by p_mfgr order by p_varchar range between 3 preceding and current row) as cs,
                                     sum(p_retailprice) over(partition by p_mfgr order by p_varchar range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -6797,14 +6797,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     count(*) over(partition by p_varchar) as cs,
                                     sum(p_retailprice) over(partition by p_varchar) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_varchar,
                                     count(*) over(partition by p_varchar) as cs,
                                     sum(p_retailprice) over(partition by p_varchar) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -7038,7 +7038,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     sum(p_retailprice) over(partition by p_varchar) as s
 from vector_ptf_part_simple_orc
 where p_varchar = 'DA'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_varchar,
@@ -7046,7 +7046,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp
                                     sum(p_retailprice) over(partition by p_varchar) as s
 from vector_ptf_part_simple_orc
 where p_varchar = 'DA'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -7293,7 +7293,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     current row) as cs,
                                     sum(p_retailprice) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char, p_boolean,
@@ -7301,7 +7301,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp
                                     current row) as cs,
                                     sum(p_retailprice) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -7518,14 +7518,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     count(*) over(partition by p_boolean) as cs,
                                     sum(p_retailprice) over(partition by p_boolean) as s
 from vector_ptf_part_simple_orc
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,p_boolean,
                                     count(*) over(partition by p_boolean) as cs,
                                     sum(p_retailprice) over(partition by p_boolean) as s
 from vector_ptf_part_simple_orc
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain
@@ -7742,7 +7742,7 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp,
                                     sum(p_retailprice) over(partition by p_boolean) as s
 from vector_ptf_part_simple_orc
 where p_boolean = true
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,p_boolean,
@@ -7750,7 +7750,7 @@ POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp
                                     sum(p_retailprice) over(partition by p_boolean) as s
 from vector_ptf_part_simple_orc
 where p_boolean = true
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 Explain

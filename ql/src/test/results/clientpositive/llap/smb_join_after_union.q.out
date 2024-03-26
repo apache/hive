@@ -114,7 +114,7 @@ select t.COLUMID from
 left join
 (select distinct t.COLUMID from (SELECT COLUMID FROM hive4_tbl_data UNION ALL SELECT COLUMID FROM hive2_tbl_data) t) t1
 on t.COLUMID = t1.COLUMID where t1.COLUMID is null
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@hive1_tbl_data
 PREHOOK: Input: default@hive2_tbl_data
 PREHOOK: Input: default@hive3_tbl_data
@@ -126,7 +126,7 @@ select t.COLUMID from
 left join
 (select distinct t.COLUMID from (SELECT COLUMID FROM hive4_tbl_data UNION ALL SELECT COLUMID FROM hive2_tbl_data) t) t1
 on t.COLUMID = t1.COLUMID where t1.COLUMID is null
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@hive1_tbl_data
 POSTHOOK: Input: default@hive2_tbl_data
 POSTHOOK: Input: default@hive3_tbl_data

@@ -114,11 +114,11 @@ POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 62430
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -178,11 +178,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -311,14 +311,14 @@ PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -384,14 +384,14 @@ PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -490,14 +490,14 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -521,14 +521,14 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -597,7 +597,7 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t NOT IN (-1,-2,-3)
   AND t BETWEEN 25 AND 30
   SORT BY t,s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
@@ -606,7 +606,7 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t NOT IN (-1,-2,-3)
   AND t BETWEEN 25 AND 30
   SORT BY t,s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -667,7 +667,7 @@ PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t NOT IN (-1,-2,-3)
   AND t BETWEEN 25 AND 30
   SORT BY t,s
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
@@ -676,7 +676,7 @@ POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   AND t NOT IN (-1,-2,-3)
   AND t BETWEEN 25 AND 30
   SORT BY t,s
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -800,7 +800,7 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   ORDER BY s DESC
   LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
@@ -813,7 +813,7 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   ORDER BY s DESC
   LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -888,7 +888,7 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   ORDER BY s DESC
   LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
@@ -901,7 +901,7 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   ORDER BY s DESC
   LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1041,7 +1041,7 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   SORT BY s DESC
   LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
@@ -1056,7 +1056,7 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   SORT BY s DESC
   LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -1156,7 +1156,7 @@ PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   SORT BY s DESC
   LIMIT 3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
@@ -1171,7 +1171,7 @@ POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   SORT BY s DESC
   LIMIT 3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

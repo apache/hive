@@ -34,7 +34,7 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.value, x.key from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n19
 PREHOOK: Input: default@test_table1_n19@ds=1
 PREHOOK: Output: default@test_table2_n18@ds=1
@@ -42,7 +42,7 @@ POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.value, x.key from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n19
 POSTHOOK: Input: default@test_table1_n19@ds=1
 POSTHOOK: Output: default@test_table2_n18@ds=1
@@ -162,7 +162,7 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.key, x.value from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@test_table1_n19
 PREHOOK: Input: default@test_table1_n19@ds=1
 PREHOOK: Output: default@test_table2_n18@ds=1
@@ -170,7 +170,7 @@ POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n18 PARTITION (ds = '1')
 SELECT x.key, x.value from 
 (SELECT a.key, a.value FROM test_table1_n19 a WHERE a.ds = '1')x
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@test_table1_n19
 POSTHOOK: Input: default@test_table1_n19@ds=1
 POSTHOOK: Output: default@test_table2_n18@ds=1

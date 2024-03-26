@@ -1,12 +1,12 @@
 PREHOOK: query: explain
 create table summary as select *, key + 1, concat(value, value) from src limit 20
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@summary
 POSTHOOK: query: explain
 create table summary as select *, key + 1, concat(value, value) from src limit 20
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@summary
@@ -205,13 +205,13 @@ POSTHOOK: Input: default@summary
 98	val_98	99.0	val_98val_98
 PREHOOK: query: explain
 create table x4 as select *, rank() over(partition by key order by value) as rr from src1
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x4
 POSTHOOK: query: explain
 create table x4 as select *, rank() over(partition by key order by value) as rr from src1
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x4
@@ -428,13 +428,13 @@ POSTHOOK: Input: default@x4
 98	val_98	1
 PREHOOK: query: explain
 create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x5
 POSTHOOK: query: explain
 create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x5
@@ -666,13 +666,13 @@ POSTHOOK: Input: default@x5
 119	val_119	119
 PREHOOK: query: explain
 create table x6 as select * from (select *, key + 1 from src1) a
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x6
 POSTHOOK: query: explain
 create table x6 as select * from (select *, key + 1 from src1) a
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x6
@@ -854,13 +854,13 @@ POSTHOOK: Input: default@x6
 98	val_98	99.0
 PREHOOK: query: explain
 create table x7 as select * from (select *, count(value) from src group by key, value) a
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x7
 POSTHOOK: query: explain
 create table x7 as select * from (select *, count(value) from src group by key, value) a
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x7
@@ -1350,13 +1350,13 @@ POSTHOOK: Input: default@x7
 98	val_98	2
 PREHOOK: query: explain
 create table x8 as select * from (select *, count(value) from src group by key, value having key < 9) a
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x8
 POSTHOOK: query: explain
 create table x8 as select * from (select *, count(value) from src group by key, value having key < 9) a
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x8
@@ -1542,13 +1542,13 @@ POSTHOOK: Input: default@x8
 8	val_8	1
 PREHOOK: query: explain
 create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x9
 POSTHOOK: query: explain
 create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x9

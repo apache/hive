@@ -12,7 +12,7 @@ INSERT OVERWRITE TABLE dest1_n37
 MAP src.*, src.key, CAST(src.key / 10 AS INT), CAST(src.key % 10 AS INT), src.value
 USING 'cat' AS (k, v, tkey, ten, one, tvalue)
 SORT BY tvalue, tkey
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n37
 POSTHOOK: query: EXPLAIN
@@ -21,7 +21,7 @@ INSERT OVERWRITE TABLE dest1_n37
 MAP src.*, src.key, CAST(src.key / 10 AS INT), CAST(src.key % 10 AS INT), src.value
 USING 'cat' AS (k, v, tkey, ten, one, tvalue)
 SORT BY tvalue, tkey
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n37
 STAGE DEPENDENCIES:

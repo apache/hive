@@ -359,7 +359,7 @@ POSTHOOK: Input: default@acid_cmv_part@k=100
 100	val_100
 PREHOOK: query: explain formatted
 select k, value from acid_cmv_part
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@acid_cmv_part
 PREHOOK: Input: default@acid_cmv_part@k=0
 PREHOOK: Input: default@acid_cmv_part@k=10
@@ -367,7 +367,7 @@ PREHOOK: Input: default@acid_cmv_part@k=100
 #### A masked pattern was here ####
 POSTHOOK: query: explain formatted
 select k, value from acid_cmv_part
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@acid_cmv_part
 POSTHOOK: Input: default@acid_cmv_part@k=0
 POSTHOOK: Input: default@acid_cmv_part@k=10

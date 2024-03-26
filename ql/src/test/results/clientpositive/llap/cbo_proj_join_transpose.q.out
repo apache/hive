@@ -23,7 +23,7 @@ FROM table1 t1
 INNER JOIN table2 t2
 ON trim(acct_num) = t2.act_id) t
 WHERE t.row_num = 1
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table1
 PREHOOK: Input: default@table2
 PREHOOK: Output: database:default
@@ -37,7 +37,7 @@ FROM table1 t1
 INNER JOIN table2 t2
 ON trim(acct_num) = t2.act_id) t
 WHERE t.row_num = 1
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table2
 POSTHOOK: Output: database:default

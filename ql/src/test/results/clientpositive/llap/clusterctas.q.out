@@ -1,14 +1,14 @@
 PREHOOK: query: EXPLAIN
 CREATE TABLE x STORED AS ORC TBLPROPERTIES('transactional'='true') AS
 SELECT * FROM SRC x CLUSTER BY x.key
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x
 POSTHOOK: query: EXPLAIN
 CREATE TABLE x STORED AS ORC TBLPROPERTIES('transactional'='true') AS
 SELECT * FROM SRC x CLUSTER BY x.key
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x

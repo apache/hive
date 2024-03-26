@@ -1,11 +1,11 @@
 PREHOOK: query: explain
 select a.* from src a join src b on a.key=b.key order by key, value limit 40
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.* from src a join src b on a.key=b.key order by key, value limit 40
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -161,12 +161,12 @@ RUN: Stage-1:MAPRED
 119	val_119
 PREHOOK: query: explain
 select a.* from src a join src b on a.key=b.key join src c on a.value=c.value order by a.key, a.value limit 40
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.* from src a join src b on a.key=b.key join src c on a.value=c.value order by a.key, a.value limit 40
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -354,12 +354,12 @@ RUN: Stage-1:MAPRED
 103	val_103
 PREHOOK: query: explain
 select a.* from src a join src b on a.key=b.key join src c on a.value=c.value where a.key>100 order by a.key, a.value limit 40
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.* from src a join src b on a.key=b.key join src c on a.value=c.value where a.key>100 order by a.key, a.value limit 40
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

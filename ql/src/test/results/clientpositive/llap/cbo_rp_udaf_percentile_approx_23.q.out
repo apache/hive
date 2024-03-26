@@ -496,12 +496,12 @@ POSTHOOK: Input: default@t12_n1
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: explain
 select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -571,12 +571,12 @@ POSTHOOK: Input: default@bucket_n1
 false
 PREHOOK: query: explain
 select percentile_approx(key, 0.5) from bucket_n1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select percentile_approx(key, 0.5) from bucket_n1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

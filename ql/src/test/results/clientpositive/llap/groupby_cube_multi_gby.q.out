@@ -21,7 +21,7 @@ group by cube(key, value)
 insert into table t2_n13 select
 key, value
 group by key, value grouping sets ((key), (key, value))
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_n21
 PREHOOK: Output: default@t2_n13
@@ -32,7 +32,7 @@ group by cube(key, value)
 insert into table t2_n13 select
 key, value
 group by key, value grouping sets ((key), (key, value))
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_n21
 POSTHOOK: Output: default@t2_n13

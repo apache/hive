@@ -9,13 +9,13 @@ POSTHOOK: Output: default@bucket5_1
 PREHOOK: query: explain extended
 insert overwrite table bucket5_1
 select * from src cluster by key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@bucket5_1
 POSTHOOK: query: explain extended
 insert overwrite table bucket5_1
 select * from src cluster by key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bucket5_1
 STAGE DEPENDENCIES:
@@ -267,7 +267,7 @@ select s2.* from
    from complex_tbl_2 where ds ='2010-03-29' cluster by bid
 )s
 )s2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@complex_tbl_2
 PREHOOK: Output: default@complex_tbl_1@ds=2010-03-29
 POSTHOOK: query: explain extended
@@ -285,7 +285,7 @@ select s2.* from
    from complex_tbl_2 where ds ='2010-03-29' cluster by bid
 )s
 )s2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@complex_tbl_2
 POSTHOOK: Output: default@complex_tbl_1@ds=2010-03-29
 STAGE DEPENDENCIES:

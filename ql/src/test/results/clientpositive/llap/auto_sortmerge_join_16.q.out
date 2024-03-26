@@ -170,7 +170,7 @@ PREHOOK: query: explain select a.key , a.value , b.value , 'day1' as day, 1 as p
             where pri between 1 and 2 ) b
             on
           (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n17
 PREHOOK: Input: default@bucket_big_n17@day=day1/pri=1
 PREHOOK: Input: default@bucket_small_n17
@@ -187,7 +187,7 @@ POSTHOOK: query: explain select a.key , a.value , b.value , 'day1' as day, 1 as 
             where pri between 1 and 2 ) b
             on
           (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n17
 POSTHOOK: Input: default@bucket_big_n17@day=day1/pri=1
 POSTHOOK: Input: default@bucket_small_n17
@@ -344,7 +344,7 @@ left outer join
   where pri between 1 and 2 ) b
 on
 (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n17
 PREHOOK: Input: default@bucket_big_n17@day=day1/pri=1
 PREHOOK: Input: default@bucket_small_n17
@@ -361,7 +361,7 @@ left outer join
   where pri between 1 and 2 ) b
 on
 (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n17
 POSTHOOK: Input: default@bucket_big_n17@day=day1/pri=1
 POSTHOOK: Input: default@bucket_small_n17
@@ -610,7 +610,7 @@ PREHOOK: query: explain select a.key , a.value , b.value , 'day1' as day, 1 as p
           where pri between 1 and 2 ) b
         on
         (a.key = b.key)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@bucket_big_n17
 PREHOOK: Input: default@bucket_big_n17@day=day1/pri=1
 PREHOOK: Input: default@bucket_small_n17
@@ -627,7 +627,7 @@ POSTHOOK: query: explain select a.key , a.value , b.value , 'day1' as day, 1 as 
           where pri between 1 and 2 ) b
         on
         (a.key = b.key)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@bucket_big_n17
 POSTHOOK: Input: default@bucket_big_n17@day=day1/pri=1
 POSTHOOK: Input: default@bucket_small_n17

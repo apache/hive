@@ -1,8 +1,8 @@
 PREHOOK: query: explain authorization create resource plan rp
-PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create resource plan rp
-POSTHOOK: type: CREATE RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -18,10 +18,10 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: explain authorization create resource plan rp
-PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create resource plan rp
-POSTHOOK: type: CREATE RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -35,10 +35,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: create resource plan rp
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: explain authorization show resource plans
-PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization show resource plans
-POSTHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -49,10 +49,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation SHOW_RESOURCEPLAN [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization show resource plan rp
-PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization show resource plan rp
-POSTHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -63,10 +63,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation SHOW_RESOURCEPLAN [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization alter resource plan rp set query_parallelism = 5
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter resource plan rp set query_parallelism = 5
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -77,10 +77,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation ALTER_RESOURCEPLAN [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization drop resource plan rp
-PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop resource plan rp
-POSTHOOK: type: DROP RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -91,10 +91,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation DROP_RESOURCEPLAN [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization create pool rp.pool0 WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
-PREHOOK: type: CREATE POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create pool rp.pool0 WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
-POSTHOOK: type: CREATE POOL
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -105,10 +105,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation CREATE_POOL [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
-PREHOOK: type: CREATE TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
-POSTHOOK: type: CREATE TRIGGER
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -119,10 +119,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation CREATE_TRIGGER [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization create user mapping 'joe' IN rp UNMANAGED
-PREHOOK: type: CREATE MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create user mapping 'joe' IN rp UNMANAGED
-POSTHOOK: type: CREATE MAPPING
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -144,10 +144,10 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: explain authorization show resource plans
-PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization show resource plans
-POSTHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -156,10 +156,10 @@ CURRENT_USER:
 OPERATION: 
   SHOW_RESOURCEPLAN
 PREHOOK: query: explain authorization show resource plan rp
-PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization show resource plan rp
-POSTHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -168,10 +168,10 @@ CURRENT_USER:
 OPERATION: 
   SHOW_RESOURCEPLAN
 PREHOOK: query: explain authorization alter resource plan rp set query_parallelism = 5
-PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter resource plan rp set query_parallelism = 5
-POSTHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -180,10 +180,10 @@ CURRENT_USER:
 OPERATION: 
   ALTER_RESOURCEPLAN
 PREHOOK: query: explain authorization drop resource plan rp
-PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop resource plan rp
-POSTHOOK: type: DROP RESOURCEPLAN
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -192,10 +192,10 @@ CURRENT_USER:
 OPERATION: 
   DROP_RESOURCEPLAN
 PREHOOK: query: explain authorization create pool rp.pool0 WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
-PREHOOK: type: CREATE POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create pool rp.pool0 WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
-POSTHOOK: type: CREATE POOL
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -204,10 +204,10 @@ CURRENT_USER:
 OPERATION: 
   CREATE_POOL
 PREHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
-PREHOOK: type: CREATE TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
-POSTHOOK: type: CREATE TRIGGER
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -216,10 +216,10 @@ CURRENT_USER:
 OPERATION: 
   CREATE_TRIGGER
 PREHOOK: query: explain authorization create user mapping 'joe' IN rp UNMANAGED
-PREHOOK: type: CREATE MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization create user mapping 'joe' IN rp UNMANAGED
-POSTHOOK: type: CREATE MAPPING
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -272,10 +272,10 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: create user mapping 'joe' IN rp UNMANAGED
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: explain authorization alter pool rp.pool0 SET QUERY_PARALLELISM=4
-PREHOOK: type: ALTER POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter pool rp.pool0 SET QUERY_PARALLELISM=4
-POSTHOOK: type: ALTER POOL
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -286,10 +286,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation ALTER_POOL [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
-PREHOOK: type: ALTER TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
-POSTHOOK: type: ALTER TRIGGER
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -300,10 +300,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation ALTER_TRIGGER [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization alter user mapping 'joe' IN rp TO pool0
-PREHOOK: type: ALTER MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter user mapping 'joe' IN rp TO pool0
-POSTHOOK: type: ALTER MAPPING
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -314,10 +314,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation ALTER_MAPPING [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization drop user mapping 'joe' IN rp
-PREHOOK: type: DROP MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop user mapping 'joe' IN rp
-POSTHOOK: type: DROP MAPPING
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -328,10 +328,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation DROP_MAPPING [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization drop pool rp.pool0
-PREHOOK: type: DROP POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop pool rp.pool0
-POSTHOOK: type: DROP POOL
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -342,10 +342,10 @@ OPERATION:
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation DROP_POOL [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
 PREHOOK: query: explain authorization drop trigger rp.trigger0
-PREHOOK: type: DROP TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop trigger rp.trigger0
-POSTHOOK: type: DROP TRIGGER
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -366,10 +366,10 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: explain authorization alter pool rp.pool0 SET QUERY_PARALLELISM=4
-PREHOOK: type: ALTER POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter pool rp.pool0 SET QUERY_PARALLELISM=4
-POSTHOOK: type: ALTER POOL
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -378,10 +378,10 @@ CURRENT_USER:
 OPERATION: 
   ALTER_POOL
 PREHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
-PREHOOK: type: ALTER TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
-POSTHOOK: type: ALTER TRIGGER
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -390,10 +390,10 @@ CURRENT_USER:
 OPERATION: 
   ALTER_TRIGGER
 PREHOOK: query: explain authorization alter user mapping 'joe' IN rp TO pool0
-PREHOOK: type: ALTER MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization alter user mapping 'joe' IN rp TO pool0
-POSTHOOK: type: ALTER MAPPING
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -402,10 +402,10 @@ CURRENT_USER:
 OPERATION: 
   ALTER_MAPPING
 PREHOOK: query: explain authorization drop user mapping 'joe' IN rp
-PREHOOK: type: DROP MAPPING
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop user mapping 'joe' IN rp
-POSTHOOK: type: DROP MAPPING
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -414,10 +414,10 @@ CURRENT_USER:
 OPERATION: 
   DROP_MAPPING
 PREHOOK: query: explain authorization drop pool rp.pool0
-PREHOOK: type: DROP POOL
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop pool rp.pool0
-POSTHOOK: type: DROP POOL
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest
@@ -426,10 +426,10 @@ CURRENT_USER:
 OPERATION: 
   DROP_POOL
 PREHOOK: query: explain authorization drop trigger rp.trigger0
-PREHOOK: type: DROP TRIGGER
+PREHOOK: type: EXPLAIN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization drop trigger rp.trigger0
-POSTHOOK: type: DROP TRIGGER
+POSTHOOK: type: EXPLAIN
 INPUTS: 
 OUTPUTS: 
   dummyHostnameForTest

@@ -63,7 +63,7 @@ from wealth t2,
 from tv_view_data) t
 where t.program=t2.watches
 group by quartile
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
@@ -79,7 +79,7 @@ from wealth t2,
 from tv_view_data) t
 where t.program=t2.watches
 group by quartile
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
@@ -143,7 +143,7 @@ from tv_view_data) t
 where t.program=t2.watches
 group by quartile
 order by quartile
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: arc_view@mv_tv_view_data_av1
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
@@ -161,7 +161,7 @@ from tv_view_data) t
 where t.program=t2.watches
 group by quartile
 order by quartile
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
@@ -219,13 +219,13 @@ POSTHOOK: Lineage: tv_view_data.program SCRIPT []
 POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
 PREHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
 PREHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
@@ -453,7 +453,7 @@ from tv_view_data) t
 where t.program=t2.watches
 group by quartile
 order by quartile
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: arc_view@mv_tv_view_data_av1
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
@@ -471,7 +471,7 @@ from tv_view_data) t
 where t.program=t2.watches
 group by quartile
 order by quartile
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
@@ -530,13 +530,13 @@ POSTHOOK: Lineage: tv_view_data.program SCRIPT []
 POSTHOOK: Lineage: tv_view_data.total_views SCRIPT []
 PREHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
 PREHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: query: explain
 alter materialized view mv_tv_view_data_av1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
@@ -764,7 +764,7 @@ from tv_view_data) t
 where t.program=t2.watches
 group by quartile
 order by quartile
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: arc_view@mv_tv_view_data_av1
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Input: arc_view@wealth
@@ -782,7 +782,7 @@ from tv_view_data) t
 where t.program=t2.watches
 group by quartile
 order by quartile
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
@@ -895,12 +895,12 @@ POSTHOOK: Input: arc_view@tv_view_data
 40000000	9.0000	scream3
 PREHOOK: query: explain
 alter materialized view mv_tv_view_data_av2 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: arc_view@tv_view_data
 PREHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: query: explain
 alter materialized view mv_tv_view_data_av2 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Output: arc_view@mv_tv_view_data_av2
 STAGE DEPENDENCIES:

@@ -24,13 +24,13 @@ POSTHOOK: Lineage: v0.key SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(n
 POSTHOOK: Lineage: v0.value SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select * from `v0`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n5
 PREHOOK: Input: default@v0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from `v0`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Input: default@v0
 #### A masked pattern was here ####
@@ -97,7 +97,7 @@ POSTHOOK: Lineage: v1_n9.value SIMPLE [(masking_test_subq_n1)masking_test_subq_n
 PREHOOK: query: explain cbo
 select * from `v1_n9`
 limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_subq_n1
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v1_n9
@@ -105,7 +105,7 @@ PREHOOK: Input: default@v1_n9
 POSTHOOK: query: explain cbo
 select * from `v1_n9`
 limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_subq_n1
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v1_n9
@@ -124,7 +124,7 @@ HiveSortLimit(fetch=[20])
 PREHOOK: query: explain
 select * from `v1_n9`
 limit 20
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_subq_n1
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v1_n9
@@ -132,7 +132,7 @@ PREHOOK: Input: default@v1_n9
 POSTHOOK: query: explain
 select * from `v1_n9`
 limit 20
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_subq_n1
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v1_n9
@@ -279,14 +279,14 @@ POSTHOOK: Output: default@masking_test_view
 POSTHOOK: Lineage: masking_test_view.key SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: explain
 select key from `masking_test_view`
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n5
 PREHOOK: Input: default@masking_test_view
 PREHOOK: Input: default@v0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_view`
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Input: default@masking_test_view
 POSTHOOK: Input: default@v0
@@ -326,14 +326,14 @@ POSTHOOK: Input: default@v0
 4
 PREHOOK: query: explain
 select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@masking_test_n5
 PREHOOK: Input: default@masking_test_view
 PREHOOK: Input: default@v0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@masking_test_n5
 POSTHOOK: Input: default@masking_test_view
 POSTHOOK: Input: default@v0

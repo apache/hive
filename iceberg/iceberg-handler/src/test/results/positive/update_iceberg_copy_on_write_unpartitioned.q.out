@@ -21,11 +21,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: explain update tbl_ice set b='Changed' where b in ('one', 'four') or a = 22
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: explain update tbl_ice set b='Changed' where b in ('one', 'four') or a = 22
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:
@@ -283,11 +283,11 @@ Warning: Shuffle Join MERGEJOIN[291][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_
 Warning: Shuffle Join MERGEJOIN[279][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 18' is a cross product
 Warning: Shuffle Join MERGEJOIN[289][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 20' is a cross product
 PREHOOK: query: explain update tbl_ice set b='Changed again' where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: explain update tbl_ice set b='Changed again' where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:
@@ -1125,12 +1125,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_other
 Warning: Shuffle Join MERGEJOIN[267][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain update tbl_ice set b='Changed forever' where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_other
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: explain update tbl_ice set b='Changed forever' where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_other
 POSTHOOK: Output: default@tbl_ice
@@ -1611,12 +1611,12 @@ POSTHOOK: Lineage: tbl_standard_other.a SCRIPT []
 POSTHOOK: Lineage: tbl_standard_other.b SCRIPT []
 Warning: Shuffle Join MERGEJOIN[222][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: explain update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_standard_other
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: explain update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_standard_other
 POSTHOOK: Output: default@tbl_ice
@@ -2084,11 +2084,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 444	The last one	800
 555	Changed again	801
 PREHOOK: query: explain update tbl_ice set b='All'
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: default@tbl_ice
 POSTHOOK: query: explain update tbl_ice set b='All'
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@tbl_ice
 STAGE DEPENDENCIES:

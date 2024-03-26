@@ -177,7 +177,7 @@ PREHOOK: query: explain
 select *
 from (select * from emps_n3 where empid < 120) t
 join depts_n2 using (deptno)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n2
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
@@ -186,7 +186,7 @@ POSTHOOK: query: explain
 select *
 from (select * from emps_n3 where empid < 120) t
 join depts_n2 using (deptno)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n2
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
@@ -320,7 +320,7 @@ PREHOOK: query: explain
 select emps_n3.name, emps_n3.salary, emps_n3.commission
 from emps_n3
 join depts_n2 using (deptno)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n2
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
@@ -329,7 +329,7 @@ POSTHOOK: query: explain
 select emps_n3.name, emps_n3.salary, emps_n3.commission
 from emps_n3
 join depts_n2 using (deptno)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n2
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
@@ -401,7 +401,7 @@ POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid
 PREHOOK: query: explain
 select empid deptno from emps_n3
 join depts_n2 using (deptno) where empid = 1
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n2
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
@@ -409,7 +409,7 @@ PREHOOK: Input: default@mv1_n2
 POSTHOOK: query: explain
 select empid deptno from emps_n3
 join depts_n2 using (deptno) where empid = 1
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n2
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
@@ -474,14 +474,14 @@ POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salar
 PREHOOK: query: explain
 select * from emps_n3 where empid > 120
 union all select * from emps_n3 where empid < 150
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from emps_n3 where empid > 120
 union all select * from emps_n3 where empid < 150
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -592,12 +592,12 @@ POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(emps_n3)emps_n3.FieldSchema(name:deptn
 POSTHOOK: Lineage: mv1_n2.empid SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select empid, deptno from emps_n3 group by empid, deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select empid, deptno from emps_n3 group by empid, deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 #### A masked pattern was here ####
 CBO PLAN:
@@ -606,12 +606,12 @@ HiveProject(empid=[$0], deptno=[$1])
 
 PREHOOK: query: explain
 select empid, deptno from emps_n3 group by empid, deptno
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid, deptno from emps_n3 group by empid, deptno
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -666,12 +666,12 @@ POSTHOOK: Lineage: mv1_n2.empid SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid,
 POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select empid, name from emps_n3 group by empid, name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select empid, name from emps_n3 group by empid, name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -726,13 +726,13 @@ POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, t
 POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name, salary from emps_n3 group by name, salary
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select name, salary from emps_n3 group by name, salary
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -789,13 +789,13 @@ POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, t
 POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name from emps_n3 group by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select name from emps_n3 group by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -894,13 +894,13 @@ POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, t
 POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name from emps_n3 where deptno = 10 group by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select name from emps_n3 where deptno = 10 group by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -1002,13 +1002,13 @@ POSTHOOK: Lineage: mv1_n2.s EXPRESSION [(emps_n3)emps_n3.FieldSchema(name:empid,
 POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name from emps_n3 group by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@emps_n3
 PREHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select name from emps_n3 group by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -1115,7 +1115,7 @@ select name, count(*) as c
 from depts_n2
 where name = 'Sales'
 group by name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n2
 PREHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -1124,7 +1124,7 @@ select name, count(*) as c
 from depts_n2
 where name = 'Sales'
 group by name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n2
 POSTHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -1246,7 +1246,7 @@ select deptno, name, count(*) as c
 from depts_n2
 where name = 'Sales'
 group by deptno, name
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@depts_n2
 PREHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####
@@ -1255,7 +1255,7 @@ select deptno, name, count(*) as c
 from depts_n2
 where name = 'Sales'
 group by deptno, name
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@depts_n2
 POSTHOOK: Input: default@mv1_n2
 #### A masked pattern was here ####

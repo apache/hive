@@ -27,11 +27,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain select count(*) from ice01
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) from ice01
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -62,11 +62,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice02
 PREHOOK: query: explain select count(*) from ice02
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice02
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) from ice02
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice02
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -97,11 +97,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain select count(*) from ice01
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) from ice01
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
@@ -175,11 +175,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain select count(*) from ice01
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@ice01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) from ice01
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:

@@ -68,7 +68,7 @@ PREHOOK: query: explain
 from t3
 insert into t select a
 insert into t2 select a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t3
 PREHOOK: Output: default@t
 PREHOOK: Output: default@t2
@@ -76,7 +76,7 @@ POSTHOOK: query: explain
 from t3
 insert into t select a
 insert into t2 select a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t3
 POSTHOOK: Output: default@t
 POSTHOOK: Output: default@t2

@@ -19,7 +19,7 @@ PREHOOK: query: explain cbo select id,
   (select count(*) from t1 join t2 on t1.id=t2.id)
   from t2
 order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -27,7 +27,7 @@ POSTHOOK: query: explain cbo select id,
   (select count(*) from t1 join t2 on t1.id=t2.id)
   from t2
 order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -52,7 +52,7 @@ PREHOOK: query: explain cbo select id,
   (select count(*) from t1 join t2 using (id))
   from t2
 order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -60,7 +60,7 @@ POSTHOOK: query: explain cbo select id,
   (select count(*) from t1 join t2 using (id))
   from t2
 order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -85,7 +85,7 @@ PREHOOK: query: explain cbo select id,
   (select count(*) from t1 join t2 where t1.id=t2.id)
   from t2
 order by id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -93,7 +93,7 @@ POSTHOOK: query: explain cbo select id,
   (select count(*) from t1 join t2 where t1.id=t2.id)
   from t2
 order by id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####

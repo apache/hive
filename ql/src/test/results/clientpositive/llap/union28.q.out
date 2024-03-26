@@ -18,7 +18,7 @@ select * from (
     select key, value, count(1) from src group by key, value
   ) subq
 ) a
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 PREHOOK: Output: default@union_subq_union
 POSTHOOK: query: explain
@@ -33,7 +33,7 @@ select * from (
     select key, value, count(1) from src group by key, value
   ) subq
 ) a
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_subq_union
 STAGE DEPENDENCIES:

@@ -633,7 +633,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     BaseSemanticAnalyzer analyzer = work.getAnalyzer();
-    HiveOperation operation = queryState.getHiveOperation();
+    HiveOperation operation = queryState.getAuthorizationCommandType();
 
     JSONObject object = new JSONObject(new LinkedHashMap<>());
     Object jsonInput = toJson("INPUTS", toString(analyzer.getInputs()), out, work);
@@ -671,7 +671,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       SessionState.get().setActiveAuthorizer(authorizer);
       try {
-        CommandAuthorizer.doAuthorization(queryState.getHiveOperation(), analyzer, "");
+        CommandAuthorizer.doAuthorization(queryState.getAuthorizationCommandType(), analyzer, "");
       } finally {
         SessionState.get().setActiveAuthorizer(delegate);
       }

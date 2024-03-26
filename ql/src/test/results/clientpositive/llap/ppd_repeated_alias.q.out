@@ -31,7 +31,7 @@ SELECT a.foo as foo1, b.foo as foo2, b.bar
 FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
 ON a.foo=b.foo
 WHERE b.bar=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pokes2_n0
 PREHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
@@ -40,7 +40,7 @@ SELECT a.foo as foo1, b.foo as foo2, b.bar
 FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
 ON a.foo=b.foo
 WHERE b.bar=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pokes2_n0
 POSTHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
@@ -133,7 +133,7 @@ SELECT * FROM
     FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pokes2_n0
 PREHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
@@ -143,7 +143,7 @@ SELECT * FROM
     FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pokes2_n0
 POSTHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
@@ -236,7 +236,7 @@ SELECT * FROM
     FROM pokes_n0 a JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pokes2_n0
 PREHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
@@ -246,7 +246,7 @@ SELECT * FROM
     FROM pokes_n0 a JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pokes2_n0
 POSTHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
@@ -335,11 +335,11 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes_n0 c left outer join pokes_n0 b on c.foo=b.foo) c left outer join pokes_n0 d where d.foo=1 and c.bar=2
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes_n0 c left outer join pokes_n0 b on c.foo=b.foo) c left outer join pokes_n0 d where d.foo=1 and c.bar=2
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@pokes_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

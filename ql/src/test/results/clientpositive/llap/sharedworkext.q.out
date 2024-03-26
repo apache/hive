@@ -10,7 +10,7 @@ JOIN
   GROUP BY a1.key, a2.value
 ) b
 ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -25,7 +25,7 @@ JOIN
   GROUP BY a1.key, a2.value
 ) b
 ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -527,7 +527,7 @@ JOIN
     GROUP BY a1.key, a2.value) b
 ) b
 ON a.key = b.key
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
@@ -544,7 +544,7 @@ JOIN
     GROUP BY a1.key, a2.value) b
 ) b
 ON a.key = b.key
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

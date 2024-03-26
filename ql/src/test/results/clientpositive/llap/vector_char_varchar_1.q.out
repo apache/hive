@@ -28,13 +28,13 @@ POSTHOOK: Input: default@varchar_table
 POSTHOOK: Output: default@varchar_table
 PREHOOK: query: explain vectorization detail
 create table varchar_ctas_1 as select length(vs),reverse(vs) from varchar_table
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@varchar_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_ctas_1
 POSTHOOK: query: explain vectorization detail
 create table varchar_ctas_1 as select length(vs),reverse(vs) from varchar_table
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@varchar_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_ctas_1
@@ -265,13 +265,13 @@ POSTHOOK: Input: default@char_table
 POSTHOOK: Output: default@char_table
 PREHOOK: query: explain vectorization detail
 create table char_ctas_1 as select length(vs),reverse(vs) from char_table
-PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@char_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@char_ctas_1
 POSTHOOK: query: explain vectorization detail
 create table char_ctas_1 as select length(vs),reverse(vs) from char_table
-POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@char_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_ctas_1

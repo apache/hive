@@ -19,13 +19,13 @@ POSTHOOK: Output: example_structprint
 PREHOOK: query: EXPLAIN
 SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@src_thrift
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

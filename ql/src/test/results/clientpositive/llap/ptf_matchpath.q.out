@@ -46,7 +46,7 @@ from matchpath(on
       arg2('LATE'), arg3(arr_delay > 15), 
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -59,7 +59,7 @@ from matchpath(on
       arg2('LATE'), arg3(arr_delay > 15), 
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -179,7 +179,7 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 where fl_num = 1142
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -192,7 +192,7 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 where fl_num = 1142
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -303,7 +303,7 @@ from matchpath(on
       arg2('LATE'), arg3(arr_delay > 15),
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -315,7 +315,7 @@ from matchpath(on
       arg2('LATE'), arg3(arr_delay > 15),
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:

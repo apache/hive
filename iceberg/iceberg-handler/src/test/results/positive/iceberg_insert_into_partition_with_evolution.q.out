@@ -38,11 +38,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testice1000
 POSTHOOK: Output: default@testice1000
 PREHOOK: query: explain insert into testice1000 partition(b = 'rtyuiy') values (33)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testice1000@b=rtyuiy
 POSTHOOK: query: explain insert into testice1000 partition(b = 'rtyuiy') values (33)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testice1000@b=rtyuiy
 STAGE DEPENDENCIES:

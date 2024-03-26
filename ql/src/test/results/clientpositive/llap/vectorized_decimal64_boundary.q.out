@@ -77,7 +77,7 @@ PREHOOK: query: explain vectorization detail
 select s_store_id, coalesce(ss_sales_price*ss_quantity,0) sumsales
             from mini_sales, mini_store
        where ss_store_sk = s_store_sk
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@mini_sales
 PREHOOK: Input: default@mini_store
 #### A masked pattern was here ####
@@ -85,7 +85,7 @@ POSTHOOK: query: explain vectorization detail
 select s_store_id, coalesce(ss_sales_price*ss_quantity,0) sumsales
             from mini_sales, mini_store
        where ss_store_sk = s_store_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@mini_sales
 POSTHOOK: Input: default@mini_store
 #### A masked pattern was here ####

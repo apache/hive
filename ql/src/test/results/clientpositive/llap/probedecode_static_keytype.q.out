@@ -101,12 +101,12 @@ POSTHOOK: Lineage: orders_fact_dt.dt SCRIPT []
 POSTHOOK: Lineage: orders_fact_dt.key2 SCRIPT []
 POSTHOOK: Lineage: orders_fact_dt.nokey SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact_dt join item_dim_dt on (orders_fact_dt.key2 = item_dim_dt.key1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@item_dim_dt
 PREHOOK: Input: default@orders_fact_dt
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact_dt join item_dim_dt on (orders_fact_dt.key2 = item_dim_dt.key1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@item_dim_dt
 POSTHOOK: Input: default@orders_fact_dt
 #### A masked pattern was here ####
@@ -383,12 +383,12 @@ POSTHOOK: Lineage: orders_fact_ts.dt SCRIPT []
 POSTHOOK: Lineage: orders_fact_ts.key2 SCRIPT []
 POSTHOOK: Lineage: orders_fact_ts.nokey SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact_ts join item_dim_ts on (orders_fact_ts.key2 = item_dim_ts.key1)
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@item_dim_ts
 PREHOOK: Input: default@orders_fact_ts
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select key1, key2, name, dt from orders_fact_ts join item_dim_ts on (orders_fact_ts.key2 = item_dim_ts.key1)
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@item_dim_ts
 POSTHOOK: Input: default@orders_fact_ts
 #### A masked pattern was here ####

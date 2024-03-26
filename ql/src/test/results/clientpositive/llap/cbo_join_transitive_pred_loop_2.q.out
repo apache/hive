@@ -38,7 +38,7 @@ SELECT * FROM (
 ) a
 JOIN tenant_1 dt
   ON a.tenant_id = dt.tenant_id
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@table2
 PREHOOK: Input: default@tenant_1
 #### A masked pattern was here ####
@@ -54,7 +54,7 @@ SELECT * FROM (
 ) a
 JOIN tenant_1 dt
   ON a.tenant_id = dt.tenant_id
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@table2
 POSTHOOK: Input: default@tenant_1
 #### A masked pattern was here ####

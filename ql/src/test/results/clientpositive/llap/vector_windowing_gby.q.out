@@ -3,7 +3,7 @@ PREHOOK: query: explain vectorization detail
        (select sum(wr.cint)/sum(ws.c_int)  as return_ratio
                  from cbo_t3  ws join alltypesorc wr on ws.value = wr.cstring1
                   group by ws.c_boolean ) in_web
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
@@ -12,7 +12,7 @@ POSTHOOK: query: explain vectorization detail
        (select sum(wr.cint)/sum(ws.c_int)  as return_ratio
                  from cbo_t3  ws join alltypesorc wr on ws.value = wr.cstring1
                   group by ws.c_boolean ) in_web
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####

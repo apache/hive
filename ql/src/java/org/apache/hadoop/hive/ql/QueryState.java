@@ -89,6 +89,11 @@ public class QueryState {
   private final ReentrantLock resolveConditionalTaskLock = new ReentrantLock(true);
 
   /**
+   * command type that requires the authorization.
+   */
+  private HiveOperation authorizationCommandType;
+
+  /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
    */
@@ -203,6 +208,14 @@ public class QueryState {
 
   public ReentrantLock getResolveConditionalTaskLock() {
     return resolveConditionalTaskLock;
+  }
+
+  public void setAuthorizationCommandType(HiveOperation authorizationCommandType) {
+    this.authorizationCommandType = authorizationCommandType;
+  }
+
+  public HiveOperation getAuthorizationCommandType() {
+    return authorizationCommandType;
   }
 
   /**

@@ -39,7 +39,7 @@ select u.* from
     union all  
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: default@tstparttbl
 PREHOOK: Input: default@tstparttbl2
 PREHOOK: Input: default@tstparttbl2@ds=2009-04-09
@@ -51,7 +51,7 @@ select u.* from
     union all  
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: default@tstparttbl
 POSTHOOK: Input: default@tstparttbl2
 POSTHOOK: Input: default@tstparttbl2@ds=2009-04-09

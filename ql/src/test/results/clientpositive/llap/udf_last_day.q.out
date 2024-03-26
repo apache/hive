@@ -15,11 +15,11 @@ Example:
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLastDay
 Function type:BUILTIN
 PREHOOK: query: explain select last_day('2015-02-05')
-PREHOOK: type: QUERY
+PREHOOK: type: EXPLAIN
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain select last_day('2015-02-05')
-POSTHOOK: type: QUERY
+POSTHOOK: type: EXPLAIN
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
