@@ -371,7 +371,13 @@ public class RelJson {
         return rexBuilder.makeLiteral(literal, type, true);
       case TIMESTAMP:
       case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
-        return rexBuilder.makeLiteral(new TimestampString((String) literal), type, false);
+        Object timeStampLiteral = literal;
+        if (literal instanceof Integer) {
+          timeStampLiteral = (long) (int) literal;
+        } else if (literal instanceof String) {
+          timeStampLiteral = new TimestampString((String) literal);
+        }
+        return rexBuilder.makeLiteral(timeStampLiteral, type, false);
       case SYMBOL:
         return rexBuilder.makeLiteral(HiveRelEnumTypes.toEnum((String) literal), type, true);
       default:
