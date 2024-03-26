@@ -258,14 +258,12 @@ POSTHOOK: query: insert into table parquet_source select * from parquet_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_source
 POSTHOOK: Output: default@parquet_source
-PREHOOK: query: insert into table parquet_part_source select * from parquet_part_source where ds = 102 union all select * from orc_part_source where ds = 103
+PREHOOK: query: insert into table parquet_part_source select * from parquet_part_source where ds = 102 union all select * from parquet_part_source where ds = 103
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_part_source
 PREHOOK: Input: default@parquet_part_source
 PREHOOK: Output: default@parquet_part_source
-POSTHOOK: query: insert into table parquet_part_source select * from parquet_part_source where ds = 102 union all select * from orc_part_source where ds = 103
+POSTHOOK: query: insert into table parquet_part_source select * from parquet_part_source where ds = 102 union all select * from parquet_part_source where ds = 103
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_part_source
 POSTHOOK: Input: default@parquet_part_source
 POSTHOOK: Output: default@parquet_part_source
 PREHOOK: query: select count(*) from parquet_source
@@ -285,7 +283,7 @@ POSTHOOK: query: select count(*) from parquet_part_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_part_source
 #### A masked pattern was here ####
-5000
+4000
 PREHOOK: query: select count(distinct(file_path)) from default.parquet_source.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_source
@@ -456,3 +454,250 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@avro_part_source
 #### A masked pattern was here ####
 6
+PREHOOK: query: create table ctas_source stored by iceberg stored as orc as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_source
+#### A masked pattern was here ####
+POSTHOOK: query: create table ctas_source stored by iceberg stored as orc as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_source
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_source.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_source.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table ctas_source select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_source
+POSTHOOK: query: insert into table ctas_source select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_source
+PREHOOK: query: insert into table ctas_source select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_source
+POSTHOOK: query: insert into table ctas_source select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_source
+PREHOOK: query: insert into table ctas_source select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_source
+POSTHOOK: query: insert into table ctas_source select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_source
+PREHOOK: query: insert into table ctas_source select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_source
+POSTHOOK: query: insert into table ctas_source select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_source
+PREHOOK: query: select count(*) from ctas_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_source
+#### A masked pattern was here ####
+2500
+PREHOOK: query: create table ctas_orc_table stored by iceberg stored as orc as select * from ctas_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ctas_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: create table ctas_orc_table stored by iceberg stored as orc as select * from ctas_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ctas_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_orc_table
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_orc_table.key SIMPLE [(ctas_source)ctas_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_orc_table.value SIMPLE [(ctas_source)ctas_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(distinct(file_path)) from default.ctas_orc_table.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.ctas_orc_table.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_orc_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from ctas_orc_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_orc_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_orc_table
+#### A masked pattern was here ####
+2500
+PREHOOK: query: create materialized view cmv_orc stored by iceberg stored as orc as select * from ctas_source
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@ctas_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_orc
+#### A masked pattern was here ####
+POSTHOOK: query: create materialized view cmv_orc stored by iceberg stored as orc as select * from ctas_source
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@ctas_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_orc
+#### A masked pattern was here ####
+POSTHOOK: Lineage: cmv_orc.key SIMPLE [(ctas_source)ctas_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cmv_orc.value SIMPLE [(ctas_source)ctas_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(distinct(file_path)) from default.cmv_orc.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.cmv_orc.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_orc
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from cmv_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from cmv_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_orc
+#### A masked pattern was here ####
+2500
+PREHOOK: query: create table ctas_parquet_table stored by iceberg stored as parquet as select * from ctas_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ctas_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_parquet_table
+#### A masked pattern was here ####
+POSTHOOK: query: create table ctas_parquet_table stored by iceberg stored as parquet as select * from ctas_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ctas_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_parquet_table
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_parquet_table.key SIMPLE [(ctas_source)ctas_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_parquet_table.value SIMPLE [(ctas_source)ctas_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(distinct(file_path)) from default.ctas_parquet_table.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_parquet_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.ctas_parquet_table.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_parquet_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from ctas_parquet_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_parquet_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_parquet_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_parquet_table
+#### A masked pattern was here ####
+2500
+PREHOOK: query: create materialized view cmv_parquet stored by iceberg stored as parquet as select * from ctas_source
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@ctas_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: create materialized view cmv_parquet stored by iceberg stored as parquet as select * from ctas_source
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@ctas_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_parquet
+#### A masked pattern was here ####
+POSTHOOK: Lineage: cmv_parquet.key SIMPLE [(ctas_source)ctas_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cmv_parquet.value SIMPLE [(ctas_source)ctas_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(distinct(file_path)) from default.cmv_parquet.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.cmv_parquet.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_parquet
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from cmv_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from cmv_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_parquet
+#### A masked pattern was here ####
+2500
+PREHOOK: query: create table ctas_avro_table stored by iceberg stored as avro as select * from ctas_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ctas_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_avro_table
+#### A masked pattern was here ####
+POSTHOOK: query: create table ctas_avro_table stored by iceberg stored as avro as select * from ctas_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ctas_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_avro_table
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_avro_table.key SIMPLE [(ctas_source)ctas_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_avro_table.value SIMPLE [(ctas_source)ctas_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(distinct(file_path)) from default.ctas_avro_table.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_avro_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.ctas_avro_table.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_avro_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from ctas_avro_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_avro_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_avro_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_avro_table
+#### A masked pattern was here ####
+2500
+PREHOOK: query: create materialized view cmv_avro stored by iceberg stored as avro as select * from ctas_source
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@ctas_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_avro
+#### A masked pattern was here ####
+POSTHOOK: query: create materialized view cmv_avro stored by iceberg stored as avro as select * from ctas_source
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@ctas_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_avro
+#### A masked pattern was here ####
+POSTHOOK: Lineage: cmv_avro.key SIMPLE [(ctas_source)ctas_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cmv_avro.value SIMPLE [(ctas_source)ctas_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(distinct(file_path)) from default.cmv_avro.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_avro
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.cmv_avro.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_avro
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from cmv_avro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_avro
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from cmv_avro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_avro
+#### A masked pattern was here ####
+2500
