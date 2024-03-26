@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -380,6 +381,10 @@ public class RelJson {
         return rexBuilder.makeLiteral(timeStampLiteral, type, false);
       case SYMBOL:
         return rexBuilder.makeLiteral(HiveRelEnumTypes.toEnum((String) literal), type, true);
+      case DECIMAL:
+        if (literal instanceof BigInteger) {
+          return rexBuilder.makeLiteral(new BigDecimal((BigInteger) literal), type, true);
+        }
       default:
         return rexBuilder.makeLiteral(literal, type, true);
     }
