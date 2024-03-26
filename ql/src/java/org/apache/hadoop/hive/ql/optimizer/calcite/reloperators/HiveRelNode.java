@@ -20,8 +20,19 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.rel.RelNode;
 
+import java.util.stream.Stream;
+
 public interface HiveRelNode extends RelNode {
 
   /** Calling convention for relational operations that occur in Hive. */
   Convention CONVENTION = new Convention.Impl("HIVE", HiveRelNode.class);
+
+  static Stream<RelNode> stream(RelNode node) {
+    return Stream.concat(
+        Stream.of(node),
+        node.getInputs()
+            .stream()
+            .flatMap(HiveRelNode::stream)
+    );
+  }
 }
