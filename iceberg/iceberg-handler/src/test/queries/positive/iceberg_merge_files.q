@@ -57,7 +57,7 @@ select count(distinct(file_path)) from default.parquet_part_source.files;
 
 -- Insert into the tables both for unpartitioned and partitioned cases for Parquet formats.
 insert into table parquet_source select * from parquet_source;
-insert into table parquet_part_source select * from parquet_part_source where ds = 102 union all select * from orc_part_source where ds = 103;
+insert into table parquet_part_source select * from parquet_part_source where ds = 102 union all select * from parquet_part_source where ds = 103;
 
 select count(*) from parquet_source;
 select count(*) from parquet_part_source;
@@ -93,3 +93,36 @@ select count(*) from avro_part_source;
 
 select count(distinct(file_path)) from default.avro_source.files;
 select count(distinct(file_path)) from default.avro_part_source.files;
+
+-- Generate 5 files in the CTAS source table.
+create table ctas_source stored by iceberg stored as orc as select * from src;
+insert into table ctas_source select * from src;
+insert into table ctas_source select * from src;
+insert into table ctas_source select * from src;
+insert into table ctas_source select * from src;
+select count(*) from ctas_source;
+
+-- Check whether a single file is created post merge task for CTAS and CMV.
+create table ctas_orc_table stored by iceberg stored as orc as select * from ctas_source;
+select count(distinct(file_path)) from default.ctas_orc_table.files;
+select count(*) from ctas_orc_table;
+
+create materialized view cmv_orc stored by iceberg stored as orc as select * from ctas_source;
+select count(distinct(file_path)) from default.cmv_orc.files;
+select count(*) from cmv_orc;
+
+create table ctas_parquet_table stored by iceberg stored as parquet as select * from ctas_source;
+select count(distinct(file_path)) from default.ctas_parquet_table.files;
+select count(*) from ctas_parquet_table;
+
+create materialized view cmv_parquet stored by iceberg stored as parquet as select * from ctas_source;
+select count(distinct(file_path)) from default.cmv_parquet.files;
+select count(*) from cmv_parquet;
+
+create table ctas_avro_table stored by iceberg stored as avro as select * from ctas_source;
+select count(distinct(file_path)) from default.ctas_avro_table.files;
+select count(*) from ctas_avro_table;
+
+create materialized view cmv_avro stored by iceberg stored as avro as select * from ctas_source;
+select count(distinct(file_path)) from default.cmv_avro.files;
+select count(*) from cmv_avro;
