@@ -141,6 +141,12 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
             null);
     int logLength = fetchAndVerifyLog(operationHandleWithOrientation, expectedLogLength);
     Assert.assertEquals(expectedLogLength, logLength);
+
+
+    // (FETCH_FIRST) fetch again from the same operation handle with FETCH_FIRST orientation
+    RowSet rowSetLogWithOrientation = client.fetchResults(operationHandleWithOrientation,
+            FetchOrientation.FETCH_FIRST, 1000, FetchType.LOG);
+    verifyFetchedLog(rowSetLogWithOrientation,  expectedLogsVerbose);
   }
 
   private int fetchAndVerifyLog(OperationHandle operationHandle, int expectedLogLength) throws Exception {
@@ -152,9 +158,6 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
               FetchOrientation.FETCH_NEXT, maxRows, FetchType.LOG);
       logLength += rowSetLogWithOrientation.numRows();
     } while (rowSetLogWithOrientation.numRows() == maxRows);
-
-    // Close the operation handle after fetching all results
-    client.closeOperation(operationHandle);
 
     return logLength;
   }
