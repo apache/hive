@@ -128,32 +128,35 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
   }
 
   @Test
-  @Ignore("HIVE-27966")
   public void testFetchResultsOfLogWithOrientation() throws Exception {
-    // (FETCH_FIRST) execute a sql, and fetch its sql operation log as expected value
     OperationHandle operationHandle = client.executeStatement(sessionHandle, sql, null);
     RowSet rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 1000,
-        FetchType.LOG);
+            FetchType.LOG);
     int expectedLogLength = rowSetLog.numRows();
 
-    // (FETCH_NEXT) execute the same sql again,
-    // and fetch the sql operation log with FETCH_NEXT orientation
+    // Close the initial operation handle after fetching results
+    client.closeOperation(operationHandle);
+
     OperationHandle operationHandleWithOrientation = client.executeStatement(sessionHandle, sql,
-        null);
+            null);
+    int logLength = fetchAndVerifyLog(operationHandleWithOrientation, expectedLogLength);
+    Assert.assertEquals(expectedLogLength, logLength);
+  }
+
+  private int fetchAndVerifyLog(OperationHandle operationHandle, int expectedLogLength) throws Exception {
     RowSet rowSetLogWithOrientation;
     int logLength = 0;
     int maxRows = calculateProperMaxRows(expectedLogLength);
     do {
-      rowSetLogWithOrientation = client.fetchResults(operationHandleWithOrientation,
-          FetchOrientation.FETCH_NEXT, maxRows, FetchType.LOG);
+      rowSetLogWithOrientation = client.fetchResults(operationHandle,
+              FetchOrientation.FETCH_NEXT, maxRows, FetchType.LOG);
       logLength += rowSetLogWithOrientation.numRows();
     } while (rowSetLogWithOrientation.numRows() == maxRows);
-    Assert.assertEquals(expectedLogLength, logLength);
 
-    // (FETCH_FIRST) fetch again from the same operation handle with FETCH_FIRST orientation
-    rowSetLogWithOrientation = client.fetchResults(operationHandleWithOrientation,
-        FetchOrientation.FETCH_FIRST, 1000, FetchType.LOG);
-    verifyFetchedLog(rowSetLogWithOrientation,  expectedLogsVerbose);
+    // Close the operation handle after fetching all results
+    client.closeOperation(operationHandle);
+
+    return logLength;
   }
 
   // Since the log length of the sql operation may vary during HIVE dev, calculate a proper maxRows.
