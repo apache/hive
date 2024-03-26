@@ -452,7 +452,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
         innerReader = new NullRowsRecordReader(job, split);
       } else {
-        throw e;
+        throw new IOException("Exception caught while creating the inner reader", e);
       }
     }
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
