@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.reflections.Reflections;
@@ -85,7 +86,24 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         throw new IllegalArgumentException("Unknown DDL request: " + ddlDesc.getClass());
       }
-    } catch (Throwable e) {
+    } catch(HiveException e){
+      int excpErrorCode = ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(),
+              work.getMetricCollector(), getName(), conf);
+      if(excpErrorCode == 10241){
+        return excpErrorCode;
+      }else{
+        if(work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
+          LOG.warn("Error while table creation: ", e);
+          return 0;
+        }
+        failed(e);
+        if(ddlOperation != null) {
+          LOG.error("DDLTask failed, DDL Operation: " + ddlOperation.getClass().toString(), e);
+        }
+        return excpErrorCode;
+      }
+    }
+    catch (Throwable e) {
       if(work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
         LOG.warn("Error while table creation: ", e);
         return 0;
