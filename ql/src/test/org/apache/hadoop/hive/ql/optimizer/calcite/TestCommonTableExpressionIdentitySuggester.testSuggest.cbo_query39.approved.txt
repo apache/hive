@@ -1,0 +1,13 @@
+[0] = LogicalProject(W_WAREHOUSE_NAME=[$0], W_WAREHOUSE_SK=[$1], I_ITEM_SK=[$2], D_MOY=[$3], STDEV=[$4], MEAN=[$5], COV=[CASE(=($5, 0), null:INTEGER, /($4, $5))])
+  LogicalFilter(condition=[>(CASE(=($5, 0), 0, /($4, $5)), 1)])
+    LogicalAggregate(group=[{0, 1, 2, 3}], STDEV=[STDDEV_SAMP($4)], MEAN=[AVG($4)])
+      LogicalProject(W_WAREHOUSE_NAME=[$28], W_WAREHOUSE_SK=[$26], I_ITEM_SK=[$4], D_MOY=[$48], INV_QUANTITY_ON_HAND=[$3])
+        LogicalFilter(condition=[AND(=($1, $4), =($2, $26), =($0, $40), =($46, 1999))])
+          LogicalJoin(condition=[true], joinType=[inner])
+            LogicalJoin(condition=[true], joinType=[inner])
+              LogicalJoin(condition=[true], joinType=[inner])
+                LogicalTableScan(table=[[tpcds, INVENTORY]])
+                LogicalTableScan(table=[[tpcds, ITEM]])
+              LogicalTableScan(table=[[tpcds, WAREHOUSE]])
+            LogicalTableScan(table=[[tpcds, DATE_DIM]])
+

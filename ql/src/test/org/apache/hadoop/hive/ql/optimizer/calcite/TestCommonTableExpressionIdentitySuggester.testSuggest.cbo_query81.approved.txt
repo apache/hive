@@ -1,0 +1,10 @@
+[0] = LogicalProject(CTR_CUSTOMER_SK=[$0], CTR_STATE=[$1], CTR_TOTAL_RETURN=[$2])
+  LogicalAggregate(group=[{0, 1}], CTR_TOTAL_RETURN=[SUM($2)])
+    LogicalProject(CR_RETURNING_CUSTOMER_SK=[$7], CA_STATE=[$63], CR_RETURN_AMT_INC_TAX=[$20])
+      LogicalFilter(condition=[AND(=($0, $27), =($33, 1998), =($10, $55))])
+        LogicalJoin(condition=[true], joinType=[inner])
+          LogicalJoin(condition=[true], joinType=[inner])
+            LogicalTableScan(table=[[tpcds, CATALOG_RETURNS]])
+            LogicalTableScan(table=[[tpcds, DATE_DIM]])
+          LogicalTableScan(table=[[tpcds, CUSTOMER_ADDRESS]])
+

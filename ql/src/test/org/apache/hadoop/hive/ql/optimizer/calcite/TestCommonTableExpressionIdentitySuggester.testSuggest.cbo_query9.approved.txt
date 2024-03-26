@@ -1,0 +1,15 @@
+[0] = LogicalFilter(condition=[AND(>=($10, 1), <=($10, 20))])
+  LogicalTableScan(table=[[tpcds, STORE_SALES]])
+
+[1] = LogicalFilter(condition=[AND(>=($10, 21), <=($10, 40))])
+  LogicalTableScan(table=[[tpcds, STORE_SALES]])
+
+[2] = LogicalFilter(condition=[AND(>=($10, 41), <=($10, 60))])
+  LogicalTableScan(table=[[tpcds, STORE_SALES]])
+
+[3] = LogicalFilter(condition=[AND(>=($10, 61), <=($10, 80))])
+  LogicalTableScan(table=[[tpcds, STORE_SALES]])
+
+[4] = LogicalFilter(condition=[AND(>=($10, 81), <=($10, 100))])
+  LogicalTableScan(table=[[tpcds, STORE_SALES]])
+

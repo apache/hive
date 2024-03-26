@@ -1,0 +1,11 @@
+[0] = LogicalJoin(condition=[true], joinType=[inner])
+  LogicalJoin(condition=[true], joinType=[inner])
+    LogicalAggregate(group=[{0, 1}], SUN_SALES=[SUM($2)], MON_SALES=[SUM($3)], TUE_SALES=[SUM($4)], WED_SALES=[SUM($5)], THU_SALES=[SUM($6)], FRI_SALES=[SUM($7)], SAT_SALES=[SUM($8)])
+      LogicalProject(D_WEEK_SEQ=[$27], SS_STORE_SK=[$7], $f2=[CASE(=($37, 'Sunday   '), $13, null:DECIMAL(7, 2))], $f3=[CASE(=($37, 'Monday   '), $13, null:DECIMAL(7, 2))], $f4=[CASE(=($37, 'Tuesday  '), $13, null:DECIMAL(7, 2))], $f5=[CASE(=($37, 'Wednesday'), $13, null:DECIMAL(7, 2))], $f6=[CASE(=($37, 'Thursday '), $13, null:DECIMAL(7, 2))], $f7=[CASE(=($37, 'Friday   '), $13, null:DECIMAL(7, 2))], $f8=[CASE(=($37, 'Saturday '), $13, null:DECIMAL(7, 2))])
+        LogicalFilter(condition=[=($23, $0)])
+          LogicalJoin(condition=[true], joinType=[inner])
+            LogicalTableScan(table=[[tpcds, STORE_SALES]])
+            LogicalTableScan(table=[[tpcds, DATE_DIM]])
+    LogicalTableScan(table=[[tpcds, STORE]])
+  LogicalTableScan(table=[[tpcds, DATE_DIM]])
+

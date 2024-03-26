@@ -1,0 +1,10 @@
+[0] = LogicalAggregate(group=[{0}])
+  LogicalProject(D_DATE=[$2])
+    LogicalFilter(condition=[=($4, $28)])
+      LogicalJoin(condition=[true], joinType=[left])
+        LogicalTableScan(table=[[tpcds, DATE_DIM]])
+        LogicalAggregate(group=[{}], agg#0=[SINGLE_VALUE($0)])
+          LogicalProject(D_WEEK_SEQ=[$4])
+            LogicalFilter(condition=[=($2, CAST('1998-02-19'):DATE NOT NULL)])
+              LogicalTableScan(table=[[tpcds, DATE_DIM]])
+

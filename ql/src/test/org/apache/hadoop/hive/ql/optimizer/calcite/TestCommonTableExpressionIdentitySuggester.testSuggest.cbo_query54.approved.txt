@@ -1,0 +1,3 @@
+[0] = LogicalFilter(condition=[AND(=($6, 1999), =($8, 3))])
+  LogicalTableScan(table=[[tpcds, DATE_DIM]])
+

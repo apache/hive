@@ -1,0 +1,4 @@
+[0] = LogicalProject(I_ITEM_ID=[$1], $f1=[true])
+  LogicalFilter(condition=[OR(=($0, 2), =($0, 3), =($0, 5), =($0, 7), =($0, 11), =($0, 13), =($0, 17), =($0, 19), =($0, 23), =($0, 29))])
+    LogicalTableScan(table=[[tpcds, ITEM]])
+

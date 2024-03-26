@@ -1,0 +1,13 @@
+[0] = LogicalFilter(condition=[>($1, *(0.9:DECIMAL(2, 1), $2))])
+  LogicalJoin(condition=[true], joinType=[left])
+    LogicalAggregate(group=[{0}], RANK_COL=[AVG($1)])
+      LogicalProject(SS_ITEM_SK=[$2], SS_NET_PROFIT=[$22])
+        LogicalFilter(condition=[=($7, 410)])
+          LogicalTableScan(table=[[tpcds, STORE_SALES]])
+    LogicalAggregate(group=[{}], agg#0=[SINGLE_VALUE($0)])
+      LogicalProject(RANK_COL=[$1])
+        LogicalAggregate(group=[{0}], RANK_COL=[AVG($1)])
+          LogicalProject(SS_STORE_SK=[$7], SS_NET_PROFIT=[$22])
+            LogicalFilter(condition=[AND(=($7, 410), IS NULL($5))])
+              LogicalTableScan(table=[[tpcds, STORE_SALES]])
+

@@ -1,0 +1,5 @@
+[0] = LogicalAggregate(group=[{0}])
+  LogicalProject(I_ITEM_ID=[$1])
+    LogicalFilter(condition=[OR(=($17, 'orchid'), =($17, 'chiffon'), =($17, 'lace'))])
+      LogicalTableScan(table=[[tpcds, ITEM]])
+

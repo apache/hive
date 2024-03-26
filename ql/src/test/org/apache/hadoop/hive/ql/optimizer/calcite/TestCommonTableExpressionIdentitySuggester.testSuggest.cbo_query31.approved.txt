@@ -1,0 +1,18 @@
+[0] = LogicalAggregate(group=[{0, 1, 2}], STORE_SALES=[SUM($3)])
+  LogicalProject(CA_COUNTY=[$58], D_QOY=[$33], D_YEAR=[$29], SS_EXT_SALES_PRICE=[$15])
+    LogicalFilter(condition=[AND(=($0, $23), =($6, $51))])
+      LogicalJoin(condition=[true], joinType=[inner])
+        LogicalJoin(condition=[true], joinType=[inner])
+          LogicalTableScan(table=[[tpcds, STORE_SALES]])
+          LogicalTableScan(table=[[tpcds, DATE_DIM]])
+        LogicalTableScan(table=[[tpcds, CUSTOMER_ADDRESS]])
+
+[1] = LogicalAggregate(group=[{0, 1, 2}], WEB_SALES=[SUM($3)])
+  LogicalProject(CA_COUNTY=[$69], D_QOY=[$44], D_YEAR=[$40], WS_EXT_SALES_PRICE=[$23])
+    LogicalFilter(condition=[AND(=($0, $34), =($7, $62))])
+      LogicalJoin(condition=[true], joinType=[inner])
+        LogicalJoin(condition=[true], joinType=[inner])
+          LogicalTableScan(table=[[tpcds, WEB_SALES]])
+          LogicalTableScan(table=[[tpcds, DATE_DIM]])
+        LogicalTableScan(table=[[tpcds, CUSTOMER_ADDRESS]])
+

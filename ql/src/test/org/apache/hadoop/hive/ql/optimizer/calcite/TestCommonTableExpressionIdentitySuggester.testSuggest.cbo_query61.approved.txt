@@ -1,0 +1,4 @@
+[0] = LogicalJoin(condition=[true], joinType=[inner])
+  LogicalTableScan(table=[[tpcds, STORE_SALES]])
+  LogicalTableScan(table=[[tpcds, STORE]])
+

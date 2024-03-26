@@ -1,0 +1,8 @@
+[0] = LogicalJoin(condition=[true], joinType=[inner])
+  LogicalJoin(condition=[true], joinType=[inner])
+    LogicalJoin(condition=[true], joinType=[inner])
+      LogicalTableScan(table=[[tpcds, STORE_SALES]])
+      LogicalTableScan(table=[[tpcds, HOUSEHOLD_DEMOGRAPHICS]])
+    LogicalTableScan(table=[[tpcds, TIME_DIM]])
+  LogicalTableScan(table=[[tpcds, STORE]])
+

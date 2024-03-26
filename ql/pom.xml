@@ -441,6 +441,22 @@
     </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
+      <artifactId>calcite-plus</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.approvaltests</groupId>
+      <artifactId>approvaltests</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.calcite</groupId>
+      <artifactId>calcite-babel</artifactId>
+      <version>${calcite.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-core</artifactId>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db

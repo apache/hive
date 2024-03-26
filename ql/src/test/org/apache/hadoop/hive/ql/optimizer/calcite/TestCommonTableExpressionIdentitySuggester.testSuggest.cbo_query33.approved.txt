@@ -1,0 +1,5 @@
+[0] = LogicalAggregate(group=[{0}])
+  LogicalProject(I_MANUFACT_ID=[$13])
+    LogicalFilter(condition=[=($12, 'Books')])
+      LogicalTableScan(table=[[tpcds, ITEM]])
+

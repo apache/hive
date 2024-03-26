@@ -1,0 +1,5 @@
+[0] = LogicalFilter(condition=[AND(=($17, $51), <>($15, $49))])
+  LogicalJoin(condition=[true], joinType=[inner])
+    LogicalTableScan(table=[[tpcds, WEB_SALES]])
+    LogicalTableScan(table=[[tpcds, WEB_SALES]])
+

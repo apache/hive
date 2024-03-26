@@ -1,0 +1,7 @@
+[0] = LogicalAggregate(group=[{0, 1}], REVENUE=[SUM($2)])
+  LogicalProject(SS_STORE_SK=[$7], SS_ITEM_SK=[$2], SS_SALES_PRICE=[$13])
+    LogicalFilter(condition=[AND(=($0, $23), >=($26, 1212), <=($26, +(1212, 11)))])
+      LogicalJoin(condition=[true], joinType=[inner])
+        LogicalTableScan(table=[[tpcds, STORE_SALES]])
+        LogicalTableScan(table=[[tpcds, DATE_DIM]])
+
