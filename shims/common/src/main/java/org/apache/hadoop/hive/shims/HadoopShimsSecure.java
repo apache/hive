@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.security.AccessControlException;
@@ -30,19 +28,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -137,7 +131,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     public boolean next(K key, V value) throws IOException {
 
       while ((curReader == null)
-          || !doNextWithExceptionHandler((K) ((CombineHiveKey) key).getKey(),
+          || !doNext((K) ((CombineHiveKey) key).getKey(),
               value)) {
         if (!initNextRecordReader(key)) {
           return false;
@@ -221,13 +215,8 @@ public abstract class HadoopShimsSecure implements HadoopShims {
      * @return
      * @throws IOException
      */
-    private boolean doNextWithExceptionHandler(K key, V value) throws IOException {
-      try {
-        return curReader.next(key, value);
-      } catch (Exception e) {
-        return HiveIOExceptionHandlerUtil
-            .handleRecordReaderNextException(e, jc);
-      }
+    private boolean doNext(K key, V value) throws IOException {
+      return curReader.next(key, value);
     }
 
     /**
@@ -265,8 +254,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
         jc.setLong("map.input.start", split.getOffset(idx));
         jc.setLong("map.input.length", split.getLength(idx));
       } catch (Exception e) {
-        curReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(
-            e, jc);
+        throw new IOException(e);
       }
       idx++;
       return true;
