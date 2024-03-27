@@ -1049,6 +1049,7 @@ public class MetastoreConf {
         "This limits the number of partitions (whole partition objects) that can be requested " +
         "from the metastore for a give table. MetaStore API methods using this are: \n" +
                 "get_partitions, \n" +
+                "get_partitions_by_names, \n" +
                 "get_partitions_with_auth, \n" +
                 "get_partitions_by_filter, \n" +
                 "get_partitions_spec_by_filter, \n" +
