@@ -1730,7 +1730,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITING);
-      calcitePlan = applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
 
       // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
