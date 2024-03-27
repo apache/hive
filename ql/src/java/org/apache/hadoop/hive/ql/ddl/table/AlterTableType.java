@@ -42,6 +42,7 @@ public enum AlterTableType {
   EXECUTE("execute"),
   CREATE_BRANCH("create branch"),
   DROP_BRANCH("drop branch"),
+  RENAME_BRANCH("rename branch"),
   CREATE_TAG("create tag"),
   DROP_TAG("drop tag"),
   // constraint
