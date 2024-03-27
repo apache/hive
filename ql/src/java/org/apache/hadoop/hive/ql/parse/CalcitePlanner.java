@@ -1764,14 +1764,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
-      calcitePlan = serializeAndDeserialize(cluster, relOptSchema, perfLogger, calcitePlan);
+      calcitePlan = serializeAndDeserialize(relOptSchema, perfLogger, calcitePlan);
 
       return calcitePlan;
     }
 
     @Nullable
-    private RelNode serializeAndDeserialize(RelOptCluster cluster, RelOptSchema relOptSchema,
-                                            PerfLogger perfLogger, RelNode calcitePlan) {
+    private RelNode serializeAndDeserialize(RelOptSchema relOptSchema, PerfLogger perfLogger, RelNode calcitePlan) {
       if (!canSerializeDeserialize(calcitePlan)) {
         return calcitePlan;
       }
@@ -1784,7 +1783,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       try {
         perfLogger.perfLogBegin(this.getClass().getName(), "fromJsonString");
         RelPlanParser parser =
-            new RelPlanParser(ctx, getQB(), relOptSchema, cluster, conf, db, tabNameToTabObject,
+            new RelPlanParser(ctx, getQB(), relOptSchema, calcitePlan.getCluster(), conf, db, tabNameToTabObject,
                 partitionCache, colStatsCache, noColsMissingStats);
         RelNode fromJson = parser.parse(calcitePlanJson);
         perfLogger.perfLogEnd(this.getClass().getName(), "fromJsonString");
