@@ -65,7 +65,9 @@ public class HiveRelJsonImpl extends RelJsonWriter {
     super.explain_(rel, values);
     RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
     Map<String, Object> map = (Map<String, Object>) relList.get(relList.size() - 1);
-    map.put("rowCount", mq.getRowCount(rel));
+    if (includeTableAndColumnStats) {
+      map.put("rowCount", mq.getRowCount(rel));
+    }
     if (rel.getInputs().size() == 0) {
       map.put("rowType", relJson.toJson(rel.getRowType()));
       // We also include partition columns information
