@@ -1631,15 +1631,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private SnapshotContext.WriteOperationType toWriteOperationType(String operation) {
-    if (DataOperations.APPEND.equals(operation)) {
-      return SnapshotContext.WriteOperationType.APPEND;
-    } else if (DataOperations.DELETE.equals(operation)) {
-      return SnapshotContext.WriteOperationType.DELETE;
-    } else if (DataOperations.OVERWRITE.equals(operation)) {
-      return SnapshotContext.WriteOperationType.OVERWRITE;
-    } else if (DataOperations.REPLACE.equals(operation)) {
-      return SnapshotContext.WriteOperationType.REPLACE;
-    } else {
+    try {
+      return SnapshotContext.WriteOperationType.valueOf(operation.toUpperCase());
+    } catch(NullPointerException | IllegalArgumentException ex) {
       return SnapshotContext.WriteOperationType.UNKNOWN;
     }
   }
