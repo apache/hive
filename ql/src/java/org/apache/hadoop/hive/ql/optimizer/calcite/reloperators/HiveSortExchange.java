@@ -121,7 +121,7 @@ public final class HiveSortExchange extends SortExchange implements HiveRelNode 
   private static RelDistribution getDistribution(RelInput input) {
     RelDistribution result = input.getDistribution();
     if (RelDistribution.Type.ANY == result.getType()) {
-      result = new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
+      result = HiveRelDistribution.ANY;
     }
 
     return result;
