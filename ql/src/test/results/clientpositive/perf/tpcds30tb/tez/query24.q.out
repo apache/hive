@@ -1,3 +1,19 @@
+CTE Suggestion 0:HiveProject(c_last_name=[$0], c_first_name=[$1], s_store_name=[$2], ca_state=[$3], s_state=[$4], i_color=[$5], i_current_price=[$6], i_manager_id=[$7], i_units=[$8], i_size=[$9], netpaid=[$10])
+  HiveAggregate(group=[{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}], agg#0=[sum($10)])
+    HiveProject($f0=[$119], $f1=[$118], $f2=[$56], $f3=[$140], $f4=[$75], $f5=[$101], $f6=[$89], $f7=[$104], $f8=[$102], $f9=[$99], $f10=[$12])
+      HiveFilter(condition=[AND(=($8, $35), =($1, $28), =($2, $110), =($1, $84), =($6, $51), =($114, $132), <>($124, UPPER($142)), =($76, $141), =($61, CAST(7):INTEGER))])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                  HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                HiveTableScan(table=[[default, store]], table:alias=[store])
+              HiveTableScan(table=[[default, item]], table:alias=[item])
+            HiveTableScan(table=[[default, customer]], table:alias=[customer])
+          HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+
 Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross product
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

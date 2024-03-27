@@ -212,7 +212,7 @@
         <value>false</value>
     </property>
     <property>
-        <name>hive.query.lifetime.hooks</name>
-        <value>org.apache.hadoop.hive.ql.hooks.CommonTableExpressionAutoTuningHook</value>
+        <name>hive.optimize.cte.suggester.class</name>
+        <value>org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionPrintSuggester</value>
     </property>
 </configuration>

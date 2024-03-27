@@ -1,3 +1,16 @@
+CTE Suggestion 0:HiveProject(i_category=[$0], i_brand=[$1], s_store_name=[$2], s_company_name=[$3], d_year=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7], rn=[$8])
+  HiveProject((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col s_store_name)=[$2], (tok_table_or_col s_company_name)=[$3], (tok_table_or_col d_year)=[$4], (tok_table_or_col d_moy)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $0, $1, $2, $3, $4 ORDER BY $0 NULLS FIRST, $1 NULLS FIRST, $2 NULLS FIRST, $3 NULLS FIRST, $4 NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], rank_window_1=[rank() OVER (PARTITION BY $0, $1, $2, $3 ORDER BY $4 NULLS LAST, $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+    HiveAggregate(group=[{0, 1, 2, 3, 4, 5}], agg#0=[sum($6)])
+      HiveProject($f0=[$12], $f1=[$8], $f2=[$90], $f3=[$102], $f4=[$59], $f5=[$61], $f6=[$38])
+        HiveFilter(condition=[AND(=($27, $0), =($48, $53), =($32, $85), OR(=($59, CAST(2000):INTEGER), AND(=($59, -(2000, 1)), =($61, CAST(12):INTEGER)), AND(=($59, +(2000, 1)), =($61, CAST(1):INTEGER))))])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveTableScan(table=[[default, item]], table:alias=[item])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveTableScan(table=[[default, store]], table:alias=[store])
+
 CBO PLAN:
 HiveProject(i_category=[$0], d_year=[$1], d_moy=[$2], avg_monthly_sales=[$3], sum_sales=[$4], psum=[$5], nsum=[$6])
   HiveSortLimit(sort0=[$7], sort1=[$2], dir0=[ASC], dir1=[ASC], fetch=[100])

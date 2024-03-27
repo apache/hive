@@ -1,3 +1,8 @@
+CTE Suggestion 0:HiveAggregate(group=[{0}])
+  HiveProject(i_manufact_id=[$13])
+    HiveFilter(condition=[=($12, CAST(_UTF-16LE'Books                                             '):CHAR(50) CHARACTER SET "UTF-16LE")])
+      HiveTableScan(table=[[default, item]], table:alias=[item])
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

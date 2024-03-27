@@ -1,3 +1,9 @@
+CTE Suggestion 0:HiveProject(ws_order_number=[$16], wh1=[$14], wh2=[$52])
+  HiveFilter(condition=[AND(=($16, $54), <>($14, $52))])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count(DISTINCT $3)], agg#1=[sum($4)], agg#2=[sum($5)])
   HiveSemiJoin(condition=[=($3, $12)], joinType=[semi])

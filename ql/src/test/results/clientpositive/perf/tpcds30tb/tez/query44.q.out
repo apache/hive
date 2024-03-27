@@ -1,3 +1,17 @@
+CTE Suggestion 0:HiveProject(item_sk=[$0], rank_col=[$1])
+  HiveProject($f0=[$0], $f1=[$1])
+    HiveFilter(condition=[>($1, *(0.9:DECIMAL(1, 1), $2))])
+      HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
+        HiveAggregate(group=[{0}], agg#0=[avg($1)])
+          HiveProject($f0=[$1], $f1=[$21])
+            HiveFilter(condition=[=($6, CAST(410:BIGINT):BIGINT)])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[ss1])
+        HiveProject(rank_col=[$1])
+          HiveAggregate(group=[{0}], agg#0=[avg($1)])
+            HiveProject($f0=[$6], $f1=[$21])
+              HiveFilter(condition=[AND(=($6, CAST(410:BIGINT):BIGINT), IS NULL($4))])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
 Warning: Map Join MAPJOIN[112][bigTable=?] in task 'Reducer 2' is a cross product
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

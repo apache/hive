@@ -1,3 +1,8 @@
+CTE Suggestion 0:HiveAggregate(group=[{0}])
+  HiveProject(i_item_id=[$1])
+    HiveFilter(condition=[=($12, CAST(_UTF-16LE'Children                                          '):CHAR(50) CHARACTER SET "UTF-16LE")])
+      HiveTableScan(table=[[default, item]], table:alias=[item])
+
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(i_item_id=[$0], $f1=[$1])

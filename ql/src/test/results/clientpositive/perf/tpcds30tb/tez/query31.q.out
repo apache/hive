@@ -1,3 +1,23 @@
+CTE Suggestion 0:HiveProject(ca_county=[$0], d_qoy=[$1], d_year=[$2], store_sales=[$3])
+  HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($3)])
+    HiveProject($f0=[$66], $f1=[$37], $f2=[$33], $f3=[$14])
+      HiveFilter(condition=[AND(=($22, $27), =($5, $59))])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+
+CTE Suggestion 1:HiveProject(ca_county=[$0], d_qoy=[$1], d_year=[$2], web_sales=[$3])
+  HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($3)])
+    HiveProject($f0=[$77], $f1=[$48], $f2=[$44], $f3=[$22])
+      HiveFilter(condition=[AND(=($33, $38), =($6, $70))])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
