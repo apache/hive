@@ -3913,7 +3913,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   // but the instance RelDistributions.ANY can not be used here because
                   // org.apache.calcite.rel.core.Exchange has
                   // assert distribution != RelDistributions.ANY;
-                  new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys()),
+                  HiveRelDistribution.ANY,
               canonizedCollation,
               builder.build());
 
