@@ -2174,24 +2174,18 @@ public class Hive {
       }
 
       boolean hasAppendsOnly = true;
-      boolean noSnapshots = true;
 
       if (storageHandler.areSnapshotsSupported()) {
         for (SnapshotContext snapshot : storageHandler.getSnapshots(
             table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
-          noSnapshots = false;
-          if (!SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation())) {
-            hasAppendsOnly = false;
+          hasAppendsOnly = SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation());
+          if (!hasAppendsOnly) {
             break;
           }
         }
       }
 
-      if (noSnapshots) {
-        Materialization materialization = new Materialization();
-        materialization.setSourceTablesCompacted(true);
-        return materialization;
-      } else if (!hasAppendsOnly) {
+      if (!hasAppendsOnly) {
         allHasAppendsOnly = false;
         break;
       }

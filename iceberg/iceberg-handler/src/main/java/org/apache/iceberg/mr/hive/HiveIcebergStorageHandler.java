@@ -1633,7 +1633,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private SnapshotContext.WriteOperationType toWriteOperationType(String operation) {
     try {
       return SnapshotContext.WriteOperationType.valueOf(operation.toUpperCase());
-    } catch(NullPointerException | IllegalArgumentException ex) {
+    } catch (NullPointerException | IllegalArgumentException ex) {
       return SnapshotContext.WriteOperationType.UNKNOWN;
     }
   }
