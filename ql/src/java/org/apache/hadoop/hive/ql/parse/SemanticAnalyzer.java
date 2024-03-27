@@ -14496,8 +14496,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     } else if (partitionTransformSpecExists) {
-      throw new SemanticException("Partition transform is only supported for specific storage handler tables. e.g. " +
-              "Iceberg tables");
+      throw new SemanticException("Partition transforms are only supported by Iceberg storage handler");
     }
   }
 
