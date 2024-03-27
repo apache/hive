@@ -577,7 +577,6 @@
             <exclude>**/*.iml</exclude>
             <exclude>**/*.txt</exclude>
             <exclude>**/*.log</exclude>
-            <exclude>**/*.arcconfig</exclude>
             <exclude>**/package-info.java</exclude>
             <exclude>**/*.properties</exclude>
             <exclude>**/*.q</exclude>
