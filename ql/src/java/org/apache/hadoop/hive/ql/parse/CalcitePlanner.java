@@ -1808,7 +1808,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private boolean canSerializeDeserialize(RelNode plan) {
-      return HiveRelNode.stream(plan)
+      return
+          conf.getBoolVar(ConfVars.QUERY_PLAN_CACHE_ENABLED) &&
+          HiveRelNode.stream(plan)
             .noneMatch(node -> node.getConvention().getName().toLowerCase().contains("jdbc"));
     }
 
