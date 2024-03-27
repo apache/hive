@@ -2175,12 +2175,15 @@ public class Hive {
 
       boolean hasAppendsOnly = true;
       boolean noSnapshots = true;
-      for (SnapshotContext snapshot : storageHandler.getSnapshots(
-          table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
-        noSnapshots = false;
-        if (!SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation())) {
-          hasAppendsOnly = false;
-          break;
+
+      if (storageHandler.areSnapshotsSupported()) {
+        for (SnapshotContext snapshot : storageHandler.getSnapshots(
+            table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
+          noSnapshots = false;
+          if (!SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation())) {
+            hasAppendsOnly = false;
+            break;
+          }
         }
       }
 

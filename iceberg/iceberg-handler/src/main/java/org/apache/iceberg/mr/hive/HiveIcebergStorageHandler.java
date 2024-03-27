@@ -1659,7 +1659,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   Iterable<SnapshotContext> getSnapshots(Iterable<Snapshot> snapshots, SnapshotContext since) {
     List<SnapshotContext> result = Lists.newArrayList();
 
-    boolean foundSince = since == null;
+    boolean foundSince = Objects.isNull(since);
     for (Snapshot snapshot : snapshots) {
       if (!foundSince) {
         if (snapshot.snapshotId() == since.getSnapshotId()) {
@@ -1670,11 +1670,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
 
-    if (foundSince) {
-      return result;
-    }
-
-    return Collections.emptyList();
+    return foundSince ? result : Collections.emptyList();
   }
 
   @Override
