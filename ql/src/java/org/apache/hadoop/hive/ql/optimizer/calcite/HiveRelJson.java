@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.externalize.RelEnumTypes;
@@ -77,6 +78,9 @@ public class HiveRelJson extends RelJson {
   public Object toJson(AggregateCall node) {
     final Map<String, Object> map = (Map<String, Object>) super.toJson(node);
     map.put("type", toJson(node.getType()));
+    if (node.getCollation() != RelCollations.EMPTY) {
+      map.put("collation", toJson(node.getCollation()));
+    }
     return map;
   }
 

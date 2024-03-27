@@ -466,6 +466,9 @@ public class RelPlanParser {
     final List<Integer> operands = (List<Integer>) jsonAggCall.get("operands");
     final Integer filterOperand = (Integer) jsonAggCall.get("filter");
     final RelDataType type = relJson.toType(input.getCluster().getTypeFactory(), jsonAggCall.get("type"));
+    final RelCollation collation = jsonAggCall.containsKey("collation") ?
+        relJson.toCollation((List<Map<String, Object>>) jsonAggCall.get("collation")) :
+        RelCollations.EMPTY;
 
     // GROUPING__ID requires special handling, otherwise this will create different
     // optimized AST.
@@ -485,8 +488,11 @@ public class RelPlanParser {
     return AggregateCall.create(
         relJson.toAggregation(input, aggName, jsonAggCall),
         distinct,
+        false,
+        false,
         operands,
         filterOperand == null ? -1 : filterOperand,
+        collation,
         type,
         (String) jsonAggCall.get("name"));
   }
