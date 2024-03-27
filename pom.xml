@@ -1745,14 +1745,11 @@
         <configuration>
           <excludes>
             <exclude>*.patch</exclude>
-            <exclude>.github/**</exclude>
+            <exclude>**/pull_request_template.md</exclude>
             <exclude>data/**</exclude>
-            <exclude>conf/**</exclude>
             <exclude>checkstyle/**</exclude>
             <exclude>docs/Gemfile</exclude>
             <exclude>bin/**</exclude>
-            <exclude>itests/**</exclude>
-            <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>
             <exclude>**/*.txt</exclude>
             <exclude>**/*.log</exclude>
@@ -1766,8 +1763,8 @@
             <exclude>**/*.q</exclude>
             <exclude>**/*.q.out</exclude>
             <exclude>**/*.q.out_*</exclude>
-            <exclude>**/*.xml</exclude>
-            <exclude>**/*.yml</exclude>
+            <exclude>**/test/**/*.xml</exclude>
+            <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/*json</exclude>
             <exclude>**/gen/**</exclude>
             <exclude>**/target/**</exclude>
