@@ -119,12 +119,13 @@ public class MetastoreLock implements HiveLock {
         conf.getLong(HIVE_TABLE_LEVEL_LOCK_EVICT_MS, HIVE_TABLE_LEVEL_LOCK_EVICT_MS_DEFAULT);
 
     this.agentInfo = "Iceberg-" + UUID.randomUUID();
-
+    // trying a different fix table names with '%'
+    final String nameFormat = "iceberg-hive-lock-heartbeat-" + fullName.replace("%", "_") + "-%d";
     this.exitingScheduledExecutorService =
             Executors.newSingleThreadScheduledExecutor(
                     new ThreadFactoryBuilder()
                             .setDaemon(true)
-                            .setNameFormat("iceberg-hive-lock-heartbeat-" + fullName.replace("%", "%%") + "-%d")
+                            .setNameFormat(nameFormat)
                             .build());
 
     initTableLevelLockCache(tableLevelLockCacheEvictionTimeout);
