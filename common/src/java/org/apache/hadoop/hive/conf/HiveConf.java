@@ -492,6 +492,8 @@ public class HiveConf extends Configuration {
                     "Only in effect when the cache is enabled"),
     MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.v2.recordStats", false,
             "This property enables recording metastore client cache stats in DEBUG logs"),
+    QUERY_PLAN_CACHE_ENABLED("hive.query.plan.cache.enabled", true,
+        "This property enables Query Plan Cache"),
     // QL execution stuff
     DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE("dfs.xattr.supported.only.on.reserved.namespace", false,
       "DFS supports xattr only on Reserved Name space (/.reserved/raw)"),
