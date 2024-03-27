@@ -2519,7 +2519,7 @@ POSTHOOK: Input: default@table1
 CBO PLAN:
 HiveProject(r=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[left], algorithm=[none], cost=[not available])
-    HiveProject(r=[RANK() OVER (PARTITION BY 0 ORDER BY $1 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+    HiveProject(r=[RANK() OVER (PARTITION BY 0 ORDER BY $1 DESC NULLS FIRST)])
       HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(a=[$0], b=[$1])
           HiveFilter(condition=[IS NOT NULL($0)])
