@@ -50,7 +50,6 @@
       </excludes>
 
       <includes>
-        <include>.arcconfig</include>
         <include>.checkstyle</include>
         <include>.gitattributes</include>
         <include>.gitignore</include>
