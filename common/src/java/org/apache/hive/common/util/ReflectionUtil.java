@@ -31,8 +31,6 @@ import org.apache.hadoop.conf.Configuration;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import static java.lang.String.format;
-
 /**
  * Same as Hadoop ReflectionUtils, but (1) does not leak classloaders (or shouldn't anyway, we
  * rely on Guava cache, and could fix it otherwise); (2) does not have a hidden epic lock.
@@ -102,8 +100,8 @@ public class ReflectionUtil {
    */
   public static void setConf(Object theObject, Configuration conf) {
     if (conf != null) {
-      if (theObject instanceof Configurable) {
-        ((Configurable) theObject).setConf(conf);
+      if (theObject instanceof Configurable configurable) {
+        configurable.setConf(conf);
       }
       setJobConf(theObject, conf);
     }
@@ -135,7 +133,7 @@ public class ReflectionUtil {
       fieldToChange.setAccessible(true);
       fieldToChange.set(object, value);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(format("Cannot set field %s in object %s", field, object.getClass()));
+      throw new RuntimeException("Cannot set field %s in object %s".formatted(field, object.getClass()));
     }
   }
 
@@ -157,7 +155,7 @@ public class ReflectionUtil {
 
       fieldToChange.set(object, value);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(format("Cannot set field %s in object %s", field, object.getClass()));
+      throw new RuntimeException("Cannot set field %s in object %s".formatted(field, object.getClass()));
     }
   }
 }
