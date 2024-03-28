@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,8 +23,6 @@ import org.apache.hadoop.hive.ql.udf.UDFLike;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Evaluate LIKE filter on a batch for a vector of strings.
@@ -58,14 +56,8 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    * Accepts simple LIKE patterns like "abc%" and creates corresponding checkers.
    */
   private static class BeginCheckerFactory implements CheckerFactory {
-    private static final Pattern BEGIN_PATTERN = Pattern.compile("([^_%]+)%");
-
     public Checker tryCreate(String pattern) {
-      Matcher matcher = BEGIN_PATTERN.matcher(pattern);
-      if (matcher.matches()) {
-        return new BeginChecker(matcher.group(1));
-      }
-      return null;
+      return UDFLikePattern.BEGIN.apply(pattern);
     }
   }
 
@@ -73,14 +65,8 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    * Accepts simple LIKE patterns like "%abc" and creates a corresponding checkers.
    */
   private static class EndCheckerFactory implements CheckerFactory {
-    private static final Pattern END_PATTERN = Pattern.compile("%([^_%]+)");
-
     public Checker tryCreate(String pattern) {
-      Matcher matcher = END_PATTERN.matcher(pattern);
-      if (matcher.matches()) {
-        return new EndChecker(matcher.group(1));
-      }
-      return null;
+      return UDFLikePattern.END.apply(pattern);
     }
   }
 
@@ -88,14 +74,8 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    * Accepts simple LIKE patterns like "%abc%" and creates a corresponding checkers.
    */
   private static class MiddleCheckerFactory implements CheckerFactory {
-    private static final Pattern MIDDLE_PATTERN = Pattern.compile("%([^_%]+)%");
-
     public Checker tryCreate(String pattern) {
-      Matcher matcher = MIDDLE_PATTERN.matcher(pattern);
-      if (matcher.matches()) {
-        return new MiddleChecker(matcher.group(1));
-      }
-      return null;
+      return UDFLikePattern.MIDDLE.apply(pattern);
     }
   }
 
@@ -103,14 +83,8 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    * Accepts simple LIKE patterns like "abc" and creates corresponding checkers.
    */
   private static class NoneCheckerFactory implements CheckerFactory {
-    private static final Pattern NONE_PATTERN = Pattern.compile("[^%_]+");
-
     public Checker tryCreate(String pattern) {
-      Matcher matcher = NONE_PATTERN.matcher(pattern);
-      if (matcher.matches()) {
-        return new NoneChecker(pattern);
-      }
-      return null;
+      return UDFLikePattern.NONE.apply(pattern);
     }
   }
 
@@ -120,14 +94,8 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    *
    */
   private static class ChainedCheckerFactory implements CheckerFactory {
-    private static final Pattern CHAIN_PATTERN = Pattern.compile("(%?[^%_\\\\]+%?)+");
-
     public Checker tryCreate(String pattern) {
-      Matcher matcher = CHAIN_PATTERN.matcher(pattern);
-      if (matcher.matches()) {
-        return new ChainedChecker(pattern);
-      }
-      return null;
+      return UDFLikePattern.CHAINED.apply(pattern);
     }
   }
 
@@ -138,6 +106,102 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
     public Checker tryCreate(String pattern) {
       // anchor the pattern to the start:end of the whole string.
       return new ComplexChecker("^" + UDFLike.likePatternToRegExp(pattern) + "$");
+    }
+  }
+
+  private enum UDFLikePattern {
+    BEGIN(BeginChecker.class, UDFLike.PatternType.BEGIN),
+    END(EndChecker.class, UDFLike.PatternType.END),
+    MIDDLE(MiddleChecker.class, UDFLike.PatternType.MIDDLE),
+    NONE(NoneChecker.class, UDFLike.PatternType.NONE),
+    CHAINED(ChainedChecker.class, UDFLike.PatternType.CHAINED);
+
+    Class<? extends Checker> checker;
+    UDFLike.PatternType type;
+
+    UDFLikePattern(Class<? extends Checker> checker, UDFLike.PatternType type) {
+      this.checker = checker;
+      this.type = type;
+    }
+
+    public Checker apply(String pattern) {
+      String matche = check(pattern);
+      if (matche != null) {
+        try {
+          return checker.getConstructor(String.class).newInstance(matche);
+        } catch (Exception e) {
+          throw new IllegalArgumentException("unable to initialize Checker");
+        }
+      }
+
+      return null;
+    }
+
+    private String check(String pattern) {
+      UDFLike.PatternType lastType = UDFLike.PatternType.NONE;
+      int length = pattern.length();
+      int beginIndex = 0;
+      int endIndex = length;
+      char lastChar = 0;
+      StringBuilder strPattern = new StringBuilder();
+      String simplePattern;
+
+      for (int i = 0; i < length; i++) {
+        char n = pattern.charAt(i);
+        if (n == '_') { // such as "a_b"
+          if (lastChar != '\\') { // such as "a%bc"
+            return null;
+          } else { // such as "abc\%de%"
+            strPattern.append(pattern.substring(beginIndex, i - 1));
+            beginIndex = i;
+          }
+        } else if (n == '%') {
+          if (i == 0) { // such as "%abc"
+            lastType = UDFLike.PatternType.END;
+            beginIndex = 1;
+          } else if (i < length - 1) {
+            if (lastChar != '\\') { // such as "a%bc"
+              lastType = UDFLike.PatternType.CHAINED;
+            } else if (lastChar == '\\') { // such as "a\%bc"
+              strPattern.append(pattern.substring(beginIndex, i - 1));
+              beginIndex = i;
+              if (lastType == UDFLike.PatternType.CHAINED) {
+                lastType = UDFLike.PatternType.COMPLEX;
+              }
+            } else {
+              lastType = UDFLike.PatternType.COMPLEX;
+            }
+          } else {
+            if (lastChar != '\\') {
+              endIndex = length - 1;
+              if (lastType == UDFLike.PatternType.END) { // such as "%abc%"
+                lastType = UDFLike.PatternType.MIDDLE;
+              } else if (lastType != UDFLike.PatternType.CHAINED &&
+                         lastType != UDFLike.PatternType.COMPLEX) {
+                lastType = UDFLike.PatternType.BEGIN; // such as "abc%"
+              }
+            } else { // such as "abc\%"
+              strPattern.append(pattern.substring(beginIndex, i - 1));
+              beginIndex = i;
+              endIndex = length;
+            }
+          }
+        }
+        lastChar = n;
+      }
+
+      strPattern.append(pattern.substring(beginIndex, endIndex));
+      if (lastType == UDFLike.PatternType.CHAINED) {
+        simplePattern = pattern;
+      } else {
+        simplePattern = strPattern.toString();
+      }
+
+      if (type == lastType) {
+        return simplePattern;
+      } else {
+        return null;
+      }
     }
   }
 }
