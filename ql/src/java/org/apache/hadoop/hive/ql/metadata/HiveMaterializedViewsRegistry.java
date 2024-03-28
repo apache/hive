@@ -468,7 +468,7 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger(), RelOptHiveTable.Type.VIEW);
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -483,7 +483,7 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger(), RelOptHiveTable.Type.VIEW);
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }

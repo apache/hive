@@ -398,5 +398,8 @@
   <name>hive.txn.xlock.ctas</name>
   <value>false</value>
 </property>
-
+<property>
+  <name>hive.query.lifetime.hooks</name>
+  <value>org.apache.hadoop.hive.ql.hooks.CommonTableExpressionAutoTuningHook</value>
+</property>
 </configuration>

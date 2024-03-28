@@ -554,7 +554,6 @@ class MetastoreDirectSqlUtils {
         return true;
       }
     }
-    LOG.debug("Value is of type {}", value.getClass());
     throw new MetaException("Cannot extract boolean from column value " + value);
   }
 
@@ -590,8 +589,8 @@ class MetastoreDirectSqlUtils {
       return (byte[]) value;
     }
 	else {
-      // this may happen when enablebitvector is false
-      LOG.debug("Expected blob type but got " + value.getClass().getName());
+      // org.apache.hadoop.hive.metastore.MetaStoreDirectSql.getStatsList(enableBitVector,enableKll)
+      // We get here when enableBitvector or enableKll is false
       return null;
     }
   }

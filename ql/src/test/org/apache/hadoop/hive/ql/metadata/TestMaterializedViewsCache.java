@@ -336,7 +336,7 @@ class TestMaterializedViewsCache {
       this.dummyTable = new RelOptHiveTable(null, null,
               singletonList(table.getDbName() + "." + table.getTableName()), null, table,
               emptyList(), emptyList(), emptyList(), null, null, null,
-              null, null, null);
+              null, null, null, RelOptHiveTable.Type.NORMAL);
     }
 
     @Override
