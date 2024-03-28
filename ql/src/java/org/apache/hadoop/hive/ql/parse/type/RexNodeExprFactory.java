@@ -276,7 +276,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     Double d = Double.valueOf(value);
     // TODO: The best solution is to support NaN in expression reduction.
     if (Double.isNaN(d)) {
-      throw new CalciteSemanticException("NaN", UnsupportedFeature.Invalid_decimal);
+      throw new CalciteSemanticException("NaN", UnsupportedFeature.INVALID_DECIMAL);
     }
     return rexBuilder.makeApproxLiteral(
         new BigDecimal(Double.toString(d)),
@@ -626,7 +626,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       // This may happen for schema-less tables, where columns are dynamically
       // supplied by serdes.
       throw new CalciteSemanticException("Unexpected rexnode : "
-          + expr.getClass().getCanonicalName(), UnsupportedFeature.Schema_less_table);
+          + expr.getClass().getCanonicalName(), UnsupportedFeature.SCHEMA_LESS_TABLE);
     }
   }
 

@@ -145,7 +145,7 @@ public class RexNodeConverter {
       // This may happen for schema-less tables, where columns are dynamically
       // supplied by serdes.
       throw new CalciteSemanticException("Unexpected rexnode : "
-          + rexNode.getClass().getCanonicalName(), UnsupportedFeature.Schema_less_table);
+          + rexNode.getClass().getCanonicalName(), UnsupportedFeature.SCHEMA_LESS_TABLE);
     }
   }
 
@@ -712,7 +712,7 @@ public class RexNodeConverter {
         // For now, we will not run CBO in the presence of invalid decimal
         // literals.
         throw new CalciteSemanticException("Expression " + literal.getExprString()
-            + " is not a valid decimal", UnsupportedFeature.Invalid_decimal);
+            + " is not a valid decimal", UnsupportedFeature.INVALID_DECIMAL);
         // TODO: return createNullLiteral(literal);
       }
       calciteLiteral = rexBuilder.makeExactLiteral((BigDecimal) value, calciteDataType);
@@ -724,7 +724,7 @@ public class RexNodeConverter {
     case DOUBLE:
       // TODO: The best solution is to support NaN in expression reduction.
       if (Double.isNaN((Double) value)) {
-        throw new CalciteSemanticException("NaN", UnsupportedFeature.Invalid_decimal);
+        throw new CalciteSemanticException("NaN", UnsupportedFeature.INVALID_DECIMAL);
       }
       calciteLiteral = rexBuilder.makeApproxLiteral(
           new BigDecimal(Double.toString((Double)value)), calciteDataType);

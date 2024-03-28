@@ -83,7 +83,7 @@ public class HiveProject extends Project implements HiveRelNode {
     // 1 Ensure columnNames are unique - CALCITE-411
     if (fieldNames != null && !Util.isDistinct(fieldNames)) {
       String msg = "Select list contains multiple expressions with the same name." + fieldNames;
-      throw new CalciteSemanticException(msg, UnsupportedFeature.Same_name_in_multiple_expressions);
+      throw new CalciteSemanticException(msg, UnsupportedFeature.SAME_NAME_IN_MULTIPLE_EXPRESSIONS);
     }
     RelDataType rowType = RexUtil.createStructType(
         cluster.getTypeFactory(), exps, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);

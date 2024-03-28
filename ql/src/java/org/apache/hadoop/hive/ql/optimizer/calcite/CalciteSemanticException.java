@@ -30,12 +30,23 @@ public class CalciteSemanticException extends SemanticException {
   private static final long serialVersionUID = 1L;
 
   public enum UnsupportedFeature {
-    Distinct_without_an_aggregation, Duplicates_in_RR, Filter_expression_with_non_boolean_return_type,
-    Having_clause_without_any_groupby, Invalid_column_reference, Invalid_decimal,
-    Less_than_equal_greater_than, Others, Same_name_in_multiple_expressions,
-    Schema_less_table, Select_alias_in_having_clause, Select_transform, Subquery,
-    Table_sample_clauses, UDTF, Union_type, Unique_join,
-    HighPrecisionTimestamp // CALCITE-1690
+    DISTINCT_WITHOUT_AN_AGGREGATION,
+    DUPLICATES_IN_RR,
+    FILTER_EXPRESSION_WITH_NON_BOOLEAN_RETURN_TYPE,
+    HAVING_CLAUSE_WITHOUT_ANY_GROUPBY,
+    INVALID_COLUMN_REFERENCE,
+    INVALID_DECIMAL,
+    LESS_THAN_EQUAL_GREATER_THAN,
+    OTHERS,
+    SAME_NAME_IN_MULTIPLE_EXPRESSIONS,
+    SCHEMA_LESS_TABLE,
+    SELECT_ALIAS_IN_HAVING_CLAUSE,
+    SELECT_TRANSFORM,
+    SUBQUERY,
+    TABLE_SAMPLE_CLAUSES,
+    UDTF,
+    UNION_TYPE,
+    UNIQUE_JOIN
   };
 
   private UnsupportedFeature unsupportedFeature;
