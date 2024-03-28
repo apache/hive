@@ -9,6 +9,8 @@
 --! qt:replace:/(\s+current-snapshot-id\s+)\S+(\s*)/$1#Masked#/
 -- Mask added file size
 --! qt:replace:/(\S\"added-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
+-- Mask removed file size
+--! qt:replace:/(\S\"removed-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 -- Mask total file size
 --! qt:replace:/(\S\"total-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 -- Mask current-snapshot-timestamp-ms

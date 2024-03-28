@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.sun.tools.javac.util.Pair;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -63,11 +64,11 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.OverwriteFiles;
 import org.apache.iceberg.ReplacePartitions;
+import org.apache.iceberg.RewriteFiles;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.Transaction;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
@@ -572,19 +573,28 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       RewritePolicy rewritePolicy) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
-      Transaction transaction = table.newTransaction();
       if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
-        DeleteFiles delete = transaction.newDelete();
-        delete.deleteFromRowFilter(Expressions.alwaysTrue());
-        delete.commit();
+
+        Pair<List<DataFile>, List<DeleteFile>> dataAndDeleteFiles = IcebergTableUtil.getDataAndDeleteFiles(table);
+        List<DataFile> existingDataFiles = dataAndDeleteFiles.fst;
+        List<DeleteFile> existingDeleteFiles = dataAndDeleteFiles.snd;
+
+        RewriteFiles rewriteFiles = table.newRewrite();
+        rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
+
+        existingDataFiles.forEach(rewriteFiles::deleteFile);
+        existingDeleteFiles.forEach(rewriteFiles::deleteFile);
+        results.dataFiles().forEach(rewriteFiles::addFile);
+
+        rewriteFiles.commit();
+      } else {
+        ReplacePartitions overwrite = table.newReplacePartitions();
+        results.dataFiles().forEach(overwrite::addFile);
+        if (StringUtils.isNotEmpty(branchName)) {
+          overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
+        }
+        overwrite.commit();
       }
-      ReplacePartitions overwrite = transaction.newReplacePartitions();
-      results.dataFiles().forEach(overwrite::addFile);
-      if (StringUtils.isNotEmpty(branchName)) {
-        overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
-      }
-      overwrite.commit();
-      transaction.commitTransaction();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());
     } else if (table.spec().isUnpartitioned()) {

@@ -19,10 +19,12 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.sun.tools.javac.util.Pair;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +38,10 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionSpec;
@@ -50,8 +55,11 @@ import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -327,5 +335,27 @@ public class IcebergTableUtil {
       }
     }
     return data;
+  }
+
+  public static Pair<List<DataFile>, List<DeleteFile>> getDataAndDeleteFiles(Table table) {
+    CloseableIterable<FileScanTask> fileScanTasks = table.newScan().planFiles();
+    List<DataFile> dataFiles = Lists.newArrayList();
+    List<DeleteFile> deleteFiles = Lists.newArrayList();
+    Set<String> dataFilesPath = Sets.newHashSet();
+    Set<String> deleteFilesPath = Sets.newHashSet();
+
+    fileScanTasks.forEach(fileScanTask -> {
+      // filter repeated data files
+      if (dataFilesPath.add(fileScanTask.file().path().toString())) {
+        dataFiles.add(fileScanTask.file());
+      }
+
+      // filter repeated delete files
+      fileScanTask.deletes().stream()
+          .filter(delete -> deleteFilesPath.add(delete.path().toString()))
+          .forEach(deleteFiles::add);
+    });
+
+    return new Pair<>(dataFiles, deleteFiles);
   }
 }
