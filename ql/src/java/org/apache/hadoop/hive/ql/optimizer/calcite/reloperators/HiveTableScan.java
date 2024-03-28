@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.RelWriter;
@@ -139,6 +140,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, null);
   }
 
+  public HiveTableScan(RelInput input) {
+    this(input.getCluster(), input.getTraitSet(), (RelOptHiveTable)input.getTable("table"),
+        (String) input.get("table:alias"), (String) input.get("qbid:alias"),
+        input.get("qbid:alias") != null, input.getBoolean("insideView", false));
+  }
+
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView,
       HiveTableScanTrait tableScanTrait) {
@@ -205,13 +212,16 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return super.explainTerms(pw)
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
       .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
-      .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("insideView", this.isInsideView(),
+          this.isInsideView() && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
           pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
-          isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
+          isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()))
+      .itemIf("materializedTable", this.isMaterializedTable(),
+            this.isMaterializedTable() && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES);
   }
 
   @Override
@@ -324,6 +334,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
 
   public boolean isInsideView() {
     return insideView;
+  }
+
+  private boolean isMaterializedTable() {
+    return ((RelOptHiveTable) table).getHiveTableMD().isMaterializedTable();
   }
 
   public HiveTableScanTrait getTableScanTrait() {

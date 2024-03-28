@@ -27,6 +27,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import java.nio.charset.Charset;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -167,6 +168,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelPlanParser;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
@@ -323,6 +325,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.Interval;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -1745,7 +1748,46 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
+
+      calcitePlan = serializeAndDeserialize(relOptSchema, perfLogger, calcitePlan);
+
       return calcitePlan;
+    }
+
+    @Nullable
+    private RelNode serializeAndDeserialize(RelOptSchema relOptSchema, PerfLogger perfLogger, RelNode calcitePlan) {
+      if (!canSerializeDeserialize(calcitePlan)) {
+        return calcitePlan;
+      }
+      perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
+      String calcitePlanJson = HiveRelOptUtil.asJSONObjectString(calcitePlan, false);
+      perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
+      LOG.debug("Size of calcite plan: {}", calcitePlanJson.getBytes(Charset.defaultCharset()).length);
+      LOG.debug("JSON plan: \n{}", calcitePlanJson);
+
+      try {
+        perfLogger.perfLogBegin(this.getClass().getName(), "fromJsonString");
+        RelPlanParser parser =
+            new RelPlanParser(ctx, getQB(), relOptSchema, calcitePlan.getCluster(), conf, db, tabNameToTabObject,
+                partitionCache, colStatsCache, noColsMissingStats);
+        RelNode fromJson = parser.parse(calcitePlanJson);
+        perfLogger.perfLogEnd(this.getClass().getName(), "fromJsonString");
+        LOG.debug("Base plan: \n{}", RelOptUtil.toString(calcitePlan));
+        LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
+        calcitePlan = fromJson;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+
+      return calcitePlan;
+    }
+
+    private boolean canSerializeDeserialize(RelNode plan) {
+      return
+          conf.getBoolVar(ConfVars.QUERY_PLAN_CACHE_ENABLED) &&
+          HiveRelNode.stream(plan)
+            .noneMatch(node -> node.getConvention().getName().toLowerCase().contains("jdbc"));
     }
 
     /**
@@ -3327,6 +3369,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode subQueryRoot = (ASTNode) next.getChild(1);
             doPhase1(subQueryRoot, qbSQ, ctx1, null);
             getMetaData(qbSQ);
+            qb.getSubqueryMetaDataList().add(qbSQ.getMetaData());
             this.subqueryId++;
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
@@ -3876,7 +3919,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   // but the instance RelDistributions.ANY can not be used here because
                   // org.apache.calcite.rel.core.Exchange has
                   // assert distribution != RelDistributions.ANY;
-                  new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys()),
+                  HiveRelDistribution.ANY,
               canonizedCollation,
               builder.build());
 

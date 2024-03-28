@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 
 /**
@@ -56,7 +56,7 @@ public class NotNullConstraint implements Serializable {
         String enable = pk.isEnable_cstr()? "ENABLE": "DISABLE";
         String validate = pk.isValidate_cstr()? "VALIDATE": "NOVALIDATE";
         String rely = pk.isRely_cstr()? "RELY": "NORELY";
-        enableValidateRely.put(pk.getNn_name(), ImmutableList.of(enable, validate, rely));
+        enableValidateRely.put(pk.getNn_name(), Arrays.asList(enable, validate, rely));
         notNullConstraints.put(pk.getNn_name(), pk.getColumn_name());
       }
     }
