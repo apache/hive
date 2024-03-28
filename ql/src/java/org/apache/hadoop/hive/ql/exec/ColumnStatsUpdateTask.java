@@ -101,9 +101,8 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
 
     ColumnStatisticsData statsData = new ColumnStatisticsData();
 
-    if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
-        || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
-        || columnType.equalsIgnoreCase("bigint")) {
+    if (columnType.equalsIgnoreCase("tinyint") || columnType.equalsIgnoreCase("smallint")
+            || columnType.equalsIgnoreCase("int") || columnType.equalsIgnoreCase("bigint")) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
