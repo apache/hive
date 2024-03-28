@@ -131,6 +131,13 @@ public class TestCachedClientPool extends HiveMetastoreTest {
         .hasMessageContaining("Conf key element k1 already specified");
   }
 
+  private static HiveClientPool getPool(HiveActor actor) {
+    if (actor instanceof HiveCatalogActor) {
+      return ((CachedClientPool) ((HiveCatalogActor) actor).clientPool()).clientPool();
+    }
+    return null;
+  }
+
   @Test
   public void testHmsCatalog() {
     Map<String, String> properties =
@@ -155,10 +162,10 @@ public class TestCachedClientPool extends HiveMetastoreTest {
     HiveCatalog catalog4 =
         (HiveCatalog) CatalogUtil.buildIcebergCatalog("4", properties, new Configuration());
 
-    HiveClientPool pool1 = ((CachedClientPool) catalog1.clientPool()).clientPool();
-    HiveClientPool pool2 = ((CachedClientPool) catalog2.clientPool()).clientPool();
-    HiveClientPool pool3 = ((CachedClientPool) catalog3.clientPool()).clientPool();
-    HiveClientPool pool4 = ((CachedClientPool) catalog4.clientPool()).clientPool();
+    HiveClientPool pool1 = getPool(catalog1.getActor());
+    HiveClientPool pool2 = getPool(catalog2.getActor());
+    HiveClientPool pool3 = getPool(catalog3.getActor());
+    HiveClientPool pool4 = getPool(catalog4.getActor());
 
     assertThat(pool2).isSameAs(pool1);
     assertThat(pool1).isNotSameAs(pool3);

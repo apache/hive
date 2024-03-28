@@ -1822,6 +1822,24 @@ public class MetastoreConf {
         "hive.metastore.properties.servlet.auth", "jwt",
         "Property-maps servlet authentication method (simple or jwt)."
     ),
+    PROPERTIES_NS("hive.metastore.properties.namespaces",
+        "hive.metastore.properties.namespaces", "",
+        "Property-maps namespace map; a JSON map where keys are namespace names, values namespace" +
+            "class and/or static factory method"),
+    CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
+        "hive.metastore.catalog.servlet.path", "icecli",
+        "Catalog servlet path component of URL endpoint."
+    ),
+    CATALOG_SERVLET_PORT("hive.metastore.catalog.servlet.port",
+        "hive.metastore.catalog.servlet.port", -1,
+        "Catalog servlet server port. Negative value disables the servlet," +
+            " 0 will let the system determine the catalog server port," +
+            " positive value will be used as-is."
+    ),
+    CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
+        "hive.metastore.catalog.servlet.auth", "jwt",
+        "Catalog servlet authentication method (simple or jwt)."
+    ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
