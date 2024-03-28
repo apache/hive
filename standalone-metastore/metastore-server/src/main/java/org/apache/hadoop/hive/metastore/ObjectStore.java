@@ -625,37 +625,26 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public int updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
-      throws MetaException {
-    String dml = String.format(
-        "UPDATE \"TABLE_PARAMS\" SET \"PARAM_VALUE\" = '%s' " +
-            "WHERE \"TBL_ID\" = %d AND \"PARAM_KEY\" = '%s' AND \"PARAM_VALUE\" = '%s'",
-        newValue,
-        table.getId(),
-        key,
-        expectedValue
-    );
-    JDOConnection jdoConn = null;
-    try {
-      openTransaction();
-      jdoConn = pm.getDataStoreConnection();
-      Object nativeConn = jdoConn.getNativeConnection();
-      if (!(nativeConn instanceof Connection)) {
-        throw new MetaException("Unexpected JDO native connection " + nativeConn.getClass().getName());
+  public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
+      throws MetaException, NoSuchObjectException {
+    return new GetHelper<Long>(table.getCatName(), table.getDbName(), table.getTableName(), true, false) {
+
+      @Override
+      protected String describeResult() {
+        return "Affected rows";
       }
-      Connection dbConn = (Connection) nativeConn;
-      try (Statement statement = dbConn.createStatement()) {
-        int affectedRows = statement.executeUpdate(dml);
-        commitTransaction();
-        return affectedRows;
+
+      @Override
+      protected Long getSqlResult(GetHelper<Long> ctx) throws MetaException {
+        return directSql.updateTableParam(table, key, expectedValue, newValue);
       }
-    } catch (SQLException e) {
-      throw new JDOException("Failed to execute direct SQL", e);
-    } finally {
-      if (jdoConn != null) {
-        jdoConn.close();
+
+      @Override
+      protected Long getJdoResult(GetHelper<Long> ctx) throws MetaException, NoSuchObjectException, InvalidObjectException {
+        throw new UnsupportedOperationException(
+            "Cannot update parameter with JDO, make sure direct SQL is enabled");
       }
-    }
+    }.run(false);
   }
 
   /**
