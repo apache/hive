@@ -47,6 +47,7 @@ and
 approx_distinct
 array
 array_append
+array_compact
 array_contains
 array_distinct
 array_except
@@ -677,6 +678,7 @@ and
 approx_distinct
 array
 array_append
+array_compact
 array_contains
 array_distinct
 array_except
