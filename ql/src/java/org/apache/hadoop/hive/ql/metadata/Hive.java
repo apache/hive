@@ -1710,6 +1710,7 @@ public class Hive {
    */
   public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional, boolean getColumnStats) throws HiveException {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
 
     if (tableName == null || tableName.equals("")) {
       throw new HiveException("empty table creation??");
@@ -1718,6 +1719,7 @@ public class Hive {
     // Get the table from metastore
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
       // Note: this is currently called w/true from StatsOptimizer only.
       GetTableRequest request = new GetTableRequest(dbName, tableName);
       request.setCatName(getDefaultCatalog(conf));
@@ -1740,6 +1742,8 @@ public class Hive {
       return null;
     } catch (Exception e) {
       throw new HiveException("Unable to fetch table " + tableName + ". " + e.getMessage(), e);
+    } finally {
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE, "HS2-cache");
     }
 
     // For non-views, we need to do some extra fixes
@@ -1932,7 +1936,7 @@ public class Hive {
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLES_BY_TYPE);
 
     if (dbName == null) {
       dbName = SessionState.get().getCurrentDatabase();
@@ -1957,7 +1961,7 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLES_BY_TYPE, "HS2-cache");
     }
   }
 
