@@ -53,6 +53,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -3297,5 +3298,14 @@ class MetaStoreDirectSql {
       }
       return result;
     }
+  }
+
+  long updateTableParam(Table table, String key, String expectedValue, String newValue) {
+    String statement = TxnUtils.createUpdatePreparedStmt(
+        "\"TABLE_PARAMS\"",
+        ImmutableList.of("\"PARAM_VALUE\""),
+        ImmutableList.of("\"TBL_ID\"", "\"PARAM_KEY\"", "\"PARAM_VALUE\""));
+    Query query = pm.newQuery("javax.jdo.query.SQL", statement);
+    return (long) query.executeWithArray(newValue, table.getId(), key, expectedValue);
   }
 }
