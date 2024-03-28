@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -68,7 +67,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
-import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -77,6 +75,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactOperation;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -1125,15 +1124,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // If the table is empty we don't have any danger that some data can get lost.
         return;
       }
-      if (RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, RewritePolicy.DEFAULT.name())) ==
-          RewritePolicy.ALL_PARTITIONS) {
-        // Table rewriting has special logic as part of IOW that handles the case when table had a partition evolution
-        return;
-      }
       if (IcebergTableUtil.isBucketed(table)) {
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
-      if (hasUndergonePartitionEvolution(table)) {
+      String partSpec = SessionState.getSessionConf().get(AlterTableCompactOperation.compactPartition);
+      if (hasUndergonePartitionEvolution(table) && partSpec != null && !partSpec.isEmpty()) {
         throw new SemanticException(
             "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
             "to successfully carry out any insert overwrite operation on this table, the data has to be rewritten " +

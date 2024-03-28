@@ -27,9 +27,12 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -109,7 +112,19 @@ public final class PartitionUtils {
       boolean throwException) throws SemanticException {
     List<Partition> partitions;
     try {
-      partitions = partitionSpec == null ? db.getPartitions(table) : db.getPartitions(table, partitionSpec);
+      if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+        table.getStorageHandler().validatePartSpec(table, partitionSpec);
+        try {
+          String partName = Warehouse.makePartName(partitionSpec, false);
+          partitions = new ArrayList<>();
+          partitions.add(new DummyPartition(table, partName, partitionSpec));
+          return partitions;
+        } catch (MetaException e) {
+          throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+        }
+      } else {
+        partitions = partitionSpec == null ? db.getPartitions(table) : db.getPartitions(table, partitionSpec); 
+      }
     } catch (Exception e) {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partitionSpec), e);
     }

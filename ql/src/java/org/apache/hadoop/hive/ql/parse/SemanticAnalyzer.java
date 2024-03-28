@@ -127,6 +127,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.preinsert.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableUnsetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactOperation;
 import org.apache.hadoop.hive.ql.ddl.table.storage.skewed.SkewedTableUtils;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
@@ -8835,7 +8836,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ExprNodeDesc> expressions = new ArrayList<>(outColumnCnt);
 
     AtomicBoolean convert = new AtomicBoolean(false);
-    if (inColumnCnt + staticPartitionColumnCnt != outColumnCnt) {
+    if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+      if (inColumnCnt != outColumnCnt || staticPartitionColumnCnt > inColumnCnt){
+        String reason = "Always unpartitioned table " + dest + " has " + outColumnCnt
+            + " columns, but query has " + inColumnCnt + " columns.";
+        throw new SemanticException(ASTErrorUtils.getMsg(
+            ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(),
+            qb.getParseInfo().getDestForClause(dest), reason));
+      }
+    }
+    else if (inColumnCnt + staticPartitionColumnCnt != outColumnCnt) {
       String reason = "Table " + dest + " has " + outColumnCnt
               + " columns, but query has " + (inColumnCnt + staticPartitionColumnCnt) + " columns.";
       throw new SemanticException(ASTErrorUtils.getMsg(
@@ -13203,12 +13213,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // validate if this sink operation is allowed for non-native tables
     if (sinkOp instanceof FileSinkOperator) {
       FileSinkOperator fileSinkOperator = (FileSinkOperator) sinkOp;
-      Optional<HiveStorageHandler> handler = Optional.ofNullable(fileSinkOperator)
+      Optional<Table> table = Optional.ofNullable(fileSinkOperator)
           .map(FileSinkOperator::getConf)
-          .map(FileSinkDesc::getTable)
+          .map(FileSinkDesc::getTable);
+      Optional<HiveStorageHandler> handler = table
           .map(Table::getStorageHandler);
       if (handler.isPresent()) {
-         handler.get().validateSinkDesc(fileSinkOperator.getConf());
+        if (fileSinkOperator.getConf().getInsertOverwrite()) {
+          qb.getMetaData()
+              .getNameToDestPartition()
+              .keySet()
+              .stream()
+              .findFirst()
+              .map(alias -> qb.getMetaData().getPartSpecForAlias(alias))
+              .map(partSpecMap -> {
+                try {
+                  return handler.get().getPartitionNames(table.get(), partSpecMap).get(0);
+                } catch (SemanticException e) {
+                  throw new RuntimeException(e);
+                }
+              })
+              .map(partSpec -> {
+                SessionState.getSessionConf().set(AlterTableCompactOperation.compactPartition, partSpec);
+                return true;
+              });
+        }
+        handler.get().validateSinkDesc(fileSinkOperator.getConf());
       }
     }
 

@@ -29,9 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -50,7 +48,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -166,19 +163,8 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
-        if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
-          table.getStorageHandler().validatePartSpec(table, partitionSpec);
-          try {
-            String partName = Warehouse.makePartName(partitionSpec, false);
-            Partition partition = new DummyPartition(table, partName, partitionSpec);
-            outputs.add(new WriteEntity(partition, writeType));
-          } catch (MetaException e) {
-            throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
-          }
-        } else {
-          Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
-          outputs.add(new WriteEntity(partition, writeType));
-        }
+        Partition partition = PartitionUtils.getPartitions(db, table, partitionSpec, true).get(0);
+        outputs.add(new WriteEntity(partition, writeType));
       } else {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, false);
         for (Partition partition : PartitionUtils.getPartitions(db, table, partitionSpec, false)) {

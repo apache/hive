@@ -95,11 +95,12 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
       // ReadEntity as no lock.
       re.noLockNeeded();
       inputs.add(re);
+      Partition partition;
 
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
         // Fully specified partition spec
-        Partition part = PartitionUtils.getPartition(db, table, partitionSpec, true);
-        outputs.add(new WriteEntity(part, writeType));
+        partition = PartitionUtils.getPartitions(db, table, partitionSpec, true).get(0);
+        outputs.add(new WriteEntity(partition, writeType));
       } else {
         // Partial partition spec supplied. Make sure this is allowed.
         if (!AlterTableType.SUPPORT_PARTIAL_PARTITION_SPEC.contains(op)) {

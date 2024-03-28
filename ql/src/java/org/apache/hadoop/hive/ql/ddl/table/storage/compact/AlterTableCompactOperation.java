@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -51,6 +52,8 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftTyp
  * Operation process of compacting a table.
  */
 public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
+
+  public static String compactPartition = "hive.iceberg.compaction.partition";
 
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
     super(context, desc);
@@ -133,7 +136,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       }
     } else {
       Map<String, String> partitionSpec = desc.getPartitionSpec();
-      partitions = context.getDb().getPartitions(table, partitionSpec);
+      partitions.addAll(PartitionUtils.getPartitions(context.getDb(), table, partitionSpec, false));
       if (partitions.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       } else if (partitions.isEmpty()) {

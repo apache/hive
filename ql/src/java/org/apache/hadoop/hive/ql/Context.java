@@ -253,21 +253,7 @@ public class Context {
       return prefix;
     }
   }
-  public enum RewritePolicy {
 
-    DEFAULT,
-    ALL_PARTITIONS;
-
-    public static RewritePolicy fromString(String rewritePolicy) {
-      Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");
-
-      try {
-        return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
-      } catch (IllegalArgumentException var2) {
-        throw new IllegalArgumentException(String.format("Invalid rewrite policy: %s", rewritePolicy), var2);
-      }
-    }
-  }
   private String getMatchedText(ASTNode n) {
     return getTokenRewriteStream().toString(n.getTokenStartIndex(), n.getTokenStopIndex() + 1).trim();
   }
