@@ -19,9 +19,12 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.parse.ParseUtils.ensureClassExists;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,8 +51,13 @@ public class StorageFormat {
 
   public enum StorageHandlerTypes {
     DEFAULT(),
-    ICEBERG("\'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler\'",
+    ICEBERG("'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'",
         "org.apache.iceberg.mr.hive.HiveIcebergInputFormat", "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
+
+    private static final List<StorageHandlerTypes> NON_DEFAULT_TYPES = Arrays
+        .stream(values())
+        .filter(type -> type != StorageHandlerTypes.DEFAULT)
+        .collect(Collectors.toList());
 
     private final String className;
     private final String inputFormat;
@@ -133,7 +141,7 @@ public class StorageFormat {
             BaseSemanticAnalyzer.readProps((ASTNode) grandChild.getChild(0), serdeProps);
             break;
           default:
-            storageHandler = processStorageHandler(grandChild.getText());
+            storageHandler = processStorageHandler(grandChild);
         }
       }
       break;
@@ -157,17 +165,41 @@ public class StorageFormat {
     return true;
   }
 
-  private String processStorageHandler(String name) throws SemanticException {
-    for (StorageHandlerTypes type : StorageHandlerTypes.values()) {
-      if (type.name().equalsIgnoreCase(name)) {
-        name = type.className();
-        inputFormat = type.inputFormat();
-        outputFormat = type.outputFormat();
-        break;
+  private String processStorageHandler(ASTNode node) throws SemanticException {
+    if (node.getType() == HiveParser.StringLiteral) {
+      // e.g. STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'
+      try {
+        return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(node.getText()));
+      } catch (SemanticException e) {
+        throw createUnsupportedStorageHandlerTypeError(node, e);
       }
     }
+    if (node.getType() == HiveParser.Identifier) {
+      // e.g. STORED BY ICEBERG
+      for (StorageHandlerTypes type : StorageHandlerTypes.NON_DEFAULT_TYPES) {
+        if (type.name().equalsIgnoreCase(node.getText())) {
+          inputFormat = type.inputFormat();
+          outputFormat = type.outputFormat();
+          assert type.className() != null;
+          // Should never fail
+          return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(type.className()));
+        }
+      }
+    }
+    throw createUnsupportedStorageHandlerTypeError(node, null);
+  }
 
-    return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(name));
+  private static SemanticException createUnsupportedStorageHandlerTypeError(ASTNode node, Throwable cause) {
+    final String supportedTypes = StorageHandlerTypes
+        .NON_DEFAULT_TYPES
+        .stream()
+        .map(Enum::toString)
+        .collect(Collectors.joining(", "));
+    return new SemanticException(String.format(
+        "The storage handler specified in the STORED BY clause is not recognized: %s. Please use one of the supported "
+            + "types, which are %s, or provide the Fully Qualified Class Name (FQCN) of a valid storage handler.",
+        node.getText(), supportedTypes
+    ), cause);
   }
 
   public void processStorageFormat(String name) throws SemanticException {
