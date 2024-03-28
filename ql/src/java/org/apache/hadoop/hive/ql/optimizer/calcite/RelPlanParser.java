@@ -201,19 +201,26 @@ public class RelPlanParser {
         );
       }
 
+      // TODO: Probably could simplify this method. Maybe we don't need to look in QB.
       private Table getTable(String alias, String dbName, String tableName) {
         String fullTableName = TableName.getDbTable(dbName, tableName);
         // Look in QB
-        Table result = qb.getTableForAlias(alias);
+        Table result = verifyTableName(qb.getTableForAlias(alias), fullTableName);
 
         // Look in ctx if it's a materialized table
         if (result == null && jsonRel.containsKey("materializedTable") && (boolean) jsonRel.get("materializedTable")) {
-          result = getTableUsing(ctx::getMaterializedTable, alias, tableName, fullTableName);
+          result = verifyTableName(
+              getTableUsing(ctx::getMaterializedTable, alias, tableName, fullTableName),
+              fullTableName
+          );
         }
 
         // Look in tabNameToTabObject
         if (result == null) {
-          result = getTableUsing(tabNameToTabObject::getParsedTable, tableName, fullTableName);
+          result = verifyTableName(
+              getTableUsing(tabNameToTabObject::getParsedTable, tableName, fullTableName),
+              fullTableName
+          );
         }
 
         // Finally try HMS
@@ -233,6 +240,15 @@ public class RelPlanParser {
 
       private Table getTableUsing(Function<String, Table> function, String ... names) {
         return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
+      }
+
+      private Table verifyTableName(Table table, String fullName) {
+        if (table == null) {
+          return null;
+        }
+        String tableName = TableName.getDbTable(table.getDbName(), table.getTableName());
+
+        return fullName.equals(tableName) ? table: null;
       }
 
       private Map<Boolean, List<ColumnInfo>> computeColumnInfos(RelDataType rowType, String tableAlias) {
