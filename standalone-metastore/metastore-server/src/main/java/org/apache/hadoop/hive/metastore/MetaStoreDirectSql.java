@@ -56,6 +56,7 @@ import javax.jdo.datastore.JDOConnection;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -110,6 +111,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -1550,30 +1552,33 @@ class MetaStoreDirectSql {
       if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
         Map<String, String> partKeyToVal = new HashMap<>();
         partKeyToVal.put(partCol.getName(), node.value.toString());
-        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
+        String escapedNameFragmentPart = Warehouse.makePartName(partKeyToVal, false);
         if (colType == FilterType.Date) {
           // Some engines like Pig will record both date and time values, in which case we need
           // match PART_NAME by like clause.
-          escapedNameFragment += "%";
+          escapedNameFragmentPart += "%";
         }
+        StringBuilder sbFilter = new StringBuilder();
+        for (int i = 0; i < partitionKeys.size(); i++) {
+          FieldSchema col = partitionKeys.get(i);
+          if (i > 0) {
+            sbFilter.append(Path.SEPARATOR);
+          }
+          if (partCol.getName().equals(col.getName())) {
+            sbFilter.append(escapedNameFragmentPart);
+          } else {
+            sbFilter.append(FileUtils.escapePathName(col.getName().toLowerCase(), "_%"));
+            sbFilter.append('=');
+            sbFilter.append(FileUtils.escapePathName(null, "_%"));
+          }
+        }
+        String escapedNameFragment = sbFilter.toString();
         if (colType != FilterType.Date && partColCount == 1) {
           // Case where partition column type is not date and there is no other partition columns
           params.add(escapedNameFragment);
           filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " =? " : " !=? ");
         } else {
-          if (partColCount == 1) {
-            // Case where partition column type is date and there is no other partition columns
-            params.add(escapedNameFragment);
-          } else if (partColIndex + 1 == partColCount) {
-            // Case where the partition column is at the end of the name.
-            params.add("%/" + escapedNameFragment);
-          } else if (partColIndex == 0) {
-            // Case where the partition column is at the beginning of the name.
-            params.add(escapedNameFragment + "/%");
-          } else {
-            // Case where the partition column is in the middle of the name.
-            params.add("%/" + escapedNameFragment + "/%");
-          }
+          params.add(escapedNameFragment);
           filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " like ? " : " not like ? ");
         }
       }
