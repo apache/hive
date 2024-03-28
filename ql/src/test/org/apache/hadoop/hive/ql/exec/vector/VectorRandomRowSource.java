@@ -441,7 +441,7 @@ public class VectorRandomRowSource {
       String elementTypeName = getRandomTypeName(random, supportedTypes, allowedTypeNameSet);
       elementTypeName =
           getDecoratedTypeName(random, elementTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      typeName = String.format("array<%s>", elementTypeName);
+      typeName = String.format("%s<%s>", "array", elementTypeName);
     } else if (typeName.equals("map")) {
       String keyTypeName =
           getRandomTypeName(
@@ -455,7 +455,7 @@ public class VectorRandomRowSource {
       valueTypeName =
           getDecoratedTypeName(
               random, valueTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      typeName = String.format("map<%s,%s>", keyTypeName, valueTypeName);
+      typeName = String.format("%s<%s,%s>", "map", keyTypeName, valueTypeName);
     } else if (typeName.equals("struct")) {
       final int fieldCount = 1 + random.nextInt(10);
       final StringBuilder sb = new StringBuilder();
@@ -474,7 +474,7 @@ public class VectorRandomRowSource {
         sb.append(":");
         sb.append(fieldTypeName);
       }
-      typeName = String.format("struct<%s>", sb.toString());
+      typeName = String.format("%s<%s>", "struct", sb.toString());
     } else if (typeName.equals("struct") ||
         typeName.equals("uniontype")) {
       final int fieldCount = 1 + random.nextInt(10);
@@ -491,7 +491,7 @@ public class VectorRandomRowSource {
         }
         sb.append(fieldTypeName);
       }
-      typeName = String.format("uniontype<%s>", sb.toString());
+      typeName = String.format("%s<%s>", "uniontype", sb.toString());
     }
     return typeName;
   }

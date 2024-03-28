@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -439,7 +440,7 @@ public class ConvertAstToSearchArg {
       // if it is a reference to a boolean column, covert it to a truth test.
       if (expression instanceof ExprNodeColumnDesc) {
         ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) expression;
-        if (columnDesc.getTypeString().equals("boolean")) {
+        if (columnDesc.getTypeString().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
           builder.equals(columnDesc.getColumn(), PredicateLeaf.Type.BOOLEAN,
               true);
           return;

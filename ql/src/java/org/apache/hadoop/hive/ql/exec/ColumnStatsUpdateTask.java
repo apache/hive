@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
@@ -101,9 +102,11 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
 
     ColumnStatisticsData statsData = new ColumnStatisticsData();
 
-    if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
-        || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
-        || columnType.equalsIgnoreCase("bigint")) {
+    if (columnType.equalsIgnoreCase("long")
+        || columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
+        || columnType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
+        || columnType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
+        || columnType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
@@ -127,7 +130,8 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setLongStats(longStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("double") || columnType.equalsIgnoreCase("float")) {
+    } else if (columnType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)
+            || columnType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
       DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
       doubleStats.setNumNullsIsSet(false);
       doubleStats.setNumDVsIsSet(false);
@@ -151,8 +155,9 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDoubleStats(doubleStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("string") || columnType.toLowerCase().startsWith("char")
-              || columnType.toLowerCase().startsWith("varchar")) { //char(x),varchar(x) types
+    } else if (columnType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
+            || columnType.toLowerCase().startsWith(serdeConstants.CHAR_TYPE_NAME)
+            || columnType.toLowerCase().startsWith(serdeConstants.VARCHAR_TYPE_NAME)) { //char(x),varchar(x) types
       StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
       stringStats.setMaxColLenIsSet(false);
       stringStats.setAvgColLenIsSet(false);
@@ -176,7 +181,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setStringStats(stringStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("boolean")) {
+    } else if (columnType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
       BooleanColumnStatsData booleanStats = new BooleanColumnStatsData();
       booleanStats.setNumNullsIsSet(false);
       booleanStats.setNumTruesIsSet(false);
@@ -197,7 +202,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setBooleanStats(booleanStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("binary")) {
+    } else if (columnType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
       binaryStats.setNumNullsIsSet(false);
       binaryStats.setAvgColLenIsSet(false);
@@ -218,7 +223,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setBinaryStats(binaryStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.toLowerCase().startsWith("decimal")) { //decimal(a,b) type
+    } else if (columnType.toLowerCase().startsWith(serdeConstants.DECIMAL_TYPE_NAME)) { //decimal(a,b) type
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
       decimalStats.setNumNullsIsSet(false);
       decimalStats.setNumDVsIsSet(false);
@@ -246,7 +251,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDecimalStats(decimalStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("date")) {
+    } else if (columnType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
       DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
       Map<String, String> mapProp = work.getMapProp();
       for (Entry<String, String> entry : mapProp.entrySet()) {
@@ -268,7 +273,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDateStats(dateStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("timestamp")) {
+    } else if (columnType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
       Map<String, String> mapProp = work.getMapProp();
       for (Entry<String, String> entry : mapProp.entrySet()) {

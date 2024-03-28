@@ -105,28 +105,28 @@ public class VectorExpressionDescriptor {
 
     public static ArgumentType fromHiveTypeName(String hiveTypeName) {
       String lower = hiveTypeName.toLowerCase();
-      if (lower.equals("tinyint") ||
-          lower.equals("smallint") ||
-          lower.equals("int") ||
-          lower.equals("bigint") ||
-          lower.equals("boolean") ||
+      if (lower.equals(serdeConstants.TINYINT_TYPE_NAME) ||
+          lower.equals(serdeConstants.SMALLINT_TYPE_NAME) ||
+          lower.equals(serdeConstants.INT_TYPE_NAME) ||
+          lower.equals(serdeConstants.BIGINT_TYPE_NAME) ||
+          lower.equals(serdeConstants.BOOLEAN_TYPE_NAME) ||
           lower.equals("long")) {
         return INT_FAMILY;
-      } else if (lower.equals("double") || lower.equals("float")) {
+      } else if (lower.equals(serdeConstants.DOUBLE_TYPE_NAME) || lower.equals(serdeConstants.FLOAT_TYPE_NAME)) {
         return FLOAT_FAMILY;
-      } else if (lower.equals("string")) {
+      } else if (lower.equals(serdeConstants.STRING_TYPE_NAME)) {
         return STRING;
       } else if (VectorizationContext.charTypePattern.matcher(lower).matches()) {
         return CHAR;
       } else if (VectorizationContext.varcharTypePattern.matcher(lower).matches()) {
         return VARCHAR;
-      } else if (lower.equals("binary")) {
+      } else if (lower.equals(serdeConstants.BINARY_TYPE_NAME)) {
         return BINARY;
       } else if (VectorizationContext.decimalTypePattern.matcher(lower).matches()) {
         return DECIMAL;
-      } else if (lower.equals("timestamp")) {
+      } else if (lower.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
         return TIMESTAMP;
-      } else if (lower.equals("date")) {
+      } else if (lower.equals(serdeConstants.DATE_TYPE_NAME)) {
         return DATE;
       } else if (lower.equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME)) {
         return INTERVAL_YEAR_MONTH;
@@ -138,7 +138,7 @@ public class VectorExpressionDescriptor {
         return LIST;
       } else if (VectorizationContext.mapTypePattern.matcher(lower).matches()) {
         return MAP;
-      } else if (lower.equals("void")) {
+      } else if (lower.equals(serdeConstants.VOID_TYPE_NAME)) {
         return VOID;
       } else {
         return NONE;
@@ -149,7 +149,7 @@ public class VectorExpressionDescriptor {
       if (inType.equalsIgnoreCase("long")) {
         // A synonym in some places in the code...
         return INT_FAMILY;
-      } else if (inType.equalsIgnoreCase("double")) {
+      } else if (inType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
         // A synonym in some places in the code...
         return FLOAT_FAMILY;
       } else if (VectorizationContext.decimalTypePattern.matcher(inType).matches()) {

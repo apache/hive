@@ -362,12 +362,12 @@ public class TestVectorSerDeRow {
 
   private void addToProperties(Properties tbl, String fieldNames, String fieldTypes) {
     // Set the configuration parameters
-    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty("serialization.format", "9");
 
     tbl.setProperty("columns", fieldNames);
     tbl.setProperty("columns.types", fieldTypes);
 
-    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "\\N");
+    tbl.setProperty("serialization.null.format", "\\N");
   }
 
   private LazySerDeParameters getSerDeParams(

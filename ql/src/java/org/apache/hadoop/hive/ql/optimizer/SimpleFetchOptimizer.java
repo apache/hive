@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -231,7 +232,7 @@ public class SimpleFetchOptimizer extends Transform {
       if (op instanceof FilterOperator) {
         ExprNodeDesc predicate = ((FilterOperator) op).getConf().getPredicate();
         if (predicate instanceof ExprNodeConstantDesc
-                && "boolean".equals(predicate.getTypeInfo().getTypeName())) {
+                && serdeConstants.BOOLEAN_TYPE_NAME.equals(predicate.getTypeInfo().getTypeName())) {
           continue;
         } else if (PartitionPruner.onlyContainsPartnCols(table, predicate)) {
           continue;

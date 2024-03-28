@@ -259,33 +259,34 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   static {
     StringBuilder patternBuilder = new StringBuilder();
-    patternBuilder.append("int");
-    patternBuilder.append("|smallint");
-    patternBuilder.append("|tinyint");
-    patternBuilder.append("|bigint");
-    patternBuilder.append("|integer");
-    patternBuilder.append("|long");
-    patternBuilder.append("|short");
-    patternBuilder.append("|timestamp");
-    patternBuilder.append("|" + serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
-    patternBuilder.append("|" + serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
-    patternBuilder.append("|boolean");
-    patternBuilder.append("|binary");
-    patternBuilder.append("|string");
-    patternBuilder.append("|byte");
-    patternBuilder.append("|float");
-    patternBuilder.append("|double");
-    patternBuilder.append("|date");
-    patternBuilder.append("|void");
+    patternBuilder.append(serdeConstants.INT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.SMALLINT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.TINYINT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BIGINT_TYPE_NAME);
+    patternBuilder.append("|").append("integer");
+    patternBuilder.append("|").append("long");
+    patternBuilder.append("|").append("short");
+    patternBuilder.append("|").append(serdeConstants.TIMESTAMP_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BOOLEAN_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BINARY_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.STRING_TYPE_NAME);
+    patternBuilder.append("|").append("byte");
+    patternBuilder.append("|").append(serdeConstants.FLOAT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.DOUBLE_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.DATE_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.VOID_TYPE_NAME);
 
-    // Decimal types can be specified with different precision and scales e.g. decimal(10,5),
-    // as opposed to other data types which can be represented by constant strings.
-    // The regex matches only the "decimal" prefix of the type.
-    patternBuilder.append("|decimal.*");
+    /** Decimal types can be specified with different precision and scales e.g. decimal(10,5),
+     * as opposed to other data types which can be represented by constant strings.
+     * The regex matches only the {@link serdeConstants#DECIMAL_TYPE_NAME} prefix of the type.
+     */
+    patternBuilder.append("|").append(serdeConstants.DECIMAL_TYPE_NAME).append(".*");
 
     // CHAR and VARCHAR types can be specified with maximum length.
-    patternBuilder.append("|char.*");
-    patternBuilder.append("|varchar.*");
+    patternBuilder.append("|").append(serdeConstants.CHAR_TYPE_NAME).append(".*");
+    patternBuilder.append("|").append(serdeConstants.VARCHAR_TYPE_NAME).append(".*");
 
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
   }
@@ -3255,7 +3256,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
-        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals(serdeConstants.VOID_TYPE_NAME)) {
       return false;
     }
 
@@ -3283,7 +3284,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
-        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals(serdeConstants.VOID_TYPE_NAME)) {
       return "Vectorizing data type void not supported when mode = PROJECTION";
     }
 

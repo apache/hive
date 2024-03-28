@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -141,7 +142,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         Table table = db.newTable(tableName);
         table.setSerializationLib(format.getSerde());
         List<FieldSchema> fields = new ArrayList<>();
-        fields.add(new FieldSchema("val", "int", null));
+        fields.add(new FieldSchema("val", serdeConstants.INT_TYPE_NAME, null));
         table.setFields(fields);
         table.setDataLocation(Warehouse.getDnsPath(new Path(SessionState.get().getTempTableSpace(),
             tableName), conf));

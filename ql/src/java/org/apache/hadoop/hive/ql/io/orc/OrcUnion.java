@@ -27,6 +27,8 @@ import org.apache.orc.OrcProto;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME;
+
 /**
  * An in-memory representation of a union type.
  */
@@ -119,7 +121,8 @@ final class OrcUnion implements UnionObject {
 
     @Override
     public String getTypeName() {
-      StringBuilder builder = new StringBuilder("uniontype<");
+      StringBuilder builder = new StringBuilder(UNION_TYPE_NAME);
+      builder.append("<");
       boolean first = true;
       for(ObjectInspector child: children) {
         if (first) {

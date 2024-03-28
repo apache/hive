@@ -97,7 +97,7 @@ public class OrcSerde extends AbstractSerDe implements SchemaInference {
   }
 
   /**
-   * NOTE: if "columns.types" is missing, all columns will be of String type.
+   * NOTE: if {@link serdeConstants#LIST_COLUMN_TYPES} is missing, all columns will be of String type.
    */
   @Override
   protected List<TypeInfo> parseColumnTypes() {
@@ -163,7 +163,7 @@ public class OrcSerde extends AbstractSerDe implements SchemaInference {
   }
 
   private String convertPrimitiveType(TypeDescription fieldType) {
-    if (fieldType.getCategory().getName().equals("timestamp with local time zone")) {
+    if (fieldType.getCategory().getName().equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       throw new IllegalArgumentException("Unhandled ORC type " + fieldType.getCategory().getName());
     }
     return fieldType.toString();

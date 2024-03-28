@@ -1043,8 +1043,8 @@ public class TypeCheckProcFactory<T> {
           // flatten OR
           List<T> childrenList = new ArrayList<>(children.size());
           for (T child : children) {
-            if (TypeInfoFactory.getPrimitiveTypeInfo("void").equals(exprFactory.getTypeInfo(child))) {
-              child = exprFactory.setTypeInfo(child, TypeInfoFactory.getPrimitiveTypeInfo("boolean"));
+            if (TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME).equals(exprFactory.getTypeInfo(child))) {
+              child = exprFactory.setTypeInfo(child, TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME));
             }
             if (exprFactory.isORFuncCallExpr(child)) {
               childrenList.addAll(exprFactory.getExprChildren(child));
@@ -1057,8 +1057,8 @@ public class TypeCheckProcFactory<T> {
           // flatten AND
           List<T> childrenList = new ArrayList<>(children.size());
           for (T child : children) {
-            if (TypeInfoFactory.getPrimitiveTypeInfo("void").equals(exprFactory.getTypeInfo(child))) {
-              child = exprFactory.setTypeInfo(child, TypeInfoFactory.getPrimitiveTypeInfo("boolean"));
+            if (TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME).equals(exprFactory.getTypeInfo(child))) {
+              child = exprFactory.setTypeInfo(child, TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME));
             }
             if (exprFactory.isANDFuncCallExpr(child)) {
               childrenList.addAll(exprFactory.getExprChildren(child));

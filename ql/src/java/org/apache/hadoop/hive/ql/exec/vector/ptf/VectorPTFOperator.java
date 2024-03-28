@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPTFDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPTFInfo;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -568,15 +569,15 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private static TypeInfo columnVectorTypeToTypeInfo(Type type) {
     switch (type) {
     case DOUBLE:
-      return TypeInfoUtils.getTypeInfoFromTypeString("double");
+      return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.DOUBLE_TYPE_NAME);
     case BYTES:
-      return TypeInfoUtils.getTypeInfoFromTypeString("string");
+      return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.STRING_TYPE_NAME);
     case DECIMAL:
-      return TypeInfoUtils.getTypeInfoFromTypeString("decimal");
+      return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.DECIMAL_TYPE_NAME);
     case TIMESTAMP:
-      return TypeInfoUtils.getTypeInfoFromTypeString("timestamp");
+      return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.TIMESTAMP_TYPE_NAME);
     case LONG:
-      return TypeInfoUtils.getTypeInfoFromTypeString("int");
+      return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.INT_TYPE_NAME);
     default:
       throw new RuntimeException("Cannot convert column vector type: '" + type + "' to TypeInfo");
     }
