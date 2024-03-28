@@ -1789,6 +1789,7 @@
             <exclude>hcatalog/core/mapred/**/part-m*</exclude>
             <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
             <exclude>**/PriorityBlockingDeque.java</exclude>
+            <exclude>**/StringToDouble.java</exclude>
             <exclude>LICENSE-binary</exclude>
           </excludes>
         </configuration>
