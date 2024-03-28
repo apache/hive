@@ -92,4 +92,18 @@ public class TestGenericUDFFromUtcTimestamp {
         new Text("2015-03-28 18:00:00.123456789"), new Text("Europe/London"),
         Timestamp.valueOf("2015-03-28 18:00:00.123456789"));
   }
+
+  @Test
+  public void testInvalidTimestamp() throws Exception {
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    GenericUDFFromUtcTimestamp udf = new GenericUDFFromUtcTimestamp();
+    ObjectInspector[] args2 = {valueOI, valueOI};
+    udf.initialize(args2);
+
+    try {
+      runAndVerify(udf, new Text("2015-03-28 17:00:00"), new Text("InvalidTimestamp"), null);
+    }catch (Exception exception){
+      assertEquals("Unknown time-zone ID: InvalidTimestamp", exception.getMessage());
+    }
+  }
 }
