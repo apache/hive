@@ -14495,6 +14495,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                           + "'='" + fileFormat + "')");
         }
       }
+    } else if (partitionTransformSpecExists) {
+      throw new SemanticException("Partition transforms are only supported by Iceberg storage handler");
     }
   }
 
