@@ -973,7 +973,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void alter_catalog(AlterCatalogRequest rqst) throws TException {
-    startFunction("alter_catalog " + rqst.getName());
+    startFunction("alter_catalog", ": " + rqst.getName());
     boolean success = false;
     Exception ex = null;
     RawStore ms = getMS();
@@ -1047,7 +1047,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw e;
     } finally {
-      endFunction("get_catalog", ret != null, ex);
+      endFunction("get_catalogs", ret != null, ex);
     }
     return new GetCatalogsResponse(ret == null ? Collections.emptyList() : ret);
 
@@ -1423,7 +1423,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void alter_database(final String dbName, final Database newDB) throws TException {
-    startFunction("alter_database " + dbName);
+    startFunction("alter_database", ": " + dbName);
     boolean success = false;
     Exception ex = null;
     RawStore ms = getMS();
@@ -1941,7 +1941,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void alter_dataconnector(final String dcName, final DataConnector newDC) throws TException {
-    startFunction("alter_dataconnector " + dcName);
+    startFunction("alter_dataconnector", ": " + dcName);
     boolean success = false;
     Exception ex = null;
     RawStore ms = getMS();
@@ -1986,7 +1986,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               transactionalListenersResponses, ms);
         }
  */
-      endFunction("alter_database", success, ex);
+      endFunction("alter_dataconnector", success, ex);
     }
   }
 
@@ -2558,7 +2558,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                             List<SQLCheckConstraint> checkConstraints)
       throws AlreadyExistsException, MetaException, InvalidObjectException,
       InvalidInputException {
-    startFunction("create_table", ": " + tbl.toString());
+    startFunction("create_table_with_constraints", ": " + tbl.toString());
     boolean success = false;
     Exception ex = null;
     try {
@@ -4381,19 +4381,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public AddPartitionsResult add_partitions_req(AddPartitionsRequest request)
       throws TException {
-    startFunction("add_partitions_req",
-        ": db=" + request.getDbName() + " tab=" + request.getTblName());
-    AddPartitionsResult result = new AddPartitionsResult();
-    if (request.getParts().isEmpty()) {
-      return result;
-    }
     String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
     String dbName = request.getDbName();
     String tblName = request.getTblName();
     startTableFunction("add_partitions_req", catName, dbName, tblName);
 
+    AddPartitionsResult result = new AddPartitionsResult();
     Exception ex = null;
     try {
+      if (request.getParts().isEmpty()) {
+        return result;
+      }
       if (!request.isSetCatName()) {
         request.setCatName(catName);
       }
@@ -5728,6 +5726,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     long maxParts = request.getMaxParts();
     String filter = request.isSetFilter() ? request.getFilter() : "";
     startPartitionFunction("get_partition_values", catName, dbName, tblName, (int) maxParts, filter);
+    PartitionValuesResponse ret = null;
+    Exception ex = null;
     try {
       authorizeTableForPartitionMetadata(catName, dbName, tblName);
 
@@ -5735,13 +5735,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // the subsequent call to listPartitionValues fails.
       List<FieldSchema> partCols = new ArrayList<FieldSchema>();
       partCols.add(request.getPartitionKeys().get(0));
-      return getMS().listPartitionValues(catName, dbName, tblName, request.getPartitionKeys(),
+      ret = getMS().listPartitionValues(catName, dbName, tblName, request.getPartitionKeys(),
           request.isApplyDistinct(), request.getFilter(), request.isAscending(),
           request.getPartitionOrder(), request.getMaxParts());
     } catch (NoSuchObjectException e) {
+      ex = e;
       LOG.error(String.format("Unable to get partition for %s.%s.%s", catName, dbName, tblName), e);
       throw new MetaException(e.getMessage());
+    } finally {
+      endFunction("get_partition_values", ret != null, ex, tblName);
     }
+    return ret;
   }
 
   @Deprecated
@@ -7410,6 +7414,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
     int ret = -1;
     Exception ex = null;
+    startTableFunction("get_num_partitions_by_expr", catName, dbName, tblName);
     try {
       ret = getMS().getNumPartitionsByExpr(catName, dbName, tblName, expr);
     } catch (Exception e) {
@@ -8237,7 +8242,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public String get_token(String token_identifier) throws TException {
-    startFunction("get_token for", ": " + token_identifier);
+    startFunction("get_token", ": " + token_identifier);
     String ret = null;
     Exception ex = null;
     try {
@@ -8254,7 +8259,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public List<String> get_all_token_identifiers() throws TException {
-    startFunction("get_all_token_identifiers.");
+    startFunction("get_all_token_identifiers");
     List<String> ret;
     Exception ex = null;
     try {
@@ -8263,14 +8268,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("get_all_token_identifiers.", ex == null, ex);
+      endFunction("get_all_token_identifiers", ex == null, ex);
     }
     return ret;
   }
 
   @Override
   public int add_master_key(String key) throws TException {
-    startFunction("add_master_key.");
+    startFunction("add_master_key");
     int ret;
     Exception ex = null;
     try {
@@ -8279,14 +8284,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("add_master_key.", ex == null, ex);
+      endFunction("add_master_key", ex == null, ex);
     }
     return ret;
   }
 
   @Override
   public void update_master_key(int seq_number, String key) throws TException {
-    startFunction("update_master_key.");
+    startFunction("update_master_key");
     Exception ex = null;
     try {
       getMS().updateMasterKey(seq_number, key);
@@ -8294,13 +8299,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("update_master_key.", ex == null, ex);
+      endFunction("update_master_key", ex == null, ex);
     }
   }
 
   @Override
   public boolean remove_master_key(int key_seq) throws TException {
-    startFunction("remove_master_key.");
+    startFunction("remove_master_key");
     Exception ex = null;
     boolean ret;
     try {
@@ -8309,14 +8314,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("remove_master_key.", ex == null, ex);
+      endFunction("remove_master_key", ex == null, ex);
     }
     return ret;
   }
 
   @Override
   public List<String> get_master_keys() throws TException {
-    startFunction("get_master_keys.");
+    startFunction("get_master_keys");
     Exception ex = null;
     String [] ret = null;
     try {
@@ -8325,7 +8330,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("get_master_keys.", ret != null, ex);
+      endFunction("get_master_keys", ret != null, ex);
     }
     return Arrays.asList(ret);
   }
@@ -9092,7 +9097,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest request)
       throws TException {
 
-    incrementCounter("get_principals_in_role");
+    startFunction("get_principals_in_role");
     firePreEvent(new PreAuthorizationCallEvent(this));
     Exception ex = null;
     GetPrincipalsInRoleResponse response = null;
@@ -9111,7 +9116,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
       GetRoleGrantsForPrincipalRequest request) throws TException {
 
-    incrementCounter("get_role_grants_for_principal");
+    startFunction("get_role_grants_for_principal");
     firePreEvent(new PreAuthorizationCallEvent(this));
     Exception ex = null;
     List<RolePrincipalGrant> roleMaps = null;
@@ -10423,7 +10428,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void map_schema_version_to_serde(MapSchemaVersionToSerdeRequest rqst)
       throws TException {
-    startFunction("map_schema_version_to_serde, :" + rqst);
+    startFunction("map_schema_version_to_serde", ": " + rqst);
     boolean success = false;
     Exception ex = null;
     RawStore ms = getMS();
@@ -10471,7 +10476,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void set_schema_version_state(SetSchemaVersionStateRequest rqst) throws TException {
-    startFunction("set_schema_version_state, :" + rqst);
+    startFunction("set_schema_version_state", ": " + rqst);
     boolean success = false;
     Exception ex = null;
     RawStore ms = getMS();
