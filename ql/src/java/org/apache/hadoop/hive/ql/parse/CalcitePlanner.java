@@ -1763,6 +1763,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
       String calcitePlanJson = HiveRelOptUtil.asJSONObjectString(calcitePlan, false);
       perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
+
+      if (stringSizeGreaterThan(calcitePlanJson, 1_000_000)) {
+        return calcitePlan;
+      }
       LOG.debug("Size of calcite plan: {}", calcitePlanJson.getBytes(Charset.defaultCharset()).length);
       LOG.debug("JSON plan: \n{}", calcitePlanJson);
 
@@ -1786,8 +1790,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private boolean canSerializeDeserialize(RelNode plan) {
       return
           conf.getBoolVar(ConfVars.QUERY_PLAN_CACHE_ENABLED) &&
+          !stringSizeGreaterThan(ctx.getCmd(), 1_000_000) &&
           HiveRelNode.stream(plan)
             .noneMatch(node -> node.getConvention().getName().toLowerCase().contains("jdbc"));
+    }
+
+    private boolean stringSizeGreaterThan(String str, int length) {
+      return str.getBytes(Charset.defaultCharset()).length > length;
     }
 
     /**
