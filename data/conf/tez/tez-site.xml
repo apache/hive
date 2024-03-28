@@ -19,4 +19,8 @@
     <name>tez.am.dag.scheduler.class</name>
     <value>org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled</value>
   </property>
+  <property>
+    <name>hive.tez.container.size</name>
+    <value>1024</value>
+  </property>
 </configuration>

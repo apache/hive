@@ -330,6 +330,7 @@
           <excludes>
             <exclude>${exclude.tests}</exclude>
           </excludes>
+          <argLine>-Xmx2048m</argLine>
         </configuration>
       </plugin>
     </plugins>

@@ -479,6 +479,7 @@
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
           </additionalClasspathElements>
+          <argLine>-Xmx2048m</argLine>
         </configuration>
       </plugin>
     </plugins>

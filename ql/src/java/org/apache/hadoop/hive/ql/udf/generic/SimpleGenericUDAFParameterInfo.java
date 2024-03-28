@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
- * A simple implementation of <tt>GenericUDAFParameterInfo</tt>.
+ * A simple implementation of <code>GenericUDAFParameterInfo</code>.
  *
  */
 public class SimpleGenericUDAFParameterInfo implements GenericUDAFParameterInfo

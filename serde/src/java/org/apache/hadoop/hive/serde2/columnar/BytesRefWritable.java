@@ -28,7 +28,7 @@ import org.apache.hadoop.io.WritableFactories;
 import org.apache.hadoop.io.WritableFactory;
 
 /**
- * <tt>BytesRefWritable</tt> referenced a section of byte array. It can be used
+ * <code>BytesRefWritable</code> referenced a section of byte array. It can be used
  * to avoid unnecessary byte copy.
  */
 public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> {
@@ -50,7 +50,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
   }
 
   /**
-   * Create a BytesRefWritable with <tt>length</tt> bytes.
+   * Create a BytesRefWritable with <code>length</code> bytes.
    */
   public BytesRefWritable(int length) {
     assert length > 0;
@@ -70,7 +70,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
 
   /**
    * Create a BytesRefWritable referenced to one section of the given bytes. The
-   * section is determined by argument <tt>offset</tt> and <tt>len</tt>.
+   * section is determined by argument <code>offset</code> and <code>len</code>.
    */
   public BytesRefWritable(byte[] data, int offset, int len) {
     bytes = data;
@@ -80,10 +80,10 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
 
   /**
    * Create a BytesRefWritable referenced to one section of the given bytes. The
-   * argument <tt>lazyDecompressData</tt> refers to a LazyDecompressionCallback
-   * object. The arguments <tt>offset</tt> and <tt>len</tt> are referred to
-   * uncompressed bytes of <tt>lazyDecompressData</tt>. Use <tt>offset</tt> and
-   * <tt>len</tt> after uncompressing the data.
+   * argument <code>lazyDecompressData</code> refers to a LazyDecompressionCallback
+   * object. The arguments <code>offset</code> and <code>len</code> are referred to
+   * uncompressed bytes of <code>lazyDecompressData</code>. Use <code>offset</code> and
+   * <code>len</code> after uncompressing the data.
    */
   public BytesRefWritable(LazyDecompressionCallback lazyDecompressData,
       int offset, int len) {
