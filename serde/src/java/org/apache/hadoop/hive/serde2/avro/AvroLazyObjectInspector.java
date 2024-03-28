@@ -181,7 +181,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
         throw new IllegalArgumentException("data should be an instance of list");
       }
 
-      if (!(fieldID < ((List<Object>) data).size())) {
+      if (fieldID >= ((List<Object>) data).size()) {
         return null;
       }
 

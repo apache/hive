@@ -325,7 +325,7 @@ class ZooKeeperHiveClientHelper {
           connParams.setPort(Integer.parseInt(matcher.group(2)));
         }
         if ((matcher.group(1).equals("hive.server2.thrift.http.port"))
-            && !(connParams.getPort() > 0)) {
+            && connParams.getPort() <= 0) {
           connParams.setPort(Integer.parseInt(matcher.group(2)));
         }
         // Set sasl qop

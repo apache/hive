@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
-import com.google.common.primitives.Ints;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -115,7 +114,7 @@ public class ReplDumpWork implements Serializable {
     if (eventTo < eventFrom) {
       throw new Exception("Invalid event ID input received in TO clause");
     }
-    Integer maxRange = Ints.checkedCast(this.eventTo - eventFrom + 1);
+    Integer maxRange = Math.toIntExact(this.eventTo - eventFrom + 1);
     if ((maxEventLimit == null) || (maxEventLimit > maxRange)) {
       maxEventLimit = maxRange;
     }
