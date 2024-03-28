@@ -30,6 +30,7 @@ import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
@@ -39,9 +40,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -456,5 +460,35 @@ public final class TestTxnDbUtil {
     }
   }
 
+
+  /** The list is small, and the object is generated, so we don't use sets/equals/etc. */
+  public static ShowLocksResponseElement checkLock(LockType expectedType, LockState expectedState, String expectedDb,
+      String expectedTable, String expectedPartition, List<ShowLocksResponseElement> actuals) {
+    return checkLock(expectedType, expectedState, expectedDb, expectedTable, expectedPartition, actuals, false);
+  }
+
+  public static ShowLocksResponseElement checkLock(LockType expectedType, LockState expectedState, String expectedDb,
+      String expectedTable, String expectedPartition, List<ShowLocksResponseElement> actuals, boolean skipFirst) {
+    boolean skip = skipFirst;
+    for (ShowLocksResponseElement actual : actuals) {
+      if (expectedType == actual.getType() && expectedState == actual.getState()
+          && StringUtils.equals(normalizeCase(expectedDb), normalizeCase(actual.getDbname()))
+          && StringUtils.equals(normalizeCase(expectedTable), normalizeCase(actual.getTablename()))
+          && StringUtils.equals(
+              normalizeCase(expectedPartition), normalizeCase(actual.getPartname()))) {
+        if(!skip){
+          return actual;
+        }
+        skip = false;
+      }
+    }
+    Assert.fail("Could't find {" + expectedType + ", " + expectedState + ", " + expectedDb
+       + ", " + expectedTable  + ", " + expectedPartition + "} in " + actuals);
+    throw new IllegalStateException("How did it get here?!");
+  }
+
+  private static String normalizeCase(String s) {
+    return s == null ? null : s.toLowerCase();
+  }
 
 }
