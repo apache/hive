@@ -386,6 +386,10 @@ public class RelJson {
         if (literal instanceof BigInteger) {
           return rexBuilder.makeLiteral(new BigDecimal((BigInteger) literal), type, true);
         }
+      case FLOAT:
+        if (literal instanceof Integer) {
+          return rexBuilder.makeLiteral(new BigDecimal((Integer)literal), type, true);
+        }
       default:
         return rexBuilder.makeLiteral(literal, type, true);
     }
