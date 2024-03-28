@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hdfs.ViewDistributedFileSystem;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -122,7 +123,29 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance(Logger logger, MiniDFSCluster cluster,
       Map<String, String> overridesForHiveConf) throws Exception {
-    this(logger, cluster, overridesForHiveConf, null);
+    this(logger, cluster, overridesForHiveConf, (String) null);
+  }
+
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf, FileSystem vfs)
+      throws Exception {
+    this.logger = logger;
+    this.miniDFSCluster = cluster;
+    assert miniDFSCluster.isClusterUp();
+    assert miniDFSCluster.isDataNodeUp();
+    ViewDistributedFileSystem fs = (ViewDistributedFileSystem) vfs;
+
+    warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
+    externalTableWarehouseRoot = mkDir(fs, "/external" + uniqueIdentifier);
+    Path cmRootPath = mkDir(fs, "/cmroot" + uniqueIdentifier);
+    this.functionsRoot = mkDir(fs, "/functions" + uniqueIdentifier).toString();
+    String tmpDir = "/tmp/"
+        + TestReplicationScenarios.class.getCanonicalName().replace('.', '_')
+        + "_"
+        + System.nanoTime();
+
+    this.repldDir = mkDir(fs, tmpDir + "/hrepl" + uniqueIdentifier + "/").toString();
+    initialize(cmRootPath.toString(), externalTableWarehouseRoot.toString(),
+        warehouseRoot.toString(), overridesForHiveConf);
   }
 
   private void initialize(String cmRoot, String externalTableWarehouseRoot, String warehouseRoot,
@@ -203,6 +226,13 @@ public class WarehouseInstance implements Closeable {
   }
 
   private Path mkDir(DistributedFileSystem fs, String pathString)
+      throws IOException, SemanticException {
+    Path path = new Path(pathString);
+    fs.mkdirs(path, new FsPermission("777"));
+    return PathBuilder.fullyQualifiedHDFSUri(path, fs);
+  }
+
+  private Path mkDir(ViewDistributedFileSystem fs, String pathString)
       throws IOException, SemanticException {
     Path path = new Path(pathString);
     fs.mkdirs(path, new FsPermission("777"));
