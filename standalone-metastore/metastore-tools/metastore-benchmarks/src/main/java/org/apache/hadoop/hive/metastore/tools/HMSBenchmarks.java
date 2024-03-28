@@ -416,11 +416,12 @@ final class HMSBenchmarks {
     final HMSClient client = data.getClient();
     String dbName = data.dbName;
     String tableName = data.tableName;
+    List<String> partitionList = Arrays.asList("date", "hour");
 
-    BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName, partitionList);
     try {
       addManyPartitionsNoException(client, dbName, tableName, null,
-              Collections.singletonList("d"), count);
+              partitionList, count);
       return bench.measure(
           () ->
               throwingSupplierWrapper(() ->
