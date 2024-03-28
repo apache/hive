@@ -19,7 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import jodd.datetime.JDateTime;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.datetime.JDateTime;
 
 /**
  * Utilities for converting from java.sql.Timestamp to parquet timestamp.

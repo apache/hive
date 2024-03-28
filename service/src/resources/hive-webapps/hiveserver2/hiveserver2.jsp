@@ -18,6 +18,7 @@
  */
 --%>
 <%@ page contentType="text/html;charset=UTF-8"
+  import="org.apache.commons.lang3.StringEscapeUtils"
   import="org.apache.hadoop.conf.Configuration"
   import="org.apache.hadoop.hive.conf.HiveConf"
   import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
@@ -31,7 +32,6 @@
   import="java.util.Collection"
   import="java.util.Date"
   import="java.util.List"
-  import="jodd.util.HtmlEncoder"
 %>
 
 <%
@@ -147,7 +147,7 @@ for (HiveSession hiveSession: hiveSessions) {
     %>
     <tr>
         <td><%= operation.getUserName() %></td>
-        <td><%= HtmlEncoder.strict(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
+        <td><%= StringEscapeUtils.escapeHtml4(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
         <td><%= operation.getExecutionEngine() %>
         <td><%= operation.getState() %></td>
         <td><%= new Date(operation.getBeginTime()) %></td>
@@ -188,7 +188,7 @@ for (HiveSession hiveSession: hiveSessions) {
     %>
     <tr>
         <td><%= operation.getUserName() %></td>
-        <td><%= HtmlEncoder.strict(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
+        <td><%= StringEscapeUtils.escapeHtml4(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
         <td><%= operation.getExecutionEngine() %>
         <td><%= operation.getState() %></td>
         <td><%= operation.getElapsedTime()/1000 %></td>
