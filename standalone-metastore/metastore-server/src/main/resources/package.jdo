@@ -939,15 +939,6 @@
         <column name="CS_ID"/>
       </datastore-identity>
 
-      <field name ="catName">
-        <column name="CAT_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
-      <field name ="dbName">
-        <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
-      <field name="tableName">
-        <column name="TABLE_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
       <field name="table">
         <column name="TBL_ID"/>
       </field>
@@ -1013,18 +1004,6 @@
         <column name="CS_ID"/>
       </datastore-identity>
 
-      <field name ="catName">
-        <column name="CAT_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
-      <field name ="dbName">
-        <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
-      <field name="tableName">
-        <column name="TABLE_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
-      <field name="partitionName">
-        <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
       <field name="partition">
         <column name="PART_ID"/>
       </field>

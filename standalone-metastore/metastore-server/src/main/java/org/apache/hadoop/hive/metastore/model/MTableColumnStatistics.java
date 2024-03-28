@@ -33,9 +33,6 @@ package org.apache.hadoop.hive.metastore.model;
 public class MTableColumnStatistics {
 
   private MTable table;
-  private String catName;
-  private String dbName;
-  private String tableName;
   private String colName;
   private String colType;
   private String engine;
@@ -64,14 +61,6 @@ public class MTableColumnStatistics {
 
   public void setTable(MTable table) {
     this.table = table;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
   }
 
   public String getColName() {
@@ -144,22 +133,6 @@ public class MTableColumnStatistics {
 
   public void setLastAnalyzed(long lastAnalyzed) {
     this.lastAnalyzed = lastAnalyzed;
-  }
-
-  public String getDbName() {
-    return dbName;
-  }
-
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
-  }
-
-  public String getCatName() {
-    return catName;
-  }
-
-  public void setCatName(String catName) {
-    this.catName = catName;
   }
 
   public void setBooleanStats(Long numTrues, Long numFalses, Long numNulls) {

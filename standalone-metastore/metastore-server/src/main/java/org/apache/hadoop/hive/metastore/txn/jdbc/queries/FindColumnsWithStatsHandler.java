@@ -37,11 +37,16 @@ public class FindColumnsWithStatsHandler implements QueryHandler<List<String>> {
 
   //language=SQL
   private static final String TABLE_SELECT = "SELECT \"COLUMN_NAME\" FROM \"TAB_COL_STATS\" " +
-      "WHERE \"DB_NAME\" = :dbName AND \"TABLE_NAME\" = :tableName";
+      "INNER JOIN \"TBLS\" ON \"TAB_COL_STATS\".\"TBL_ID\" = \"TBLS\".\"TBL_ID\" " +
+      "INNER JOIN \"DBS\" ON \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" " +
+      "WHERE \"DBS\".\"NAME\" = :dbName AND \"TBLS\".\"TBL_NAME\" = :tableName";
   //language=SQL
   private static final String PARTITION_SELECT = "SELECT \"COLUMN_NAME\" FROM \"PART_COL_STATS\" " +
-      "WHERE \"DB_NAME\" = :dbName AND \"TABLE_NAME\" = :tableName AND \"PARTITION_NAME\" = :partName";
-  
+      "INNER JOIN \"PARTITIONS\" ON \"PART_COL_STATS\".\"PART_ID\" = \"PARTITIONS\".\"PART_ID\" " +
+      "INNER JOIN \"TBLS\" ON \"PARTITIONS\".\"TBL_ID\" = \"TBLS\".\"TBL_ID\" " +
+      "INNER JOIN \"DBS\" ON \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" " +
+      "WHERE \"DBS\".\"NAME\" = :dbName AND \"TBLS\".\"TBL_NAME\" = :tableName AND \"PARTITIONS\".\"PART_NAME\" = :partName";
+
   private final CompactionInfo ci;
 
   public FindColumnsWithStatsHandler(CompactionInfo ci) {

@@ -901,58 +901,58 @@ ALTER TABLE `default`.`customer_removal_n0` ADD CONSTRAINT `#### A masked patter
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
 ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_custkey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_custkey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_name` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_name` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_address` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_address` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_city` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_city` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_custkey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_custkey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_mktsegment` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_mktsegment` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_name` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_name` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_nation` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_nation` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_phone` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_phone` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_region` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_region` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_date` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_date` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_phone` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_phone` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_mktsegment` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_mktsegment` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_datekey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_datekey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminmonth` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminweek` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_dayofweek` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_dayofweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_holidayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_holidayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_id` SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_id` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinmonthfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinmonthfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinweekfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinweekfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_date` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_date` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_dayofweek` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_dayofweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_month` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_month` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_monthnuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_monthnuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_sellingseason` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_sellingseason` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weekdayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weekdayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weeknuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weeknuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_year` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonth` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonthnum` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonthnum` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonth` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminweek` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminmonth` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_monthnuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_monthnuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weeknuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weeknuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_sellingseason` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_sellingseason` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinweekfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinweekfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinmonthfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinmonthfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_holidayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_holidayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weekdayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weekdayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 
 
 
@@ -1109,42 +1109,42 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_date` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_date` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_datekey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_datekey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminmonth` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminweek` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_dayofweek` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_dayofweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_holidayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_holidayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_id` SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_id` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinmonthfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinmonthfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinweekfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinweekfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_date` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_date` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_dayofweek` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_dayofweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_month` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_month` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_monthnuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_monthnuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_sellingseason` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_sellingseason` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weekdayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weekdayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weeknuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weeknuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_year` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonth` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonthnum` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonthnum` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonth` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminweek` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminmonth` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_monthnuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_monthnuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weeknuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weeknuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_sellingseason` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_sellingseason` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinweekfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinweekfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinmonthfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinmonthfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_holidayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_holidayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weekdayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weekdayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 
 
 
@@ -1312,22 +1312,22 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`customer_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`c_custkey`) DISABLE NOVALIDATE RELY;
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_custkey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_custkey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_name` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_name` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_address` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_address` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_city` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_city` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_custkey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_custkey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_mktsegment` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_mktsegment` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_name` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_name` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_nation` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_nation` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_phone` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_phone` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_region` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_region` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_phone` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_phone` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_mktsegment` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_mktsegment` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 
 
 
@@ -2515,12 +2515,12 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -2644,12 +2644,12 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -2774,12 +2774,12 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -2903,12 +2903,12 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -3092,12 +3092,12 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
 ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
 ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
 -- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -7035,10 +7035,10 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
 ALTER TABLE `default`.`web_sales` ADD CONSTRAINT `pk1` PRIMARY KEY (`ws_order_number`,`ws_item_sk`) DISABLE NOVALIDATE RELY;
 ALTER TABLE `default`.`web_sales` UPDATE STATISTICS SET('numRows'='2','rawDataSize'='14' );
-ALTER TABLE `default`.`web_sales` UPDATE STATISTICS FOR COLUMN `ws_item_sk` SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR `default`.`web_sales` FOR COLUMN `ws_item_sk` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
 ALTER TABLE `default`.`web_sales` UPDATE STATISTICS FOR COLUMN `ws_order_number` SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
 -- BIT VECTORS PRESENT FOR `default`.`web_sales` FOR COLUMN `ws_order_number` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
+ALTER TABLE `default`.`web_sales` UPDATE STATISTICS FOR COLUMN `ws_item_sk` SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`web_sales` FOR COLUMN `ws_item_sk` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
 ALTER TABLE `default`.`web_sales` UPDATE STATISTICS FOR COLUMN `ws_price` SET('numNulls'='0','numDVs'='1','highValue'='1.2000000476837158','lowValue'='1.2000000476837158' );
 -- BIT VECTORS PRESENT FOR `default`.`web_sales` FOR COLUMN `ws_price` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwbaGtAM= 
 

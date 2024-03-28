@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -35,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsResult;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsRequest;
@@ -276,6 +279,10 @@ final class HMSClient implements AutoCloseable {
     client.add_partitions(partitions);
   }
 
+  void updatePartitionColumnStats(ColumnStatistics colStats) throws TException {
+    client.update_partition_column_statistics(colStats);
+  }
+
 
   List<Partition> listPartitions(@NotNull String dbName,
                                  @NotNull String tableName) throws TException {
@@ -332,6 +339,10 @@ final class HMSClient implements AutoCloseable {
   List<Partition> getPartitionsByFilter(@NotNull String dbName, @NotNull String tableName,
                                         @NotNull String filter) throws TException {
     return client.get_partitions_by_filter(dbName, tableName, filter, (short) -1);
+  }
+
+  PartitionsStatsResult getPartitionsStats(PartitionsStatsRequest request) throws TException {
+    return client.get_partitions_statistics_req(request);
   }
 
   boolean alterTable(@NotNull String dbName, @NotNull String tableName, @NotNull Table newTable)

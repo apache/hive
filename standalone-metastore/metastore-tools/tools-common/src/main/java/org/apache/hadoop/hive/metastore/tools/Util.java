@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.metastore.tools;
 import com.google.common.base.Joiner;
 import com.google.common.net.HostAndPort;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -31,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
@@ -611,6 +616,24 @@ public final class Util {
     return null;
   }
 
+  static Object updateManyPartitionsStats(@NotNull HMSClient client,
+                                         @NotNull String dbName,
+                                         @NotNull String tableName,
+                                         @NotNull List<String> partNames) throws TException {
+    List<ColumnStatisticsObj> statsObj = new ArrayList<>();
+    ColumnStatisticsData statsData = new ColumnStatisticsData(
+        ColumnStatisticsData._Fields.STRING_STATS, new StringColumnStatsData(100, 10.1, 20, 30));
+    statsObj.add(new ColumnStatisticsObj("id", "int", statsData));
+    ColumnStatisticsDesc partDesc = new ColumnStatisticsDesc(false, dbName, tableName);
+    for (String partName : partNames) {
+      partDesc.setPartName(partName);
+      ColumnStatistics partColStat = new ColumnStatistics(partDesc, statsObj);
+      partColStat.setEngine("hive");
+      client.updatePartitionColumnStats(partColStat);
+    }
+    return null;
+  }
+
   static List<String> generatePartitionNames(@NotNull String prefix, int npartitions) {
     return IntStream.range(0, npartitions).mapToObj(i -> prefix + i).collect(Collectors.toList());
   }
@@ -623,6 +646,14 @@ public final class Util {
                                            int npartitions) {
     throwingSupplierWrapper(() ->
             addManyPartitions(client, dbName, tableName, parameters, arguments, npartitions));
+  }
+
+  static void updateManyPartitionsStatsNoException(@NotNull HMSClient client,
+                                                   @NotNull String dbName,
+                                                   @NotNull String tableName,
+                                                   @NotNull List<String> partNames) {
+    throwingSupplierWrapper(() ->
+            updateManyPartitionsStats(client, dbName, tableName, partNames));
   }
 
   /**

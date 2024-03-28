@@ -222,12 +222,11 @@ class DirectSqlUpdatePart {
                                           long maxCsId,
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
     int numRows = 0;
-    String insert = "INSERT INTO \"PART_COL_STATS\" (\"CS_ID\", \"CAT_NAME\", \"DB_NAME\","
-            + "\"TABLE_NAME\", \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
+    String insert = "INSERT INTO \"PART_COL_STATS\" (\"CS_ID\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
             + " \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", \"DOUBLE_HIGH_VALUE\", \"DOUBLE_LOW_VALUE\","
             + " \"BIG_DECIMAL_LOW_VALUE\", \"BIG_DECIMAL_HIGH_VALUE\", \"NUM_NULLS\", \"NUM_DISTINCTS\", \"BIT_VECTOR\" ,"
             + " \"HISTOGRAM\", \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
-            + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try (PreparedStatement preparedStatement = dbConn.prepareStatement(insert)) {
       for (Map.Entry entry : insertMap.entrySet()) {
@@ -236,29 +235,25 @@ class DirectSqlUpdatePart {
         MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) entry.getValue();
 
         preparedStatement.setLong(1, maxCsId);
-        preparedStatement.setString(2, mPartitionColumnStatistics.getCatName());
-        preparedStatement.setString(3, mPartitionColumnStatistics.getDbName());
-        preparedStatement.setString(4, mPartitionColumnStatistics.getTableName());
-        preparedStatement.setString(5, mPartitionColumnStatistics.getPartitionName());
-        preparedStatement.setString(6, mPartitionColumnStatistics.getColName());
-        preparedStatement.setString(7, mPartitionColumnStatistics.getColType());
-        preparedStatement.setLong(8, partId);
-        preparedStatement.setObject(9, mPartitionColumnStatistics.getLongLowValue());
-        preparedStatement.setObject(10, mPartitionColumnStatistics.getLongHighValue());
-        preparedStatement.setObject(11, mPartitionColumnStatistics.getDoubleHighValue());
-        preparedStatement.setObject(12, mPartitionColumnStatistics.getDoubleLowValue());
-        preparedStatement.setString(13, mPartitionColumnStatistics.getDecimalLowValue());
-        preparedStatement.setString(14, mPartitionColumnStatistics.getDecimalHighValue());
-        preparedStatement.setObject(15, mPartitionColumnStatistics.getNumNulls());
-        preparedStatement.setObject(16, mPartitionColumnStatistics.getNumDVs());
-        preparedStatement.setObject(17, mPartitionColumnStatistics.getBitVector());
-        preparedStatement.setBytes(18, mPartitionColumnStatistics.getHistogram());
-        preparedStatement.setObject(19, mPartitionColumnStatistics.getAvgColLen());
-        preparedStatement.setObject(20, mPartitionColumnStatistics.getMaxColLen());
-        preparedStatement.setObject(21, mPartitionColumnStatistics.getNumTrues());
-        preparedStatement.setObject(22, mPartitionColumnStatistics.getNumFalses());
-        preparedStatement.setLong(23, mPartitionColumnStatistics.getLastAnalyzed());
-        preparedStatement.setString(24, mPartitionColumnStatistics.getEngine());
+        preparedStatement.setString(2, mPartitionColumnStatistics.getColName());
+        preparedStatement.setString(3, mPartitionColumnStatistics.getColType());
+        preparedStatement.setLong(4, partId);
+        preparedStatement.setObject(5, mPartitionColumnStatistics.getLongLowValue());
+        preparedStatement.setObject(6, mPartitionColumnStatistics.getLongHighValue());
+        preparedStatement.setObject(7, mPartitionColumnStatistics.getDoubleHighValue());
+        preparedStatement.setObject(8, mPartitionColumnStatistics.getDoubleLowValue());
+        preparedStatement.setString(9, mPartitionColumnStatistics.getDecimalLowValue());
+        preparedStatement.setString(10, mPartitionColumnStatistics.getDecimalHighValue());
+        preparedStatement.setObject(11, mPartitionColumnStatistics.getNumNulls());
+        preparedStatement.setObject(12, mPartitionColumnStatistics.getNumDVs());
+        preparedStatement.setObject(13, mPartitionColumnStatistics.getBitVector());
+        preparedStatement.setBytes(14, mPartitionColumnStatistics.getHistogram());
+        preparedStatement.setObject(15, mPartitionColumnStatistics.getAvgColLen());
+        preparedStatement.setObject(16, mPartitionColumnStatistics.getMaxColLen());
+        preparedStatement.setObject(17, mPartitionColumnStatistics.getNumTrues());
+        preparedStatement.setObject(18, mPartitionColumnStatistics.getNumFalses());
+        preparedStatement.setLong(19, mPartitionColumnStatistics.getLastAnalyzed());
+        preparedStatement.setString(20, mPartitionColumnStatistics.getEngine());
 
         maxCsId++;
         numRows++;
