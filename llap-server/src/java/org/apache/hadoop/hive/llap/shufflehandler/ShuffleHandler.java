@@ -204,6 +204,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   public static final String CONNECTION_CLOSE = "close";
 
+  public static final String SHUFFLE_SSL_ENABLED_KEY = "hive.llap.shuffle.ssl.enabled";
+  public static final boolean SHUFFLE_SSL_ENABLED_DEFAULT = false;
+
   public static final String SUFFLE_SSL_FILE_BUFFER_SIZE_KEY =
     "llap.shuffle.ssl.file.buffer.size";
 
@@ -376,13 +379,12 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   private void initPipeline(ServerBootstrap bootstrap, Configuration conf) throws Exception {
     SHUFFLE = getShuffle(conf);
-    // TODO Setup SSL Shuffle
-    //  if (conf.getBoolean(MRConfig.SHUFFLE_SSL_ENABLED_KEY,
-    //                      MRConfig.SHUFFLE_SSL_ENABLED_DEFAULT)) {
-    //    LOG.info("Encrypted shuffle is enabled.");
-    //    sslFactory = new SSLFactory(SSLFactory.Mode.SERVER, conf);
-    //    sslFactory.init();
-    //  }
+     // Setup SSL Shuffle
+      if (conf.getBoolean(SHUFFLE_SSL_ENABLED_KEY, SHUFFLE_SSL_ENABLED_DEFAULT)) {
+        LOG.info("Encrypted shuffle is enabled.");
+        sslFactory = new SSLFactory(SSLFactory.Mode.SERVER, conf);
+        sslFactory.init();
+      }
 
     ChannelInitializer<NioSocketChannel> channelInitializer =
         new ChannelInitializer<NioSocketChannel>() {
