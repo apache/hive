@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFu
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
@@ -588,6 +589,10 @@ public class RelJson {
     }
     final SqlOperandTypeChecker operandTypeChecker = OperandTypes.family(typeFamilyBuilder.build());
     switch (aggName) {
+      case "$SUM0":
+        return new HiveSqlSumEmptyIsZeroAggFunction(
+            distinct, returnTypeInference, operandTypeInference, operandTypeChecker
+        );
       case "sum":
         return new HiveSqlSumAggFunction(distinct, returnTypeInference, operandTypeInference, operandTypeChecker);
       case "count":
