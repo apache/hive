@@ -90,8 +90,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -104,8 +104,9 @@ public class TestHive {
 
   @BeforeClass
   public static void setUp() throws Exception {
-
     hiveConf = new HiveConf(TestHive.class);
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     hm = setUpImpl(hiveConf);
   }
 
@@ -469,14 +470,13 @@ public class TestHive {
 
   @Test
   public void testWmNamespaceHandling() throws Throwable {
-    HiveConf hiveConf = new HiveConf(this.getClass());
     Hive hm = setUpImpl(hiveConf);
     // TODO: threadlocals... Why is all this Hive client stuff like that?!!
     final AtomicReference<Hive> hm2r = new AtomicReference<>();
     Thread pointlessThread = new Thread(new Runnable() {
       @Override
       public void run() {
-        HiveConf hiveConf2 = new HiveConf(this.getClass());
+        HiveConf hiveConf2 = new HiveConf(hiveConf);
         hiveConf2.setVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE, "hm2");
         try {
           hm2r.set(setUpImpl(hiveConf2));
@@ -638,8 +638,8 @@ public class TestHive {
                                                  .put("ds", "20141216")
                                                  .put("hr", "12")
                                                  .build();
-
-      int trashSizeBeforeDrop = getTrashContents().length;
+      FileStatus[] trashContentsBeforeDrop = getTrashContents();
+      int trashSizeBeforeDrop = trashContentsBeforeDrop.length;
 
       Table table = createPartitionedTable(dbName, tableName);
       hm.createPartition(table, partitionSpec);
@@ -672,11 +672,12 @@ public class TestHive {
                                            .purgeData(false)
                       );
 
-      int trashSizeWithoutPurge = getTrashContents().length;
+      FileStatus[] trashContentsWithoutPurge = getTrashContents();
+      int trashSizeWithoutPurge = trashContentsWithoutPurge.length;
 
-      assertEquals("After dropPartitions(noPurge), data should've gone to trash!",
-                  trashSizeBeforeDrop, trashSizeWithoutPurge);
-
+      assertEquals("After dropPartitions(noPurge), data should've gone to trash, contents before drop: "
+          + Arrays.asList(trashContentsBeforeDrop) + ", contents without purge: " + Arrays.asList(trashContentsWithoutPurge)
+          + "!", trashSizeBeforeDrop, trashSizeWithoutPurge);
     }
     catch (Exception e) {
       fail("Unexpected exception: " + StringUtils.stringifyException(e));

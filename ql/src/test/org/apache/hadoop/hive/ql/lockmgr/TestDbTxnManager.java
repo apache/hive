@@ -76,9 +76,10 @@ public class TestDbTxnManager {
   HashSet<WriteEntity> writeEntities;
 
   public TestDbTxnManager() throws Exception {
-    conf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     TestTxnDbUtil.setConfValues(conf);
     SessionState.start(conf);
     ctx = new Context(conf);

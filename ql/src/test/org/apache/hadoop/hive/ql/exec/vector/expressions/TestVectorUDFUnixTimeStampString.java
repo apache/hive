@@ -73,6 +73,8 @@ public class TestVectorUDFUnixTimeStampString {
   @Test
   public void testEvaluate() throws HiveException, InterruptedException, CharacterCodingException {
     HiveConf conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_FORMATTER, formatter);
     conf.setVar(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE, zone);
     SessionState state = SessionState.start(conf);

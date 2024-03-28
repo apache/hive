@@ -740,7 +740,7 @@ public class CliDriver {
       logInitDetailMessage = e.getMessage();
     }
 
-    CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
+    CliSessionState ss = new CliSessionState(getConf());
     ss.in = System.in;
     try {
       ss.out =
@@ -813,6 +813,10 @@ public class CliDriver {
       ss.resetThreadName();
       ss.close();
     }
+  }
+
+  protected HiveConf getConf() {
+    return new HiveConf(SessionState.class);
   }
 
   /**

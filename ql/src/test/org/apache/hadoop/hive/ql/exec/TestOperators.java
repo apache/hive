@@ -71,6 +71,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.Assert;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
@@ -79,13 +80,21 @@ import static org.mockito.Mockito.when;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 /**
  * TestOperators.
  *
  */
 public class TestOperators {
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
   // this is our row to test expressions on
   protected InspectableObject[] r;
@@ -421,7 +430,7 @@ public class TestOperators {
 
   @Test
   public void testFetchOperatorContext() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     conf.set("hive.support.concurrency", "false");
     conf.setVar(HiveConf.ConfVars.HIVE_MAPRED_MODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

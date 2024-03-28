@@ -26,10 +26,12 @@ import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.shims.Utils;
-
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +52,11 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
  * TestMetaStoreEventListenerInRepl - Test metastore events created by replication.
  */
 public class TestMetaStoreEventListenerInRepl {
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
   @Rule
   public final TestName testName = new TestName();
@@ -62,7 +69,7 @@ public class TestMetaStoreEventListenerInRepl {
 
   @BeforeClass
   public static void internalBeforeClassSetup() throws Exception {
-    TestMetaStoreEventListenerInRepl.conf = new HiveConf(TestMetaStoreEventListenerInRepl.class);
+    TestMetaStoreEventListenerInRepl.conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     TestMetaStoreEventListenerInRepl.conf.set("dfs.client.use.datanode.hostname", "true");
     TestMetaStoreEventListenerInRepl.conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

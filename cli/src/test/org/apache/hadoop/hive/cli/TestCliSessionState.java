@@ -33,9 +33,16 @@ public class TestCliSessionState {
    * test default db name
    */
   @Test
-  public void testgetDbName() throws Exception {
-    SessionState.start(new HiveConf());
+  public void testGetDbName() throws Exception {
+    SessionState.start(getHiveConf());
     assertEquals(Warehouse.DEFAULT_DATABASE_NAME,
         SessionState.get().getCurrentDatabase());
+  }
+
+  private HiveConf getHiveConf() {
+    HiveConf hiveConf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
+    return hiveConf;
   }
 }

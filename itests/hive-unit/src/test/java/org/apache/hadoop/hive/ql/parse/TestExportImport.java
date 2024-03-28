@@ -18,16 +18,18 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -44,6 +46,12 @@ public class TestExportImport {
   private static WarehouseInstance destHiveWarehouse;
   private static WarehouseInstance dumpExternalWarehouse;
 
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   @Rule
   public final TestName testName = new TestName();
   private String dbName;
@@ -51,7 +59,7 @@ public class TestExportImport {
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    Configuration conf = new Configuration();
+    HiveConf conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     conf.set("hive.repl.include.external.tables", "false");

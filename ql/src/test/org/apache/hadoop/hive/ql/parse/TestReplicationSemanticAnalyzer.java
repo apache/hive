@@ -33,6 +33,8 @@ public class TestReplicationSemanticAnalyzer {
 
   public static HiveConf buildHiveConf() {
     HiveConf conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setVar(HIVE_QUOTEDID_SUPPORT, Quotation.NONE.stringValue());
     return conf;
   }

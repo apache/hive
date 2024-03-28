@@ -86,7 +86,7 @@ public class HivePreWarmProcessor extends AbstractLogicalIOProcessor {
     ReadaheadPool rpool = ReadaheadPool.getInstance();
     ShimLoader.getHadoopShims();
 
-    URL hiveurl = new URL("jar:" + DagUtils.getInstance().getExecJarPathLocal(conf) + "!/");
+    URL hiveurl = new URL("jar:file:" + DagUtils.getInstance().getExecJarPathLocal(conf) + "!/");
     JarURLConnection hiveconn = (JarURLConnection)hiveurl.openConnection();
     JarFile hivejar = hiveconn.getJarFile();
     try {

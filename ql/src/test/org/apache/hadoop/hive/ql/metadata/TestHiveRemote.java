@@ -43,7 +43,9 @@ public class TestHiveRemote extends TestHive {
    */
   @BeforeClass
   public static void setUp() throws Exception {
-    hiveConf = new HiveConf(TestHiveRemote.class);
+    hiveConf = new HiveConf(TestHive.class);
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);

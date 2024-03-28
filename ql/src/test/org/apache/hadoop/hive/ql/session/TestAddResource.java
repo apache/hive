@@ -33,9 +33,13 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
@@ -44,12 +48,19 @@ import static org.junit.Assert.assertEquals;
 public class TestAddResource {
 
   private static final String TEST_JAR_DIR = System.getProperty("test.tmp.dir", ".") + File.separator;
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   private HiveConf conf;
   private ResourceType t;
 
   @Before
   public void setup() throws IOException {
-    conf = new HiveConf();
+    conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     t = ResourceType.JAR;
 
     //Generate test jar files
@@ -165,8 +176,6 @@ public class TestAddResource {
   // test when two jars with shared dependencies are added, the classloader contains union of the dependencies
   @Test
   public void testUnion() throws URISyntaxException, IOException {
-
-    HiveConf conf = new HiveConf();
     SessionState ss = Mockito.spy(SessionState.start(conf).get());
     ResourceType t = ResourceType.JAR;
     String query1 = "testQuery1";

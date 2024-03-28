@@ -63,6 +63,8 @@ public class TestMetastoreVersion {
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
     System.setProperty(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL.toString(), "true");
     hiveConf = new HiveConf(this.getClass());
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    System.setProperty("hive.cli.tez.initialize.session", "false");
     System.setProperty("hive.support.concurrency", "false");
     System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());

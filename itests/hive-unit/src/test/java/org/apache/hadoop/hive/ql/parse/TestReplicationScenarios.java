@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -150,7 +151,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenarios {
-
   @Rule
   public final TestName testName = new TestName();
 
@@ -193,6 +193,8 @@ public class TestReplicationScenarios {
   static void internalBeforeClassSetup(Map<String, String> additionalProperties)
       throws Exception {
     hconf = new HiveConf(TestReplicationScenarios.class);
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    hconf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     String metastoreUri = System.getProperty("test."+MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
     if (metastoreUri != null) {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);

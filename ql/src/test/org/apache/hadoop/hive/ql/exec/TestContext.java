@@ -38,6 +38,8 @@ public class TestContext {
     @Before
     public void setUp() {
         /* Only called to create session directories used by the Context class */
+        // the test doesn't involve DAG execution, skip TezSessionState initialization
+        conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
         SessionState.start(conf);
         SessionState.detachSession();
 

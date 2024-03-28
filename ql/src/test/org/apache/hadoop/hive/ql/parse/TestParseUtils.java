@@ -50,6 +50,8 @@ public class TestParseUtils {
     this.query = query;
     this.txnType = txnType;
     this.conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
   }
 
   @Before

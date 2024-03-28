@@ -46,6 +46,7 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
 public class TestReplicationOnHDFSEncryptedZones {
   private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";
   private static String jksFile2 = System.getProperty("java.io.tmpdir") + "/test2.jks";
+
   @Rule
   public final TestName testName = new TestName();
 
@@ -61,6 +62,8 @@ public class TestReplicationOnHDFSEncryptedZones {
         "java.security.KeyRep$Type;javax.crypto.spec.SecretKeySpec;" +
         "org.apache.hadoop.crypto.key.JavaKeyStoreProvider$KeyMetadata;!*");
     conf = new Configuration();
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     conf.set("hadoop.security.key.provider.path", "jceks://file" + jksFile);

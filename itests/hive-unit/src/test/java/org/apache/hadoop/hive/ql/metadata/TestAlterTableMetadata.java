@@ -36,6 +36,8 @@ public class TestAlterTableMetadata {
      */
 
     HiveConf conf = new HiveConf(this.getClass());
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);
     IDriver driver = DriverFactory.newDriver(conf);

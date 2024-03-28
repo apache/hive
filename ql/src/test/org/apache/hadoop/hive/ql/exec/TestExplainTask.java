@@ -51,15 +51,17 @@ import static org.mockito.Mockito.when;
 public class TestExplainTask {
 
   private static final String BACKUP_ID = "backup-id-mock";
-  private static final String AST = "ast-mock";
 
   private PrintStream out;
   private ExplainTask uut;
+  private HiveConf hiveConf;
   private ObjectMapper objectMapper = new ObjectMapper();
 
   @Before
   public void setUp() {
-    HiveConf hiveConf = new HiveConf();
+    hiveConf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     uut = new ExplainTask();
     uut.conf = hiveConf;
     out = mock(PrintStream.class);
@@ -322,7 +324,7 @@ public class TestExplainTask {
     when(qs.getHiveOperation()).thenReturn(HiveOperation.EXPLAIN);
     uut.queryState = qs;
 
-    SessionState.start(new HiveConf(ExplainTask.class));
+    SessionState.start(hiveConf);
     // SessionState.get().setCommandType(HiveOperation.EXPLAIN);
     HiveAuthenticationProvider authenticationProviderMock = mock(HiveAuthenticationProvider.class);
     when(authenticationProviderMock.getUserName()).thenReturn("test-user");
@@ -340,7 +342,6 @@ public class TestExplainTask {
   public void testOutputPlanVectorizationJsonShouldMatch() throws Exception {
     QueryState qs = mock(QueryState.class);
     when(qs.getHiveOperation()).thenReturn(HiveOperation.EXPLAIN);
-    HiveConf hiveConf = new HiveConf();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     when(qs.getConf()).thenReturn(hiveConf);
     uut.queryState = qs;

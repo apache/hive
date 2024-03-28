@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.hadoop.io.Text;
 
 import com.opencsv.CSVParser;
@@ -34,6 +35,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -51,6 +53,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class TestGenericUDFDateFormatEvaluate {
+
   private final GenericUDFDateFormat udf = new GenericUDFDateFormat();
   private final String value;
   private final String pattern;
@@ -85,6 +88,8 @@ public class TestGenericUDFDateFormatEvaluate {
   @Test
   public void testEvaluate() throws HiveException, InterruptedException {
     HiveConf conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_FORMATTER, formatter);
     conf.setVar(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE, zone);
     SessionState state = SessionState.start(conf);

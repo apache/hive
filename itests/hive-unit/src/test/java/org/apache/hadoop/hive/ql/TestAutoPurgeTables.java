@@ -31,22 +31,29 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TestAutoPurgeTables {
+
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
+
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String testDbName = "auto_purge_test_db";
   //private static final String testTableName = "auto_purge_test_table";
@@ -112,7 +119,7 @@ public class TestAutoPurgeTables {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    conf = new HiveConf(TestAutoPurgeTables.class);
+    conf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     // enable trash so it can be tested
     conf.setFloat("fs.trash.checkpoint.interval", 30);
     conf.setFloat("fs.trash.interval", 30);

@@ -79,6 +79,8 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
     tests = new JUnit4TestAdapter(this.getClass()).countTestCases();
     try {
       conf = new HiveConf(ExecDriver.class);
+      // the test doesn't involve DAG execution, skip TezSessionState initialization
+      conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
       SessionState.start(conf);
 
       // Test with remote metastore service

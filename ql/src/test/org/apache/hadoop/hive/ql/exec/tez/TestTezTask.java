@@ -40,6 +40,7 @@ import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.hive.common.util.Ref;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
@@ -50,7 +51,10 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -79,6 +83,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TestTezTask {
+  @ClassRule
+  public static HiveTestEnvSetup ENVIRONMENT = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = ENVIRONMENT.getMethodRule();
 
   DagUtils utils;
   MapWork[] mws;
@@ -170,7 +179,7 @@ public class TestTezTask {
     conf = new JobConf();
     appLr = createResource("foo.jar");
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = new HiveConf(ENVIRONMENT.getTestCtx().hiveConf);
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -356,7 +365,7 @@ public class TestTezTask {
   }
 
   @Test
-  public void tezTask_updates_Metrics() throws IOException {
+  public void testTezTaskUpdatesMetrics() throws IOException {
 
     Metrics mockMetrics = Mockito.mock(Metrics.class);
 

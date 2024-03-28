@@ -35,6 +35,8 @@ public class TestCommandProcessorFactory {
   @Before
   public void setUp() throws Exception {
     conf = new HiveConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
   }
 
   @Test

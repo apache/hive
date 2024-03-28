@@ -20,8 +20,10 @@ package org.apache.hive.testutils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -58,9 +60,6 @@ import com.google.common.collect.Sets;
  *  <li>invocation order of before calls are "forward"
  *  <li>invocation order of before calls are "backward"
  *  </ul>
- *
- *
- * Later this should be migrated to junit5...when it will be possible; see HIVE-18495
  */
 public class HiveTestEnvSetup extends ExternalResource {
 
@@ -88,6 +87,27 @@ public class HiveTestEnvSetup extends ExternalResource {
     public File tmpFolder;
     public HiveConf hiveConf;
 
+    // FIXME: explain this shit
+    public String getConfAsQueryString( ) {
+      StringBuilder sb = new StringBuilder();
+      for (Entry<Object, Object> entry : hiveConf.getAllProperties().entrySet()) {
+        String key = entry.getKey().toString().replaceAll("\\s+","");
+        String value = entry.getValue().toString().replaceAll("\\s+","");
+        if (!(key.startsWith("tez."))) {
+          continue;
+        }
+        sb.append(URLEncoder.encode(key));
+        sb.append('=');
+        sb.append(URLEncoder.encode(value));
+        if (sb.length() > 0) {
+          sb.append(";");
+        }
+      }
+      if (sb.length() > 0) {
+        sb.deleteCharAt(sb.length() - 1);
+      }
+      return sb.toString();
+    }
   }
 
   static class TmpDirSetup implements IHiveTestRule {
@@ -227,18 +247,27 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   static class SetupTez implements IHiveTestRule {
     private MiniMrShim mr1;
+    private boolean runTezCluster = true;
+
+    public SetupTez(boolean runTezCluster) {
+      this.runTezCluster = runTezCluster;
+    }
 
     @Override
     public void beforeClass(HiveTestEnvContext ctx) throws Exception {
-      HadoopShims shims = ShimLoader.getHadoopShims();
-      mr1 = shims.getLocalMiniTezCluster(ctx.hiveConf, true);
-      mr1.setupConfiguration(ctx.hiveConf);
+      if (runTezCluster) {
+        HadoopShims shims = ShimLoader.getHadoopShims();
+        mr1 = shims.getLocalMiniTezCluster(ctx.hiveConf, true);
+        mr1.setupConfiguration(ctx.hiveConf);
+      }
       setupTez(ctx.hiveConf);
     }
 
     @Override
     public void afterClass(HiveTestEnvContext ctx) throws Exception {
-      mr1.shutdown();
+      if (runTezCluster) {
+        mr1.shutdown();
+      }
     }
 
     private void setupTez(HiveConf conf) {
@@ -259,12 +288,50 @@ public class HiveTestEnvSetup extends ExternalResource {
   public static final String DATA_DIR = HIVE_ROOT + "/data/";
   List<IHiveTestRule> parts = new ArrayList<>();
 
+  public static class Builder {
+    private boolean useZookeeper = false;
+    private boolean useTez = true;
+    private boolean runTezCluster = true;
+
+    public Builder useZookeeper(boolean useZookeeper) {
+      this.useZookeeper = useZookeeper;
+      return this;
+    }
+
+    public Builder useTez(boolean useTez) {
+      this.useTez = useTez;
+      return this;
+    }
+
+    public Builder runTezCluster(boolean runTezCluster) {
+      this.runTezCluster = runTezCluster;
+      return this;
+    }
+
+    public HiveTestEnvSetup build() {
+      return new HiveTestEnvSetup(useZookeeper, useTez, runTezCluster);
+    }
+  }
+
   public HiveTestEnvSetup() {
+    initCommon();
+    parts.add(new SetupTez(false));
+  }
+
+  private HiveTestEnvSetup(boolean useZookeeper, boolean useTez, boolean runTezCluster) {
+    initCommon();
+    if (useZookeeper) {
+      parts.add(new SetupZookeeper());
+    }
+    if (useTez) {
+      parts.add(new SetupTez(runTezCluster));
+    }
+  }
+
+  private void initCommon() {
     parts.add(new TmpDirSetup());
     parts.add(new SetTestEnvs());
     parts.add(new SetupHiveConf());
-    parts.add(new SetupZookeeper());
-    parts.add(new SetupTez());
   }
 
   TemporaryFolder tmpFolderRule = new TemporaryFolder(new File(HIVE_ROOT + "/target/tmp"));
@@ -360,5 +427,4 @@ public class HiveTestEnvSetup extends ExternalResource {
   public HiveTestEnvContext getTestCtx() {
     return testEnvContext;
   }
-
 }

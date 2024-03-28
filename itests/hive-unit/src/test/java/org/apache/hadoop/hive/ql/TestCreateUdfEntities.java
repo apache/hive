@@ -34,8 +34,9 @@ public class TestCreateUdfEntities {
 
   @Before
   public void setUp() throws Exception {
-
     HiveConf conf = new HiveConf(IDriver.class);
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     SessionState.start(conf);
     driver = DriverFactory.newDriver(conf);
   }

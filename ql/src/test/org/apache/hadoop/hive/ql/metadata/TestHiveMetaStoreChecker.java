@@ -80,16 +80,19 @@ public class TestHiveMetaStoreChecker {
   @Before
   public void setUp() throws Exception {
     hive = Hive.get();
-    hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
-    hive.getConf().set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");
-    msc = new HiveMetaStoreClient(hive.getConf());
-    checker = new HiveMetaStoreChecker(msc, hive.getConf());
+    HiveConf conf = hive.getConf();
+    conf.set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
+    conf.set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
+    msc = new HiveMetaStoreClient(conf);
+    checker = new HiveMetaStoreChecker(msc, conf);
 
-    hive.getConf().setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    HiveConf.setBoolVar(hive.getConf(), HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    SessionState ss = SessionState.start(hive.getConf());
-    ss.initTxnMgr(hive.getConf());
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    SessionState ss = SessionState.start(conf);
+    ss.initTxnMgr(conf);
 
     partCols = new ArrayList<>();
     partCols.add(new FieldSchema(partDateName, serdeConstants.STRING_TYPE_NAME, ""));

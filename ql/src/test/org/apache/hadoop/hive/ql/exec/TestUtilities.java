@@ -129,10 +129,10 @@ public class TestUtilities {
   }
 
   @Test
-  public void testgetDbTableName() throws HiveException{
+  public void testGetDbTableName() throws HiveException{
     String tablename;
     String [] dbtab;
-    SessionState.start(new HiveConf(this.getClass()));
+    SessionState.start(getHiveConf());
     String curDefaultdb = SessionState.get().getCurrentDatabase();
 
     //test table without db portion
@@ -246,7 +246,7 @@ public class TestUtilities {
 
   private List<Path> runRemoveTempOrDuplicateFilesTestCase(String executionEngine, boolean dPEnabled)
       throws Exception {
-    Configuration hconf = new HiveConf(this.getClass());
+    Configuration hconf = getHiveConf();
     // do this to verify that Utilities.removeTempOrDuplicateFiles does not revert to default scheme information
     hconf.set("fs.defaultFS", "hdfs://should-not-be-used/");
     hconf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, executionEngine);
@@ -265,6 +265,13 @@ public class TestUtilities {
     assertPathsMatchSchemeAndAuthority(expectedScheme, expectedAuthority, paths);
 
     return paths;
+  }
+
+  private HiveConf getHiveConf() {
+    HiveConf conf = new HiveConf(this.getClass());
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
+    return conf;
   }
 
   private void assertPathsMatchSchemeAndAuthority(String expectedScheme, String expectedAuthority, List<Path> paths) {

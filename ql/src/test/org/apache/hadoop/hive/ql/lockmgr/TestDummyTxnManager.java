@@ -66,6 +66,8 @@ public class TestDummyTxnManager {
 
   @Before
   public void setUp() throws Exception {
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, DummyTxnManager.class.getName());
     conf
