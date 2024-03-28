@@ -31,6 +31,7 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDigestIncludeType;
+import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -157,6 +158,11 @@ public class HiveRelJson extends RelJson {
         map = jsonBuilder.map();
         map.put("correl", ((RexCorrelVariable) node).getName());
         map.put("type", toJson(node.getType()));
+        return map;
+      case DYNAMIC_PARAM:
+        map = jsonBuilder.map();
+        map.put("dynamic_param", true);
+        map.put("index", ((RexDynamicParam) node).getIndex());
         return map;
       default:
         if (node instanceof RexCall) {
