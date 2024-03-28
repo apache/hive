@@ -1,0 +1,242 @@
+PREHOOK: query: EXPLAIN CBO
+SELECT
+  ROUND(AVG(key), 3),
+  ROUND(STDDEV_POP(key), 3),
+  ROUND(STDDEV_SAMP(key), 3),
+  ROUND(VAR_POP(key), 3),
+  ROUND(VAR_SAMP(key), 3)
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT
+  ROUND(AVG(key), 3),
+  ROUND(STDDEV_POP(key), 3),
+  ROUND(STDDEV_SAMP(key), 3),
+  ROUND(VAR_POP(key), 3),
+  ROUND(VAR_SAMP(key), 3)
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[round($0, 3)], _o__c1=[round($1, 3)], _o__c2=[round($2, 3)], _o__c3=[round($3, 3)], _o__c4=[round($4, 3)])
+  HiveAggregate(group=[{}], agg#0=[avg($0)], agg#1=[stddev_pop($0)], agg#2=[stddev_samp($0)], agg#3=[var_pop($0)], agg#4=[var_samp($0)])
+    HiveTableScan(table=[[default, src]], table:alias=[src])
+
+PREHOOK: query: SELECT
+  ROUND(AVG(key), 3),
+  ROUND(STDDEV_POP(key), 3),
+  ROUND(STDDEV_SAMP(key), 3),
+  ROUND(VAR_POP(key), 3),
+  ROUND(VAR_SAMP(key), 3)
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  ROUND(AVG(key), 3),
+  ROUND(STDDEV_POP(key), 3),
+  ROUND(STDDEV_SAMP(key), 3),
+  ROUND(VAR_POP(key), 3),
+  ROUND(VAR_SAMP(key), 3)
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+260.182	142.927	143.07	20428.073	20469.011
+PREHOOK: query: EXPLAIN CBO
+SELECT
+  ROUND(AVG(value), 3),
+  ROUND(STDDEV_POP(value), 3),
+  ROUND(STDDEV_SAMP(value), 3),
+  ROUND(VAR_POP(value), 3),
+  ROUND(VAR_SAMP(value), 3)
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT
+  ROUND(AVG(value), 3),
+  ROUND(STDDEV_POP(value), 3),
+  ROUND(STDDEV_SAMP(value), 3),
+  ROUND(VAR_POP(value), 3),
+  ROUND(VAR_SAMP(value), 3)
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[round($0, 3)], _o__c1=[round($1, 3)], _o__c2=[round($2, 3)], _o__c3=[round($3, 3)], _o__c4=[round($4, 3)])
+  HiveAggregate(group=[{}], agg#0=[avg($1)], agg#1=[stddev_pop($1)], agg#2=[stddev_samp($1)], agg#3=[var_pop($1)], agg#4=[var_samp($1)])
+    HiveTableScan(table=[[default, src]], table:alias=[src])
+
+PREHOOK: query: SELECT
+  ROUND(AVG(value), 3),
+  ROUND(STDDEV_POP(value), 3),
+  ROUND(STDDEV_SAMP(value), 3),
+  ROUND(VAR_POP(value), 3),
+  ROUND(VAR_SAMP(value), 3)
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  ROUND(AVG(value), 3),
+  ROUND(STDDEV_POP(value), 3),
+  ROUND(STDDEV_SAMP(value), 3),
+  ROUND(VAR_POP(value), 3),
+  ROUND(VAR_SAMP(value), 3)
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: EXPLAIN CBO
+WITH combined AS (
+  SELECT key AS combined_value FROM src
+  UNION ALL
+  SELECT value AS combined_value FROM src
+)
+SELECT
+  ROUND(AVG(combined_value), 3),
+  ROUND(STDDEV_POP(combined_value), 3),
+  ROUND(STDDEV_SAMP(combined_value), 3),
+  ROUND(VAR_POP(combined_value), 3),
+  ROUND(VAR_SAMP(combined_value), 3)
+FROM combined
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+WITH combined AS (
+  SELECT key AS combined_value FROM src
+  UNION ALL
+  SELECT value AS combined_value FROM src
+)
+SELECT
+  ROUND(AVG(combined_value), 3),
+  ROUND(STDDEV_POP(combined_value), 3),
+  ROUND(STDDEV_SAMP(combined_value), 3),
+  ROUND(VAR_POP(combined_value), 3),
+  ROUND(VAR_SAMP(combined_value), 3)
+FROM combined
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[round($0, 3)], _o__c1=[round($1, 3)], _o__c2=[round($2, 3)], _o__c3=[round($3, 3)], _o__c4=[round($4, 3)])
+  HiveAggregate(group=[{}], agg#0=[avg($0)], agg#1=[stddev_pop($0)], agg#2=[stddev_samp($0)], agg#3=[var_pop($0)], agg#4=[var_samp($0)])
+    HiveProject(combined_value=[$0])
+      HiveUnion(all=[true])
+        HiveProject(combined_value=[$0])
+          HiveTableScan(table=[[default, src]], table:alias=[src])
+        HiveProject(combined_value=[$1])
+          HiveTableScan(table=[[default, src]], table:alias=[src])
+
+PREHOOK: query: WITH combined AS (
+  SELECT key AS combined_value FROM src
+  UNION ALL
+  SELECT value AS combined_value FROM src
+)
+SELECT
+  ROUND(AVG(combined_value), 3),
+  ROUND(STDDEV_POP(combined_value), 3),
+  ROUND(STDDEV_SAMP(combined_value), 3),
+  ROUND(VAR_POP(combined_value), 3),
+  ROUND(VAR_SAMP(combined_value), 3)
+FROM combined
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: WITH combined AS (
+  SELECT key AS combined_value FROM src
+  UNION ALL
+  SELECT value AS combined_value FROM src
+)
+SELECT
+  ROUND(AVG(combined_value), 3),
+  ROUND(STDDEV_POP(combined_value), 3),
+  ROUND(STDDEV_SAMP(combined_value), 3),
+  ROUND(VAR_POP(combined_value), 3),
+  ROUND(VAR_SAMP(combined_value), 3)
+FROM combined
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+260.182	142.927	143.07	20428.073	20469.011
+PREHOOK: query: SELECT
+  ROUND(AVG(key), 3),
+  ROUND(STDDEV_POP(key), 3),
+  ROUND(STDDEV_SAMP(key), 3),
+  ROUND(VAR_POP(key), 3),
+  ROUND(VAR_SAMP(key), 3)
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  ROUND(AVG(key), 3),
+  ROUND(STDDEV_POP(key), 3),
+  ROUND(STDDEV_SAMP(key), 3),
+  ROUND(VAR_POP(key), 3),
+  ROUND(VAR_SAMP(key), 3)
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+260.182	142.927	143.07	20428.073	20469.011
+PREHOOK: query: SELECT
+  ROUND(AVG(value), 3),
+  ROUND(STDDEV_POP(value), 3),
+  ROUND(STDDEV_SAMP(value), 3),
+  ROUND(VAR_POP(value), 3),
+  ROUND(VAR_SAMP(value), 3)
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  ROUND(AVG(value), 3),
+  ROUND(STDDEV_POP(value), 3),
+  ROUND(STDDEV_SAMP(value), 3),
+  ROUND(VAR_POP(value), 3),
+  ROUND(VAR_SAMP(value), 3)
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: WITH combined AS (
+  SELECT key AS combined_value FROM src
+  UNION ALL
+  SELECT value AS combined_value FROM src
+)
+SELECT
+  ROUND(AVG(combined_value), 3),
+  ROUND(STDDEV_POP(combined_value), 3),
+  ROUND(STDDEV_SAMP(combined_value), 3),
+  ROUND(VAR_POP(combined_value), 3),
+  ROUND(VAR_SAMP(combined_value), 3)
+FROM combined
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: WITH combined AS (
+  SELECT key AS combined_value FROM src
+  UNION ALL
+  SELECT value AS combined_value FROM src
+)
+SELECT
+  ROUND(AVG(combined_value), 3),
+  ROUND(STDDEV_POP(combined_value), 3),
+  ROUND(STDDEV_SAMP(combined_value), 3),
+  ROUND(VAR_POP(combined_value), 3),
+  ROUND(VAR_SAMP(combined_value), 3)
+FROM combined
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+260.182	142.927	143.07	20428.073	20469.011
