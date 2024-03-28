@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature.RelTreeSignatureWriter;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
 import com.google.common.collect.ImmutableList;
@@ -202,6 +203,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   // Also include partition list key to trigger cost evaluation even if an
   // expression was already generated.
   @Override public RelWriter explainTerms(RelWriter pw) {
+    if (pw instanceof RelTreeSignatureWriter) {
+      return super.explainTerms(pw)
+          .item("tableScanTrait", this.tableScanTrait)
+          .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
+              isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
+    }
     return super.explainTerms(pw)
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
       .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)

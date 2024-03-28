@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 
 /**
  * Enables to connect related objects to eachother.
@@ -45,8 +46,11 @@ import com.google.common.collect.Sets;
  */
 public class PlanMapper {
 
-  Set<EquivGroup> groups = new HashSet<>();
-  private Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class, AuxOpTreeSignature.class);
+  private final Set<EquivGroup> groups = new HashSet<>();
+  private final Map<Object, EquivGroup> objectMap = new CompositeMap<>(
+      OpTreeSignature.class,
+      AuxOpTreeSignature.class,
+      RelTreeSignature.class);
 
   /**
    * Specialized class which can compare by identity or value; based on the key type.

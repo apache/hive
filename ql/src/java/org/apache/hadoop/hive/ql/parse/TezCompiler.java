@@ -1046,11 +1046,16 @@ public class TezCompiler extends TaskCompiler {
         }
       }
       if (nd instanceof TableScanOperator) {
+        TableScanOperator ts = (TableScanOperator) nd;
         // If the tablescan operator is making use of filtering capabilities of readers then
         // we will not see the actual incoming rowcount which was processed - so we may not use it for relNodes
-        TableScanOperator ts = (TableScanOperator) nd;
         if (ts.getConf().getPredicateString() != null) {
-          planMapper.link(ts, new OperatorStats.MayNotUseForRelNodes());
+          invalidateForRelNodes(ts, false);
+        }
+        // If sampling is configured, the table scan could be canceled in the middle. We avoid using runtime stats
+        // for HiveTableScan and its descendants as it is not pushed down to HiveTableScan RelNodes
+        if (ts.getConf().getRowLimit() >= 0) {
+          invalidateForRelNodes(ts, true);
         }
       }
       return null;
@@ -1074,6 +1079,12 @@ public class TezCompiler extends TaskCompiler {
       planMapper.link(op, new OperatorStats.IncorrectRuntimeStatsMarker());
     }
 
+    private void invalidateForRelNodes(Operator<?> op, boolean recursive) {
+      planMapper.link(op, new OperatorStats.MayNotUseForRelNodes());
+      if (recursive) {
+        op.getChildOperators().forEach(child -> invalidateForRelNodes(child, true));
+      }
+    }
   }
 
   private void markOperatorsWithUnstableRuntimeStats(OptimizeTezProcContext procCtx) throws SemanticException {
