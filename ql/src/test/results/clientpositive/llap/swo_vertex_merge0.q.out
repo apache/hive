@@ -32,8 +32,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tv
 POSTHOOK: Lineage: tv.b SCRIPT []
-Warning: Map Join MAPJOIN[78][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[81][bigTable=?] in task 'Map 6' is a cross product
+Warning: Map Join MAPJOIN[81][bigTable=?] in task 'Map 4' is a cross product
 PREHOOK: query: explain
 with t as (
 	select a+b as s from tu,tv where a>1 and b>2 and a*a=b
@@ -65,65 +64,14 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
-        Map 4 <- Map 5 (BROADCAST_EDGE)
-        Map 6 <- Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Map 4 <- Map 1 (BROADCAST_EDGE), Map 2 (BROADCAST_EDGE), Reducer 3 (BROADCAST_EDGE)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
+        Reducer 7 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: tv
-                  filterExpr: (b > 2) (type: boolean)
-                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (b > 2) (type: boolean)
-                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: b (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 
-                          1 
-                        outputColumnNames: _col0, _col1, _col3
-                        input vertices:
-                          0 Map 4
-                        Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col3 (type: int)
-                            1 _col1 (type: int)
-                          outputColumnNames: _col0, _col1, _col3, _col4
-                          input vertices:
-                            1 Map 5
-                          residual filter predicates: {((_col1 + _col0) = ((_col4 + _col3) + 1))}
-                          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: (_col1 + _col0) (type: int)
-                            outputColumnNames: _col0
-                            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: sum(_col0)
-                              minReductionHashAggr: 0.4
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                null sort order: 
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: tv
@@ -144,13 +92,8 @@ STAGE PLANS:
                           1 _col1 (type: int)
                         outputColumnNames: _col0, _col1
                         input vertices:
-                          1 Map 5
+                          1 Map 2
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: int), _col1 (type: int)
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
@@ -158,7 +101,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: int), _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 5 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tu
@@ -194,7 +137,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 6 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: tv
@@ -215,7 +158,7 @@ STAGE PLANS:
                           1 
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
-                          0 Map 4
+                          0 Map 1
                         Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -225,8 +168,34 @@ STAGE PLANS:
                             1 _col1 (type: int)
                           outputColumnNames: _col0, _col1, _col3, _col4
                           input vertices:
-                            1 Map 5
+                            1 Map 2
                           residual filter predicates: {(((_col1 + _col0) + 1) = (_col4 + _col3))}
+                          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: (_col1 + _col0) (type: int)
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: sum(_col0)
+                              minReductionHashAggr: 0.4
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                null sort order: 
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: bigint)
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col3 (type: int)
+                            1 _col1 (type: int)
+                          outputColumnNames: _col0, _col1, _col3, _col4
+                          input vertices:
+                            1 Reducer 3
+                          residual filter predicates: {((_col1 + _col0) = ((_col4 + _col3) + 1))}
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: (_col1 + _col0) (type: int)
@@ -245,7 +214,20 @@ STAGE PLANS:
                                 value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: all inputs
-        Reducer 2 
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: _col1, _col0
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -275,8 +257,8 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 3 
-            Vertex: Union 3
+        Union 6 
+            Vertex: Union 6
 
   Stage: Stage-0
     Fetch Operator

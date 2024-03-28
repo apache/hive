@@ -19,17 +19,18 @@
 
 package org.apache.hadoop.hive.ql.optimizer.graph;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -37,8 +38,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import com.google.common.collect.Sets;
 
 /**
  * Represents the Operator tree as a graph.
@@ -55,7 +54,9 @@ import com.google.common.collect.Sets;
  */
 public class OperatorGraph {
 
-  DagGraph<Operator<?>, OpEdge> g;
+  private final DagGraph<Operator<?>, OpEdge> dagGraph;
+  private final Set<Cluster> clusterSet;
+  private final Map<Operator<?>, Set<Cluster>> operatorToCluster;
 
   public enum EdgeType {
     FLOW, SEMIJOIN, DPP, TEST, BROADCAST
@@ -64,15 +65,9 @@ public class OperatorGraph {
   public static class OpEdge {
 
     private final EdgeType et;
-    private final int index;
 
     public OpEdge(EdgeType et) {
-      this(et, 0);
-    }
-
-    public OpEdge(EdgeType et, int index) {
       this.et = et;
-      this.index = index;
     }
 
     public EdgeType getEdgeType() {
@@ -81,45 +76,38 @@ public class OperatorGraph {
 
   }
 
-  public static interface OperatorEdgePredicate {
+  public interface OperatorEdgePredicate {
 
     boolean accept(Operator<?> s, Operator<?> t, OpEdge opEdge);
 
   }
 
-  Map<Operator<?>, Cluster> nodeCluster = new HashMap<>();
-
   public class Cluster {
 
-    Set<Operator<?>> members = new LinkedHashSet<>();
+    private final Set<Operator<?>> members = new HashSet<>();
 
-    protected void merge(Cluster o) {
-      if (o == this) {
-        return;
-      }
-      for (Operator<?> node : o.members) {
-        add(node);
-      }
-      o.members.clear();
+    public void add(Operator<?> operator) {
+      members.add(operator);
     }
 
-    protected void add(Operator<?> curr) {
-      nodeCluster.put(curr, this);
-      members.add(curr);
+    public void merge(Cluster cluster) {
+      members.addAll(cluster.getMembers());
     }
 
     public Set<Cluster> parentClusters(OperatorEdgePredicate traverseEdge) {
       Set<Cluster> ret = new HashSet<Cluster>();
       for (Operator<?> operator : members) {
-        for (Operator<? extends OperatorDesc> p : operator.getParentOperators()) {
-          if (members.contains(p)) {
-            continue;
+        Stream<Operator<?>> foreignParentOperators =
+            dagGraph.predecessors(operator).stream()
+                .filter(pOp -> !members.contains(pOp))
+                .filter(pOp -> traverseEdge.accept(pOp, operator, dagGraph.getEdge(pOp, operator).get()));
+        foreignParentOperators.forEach(parentOperator -> {
+          for (Cluster parentCluster: operatorToCluster.get(parentOperator)) {
+            if (!parentCluster.getMembers().contains(operator)) {
+              ret.add(parentCluster);
+            }
           }
-          Optional<OpEdge> e = g.getEdge(p, operator);
-          if (traverseEdge.accept(p, operator, e.get())) {
-            ret.add(nodeCluster.get(p));
-          }
-        }
+        });
       }
       return ret;
     }
@@ -127,15 +115,17 @@ public class OperatorGraph {
     public Set<Cluster> childClusters(OperatorEdgePredicate traverseEdge) {
       Set<Cluster> ret = new HashSet<Cluster>();
       for (Operator<?> operator : members) {
-        for (Operator<? extends OperatorDesc> p : operator.getChildOperators()) {
-          if (members.contains(p)) {
-            continue;
+        Stream<Operator<?>> foreignChildOperators =
+            dagGraph.successors(operator).stream()
+                .filter(cOp -> !members.contains(cOp))
+                .filter(cOp -> traverseEdge.accept(operator, cOp, dagGraph.getEdge(operator, cOp).get()));
+        foreignChildOperators.forEach(childOperator -> {
+          for (Cluster childCluster: operatorToCluster.get(childOperator)) {
+            if (!childCluster.getMembers().contains(operator)) {
+              ret.add(childCluster);
+            }
           }
-          Optional<OpEdge> e = g.getEdge(operator, p);
-          if (traverseEdge.accept(operator, p, e.get())) {
-            ret.add(nodeCluster.get(p));
-          }
-        }
+        });
       }
       return ret;
     }
@@ -143,121 +133,145 @@ public class OperatorGraph {
     public Set<Operator<?>> getMembers() {
       return Collections.unmodifiableSet(members);
     }
+
   }
 
+  private Cluster createCluster(Operator<?> rootOperator) {
+    Cluster cluster = new Cluster();
+    Queue<Operator<?>> remainingOperators = new LinkedList<>();
+    remainingOperators.add(rootOperator);
 
-  public OperatorGraph(ParseContext pctx) {
-    g = new DagGraph<Operator<?>, OperatorGraph.OpEdge>();
-    Set<Operator<?>> visited = Sets.newIdentityHashSet();
-    Set<Operator<?>> seen = Sets.newIdentityHashSet();
+    while (!remainingOperators.isEmpty()) {
+      Operator<?> currentOperator = remainingOperators.poll();
+      if (!cluster.getMembers().contains(currentOperator)) {
+        cluster.add(currentOperator);
 
-    seen.addAll(pctx.getTopOps().values());
-    while (!seen.isEmpty()) {
-      Operator<?> curr = seen.iterator().next();
-      seen.remove(curr);
-      if (visited.contains(curr)) {
-        continue;
-      }
-
-      visited.add(curr);
-
-      Cluster currentCluster = nodeCluster.get(curr);
-      if (currentCluster == null) {
-        currentCluster=new Cluster();
-        currentCluster.add(curr);
-      }
-      List<Operator<?>> parents = curr.getParentOperators();
-      for (int i = 0; i < parents.size(); i++) {
-        Operator<?> p = parents.get(i);
-        if (curr instanceof MapJoinOperator && p instanceof ReduceSinkOperator) {
-          g.putEdgeValue(p, curr, new OpEdge(EdgeType.BROADCAST, i));
-        } else {
-          g.putEdgeValue(p, curr, new OpEdge(EdgeType.FLOW, i));
+        // TODO: write about DummyStoreOperator and FileSinkOperator
+        if (!(currentOperator instanceof ReduceSinkOperator)) {
+          remainingOperators.addAll(currentOperator.getChildOperators());
         }
-        if (p instanceof ReduceSinkOperator) {
-          // ignore cluster of parent RS
-          continue;
-        }
-        Cluster cluster = nodeCluster.get(p);
-        if (cluster != null) {
-          currentCluster.merge(cluster);
-        } else {
-          currentCluster.add(p);
-        }
-      }
-
-      SemiJoinBranchInfo sji = pctx.getRsToSemiJoinBranchInfo().get(curr);
-      if (sji != null) {
-        g.putEdgeValue(curr, sji.getTsOp(), new OpEdge(EdgeType.SEMIJOIN));
-        seen.add(sji.getTsOp());
-      }
-      if (curr instanceof AppMasterEventOperator) {
-        DynamicPruningEventDesc dped = (DynamicPruningEventDesc) curr.getConf();
-        TableScanOperator ts = dped.getTableScan();
-        g.putEdgeValue(curr, ts, new OpEdge(EdgeType.DPP));
-        seen.add(ts);
-      }
-
-      List<Operator<?>> ccc = curr.getChildOperators();
-      for (Operator<?> operator : ccc) {
-        seen.add(operator);
       }
     }
+
+    return cluster;
   }
 
-  public void toDot(File outFile) throws Exception {
-    new DotExporter(this).write(outFile);
+  private Set<Cluster> createClusterSet(ParseContext pctx) {
+    Set<Operator<?>> rootOperators = new HashSet<>(pctx.getTopOps().values());
+    Set<Operator<?>> mergeJoinOperators = new HashSet<>();
+    for (Operator<?> operator: pctx.getAllOps()) {
+      if (operator instanceof CommonMergeJoinOperator) {
+        mergeJoinOperators.add(operator);
+      }
+
+      if (operator instanceof ReduceSinkOperator) {
+        // TODO: Do we need to consider SJ and DPP?
+        for (Operator<?> childOperator: operator.getChildOperators()) {
+          if (childOperator instanceof MapJoinOperator) {
+            MapJoinOperator childMJOperator = (MapJoinOperator) childOperator;
+            int parentTag = childMJOperator.getParentOperators().indexOf(operator);
+            int bigTablePos = childMJOperator.getConf().getPosBigTable();
+            if (parentTag == bigTablePos) {
+              rootOperators.add(childOperator);
+            }
+          } else {
+            rootOperators.add(childOperator);
+          }
+        }
+      }
+    }
+
+    Set<Cluster> clusters = new HashSet<>();
+    for (Operator<?> rootOperator: rootOperators) {
+      clusters.add(createCluster(rootOperator));
+    }
+
+    for (Operator<?> operator: mergeJoinOperators) {
+      Set<Cluster> mergeJoinCluster = new HashSet<>();
+      for (Cluster cluster: clusters) {
+        if (cluster.getMembers().contains(operator)) {
+          mergeJoinCluster.add(cluster);
+        }
+      }
+
+      if (!mergeJoinCluster.isEmpty()) {
+        Cluster mergedCluster = new Cluster();
+        for (Cluster cluster: mergeJoinCluster) {
+          mergedCluster.merge(cluster);
+          clusters.remove(cluster);
+        }
+        clusters.add(mergedCluster);
+      }
+    }
+
+    return clusters;
+  }
+
+  private DagGraph<Operator<?>, OperatorGraph.OpEdge> createDagGraph(ParseContext pctx) {
+    DagGraph<Operator<?>, OperatorGraph.OpEdge> dagGraph = new DagGraph<>();
+    for (Operator<?> operator: pctx.getAllOps()) {
+      List<Operator<?>> parents = operator.getParentOperators();
+      for (Operator<?> parentOperator: parents) {
+        if (operator instanceof MapJoinOperator && parentOperator instanceof ReduceSinkOperator) {
+          dagGraph.putEdgeValue(parentOperator, operator, new OpEdge(EdgeType.BROADCAST));
+        } else {
+          dagGraph.putEdgeValue(parentOperator, operator, new OpEdge(EdgeType.FLOW));
+        }
+      }
+
+      SemiJoinBranchInfo sji = pctx.getRsToSemiJoinBranchInfo().get(operator);
+      if (sji != null) {
+        dagGraph.putEdgeValue(operator, sji.getTsOp(), new OpEdge(EdgeType.SEMIJOIN));
+      }
+      if (operator instanceof AppMasterEventOperator) {
+        DynamicPruningEventDesc dped = (DynamicPruningEventDesc) operator.getConf();
+        TableScanOperator ts = dped.getTableScan();
+        dagGraph.putEdgeValue(operator, ts, new OpEdge(EdgeType.DPP));
+      }
+    }
+    return dagGraph;
+  }
+
+  public OperatorGraph(ParseContext pctx) {
+    dagGraph = createDagGraph(pctx);
+    clusterSet = Collections.unmodifiableSet(createClusterSet(pctx));
+    operatorToCluster = new HashMap<>();
+
+    for (Cluster cluster: clusterSet) {
+      for (Operator<?> operator: cluster.getMembers()) {
+        if (!operatorToCluster.containsKey(operator)) {
+          operatorToCluster.put(operator, new HashSet<>());
+        }
+        operatorToCluster.get(operator).add(cluster);
+      }
+    }
   }
 
   public boolean mayMerge(Operator<?> opA, Operator<?> opB) {
     try {
-      g.putEdgeValue(opA, opB, new OpEdge(EdgeType.TEST));
-      g.removeEdge(opA, opB);
-      g.putEdgeValue(opB, opA, new OpEdge(EdgeType.TEST));
-      g.removeEdge(opB, opA);
+      dagGraph.putEdgeValue(opA, opB, new OpEdge(EdgeType.TEST));
+      dagGraph.removeEdge(opA, opB);
+      dagGraph.putEdgeValue(opB, opA, new OpEdge(EdgeType.TEST));
+      dagGraph.removeEdge(opB, opA);
       return true;
     } catch (IllegalArgumentException iae) {
       return false;
     } finally {
-      g.removeEdge(opA, opB);
-      g.removeEdge(opB, opA);
+      dagGraph.removeEdge(opA, opB);
+      dagGraph.removeEdge(opB, opA);
     }
   }
 
-  public int getDepth(Operator<?> o1) {
-    return g.getDepth(o1);
-  }
-
-  public OperatorGraph implode() {
-    Set<Operator<?>> nodes = new HashSet<Operator<?>>(g.nodes());
-    for (Operator<?> n : nodes) {
-      if (n instanceof TableScanOperator) {
-        continue;
-      }
-      if (g.degree(n) == 2 && g.inDegree(n) == 1) {
-        g.impode(n, new OpEdge(EdgeType.FLOW, -1));
-      }
-    }
-    nodeCluster.clear();
-    return this;
-
-  }
-
-  public Cluster clusterOf(Operator<?> op1) {
-    return nodeCluster.get(op1);
+  public Set<Cluster> clusterOf(Operator<?> operator) {
+    return Collections.unmodifiableSet(operatorToCluster.get(operator));
   }
 
   public Set<Cluster> getClusters() {
-    return new HashSet<>(nodeCluster.values());
+    return clusterSet;
   }
 
-  public Operator<?> findOperator(String name) {
-    for (Operator<?> o : g.nodes()) {
-      if (name.equals(o.toString())) {
-        return o;
-      }
-    }
-    return null;
+  public DagGraph<Operator<?>, OpEdge> getDagGraph() {
+    return dagGraph;
   }
 
 }
