@@ -348,6 +348,10 @@ public class RelJson {
 
         return makeLiteral(rexBuilder, literal, type);
       }
+      if (map.containsKey("dynamic_param")) {
+        int index = (int) map.get("index");
+        return rexBuilder.makeDynamicParam(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.NULL), index);
+      }
       throw new UnsupportedOperationException("cannot convert to rex " + o);
     } else if (o instanceof Boolean) {
       return rexBuilder.makeLiteral((Boolean) o);
