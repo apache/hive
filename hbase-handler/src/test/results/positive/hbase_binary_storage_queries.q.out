@@ -69,7 +69,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -251,7 +251,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

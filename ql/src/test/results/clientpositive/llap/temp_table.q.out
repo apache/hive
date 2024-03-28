@@ -190,7 +190,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	253                 
 	rawDataSize         	2703                
-	totalSize           	2956                
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

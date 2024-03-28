@@ -63,7 +63,7 @@ public class QOutProcessor {
   private static final PatternReplacementPair MASK_LINEAGE = new PatternReplacementPair(
       Pattern.compile("POSTHOOK: Lineage: .*"),
       "POSTHOOK: Lineage: ###Masked###");
-
+  
   private FsType fsType = FsType.LOCAL;
 
   public static class LineProcessingResult {
@@ -249,29 +249,9 @@ public class QOutProcessor {
         }
       }
 
-      if (!result.partialMaskWasMatched && queryMasks.contains(Mask.STATS)) {
-        matcher = MASK_STATS.pattern.matcher(result.line);
-        if (matcher.find()) {
-          result.line = result.line.replaceAll(MASK_STATS.pattern.pattern(), MASK_STATS.replacement);
-          result.partialMaskWasMatched = true;
-        }
-      }
-
-      if (!result.partialMaskWasMatched && queryMasks.contains(Mask.DATASIZE)) {
-        matcher = MASK_DATA_SIZE.pattern.matcher(result.line);
-        if (matcher.find()) {
-          result.line = result.line.replaceAll(MASK_DATA_SIZE.pattern.pattern(), MASK_DATA_SIZE.replacement);
-          result.partialMaskWasMatched = true;
-        }
-      }
-
-      if (!result.partialMaskWasMatched && queryMasks.contains(Mask.LINEAGE)) {
-        matcher = MASK_LINEAGE.pattern.matcher(result.line);
-        if (matcher.find()) {
-          result.line = result.line.replaceAll(MASK_LINEAGE.pattern.pattern(), MASK_LINEAGE.replacement);
-          result.partialMaskWasMatched = true;
-        }
-      }
+      maskPattern(result, Mask.STATS, MASK_STATS);
+      maskPattern(result, Mask.DATASIZE, MASK_DATA_SIZE);
+      maskPattern(result, Mask.LINEAGE,  MASK_LINEAGE);
 
       for (String prefix : maskIfStartsWith) {
         if (result.line.startsWith(prefix)) {
@@ -308,6 +288,15 @@ public class QOutProcessor {
     }
 
     return result;
+  }
+
+  private void maskPattern(LineProcessingResult result, Mask mask, PatternReplacementPair patternReplacementPair) {
+    if (!result.partialMaskWasMatched && queryMasks.contains(mask)) {
+      if (patternReplacementPair.pattern.matcher(result.line).find()) {
+        result.line = result.line.replaceAll(patternReplacementPair.pattern.pattern(), patternReplacementPair.replacement);
+        result.partialMaskWasMatched = true;
+      }
+    }
   }
 
   private final Pattern[] partialReservedPlanMask = toPattern(new String[] {
@@ -362,6 +351,7 @@ public class QOutProcessor {
         add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX, String.format("%s %s$3$4 %s $6%s",
             HDFS_USER_MASK, HDFS_GROUP_MASK, HDFS_DATE_MASK, HDFS_MASK)));
         add(toPatternPair(PATH_HDFS_REGEX, String.format("$1%s", HDFS_MASK)));
+        add(toPatternPair("(.*totalSize\\s*=*\\s*)\\d+\\s*(.*)", "$1#Masked#$2"));
       }
     };
   }

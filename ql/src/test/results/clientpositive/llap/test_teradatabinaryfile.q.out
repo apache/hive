@@ -460,7 +460,7 @@ Table Parameters:
 	teradata.char.charset	LATIN               
 	teradata.row.length 	64KB                
 	teradata.timestamp.precision	0                   
-	totalSize           	1800                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -498,7 +498,7 @@ Table Parameters:
 	teradata.char.charset	UNICODE             
 	teradata.row.length 	1MB                 
 	teradata.timestamp.precision	6                   
-	totalSize           	11                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

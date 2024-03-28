@@ -1,8 +1,6 @@
 -- SORT_QUERY_RESULTS
 -- Mask neededVirtualColumns due to non-strict order
 --! qt:replace:/(\s+neededVirtualColumns:\s)(.*)/$1#Masked#/
--- Mask the totalSize value as it can have slight variability, causing test flakiness
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask a random snapshot id

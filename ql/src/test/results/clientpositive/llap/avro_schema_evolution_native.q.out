@@ -108,7 +108,7 @@ Table Parameters:
 	numPartitions       	7                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3707                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -220,7 +220,7 @@ Table Parameters:
 	numPartitions       	7                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3707                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

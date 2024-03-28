@@ -36,7 +36,7 @@ STAGE PLANS:
       db name: default
       partitions:
           Partition
-            params: {totalSize=0, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}, numFiles=0, numFilesErasureCoded=0}
+            params: {totalSize=#Masked#, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}, numFiles=0, numFilesErasureCoded=0}
             partition spec: {c=US, d=1}
       table name: ptestfilter_n1_temp
 
