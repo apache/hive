@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
 
 import java.util.List;
 
@@ -29,6 +30,12 @@ public class NativeAcidMaterializedViewASTBuilder extends MaterializedViewASTBui
   @Override
   public List<ASTNode> createDeleteSelectNodes(String tableName) {
     return wrapIntoSelExpr(singletonList(createQualifiedColumnNode(tableName, VirtualColumn.ROWID.getName())));
+  }
+
+  @Override
+  public void appendDeleteSelectNodes(ASTNode selectNode, String tableName) {
+    wrapIntoSelExpr(createAcidSortNodesInternal(tableName))
+        .forEach(astNode -> ParseDriver.adaptor.addChild(selectNode, astNode));
   }
 
   @Override
