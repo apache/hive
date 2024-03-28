@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -2162,7 +2163,7 @@ public class Hive {
 
     MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
 
-    boolean hasAppendsOnly = true;
+    boolean allHasAppendsOnly = true;
     for (SourceTable sourceTable : metadata.getSourceTables()) {
       Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
       HiveStorageHandler storageHandler = table.getStorageHandler();
@@ -2171,22 +2172,29 @@ public class Hive {
         materialization.setSourceTablesCompacted(true);
         return materialization;
       }
-      Boolean b = storageHandler.hasAppendsOnly(
-          table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()));
-      if (b == null) {
-        Materialization materialization = new Materialization();
-        materialization.setSourceTablesCompacted(true);
-        return materialization;
-      } else if (!b) {
-        hasAppendsOnly = false;
+
+      boolean hasAppendsOnly = true;
+
+      if (storageHandler.areSnapshotsSupported()) {
+        for (SnapshotContext snapshot : storageHandler.getSnapshots(
+            table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
+          hasAppendsOnly = SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation());
+          if (!hasAppendsOnly) {
+            break;
+          }
+        }
+      }
+
+      if (!hasAppendsOnly) {
+        allHasAppendsOnly = false;
         break;
       }
     }
     Materialization materialization = new Materialization();
     // TODO: delete operations are not supported yet.
     // Set setSourceTablesCompacted to false when delete is supported
-    materialization.setSourceTablesCompacted(!hasAppendsOnly);
-    materialization.setSourceTablesUpdateDeleteModified(!hasAppendsOnly);
+    materialization.setSourceTablesCompacted(!allHasAppendsOnly);
+    materialization.setSourceTablesUpdateDeleteModified(!allHasAppendsOnly);
     return materialization;
   }
 
