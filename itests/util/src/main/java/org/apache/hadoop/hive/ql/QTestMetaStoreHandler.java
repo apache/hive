@@ -98,14 +98,12 @@ public class QTestMetaStoreHandler {
   }
 
   public void beforeTest() throws Exception {
-    getRule().before();
-    if (!isDerby()) {// derby is handled with old QTestUtil logic (TxnDbUtil stuff)
-      getRule().install();
+    if (isDerby()) {
+      getRule().before();
     }
   }
 
   public void afterTest(QTestUtil qt) throws Exception {
-    getRule().after();
 
     // special qtest logic, which doesn't fit quite well into Derby.after()
     if (isDerby()) {
