@@ -44,6 +44,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class TestHivePreparedStatement {
 
@@ -208,5 +211,67 @@ public class TestHivePreparedStatement {
     verify(client, times(2)).ExecuteStatement(argument.capture());
     assertEquals("select * from table where value='\\'anyValue\\' or 1=1'",
         argument.getValue().getStatement());
+  }
+
+  @Test
+  public void testNonEffectiveArgumentPlaceholder() throws Exception {
+
+    int times = 1;
+
+    // Non-effective
+    String inSingleQuote = "select '?' from table_a";
+    String executedSql = captureExecutedSql(inSingleQuote, times++, null);
+    assertEquals("select '?' from table_a", executedSql);
+
+    String inDoubleQuote = "select \"?\" from table_a";
+    executedSql = captureExecutedSql(inDoubleQuote, times++, null);
+    assertEquals("select \"?\" from table_a", executedSql);
+
+    String inDoubleQuoteLikeRegex =
+        "select field_a from table_a where field_b rlike \"[a-zA-Z]+?\"";
+    executedSql = captureExecutedSql(inDoubleQuoteLikeRegex, times++, null);
+    assertEquals("select field_a from table_a where field_b rlike \"[a-zA-Z]+?\"", executedSql);
+
+    String inComment = "select\n" + "-- ? in the comments\n" + "field_a\n" + "from table_a";
+    executedSql = captureExecutedSql(inComment, times++, null);
+    assertEquals("select\n" + "-- ? in the comments\n" + "field_a\n" + "from table_a", executedSql);
+
+    // Mix non-effective and effective
+    String lastOneIsEffective =
+        "select\n" + "-- ? in the comments\n" + "'?',\n" + "\"?\",\n" + "field_a\n" + "from ?";
+    executedSql =
+        captureExecutedSql(
+            lastOneIsEffective,
+            times++,
+            Arrays.asList(
+                ps -> {
+                  try {
+                    ps.setString(1, "value_of_second_placeholder");
+                  } catch (SQLException e) {
+                    e.printStackTrace();
+                  }
+                }));
+    assertEquals(
+        "select\n"
+            + "-- ? in the comments\n"
+            + "'?',\n"
+            + "\"?\",\n"
+            + "field_a\n"
+            + "from 'value_of_second_placeholder'",
+        executedSql);
+  }
+
+  private String captureExecutedSql(
+      String sql, int times, List<Consumer<HivePreparedStatement>> statementArguments)
+      throws Exception {
+    ArgumentCaptor<TExecuteStatementReq> argument =
+        ArgumentCaptor.forClass(TExecuteStatementReq.class);
+    HivePreparedStatement ps = new HivePreparedStatement(connection, client, sessHandle, sql);
+    if (statementArguments != null) {
+      statementArguments.forEach(statementArgument -> statementArgument.accept(ps));
+    }
+    ps.execute();
+    verify(client, times(times)).ExecuteStatement(argument.capture());
+    return argument.getValue().getStatement();
   }
 }

@@ -130,7 +130,8 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   /**
    * Splits the parametered sql statement at parameter boundaries.
    *
-   * taking into account ' and \ escaping.
+   * taking into account ' and " and \ escaping.
+   * the placeholder inside the comment will also be ignored
    *
    * output for: 'select 1 from ? where a = ?'
    *  ['select 1 from ',' where a = ','']
@@ -140,34 +141,56 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
   private List<String> splitSqlStatement(String sql) {
     List<String> parts = new ArrayList<>();
-    int apCount = 0;
+    boolean inSingleQuote = false;
+    boolean inDoubleQuote = false;
+    boolean inComment = false;
     int off = 0;
     boolean skip = false;
 
     for (int i = 0; i < sql.length(); i++) {
       char c = sql.charAt(i);
+      if (inComment) {
+        inComment = (c != '\n');
+        continue;
+      }
       if (skip) {
         skip = false;
         continue;
       }
       switch (c) {
-      case '\'':
-        apCount++;
-        break;
-      case '\\':
-        skip = true;
-        break;
-      case '?':
-        if ((apCount & 1) == 0) {
-          parts.add(sql.substring(off,i));
-          off=i+1;
-        }
-        break;
-      default:
-        break;
+        case '\'':
+          if (!inDoubleQuote) {
+            inSingleQuote = !inSingleQuote;
+          }
+          break;
+        case '\"':
+          if (!inSingleQuote) {
+            inDoubleQuote = !inDoubleQuote;
+          }
+          break;
+        case '-':
+          if (!inSingleQuote && !inDoubleQuote) {
+            if (i < sql.length() - 1 && sql.charAt(i + 1) == '-') {
+              inComment = true;
+            }
+          }
+          break;
+        case '\\':
+          if (!inSingleQuote && !inDoubleQuote) {
+            skip = true;
+          }
+          break;
+        case '?':
+          if (!inSingleQuote && !inDoubleQuote) {
+            parts.add(sql.substring(off, i));
+            off = i + 1;
+          }
+          break;
+        default:
+          break;
       }
     }
-    parts.add(sql.substring(off, sql.length()));
+    parts.add(sql.substring(off));
     return parts;
   }
 
