@@ -42,6 +42,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelEnumTypes;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -143,7 +144,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public HiveTableScan(RelInput input) {
     this(input.getCluster(), input.getTraitSet(), (RelOptHiveTable)input.getTable("table"),
         (String) input.get("table:alias"), (String) input.get("qbid:alias"),
-        input.get("qbid:alias") != null, input.getBoolean("insideView", false));
+        input.get("qbid:alias") != null, input.getBoolean("insideView", false),
+        createTableScanTrait(input));
   }
 
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
@@ -217,7 +219,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
-          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+          this.tableScanTrait != null && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
       .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
           isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()))
       .itemIf("materializedTable", this.isMaterializedTable(),
@@ -342,6 +344,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
 
   public HiveTableScanTrait getTableScanTrait() {
     return tableScanTrait;
+  }
+
+  private static HiveTableScanTrait createTableScanTrait(RelInput input) {
+    String enumName = input.getString("tableScanTrait");
+    if (enumName == null) {
+      return null;
+    }
+
+    return HiveRelEnumTypes.toEnum(enumName);
   }
 
   @Override
