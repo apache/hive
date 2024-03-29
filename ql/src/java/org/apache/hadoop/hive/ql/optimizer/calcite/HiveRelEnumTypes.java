@@ -32,6 +32,7 @@ import org.apache.calcite.sql.SqlJsonValueEmptyOrErrorBehavior;
 import org.apache.calcite.sql.SqlMatchRecognize;
 import org.apache.calcite.sql.SqlSelectKeyword;
 import org.apache.calcite.sql.fun.SqlTrimFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 /**
  * Copy of org.apache.calcite.rel.externalize.RelEnumTypes as it has
@@ -64,6 +65,7 @@ public class HiveRelEnumTypes {
     register(enumByName, SqlTrimFunction.Flag.class);
     register(enumByName, TimeUnitRange.class);
     register(enumByName, TableModify.Operation.class);
+    register(enumByName, HiveTableScan.HiveTableScanTrait.class);
     ENUM_BY_NAME = enumByName.build();
   }
 

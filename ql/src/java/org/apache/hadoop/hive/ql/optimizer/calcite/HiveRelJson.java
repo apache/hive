@@ -42,6 +42,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.JsonBuilder;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 /**
  * Hive extension of RelJson.
@@ -72,6 +73,9 @@ public class HiveRelJson extends RelJson {
     }
     if (value instanceof AggregateCall) {
       return toJson((AggregateCall) value);
+    }
+    if (value instanceof HiveTableScan.HiveTableScanTrait) {
+      return ((HiveTableScan.HiveTableScanTrait) value).name();
     }
     return super.toJson(value);
   }
