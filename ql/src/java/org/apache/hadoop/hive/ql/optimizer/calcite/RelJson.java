@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFromUnixTimeSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToUnixTimestampSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTruncSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.CalciteUDAF;
@@ -510,6 +511,9 @@ public class RelJson {
       case "TO_DATE":
         return HiveToDateSqlOperator.INSTANCE;
       case "UNIX_TIMESTAMP":
+        if (!((List) map.get("operands")).isEmpty()) {
+          return HiveToUnixTimestampSqlOperator.INSTANCE;
+        }
         return HiveUnixTimestampSqlOperator.INSTANCE;
       case "FROM_UNIXTIME":
         return HiveFromUnixTimeSqlOperator.INSTANCE;
