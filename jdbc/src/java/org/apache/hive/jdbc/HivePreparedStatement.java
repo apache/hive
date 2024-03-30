@@ -142,7 +142,6 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   private List<String> splitSqlStatement(String sql) {
     List<String> parts = new ArrayList<>();
     boolean inSingleQuote = false;
-    boolean inDoubleQuote = false;
     boolean inComment = false;
     int off = 0;
     boolean skip = false;
@@ -159,29 +158,22 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
       }
       switch (c) {
         case '\'':
-          if (!inDoubleQuote) {
-            inSingleQuote = !inSingleQuote;
-          }
-          break;
-        case '\"':
-          if (!inSingleQuote) {
-            inDoubleQuote = !inDoubleQuote;
-          }
+          inSingleQuote = !inSingleQuote;
           break;
         case '-':
-          if (!inSingleQuote && !inDoubleQuote) {
+          if (!inSingleQuote) {
             if (i < sql.length() - 1 && sql.charAt(i + 1) == '-') {
               inComment = true;
             }
           }
           break;
         case '\\':
-          if (!inSingleQuote && !inDoubleQuote) {
+          if (!inSingleQuote) {
             skip = true;
           }
           break;
         case '?':
-          if (!inSingleQuote && !inDoubleQuote) {
+          if (!inSingleQuote) {
             parts.add(sql.substring(off, i));
             off = i + 1;
           }
