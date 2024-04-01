@@ -1572,8 +1572,7 @@ class MetaStoreDirectSql {
             sbFilter.append(escapedNameFragmentPart);
           } else {
             sbFilter.append(FileUtils.escapePathName(col.getName().toLowerCase(), "_%"));
-            sbFilter.append('=');
-            sbFilter.append(FileUtils.escapePathName(null, "_%"));
+            sbFilter.append("=_%");
           }
         }
         String escapedNameFragment = sbFilter.toString();
