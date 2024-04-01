@@ -1892,7 +1892,7 @@ public class SharedWorkOptimizer extends Transform {
         Set<Cluster> cc2 = cluster2.childClusters(edgePredicate);
 
         if (!Collections.disjoint(cc1, cc2)) {
-          LOG.debug("merge would create an unsupported parallel edge(CHILDS)", op1, op2);
+          LOG.debug("merging {} and {} would create an unsupported parallel edge(CHILDS)", op1, op2);
           return false;
         }
       }
@@ -1929,7 +1929,7 @@ public class SharedWorkOptimizer extends Transform {
         }
 
         if (pc.size() > 0) {
-          LOG.debug("merge would create an unsupported parallel edge(PARENTS)", op1, op2);
+          LOG.debug("merging {} and {} would create an unsupported parallel edge(PARENTS)", op1, op2);
           return false;
         }
       }
