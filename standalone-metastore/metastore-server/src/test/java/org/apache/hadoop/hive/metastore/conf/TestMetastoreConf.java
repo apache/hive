@@ -510,4 +510,29 @@ public class TestMetastoreConf {
     Assert.assertEquals(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,
         AcidOpenTxnsCounterService.class.getName());
   }
+
+  /**
+   * Verify that getVar(Configuration conf, ConfVars var) method of MetaStoreConf.java runs as expected in case of unset environment variables
+   * or any other variables that don't have default Value type of String
+   */
+  @Test
+  public void testGetVarForUnsetSystemProperties(){
+    conf = MetastoreConf.newMetastoreConf();
+    System.clearProperty(ConfVars.USE_SSL.getVarname());
+    Assert.assertEquals("false", MetastoreConf.getVar(conf, ConfVars.USE_SSL));
+  }
+
+  /**
+   * Verify that getStringCollection(Configuration conf, ConfVars var) method of MetaStoreConf.java runs as expected in case of unset environment variables
+   * or any other properties that don't have default Value type of String
+   */
+  @Test
+  public void testGetStringCollectionForUnsetSystemProperties(){
+    conf = MetastoreConf.newMetastoreConf();
+    System.clearProperty(ConfVars.USE_SSL.getVarname());
+    Collection<String> list = MetastoreConf.getStringCollection(conf, ConfVars.USE_SSL);
+    Assert.assertEquals(1, list.size());
+    Assert.assertTrue(list.contains("false"));
+  }
+
 }
