@@ -201,6 +201,7 @@ public class HiveRelJson extends RelJson {
             map.put("distinct", over.isDistinct());
             map.put("type", toJson(node.getType()));
             map.put("window", toJson(over.getWindow()));
+            map.put("ignoreNulls", toJson(over.ignoreNulls()));
           }
           return map;
         }
