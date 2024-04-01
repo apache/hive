@@ -204,8 +204,8 @@ public class HiveAlterHandler implements AlterHandler {
         }
         long affectedRows = msdb.updateParameterWithExpectedValue(oldt, expectedKey, expectedValue, newValue);
         if (affectedRows != 1) {
-          throw new MetaException(String.format(
-              "The table has been modified. Updating expected key %s affects %d rows", expectedKey, affectedRows));
+          // make sure concurrent modification exception messages have the same prefix
+          throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is different");
         }
       }
 
