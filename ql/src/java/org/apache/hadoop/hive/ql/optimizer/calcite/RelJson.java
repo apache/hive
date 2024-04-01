@@ -285,6 +285,7 @@ public class RelJson {
             physical = false;
           }
           final boolean distinct = (Boolean) map.get("distinct");
+          final boolean ignoreNulls = (Boolean) map.get("ignoreNulls");
           return rexBuilder.makeOver(
               type,
               operator,
@@ -296,7 +297,8 @@ public class RelJson {
               physical,
               true,
               false,
-              distinct);
+              distinct,
+              ignoreNulls);
         } else {
           final SqlOperator operator = toOp(relInput, opName, map);
           final RelDataType type;
