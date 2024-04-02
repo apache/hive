@@ -1398,7 +1398,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidInputException bad inputs, such as null table name.
    */
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-    String colName, String engine)
+    String colName, String engine, String validWriteIds, long writeId)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   long cleanupEvents();

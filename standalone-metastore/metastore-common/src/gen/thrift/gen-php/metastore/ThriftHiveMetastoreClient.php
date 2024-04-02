@@ -9226,19 +9226,21 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("delete_partition_column_statistics failed: unknown result");
     }
 
-    public function delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine)
+    public function delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine, $validWriteIdList, $writeId)
     {
-        $this->send_delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine);
+        $this->send_delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine, $validWriteIdList, $writeId);
         return $this->recv_delete_table_column_statistics();
     }
 
-    public function send_delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine)
+    public function send_delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine, $validWriteIdList, $writeId)
     {
         $args = new \metastore\ThriftHiveMetastore_delete_table_column_statistics_args();
         $args->db_name = $db_name;
         $args->tbl_name = $tbl_name;
         $args->col_name = $col_name;
         $args->engine = $engine;
+        $args->validWriteIdList = $validWriteIdList;
+        $args->writeId = $writeId;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(

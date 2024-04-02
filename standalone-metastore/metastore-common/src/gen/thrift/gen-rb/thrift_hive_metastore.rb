@@ -2382,13 +2382,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'delete_partition_column_statistics failed: unknown result')
     end
 
-    def delete_table_column_statistics(db_name, tbl_name, col_name, engine)
-      send_delete_table_column_statistics(db_name, tbl_name, col_name, engine)
+    def delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId)
+      send_delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId)
       return recv_delete_table_column_statistics()
     end
 
-    def send_delete_table_column_statistics(db_name, tbl_name, col_name, engine)
-      send_message('delete_table_column_statistics', Delete_table_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :col_name => col_name, :engine => engine)
+    def send_delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId)
+      send_message('delete_table_column_statistics', Delete_table_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :col_name => col_name, :engine => engine, :validWriteIdList => validWriteIdList, :writeId => writeId)
     end
 
     def recv_delete_table_column_statistics()
@@ -6476,7 +6476,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Delete_table_column_statistics_args)
       result = Delete_table_column_statistics_result.new()
       begin
-        result.success = @handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine)
+        result.success = @handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine, args.validWriteIdList, args.writeId)
       rescue ::NoSuchObjectException => o1
         result.o1 = o1
       rescue ::MetaException => o2
@@ -13329,12 +13329,16 @@ module ThriftHiveMetastore
     TBL_NAME = 2
     COL_NAME = 3
     ENGINE = 4
+    VALIDWRITEIDLIST = 5
+    WRITEID = 6
 
     FIELDS = {
       DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
       TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
       COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'},
-      ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine'}
+      ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine'},
+      VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList'},
+      WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'}
     }
 
     def struct_fields; FIELDS; end

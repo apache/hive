@@ -2717,8 +2717,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
-   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine) throws
-    NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine,
+       String validWriteIdList, long writeId)
+       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   /**
    * Delete table level column statistics given dbName, tableName and colName, or all columns in
@@ -2735,7 +2736,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
    */
-  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
+  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine,
+      String validWriteIdList, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
 
   void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;

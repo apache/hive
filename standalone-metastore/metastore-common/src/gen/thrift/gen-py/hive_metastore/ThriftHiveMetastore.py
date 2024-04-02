@@ -1266,13 +1266,15 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def delete_table_column_statistics(self, db_name, tbl_name, col_name, engine):
+    def delete_table_column_statistics(self, db_name, tbl_name, col_name, engine, validWriteIdList, writeId):
         """
         Parameters:
          - db_name
          - tbl_name
          - col_name
          - engine
+         - validWriteIdList
+         - writeId
 
         """
         pass
@@ -7655,25 +7657,29 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o4
         raise TApplicationException(TApplicationException.MISSING_RESULT, "delete_partition_column_statistics failed: unknown result")
 
-    def delete_table_column_statistics(self, db_name, tbl_name, col_name, engine):
+    def delete_table_column_statistics(self, db_name, tbl_name, col_name, engine, validWriteIdList, writeId):
         """
         Parameters:
          - db_name
          - tbl_name
          - col_name
          - engine
+         - validWriteIdList
+         - writeId
 
         """
-        self.send_delete_table_column_statistics(db_name, tbl_name, col_name, engine)
+        self.send_delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId)
         return self.recv_delete_table_column_statistics()
 
-    def send_delete_table_column_statistics(self, db_name, tbl_name, col_name, engine):
+    def send_delete_table_column_statistics(self, db_name, tbl_name, col_name, engine, validWriteIdList, writeId):
         self._oprot.writeMessageBegin('delete_table_column_statistics', TMessageType.CALL, self._seqid)
         args = delete_table_column_statistics_args()
         args.db_name = db_name
         args.tbl_name = tbl_name
         args.col_name = col_name
         args.engine = engine
+        args.validWriteIdList = validWriteIdList
+        args.writeId = writeId
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -16805,7 +16811,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = delete_table_column_statistics_result()
         try:
-            result.success = self._handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine)
+            result.success = self._handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine, args.validWriteIdList, args.writeId)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -43472,15 +43478,19 @@ class delete_table_column_statistics_args(object):
      - tbl_name
      - col_name
      - engine
+     - validWriteIdList
+     - writeId
 
     """
 
 
-    def __init__(self, db_name=None, tbl_name=None, col_name=None, engine=None,):
+    def __init__(self, db_name=None, tbl_name=None, col_name=None, engine=None, validWriteIdList=None, writeId=None,):
         self.db_name = db_name
         self.tbl_name = tbl_name
         self.col_name = col_name
         self.engine = engine
+        self.validWriteIdList = validWriteIdList
+        self.writeId = writeId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -43511,6 +43521,16 @@ class delete_table_column_statistics_args(object):
                     self.engine = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I64:
+                    self.writeId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -43537,6 +43557,14 @@ class delete_table_column_statistics_args(object):
             oprot.writeFieldBegin('engine', TType.STRING, 4)
             oprot.writeString(self.engine.encode('utf-8') if sys.version_info[0] == 2 else self.engine)
             oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 5)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.writeId is not None:
+            oprot.writeFieldBegin('writeId', TType.I64, 6)
+            oprot.writeI64(self.writeId)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -43560,6 +43588,8 @@ delete_table_column_statistics_args.thrift_spec = (
     (2, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'col_name', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'engine', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 5
+    (6, TType.I64, 'writeId', None, None, ),  # 6
 )
 
 

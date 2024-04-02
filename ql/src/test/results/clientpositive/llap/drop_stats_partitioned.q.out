@@ -1,0 +1,145 @@
+PREHOOK: query: create table t1_uq12(i int) partitioned by(j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_uq12
+POSTHOOK: query: create table t1_uq12(i int) partitioned by(j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_uq12
+PREHOOK: query: alter table t1_uq12 add partition(j=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@t1_uq12
+POSTHOOK: query: alter table t1_uq12 add partition(j=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12@j=1
+PREHOOK: query: analyze table t1_uq12 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Input: default@t1_uq12@j=1
+PREHOOK: Output: default@t1_uq12
+PREHOOK: Output: default@t1_uq12@j=1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table t1_uq12 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Input: default@t1_uq12@j=1
+POSTHOOK: Output: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12@j=1
+#### A masked pattern was here ####
+PREHOOK: query: alter table t1_uq12 partition(j=1) update statistics set('numRows'='10000', 'rawDataSize'='18000')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Output: default@t1_uq12@j=1
+POSTHOOK: query: alter table t1_uq12 partition(j=1) update statistics set('numRows'='10000', 'rawDataSize'='18000')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Input: default@t1_uq12@j=1
+POSTHOOK: Output: default@t1_uq12@j=1
+PREHOOK: query: describe formatted t1_uq12 partition(j=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1_uq12
+POSTHOOK: query: describe formatted t1_uq12 partition(j=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1_uq12
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+j                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	t1_uq12             	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	10000               
+	rawDataSize         	18000               
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table t1_uq12 partition(j=1) update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Output: default@t1_uq12@j=1
+POSTHOOK: query: alter table t1_uq12 partition(j=1) update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12@j=1
+PREHOOK: query: describe formatted t1_uq12 partition(j=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1_uq12
+POSTHOOK: query: describe formatted t1_uq12 partition(j=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1_uq12
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+j                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	t1_uq12             	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	10000               
+	rawDataSize         	18000               
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table t1_uq12 partition(j=1) drop statistics for column i
+PREHOOK: type: ALTERTABLE_DELETEPARTSTATS
+PREHOOK: Input: default@t1_uq12
+PREHOOK: Output: default@t1_uq12@j=1
+POSTHOOK: query: alter table t1_uq12 partition(j=1) drop statistics for column i
+POSTHOOK: type: ALTERTABLE_DELETEPARTSTATS
+POSTHOOK: Input: default@t1_uq12
+POSTHOOK: Output: default@t1_uq12@j=1
+PREHOOK: query: describe formatted t1_uq12 partition(j=1) i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1_uq12
+POSTHOOK: query: describe formatted t1_uq12 partition(j=1) i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1_uq12
+col_name            	i                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   

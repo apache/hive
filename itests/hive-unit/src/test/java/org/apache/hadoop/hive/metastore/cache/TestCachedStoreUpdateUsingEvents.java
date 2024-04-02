@@ -839,7 +839,7 @@ public class TestCachedStoreUpdateUsingEvents {
   }
 
   private void deleteColStats(String dbName, String tblName, String[] colName) throws Throwable {
-    boolean status = hmsHandler.delete_table_column_statistics(dbName, tblName, null, Constants.HIVE_ENGINE);
+    boolean status = hmsHandler.delete_table_column_statistics(dbName, tblName, null, Constants.HIVE_ENGINE, null, 0);
     Assert.assertEquals(status, true);
     Assert.assertEquals(sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME, dbName, tblName,
             Lists.newArrayList(colName[0]),  null, true).getStatsObj().isEmpty(), true);

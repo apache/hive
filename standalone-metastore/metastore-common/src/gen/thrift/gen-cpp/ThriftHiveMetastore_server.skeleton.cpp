@@ -715,7 +715,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("delete_partition_column_statistics\n");
   }
 
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) {
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId) {
     // Your implementation goes here
     printf("delete_table_column_statistics\n");
   }

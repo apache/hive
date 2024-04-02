@@ -36033,6 +36033,22 @@ uint32_t ThriftHiveMetastore_delete_table_column_statistics_args::read(::apache:
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->validWriteIdList);
+          this->__isset.validWriteIdList = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->writeId);
+          this->__isset.writeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -36066,6 +36082,14 @@ uint32_t ThriftHiveMetastore_delete_table_column_statistics_args::write(::apache
   xfer += oprot->writeString(this->engine);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->validWriteIdList);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("writeId", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64(this->writeId);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -36095,6 +36119,14 @@ uint32_t ThriftHiveMetastore_delete_table_column_statistics_pargs::write(::apach
 
   xfer += oprot->writeFieldBegin("engine", ::apache::thrift::protocol::T_STRING, 4);
   xfer += oprot->writeString((*(this->engine)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString((*(this->validWriteIdList)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("writeId", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64((*(this->writeId)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -74236,13 +74268,13 @@ bool ThriftHiveMetastoreClient::recv_delete_partition_column_statistics()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "delete_partition_column_statistics failed: unknown result");
 }
 
-bool ThriftHiveMetastoreClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
+bool ThriftHiveMetastoreClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId)
 {
-  send_delete_table_column_statistics(db_name, tbl_name, col_name, engine);
+  send_delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId);
   return recv_delete_table_column_statistics();
 }
 
-void ThriftHiveMetastoreClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
+void ThriftHiveMetastoreClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("delete_table_column_statistics", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -74252,6 +74284,8 @@ void ThriftHiveMetastoreClient::send_delete_table_column_statistics(const std::s
   args.tbl_name = &tbl_name;
   args.col_name = &col_name;
   args.engine = &engine;
+  args.validWriteIdList = &validWriteIdList;
+  args.writeId = &writeId;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -91017,7 +91051,7 @@ void ThriftHiveMetastoreProcessor::process_delete_table_column_statistics(int32_
 
   ThriftHiveMetastore_delete_table_column_statistics_result result;
   try {
-    result.success = iface_->delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine);
+    result.success = iface_->delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name, args.engine, args.validWriteIdList, args.writeId);
     result.__isset.success = true;
   } catch (NoSuchObjectException &o1) {
     result.o1 = std::move(o1);
@@ -111792,13 +111826,13 @@ bool ThriftHiveMetastoreConcurrentClient::recv_delete_partition_column_statistic
   } // end while(true)
 }
 
-bool ThriftHiveMetastoreConcurrentClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
+bool ThriftHiveMetastoreConcurrentClient::delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId)
 {
-  int32_t seqid = send_delete_table_column_statistics(db_name, tbl_name, col_name, engine);
+  int32_t seqid = send_delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId);
   return recv_delete_table_column_statistics(seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine)
+int32_t ThriftHiveMetastoreConcurrentClient::send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
@@ -111809,6 +111843,8 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_delete_table_column_statistics
   args.tbl_name = &tbl_name;
   args.col_name = &col_name;
   args.engine = &engine;
+  args.validWriteIdList = &validWriteIdList;
+  args.writeId = &writeId;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();

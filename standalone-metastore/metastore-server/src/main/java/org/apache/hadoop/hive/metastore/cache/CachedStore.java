@@ -2176,12 +2176,14 @@ public class CachedStore implements RawStore, Configurable {
     return columnStatistics;
   }
 
-  @Override public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  @Override
+  public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, String colName,
+    String engine, String validWriteIdList, long writeId) throws NoSuchObjectException, MetaException,
+    InvalidObjectException, InvalidInputException {
     if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
       throw new RuntimeException("CachedStore can only be enabled for Hive engine");
     }
-    boolean succ = rawStore.deleteTableColumnStatistics(catName, dbName, tblName, colName, engine);
+    boolean succ = rawStore.deleteTableColumnStatistics(catName, dbName, tblName, colName, engine, validWriteIdList, writeId);
     // in case of event based cache update, cache is updated during commit txn
     if (succ && !canUseEvents) {
       catName = normalizeIdentifier(catName);

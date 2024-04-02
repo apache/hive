@@ -1967,11 +1967,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /** {@inheritDoc} */
   @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
-    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
-    InvalidInputException
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine,
+    String validWriteIdList, long writeId) throws NoSuchObjectException, InvalidObjectException, MetaException,
+    TException, InvalidInputException
   {
-    return client.delete_table_column_statistics(dbName, tableName, colName, engine);
+    return client.delete_table_column_statistics(dbName, tableName, colName, engine, validWriteIdList, writeId);
   }
 
   @Override
@@ -3733,7 +3733,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine) throws NoSuchObjectException,
+      String colName, String engine, String validWriteIdList, long writeId) throws NoSuchObjectException,
       MetaException, InvalidObjectException, TException, InvalidInputException {
     throw new UnsupportedOperationException();
   }

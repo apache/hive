@@ -2012,10 +2012,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_ANALYZE:
         // Case of analyze command
-
-        String table_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0)).toLowerCase();
-
-
+        String table_name = null;
+        table_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0)).toLowerCase();
+        if (ast.getChildCount() > 1 && ((ASTNode)ast.getChild(1)).getToken().getType() == HiveParser.TOK_DROPSTAT) {
+          qb.getParseInfo().setIsDropStatCommand(true);
+        }
         qb.setTabAlias(table_name, table_name);
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
@@ -15709,6 +15710,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (qb != null) {
       queryProperties.setQuery(qb.getIsQuery());
       queryProperties.setAnalyzeCommand(qb.getParseInfo().isAnalyzeCommand());
+      queryProperties.setDropStatistics(qb.getParseInfo().isDropStatCommand());
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
       queryProperties.setCTAS(qb.getTableDesc() != null);

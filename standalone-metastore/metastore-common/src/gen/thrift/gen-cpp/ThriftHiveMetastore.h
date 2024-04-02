@@ -165,7 +165,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_aggr_stats_for(AggrStats& _return, const PartitionsStatsRequest& request) = 0;
   virtual bool set_aggr_stats_for(const SetPartitionsStatsRequest& request) = 0;
   virtual bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine) = 0;
-  virtual bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) = 0;
+  virtual bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId) = 0;
   virtual void create_function(const Function& func) = 0;
   virtual void drop_function(const std::string& dbName, const std::string& funcName) = 0;
   virtual void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc) = 0;
@@ -764,7 +764,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     bool _return = false;
     return _return;
   }
-  bool delete_table_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */, const std::string& /* engine */) override {
+  bool delete_table_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */, const std::string& /* engine */, const std::string& /* validWriteIdList */, const int64_t /* writeId */) override {
     bool _return = false;
     return _return;
   }
@@ -19133,11 +19133,13 @@ class ThriftHiveMetastore_delete_partition_column_statistics_presult {
 };
 
 typedef struct _ThriftHiveMetastore_delete_table_column_statistics_args__isset {
-  _ThriftHiveMetastore_delete_table_column_statistics_args__isset() : db_name(false), tbl_name(false), col_name(false), engine(false) {}
+  _ThriftHiveMetastore_delete_table_column_statistics_args__isset() : db_name(false), tbl_name(false), col_name(false), engine(false), validWriteIdList(false), writeId(false) {}
   bool db_name :1;
   bool tbl_name :1;
   bool col_name :1;
   bool engine :1;
+  bool validWriteIdList :1;
+  bool writeId :1;
 } _ThriftHiveMetastore_delete_table_column_statistics_args__isset;
 
 class ThriftHiveMetastore_delete_table_column_statistics_args {
@@ -19149,7 +19151,9 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
                                                           : db_name(),
                                                             tbl_name(),
                                                             col_name(),
-                                                            engine() {
+                                                            engine(),
+                                                            validWriteIdList(),
+                                                            writeId(0) {
   }
 
   virtual ~ThriftHiveMetastore_delete_table_column_statistics_args() noexcept;
@@ -19157,6 +19161,8 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
   std::string tbl_name;
   std::string col_name;
   std::string engine;
+  std::string validWriteIdList;
+  int64_t writeId;
 
   _ThriftHiveMetastore_delete_table_column_statistics_args__isset __isset;
 
@@ -19168,6 +19174,10 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
 
   void __set_engine(const std::string& val);
 
+  void __set_validWriteIdList(const std::string& val);
+
+  void __set_writeId(const int64_t val);
+
   bool operator == (const ThriftHiveMetastore_delete_table_column_statistics_args & rhs) const
   {
     if (!(db_name == rhs.db_name))
@@ -19177,6 +19187,10 @@ class ThriftHiveMetastore_delete_table_column_statistics_args {
     if (!(col_name == rhs.col_name))
       return false;
     if (!(engine == rhs.engine))
+      return false;
+    if (!(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (!(writeId == rhs.writeId))
       return false;
     return true;
   }
@@ -19201,6 +19215,8 @@ class ThriftHiveMetastore_delete_table_column_statistics_pargs {
   const std::string* tbl_name;
   const std::string* col_name;
   const std::string* engine;
+  const std::string* validWriteIdList;
+  const int64_t* writeId;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -35137,8 +35153,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine) override;
   void send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_partition_column_statistics();
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) override;
-  void send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId) override;
+  void send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId);
   bool recv_delete_table_column_statistics();
   void create_function(const Function& func) override;
   void send_create_function(const Function& func);
@@ -37485,13 +37501,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return ifaces_[i]->delete_partition_column_statistics(db_name, tbl_name, part_name, col_name, engine);
   }
 
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) override {
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine);
+      ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId);
     }
-    return ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine);
+    return ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine, validWriteIdList, writeId);
   }
 
   void create_function(const Function& func) override {
@@ -39232,8 +39248,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine) override;
   int32_t send_delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_partition_column_statistics(const int32_t seqid);
-  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) override;
-  int32_t send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId) override;
+  int32_t send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine, const std::string& validWriteIdList, const int64_t writeId);
   bool recv_delete_table_column_statistics(const int32_t seqid);
   void create_function(const Function& func) override;
   int32_t send_create_function(const Function& func);

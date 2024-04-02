@@ -62,7 +62,8 @@ public class TestHiveAlterHandler {
     handler.setConf(conf);
     Deadline.registerIfNot(100_000);
     Deadline.startTimer("updateTableColumnStats");
-    List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable, handler.getColumnStats(msdb, oldTable));
+    List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable,
+      handler.getColumnStats(msdb, oldTable), null, 0);
     handler.updateTableColumnStats(msdb, newTable, null, colstats);
   }
 
@@ -91,7 +92,8 @@ public class TestHiveAlterHandler {
     Deadline.registerIfNot(100_000);
     Deadline.startTimer("updateTableColumnStats");
     try {
-      List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable, handler.getColumnStats(msdb, oldTable));
+      List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable,
+        handler.getColumnStats(msdb, oldTable), null, 0);
       handler.updateTableColumnStats(msdb, newTable, null, colstats);
     } catch (Throwable t) {
       System.err.println(t);
@@ -129,7 +131,8 @@ public class TestHiveAlterHandler {
     handler.setConf(conf);
     Deadline.registerIfNot(100_000);
     Deadline.startTimer("updateTableColumnStats");
-    List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable, handler.getColumnStats(msdb, oldTable));
+    List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable,
+      handler.getColumnStats(msdb, oldTable), null, 0);
     handler.updateTableColumnStats(msdb, newTable, null, colstats);
   }
 

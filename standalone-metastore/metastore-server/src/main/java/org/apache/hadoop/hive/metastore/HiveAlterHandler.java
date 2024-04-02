@@ -259,7 +259,7 @@ public class HiveAlterHandler implements AlterHandler {
           rename && MetaStoreUtils.isIcebergTable(newt.getParameters());
 
       List<ColumnStatistics> columnStatistics = getColumnStats(msdb, oldt);
-      columnStatistics = deleteTableColumnStats(msdb, oldt, newt, columnStatistics);
+      columnStatistics = deleteTableColumnStats(msdb, oldt, newt, columnStatistics, writeIdList, oldt.getWriteId());
 
       if (!isRenameIcebergTable &&
           (replDataLocationChanged || renamedManagedTable || renamedTranslatedToExternalTable ||
@@ -1073,8 +1073,8 @@ public class HiveAlterHandler implements AlterHandler {
   }
 
   @VisibleForTesting
-  public static List<ColumnStatistics> deleteTableColumnStats(RawStore msdb, Table oldTable, Table newTable, List<ColumnStatistics> multiColStats)
-      throws InvalidObjectException, MetaException {
+  public static List<ColumnStatistics> deleteTableColumnStats(RawStore msdb, Table oldTable, Table newTable,
+    List<ColumnStatistics> multiColStats, String validWriteIdList, long writeId) throws InvalidObjectException, MetaException {
     List<ColumnStatistics> newMultiColStats = new ArrayList<>();
     try {
       String catName = normalizeIdentifier(oldTable.isSetCatName()
@@ -1102,7 +1102,8 @@ public class HiveAlterHandler implements AlterHandler {
                   statsObj.getColType().equalsIgnoreCase(c.getType()));
               if (nameChanged || !found) {
                 msdb.deleteTableColumnStatistics(catName, oldTable.getDbName().toLowerCase(),
-                    normalizeIdentifier(oldTable.getTableName()), statsObj.getColName(), colStats.getEngine());
+                    normalizeIdentifier(oldTable.getTableName()), statsObj.getColName(), colStats.getEngine(),
+                    validWriteIdList, writeId);
               }
               if (found) {
                 newStatsObjs.add(statsObj);

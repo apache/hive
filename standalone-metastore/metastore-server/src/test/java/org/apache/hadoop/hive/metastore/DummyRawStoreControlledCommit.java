@@ -838,9 +838,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine)
+      String colName, String engine, String validWriteIdList, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colName, engine);
+    return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colName, engine, validWriteIdList,
+        writeId);
   }
 
   @Override

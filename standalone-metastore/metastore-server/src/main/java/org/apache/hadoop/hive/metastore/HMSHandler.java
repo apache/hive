@@ -7144,7 +7144,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     getMS().openTransaction();
     try {
-      List<String> partVals = getPartValsFromName(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, convertedPartName);
+      List<String> partVals =  new ArrayList<>();
+      if (convertedPartName == null) {
+        List<Partition> partitions = getMS().getPartitions(parsedDbName[CAT_NAME], dbName, tableName, -1);
+        for (Partition p : partitions) {
+          partVals.addAll(p.getValues());
+        }
+      } else {
+        partVals = getPartValsFromName(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, convertedPartName);
+      }
       Table table = getMS().getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
       // This API looks unused; if it were used we'd need to update stats state and write ID.
       // We cannot just randomly nuke some txn stats.
@@ -7179,7 +7187,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
+  public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine,
+                                                String validWriteIdList, long writeId)
       throws TException {
     dbName = dbName.toLowerCase();
     tableName = tableName.toLowerCase();
@@ -7204,7 +7213,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new MetaException("Cannot delete stats via this API for a transactional table");
       }
 
-      ret = getMS().deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine);
+      ret = getMS().deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName,
+        engine, validWriteIdList, writeId);
       if (ret) {
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
@@ -7218,6 +7228,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
                   tableName, colName, engine, this));
         }
+      }
+      boolean isPartitioned = table.isSetPartitionKeys() && table.getPartitionKeysSize() > 0;
+      if (isPartitioned) {
+        delete_partition_column_statistics(dbName, tableName, null, colName, engine);
       }
       committed = getMS().commitTransaction();
     } finally {

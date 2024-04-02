@@ -909,7 +909,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine)
+      String colName, String engine, String validWriteIdList, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
   }

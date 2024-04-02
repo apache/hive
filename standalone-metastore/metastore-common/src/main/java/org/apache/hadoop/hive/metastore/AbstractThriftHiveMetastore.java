@@ -835,7 +835,7 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
 
     @Override
     public boolean delete_table_column_statistics(String db_name, String tbl_name, String col_name,
-                                                  String engine)
+                                                  String engine, String validWriteIdList, long writeId)
             throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }

@@ -41,6 +41,16 @@ class ThriftHiveMetastore_delete_table_column_statistics_args
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        5 => array(
+            'var' => 'validWriteIdList',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        6 => array(
+            'var' => 'writeId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -59,6 +69,14 @@ class ThriftHiveMetastore_delete_table_column_statistics_args
      * @var string
      */
     public $engine = null;
+    /**
+     * @var string
+     */
+    public $validWriteIdList = null;
+    /**
+     * @var int
+     */
+    public $writeId = null;
 
     public function __construct($vals = null)
     {
@@ -74,6 +92,12 @@ class ThriftHiveMetastore_delete_table_column_statistics_args
             }
             if (isset($vals['engine'])) {
                 $this->engine = $vals['engine'];
+            }
+            if (isset($vals['validWriteIdList'])) {
+                $this->validWriteIdList = $vals['validWriteIdList'];
+            }
+            if (isset($vals['writeId'])) {
+                $this->writeId = $vals['writeId'];
             }
         }
     }
@@ -125,6 +149,20 @@ class ThriftHiveMetastore_delete_table_column_statistics_args
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 5:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->validWriteIdList);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 6:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->writeId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -157,6 +195,16 @@ class ThriftHiveMetastore_delete_table_column_statistics_args
         if ($this->engine !== null) {
             $xfer += $output->writeFieldBegin('engine', TType::STRING, 4);
             $xfer += $output->writeString($this->engine);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->validWriteIdList !== null) {
+            $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 5);
+            $xfer += $output->writeString($this->validWriteIdList);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->writeId !== null) {
+            $xfer += $output->writeFieldBegin('writeId', TType::I64, 6);
+            $xfer += $output->writeI64($this->writeId);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

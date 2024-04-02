@@ -204,8 +204,8 @@ public class TestStats {
       throws TException {
     for (String colName : colNames) {
       if (partName == null) {
-        if (NO_CAT.equals(catName)) client.deleteTableColumnStatistics(dbName, tableName, colName, ENGINE);
-        else client.deleteTableColumnStatistics(catName, dbName, tableName, colName, ENGINE);
+        if (NO_CAT.equals(catName)) client.deleteTableColumnStatistics(dbName, tableName, colName, ENGINE, null, 0);
+        else client.deleteTableColumnStatistics(catName, dbName, tableName, colName, ENGINE, null, 0);
       } else {
         if (NO_CAT.equals(catName)) client.deletePartitionColumnStatistics(dbName, tableName, partName, colName, ENGINE);
         else client.deletePartitionColumnStatistics(catName, dbName, tableName, partName, colName, ENGINE);

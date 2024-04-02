@@ -1833,7 +1833,7 @@ public abstract class TestHiveMetaStore {
 
       // test delete column stats; if no col name is passed all column stats associated with the
       // table is deleted
-      boolean status = client.deleteTableColumnStatistics(dbName, tblName, null, ENGINE);
+      boolean status = client.deleteTableColumnStatistics(dbName, tblName, null, ENGINE, null, 0);
       assertTrue(status);
       // try to query stats for a column for which stats doesn't exist
       List<ColumnStatisticsObj> stats = client.getTableColumnStatistics(

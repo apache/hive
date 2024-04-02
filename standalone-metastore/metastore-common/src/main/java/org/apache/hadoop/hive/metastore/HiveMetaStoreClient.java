@@ -3530,16 +3530,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine,
+      String validWriteIdList, long writeId)
       throws TException {
-    return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName, engine);
+    return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName, engine, validWriteIdList, writeId);
   }
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine) throws TException {
+      String colName, String engine, String validWriteIdList, long writeId) throws TException {
     return client.delete_table_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, colName, engine);
+        tableName, colName, engine, validWriteIdList, writeId);
   }
 
   @Override

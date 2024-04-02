@@ -1152,13 +1152,15 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param string $tbl_name
      * @param string $col_name
      * @param string $engine
+     * @param string $validWriteIdList
+     * @param int $writeId
      * @return bool
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\MetaException
      * @throws \metastore\InvalidObjectException
      * @throws \metastore\InvalidInputException
      */
-    public function delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine);
+    public function delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine, $validWriteIdList, $writeId);
     /**
      * @param \metastore\Function $func
      * @throws \metastore\AlreadyExistsException

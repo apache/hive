@@ -579,13 +579,14 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   /** {@inheritDoc} */
   @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine,
+    String validWriteIdList, long writeId)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
       InvalidInputException {
     if (getTempTable(dbName, tableName) != null) {
       return deleteTempTableColumnStats(dbName, tableName, colName);
     }
-    return super.deleteTableColumnStatistics(dbName, tableName, colName, engine);
+    return super.deleteTableColumnStatistics(dbName, tableName, colName, engine, validWriteIdList, writeId);
   }
 
   private void createTempTable(org.apache.hadoop.hive.metastore.api.Table tbl) throws
