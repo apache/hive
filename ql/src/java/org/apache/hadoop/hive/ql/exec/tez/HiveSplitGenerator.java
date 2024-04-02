@@ -178,8 +178,8 @@ public class HiveSplitGenerator extends InputInitializer {
     private int vertexId;
     private Path appStagingPath;
     // metrics
-    private AtomicInteger timeSpentWithSplitWriteMs = new AtomicInteger(0);
-    private AtomicInteger splitsWritten = new AtomicInteger(0);
+    private AtomicInteger timeSpentWithSplitWriteMs;
+    private AtomicInteger splitsWritten;
     // lazy initialized filesystem and executor
     private FileSystem fs;
     private ExecutorService executor;
@@ -196,6 +196,9 @@ public class HiveSplitGenerator extends InputInitializer {
       inputName = getContext().getInputName();
       vertexId = getContext().getVertexId();
       appStagingPath = TezCommonUtils.getTezSystemStagingPath(conf, getContext().getApplicationId().toString());
+
+      timeSpentWithSplitWriteMs = new AtomicInteger(0);
+      splitsWritten = new AtomicInteger(0);
 
       fs = appStagingPath.getFileSystem(jobConf);
       executor = Executors.newFixedThreadPool(8,
@@ -215,7 +218,6 @@ public class HiveSplitGenerator extends InputInitializer {
           long now = Time.monotonicNow();
           try (FSDataOutputStream out = fs.create(filePath, false)) {
             mrSplit.writeTo(out);
-            out.close();
           }
           splitsWritten.getAndIncrement();
           long elapsed = Time.monotonicNow() - now;
