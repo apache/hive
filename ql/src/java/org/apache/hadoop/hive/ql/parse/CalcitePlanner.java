@@ -75,8 +75,6 @@ import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
-import org.apache.calcite.rel.RelDistribution;
-import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -1812,7 +1810,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private boolean canSerializeDeserialize(RelNode plan) {
       return
-          conf.getBoolVar(ConfVars.QUERY_PLAN_CACHE_ENABLED) &&
+          conf.getBoolVar(ConfVars.CBO_PLAN_SERIALIZATION_DESERIALIZATION_ENABLED) &&
           !stringSizeGreaterThan(ctx.getCmd(), 1_000_000) &&
           HiveRelNode.stream(plan)
             .noneMatch(node -> node.getConvention().getName().toLowerCase().contains("jdbc"));
