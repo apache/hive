@@ -25,7 +25,7 @@ backtrack=false;
 k=3;
 }
 
-import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser, ReplClauseParser, LockParser;
+import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser, ReplClauseParser, LockParser, AnalyzeStatementParser;
 
 tokens {
 TOK_INSERT;
@@ -197,6 +197,10 @@ TOK_ALTERTABLE_UPDATECOLSTATS;
 TOK_ALTERPARTITION_UPDATECOLSTATS;
 TOK_ALTERTABLE_UPDATESTATS;
 TOK_ALTERPARTITION_UPDATESTATS;
+TOK_ALTERTABLE_DROPCOLSTATS;
+TOK_ALTERPARTITION_DROPCOLSTATS;
+TOK_ALTERTABLE_DROPSTATS;
+TOK_ALTERPARTITION_DROPSTATS;
 TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERPARTITION_FILEFORMAT;
@@ -336,6 +340,7 @@ TOK_LATERAL_VIEW;
 TOK_LATERAL_VIEW_OUTER;
 TOK_TABALIAS;
 TOK_ANALYZE;
+TOK_DROPSTAT;
 TOK_CREATEROLE;
 TOK_DROPROLE;
 TOK_GRANT;
@@ -1288,18 +1293,7 @@ descStatement
     )
     ;
 
-analyzeStatement
-@init { pushMsg("analyze statement", state); }
-@after { popMsg(state); }
-    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition)
-      (
-      (KW_COMPUTE) => KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN)
-                                                      | (KW_FOR KW_COLUMNS (statsColumnName=columnNameList)?))?
-      -> ^(TOK_ANALYZE $parttype $noscan? KW_COLUMNS? $statsColumnName?)
-      |
-      (KW_CACHE) => KW_CACHE KW_METADATA -> ^(TOK_CACHE_METADATA $parttype)
-      )
-    ;
+
 
 showStatement
 @init { pushMsg("show statement", state); }
