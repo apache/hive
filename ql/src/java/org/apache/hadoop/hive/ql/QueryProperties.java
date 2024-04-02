@@ -58,6 +58,7 @@ public class QueryProperties {
 
   boolean query;
   boolean analyzeCommand;
+  boolean dropStatistics;
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
@@ -127,6 +128,14 @@ public class QueryProperties {
 
   public void setAnalyzeCommand(boolean analyzeCommand) {
     this.analyzeCommand = analyzeCommand;
+  }
+
+  public boolean isDropStatistics() {
+    return dropStatistics;
+  }
+
+  public void setDropStatistics(boolean dropStatistics) {
+    this.dropStatistics = dropStatistics;
   }
 
   public boolean isNoScanAnalyzeCommand() {
