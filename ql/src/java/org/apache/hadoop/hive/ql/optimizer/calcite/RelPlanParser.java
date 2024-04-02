@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -97,7 +98,7 @@ public class RelPlanParser {
   private final Map<String, PrunedPartitionList> partitionCache;
   private final Map<String, ColumnStatsList> colStatsCache;
   private final AtomicInteger noColsMissingStats;
-  private final RelJson relJson = new RelJson();
+  private final HiveRelJson relJson = new HiveRelJson(null);
   private final Map<String, RelNode> relMap = new LinkedHashMap<>();
   private RelNode lastRel;
 
@@ -137,8 +138,7 @@ public class RelPlanParser {
       o = mapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
           .readValue(parser.getValueAsString(), TYPE_REF);
     }
-    @SuppressWarnings("unchecked")
-    final List<Map<String, Object>> rels = (List) o.get("rels");
+    @SuppressWarnings("unchecked") final List<Map<String, Object>> rels = (List) o.get("rels");
     readRels(rels);
     return lastRel;
   }
@@ -153,312 +153,7 @@ public class RelPlanParser {
     String id = (String) jsonRel.get("id");
     String type = (String) jsonRel.get("relOp");
     Constructor constructor = relJson.getConstructor(type);
-    RelInput input = new RelInput() {
-      public RelOptCluster getCluster() {
-        return cluster;
-      }
-
-      public RelTraitSet getTraitSet() {
-        return cluster.traitSet().plus(HiveRelNode.CONVENTION).plus(RelCollations.EMPTY);
-      }
-
-      public RelOptHiveTable getTable(String table) {
-        @SuppressWarnings("unchecked")
-        List<String> qualifiedName = (List<String>) jsonRel.get("table");
-        RelDataType rowType = relJson.toType(cluster.getTypeFactory(), jsonRel.get("rowType"));
-        String tableAlias = (String) jsonRel.get("table:alias");
-        String dbName = qualifiedName.get(0);
-        String tableName = qualifiedName.get(1);
-
-        Map<Boolean, List<ColumnInfo>> columnInfo = computeColumnInfos(rowType, tableAlias);
-        List<ColumnInfo> nonPartitionColumns = columnInfo.getOrDefault(false, new ArrayList<>());
-        List<ColumnInfo> partitionColumns = columnInfo.getOrDefault(true, new ArrayList<>());
-
-        List<VirtualColumn> virtualColumns = new ArrayList<>();
-        if (jsonRel.get("virtualColumns") != null) {
-          for (String colName: (List<String>) jsonRel.get("virtualColumns")) {
-            virtualColumns.add(VirtualColumn.VIRTUAL_COLUMN_NAME_MAP.get(colName));
-          }
-        }
-
-        Table tbl = getTable(tableAlias, dbName, tableName);
-
-        return new RelOptHiveTable(
-            schema,
-            cluster.getTypeFactory(),
-            qualifiedName,
-            rowType,
-            tbl,
-            nonPartitionColumns,
-            partitionColumns,
-            virtualColumns,
-            hiveConf,
-            db,
-            tabNameToTabObject,
-            partitionCache,
-            colStatsCache,
-            noColsMissingStats
-        );
-      }
-
-      // TODO: Probably could simplify this method. Maybe we don't need to look in QB.
-      private Table getTable(String alias, String dbName, String tableName) {
-        String fullTableName = TableName.getDbTable(dbName, tableName);
-        // Look in QB
-        Table result = verifyTableName(qb.getTableForAlias(alias), fullTableName);
-
-        // Look in ctx if it's a materialized table
-        if (result == null && jsonRel.containsKey("materializedTable") && (boolean) jsonRel.get("materializedTable")) {
-          result = verifyTableName(
-              getTableUsing(ctx::getMaterializedTable, alias, tableName, fullTableName),
-              fullTableName
-          );
-        }
-
-        // Look in tabNameToTabObject
-        if (result == null) {
-          result = verifyTableName(
-              getTableUsing(tabNameToTabObject::getParsedTable, tableName, fullTableName),
-              fullTableName
-          );
-        }
-
-        // Finally try HMS
-        if (result == null) {
-          try {
-            result = db.getTable(
-                dbName, tableName, null,
-                true, true, false
-            );
-          } catch (HiveException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        return result;
-      }
-
-      private Table getTableUsing(Function<String, Table> function, String ... names) {
-        return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
-      }
-
-      private Table verifyTableName(Table table, String fullName) {
-        if (table == null) {
-          return null;
-        }
-        String tableName = TableName.getDbTable(table.getDbName(), table.getTableName());
-
-        return fullName.equals(tableName) ? table: null;
-      }
-
-      private Map<Boolean, List<ColumnInfo>> computeColumnInfos(RelDataType rowType, String tableAlias) {
-        Set<String> partColsSet = new HashSet<>();
-        if (jsonRel.containsKey("partitionColumns")) {
-          partColsSet.addAll((List<String>) jsonRel.get("partitionColumns"));
-        }
-
-        Predicate<RelDataTypeField> notVirtualColumn = f -> !VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(f.getName());
-
-        // MAP of
-        // true -> list of partition columns
-        // false -> list of non partition columns
-        return rowType.getFieldList().stream()
-            .filter(notVirtualColumn)
-            .map(f -> {
-                  boolean isPartitionedColumn = partColsSet.contains(f.getName());
-                  return new ColumnInfo(
-                      f.getName(),
-                      TypeConverter.convert(f.getType()),
-                      f.getType().isNullable(),
-                      tableAlias,
-                      isPartitionedColumn
-                  );
-                }
-            )
-            .collect(Collectors.partitioningBy(ColumnInfo::getIsVirtualCol));
-      }
-
-      public RelNode getInput() {
-        final List<RelNode> inputs = getInputs();
-        assert inputs.size() == 1;
-        return inputs.get(0);
-      }
-
-      public List<RelNode> getInputs() {
-        final List<String> jsonInputs = getStringList("inputs");
-        if (jsonInputs == null) {
-          return ImmutableList.of(lastRel);
-        }
-        final List<RelNode> inputs = new ArrayList<>();
-        for (String jsonInput : jsonInputs) {
-          inputs.add(lookupInput(jsonInput));
-        }
-        return inputs;
-      }
-
-      public RexNode getExpression(String tag) {
-        return relJson.toRex(this, jsonRel.get(tag));
-      }
-
-      public ImmutableBitSet getBitSet(String tag) {
-        return ImmutableBitSet.of(getIntegerList(tag));
-      }
-
-      public List<ImmutableBitSet> getBitSetList(String tag) {
-        List<List<Integer>> list = getIntegerListList(tag);
-        if (list == null) {
-          return null;
-        }
-        final ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
-        for (List<Integer> integers : list) {
-          builder.add(ImmutableBitSet.of(integers));
-        }
-        return builder.build();
-      }
-
-      public List<String> getStringList(String tag) {
-        //noinspection unchecked
-        return (List<String>) jsonRel.get(tag);
-      }
-
-      public List<Integer> getIntegerList(String tag) {
-        //noinspection unchecked
-        return (List<Integer>) jsonRel.get(tag);
-      }
-
-      public List<List<Integer>> getIntegerListList(String tag) {
-        //noinspection unchecked
-        return (List<List<Integer>>) jsonRel.get(tag);
-      }
-
-      public List<AggregateCall> getAggregateCalls(String tag) {
-        @SuppressWarnings("unchecked")
-        final List<Map<String, Object>> jsonAggs = (List) jsonRel.get(tag);
-        final List<AggregateCall> inputs = new ArrayList<>();
-        for (Map<String, Object> jsonAggCall : jsonAggs) {
-          inputs.add(toAggCall(this, jsonAggCall));
-        }
-        return inputs;
-      }
-
-      public Object get(String tag) {
-        if ("getJoinInputsForHiveMultiJoin".equals(tag)) {
-          return getJoinInputsForHiveMultiJoin();
-        }
-        if ("getJoinTypesForHiveMultiJoin".equals(tag)) {
-          return getJoinTypesForHiveMultiJoin();
-        }
-        return jsonRel.get(tag);
-      }
-
-      public String getString(String tag) {
-        return (String) jsonRel.get(tag);
-      }
-
-      public float getFloat(String tag) {
-        return ((Number) jsonRel.get(tag)).floatValue();
-      }
-
-      public boolean getBoolean(String tag, boolean default_) {
-        final Boolean b = (Boolean) jsonRel.get(tag);
-        return b != null ? b : default_;
-      }
-
-      public <E extends Enum<E>> E getEnum(String tag, Class<E> enumClass) {
-        return Util.enumVal(enumClass, getString(tag).toUpperCase(Locale.ROOT));
-      }
-
-      public List<RexNode> getExpressionList(String tag) {
-        @SuppressWarnings("unchecked")
-        final List<Object> jsonNodes = (List) jsonRel.get(tag);
-        final List<RexNode> nodes = new ArrayList<>();
-        for (Object jsonNode : jsonNodes) {
-          nodes.add(relJson.toRex(this, jsonNode));
-        }
-        return nodes;
-      }
-
-      public RelDataType getRowType(String tag) {
-        final Object o = jsonRel.get(tag);
-        return relJson.toType(cluster.getTypeFactory(), o);
-      }
-
-      public RelDataType getRowType(String expressionsTag, String fieldsTag) {
-        final List<RexNode> expressionList = getExpressionList(expressionsTag);
-        @SuppressWarnings("unchecked")
-        final List<String> names = (List<String>) get(fieldsTag);
-        return cluster.getTypeFactory().createStructType(new AbstractList<Entry<String, RelDataType>>() {
-          @Override
-          public Entry<String, RelDataType> get(int index) {
-            return Pair.of(names.get(index), expressionList.get(index).getType());
-          }
-
-          @Override
-          public int size() {
-            return names.size();
-          }
-        });
-      }
-
-      public RelCollation getCollation() {
-        //noinspection unchecked
-        RelCollation result = relJson.toCollation((List) get("collation"));
-        if (result != null) {
-          return result;
-        }
-        return RelCollationTraitDef.INSTANCE.getDefault();
-      }
-
-      public RelDistribution getDistribution() {
-        return relJson.toDistribution(get("distribution"));
-      }
-
-      public ImmutableList<ImmutableList<RexLiteral>> getTuples(String tag) {
-        //noinspection unchecked
-        final List<List> jsonTuples = (List) get(tag);
-        final ImmutableList.Builder<ImmutableList<RexLiteral>> builder = ImmutableList.builder();
-        for (List jsonTuple : jsonTuples) {
-          builder.add(getTuple(jsonTuple));
-        }
-        return builder.build();
-      }
-
-      public ImmutableList<RexLiteral> getTuple(List jsonTuple) {
-        final ImmutableList.Builder<RexLiteral> builder = ImmutableList.builder();
-        for (Object jsonValue : jsonTuple) {
-          builder.add((RexLiteral) relJson.toRex(this, jsonValue));
-        }
-        return builder.build();
-      }
-
-      public List<Pair<Integer,Integer>> getJoinInputsForHiveMultiJoin() {
-        List<Pair<Integer,Integer>> result = new ArrayList<>();
-        List<String> joinsDescription = getStringList("joinsDescription");
-        if (joinsDescription == null || joinsDescription.isEmpty()) {
-          return result;
-        }
-
-        return joinsDescription.stream()
-            .map(s -> s.split(" : ", 2)[0])
-            .map(s -> s.split(" - ", 2))
-            .map(s -> Pair.of(Integer.valueOf(s[0]), Integer.valueOf(s[1])))
-            .collect(Collectors.toList());
-      }
-
-      public List<JoinRelType> getJoinTypesForHiveMultiJoin() {
-        List<JoinRelType> result = new ArrayList<>();
-        List<String> joinsDescription = getStringList("joinsDescription");
-        if (joinsDescription == null || joinsDescription.isEmpty()) {
-          return result;
-        }
-
-        return joinsDescription.stream()
-            .map(s -> s.split(" : ", 2)[1])
-            .map(s -> Util.enumVal(JoinRelType.class, s))
-            .collect(Collectors.toList());
-      }
-
-    };
+    RelInput input = new HiveRelInput(jsonRel);
     try {
       final HiveRelNode rel = (HiveRelNode) constructor.newInstance(input);
       relMap.put(id, rel);
@@ -478,8 +173,7 @@ public class RelPlanParser {
     final Map aggMap = (Map) jsonAggCall.get("agg");
     final String aggName = (String) aggMap.get("name");
     final Boolean distinct = (Boolean) jsonAggCall.get("distinct");
-    @SuppressWarnings("unchecked")
-    final List<Integer> operands = (List<Integer>) jsonAggCall.get("operands");
+    @SuppressWarnings("unchecked") final List<Integer> operands = (List<Integer>) jsonAggCall.get("operands");
     final Integer filterOperand = (Integer) jsonAggCall.get("filter");
     final RelDataType type = relJson.toType(input.getCluster().getTypeFactory(), jsonAggCall.get("type"));
     final RelCollation collation = jsonAggCall.containsKey("collation") ?
@@ -513,12 +207,328 @@ public class RelPlanParser {
         (String) jsonAggCall.get("name"));
   }
 
-  private RelNode lookupInput(String jsonInput) {
-    RelNode node = relMap.get(jsonInput);
-    if (node == null) {
-      throw new RuntimeException("unknown id " + jsonInput + " for relational expression");
-    }
-    return node;
-  }
+  private class HiveRelInput implements RelInput {
 
+    final Map<String, Object> jsonRel;
+
+    public HiveRelInput(Map<String, Object> jsonRel) {
+      this.jsonRel = jsonRel;
+    }
+
+    public RelOptCluster getCluster() {
+      return cluster;
+    }
+
+    public RelTraitSet getTraitSet() {
+      return cluster.traitSet().plus(HiveRelNode.CONVENTION).plus(RelCollations.EMPTY);
+    }
+
+    public RelOptHiveTable getTable(String table) {
+      @SuppressWarnings("unchecked")
+      List<String> qualifiedName = (List<String>) jsonRel.get("table");
+      RelDataType rowType = relJson.toType(cluster.getTypeFactory(), jsonRel.get("rowType"));
+      String tableAlias = (String) jsonRel.get("table:alias");
+      String dbName = qualifiedName.get(0);
+      String tableName = qualifiedName.get(1);
+
+      Map<Boolean, List<ColumnInfo>> columnInfo = computeColumnInfos(rowType, tableAlias);
+      List<ColumnInfo> nonPartitionColumns = columnInfo.getOrDefault(false, new ArrayList<>());
+      List<ColumnInfo> partitionColumns = columnInfo.getOrDefault(true, new ArrayList<>());
+
+      List<VirtualColumn> virtualColumns = getVirtualColumns();
+
+      Table tbl = getTable(tableAlias, dbName, tableName);
+
+      return new RelOptHiveTable(
+          schema,
+          cluster.getTypeFactory(),
+          qualifiedName,
+          rowType,
+          tbl,
+          nonPartitionColumns,
+          partitionColumns,
+          virtualColumns,
+          hiveConf,
+          db,
+          tabNameToTabObject,
+          partitionCache,
+          colStatsCache,
+          noColsMissingStats
+      );
+    }
+
+    private List<VirtualColumn> getVirtualColumns() {
+      List<VirtualColumn> virtualColumns = new ArrayList<>();
+      if (!jsonRel.containsKey("virtualColumns")) {
+        return virtualColumns;
+      }
+      for (String colName : (List<String>) jsonRel.get("virtualColumns")) {
+        virtualColumns.add(VirtualColumn.VIRTUAL_COLUMN_NAME_MAP.get(colName));
+      }
+
+      return virtualColumns;
+    }
+
+    // TODO: Probably could simplify this method. Maybe we don't need to look in QB.
+    private Table getTable(String alias, String dbName, String tableName) {
+      String fullTableName = TableName.getDbTable(dbName, tableName);
+      // Look in QB
+      Table result = verifyTableName(qb.getTableForAlias(alias), fullTableName);
+
+      // Look in ctx if it's a materialized table
+      if (result == null && jsonRel.containsKey("materializedTable") && (boolean) jsonRel.get("materializedTable")) {
+        result = verifyTableName(
+            getTableUsing(ctx::getMaterializedTable, alias, tableName, fullTableName),
+            fullTableName
+        );
+      }
+
+      // Look in tabNameToTabObject
+      if (result == null) {
+        result = verifyTableName(
+            getTableUsing(tabNameToTabObject::getParsedTable, tableName, fullTableName),
+            fullTableName
+        );
+      }
+
+      // Finally try HMS
+      if (result == null) {
+        try {
+          result = db.getTable(
+              dbName, tableName, null,
+              true, true, false
+          );
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      return result;
+    }
+
+    private Table getTableUsing(Function<String, Table> function, String... names) {
+      return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
+    }
+
+    private Table verifyTableName(Table table, String fullName) {
+      if (table == null) {
+        return null;
+      }
+      String tableName = TableName.getDbTable(table.getDbName(), table.getTableName());
+
+      return fullName.equals(tableName) ? table : null;
+    }
+
+    private Map<Boolean, List<ColumnInfo>> computeColumnInfos(RelDataType rowType, String tableAlias) {
+      Set<String> partColsSet = new HashSet<>();
+      if (jsonRel.containsKey("partitionColumns")) {
+        partColsSet.addAll((List<String>) jsonRel.get("partitionColumns"));
+      }
+
+      Predicate<RelDataTypeField> notVirtualColumn = f -> !VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(f.getName());
+
+      // MAP of
+      // true -> list of partition columns
+      // false -> list of non partition columns
+      return rowType.getFieldList().stream()
+          .filter(notVirtualColumn)
+          .map(f -> {
+                boolean isPartitionedColumn = partColsSet.contains(f.getName());
+                return new ColumnInfo(
+                    f.getName(),
+                    TypeConverter.convert(f.getType()),
+                    f.getType().isNullable(),
+                    tableAlias,
+                    isPartitionedColumn
+                );
+              }
+          )
+          .collect(Collectors.partitioningBy(ColumnInfo::getIsVirtualCol));
+    }
+
+    public RelNode getInput() {
+      final List<RelNode> inputs = getInputs();
+      assert inputs.size() == 1;
+      return inputs.get(0);
+    }
+
+    public List<RelNode> getInputs() {
+      final List<String> jsonInputs = getStringList("inputs");
+      if (jsonInputs == null) {
+        return ImmutableList.of(lastRel);
+      }
+      final List<RelNode> inputs = new ArrayList<>();
+      for (String jsonInput : jsonInputs) {
+        inputs.add(lookupInput(jsonInput));
+      }
+      return inputs;
+    }
+
+    private RelNode lookupInput(String jsonInput) {
+      RelNode node = relMap.get(jsonInput);
+      if (node == null) {
+        throw new RuntimeException("unknown id " + jsonInput + " for relational expression");
+      }
+      return node;
+    }
+
+    public RexNode getExpression(String tag) {
+      return relJson.toRex(this, jsonRel.get(tag));
+    }
+
+    public ImmutableBitSet getBitSet(String tag) {
+      return ImmutableBitSet.of(getIntegerList(tag));
+    }
+
+    public List<ImmutableBitSet> getBitSetList(String tag) {
+      List<List<Integer>> list = getIntegerListList(tag);
+      if (list == null) {
+        return null;
+      }
+      final ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
+      for (List<Integer> integers : list) {
+        builder.add(ImmutableBitSet.of(integers));
+      }
+      return builder.build();
+    }
+
+    public List<String> getStringList(String tag) {
+      //noinspection unchecked
+      return (List<String>) jsonRel.get(tag);
+    }
+
+    public List<Integer> getIntegerList(String tag) {
+      //noinspection unchecked
+      return (List<Integer>) jsonRel.get(tag);
+    }
+
+    public List<List<Integer>> getIntegerListList(String tag) {
+      //noinspection unchecked
+      return (List<List<Integer>>) jsonRel.get(tag);
+    }
+
+    public List<AggregateCall> getAggregateCalls(String tag) {
+      @SuppressWarnings("unchecked") final List<Map<String, Object>> jsonAggs = (List) jsonRel.get(tag);
+      final List<AggregateCall> inputs = new ArrayList<>();
+      for (Map<String, Object> jsonAggCall : jsonAggs) {
+        inputs.add(toAggCall(this, jsonAggCall));
+      }
+      return inputs;
+    }
+
+    public Object get(String tag) {
+      if ("getJoinInputsForHiveMultiJoin".equals(tag)) {
+        return getJoinInputsForHiveMultiJoin();
+      }
+      if ("getJoinTypesForHiveMultiJoin".equals(tag)) {
+        return getJoinTypesForHiveMultiJoin();
+      }
+      return jsonRel.get(tag);
+    }
+
+    public String getString(String tag) {
+      return (String) jsonRel.get(tag);
+    }
+
+    public float getFloat(String tag) {
+      return ((Number) jsonRel.get(tag)).floatValue();
+    }
+
+    public boolean getBoolean(String tag, boolean defaultBool) {
+      final Boolean b = (Boolean) jsonRel.get(tag);
+      return b != null ? b : defaultBool;
+    }
+
+    public <E extends Enum<E>> E getEnum(String tag, Class<E> enumClass) {
+      return Util.enumVal(enumClass, getString(tag).toUpperCase(Locale.ROOT));
+    }
+
+    public List<RexNode> getExpressionList(String tag) {
+      @SuppressWarnings("unchecked") final List<Object> jsonNodes = (List) jsonRel.get(tag);
+      final List<RexNode> nodes = new ArrayList<>();
+      for (Object jsonNode : jsonNodes) {
+        nodes.add(relJson.toRex(this, jsonNode));
+      }
+      return nodes;
+    }
+
+    public RelDataType getRowType(String tag) {
+      final Object o = jsonRel.get(tag);
+      return relJson.toType(cluster.getTypeFactory(), o);
+    }
+
+    public RelDataType getRowType(String expressionsTag, String fieldsTag) {
+      final List<RexNode> expressionList = getExpressionList(expressionsTag);
+      @SuppressWarnings("unchecked") final List<String> names = (List<String>) get(fieldsTag);
+      return cluster.getTypeFactory().createStructType(new AbstractList<Entry<String, RelDataType>>() {
+        @Override
+        public Entry<String, RelDataType> get(int index) {
+          return Pair.of(names.get(index), expressionList.get(index).getType());
+        }
+
+        @Override
+        public int size() {
+          return names.size();
+        }
+      });
+    }
+
+    public RelCollation getCollation() {
+      //noinspection unchecked
+      RelCollation result = relJson.toCollation((List) get("collation"));
+      if (result != null) {
+        return result;
+      }
+      return RelCollationTraitDef.INSTANCE.getDefault();
+    }
+
+    public RelDistribution getDistribution() {
+      return relJson.toDistribution(get("distribution"));
+    }
+
+    public ImmutableList<ImmutableList<RexLiteral>> getTuples(String tag) {
+      //noinspection unchecked
+      final List<List> jsonTuples = (List) get(tag);
+      final ImmutableList.Builder<ImmutableList<RexLiteral>> builder = ImmutableList.builder();
+      for (List jsonTuple : jsonTuples) {
+        builder.add(getTuple(jsonTuple));
+      }
+      return builder.build();
+    }
+
+    public ImmutableList<RexLiteral> getTuple(List jsonTuple) {
+      final ImmutableList.Builder<RexLiteral> builder = ImmutableList.builder();
+      for (Object jsonValue : jsonTuple) {
+        builder.add((RexLiteral) relJson.toRex(this, jsonValue));
+      }
+      return builder.build();
+    }
+
+    public List<Pair<Integer, Integer>> getJoinInputsForHiveMultiJoin() {
+      List<Pair<Integer, Integer>> result = new ArrayList<>();
+      List<String> joinsDescription = getStringList("joinsDescription");
+      if (joinsDescription == null || joinsDescription.isEmpty()) {
+        return result;
+      }
+
+      return joinsDescription.stream()
+          .map(s -> s.split(" : ", 2)[0])
+          .map(s -> s.split(" - ", 2))
+          .map(s -> Pair.of(Integer.valueOf(s[0]), Integer.valueOf(s[1])))
+          .collect(Collectors.toList());
+    }
+
+    public List<JoinRelType> getJoinTypesForHiveMultiJoin() {
+      List<JoinRelType> result = new ArrayList<>();
+      List<String> joinsDescription = getStringList("joinsDescription");
+      if (joinsDescription == null || joinsDescription.isEmpty()) {
+        return result;
+      }
+
+      return joinsDescription.stream()
+          .map(s -> s.split(" : ", 2)[1])
+          .map(s -> Util.enumVal(JoinRelType.class, s))
+          .collect(Collectors.toList());
+    }
+  }
 }
