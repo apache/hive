@@ -13,6 +13,8 @@ services:
       - '5432:5432'
     volumes:
       - hive-db:/var/lib/postgresql
+    networks:
+      - hive
 
   metastore:
     image: apache/hive:${HIVE_VERSION}
@@ -35,6 +37,8 @@ services:
         - type: bind
           source: ${POSTGRES_LOCAL_PATH}
           target: /opt/hive/lib/postgres.jar
+    networks:
+      - hive
 
   hiveserver2:
     image: apache/hive:${HIVE_VERSION}
@@ -52,7 +56,13 @@ services:
       - '10002:10002'
     volumes:
       - warehouse:/opt/hive/data/warehouse
+    networks:
+      - hive
 
 volumes:
   hive-db:
   warehouse:
+
+networks:
+  hive:
+    name: hive
