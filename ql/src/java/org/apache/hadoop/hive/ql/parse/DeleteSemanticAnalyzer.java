@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.execute.AlterTableExecuteDesc;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatement> {
+  private DDLDescWithWriteId acidDdlDesc;
 
   public DeleteSemanticAnalyzer(QueryState queryState, RewriterFactory<DeleteStatement> rewriterFactory)
       throws SemanticException {
@@ -88,7 +90,7 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
     // Note: this will overwrite this.ctx with rewrittenCtx
     rewrittenCtx.setEnableUnparse(false);
     truncate.analyze(rewrittenTree, rewrittenCtx);
-
+    acidDdlDesc = truncate.getAcidDdlDesc();
     rootTasks = truncate.getRootTasks();
     outputs = truncate.getOutputs();
     updateOutputs(table);
@@ -162,5 +164,10 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
   @Override
   protected boolean enableColumnStatsCollecting() {
     return false;
+  }
+
+  @Override
+  public DDLDescWithWriteId getAcidDdlDesc() {
+    return acidDdlDesc;
   }
 }
