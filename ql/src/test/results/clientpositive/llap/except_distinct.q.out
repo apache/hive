@@ -180,6 +180,10 @@ select * from (select a_n16.key, b_n12.value from a_n16 join b_n12 on a_n16.key=
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n16
 PREHOOK: Input: default@b_n12
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a_n16.key, b_n12.value from a_n16 join b_n12 on a_n16.key=b_n12.key)sub1 
 except distinct 
@@ -187,6 +191,10 @@ select * from (select a_n16.key, b_n12.value from a_n16 join b_n12 on a_n16.key=
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n16
 POSTHOOK: Input: default@b_n12
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from (select a_n16.key, b_n12.value from a_n16 join b_n12 on a_n16.key=b_n12.key)sub1
 except distinct

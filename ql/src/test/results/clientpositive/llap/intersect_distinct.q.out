@@ -111,6 +111,10 @@ select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n17
 PREHOOK: Input: default@b_n13
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub1 
 intersect distinct 
@@ -118,6 +122,10 @@ select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n17
 POSTHOOK: Input: default@b_n13
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2

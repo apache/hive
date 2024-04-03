@@ -183,6 +183,8 @@ select id, int_col, year, month from t_test2 s where not (
   s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@cte_suggestion_1
 PREHOOK: Input: default@t_test2
 PREHOOK: Input: default@t_test3
 PREHOOK: Input: default@t_test4
@@ -193,6 +195,8 @@ select id, int_col, year, month from t_test2 s where not (
   s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@cte_suggestion_1
 POSTHOOK: Input: default@t_test2
 POSTHOOK: Input: default@t_test3
 POSTHOOK: Input: default@t_test4
@@ -211,54 +215,61 @@ HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3])
                     HiveJoin(condition=[=($0, $4)], joinType=[left], algorithm=[none], cost=[not available])
                       HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3])
                         HiveTableScan(table=[[default, t_test2]], table:alias=[s])
-                      HiveProject(id=[$0], cnt_in=[$1])
+                      HiveProject($f0=[$0], cnt_in=[$1])
                         HiveAggregate(group=[{0}], cnt_in=[COUNT()])
-                          HiveProject(id=[$0])
-                            HiveAggregate(group=[{0}])
-                              HiveFilter(condition=[IS NOT NULL($0)])
-                                HiveTableScan(table=[[default, t_test3]], table:alias=[t2])
+                          HiveFilter(condition=[IS NOT NULL($0)])
+                            HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
+                              HiveProject(id=[$0], $f1=[$1])
+                                HiveAggregate(group=[{0}], agg#0=[count()])
+                                  HiveFilter(condition=[IS NOT NULL($0)])
+                                    HiveTableScan(table=[[default, t_test3]], table:alias=[t2])
                 HiveProject(id=[$0], c=[$1], ck=[$2])
                   HiveAggregate(group=[{0}], c=[COUNT()], ck=[COUNT($1)])
-                    HiveProject(id=[$0], $f1=[$1])
-                      HiveAggregate(group=[{0}], agg#0=[count()])
-                        HiveFilter(condition=[IS NOT NULL($0)])
-                          HiveTableScan(table=[[default, t_test3]], table:alias=[t2])
-              HiveProject(_o__c0=[$1], literalTrue=[true], id=[$0])
-                HiveFilter(condition=[IS NOT NULL($1)])
-                  HiveAggregate(group=[{0}], agg#0=[count()])
                     HiveFilter(condition=[IS NOT NULL($0)])
-                      HiveTableScan(table=[[default, t_test3]], table:alias=[t2])
+                      HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+              HiveProject(_o__c0=[$1], literalTrue=[true], id=[$0])
+                HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                  HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
             HiveProject(id=[$0])
-              HiveAggregate(group=[{0}])
-                HiveFilter(condition=[IS NOT NULL($0)])
-                  HiveTableScan(table=[[default, t_test4]], table:alias=[t3])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_1]])
+                  HiveProject(id=[$0], $f1=[$1])
+                    HiveAggregate(group=[{0}], agg#0=[count()])
+                      HiveFilter(condition=[IS NOT NULL($0)])
+                        HiveTableScan(table=[[default, t_test4]], table:alias=[t3])
           HiveProject(id=[$0], c=[$1], ck=[$2])
             HiveAggregate(group=[{0}], c=[COUNT()], ck=[COUNT($1)])
-              HiveProject(id=[$0], $f1=[$1])
-                HiveAggregate(group=[{0}], agg#0=[count()])
-                  HiveFilter(condition=[IS NOT NULL($0)])
-                    HiveTableScan(table=[[default, t_test4]], table:alias=[t3])
-        HiveProject(_o__c0=[$1], literalTrue=[true], id=[$0])
-          HiveFilter(condition=[IS NOT NULL($1)])
-            HiveAggregate(group=[{0}], agg#0=[count()])
               HiveFilter(condition=[IS NOT NULL($0)])
-                HiveTableScan(table=[[default, t_test4]], table:alias=[t3])
+                HiveTableScan(table=[[cte, cte_suggestion_1]], table:alias=[cte_suggestion_1])
+        HiveProject(_o__c0=[$1], literalTrue=[true], id=[$0])
+          HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+            HiveTableScan(table=[[cte, cte_suggestion_1]], table:alias=[cte_suggestion_1])
 
 PREHOOK: query: select id, int_col, year, month from t_test2 s where not (
   s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
   s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@cte_suggestion_1
 PREHOOK: Input: default@t_test2
 PREHOOK: Input: default@t_test3
 PREHOOK: Input: default@t_test4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
+PREHOOK: Output: default@cte_suggestion_1
 #### A masked pattern was here ####
 POSTHOOK: query: select id, int_col, year, month from t_test2 s where not (
   s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
   s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@cte_suggestion_1
 POSTHOOK: Input: default@t_test2
 POSTHOOK: Input: default@t_test3
 POSTHOOK: Input: default@t_test4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
+POSTHOOK: Output: default@cte_suggestion_1
 #### A masked pattern was here ####

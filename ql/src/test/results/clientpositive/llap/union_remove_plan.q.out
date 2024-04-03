@@ -21,6 +21,7 @@ select column1 from test_table group by column1
 union all
 select column1 from test_table group by column1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@test_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -28,11 +29,15 @@ select column1 from test_table group by column1
 union all
 select column1 from test_table group by column1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@test_table
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2, Stage-0
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -77,18 +82,68 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                File Output Operator
-                  compressed: false
+                      name: default.cte_suggestion_0
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 3 <- Union 4 (CONTAINS)
+        Map 5 <- Union 4 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
                   Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Select Operator
+                    expressions: column1 (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: column1 (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Union 4 
+            Vertex: Union 4
 
   Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-3
     Fetch Operator
       limit: -1
       Processor Tree:
@@ -98,13 +153,19 @@ PREHOOK: query: select column1 from test_table group by column1
 union all
 select column1 from test_table group by column1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@test_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select column1 from test_table group by column1
 union all
 select column1 from test_table group by column1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@test_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 a
 b

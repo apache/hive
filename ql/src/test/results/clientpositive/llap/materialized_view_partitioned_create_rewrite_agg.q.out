@@ -82,11 +82,14 @@ PREHOOK: query: SELECT b, sum(sumc), a FROM (
 GROUP BY b, a
 ORDER BY a, b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@mat1@a=1
 PREHOOK: Input: default@mat1@a=2
 PREHOOK: Input: default@mat1@a=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT b, sum(sumc), a FROM (
     SELECT b, sumc, a FROM mat1
@@ -97,11 +100,14 @@ POSTHOOK: query: SELECT b, sum(sumc), a FROM (
 GROUP BY b, a
 ORDER BY a, b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@mat1@a=1
 POSTHOOK: Input: default@mat1@a=2
 POSTHOOK: Input: default@mat1@a=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 1	8	1
 2	10	1

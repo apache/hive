@@ -138,16 +138,11 @@ SELECT key, count(1) as c FROM T1_n13 GROUP BY key
 SELECT key, count(1) as c FROM T1_n13 GROUP BY key
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@t1_n13
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
-Operator:GBY_2
-Table:default@t1_n13
-Keys:key
-
-Operator:GBY_8
-Table:default@t1_n13
-Keys:key
-
 1	1
 1	1
 2	1
@@ -164,14 +159,13 @@ JOIN
 (SELECT key, count(1) as c FROM T1_n13 GROUP BY key) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@t1_n13
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
-Operator:GBY_3
-Table:default@t1_n13
-Keys:key
-
-Operator:GBY_10
-Table:default@t1_n13
+Operator:JOIN_20
+Table:default@cte_suggestion_0
 Keys:key
 
 1	1	1	1

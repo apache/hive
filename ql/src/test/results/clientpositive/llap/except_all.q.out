@@ -185,6 +185,9 @@ select * from (select a_n15.key, b_n11.value from a_n15 join b_n11 on a_n15.key=
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n15
 PREHOOK: Input: default@b_n11
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (select a_n15.key, b_n11.value from a_n15 join b_n11 on a_n15.key=b_n11.key)sub1 
 except all 
@@ -192,6 +195,9 @@ select * from (select a_n15.key, b_n11.value from a_n15 join b_n11 on a_n15.key=
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n15
 POSTHOOK: Input: default@b_n11
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 PREHOOK: query: select * from (select a_n15.key, b_n11.value from a_n15 join b_n11 on a_n15.key=b_n11.key)sub1
 except all

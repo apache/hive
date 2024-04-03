@@ -1848,14 +1848,20 @@ join
 (select distinct * from src)src2 
 on src1.key=src2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (select distinct * from src)src1 
 join 
 (select distinct * from src)src2 
 on src1.key=src2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 0	val_0	0	val_0
 10	val_10	10	val_10
@@ -4337,14 +4343,20 @@ join
 (select distinct * from src)src2 
 on src1.key=src2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (select distinct * from src)src1 
 join 
 (select distinct * from src)src2 
 on src1.key=src2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 0	val_0	0	val_0
 10	val_10	10	val_10

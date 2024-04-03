@@ -41,6 +41,7 @@ FROM (
 insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@inputtbl1_n0
 PREHOOK: Output: default@outputtbl1_n0
 PREHOOK: Output: default@outputtbl2
@@ -55,50 +56,28 @@ FROM (
 insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@inputtbl1_n0
 POSTHOOK: Output: default@outputtbl1_n0
 POSTHOOK: Output: default@outputtbl2
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-3
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-5 depends on stages: Stage-2, Stage-0
+  Stage-6 depends on stages: Stage-5
+  Stage-3 depends on stages: Stage-6
+  Stage-4 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: inputtbl1_n0
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      keys: key (type: string)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n0
@@ -134,52 +113,85 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl1_n0
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl2
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl1_n0
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl2
-        Union 3 
-            Vertex: Union 3
+                      name: default.cte_suggestion_0
 
-  Stage: Stage-3
+  Stage: Stage-2
     Dependency Collection
 
-  Stage: Stage-0
+  Stage: Stage-5
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 3 <- Union 4 (CONTAINS)
+        Map 5 <- Union 4 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), values (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.outputtbl1_n0
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.outputtbl2
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), values (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.outputtbl1_n0
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.outputtbl2
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Union 4 
+            Vertex: Union 4
+
+  Stage: Stage-6
+    Dependency Collection
+
+  Stage: Stage-3
     Move Operator
       tables:
           replace: true
@@ -189,7 +201,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1_n0
 
-  Stage: Stage-1
+  Stage: Stage-4
     Move Operator
       tables:
           replace: true
@@ -198,6 +210,12 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl2
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 PREHOOK: query: FROM (
   select * from(
@@ -209,9 +227,13 @@ PREHOOK: query: FROM (
 insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@inputtbl1_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 PREHOOK: Output: default@outputtbl1_n0
 PREHOOK: Output: default@outputtbl2
+#### A masked pattern was here ####
 POSTHOOK: query: FROM (
   select * from(
   SELECT key, count(1) as `values` from inputTbl1_n0 group by key
@@ -222,13 +244,17 @@ POSTHOOK: query: FROM (
 insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@inputtbl1_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 POSTHOOK: Output: default@outputtbl1_n0
 POSTHOOK: Output: default@outputtbl2
-POSTHOOK: Lineage: outputtbl1_n0.key EXPRESSION [(inputtbl1_n0)inputtbl1_n0.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1_n0.values EXPRESSION [(inputtbl1_n0)inputtbl1_n0.null, ]
-POSTHOOK: Lineage: outputtbl2.key EXPRESSION [(inputtbl1_n0)inputtbl1_n0.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(inputtbl1_n0)inputtbl1_n0.null, ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: outputtbl1_n0.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n0.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:values, type:bigint, comment:null), ]
+POSTHOOK: Lineage: outputtbl2.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:values, type:bigint, comment:null), ]
 PREHOOK: query: select * from outputTbl1_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1_n0
@@ -272,6 +298,7 @@ select avg(c) from(
   SELECT count(1) as c from src
 )subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -281,43 +308,25 @@ select avg(c) from(
   SELECT count(1) as c from src
 )subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2, Stage-0
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 4 <- Union 3 (CUSTOM_SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -345,22 +354,72 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: (_col0 - 200L) (type: bigint)
-                  outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    aggregations: sum(_col0), count(_col0)
-                    minReductionHashAggr: 0.5
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.cte_suggestion_0
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 3 <- Union 4 (CONTAINS)
+        Map 6 <- Union 4 (CONTAINS)
+        Reducer 5 <- Union 4 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: ($f0 - 200L) (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col0), count(_col0)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: bigint), _col1 (type: bigint)
-        Reducer 4 
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: $f0 (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col0), count(_col0)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -379,29 +438,16 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: sum(_col0), count(_col0)
-                  minReductionHashAggr: 0.5
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint), _col1 (type: bigint)
-        Union 3 
-            Vertex: Union 3
+        Union 4 
+            Vertex: Union 4
 
   Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-3
     Fetch Operator
       limit: -1
       Processor Tree:
@@ -413,7 +459,10 @@ PREHOOK: query: select avg(c) from(
   SELECT count(1) as c from src
 )subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select avg(c) from(
   SELECT count(1)-200 as c from src
@@ -421,7 +470,10 @@ POSTHOOK: query: select avg(c) from(
   SELECT count(1) as c from src
 )subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 400.0
 PREHOOK: query: explain
@@ -432,6 +484,7 @@ select key, avg(c) over w from(
 )subq group by key, c
 WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
@@ -442,48 +495,25 @@ select key, avg(c) over w from(
 )subq group by key, c
 WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2, Stage-0
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 4 <- Union 3 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      keys: key (type: string)
-                      minReductionHashAggr: 0.4
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -517,23 +547,74 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: string), (_col1 * 2L) (type: bigint)
-                  outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: _col0 (type: string), _col1 (type: bigint)
-                    minReductionHashAggr: 0.4
-                    mode: hash
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.cte_suggestion_0
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 3 <- Union 4 (CONTAINS)
+        Map 6 <- Union 4 (CONTAINS)
+        Reducer 5 <- Union 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: $f0 (type: string), ($f1 * 2L) (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string), _col1 (type: bigint)
-                      null sort order: az
-                      sort order: ++
-                      Map-reduce partition columns: _col0 (type: string)
+                    Group By Operator
+                      keys: _col0 (type: string), _col1 (type: bigint)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 4 
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: bigint)
+                        null sort order: az
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: $f0 (type: string), $f1 (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string), _col1 (type: bigint)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: bigint)
+                        null sort order: az
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -575,31 +656,16 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.4
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string), _col1 (type: bigint)
-                    null sort order: az
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
-        Union 3 
-            Vertex: Union 3
+        Union 4 
+            Vertex: Union 4
 
   Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-3
     Fetch Operator
       limit: -1
       Processor Tree:
@@ -612,7 +678,10 @@ PREHOOK: query: select key, avg(c) over w from(
 )subq group by key, c
 WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, avg(c) over w from(
   SELECT key, count(1)*2 as c from src group by key
@@ -621,7 +690,10 @@ POSTHOOK: query: select key, avg(c) over w from(
 )subq group by key, c
 WINDOW w AS (PARTITION BY key ORDER BY c ROWS UNBOUNDED PRECEDING)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 0	3.0
 0	4.5
