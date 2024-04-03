@@ -2693,8 +2693,8 @@ public class HiveConf extends Configuration {
         "\n" +
         "If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime\n" +
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
-
-    HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE("hive.optimize.delete.all", false, 
+    @Deprecated
+    HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE("hive.optimize.delete.all", true,
         "Optimize delete the entire data from table, use truncate instead"),
     HIVE_OPTIMIZE_METADATA_DELETE("hive.optimize.delete.metadata.only", true,
             "Optimize delete the entire data from table, use truncate instead"),

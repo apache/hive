@@ -65,12 +65,10 @@ POSTHOOK: Input: default@acid_iud
 -1070551679	fred
 -1069736047	fred
 PREHOOK: query: delete from acid_iud
-PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_iud
+PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@acid_iud
 POSTHOOK: query: delete from acid_iud
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_iud
+POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@acid_iud
 PREHOOK: query: select a,b from acid_iud order by a
 PREHOOK: type: QUERY
