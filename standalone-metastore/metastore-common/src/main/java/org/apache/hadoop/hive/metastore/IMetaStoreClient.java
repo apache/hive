@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -555,7 +556,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Failure in the RDBMS or storage
    * @throws TException Thrift transport exception
    */
+  @Deprecated
   void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
+
+  void truncateTable(TableName table, List<String> partNames) throws TException;
 
   void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException;
@@ -574,6 +578,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Failure in the RDBMS or storage
    * @throws TException Thrift transport exception
    */
+  @Deprecated
   void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws MetaException, TException;
 

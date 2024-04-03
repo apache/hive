@@ -1,0 +1,188 @@
+PREHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: alter table ice01 create branch branch1
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch branch1
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: insert into ice01 values (5), (6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (5), (6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: truncate table default.ice01.branch_branch1
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice01
+POSTHOOK: query: truncate table default.ice01.branch_branch1
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: create external table ice02(id int) partitioned by (name string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice02
+POSTHOOK: query: create external table ice02(id int) partitioned by (name string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice02
+PREHOOK: query: insert into ice02 values (1, 'A'), (2, 'B'), (3, 'A'), (4, 'B')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice02
+POSTHOOK: query: insert into ice02 values (1, 'A'), (2, 'B'), (3, 'A'), (4, 'B')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice02
+PREHOOK: query: select * from ice02
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice02
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice02
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice02
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	A
+2	B
+3	A
+4	B
+PREHOOK: query: alter table ice02 create branch branch1
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice02
+POSTHOOK: query: alter table ice02 create branch branch1
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice02
+PREHOOK: query: insert into default.ice02.branch_branch1 values (5, 'A'), (6, 'C')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice02
+POSTHOOK: query: insert into default.ice02.branch_branch1 values (5, 'A'), (6, 'C')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice02
+PREHOOK: query: select * from default.ice02.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice02
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice02.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice02
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	A
+2	B
+3	A
+4	B
+5	A
+6	C
+PREHOOK: query: truncate table default.ice02.branch_branch1 partition (name='A')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice02@name=A
+POSTHOOK: query: truncate table default.ice02.branch_branch1 partition (name='A')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice02@name=A
+PREHOOK: query: select * from default.ice02.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice02
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice02.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice02
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	B
+4	B
+6	C
+PREHOOK: query: select * from ice02
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice02
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice02
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice02
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	A
+2	B
+3	A
+4	B
+PREHOOK: query: alter table ice02 set partition spec (id)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice02
+POSTHOOK: query: alter table ice02 set partition spec (id)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice02
+POSTHOOK: Output: default@ice02
+PREHOOK: query: truncate table default.ice02.branch_branch1 partition (name='C')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ice02@name=C
+POSTHOOK: query: truncate table default.ice02.branch_branch1 partition (name='C')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ice02@name=C
+PREHOOK: query: select * from default.ice02.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice02
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice02.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice02
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	B
+4	B
