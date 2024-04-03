@@ -215,11 +215,13 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
       .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("insideView", this.isInsideView(),
-          this.isInsideView() && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
+          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES ||
+              (this.isInsideView() && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES))
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
-          this.tableScanTrait != null && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
+          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES ||
+              (this.tableScanTrait != null && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES))
       .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
           isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()))
       .itemIf("materializedTable", this.isMaterializedTable(),
