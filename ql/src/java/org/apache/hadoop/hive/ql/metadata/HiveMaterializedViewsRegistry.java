@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -227,7 +229,7 @@ public final class HiveMaterializedViewsRegistry {
     }
     final CBOPlan plan;
     try {
-      plan = ParseUtils.parseQuery(conf, viewQuery);
+      plan = ParseUtils.parseQuery(createContext(conf), viewQuery);
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
@@ -360,6 +362,13 @@ public final class HiveMaterializedViewsRegistry {
 
   public List<HiveRelOptMaterialization> getRewritingMaterializedViews(ASTNode ast) {
     return materializedViewsCache.get(ast);
+  }
+
+  private Context createContext(HiveConf conf) throws IOException {
+    Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    ctx.setHDFSCleanup(true);
+    return ctx;
   }
 
   public boolean isEmpty() {
