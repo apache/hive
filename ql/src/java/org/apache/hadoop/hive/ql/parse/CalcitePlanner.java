@@ -1704,9 +1704,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           materializationValidator.getAutomaticRewritingValidationResult());
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.VALIDATE_QUERY_MATERIALIZATION);
 
-      calcitePlan = applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
+      if (!forViewCreation) {
+        calcitePlan = applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
+        }
       }
       // 2. Apply pre-join order optimizations
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PREJOIN_ORDERING);

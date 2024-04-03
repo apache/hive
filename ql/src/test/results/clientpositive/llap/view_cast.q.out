@@ -106,18 +106,24 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@aa_view_tw
 PREHOOK: Input: default@atab
 PREHOOK: Input: default@atab@dt=20130312/nt=tw
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@joined_aa_view_tw
 PREHOOK: Input: default@mstab
 PREHOOK: Input: default@mstab@dt=20130311
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM joined_aa_view_tw
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@aa_view_tw
 POSTHOOK: Input: default@atab
 POSTHOOK: Input: default@atab@dt=20130312/nt=tw
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@joined_aa_view_tw
 POSTHOOK: Input: default@mstab
 POSTHOOK: Input: default@mstab@dt=20130311
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 1111	abc	fun	bar	NULL	2222	NULL	99999	99999
 1111	abc	fun	bar	NULL	2222	NULL	99999	99999
