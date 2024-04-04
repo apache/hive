@@ -58,6 +58,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -3901,6 +3902,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void truncateTable(String dbName, String tableName,
       List<String> partNames, String validWriteIds, long writeId)
       throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void truncateTable(TableName table, List<String> partNames) throws MetaException, TException {
     throw new UnsupportedOperationException();
   }
 

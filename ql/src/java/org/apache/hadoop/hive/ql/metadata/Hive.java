@@ -1530,7 +1530,7 @@ public class Hive {
       List<String> partNames = ((null == partSpec)
               ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
       if (snapshot == null) {
-        getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames);
+        getMSC().truncateTable(table.getFullTableName(), partNames);
       } else {
         boolean truncateUseBase = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE)
           || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
