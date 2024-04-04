@@ -518,7 +518,7 @@ public class TestMetastoreConf {
   @Test
   public void testGetVarForUnsetSystemProperties(){
     conf = MetastoreConf.newMetastoreConf();
-    System.clearProperty(ConfVars.USE_SSL.getVarname());
+    conf.unset(ConfVars.USE_SSL.getVarname());
     Assert.assertEquals("false", MetastoreConf.getVar(conf, ConfVars.USE_SSL));
   }
 
@@ -529,7 +529,7 @@ public class TestMetastoreConf {
   @Test
   public void testGetStringCollectionForUnsetSystemProperties(){
     conf = MetastoreConf.newMetastoreConf();
-    System.clearProperty(ConfVars.USE_SSL.getVarname());
+    conf.unset(ConfVars.USE_SSL.getVarname());
     Collection<String> list = MetastoreConf.getStringCollection(conf, ConfVars.USE_SSL);
     Assert.assertEquals(1, list.size());
     Assert.assertTrue(list.contains("false"));
