@@ -1,4 +1,4 @@
-CTE Suggestion 0:HiveFilter(condition=[AND(<=(1998-03-18 00:00:00, CAST($2):TIMESTAMP(9)), <=(CAST($2):TIMESTAMP(9), +(1998-03-18:DATE, internal_interval(1043, 90))))])
+CTE Suggestion 0:HiveFilter(condition=[AND(<=(1998-03-18 00:00:00, CAST($2):TIMESTAMP(9)), <=(CAST($2):TIMESTAMP(9), +(1998-03-18:DATE, internal_interval(1044, 90))))])
   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
 CBO PLAN:
