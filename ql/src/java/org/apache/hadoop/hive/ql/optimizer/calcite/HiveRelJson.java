@@ -337,6 +337,11 @@ public class HiveRelJson extends RelJson {
           return rexBuilder.makeLiteral(new BigDecimal((BigInteger) literal), type, true);
         }
         break;
+      case DOUBLE:
+        if (literal instanceof Integer) {
+          return rexBuilder.makeExactLiteral(new BigDecimal((Integer) literal), type);
+        }
+        break;
       case FLOAT:
         if (literal instanceof Integer) {
           return rexBuilder.makeLiteral(new BigDecimal((Integer) literal), type, true);
