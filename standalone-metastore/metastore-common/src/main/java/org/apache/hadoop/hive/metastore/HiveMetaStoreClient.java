@@ -2098,7 +2098,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void truncateTable(TableName table, List<String> partNames) throws TException {
-    truncateTableInternal(getDefaultCatalog(conf), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames,
+    truncateTableInternal(table.getCat(), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames,
         null, -1, true);
   }
 
