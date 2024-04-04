@@ -1832,12 +1832,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         break;
       }
     }
-
-    boolean isV2Table = IcebergTableUtil.isV2Table(hmsTable.getParameters());
-    if (!result && !isV2Table) {
-      throw new SemanticException("Truncate conversion to delete is not possible since its not an Iceberg V2 table." +
-          " Consider converting the table to Iceberg's V2 format specification.");
-    }
     return result;
   }
 
