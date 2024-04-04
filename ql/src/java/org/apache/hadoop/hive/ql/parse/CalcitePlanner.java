@@ -171,6 +171,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
@@ -2140,6 +2141,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ImmutableBitSet cteOutputColumns = ImmutableBitSet.range(cte.getRowType().getFieldCount());
         if (checkFullAggregate && !Boolean.TRUE.equals(mq.areColumnsAggregated(cte, cteOutputColumns))) {
           LOG.debug("Skipping CTE {} cause its not a full aggregate.", cte);
+          continue;
+        }
+        if (HiveSqlTypeUtil.containsSqlType(cte.getRowType(), SqlTypeName.NULL)) {
+          LOG.debug("Skipping CTE {} cause it contains untyped nulls", cte);
           continue;
         }
         cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, cte));
