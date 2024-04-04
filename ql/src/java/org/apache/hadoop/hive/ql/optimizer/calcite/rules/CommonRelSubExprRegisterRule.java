@@ -24,20 +24,21 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistry;
+
+import com.google.common.collect.Multimap;
 
 import java.util.function.Predicate;
 
 public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
-  private static final Predicate<RelNode> NO_SCAN_PREDICATE = rel -> !(rel instanceof TableScan);
   public static final CommonRelSubExprRegisterRule JOIN = new CommonRelSubExprRegisterRule(operand(Join.class, any()));
   public static final CommonRelSubExprRegisterRule AGGREGATE =
       new CommonRelSubExprRegisterRule(operand(Aggregate.class, any()));
   public static final CommonRelSubExprRegisterRule FILTER =
       new CommonRelSubExprRegisterRule(operand(Filter.class, any()));
   public static final CommonRelSubExprRegisterRule PROJECT =
-      new CommonRelSubExprRegisterRule(operand(Project.class, operandJ(RelNode.class, null, NO_SCAN_PREDICATE, any())));
+      new CommonRelSubExprRegisterRule(operandJ(Project.class, null, new InterestingRelNodePredicate(), any()));
 
   private CommonRelSubExprRegisterRule(RelOptRuleOperand operand) {
     super(operand);
@@ -50,4 +51,30 @@ public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
       r.add(call.rel(0));
     }
   }
+
+  /**
+   * A predicate determining if a relational expression is interesting.
+   *
+   * The notion of interesting is loosely defined on purpose since it may change as the API evolves. At the moment an
+   * expression is considered interesting if it contains at least one of the following RelNode types:
+   * <ul>
+   *   <li>{@link Join}</li>
+   *   <li>{@link Aggregate}</li>
+   *   <li>{@link Filter}</li>
+   * </ul>
+   */
+  private static final class InterestingRelNodePredicate implements Predicate<RelNode> {
+    @Override
+    public boolean test(final RelNode rel) {
+      RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
+      Multimap<Class<? extends RelNode>, RelNode> types = mq.getNodeTypes(rel);
+      if (types == null) {
+        return false;
+      }
+      return types.keySet().stream().anyMatch(
+          t -> Join.class.isAssignableFrom(t) || Aggregate.class.isAssignableFrom(t) || Filter.class.isAssignableFrom(
+              t));
+    }
+  }
+
 }
