@@ -20,13 +20,13 @@ CBO PLAN:
 HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
   HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10), <(CAST($0):DOUBLE, 20))])
         HiveTableScan(table=[[default, src]], table:alias=[src1])
     HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10), <(CAST($0):DOUBLE, 20))])
         HiveTableScan(table=[[default, src]], table:alias=[src2])
   HiveProject(key=[$0], value=[$1])
-    HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+    HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10), <(CAST($0):DOUBLE, 20))])
       HiveTableScan(table=[[default, src]], table:alias=[src3])
 
 PREHOOK: query: EXPLAIN CBO
@@ -60,7 +60,7 @@ HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1]
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, src]], table:alias=[src2])
       HiveProject(key=[$0], value=[$1])
-        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10), <(CAST($0):DOUBLE, 20))])
           HiveTableScan(table=[[default, src]], table:alias=[src1])
 
 PREHOOK: query: EXPLAIN CBO
@@ -92,7 +92,7 @@ HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1]
       HiveProject(key=[$0], value=[$1])
         HiveTableScan(table=[[default, src]], table:alias=[src2])
       HiveProject(key=[$0], value=[$1])
-        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10), <(CAST($0):DOUBLE, 20))])
           HiveTableScan(table=[[default, src]], table:alias=[src1])
 
 PREHOOK: query: EXPLAIN CBO
@@ -124,7 +124,7 @@ HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1]
       HiveProject(key=[$0], value=[$1])
         HiveTableScan(table=[[default, src]], table:alias=[src2])
       HiveProject(key=[$0], value=[$1])
-        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10), <(CAST($0):DOUBLE, 20))])
           HiveTableScan(table=[[default, src]], table:alias=[src1])
 
 PREHOOK: query: EXPLAIN CBO

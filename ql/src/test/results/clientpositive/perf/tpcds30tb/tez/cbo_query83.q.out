@@ -15,7 +15,7 @@ HiveProject(d_date_sk=[$0], d_date=[$2])
 
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(item_id=[$0], sr_item_qty=[$3], sr_dev=[*(/(/(CAST($3):DOUBLE, CAST(+(+($3, $1), $5)):DOUBLE), 3E0), 1E2)], cr_item_qty=[$1], cr_dev=[*(/(/(CAST($1):DOUBLE, CAST(+(+($3, $1), $5)):DOUBLE), 3E0), 1E2)], wr_item_qty=[$5], wr_dev=[*(/(/($6, CAST(+(+($3, $1), $5)):DOUBLE), 3E0), 1E2)], average=[/(CAST(+(+($3, $1), $5)):DECIMAL(19, 0), 3:DECIMAL(1, 0))])
+  HiveProject(item_id=[$0], sr_item_qty=[$3], sr_dev=[*(/(/(CAST($3):DOUBLE, CAST(+(+($3, $1), $5)):DOUBLE), 3), 100)], cr_item_qty=[$1], cr_dev=[*(/(/(CAST($1):DOUBLE, CAST(+(+($3, $1), $5)):DOUBLE), 3), 100)], wr_item_qty=[$5], wr_dev=[*(/(/($6, CAST(+(+($3, $1), $5)):DOUBLE), 3), 100)], average=[/(CAST(+(+($3, $1), $5)):DECIMAL(19, 0), 3:DECIMAL(1, 0))])
     HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(i_item_id=[$0], $f1=[$1])
