@@ -121,12 +121,12 @@ POSTHOOK: Input: default@view1
 POSTHOOK: Input: default@view2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4
-POSTHOOK: Lineage: t4.c_boolean EXPRESSION [(t1)t1.FieldSchema(name:c_boolean, type:boolean, comment:null), (t2)t2.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
-POSTHOOK: Lineage: t4.c_float EXPRESSION [(t1)t1.FieldSchema(name:c_float, type:float, comment:null), (t2)t2.FieldSchema(name:c_float, type:float, comment:null), ]
-POSTHOOK: Lineage: t4.c_int EXPRESSION [(t1)t1.FieldSchema(name:c_int, type:int, comment:null), (t2)t2.FieldSchema(name:c_int, type:int, comment:null), ]
-POSTHOOK: Lineage: t4.dt EXPRESSION [(t1)t1.FieldSchema(name:dt, type:string, comment:null), (t2)t2.FieldSchema(name:dt, type:string, comment:null), ]
-POSTHOOK: Lineage: t4.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t4.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), (t2)t2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: t4.c_boolean EXPRESSION [(t1)t1.FieldSchema(name:c_boolean, type:boolean, comment:null), (t1)t1.FieldSchema(name:c_boolean, type:boolean, comment:null), (t2)t2.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
+POSTHOOK: Lineage: t4.c_float EXPRESSION [(t1)t1.FieldSchema(name:c_float, type:float, comment:null), (t1)t1.FieldSchema(name:c_float, type:float, comment:null), (t2)t2.FieldSchema(name:c_float, type:float, comment:null), ]
+POSTHOOK: Lineage: t4.c_int EXPRESSION [(t1)t1.FieldSchema(name:c_int, type:int, comment:null), (t1)t1.FieldSchema(name:c_int, type:int, comment:null), (t2)t2.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: t4.dt EXPRESSION [(t1)t1.FieldSchema(name:dt, type:string, comment:null), (t1)t1.FieldSchema(name:dt, type:string, comment:null), (t2)t2.FieldSchema(name:dt, type:string, comment:null), ]
+POSTHOOK: Lineage: t4.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t4.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), (t1)t1.FieldSchema(name:value, type:string, comment:null), (t2)t2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE VIEW `view3` AS select `t4`.`key`,`t4`.`value`,`t4`.`c_int`,`t4`.`c_float`,`t4`.`c_boolean`,`t4`.`dt` from `t4` union all select `t1`.`key`,`t1`.`value`,`t1`.`c_int`,`t1`.`c_float`,`t1`.`c_boolean`,`t1`.`dt` from `t1`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
