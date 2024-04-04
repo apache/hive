@@ -1757,6 +1757,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    if (hmsTable.getSnapshotRef() != null && hasUndergonePartitionEvolution(table)) {
+      // for this case we rewrite the query as delete query, so validations would be done as part of delete.
+      return;
+    }
 
     if (table.spec().isUnpartitioned() && MapUtils.isNotEmpty(partitionSpec)) {
       throw new SemanticException("Writing data into a partition fails when the Iceberg table is unpartitioned.");
@@ -1802,6 +1806,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (MapUtils.isEmpty(partitionSpec) || !hasUndergonePartitionEvolution(table)) {
       return true;
+    } else if (hmsTable.getSnapshotRef() != null) {
+      return false;
     }
 
     Expression finalExp = generateExpressionFromPartitionSpec(table, partitionSpec);
