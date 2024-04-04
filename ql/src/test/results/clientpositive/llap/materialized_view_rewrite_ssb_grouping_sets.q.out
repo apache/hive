@@ -696,7 +696,7 @@ POSTHOOK: Input: default@ssb_mv_n3
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[sum($16)])
-  HiveFilter(condition=[AND(>(2.5E1, $8), =(CAST($18):BIGINT NOT NULL, 29247), =($4, 1993), BETWEEN(false, $7, 1E0:DOUBLE, 3E0:DOUBLE))])
+  HiveFilter(condition=[AND(>(25, $8), =(CAST($18):BIGINT NOT NULL, 29247), =($4, 1993), BETWEEN(false, $7, 1:DOUBLE, 3:DOUBLE))])
     HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
@@ -731,7 +731,7 @@ POSTHOOK: Input: default@ssb_mv_n3
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[sum($16)])
-  HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($6, 199401), BETWEEN(false, $8, 2.6E1:DOUBLE, 3.5E1:DOUBLE), BETWEEN(false, $7, 4E0:DOUBLE, 6E0:DOUBLE))])
+  HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($6, 199401), BETWEEN(false, $8, 26:DOUBLE, 35:DOUBLE), BETWEEN(false, $7, 4:DOUBLE, 6:DOUBLE))])
     HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
@@ -768,7 +768,7 @@ POSTHOOK: Input: default@ssb_mv_n3
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[sum($16)])
-  HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($4, 1994), =($3, 6), BETWEEN(false, $8, 2.6E1:DOUBLE, 3.5E1:DOUBLE), BETWEEN(false, $7, 5E0:DOUBLE, 7E0:DOUBLE))])
+  HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($4, 1994), =($3, 6), BETWEEN(false, $8, 26:DOUBLE, 35:DOUBLE), BETWEEN(false, $7, 5:DOUBLE, 7:DOUBLE))])
     HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
