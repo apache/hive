@@ -1563,7 +1563,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_TO     
      | T_TOP
      | T_TRANSACTION
-     | T_TRIM
+     // | T_TRIM
      | T_TRUE
      | T_TRUNCATE
      // T_UNION reserved word

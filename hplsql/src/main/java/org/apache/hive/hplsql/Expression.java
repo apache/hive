@@ -110,7 +110,17 @@ public class Expression {
     }
     else {
       visitChildren(ctx);
-      sql.append(exec.stackPop().toString());
+      Var value = exec.stackPop();
+      if (value.type == Type.NULL && sql.toString().length() == 0) {
+        exec.stackPush(new Var());
+        return;
+      } else if (exec.buildSql && value.type == Type.DATE) {
+        sql.append(String.format("DATE '%s'", value.toString()));
+      } else if (exec.buildSql && value.type == Type.TIMESTAMP) {
+        sql.append(String.format("TIMESTAMP '%s'", value.toString()));
+      } else {
+        sql.append(value.toString());
+      }
     }
     exec.stackPush(sql);
   }
@@ -565,7 +575,11 @@ public class Expression {
     sql.append("CONCAT(");
     int cnt = ctx.expr_concat_item().size();
     for (int i = 0; i < cnt; i++) {
-      sql.append(evalPop(ctx.expr_concat_item(i)).toString());
+      String concatStr = evalPop(ctx.expr_concat_item(i)).toString();
+      if (!concatStr.startsWith("'")) {
+        concatStr = Utils.quoteString(concatStr);
+      }
+      sql.append(concatStr);
       if (i + 1 < cnt) {
         sql.append(", ");
       }

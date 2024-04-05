@@ -4,5 +4,5 @@ declare c int default 2;
 
 print a/b/c;
 
-set a = 4 * 2 / 4 / 2;
-set b = 4 * 2 / 4 / 2;
+set a = 4 * 2 / cast(4 as int) /2;
+set b = 4 * 2 /cast(4 as int)/2;

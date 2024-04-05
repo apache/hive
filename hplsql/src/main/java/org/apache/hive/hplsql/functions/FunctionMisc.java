@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hive.hplsql.Conn;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.HplsqlParser;
+import org.apache.hive.hplsql.Utils;
 import org.apache.hive.hplsql.Var;
 import org.apache.hive.hplsql.executor.QueryException;
 import org.apache.hive.hplsql.executor.QueryExecutor;
@@ -40,11 +41,15 @@ public class FunctionMisc extends BuiltinFunctions {
    */
   @Override
   public void register(BuiltinFunctions f) {
+    f.map.put("COALESCE", this::nvl);
     f.map.put("DECODE", this::decode);
+    f.map.put("NVL", this::nvl);
     f.map.put("NVL2", this::nvl2);
     f.map.put("PART_COUNT_BY", this::partCountBy);
+    f.map.put("MOD", this::modulo);
 
     f.specMap.put("ACTIVITY_COUNT", this::activityCount);
+    f.specMap.put("CAST", this::cast);
     f.specMap.put("CURRENT", this::current);
     f.specMap.put("CURRENT_USER", this::currentUser);
     f.specMap.put("PART_COUNT", this::partCount);
@@ -58,6 +63,43 @@ public class FunctionMisc extends BuiltinFunctions {
    */
   void activityCount(HplsqlParser.Expr_spec_funcContext ctx) {
     evalInt(Long.valueOf(exec.getRowCount()));
+  }
+
+  /**
+   * CAST function
+   */
+  void cast(HplsqlParser.Expr_spec_funcContext ctx) {
+    if (ctx.expr().size() != 1) {
+      evalNull();
+      return;
+    }
+    String type = ctx.dtype().getText();
+    String len = null;
+    String scale = null;
+    if (ctx.dtype_len() != null) {
+      len = ctx.dtype_len().L_INT(0).getText();
+      if (ctx.dtype_len().L_INT(1) != null) {
+        scale = ctx.dtype_len().L_INT(1).getText();
+      }
+    }
+    Var var = new Var(null, type, len, scale, null);
+    Var value = evalPop(ctx.expr(0));
+    if (value.type == Var.Type.STRING) {
+      Var newValue = new Var(value.name, value.type, Utils.unquoteString(value.toString()));
+      value = newValue;
+    }
+    if (value.type != Var.Type.NULL && value.toString().toUpperCase().startsWith("TIMESTAMP ")) {
+      boolean old = exec.buildSql;
+      exec.buildSql = false;
+      value = evalPop(ctx.expr(0));
+      exec.buildSql = old;
+    }
+    var.cast(value);
+    if (exec.buildSql && var.type == Var.Type.STRING) {
+      evalString(var.toSqlString());
+    } else {
+      evalVar(var);
+    }
   }
   
   /**
@@ -113,7 +155,9 @@ public class FunctionMisc extends BuiltinFunctions {
   }
   
   public static Var currentUser() {
-    return new Var("CURRENT_USER()");
+    String currentUser = System.getProperty("user.name");
+    currentUser = Utils.quoteString(currentUser);
+    return new Var(currentUser);
   }
   
   /**
@@ -141,6 +185,20 @@ public class FunctionMisc extends BuiltinFunctions {
     else {
       evalNull();
     }
+  }
+
+  /**
+   * NVL function - Return first non-NULL expression
+   */
+  void nvl(HplsqlParser.Expr_func_paramsContext ctx) {
+    for (int i=0; i < ctx.func_param().size(); i++) {
+      Var v = evalPop(ctx.func_param(i).expr());
+      if (v.type != Var.Type.NULL) {
+        exec.stackPush(v);
+        return;
+      }
+    }
+    evalNull();
   }
   
   /**
@@ -209,6 +267,16 @@ public class FunctionMisc extends BuiltinFunctions {
     }
     evalInt(result);
     query.close();
+  }
+
+  public void modulo(HplsqlParser.Expr_func_paramsContext ctx) {
+    if (ctx.func_param().size() == 2) {
+      int a = evalPop(ctx.func_param(0).expr()).intValue();
+      int b = evalPop(ctx.func_param(1).expr()).intValue();
+      evalInt(a % b);
+    } else {
+      evalNull();
+    }
   }
 
   /**

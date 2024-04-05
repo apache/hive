@@ -33,12 +33,18 @@ public class FunctionString extends BuiltinFunctions {
   public void register(BuiltinFunctions f) {
     f.map.put("CONCAT", this::concat);
     f.map.put("CHAR", this::char_);
+    f.map.put("INSTR", this::instr);
     f.map.put("LEN", this::len);
+    f.map.put("LENGTH", this::length);
+    f.map.put("LOWER", this::lower);
+    f.map.put("REPLACE", this::replace);
     f.map.put("SUBSTR", this::substr);
     f.map.put("SUBSTRING", this::substr);
     f.map.put("TO_CHAR", this::toChar);
     f.map.put("UPPER", this::upper);
+
     f.specMap.put("SUBSTRING", this::substring);
+    f.specMap.put("TRIM", this::trim);
   }
   
   /**
@@ -77,6 +83,67 @@ public class FunctionString extends BuiltinFunctions {
     String str = evalPop(ctx.func_param(0).expr()).toString(); 
     evalString(str);
   }
+
+  /**
+   * INSTR function
+   */
+  void instr(HplsqlParser.Expr_func_paramsContext ctx) {
+    int cnt = getParamCount(ctx);
+    if (cnt < 2) {
+      evalNull();
+      return;
+    }
+    String str = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString());
+    if (str == null) {
+      evalNull();
+      return;
+    }
+    else if(str.isEmpty()) {
+      evalInt(0);
+      return;
+    }
+    String substr = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
+    int pos = 1;
+    int occur = 1;
+    int idx = 0;
+    if (cnt >= 3) {
+      pos = evalPop(ctx.func_param(2).expr()).intValue();
+      if (pos == 0) {
+        pos = 1;
+      }
+    }
+    if (cnt >= 4) {
+      occur = evalPop(ctx.func_param(3).expr()).intValue();
+      if (occur < 0) {
+        occur = 1;
+      }
+    }
+    for (int i = occur; i > 0; i--) {
+      if (pos > 0) {
+        idx = str.indexOf(substr, pos - 1);
+      }
+      else {
+        str = str.substring(0, str.length() - pos*(-1));
+        idx = str.lastIndexOf(substr);
+      }
+      if (idx == -1) {
+        idx = 0;
+        break;
+      }
+      else {
+        idx++;
+      }
+      if (i > 1) {
+        if (pos > 0) {
+          pos = idx + 1;
+        }
+        else {
+          pos = (str.length() - idx + 1) * (-1);
+        }
+      }
+    }
+    evalInt(idx);
+  }
   
   /**
    * LEN function (excluding trailing spaces)
@@ -88,6 +155,45 @@ public class FunctionString extends BuiltinFunctions {
     }
     int len = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString()).trim().length();
     evalInt(len);
+  }
+
+  /**
+   * LENGTH function
+   */
+  void length(HplsqlParser.Expr_func_paramsContext ctx) {
+    if (ctx.func_param().size() != 1) {
+      evalNull();
+      return;
+    }
+    int len = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString()).length();
+    evalInt(len);
+  }
+
+  /**
+   * LOWER function
+   */
+  void lower(HplsqlParser.Expr_func_paramsContext ctx) {
+    if (ctx.func_param().size() != 1) {
+      evalNull();
+      return;
+    }
+    String str = evalPop(ctx.func_param(0).expr()).toString().toLowerCase();
+    evalString(str);
+  }
+
+  /**
+   * REPLACE function
+   */
+  void replace(HplsqlParser.Expr_func_paramsContext ctx) {
+    int cnt = getParamCount(ctx);
+    if (cnt < 3) {
+      evalNull();
+      return;
+    }
+    String str = evalPop(ctx.func_param(0).expr()).toString();
+    String what = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
+    String with = Utils.unquoteString(evalPop(ctx.func_param(2).expr()).toString());
+    evalString(str.replaceAll(what, with));
   }
 
   /**
@@ -162,6 +268,20 @@ public class FunctionString extends BuiltinFunctions {
       len = evalPop(ctx.expr(2)).intValue();
     }
     substr(str, start, len);
+  }
+
+  /**
+   * TRIM function
+   */
+  void trim(HplsqlParser.Expr_spec_funcContext ctx) {
+    int cnt = ctx.expr().size();
+    if (cnt != 1) {
+      evalNull();
+      return;
+    }
+    String str = evalPop(ctx.expr(0)).toString();
+    str = Utils.unquoteString(str);
+    evalString(str.trim());
   }
   
   /**

@@ -181,6 +181,7 @@ public class Var {
       } else if (type == Type.DECIMAL) {
         if (val.type == Type.STRING) {
           value = new BigDecimal((String) val.value);
+          value = ((BigDecimal)value).setScale(scale);
         } else if (val.type == Type.BIGINT) {
           value = BigDecimal.valueOf(val.longValue());
         } else if (val.type == Type.DOUBLE) {
@@ -601,7 +602,7 @@ public class Var {
       return (String)value;
     }
     else if (type == Type.DATE) {
-      return String.format("DATE '%s'", value);
+      return ((Date)value).toString();
     }
     else if (type == Type.TIMESTAMP) {
       int len = 19;
@@ -612,7 +613,7 @@ public class Var {
       if (t.length() > len) {
         t = t.substring(0, len);
       }
-      return String.format("TIMESTAMP '%s'", t);
+      return t;
     }
 	  return value.toString();
 	}
