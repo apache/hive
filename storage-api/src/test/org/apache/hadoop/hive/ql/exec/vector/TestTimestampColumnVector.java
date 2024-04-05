@@ -29,7 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.junit.Assert;
@@ -216,21 +216,24 @@ public class TestTimestampColumnVector {
 
   @Test(timeout = 300_000)
   public void testMultiThreaded() throws Exception {
+    int vectorLength = 50000;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    long SWITCHOVER_MILLIS = dateFormat.parse("1582-10-15").getTime();
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-    // similar to TestDateColumnVector#testMultiThreaded
-
-    List<Thread> threads = new ArrayList<>();
-
-    threads.add(startVectorManipulationThread(50000, -141428));
-    threads.add(startVectorManipulationThread(50000, -141430));
-    threads.add(startVectorManipulationThread(50000, -16768));
-    threads.add(startVectorManipulationThread(50000, -499952));
-    threads.add(startVectorManipulationThread(50000, -499955));
-
-    for (Thread thread : threads) {
-      thread.join();
+    List<Future<?>> futures = new ArrayList<>();
+    futures.add(executorService.submit(startVectorManipulationThread(vectorLength, SWITCHOVER_MILLIS + -1)));
+    futures.add(executorService.submit(startVectorManipulationThread(vectorLength, SWITCHOVER_MILLIS + -1)));
+    futures.add(executorService.submit(startVectorManipulationThread(vectorLength, SWITCHOVER_MILLIS + -1)));
+    for (Future<?> future : futures) {
+      try {
+        future.get();
+      } catch (ExecutionException e) {
+        Throwable threadException = e.getCause();
+        Assert.fail("Threw exception: " + threadException.getMessage());
+      }
     }
-
+    executorService.shutdown();
   }
 
   private Thread startVectorManipulationThread(final int vectorLength, final long millis) {
@@ -242,7 +245,6 @@ public class TestTimestampColumnVector {
       }
       columnVector.changeCalendar(false, true);
     });
-    thread.start();
     return thread;
   }
 
