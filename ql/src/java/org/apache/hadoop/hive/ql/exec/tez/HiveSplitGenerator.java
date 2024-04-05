@@ -260,7 +260,7 @@ public class HiveSplitGenerator extends InputInitializer {
         LOG.error("Exception while generating splits", e.getCause());
         throw new RuntimeException(e.getCause());
       } finally {
-        if (executor == null) {
+        if (executor != null) {
           executor.shutdown();
         }
         if (fs != null) {
