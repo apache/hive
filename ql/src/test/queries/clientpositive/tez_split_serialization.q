@@ -10,5 +10,5 @@ select * from test_table;
 
 -- split serialization can be sanity-checked from hive.log by HiveSplitGenerator messages
 -- 10 bytes threshold must trigger split serialization to filesystem
-set hive.tez.split.fs.serialization.threshold = 10;
+set hive.tez.input.fs.serialization.threshold = 10;
 select * from test_table;
