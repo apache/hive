@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:21 Argument type mismatch '3': "array" expected at function ARRAY_COMPACT, but "int" is found
