@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
@@ -135,6 +136,11 @@ public class PlanModifierForASTConv {
     if (rel instanceof HiveJdbcConverter) {
       HiveJdbcConverter conv = (HiveJdbcConverter) rel;
       return conv.getTableScan().getHiveTableScan().getTableAlias();
+    }
+    if (rel instanceof HiveTableSpool) {
+      HiveTableSpool spool = (HiveTableSpool) rel;
+      List<String> qname = spool.getTable().getQualifiedName();
+      return qname.get(qname.size() - 1);
     }
     if (rel instanceof Project) {
       return null;
