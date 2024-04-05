@@ -211,6 +211,18 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
+  public void truncateTable(TableName tableName, List<String> partNames) throws TException {
+    // First try temp table
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(tableName.getDb(), tableName.getTable());
+    if (table != null) {
+      truncateTempTable(table);
+      return;
+    }
+    // Try underlying client
+    super.truncateTable(tableName, partNames);
+  }
+
+  @Override
   public void truncateTable(String dbName, String tableName,
       List<String> partNames, String validWriteIds, long writeId)
       throws TException {

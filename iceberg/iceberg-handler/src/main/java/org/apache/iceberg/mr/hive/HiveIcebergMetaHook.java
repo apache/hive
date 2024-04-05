@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -679,6 +680,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     DeleteFiles delete = icebergTable.newDelete();
+    String branchName = context.getProperties().get(Catalogs.SNAPSHOT_REF);
+    if (branchName != null) {
+      delete.toBranch(HiveUtils.getTableSnapshotRef(branchName));
+    }
     delete.deleteFromRowFilter(finalExp);
     delete.commit();
     context.putToProperties("truncateSkipDataDeletion", "true");
