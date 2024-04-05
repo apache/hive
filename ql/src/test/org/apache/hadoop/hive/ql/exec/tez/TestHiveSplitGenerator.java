@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
@@ -66,7 +67,7 @@ public class TestHiveSplitGenerator {
   public void testSplitSerializationUsingFileSystem() throws Exception {
     JobConf conf = new JobConf(new HiveConf());
     // 0 bytes will force a split serialization to filesystem
-    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD, 0);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD, 0);
 
     InputSplit[] splits = getSplits(1);
     String serializedPath = ((InputDataInformationEvent) generateEvents(conf, splits).get(1)).getSerializedPath();
@@ -82,7 +83,7 @@ public class TestHiveSplitGenerator {
     JobConf conf = new JobConf(new HiveConf());
     // split size is around 200 bytes, so first one will be held in memory, second will be serialized (200 > 10)
     // this is the most typical usecase of the split fs serialization feature
-    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD, 10);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD, 10);
 
     InputSplit[] splits = getSplits(2);
     List<Event> events = generateEvents(conf, splits);
@@ -113,7 +114,7 @@ public class TestHiveSplitGenerator {
   public void testSplitSerializationDisabledFilesystem() throws Exception {
     JobConf conf = new JobConf(new HiveConf());
     // -1 disables the split serialization to filesystem
-    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD, -1);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD, -1);
 
     InputSplit[] splits = getSplits(1);
     String serializedPath = ((InputDataInformationEvent) generateEvents(conf, splits).get(1)).getSerializedPath();
@@ -123,7 +124,7 @@ public class TestHiveSplitGenerator {
   @Test
   public void testExceptionIsPropagatedFromSplitSerializer() throws Exception {
     JobConf conf = new JobConf(new HiveConf());
-    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD, 0);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD, 0);
 
     InputSplit[] splits = getSplits(3);
     InputInitializerContext context = getInputInitializerContext(conf);
@@ -134,9 +135,17 @@ public class TestHiveSplitGenerator {
           ((InputDataInformationEvent) generateEvents(conf, splits, splitGenerator).get(1)).getSerializedPath();
       Assert.fail("HiveSplitGeneratorSerializerException should fail");
     } catch (Exception e) {
-      // exception is the IOException that has been collected
-      Assert.assertEquals(IOException.class, e.getClass());
-      Assert.assertTrue(e.getMessage().contains(HiveSplitGeneratorSerializerException.EXCEPTION_MESSAGE));
+      // outermost exception is the RuntimeException that wraps anything comes from splitSerialize.close()
+      Assert.assertEquals(RuntimeException.class, e.getClass());
+
+      // wrapperRuntimeException wraps anything thrown from splitSerialize.writeSplit()
+      Throwable wrapperRuntimeException = e.getCause();
+      Assert.assertEquals(RuntimeException.class, wrapperRuntimeException.getClass());
+
+      Throwable originalException = wrapperRuntimeException.getCause();
+      Assert.assertEquals(IOException.class, originalException.getClass());
+      Assert
+          .assertTrue(originalException.getMessage().contains(HiveSplitGeneratorSerializerException.EXCEPTION_MESSAGE));
 
       Assert.assertTrue("Already running future in not supposed to be cancelled with the current implementation",
           splitGenerator.split0Finished.get());
@@ -204,7 +213,7 @@ public class TestHiveSplitGenerator {
       }
 
       @Override
-      InputDataInformationEvent write(int count, MRSplitProto mrSplit) throws IOException {
+      InputDataInformationEvent write(int count, MRSplitProto mrSplit) {
         // mimic the following scenario: split #2 starts to be processed after split #1 failed,
         // so it won't run at all due to anyTaskFailed check
         if (count == 2) {
@@ -232,7 +241,6 @@ public class TestHiveSplitGenerator {
         }
         // writing second split fails
         if (count == 1) {
-          LOG.info("Throwing an IOException");
           throw new IOException(EXCEPTION_MESSAGE + ": " + filePath);
         }
 

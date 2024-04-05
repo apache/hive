@@ -30,7 +30,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,7 +58,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.apache.hadoop.hive.common.ExecutorUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -174,7 +175,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
   /**
    * SplitSerializer is a helper class for taking care of serializing splits to the tez scratch dir
-   * when a size criteria defined by "hive.tez.split.fs.serialization.threshold" is met.
+   * when a size criteria defined by "hive.tez.input.fs.serialization.threshold" is met.
    * It utilizes an ExecutorService for parallel writes to prevent a single split write operation
    * becoming the bottleneck (as write() is called from a loop currently).
    */
@@ -186,13 +187,12 @@ public class HiveSplitGenerator extends InputInitializer {
     private String inputName;
     private int vertexId;
     private Path appStagingPath;
-    // lazy initialized filesystem and executor
+    // filesystem and executor
     private FileSystem fs;
     private ExecutorService executor;
-    private List<Future<?>> fsWriteFutures;
 
     private AtomicBoolean anyTaskFailed;
-    private Queue<Throwable> exceptions;
+    private List<Future<?>> asyncTasks;
 
     @VisibleForTesting
     SplitSerializer() throws IOException {
@@ -208,30 +208,29 @@ public class HiveSplitGenerator extends InputInitializer {
 
       fs = appStagingPath.getFileSystem(jobConf);
 
-      int numThreads = HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THREADS);
+      int numThreads = HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THREADS);
       executor = Executors.newFixedThreadPool(numThreads,
           new ThreadFactoryBuilder().setNameFormat("HiveSplitGenerator.SplitSerializer Thread - " + "#%d").build());
-      fsWriteFutures = new ArrayList<Future<?>>();
       anyTaskFailed = new AtomicBoolean(false);
-      exceptions = new ConcurrentLinkedQueue<>();
+      asyncTasks = new ArrayList<>();
     }
 
     @VisibleForTesting
-    InputDataInformationEvent write(int count, MRSplitProto mrSplit) throws IOException {
+    InputDataInformationEvent write(int count, MRSplitProto mrSplit) {
       InputDataInformationEvent diEvent;
       Path filePath = getSerializedFilePath(count);
 
-      // parallel writes for better performance (this is called from a loop)
-      fsWriteFutures.add(executor.submit(() -> {
-        try {
-          if (!anyTaskFailed.get()) {
+      Runnable task = () -> {
+        if (!anyTaskFailed.get()) {
+          try {
             writeSplit(count, mrSplit, filePath);
+          } catch (IOException e) {
+            anyTaskFailed.set(true);
+            throw new RuntimeException(e);
           }
-        } catch (IOException e) {
-          anyTaskFailed.set(true);
-          exceptions.add(e);
         }
-      }));
+      };
+      asyncTasks.add(CompletableFuture.runAsync(task, executor));
       return InputDataInformationEvent.createWithSerializedPath(count, filePath.toString());
     }
 
@@ -251,19 +250,26 @@ public class HiveSplitGenerator extends InputInitializer {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
       if (executor == null) {
         return;
       }
       try {
         executor.shutdown();
-        exceptions.addAll(ExecutorUtils.waitFor(fsWriteFutures));
-        Iterator<Throwable> iter = exceptions.iterator();
-        if (iter.hasNext()) {
-          throw new IOException(iter.next());
-        }
+        CompletableFuture.allOf(asyncTasks.toArray(new CompletableFuture[0])).get();
+      } catch (InterruptedException e) {
+        LOG.info("Interrupted while generating splits", e);
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {// ExecutionException wraps the original exception
+        LOG.error("Exception while generating splits", e.getCause());
+        throw new RuntimeException(e.getCause());
       } finally {
-        fs.close();
+        try {
+          fs.close();
+        } catch (IOException e) {
+          LOG.error("Exception while closing the split serialization filesystem", e);
+          throw new RuntimeException(e);
+        }
       }
     }
   }
@@ -483,7 +489,7 @@ public class HiveSplitGenerator extends InputInitializer {
       long serializedPayloadSize = 0;
 
       int payloadSerializationThresholdBytes =
-          HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD);
+          HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD);
 
       List<MRSplitProto> splits = inputSplitInfo.getSplitsProto().getSplitsList();
       LOG.debug("Start creating events for {} splits", splits.size());
@@ -511,9 +517,6 @@ public class HiveSplitGenerator extends InputInitializer {
           events.add(diEvent);
           count += 1;
         }
-      } catch (Exception e) { // this also catches exceptions thrown during splitSerializer.close();
-        LOG.error("An exception was caught while running split generation, this is not recoverable", e);
-        throw e;
       }
 
       // this is useful for making decisions regarding split serialization threshold

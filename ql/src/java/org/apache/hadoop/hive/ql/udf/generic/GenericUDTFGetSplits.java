@@ -468,7 +468,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       // we're not interested in split fs serialization optimization in this case
       // it was implemented for split generation in TezAM
       // this can be removed any time when it turns out that's needed here too
-      HiveConf.setIntVar(wxConf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD, -1);
+      HiveConf.setIntVar(wxConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD, -1);
 
       HiveSplitGenerator splitGenerator =
           new HiveSplitGenerator(wxConf, mapWork, false, inputArgNumSplits);
