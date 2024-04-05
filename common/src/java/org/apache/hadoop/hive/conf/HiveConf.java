@@ -4756,10 +4756,13 @@ public class HiveConf extends Configuration {
         "Class to use for calculating available slots during split generation"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,
         "Whether to generate consistent split locations when generating splits in the AM"),
-    HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD("hive.tez.split.fs.serialization.threshold", 524288,
-        "Splits (as InputDataInformationEvent objects) larger than this (in bytes) will be serialized" +
-        " to tez scratchdir instead of being sent as RPC payloads directly. Default is 512 KB."
-        + "-1 disables this feature."),
+    HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD("hive.tez.split.fs.serialization.threshold", 268435456,
+        "When the cummulative size of the splits is larger than this (in bytes), HiveSplitGenerator"
+            + " will start to serialize splits to tez scratchdir instead of being sent as RPC payloads directly."
+            + " Default is 256MB."
+            + "-1 disables this feature."),
+    HIVE_TEZ_SPLIT_FS_SERIALIZATION_THREADS("hive.tez.split.fs.serialization.threads", 8,
+        "Number of threads used for serializing split payloads to filesystem."),
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez(Hadoop 2 only)"),
     HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez (Hadoop 2 only)"),
     HIVE_STAGE_ID_REARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
