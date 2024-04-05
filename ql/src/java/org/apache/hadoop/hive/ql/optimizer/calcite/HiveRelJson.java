@@ -43,6 +43,9 @@ public class HiveRelJson extends RelJson {
     if (value instanceof RelDistribution) {
       return toJson((RelDistribution) value);
     }
+    if (value instanceof Enum) {
+      return ((Enum<?>) value).name();
+    }
     return super.toJson(value);
   }
 
