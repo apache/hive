@@ -263,11 +263,12 @@ public class HiveSplitGenerator extends InputInitializer {
         if (executor == null) {
           executor.shutdown();
         }
-        try {
-          fs.close();
-        } catch (IOException e) {
-          LOG.error("Exception while closing the split serialization filesystem", e);
-          throw new RuntimeException(e);
+        if (fs != null) {
+          try {
+            fs.close();
+          } catch (Exception e) {
+            LOG.error("Closing file system failed: " + e.getMessage());
+          }
         }
       }
     }
