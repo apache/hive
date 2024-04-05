@@ -251,9 +251,6 @@ public class HiveSplitGenerator extends InputInitializer {
 
     @Override
     public void close() {
-      if (executor == null) {
-        return;
-      }
       try {
         CompletableFuture.allOf(asyncTasks.toArray(new CompletableFuture[0])).get();
       } catch (InterruptedException e) {
@@ -263,7 +260,9 @@ public class HiveSplitGenerator extends InputInitializer {
         LOG.error("Exception while generating splits", e.getCause());
         throw new RuntimeException(e.getCause());
       } finally {
-        executor.shutdown();
+        if (executor == null) {
+          executor.shutdown();
+        }
         try {
           fs.close();
         } catch (IOException e) {
