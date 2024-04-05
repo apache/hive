@@ -22,15 +22,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -51,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hive.common.ExecutorUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -147,12 +153,13 @@ public class HiveSplitGenerator extends InputInitializer {
     this.numSplits = Optional.empty();
   }
 
-  private void prepare(InputInitializerContext initializerContext) throws IOException, SerDeException {
+  @VisibleForTesting
+  void prepare(InputInitializerContext initializerContext) throws IOException, SerDeException {
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
     this.conf = TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
-    
+
     this.jobConf = new JobConf(conf);
 
     // Read all credentials into the credentials instance stored in JobConf.
@@ -171,81 +178,91 @@ public class HiveSplitGenerator extends InputInitializer {
    * It utilizes an ExecutorService for parallel writes to prevent a single split write operation
    * becoming the bottleneck (as write() is called from a loop currently).
    */
-  class SplitSerializer {
+  class SplitSerializer implements AutoCloseable {
+    private static final String FILE_PATH_FORMAT = "%s/events/%s/%d_%s_InputDataInformationEvent_%d";
+
     // fields needed for filepath
     private String queryId;
     private String inputName;
     private int vertexId;
     private Path appStagingPath;
-    // metrics
-    private AtomicInteger timeSpentWithSplitWriteMs;
-    private AtomicInteger splitsWritten;
     // lazy initialized filesystem and executor
     private FileSystem fs;
     private ExecutorService executor;
+    private List<Future<?>> fsWriteFutures;
 
-    /**
-     * Lazy init filesystem and executor service: don't initialize if there is no split serialized at all.
-     * No need to synchronize, this is called from a loop.
-     */
-    private void lazyInit() throws IOException {
-      if (fs != null) {
+    private AtomicBoolean anyTaskFailed;
+    private Queue<Throwable> exceptions;
+
+    @VisibleForTesting
+    SplitSerializer() throws IOException {
+      if (getContext() == null) {
+        // this typically happens in case the split generation is not in the Tez AM
+        // in that case we're not interested in this feature, so it's fine to return here and fail later
         return;
       }
-      queryId = jobConf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      queryId = jobConf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
       inputName = getContext().getInputName();
       vertexId = getContext().getVertexId();
       appStagingPath = TezCommonUtils.getTezSystemStagingPath(conf, getContext().getApplicationId().toString());
 
-      timeSpentWithSplitWriteMs = new AtomicInteger(0);
-      splitsWritten = new AtomicInteger(0);
-
       fs = appStagingPath.getFileSystem(jobConf);
-      executor = Executors.newFixedThreadPool(8,
-          new ThreadFactoryBuilder().setDaemon(true)
-              .setNameFormat("HiveSplitGenerator.SplitSerializer Thread - " + "#%d").build());
+
+      int numThreads = HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THREADS);
+      executor = Executors.newFixedThreadPool(numThreads,
+          new ThreadFactoryBuilder().setNameFormat("HiveSplitGenerator.SplitSerializer Thread - " + "#%d").build());
+      fsWriteFutures = new ArrayList<Future<?>>();
+      anyTaskFailed = new AtomicBoolean(false);
+      exceptions = new ConcurrentLinkedQueue<>();
     }
 
-    private InputDataInformationEvent write(int count, MRSplitProto mrSplit) throws IOException {
-      lazyInit();
-
+    @VisibleForTesting
+    InputDataInformationEvent write(int count, MRSplitProto mrSplit) throws IOException {
       InputDataInformationEvent diEvent;
       Path filePath = getSerializedFilePath(count);
 
       // parallel writes for better performance (this is called from a loop)
-      executor.submit(() -> {
+      fsWriteFutures.add(executor.submit(() -> {
         try {
-          long now = Time.monotonicNow();
-          try (FSDataOutputStream out = fs.create(filePath, false)) {
-            mrSplit.writeTo(out);
+          if (!anyTaskFailed.get()) {
+            writeSplit(count, mrSplit, filePath);
           }
-          splitsWritten.getAndIncrement();
-          long elapsed = Time.monotonicNow() - now;
-          timeSpentWithSplitWriteMs.getAndAdd((int) elapsed);
-          LOG.debug("Split #{} event to output path: {} written in {} ms", count, filePath, elapsed);
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          anyTaskFailed.set(true);
+          exceptions.add(e);
         }
-      });
-      // return the event now, we'll wait for the actual file write in close() if needed
+      }));
       return InputDataInformationEvent.createWithSerializedPath(count, filePath.toString());
     }
 
-    private Path getSerializedFilePath(int index) {
-      // e.g. staging_dir/events/queryid/inputtable_InputDataInformationEvent_0
-      return new Path(String.format("%s/events/%s/%d_%s_InputDataInformationEvent_%d", appStagingPath, queryId,
-          vertexId, inputName, index));
+    @VisibleForTesting
+    void writeSplit(int count, MRSplitProto mrSplit, Path filePath) throws IOException {
+      long fileWriteStarted = Time.monotonicNow();
+      try (FSDataOutputStream out = fs.create(filePath, false)) {
+        mrSplit.writeTo(out);
+      }
+      LOG.debug("Split #{} event to output path: {} written in {} ms", count, filePath,
+          fileWriteStarted - Time.monotonicNow());
     }
 
-    private void close() throws IOException {
-      if (fs != null) {
+    Path getSerializedFilePath(int index) {
+      // e.g. staging_dir/events/queryid/inputtable_InputDataInformationEvent_0
+      return new Path(String.format(FILE_PATH_FORMAT, appStagingPath, queryId, vertexId, inputName, index));
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (executor == null) {
+        return;
+      }
+      try {
         executor.shutdown();
-        try {
-          executor.awaitTermination(5, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-          throw new IOException("Interrupted while waiting for the split files to be written", e);
+        exceptions.addAll(ExecutorUtils.waitFor(fsWriteFutures));
+        Iterator<Throwable> iter = exceptions.iterator();
+        if (iter.hasNext()) {
+          throw new IOException(iter.next());
         }
-        LOG.info("Time spent with writing {} splits to fs: {} ms", splitsWritten, timeSpentWithSplitWriteMs);
+      } finally {
         fs.close();
       }
     }
@@ -467,36 +484,43 @@ public class HiveSplitGenerator extends InputInitializer {
 
       int payloadSerializationThresholdBytes =
           HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD);
-      SplitSerializer splitSerializer = new SplitSerializer();
 
       List<MRSplitProto> splits = inputSplitInfo.getSplitsProto().getSplitsList();
+      LOG.debug("Start creating events for {} splits", splits.size());
+      long startTime = Time.monotonicNow();
 
-      LOG.info("Start creating events for {} splits", splits.size());
+      try (SplitSerializer splitSerializer = getSplitSerializer()) {
+        for (MRSplitProto mrSplit : splits) {
+          ByteBuffer payloadBuffer = mrSplit.toByteString().asReadOnlyByteBuffer();
+          int payloadSize = payloadBuffer.limit();
+          boolean shouldSerializeEventToFile =
+              payloadSerializationThresholdBytes != -1 && inMemoryPayloadSize >= payloadSerializationThresholdBytes;
+          LOG.debug("Split #{}, byteBuffer size: {} bytes", count, payloadSize);
 
-      for (MRSplitProto mrSplit : splits) {
-        ByteBuffer payloadBuffer = mrSplit.toByteString().asReadOnlyByteBuffer();
-        int payloadSize = payloadBuffer.limit();
-        boolean shouldSerializeEventToFile =
-            payloadSerializationThresholdBytes != -1 && payloadSize > payloadSerializationThresholdBytes;
-        LOG.debug("Split #{} ByteBuffer size: {} bytes, serialize to file: {} (threshold: {} bytes)", count, payloadSize,
-            shouldSerializeEventToFile, payloadSerializationThresholdBytes);
+          InputDataInformationEvent diEvent = null;
 
-        InputDataInformationEvent diEvent = null;
-
-        if (shouldSerializeEventToFile) {
-          serializedPayloadSize += payloadSize;
-          diEvent = splitSerializer.write(count, mrSplit);
-        } else {
-          inMemoryPayloadSize += payloadSize;
-          diEvent = InputDataInformationEvent.createWithSerializedPayload(count, payloadBuffer);
+          if (shouldSerializeEventToFile) {
+            LOG.debug("Serialize to path: {}, current in-memory payload: {} bytes >= threshold: {} bytes",
+                splitSerializer.getSerializedFilePath(count), inMemoryPayloadSize, payloadSerializationThresholdBytes);
+            serializedPayloadSize += payloadSize;
+            diEvent = splitSerializer.write(count, mrSplit);
+          } else {
+            inMemoryPayloadSize += payloadSize;
+            diEvent = InputDataInformationEvent.createWithSerializedPayload(count, payloadBuffer);
+          }
+          events.add(diEvent);
+          count += 1;
         }
-        events.add(diEvent);
-        count += 1;
+      } catch (Exception e) { // this also catches exceptions thrown during splitSerializer.close();
+        LOG.error("An exception was caught while running split generation, this is not recoverable", e);
+        throw e;
       }
-      splitSerializer.close();
+
       // this is useful for making decisions regarding split serialization threshold
-      LOG.info("Finished creating events ({} splits), size of payloads: in memory: {} bytes, serialized: {} bytes",
-          splits.size(), inMemoryPayloadSize, serializedPayloadSize);
+      long elapsed = Time.monotonicNow() - startTime;
+      LOG.info(
+          "Finished creating events ({} splits) in {} ms, size of payloads: in memory: {} bytes, serialized to fs: {} bytes",
+          splits.size(), elapsed, inMemoryPayloadSize, serializedPayloadSize);
     } else {
       int count = 0;
       for (org.apache.hadoop.mapred.InputSplit split : inputSplitInfo.getOldFormatSplits()) {
@@ -506,6 +530,11 @@ public class HiveSplitGenerator extends InputInitializer {
       }
     }
     return events;
+  }
+
+  @VisibleForTesting
+  SplitSerializer getSplitSerializer() throws IOException {
+    return new SplitSerializer();
   }
 
   @Override
@@ -571,13 +600,5 @@ public class HiveSplitGenerator extends InputInitializer {
     AvailableSlotsCalculator slotsCalculator = (AvailableSlotsCalculator) ReflectionUtil.newInstance(clazz, null);
     slotsCalculator.initialize(conf, this);
     return slotsCalculator;
-  }
-
-  /**
-   * Convenience method for callers that want to disable the serialization of splits to filesystem.
-   */
-  public HiveSplitGenerator splitFsSerialization(boolean splitFsSerialization) {
-    HiveConf.setIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_SPLIT_FS_SERIALIZATION_THRESHOLD, -1);
-    return this;
   }
 }
