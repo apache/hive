@@ -32,7 +32,7 @@ Jul 21 2023 9:13;MMM dd yyyy H:mm;Etc/GMT;SIMPLE;1689930780
 2023-07-21 09:13;yyyy-MM-dd HH:mm;Etc/GMT;SIMPLE;1689930780
 2023-07-21 9:13;yyyy-MM-dd H:mm;Etc/GMT;DATETIME;1689930780
 2023-07-21 9:13;yyyy-MM-dd H:mm;Etc/GMT;SIMPLE;1689930780
-Field MilliOfDay cannot be printed as the value 33180000 exceeds the maximum print width of 2;yyyy-MM-dd HH:mmAA;Etc/GMT;DATETIME;1689930780
+2023-07-21 09:1333180000;yyyy-MM-dd HH:mmAA;Etc/GMT;DATETIME;1689930780
 Illegal pattern character 'A';yyyy-MM-dd HH:mmAA;Etc/GMT;SIMPLE;1689930780
 Too many pattern letters: a;yyyy-MM-dd HH:mmaa;Etc/GMT;DATETIME;1689930780
 2023-07-21 09:13AM;yyyy-MM-dd HH:mmaa;Etc/GMT;SIMPLE;1689930780
