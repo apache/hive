@@ -204,7 +204,7 @@ public class HiveSplitGenerator extends InputInitializer {
       queryId = jobConf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
       inputName = getContext().getInputName();
       vertexId = getContext().getVertexId();
-      appStagingPath = TezCommonUtils.getTezSystemStagingPath(conf, getContext().getApplicationId().toString());
+      appStagingPath = TezCommonUtils.getTezSystemStagingPath(jobConf, getContext().getApplicationId().toString());
 
       fs = appStagingPath.getFileSystem(jobConf);
 
@@ -252,7 +252,9 @@ public class HiveSplitGenerator extends InputInitializer {
     @Override
     public void close() {
       try {
-        CompletableFuture.allOf(asyncTasks.toArray(new CompletableFuture[0])).get();
+        if (asyncTasks != null) {
+          CompletableFuture.allOf(asyncTasks.toArray(new CompletableFuture[0])).get();
+        }
       } catch (InterruptedException e) {
         LOG.info("Interrupted while generating splits", e);
         Thread.currentThread().interrupt();
@@ -262,13 +264,6 @@ public class HiveSplitGenerator extends InputInitializer {
       } finally {
         if (executor != null) {
           executor.shutdown();
-        }
-        if (fs != null) {
-          try {
-            fs.close();
-          } catch (Exception e) {
-            LOG.error("Closing file system failed: " + e.getMessage());
-          }
         }
       }
     }
