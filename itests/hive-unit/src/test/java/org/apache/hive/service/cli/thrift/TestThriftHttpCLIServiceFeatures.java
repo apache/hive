@@ -67,7 +67,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import static org.mockito.ArgumentMatchers.anyList;
 import org.mockito.Mockito;
 
 import com.google.common.base.Joiner;
@@ -357,8 +357,8 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
         .forClass(HiveAuthzContext.class);
 
     verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
-        Matchers.anyListOf(HivePrivilegeObject.class),
-        Matchers.anyListOf(HivePrivilegeObject.class), contextCapturer.capture());
+        anyList(),
+        anyList(), contextCapturer.capture());
 
     HiveAuthzContext context = contextCapturer.getValue();
     System.err.println("Forwarded IP Addresses " + context.getForwardedAddresses());

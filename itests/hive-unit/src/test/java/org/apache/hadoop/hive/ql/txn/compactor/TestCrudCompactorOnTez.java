@@ -82,7 +82,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.FieldSetter;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
@@ -737,7 +737,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Initiator initiator = new Initiator();
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
-    FieldSetter.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+    ReflectionUtil.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     //Run initiator and capture compaction requests
     initiator.run();
@@ -806,7 +806,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Initiator initiator = new Initiator();
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
-    FieldSetter.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+    ReflectionUtil.setField(initiator, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
 
     //Run initiator and capture compaction requests
     initiator.run();
