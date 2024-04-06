@@ -32,8 +32,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.FieldSetter;
-
+import org.apache.hive.common.util.ReflectionUtil;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -163,7 +162,7 @@ public class TestCleanerWithSecureDFS extends CompactorTest {
     }
     cleaner.setConf(cleanerConf);
     cleaner.init(new AtomicBoolean(true));
-    FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), txnHandler);
+    ReflectionUtil.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), txnHandler);
     Runtime.getRuntime().gc();
     long startMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     cleaner.run();
