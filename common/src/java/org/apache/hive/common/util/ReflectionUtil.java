@@ -137,6 +137,16 @@ public class ReflectionUtil {
     }
   }
 
+  public static void setField(Object object, Field fld, Object value) {
+    try {
+      fld.setAccessible(true);
+      fld.set(object, value);
+    } catch (IllegalAccessException e) {
+      String fieldName = null == fld ? "n/a" : fld.getName();
+      throw new RuntimeException("Failed to set " + fieldName + " of object", e);
+    }
+  }
+
   /**
    * Sets a declared field in a given object. It finds the field, even if it is declared in a super class.
    * @param object target instance

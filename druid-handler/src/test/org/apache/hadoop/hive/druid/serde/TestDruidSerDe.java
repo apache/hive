@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.druid.serde;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -86,7 +85,7 @@ import org.apache.druid.query.timeseries.TimeseriesResultValue;
 import org.apache.druid.query.topn.TopNResultValue;
 import org.junit.rules.ExpectedException;
 
-/**
+/**Z
  * Basic tests for Druid SerDe. The examples are taken from Druid 0.9.1.1
  * documentation.
  */
@@ -664,7 +663,7 @@ public class TestDruidSerDe {
     HttpClient httpClient = mock(HttpClient.class);
     SettableFuture<InputStream> futureResult = SettableFuture.create();
     futureResult.set(new ByteArrayInputStream(resultString));
-    when(httpClient.go(anyObject(), any(HttpResponseHandler.class))).thenReturn(futureResult);
+    when(httpClient.go(any(), any(HttpResponseHandler.class))).thenReturn(futureResult);
     DruidQueryRecordReader<?> reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
 
     final HiveDruidSplit split = new HiveDruidSplit(jsonQuery, new Path("empty"), new String[]{"testing_host"});
@@ -693,7 +692,7 @@ public class TestDruidSerDe {
     // Check mapreduce path
     futureResult = SettableFuture.create();
     futureResult.set(new ByteArrayInputStream(resultString));
-    when(httpClient.go(anyObject(), any(HttpResponseHandler.class))).thenReturn(futureResult);
+    when(httpClient.go(any(), any(HttpResponseHandler.class))).thenReturn(futureResult);
     reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
     reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient,
         conf);
