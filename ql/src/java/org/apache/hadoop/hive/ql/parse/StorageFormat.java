@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -178,10 +179,9 @@ public class StorageFormat {
       // e.g. STORED BY ICEBERG
       for (StorageHandlerTypes type : StorageHandlerTypes.NON_DEFAULT_TYPES) {
         if (type.name().equalsIgnoreCase(node.getText())) {
+          Objects.requireNonNull(type.className());
           inputFormat = type.inputFormat();
           outputFormat = type.outputFormat();
-          assert type.className() != null;
-          // Should never fail
           return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(type.className()));
         }
       }
