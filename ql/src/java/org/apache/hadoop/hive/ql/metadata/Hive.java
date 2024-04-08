@@ -2157,45 +2157,44 @@ public class Hive {
         // Mixing native and non-native acid source tables are not supported. If the first source is native acid
         // the rest is expected to be native acid
         return getMSC().getMaterializationInvalidationInfo(
-                metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+            metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
       }
     }
 
-    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
-
-    boolean allHasAppendsOnly = true;
-    for (SourceTable sourceTable : metadata.getSourceTables()) {
-      Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
-      HiveStorageHandler storageHandler = table.getStorageHandler();
-      if (storageHandler == null) {
-        Materialization materialization = new Materialization();
-        materialization.setSourceTablesCompacted(true);
-        return materialization;
-      }
-
-      boolean hasAppendsOnly = true;
-
-      if (storageHandler.areSnapshotsSupported()) {
-        for (SnapshotContext snapshot : storageHandler.getSnapshotContexts(
-            table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
-          hasAppendsOnly = SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation());
-          if (!hasAppendsOnly) {
-            break;
-          }
-        }
-      }
-
-      if (!hasAppendsOnly) {
-        allHasAppendsOnly = false;
-        break;
-      }
-    }
+    boolean allHasAppendsOnly = allTablesHasAppendsOnly(metadata);
     Materialization materialization = new Materialization();
     // TODO: delete operations are not supported yet.
     // Set setSourceTablesCompacted to false when delete is supported
     materialization.setSourceTablesCompacted(!allHasAppendsOnly);
     materialization.setSourceTablesUpdateDeleteModified(!allHasAppendsOnly);
     return materialization;
+  }
+
+  private boolean allTablesHasAppendsOnly(MaterializedViewMetadata metadata) throws HiveException {
+    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
+    for (SourceTable sourceTable : metadata.getSourceTables()) {
+      Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
+      HiveStorageHandler storageHandler = table.getStorageHandler();
+      // Currently mixing native and non-native source tables are not supported.
+      if (!(storageHandler != null &&
+          storageHandler.areSnapshotsSupported() &&
+          tableHasAppendsOnly(storageHandler, table, mvSnapshot))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private boolean tableHasAppendsOnly(
+      HiveStorageHandler storageHandler, Table table, MaterializationSnapshot mvSnapshot) {
+    for (SnapshotContext snapshot : storageHandler.getSnapshotContexts(
+        table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
+      if (!SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
