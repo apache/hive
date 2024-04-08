@@ -1647,7 +1647,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public Iterable<SnapshotContext> getSnapshots(
+  public Iterable<SnapshotContext> getSnapshotContexts(
       org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
 
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
@@ -1747,7 +1747,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   /**
    * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
    * @deprecated
-   * <br>Use {@link HiveStorageHandler#getSnapshots(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
    * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
    *
    * @param hmsTable table metadata stored in Hive Metastore

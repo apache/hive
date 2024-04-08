@@ -137,7 +137,7 @@ public class TestHiveIcebergStorageHandler {
   }
 
   @Test
-  public void testGetSnapshotsReturnsEmptyIterableWhenTableIsEmpty() {
+  public void testGetSnapshotContextsReturnsEmptyIterableWhenTableIsEmpty() {
     SnapshotContext since = new SnapshotContext(42);
 
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
@@ -147,7 +147,7 @@ public class TestHiveIcebergStorageHandler {
   }
 
   @Test
-  public void testGetSnapshotsReturnsEmptyIterableWhenTableIsEmptyAndGivenSnapShotIsNull() {
+  public void testGetSnapshotContextsReturnsEmptyIterableWhenTableIsEmptyAndGivenSnapShotIsNull() {
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
     Iterable<SnapshotContext> result = storageHandler.getSnapshots(Collections.emptyList(), null);
 
@@ -155,7 +155,7 @@ public class TestHiveIcebergStorageHandler {
   }
 
   @Test
-  public void testGetSnapshotsReturnsAllSnapshotsWhenGivenSnapshotIsNull() {
+  public void testGetSnapshotContextsReturnsAllSnapshotsWhenGivenSnapshotIsNull() {
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
     Iterable<SnapshotContext> result = storageHandler.getSnapshots(asList(appendSnapshot, deleteSnapshot), null);
 
@@ -173,7 +173,7 @@ public class TestHiveIcebergStorageHandler {
   }
 
   @Test
-  public void testGetSnapshotsReturnsEmptyIterableWhenGivenSnapshotNotInTheList() {
+  public void testGetSnapshotContextsReturnsEmptyIterableWhenGivenSnapshotNotInTheList() {
     SnapshotContext since = new SnapshotContext(1);
     List<Snapshot> snapshotList = Arrays.asList(anySnapshot, appendSnapshot, deleteSnapshot);
 

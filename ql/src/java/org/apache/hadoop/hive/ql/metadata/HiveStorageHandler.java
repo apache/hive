@@ -697,7 +697,7 @@ public interface HiveStorageHandler extends Configurable {
    *              The value null means all should be checked.
    * @return Iterable of {@link SnapshotContext}.
    */
-  default Iterable<SnapshotContext> getSnapshots(
+  default Iterable<SnapshotContext> getSnapshotContexts(
       org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     return Collections.emptyList();
   }
@@ -716,7 +716,7 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
    * @deprecated
-   * <br>Use {@link HiveStorageHandler#getSnapshots(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
    * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
    *
    * @param hmsTable table metadata stored in Hive Metastore

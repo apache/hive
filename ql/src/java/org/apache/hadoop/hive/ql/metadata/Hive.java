@@ -2176,7 +2176,7 @@ public class Hive {
       boolean hasAppendsOnly = true;
 
       if (storageHandler.areSnapshotsSupported()) {
-        for (SnapshotContext snapshot : storageHandler.getSnapshots(
+        for (SnapshotContext snapshot : storageHandler.getSnapshotContexts(
             table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
           hasAppendsOnly = SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation());
           if (!hasAppendsOnly) {
