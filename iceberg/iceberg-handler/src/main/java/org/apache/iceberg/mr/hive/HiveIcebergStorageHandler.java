@@ -1744,6 +1744,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  /**
+   * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
+   * @deprecated
+   * <br>Use {@link HiveStorageHandler#getSnapshots(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
+   *
+   * @param hmsTable table metadata stored in Hive Metastore
+   * @param since the snapshot preceding the oldest snapshot which should be checked.
+   *              The value null means all should be checked.
+   * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s, false otherwise.
+   */
   @Deprecated
   @Override
   public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
