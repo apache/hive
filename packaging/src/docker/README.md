@@ -117,7 +117,7 @@ export POSTGRES_LOCAL_PATH=your_local_path_to_postgres_driver
 ```
 Example:
 ```shell
-mvn dependency:copy -Dartifact="org.postgresql:postgresql:42.5.1" && \
+mvn dependency:copy -Dartifact="org.postgresql:postgresql:42.5.6" && \
 export POSTGRES_LOCAL_PATH=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.5.1/postgresql-42.5.1.jar 
 ```
 If you don't install maven or have problem in resolving the postgres driver, you can always download this jar yourself,
