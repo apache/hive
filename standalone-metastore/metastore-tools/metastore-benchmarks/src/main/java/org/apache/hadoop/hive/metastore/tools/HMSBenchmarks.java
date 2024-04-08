@@ -423,15 +423,13 @@ final class HMSBenchmarks {
       try {
         Table table = client.getTable(dbName, tableName);
         List<Partition> partitionValueList = new ArrayList<>();
-        for (int i = 0; i < count / 24; i++) {
-          for (int j = 0; j < 24; j++) {
-            List<String> partValues = new ArrayList<>();
-            partValues.add("date" + i);
-            partValues.add("hour" + j);
-            Partition partition = new Util.PartitionBuilder(table)
-                    .withValues(partValues).build();
-            partitionValueList.add(partition);
-          }
+        for (int i = 0; i < count; i++) {
+          List<String> partValues = new ArrayList<>();
+          partValues.add("date" + i / 24);
+          partValues.add("hour" + i % 24);
+          Partition partition = new Util.PartitionBuilder(table)
+                  .withValues(partValues).build();
+          partitionValueList.add(partition);
         }
         client.addPartitions(partitionValueList);
       } catch (TException e) {
