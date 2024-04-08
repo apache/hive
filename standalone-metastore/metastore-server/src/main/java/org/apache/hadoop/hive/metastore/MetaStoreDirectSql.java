@@ -1476,13 +1476,13 @@ class MetaStoreDirectSql {
       }
 
       boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
-      if ((colType != valType) && (!isDefaultPartition)) {
-        // It's not clear how filtering for e.g. "stringCol > 5" should work (which side is
-        // to be coerced?). Let the expression evaluation sort this one out, not metastore.
-        filterBuffer.setError("Cannot push down filter for "
-            + colTypeStr + " column and value " + nodeValue.getClass());
-        return;
-      }
+//      if ((colType != valType) && (!isDefaultPartition)) {
+//        // It's not clear how filtering for e.g. "stringCol > 5" should work (which side is
+//        // to be coerced?). Let the expression evaluation sort this one out, not metastore.
+//        filterBuffer.setError("Cannot push down filter for "
+//            + colTypeStr + " column and value " + nodeValue.getClass());
+//        return;
+//      }
 
       if (joins.isEmpty()) {
         // There's a fixed number of partition cols that we might have filters on. To avoid
