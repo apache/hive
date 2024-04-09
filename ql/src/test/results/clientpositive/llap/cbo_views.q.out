@@ -93,13 +93,19 @@ PREHOOK: query: select count(*) from v1_n12 a join v1_n12 b on a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@v1_n12
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from v1_n12 a join v1_n12 b on a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@v1_n12
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 156
 PREHOOK: query: create view v3_n2 as select v1_n12.value val from v1_n12 join cbo_t1 on v1_n12.c_boolean = cbo_t1.c_boolean

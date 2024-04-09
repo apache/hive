@@ -27,7 +27,6 @@ from (select count(*) as cnt from t0 where col0 < 10) cte1
 inner join (select count(*) as cnt from t0 where col0 < 10) cte2
     on cte1.cnt = cte2.cnt
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@t0
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
@@ -36,21 +35,22 @@ from (select count(*) as cnt from t0 where col0 < 10) cte1
 inner join (select count(*) as cnt from t0 where col0 < 10) cte2
     on cte1.cnt = cte2.cnt
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@t0
 #### A masked pattern was here ####
 CBO PLAN:
 HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
   HiveProject($f0=[$0])
     HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
-        HiveProject(cnt=[$0])
-          HiveAggregate(group=[{}], agg#0=[count()])
-            HiveFilter(condition=[<($0, 10)])
-              HiveTableScan(table=[[default, t0]], table:alias=[t0])
-  HiveProject(cnt=[$0])
+      HiveProject($f0=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveFilter(condition=[<($0, 10)])
+            HiveTableScan(table=[[default, t0]], table:alias=[t0])
+  HiveProject($f0=[$0])
     HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+      HiveProject($f0=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveFilter(condition=[<($0, 10)])
+            HiveTableScan(table=[[default, t0]], table:alias=[t0])
 
 PREHOOK: query: explain cbo
 select cte1.cnt, cte2.cnt, cte1.literal
@@ -130,12 +130,9 @@ POSTHOOK: Input: default@t0
 CBO PLAN:
 HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
   HiveProject(col0=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
-        HiveProject(col0=[$0])
-          HiveFilter(condition=[<($0, 10)])
-            HiveTableScan(table=[[default, t0]], table:alias=[t0])
-  HiveProject(col0=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+    HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
+      HiveProject(col0=[$0])
+        HiveFilter(condition=[<($0, 10)])
+          HiveTableScan(table=[[default, t0]], table:alias=[t0])
+  HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
 

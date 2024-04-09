@@ -19,18 +19,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	true
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 1000
 PREHOOK: query: drop view t1_n107
@@ -95,15 +101,21 @@ POSTHOOK: Lineage: t1_n107.key EXPRESSION [(t1_new)t1_new.FieldSchema(name:key, 
 POSTHOOK: Lineage: t1_n107.value EXPRESSION [(t1_new)t1_new.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from t1_n107 where ds = '2011-10-15'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@t1_n107
 PREHOOK: Input: default@t1_new
 PREHOOK: Input: default@t1_new@ds=2011-10-15
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select * from t1_n107 where ds = '2011-10-15'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@t1_n107
 POSTHOOK: Input: default@t1_new
 POSTHOOK: Input: default@t1_new@ds=2011-10-15
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 key1	value1	2011-10-15
 key1	value1	2011-10-15

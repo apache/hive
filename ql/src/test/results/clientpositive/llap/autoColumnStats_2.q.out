@@ -405,16 +405,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi2
 PREHOOK: query: insert into table src_multi2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 PREHOOK: Output: default@src_multi2
+#### A masked pattern was here ####
 POSTHOOK: query: insert into table src_multi2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: src_multi2.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), (src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2.value SIMPLE [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe formatted src_multi2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_multi2

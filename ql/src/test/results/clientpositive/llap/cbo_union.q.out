@@ -129,6 +129,11 @@ PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: Input: default@cbo_t3
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@cte_suggestion_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
+PREHOOK: Output: default@cte_suggestion_1
 #### A masked pattern was here ####
 POSTHOOK: query: select r2.key from (select key, c_int from (select key, c_int from cbo_t1 union all select key, c_int from cbo_t3 )r1 union all select key, c_int from cbo_t3)r2 join   (select key, c_int from (select * from cbo_t1 union all select * from cbo_t2 where cbo_t2.key >=0)r1 union all select key, c_int from cbo_t3)r3 on r2.key=r3.key where r3.key >=0 order by r2.key
 POSTHOOK: type: QUERY
@@ -137,6 +142,11 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
 POSTHOOK: Input: default@cbo_t2@dt=2014
 POSTHOOK: Input: default@cbo_t3
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@cte_suggestion_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
+POSTHOOK: Output: default@cte_suggestion_1
 #### A masked pattern was here ####
  1
  1

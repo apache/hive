@@ -16,7 +16,7 @@ POSTHOOK: query: SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-0
+1
 PREHOOK: query: SELECT
 #### A masked pattern was here ####
 'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' )
