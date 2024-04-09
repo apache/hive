@@ -27,8 +27,10 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 public class HiveIncrementalRelMdRowCount extends HiveRelMdRowCount {
 
@@ -82,6 +85,13 @@ public class HiveIncrementalRelMdRowCount extends HiveRelMdRowCount {
     SourceTable sourceTable = sourceTableMap.get(fullyQualifiedName);
     if (sourceTable == null) {
       return super.getRowCount(rel, mq);
+    }
+
+    HiveStorageHandler storageHandler = table.getStorageHandler();
+    if (storageHandler != null && storageHandler.areSnapshotsSupported()) {
+      SnapshotContext since = new SnapshotContext(Long.parseLong(table.getVersionIntervalFrom()));
+      return StreamSupport.stream(storageHandler.getSnapshotContexts(table, since).spliterator(), false)
+          .mapToDouble(SnapshotContext::getAddedRowCount).sum();
     }
 
     return (double) sourceTable.getInsertedCount();

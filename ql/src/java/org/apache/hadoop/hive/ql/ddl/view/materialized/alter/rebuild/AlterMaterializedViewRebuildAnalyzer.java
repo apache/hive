@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMateri
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentSnapshotMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveInsertOnlyScanWriteIdRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertIncrementalRewritingRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HivePushdownSnapshotFilterRule;
@@ -360,13 +359,15 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
           }
 
           if (visitor.isContainsAggregate()) {
-            return applyAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
+            return applyAggregateInsertIncremental(
+                basePlan, mdProvider, executorProvider, optCluster, materialization, calcitePreMVRewritingPlan);
           } else {
             return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
           }
         case AVAILABLE:
           if (!materialization.isSourceTablesUpdateDeleteModified()) {
-            return applyAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
+            return applyAggregateInsertIncremental(
+                basePlan, mdProvider, executorProvider, optCluster, materialization, calcitePreMVRewritingPlan);
           } else {
             return applyAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
           }
@@ -391,30 +392,28 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     private RelNode applyAggregateInsertIncremental(
             RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider, RelOptCluster optCluster,
-            RelNode calcitePreMVRewritingPlan) {
+            HiveRelOptMaterialization materialization, RelNode calcitePreMVRewritingPlan) {
       mvRebuildMode = MaterializationRebuildMode.AGGREGATE_INSERT_REBUILD;
-      basePlan = applyIncrementalRebuild(basePlan, mdProvider, executorProvider,
+      RelNode incrementalRebuildPlan = applyIncrementalRebuild(basePlan, mdProvider, executorProvider,
               HiveInsertOnlyScanWriteIdRule.INSTANCE, HiveAggregateInsertIncrementalRewritingRule.INSTANCE);
 
       // Make a cost-based decision factoring the configuration property
-      optCluster.invalidateMetadataQuery();
-      RelMetadataQuery.THREAD_PROVIDERS.set(HiveMaterializationRelMetadataProvider.DEFAULT);
-      try {
-        RelMetadataQuery mq = RelMetadataQuery.instance();
-        RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
-        final double factorSelectivity = HiveConf.getFloatVar(
-                conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
-        RelOptCost costRebuildPlan = mq.getCumulativeCost(basePlan).multiplyBy(factorSelectivity);
-        if (costOriginalPlan.isLe(costRebuildPlan)) {
-          mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
-          return calcitePreMVRewritingPlan;
-        }
+      RelOptCost costOriginalPlan = calculateCost(
+          optCluster, mdProvider, HiveTezModelRelMetadataProvider.DEFAULT, calcitePreMVRewritingPlan);
 
-        return basePlan;
-      } finally {
-        optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+      RelOptCost costIncrementalRebuildPlan = calculateCost(optCluster, mdProvider,
+          HiveIncrementalRelMdRowCount.createMetadataProvider(materialization), incrementalRebuildPlan);
+
+      final double factorSelectivity = HiveConf.getFloatVar(
+          conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
+      costIncrementalRebuildPlan = costIncrementalRebuildPlan.multiplyBy(factorSelectivity);
+
+      if (costOriginalPlan.isLe(costIncrementalRebuildPlan)) {
+        mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
+        return calcitePreMVRewritingPlan;
       }
+
+      return incrementalRebuildPlan;
     }
 
     private RelNode applyJoinInsertIncremental(
