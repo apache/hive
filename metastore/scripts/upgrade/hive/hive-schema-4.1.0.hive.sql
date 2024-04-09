@@ -719,8 +719,6 @@ FROM
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `CS_ID` bigint,
- `DB_NAME` string,
- `TABLE_NAME` string,
  `COLUMN_NAME` string,
  `COLUMN_TYPE` string,
  `TBL_ID` bigint,
@@ -746,8 +744,6 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
  \"CS_ID\",
- \"DB_NAME\",
- \"TABLE_NAME\",
  \"COLUMN_NAME\",
  \"COLUMN_TYPE\",
  \"TBL_ID\",
@@ -771,9 +767,6 @@ FROM
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `CS_ID` bigint,
- `DB_NAME` string,
- `TABLE_NAME` string,
- `PARTITION_NAME` string,
  `COLUMN_NAME` string,
  `COLUMN_TYPE` string,
  `PART_ID` bigint,
@@ -799,9 +792,6 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
  \"CS_ID\",
- \"DB_NAME\",
- \"TABLE_NAME\",
- \"PARTITION_NAME\",
  \"COLUMN_NAME\",
  \"COLUMN_TYPE\",
  \"PART_ID\",

@@ -34,10 +34,6 @@ public class MPartitionColumnStatistics {
 
   private MPartition partition;
 
-  private String catName;
-  private String dbName;
-  private String tableName;
-  private String partitionName;
   private String colName;
   private String colType;
   private String engine;
@@ -59,14 +55,6 @@ public class MPartitionColumnStatistics {
   private long lastAnalyzed;
 
   public MPartitionColumnStatistics() {}
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
 
   public String getColName() {
     return colName;
@@ -132,36 +120,12 @@ public class MPartitionColumnStatistics {
     this.lastAnalyzed = lastAnalyzed;
   }
 
-  public String getDbName() {
-    return dbName;
-  }
-
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
-  }
-
-  public String getCatName() {
-    return catName;
-  }
-
-  public void setCatName(String catName) {
-    this.catName = catName;
-  }
-
   public MPartition getPartition() {
     return partition;
   }
 
   public void setPartition(MPartition partition) {
     this.partition = partition;
-  }
-
-  public String getPartitionName() {
-    return partitionName;
-  }
-
-  public void setPartitionName(String partitionName) {
-    this.partitionName = partitionName;
   }
 
   public String getColType() {

@@ -531,9 +531,6 @@ CREATE TABLE  "DELEGATION_TOKENS"
 
 CREATE TABLE "TAB_COL_STATS" (
  "CS_ID" bigint NOT NULL,
- "CAT_NAME" character varying(256) DEFAULT NULL::character varying,
- "DB_NAME" character varying(128) DEFAULT NULL::character varying,
- "TABLE_NAME" character varying(256) DEFAULT NULL::character varying,
  "COLUMN_NAME" character varying(767) DEFAULT NULL::character varying,
  "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
  "TBL_ID" bigint NOT NULL,
@@ -570,10 +567,6 @@ CREATE TABLE "VERSION" (
 
 CREATE TABLE "PART_COL_STATS" (
  "CS_ID" bigint NOT NULL,
- "CAT_NAME" character varying(256) DEFAULT NULL::character varying,
- "DB_NAME" character varying(128) DEFAULT NULL::character varying,
- "TABLE_NAME" character varying(256) DEFAULT NULL::character varying,
- "PARTITION_NAME" character varying(767) DEFAULT NULL::character varying,
  "COLUMN_NAME" character varying(767) DEFAULT NULL::character varying,
  "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
  "PART_ID" bigint NOT NULL,
@@ -1188,7 +1181,7 @@ CREATE INDEX "PART_PRIVS_N49" ON "PART_PRIVS" USING btree ("PART_ID");
 -- Name: PCS_STATS_IDX; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
-CREATE INDEX "PCS_STATS_IDX" ON "PART_COL_STATS" USING btree ("DB_NAME","TABLE_NAME","COLUMN_NAME","PARTITION_NAME","CAT_NAME");
+CREATE INDEX "PCS_STATS_IDX" ON "PART_COL_STATS" USING btree ("PART_ID","COLUMN_NAME");
 
 
 --
@@ -1276,7 +1269,7 @@ CREATE INDEX "TBL_COL_PRIVS_N49" ON "TBL_COL_PRIVS" USING btree ("TBL_ID");
 -- Name: TAB_COL_STATS_IDX; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
-CREATE INDEX "TAB_COL_STATS_IDX" ON "TAB_COL_STATS" USING btree ("DB_NAME","TABLE_NAME","COLUMN_NAME","CAT_NAME");
+CREATE INDEX "TAB_COL_STATS_IDX" ON "TAB_COL_STATS" USING btree ("TBL_ID","COLUMN_NAME");
 
 --
 -- Name: TBL_PRIVS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
@@ -1290,18 +1283,6 @@ CREATE INDEX "TBL_PRIVS_N49" ON "TBL_PRIVS" USING btree ("TBL_ID");
 --
 
 CREATE INDEX "TYPE_FIELDS_N49" ON "TYPE_FIELDS" USING btree ("TYPE_NAME");
-
---
--- Name: TAB_COL_STATS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "TAB_COL_STATS_N49" ON "TAB_COL_STATS" USING btree ("TBL_ID");
-
---
--- Name: PART_COL_STATS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "PART_COL_STATS_N49" ON "PART_COL_STATS" USING btree ("PART_ID");
 
 --
 -- Name: UNIQUEFUNCTION; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
