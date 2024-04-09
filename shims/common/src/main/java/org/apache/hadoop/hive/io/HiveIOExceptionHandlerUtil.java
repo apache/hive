@@ -56,7 +56,7 @@ public class HiveIOExceptionHandlerUtil {
    */
   public static RecordReader handleRecordReaderCreationException(Exception e,
       JobConf job) throws IOException {
-    LOG.error("RecordReader#init() exception: ", e);
+    LOG.error("RecordReader#init() threw an exception: ", e);
     HiveIOExceptionHandlerChain ioExpectionHandlerChain = get(job);
     if (ioExpectionHandlerChain != null) {
       return ioExpectionHandlerChain.handleRecordReaderCreationException(e);
@@ -77,7 +77,7 @@ public class HiveIOExceptionHandlerUtil {
    */
   public static boolean handleRecordReaderNextException(Exception e, JobConf job)
       throws IOException {
-    LOG.error("RecordReader#next() exception: ", e);
+    LOG.error("RecordReader#next() threw an exception: ", e);
     HiveIOExceptionHandlerChain ioExpectionHandlerChain = get(job);
     if (ioExpectionHandlerChain != null) {
       return ioExpectionHandlerChain.handleRecordReaderNextException(e);
