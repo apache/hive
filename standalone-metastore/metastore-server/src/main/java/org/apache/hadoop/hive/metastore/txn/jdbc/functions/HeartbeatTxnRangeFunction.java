@@ -82,7 +82,7 @@ public class HeartbeatTxnRangeFunction implements TransactionalFunction<Heartbea
     }
     if (updateCnt == numTxnsToHeartbeat) {
       //fast pass worked, i.e. all txns we were asked to heartbeat were Open as expected
-      context.rollbackToSavepoint(savePoint);
+      context.createSavepoint();
       return rsp;
     }
     //if here, do the slow path so that we can return info txns which were not in expected state

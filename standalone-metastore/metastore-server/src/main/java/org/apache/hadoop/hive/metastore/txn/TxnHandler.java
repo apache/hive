@@ -130,6 +130,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 
+import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -705,12 +706,11 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws MetaException {
     int result = jdbcResource.execute(
         "UPDATE \"MATERIALIZATION_REBUILD_LOCKS\"" +
-            " SET \"MRL_LAST_HEARTBEAT\" = " + Instant.now().toEpochMilli() +
-            " WHERE \"MRL_TXN_ID\" = " + txnId +
-            " AND \"MRL_DB_NAME\" = ?" +
-            " AND \"MRL_TBL_NAME\" = ?",
+            " SET \"MRL_LAST_HEARTBEAT\" = " + getEpochFn(jdbcResource.getDatabaseProduct()) +
+            " WHERE \"MRL_TXN_ID\" = :txnId" +
+            " AND \"MRL_DB_NAME\" = :dbName" +
+            " AND \"MRL_TBL_NAME\" = :tableName",
         new MapSqlParameterSource()
-            .addValue("now", Instant.now().toEpochMilli())
             .addValue("txnId", txnId)
             .addValue("dbName", dbName)
             .addValue("tableNane", tableName),
