@@ -1,17 +1,3 @@
-CTE Suggestion 0:HiveProject(w_warehouse_name=[$0], w_warehouse_sk=[$1], i_item_sk=[$2], d_moy=[$3], stdev=[$4], mean=[$5], cov=[CASE(=($5, 0), null:DOUBLE, /($4, $5))])
-  HiveFilter(condition=[>(CASE(=($5, 0), 0:DOUBLE, /($4, $5)), CAST(1):DOUBLE)])
-    HiveProject(w_warehouse_name=[$0], w_warehouse_sk=[$1], i_item_sk=[$2], d_moy=[$3], stdev=[$4], mean=[$5])
-      HiveAggregate(group=[{0, 1, 2, 3}], agg#0=[stddev_samp($4)], agg#1=[avg($4)])
-        HiveProject($f0=[$36], $f1=[$34], $f2=[$8], $f3=[$60], $f4=[$3])
-          HiveFilter(condition=[AND(=($1, $8), =($2, $34), =($0, $52), =($58, CAST(1999):INTEGER))])
-            HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-                HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-                  HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
-                  HiveTableScan(table=[[default, item]], table:alias=[item])
-                HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
-              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveProject(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(4):INTEGER], mean=[$2], cov=[$3], w_warehouse_sk1=[$4], i_item_sk1=[$5], d_moy1=[CAST(5):INTEGER], mean1=[$6], cov1=[$7])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$6], sort5=[$7], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC])

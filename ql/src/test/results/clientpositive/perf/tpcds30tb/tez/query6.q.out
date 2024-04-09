@@ -1,10 +1,3 @@
-CTE Suggestion 0:HiveProject(d_month_seq=[$0])
-  HiveAggregate(group=[{0}])
-    HiveProject($f0=[$0])
-      HiveProject($f0=[$3])
-        HiveFilter(condition=[AND(=($6, 2000), =($8, 2))])
-          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 Warning: Map Join MAPJOIN[168][bigTable=?] in task 'Map 1' is a cross product
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

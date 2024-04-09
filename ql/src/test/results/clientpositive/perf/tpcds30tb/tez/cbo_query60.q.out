@@ -1,7 +1,14 @@
-CTE Suggestion 0:HiveAggregate(group=[{0}])
-  HiveProject(i_item_id=[$1])
-    HiveFilter(condition=[=($12, CAST(_UTF-16LE'Children                                          '):CHAR(50) CHARACTER SET "UTF-16LE")])
-      HiveTableScan(table=[[default, item]], table:alias=[item])
+CTE Suggestion 0:HiveProject(ca_address_sk=[$0], ca_gmt_offset=[CAST(-6:DECIMAL(5, 2)):DECIMAL(5, 2)])
+  HiveFilter(condition=[=($11, -6:DECIMAL(1, 0))])
+    HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+
+CTE Suggestion 1:HiveProject(i_item_id=[$1])
+  HiveFilter(condition=[=($12, _UTF-16LE'Children                                          ')])
+    HiveTableScan(table=[[default, item]], table:alias=[item])
+
+CTE Suggestion 2:HiveProject(d_date_sk=[$0], d_year=[CAST(1999):INTEGER], d_moy=[CAST(9):INTEGER])
+  HiveFilter(condition=[AND(=($6, 1999), =($8, 9))])
+    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])

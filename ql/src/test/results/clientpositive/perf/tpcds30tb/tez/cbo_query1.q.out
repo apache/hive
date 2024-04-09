@@ -1,11 +1,6 @@
-CTE Suggestion 0:HiveProject(ctr_customer_sk=[$0], ctr_store_sk=[$1], ctr_total_return=[$2])
-  HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
-    HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
-      HiveProject($f0=[$2], $f1=[$6], $f2=[$13])
-        HiveJoin(condition=[=($19, $24)], joinType=[inner], algorithm=[none], cost=[not available])
-          HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
-          HiveFilter(condition=[=($6, 2000)])
-            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+CTE Suggestion 0:HiveProject(d_date_sk=[$0])
+  HiveFilter(condition=[=($6, 2000)])
+    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
