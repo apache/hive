@@ -51,7 +51,7 @@ public class IOContext {
    */
   private  RecordIdentifier ri;
   private boolean isDeletedRecord;
-  private PositionDeleteInfo pdi;
+  private ThreadLocal<PositionDeleteInfo> pdi = new ThreadLocal<>();
 
   public static enum Comparison {
     GREATER,
@@ -189,11 +189,11 @@ public class IOContext {
   }
 
   public void parsePositionDeleteInfo(Configuration configuration) {
-    this.pdi = PositionDeleteInfo.parseFromConf(configuration);
+    pdi.set(PositionDeleteInfo.parseFromConf(configuration));
   }
 
   public PositionDeleteInfo getPositionDeleteInfo() {
-    return pdi;
+    return pdi.get();
   }
 
   public boolean isDeletedRecord() {
