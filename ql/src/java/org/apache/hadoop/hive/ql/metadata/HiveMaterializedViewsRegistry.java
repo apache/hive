@@ -364,7 +364,7 @@ public final class HiveMaterializedViewsRegistry {
     return materializedViewsCache.get(ast);
   }
 
-  private Context createContext(HiveConf conf) throws IOException {
+  private Context createContext(HiveConf conf) {
     Context ctx = new Context(conf);
     ctx.setIsLoadingMaterializedView(true);
     ctx.setHDFSCleanup(true);
