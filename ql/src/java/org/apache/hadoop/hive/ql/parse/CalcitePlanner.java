@@ -688,7 +688,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           this.ctx.setCboInfo(cboMsg);
 
           // Determine if we should re-throw the exception OR if we try to mark the query to retry as non-CBO.
-          if (fallbackStrategy.isFatal(e)) {
+          if (fallbackStrategy.isFatal(e) || nonRetryableWithoutCBO(ast)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
               // These types of exceptions do not need wrapped
               throw e;
@@ -716,6 +716,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return sinkOp;
+  }
+
+  private static boolean nonRetryableWithoutCBO(Tree node) {
+    switch (node.getType()) {
+      // The non-CBO mode doesn't support the following features
+      case HiveParser.TOK_EXCEPTALL:
+      case HiveParser.TOK_EXCEPTDISTINCT:
+      case HiveParser.TOK_INTERSECTALL:
+      case HiveParser.TOK_INTERSECTDISTINCT:
+        return true;
+      default:
+        for (int i = 0; i < node.getChildCount(); i++) {
+          if (nonRetryableWithoutCBO(node.getChild(i))) {
+            return true;
+          }
+        }
+    }
+    return false;
   }
 
   private String getOptimizedByCboInfo() {
