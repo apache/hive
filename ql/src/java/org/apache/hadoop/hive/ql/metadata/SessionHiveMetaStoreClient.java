@@ -211,6 +211,18 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
+  public void truncateTable(TableName tableName, List<String> partNames) throws TException {
+    // First try temp table
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(tableName.getDb(), tableName.getTable());
+    if (table != null) {
+      truncateTempTable(table);
+      return;
+    }
+    // Try underlying client
+    super.truncateTable(tableName, partNames);
+  }
+
+  @Override
   public void truncateTable(String dbName, String tableName,
       List<String> partNames, String validWriteIds, long writeId)
       throws TException {
@@ -1705,10 +1717,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     assert table != null;
     ExpressionTree.FilterBuilder filterBuilder = new ExpressionTree.FilterBuilder(true);
     Map<String, Object> params = new HashMap<>();
-    exprTree.generateJDOFilterFragment(conf, params, filterBuilder, table.getPartitionKeys());
+    exprTree.accept(new ExpressionTree.JDOFilterGenerator(conf,
+        table.getPartitionKeys(), filterBuilder, params));
     StringBuilder stringBuilder = new StringBuilder(filterBuilder.getFilter());
-    // replace leading &&
-    stringBuilder.replace(0, 4, "");
     params.entrySet().stream().forEach(e -> {
       int index = stringBuilder.indexOf(e.getKey());
       stringBuilder.replace(index, index + e.getKey().length(), "\"" + e.getValue().toString() + "\"");

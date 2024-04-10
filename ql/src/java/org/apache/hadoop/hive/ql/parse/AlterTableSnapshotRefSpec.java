@@ -122,4 +122,29 @@ public class AlterTableSnapshotRefSpec<T> {
       return MoreObjects.toStringHelper(this).add("refName", refName).add("ifExists", ifExists).toString();
     }
   }
+
+  public static class RenameSnapshotrefSpec {
+
+    private final String sourceBranch;
+    private final String targetBranch;
+
+    public String getSourceBranchName() {
+      return sourceBranch;
+    }
+
+    public String getTargetBranchName() {
+      return targetBranch;
+    }
+
+    public RenameSnapshotrefSpec(String sourceBranch, String targetBranch) {
+      this.sourceBranch = sourceBranch;
+      this.targetBranch = targetBranch;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("sourceBranch", sourceBranch).add("targetBranch", targetBranch)
+          .toString();
+    }
+  }
 }

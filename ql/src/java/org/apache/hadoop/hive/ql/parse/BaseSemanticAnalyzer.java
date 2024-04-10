@@ -1803,8 +1803,7 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
     try {
-      return MetaStoreUtils.convertDateToString(
-          MetaStoreUtils.convertStringToDate(value.toString()));
+      return MetaStoreUtils.normalizeDate(value.toString());
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -1955,8 +1954,8 @@ public abstract class BaseSemanticAnalyzer {
     prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));
     prop.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, " ");
     String[] colTypes = schema.split("#");
-    prop.setProperty("columns", colTypes[0]);
-    prop.setProperty("columns.types", colTypes[1]);
+    prop.setProperty(serdeConstants.LIST_COLUMNS, colTypes[0]);
+    prop.setProperty(serdeConstants.LIST_COLUMN_TYPES, colTypes[1]);
     prop.setProperty(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
     prop.setProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
     FetchWork fetch =

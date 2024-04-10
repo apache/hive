@@ -73,6 +73,9 @@ public class TestMetaStoreLimitPartitionRequest {
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL, true);
     conf.setBoolVar(HiveConf.ConfVars.DYNAMIC_PARTITIONING, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
+    // Disable loading dynamic partitions from partition names in this test
+    // because get_partitions_by_names will also hit partition limit since HIVE-28062.
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS, false);
 
     miniHS2 = new MiniHS2.Builder().withConf(conf).build();
     Map<String, String> overlayProps = new HashMap<String, String>();

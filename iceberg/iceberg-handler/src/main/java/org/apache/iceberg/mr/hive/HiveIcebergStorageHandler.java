@@ -45,6 +45,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -107,6 +108,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -135,6 +137,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataOperations;
 import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
@@ -384,8 +387,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
+    Expression filterExpr = (Expression) HiveIcebergInputFormat.getFilterExpr(conf, predicate.pushedPredicate);
+    if (filterExpr != null) {
+      SessionStateUtil.addResource(conf, InputFormatConfig.QUERY_FILTERS, filterExpr);
+    }
     return predicate;
   }
+
 
   @Override
   public boolean canProvideBasicStatistics() {
@@ -702,6 +710,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
       addCustomSortExpr(table, hmsTable, writeOperation, customSortExprs, getSortTransformSpec(table));
     }
+    dpCtx.setHasCustomSortExprs(!customSortExprs.isEmpty());
 
     return dpCtx;
   }
@@ -747,8 +756,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (jobContextList.isEmpty()) {
       return;
     }
-
-    HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
+    HiveIcebergOutputCommitter committer = getOutputCommitter();
     try {
       committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
@@ -766,6 +774,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       throw new HiveException(
           "Error committing job: " + ids + " for table: " + tableName, e);
     }
+  }
+
+  public HiveIcebergOutputCommitter getOutputCommitter() {
+    return new HiveIcebergOutputCommitter();
   }
 
   @Override
@@ -990,6 +1002,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec =
             (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
         IcebergBranchExec.dropBranch(icebergTable, dropBranchSpec);
+        break;
+      case RENAME_BRANCH:
+        AlterTableSnapshotRefSpec.RenameSnapshotrefSpec renameSnapshotrefSpec =
+            (AlterTableSnapshotRefSpec.RenameSnapshotrefSpec) alterTableSnapshotRefSpec.getOperationParams();
+        IcebergBranchExec.renameBranch(icebergTable, renameSnapshotrefSpec);
         break;
       case DROP_TAG:
         AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec =
@@ -1602,7 +1619,58 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (current == null) {
       return null;
     }
-    return new SnapshotContext(current.snapshotId());
+    return toSnapshotContext(current);
+  }
+
+  private SnapshotContext toSnapshotContext(Snapshot snapshot) {
+    Map<String, String> summaryMap = snapshot.summary();
+    long addedRecords = getLongSummary(summaryMap, SnapshotSummary.ADDED_RECORDS_PROP);
+    long deletedRecords = getLongSummary(summaryMap, SnapshotSummary.DELETED_RECORDS_PROP);
+    return new SnapshotContext(
+        snapshot.snapshotId(), toWriteOperationType(snapshot.operation()), addedRecords, deletedRecords);
+  }
+
+  private SnapshotContext.WriteOperationType toWriteOperationType(String operation) {
+    try {
+      return SnapshotContext.WriteOperationType.valueOf(operation.toUpperCase());
+    } catch (NullPointerException | IllegalArgumentException ex) {
+      return SnapshotContext.WriteOperationType.UNKNOWN;
+    }
+  }
+
+  private long getLongSummary(Map<String, String> summaryMap, String key) {
+    String textValue = summaryMap.get(key);
+    if (StringUtils.isBlank(textValue)) {
+      return 0;
+    }
+    return Long.parseLong(textValue);
+  }
+
+  @Override
+  public Iterable<SnapshotContext> getSnapshotContexts(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    return getSnapshots(table.snapshots(), since);
+  }
+
+  @VisibleForTesting
+  Iterable<SnapshotContext> getSnapshots(Iterable<Snapshot> snapshots, SnapshotContext since) {
+    List<SnapshotContext> result = Lists.newArrayList();
+
+    boolean foundSince = Objects.isNull(since);
+    for (Snapshot snapshot : snapshots) {
+      if (!foundSince) {
+        if (snapshot.snapshotId() == since.getSnapshotId()) {
+          foundSince = true;
+        }
+      } else {
+        result.add(toSnapshotContext(snapshot));
+      }
+    }
+
+    return foundSince ? result : Collections.emptyList();
   }
 
   @Override
@@ -1676,6 +1744,20 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  /**
+   * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
+   * @deprecated
+   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
+   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
+   *
+   * @param hmsTable table metadata stored in Hive Metastore
+   * @param since the snapshot preceding the oldest snapshot which should be checked.
+   *              The value null means all should be checked.
+   * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s,
+   * false otherwise.
+   */
+  @Deprecated
   @Override
   public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
@@ -1692,7 +1774,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           foundSince = true;
         }
       } else {
-        if (!"append".equals(snapshot.operation())) {
+        if (!DataOperations.APPEND.equals(snapshot.operation())) {
           return false;
         }
       }
@@ -1756,6 +1838,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    if (hmsTable.getSnapshotRef() != null && hasUndergonePartitionEvolution(table)) {
+      // for this case we rewrite the query as delete query, so validations would be done as part of delete.
+      return;
+    }
 
     if (table.spec().isUnpartitioned() && MapUtils.isNotEmpty(partitionSpec)) {
       throw new SemanticException("Writing data into a partition fails when the Iceberg table is unpartitioned.");
@@ -1801,6 +1887,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (MapUtils.isEmpty(partitionSpec) || !hasUndergonePartitionEvolution(table)) {
       return true;
+    } else if (hmsTable.getSnapshotRef() != null) {
+      return false;
     }
 
     Expression finalExp = generateExpressionFromPartitionSpec(table, partitionSpec);
@@ -1815,12 +1903,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         result = false;
         break;
       }
-    }
-
-    boolean isV2Table = IcebergTableUtil.isV2Table(hmsTable.getParameters());
-    if (!result && !isV2Table) {
-      throw new SemanticException("Truncate conversion to delete is not possible since its not an Iceberg V2 table." +
-          " Consider converting the table to Iceberg's V2 format specification.");
     }
     return result;
   }
@@ -2019,5 +2101,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
+  }
+
+  @Override
+  public boolean supportsMergeFiles() {
+    return true;
+  }
+
+  @Override
+  public List<FileStatus> getMergeTaskInputFiles(Properties properties) throws IOException {
+    String tableName = properties.getProperty(Catalogs.NAME);
+    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
+    Configuration configuration = SessionState.getSessionConf();
+    List<JobContext> originalContextList = generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> jobContextList = originalContextList.stream()
+            .map(TezUtil::enrichContextWithVertexId)
+            .collect(Collectors.toList());
+    if (jobContextList.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return new HiveIcebergOutputCommitter().getOutputFiles(jobContextList);
+  }
+
+  @Override
+  public MergeTaskProperties getMergeTaskProperties(Properties properties) {
+    return new IcebergMergeTaskProperties(properties);
   }
 }

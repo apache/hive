@@ -323,7 +323,7 @@ public class Table implements Serializable {
   }
 
   public TableName getFullTableName() {
-    return new TableName(getCatName(), getDbName(), getTableName());
+    return new TableName(getCatName(), getDbName(), getTableName(), getSnapshotRef());
   }
 
   final public Path getDataLocation() {

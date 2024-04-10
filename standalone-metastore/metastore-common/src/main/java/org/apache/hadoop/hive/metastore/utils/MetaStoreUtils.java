@@ -108,6 +108,16 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Converts the string format date without a time-zone to
+   * a time-zone based string format date
+   * @param date the date without a time-zone
+   * @return time-zone based string format date
+   */
+  public static String normalizeDate(String date) {
+    return convertDateToString(convertStringToDate(date));
+  }
+
+  /**
    * Converts java.sql.Timestamp to string format timestamp.
    * @param timestamp java.sql.Timestamp object.
    * @return Timestamp in string format.

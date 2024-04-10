@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -646,14 +647,14 @@ public class TestObjectStore {
     createPartitionedTable(false, false);
     // query the partitions with JDO
     List<Partition> partitions;
-    try(AutoCloseable c =deadline()) {
+    try(AutoCloseable c = deadline()) {
       partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
           false, true, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(3, partitions.size());
 
     // drop partitions with directSql
-    try(AutoCloseable c =deadline()) {
+    try(AutoCloseable c = deadline()) {
       objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
           Arrays.asList("test_part_col=a0", "test_part_col=a1"), true, false);
     }
@@ -778,6 +779,49 @@ public class TestObjectStore {
     checkBackendTableSize("PARTITIONS", 0);
     checkBackendTableSize("CDS", 1); // Table has a CD
     checkBackendTableSize("COLUMNS_V2", 5);
+  }
+
+  @Test
+  public void testTableStatisticsOps() throws Exception {
+    createPartitionedTable(true, true);
+
+    List<ColumnStatistics> tabColStats;
+    try (AutoCloseable c = deadline()) {
+      tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_col1", "test_col2"));
+    }
+    Assert.assertEquals(0, tabColStats.size());
+
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, DB1, TABLE1);
+    ColumnStatisticsObj statsObj1 = new ColumnStatisticsObj("test_col1", "int",
+        new ColumnStatisticsData(ColumnStatisticsData._Fields.DECIMAL_STATS, new DecimalColumnStatsData(100, 1000)));
+    ColumnStatisticsObj statsObj2 = new ColumnStatisticsObj("test_col2", "int",
+        new ColumnStatisticsData(ColumnStatisticsData._Fields.DECIMAL_STATS, new DecimalColumnStatsData(200, 2000)));
+    ColumnStatistics colStats = new ColumnStatistics(statsDesc, Arrays.asList(statsObj1, statsObj2));
+    colStats.setEngine(ENGINE);
+    objectStore.updateTableColumnStatistics(colStats, null, 0);
+
+    try (AutoCloseable c = deadline()) {
+      tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_col1", "test_col2"));
+    }
+    Assert.assertEquals(1, tabColStats.size());
+    Assert.assertEquals(2, tabColStats.get(0).getStatsObjSize());
+
+    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col1", ENGINE);
+    try (AutoCloseable c = deadline()) {
+      tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_col1", "test_col2"));
+    }
+    Assert.assertEquals(1, tabColStats.size());
+    Assert.assertEquals(1, tabColStats.get(0).getStatsObjSize());
+
+    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col2", ENGINE);
+    try (AutoCloseable c = deadline()) {
+      tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_col1", "test_col2"));
+    }
+    Assert.assertEquals(0, tabColStats.size());
   }
 
   @Test
@@ -1635,40 +1679,44 @@ public class TestObjectStore {
 
   @Test
   public void testNoJdoForUnrecoverableException() throws Exception {
-    objectStore.openTransaction();
-    AtomicBoolean runDirectSql = new AtomicBoolean(false);
-    AtomicBoolean runJdo = new AtomicBoolean(false);
-    try {
-      objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
-        @Override
-        protected String describeResult() {
-          return "test not run jdo for unrecoverable exception";
-        }
+    Exception[] unrecoverableExceptions = new Exception[] {
+        new SQLIntegrityConstraintViolationException("Unrecoverable ex"),
+        new DeadlineException("unrecoverable ex")};
+    for (Exception unrecoverableException : unrecoverableExceptions) {
+      objectStore.openTransaction();
+      AtomicBoolean runDirectSql = new AtomicBoolean(false);
+      AtomicBoolean runJdo = new AtomicBoolean(false);
+      try {
+        objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
+          @Override
+          protected String describeResult() {
+            return "test not run jdo for unrecoverable exception";
+          }
 
-        @Override
-        protected Object getSqlResult(ObjectStore.GetHelper ctx) throws MetaException {
-          runDirectSql.set(true);
-          SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
-          MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
-          me.initCause(ex);
-          throw me;
-        }
+          @Override
+          protected Object getSqlResult(ObjectStore.GetHelper ctx) throws MetaException {
+            runDirectSql.set(true);
+            MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
+            me.initCause(unrecoverableException);
+            throw me;
+          }
 
-        @Override
-        protected Object getJdoResult(ObjectStore.GetHelper ctx) throws MetaException, NoSuchObjectException {
-          runJdo.set(true);
-          SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
-          MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
-          me.initCause(ex);
-          throw me;
-        }
-      }.run(false);
-    } catch (MetaException ex) {
-      // expected
+          @Override
+          protected Object getJdoResult(ObjectStore.GetHelper ctx) throws MetaException, NoSuchObjectException {
+            runJdo.set(true);
+            SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
+            MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
+            me.initCause(ex);
+            throw me;
+          }
+        }.run(false);
+      } catch (MetaException ex) {
+        // expected
+      }
+      objectStore.commitTransaction();
+      Assert.assertEquals(true, runDirectSql.get());
+      Assert.assertEquals(false, runJdo.get());
     }
-    objectStore.commitTransaction();
-    Assert.assertEquals(true, runDirectSql.get());
-    Assert.assertEquals(false, runJdo.get());
   }
 
   /**

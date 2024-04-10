@@ -41,7 +41,7 @@ public class TestMRCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, true);
     conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, CUSTOM_COMPACTION_QUEUE);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_MR_COMPACTOR_GATHER_STATS, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
 
     String dbName = "default";

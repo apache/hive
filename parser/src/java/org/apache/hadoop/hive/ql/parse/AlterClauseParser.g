@@ -52,6 +52,7 @@ alterStatement
     | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
+    | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
     ;
 
 alterTableStatementSuffix
@@ -79,6 +80,7 @@ alterTableStatementSuffix
     | alterStatementSuffixCreateTag
     | alterStatementSuffixDropTag
     | alterStatementSuffixConvert
+    | alterStatementSuffixRenameBranch
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -99,6 +101,19 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
   ;
+    
+optimizeTableStatementSuffix
+@init { gParent.pushMsg("optimize table statement suffix", state); }
+@after { gParent.popMsg(state); }
+    : optimizeTblRewriteDataSuffix
+    ;
+    
+optimizeTblRewriteDataSuffix
+@init { gParent.msgs.push("compaction request"); }
+@after { gParent.msgs.pop(); }
+    : KW_REWRITE KW_DATA
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING)
+    ;
 
 alterStatementPartitionKeyType
 @init {gParent.msgs.push("alter partition key type"); }
@@ -489,6 +504,13 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS KW_RETAIN $numToRetain)
     | KW_EXECUTE KW_DELETE KW_ORPHAN_FILES (KW_OLDER KW_THAN LPAREN (timestamp=StringLiteral) RPAREN)?
     -> ^(TOK_ALTERTABLE_EXECUTE KW_ORPHAN_FILES $timestamp?)
+    ;
+
+alterStatementSuffixRenameBranch
+@init { gParent.pushMsg("alter table rename branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_RENAME KW_BRANCH sourceBranch=identifier KW_TO targetBranch=identifier
+    -> ^(TOK_ALTERTABLE_RENAME_BRANCH $sourceBranch $targetBranch)
     ;
 
 alterStatementSuffixDropBranch

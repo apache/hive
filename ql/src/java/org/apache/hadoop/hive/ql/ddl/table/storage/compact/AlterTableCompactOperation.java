@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -35,10 +37,13 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.txn.compactor.InitiatorBase;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Optional;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
@@ -46,6 +51,7 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftTyp
  * Operation process of compacting a table.
  */
 public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
+
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
     super(context, desc);
   }
@@ -55,6 +61,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, table.getDbName(), table.getTableName());
     }
+
+    Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
+        convertPartitionsFromThriftToDB(getPartitions(table, desc, context));
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(context.getConf());
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
@@ -69,38 +80,46 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       compactionRequest.setNumberOfBuckets(desc.getNumberOfBuckets());
     }
 
-    InitiatorBase initiatorBase = new InitiatorBase();
-    initiatorBase.setConf(context.getConf());
-    initiatorBase.init(new AtomicBoolean());
-
-    Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
-        convertPartitionsFromThriftToDB(getPartitions(table, desc, context));
-
-    if(desc.getPartitionSpec() != null){
-      Optional<String> partitionName =  partitionMap.keySet().stream().findFirst();
-      partitionName.ifPresent(compactionRequest::setPartitionname);
-    }
-    List<CompactionResponse> compactionResponses =
-        initiatorBase.initiateCompactionForTable(compactionRequest, table.getTTable(), partitionMap);
-    for (CompactionResponse compactionResponse : compactionResponses) {
-      if (!compactionResponse.isAccepted()) {
-        String message;
-        if (compactionResponse.isSetErrormessage()) {
-          message = compactionResponse.getErrormessage();
-          throw new HiveException(ErrorMsg.COMPACTION_REFUSED, table.getDbName(), table.getTableName(),
-              "CompactionId: " + compactionResponse.getId(), message);
-        }
-        context.getConsole().printInfo(
-            "Compaction already enqueued with id " + compactionResponse.getId() + "; State is "
-                + compactionResponse.getState());
-        continue;
+    //Will directly initiate compaction if an un-partitioned table/a partition is specified in the request
+    if (desc.getPartitionSpec() != null || !table.isPartitioned()) {
+      if (desc.getPartitionSpec() != null) {
+        Optional<String> partitionName = partitionMap.keySet().stream().findFirst();
+        partitionName.ifPresent(compactionRequest::setPartitionname);
       }
-      context.getConsole().printInfo("Compaction enqueued with id " + compactionResponse.getId());
-      if (desc.isBlocking() && compactionResponse.isAccepted()) {
-        waitForCompactionToFinish(compactionResponse, context);
+      CompactionResponse compactionResponse = txnHandler.compact(compactionRequest);
+      parseCompactionResponse(compactionResponse, table, compactionRequest.getPartitionname());
+    } else { // Check for eligible partitions and initiate compaction
+      for (Map.Entry<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMapEntry : partitionMap.entrySet()) {
+        compactionRequest.setPartitionname(partitionMapEntry.getKey());
+        CompactionResponse compactionResponse =
+            CompactorUtil.initiateCompactionForPartition(table.getTTable(), partitionMapEntry.getValue(),
+                compactionRequest, ServerUtils.hostname(), txnHandler, context.getConf());
+        parseCompactionResponse(compactionResponse, table, partitionMapEntry.getKey());
       }
     }
     return 0;
+  }
+
+  private void parseCompactionResponse(CompactionResponse compactionResponse, Table table, String partitionName)
+      throws HiveException {
+    if (compactionResponse == null) {
+      context.getConsole().printInfo(
+          "Not enough deltas to initiate compaction for table=" + table.getTableName() + "partition=" + partitionName);
+      return;
+    }
+    if (!compactionResponse.isAccepted()) {
+      if (compactionResponse.isSetErrormessage()) {
+        throw new HiveException(ErrorMsg.COMPACTION_REFUSED, table.getDbName(), table.getTableName(),
+            partitionName == null ? "" : " partition(" + partitionName + ")", compactionResponse.getErrormessage());
+      }
+      context.getConsole().printInfo(
+          "Compaction already enqueued with id " + compactionResponse.getId() + "; State is " + compactionResponse.getState());
+      return;
+    }
+    context.getConsole().printInfo("Compaction enqueued with id " + compactionResponse.getId());
+    if (desc.isBlocking() && compactionResponse.isAccepted()) {
+      waitForCompactionToFinish(compactionResponse, context);
+    }
   }
 
   private List<Partition> getPartitions(Table table, AlterTableCompactDesc desc, DDLOperationContext context)
@@ -117,7 +136,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       partitions = context.getDb().getPartitions(table, partitionSpec);
       if (partitions.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
-      } else if (partitions.size() == 0) {
+      } else if (partitions.isEmpty()) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
       }
     }

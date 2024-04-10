@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -1530,7 +1531,7 @@ public class Hive {
       List<String> partNames = ((null == partSpec)
               ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
       if (snapshot == null) {
-        getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames);
+        getMSC().truncateTable(table.getFullTableName(), partNames);
       } else {
         boolean truncateUseBase = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE)
           || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
@@ -2156,38 +2157,44 @@ public class Hive {
         // Mixing native and non-native acid source tables are not supported. If the first source is native acid
         // the rest is expected to be native acid
         return getMSC().getMaterializationInvalidationInfo(
-                metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
+            metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
       }
     }
 
-    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
-
-    boolean hasAppendsOnly = true;
-    for (SourceTable sourceTable : metadata.getSourceTables()) {
-      Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
-      HiveStorageHandler storageHandler = table.getStorageHandler();
-      if (storageHandler == null) {
-        Materialization materialization = new Materialization();
-        materialization.setSourceTablesCompacted(true);
-        return materialization;
-      }
-      Boolean b = storageHandler.hasAppendsOnly(
-          table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()));
-      if (b == null) {
-        Materialization materialization = new Materialization();
-        materialization.setSourceTablesCompacted(true);
-        return materialization;
-      } else if (!b) {
-        hasAppendsOnly = false;
-        break;
-      }
-    }
+    boolean allHasAppendsOnly = allTablesHasAppendsOnly(metadata);
     Materialization materialization = new Materialization();
     // TODO: delete operations are not supported yet.
     // Set setSourceTablesCompacted to false when delete is supported
-    materialization.setSourceTablesCompacted(!hasAppendsOnly);
-    materialization.setSourceTablesUpdateDeleteModified(!hasAppendsOnly);
+    materialization.setSourceTablesCompacted(!allHasAppendsOnly);
+    materialization.setSourceTablesUpdateDeleteModified(!allHasAppendsOnly);
     return materialization;
+  }
+
+  private boolean allTablesHasAppendsOnly(MaterializedViewMetadata metadata) throws HiveException {
+    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(metadata.creationMetadata.getValidTxnList());
+    for (SourceTable sourceTable : metadata.getSourceTables()) {
+      Table table = getTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
+      HiveStorageHandler storageHandler = table.getStorageHandler();
+      // Currently mixing native and non-native source tables are not supported.
+      if (!(storageHandler != null &&
+          storageHandler.areSnapshotsSupported() &&
+          tableHasAppendsOnly(storageHandler, table, mvSnapshot))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private boolean tableHasAppendsOnly(
+      HiveStorageHandler storageHandler, Table table, MaterializationSnapshot mvSnapshot) {
+    for (SnapshotContext snapshot : storageHandler.getSnapshotContexts(
+        table, mvSnapshot.getTableSnapshots().get(table.getFullyQualifiedName()))) {
+      if (!SnapshotContext.WriteOperationType.APPEND.equals(snapshot.getOperation())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -2801,7 +2808,7 @@ public class Hive {
 
       // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
       // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
-      if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
         LOG.debug(
             "Clear partition column statistics by setting basic stats to false for " + newTPart.getCompleteName());
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
@@ -2809,7 +2816,7 @@ public class Hive {
 
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
-        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
           StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(),
               MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
         }
@@ -3020,7 +3027,7 @@ public class Hive {
                                               List<Partition> partitions,
                                               AcidUtils.TableSnapshot tableSnapshot)
           throws TException {
-    if (partitions.isEmpty() || conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)) {
+    if (partitions.isEmpty() || conf.getBoolVar(ConfVars.HIVE_STATS_AUTOGATHER)) {
       return;
     }
     EnvironmentContext ec = new EnvironmentContext();
@@ -3520,7 +3527,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
     // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
-    if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
       LOG.debug("Clear table column statistics and set basic statistics to false for " + tbl.getCompleteName());
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
     }

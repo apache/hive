@@ -41,8 +41,11 @@ import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
@@ -1720,6 +1723,43 @@ public final class GenMapRedUtils {
     return newWork;
   }
 
+  private static void setStorageHandlerAndProperties(ConditionalResolverMergeFilesCtx mrCtx, MoveWork work) {
+    Properties mergeTaskProperties = null;
+    String storageHandlerClass = null;
+    if (work.getLoadTableWork() != null) {
+      // Get the info from the table data
+      TableDesc tableDesc = work.getLoadTableWork().getTable();
+      storageHandlerClass = tableDesc.getProperties().getProperty(
+              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+      mergeTaskProperties = new Properties(tableDesc.getProperties());
+    } else {
+      // Get the info from the create table data
+      CreateTableDesc createTableDesc = work.getLoadFileWork().getCtasCreateTableDesc();
+      String location = null;
+      if (createTableDesc != null) {
+        storageHandlerClass = createTableDesc.getStorageHandler();
+        mergeTaskProperties = new Properties();
+        mergeTaskProperties.putAll(createTableDesc.getSerdeProps());
+        mergeTaskProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
+        location = createTableDesc.getLocation();
+      } else {
+        CreateMaterializedViewDesc createViewDesc = work.getLoadFileWork().getCreateViewDesc();
+        if (createViewDesc != null) {
+          storageHandlerClass = createViewDesc.getStorageHandler();
+          mergeTaskProperties = new Properties();
+          mergeTaskProperties.putAll(createViewDesc.getSerdeProps());
+          mergeTaskProperties.put(hive_metastoreConstants.META_TABLE_NAME, createViewDesc.getViewName());
+          location = createViewDesc.getLocation();
+        }
+      }
+      if (location != null) {
+        mergeTaskProperties.put(hive_metastoreConstants.META_TABLE_LOCATION, location);
+      }
+    }
+    mrCtx.setTaskProperties(mergeTaskProperties);
+    mrCtx.setStorageHandlerClass(storageHandlerClass);
+  }
+
   /**
    * Construct a conditional task given the current leaf task, the MoveWork and the MapredWork.
    *
@@ -1800,6 +1840,9 @@ public final class GenMapRedUtils {
     cndTsk.setResolver(new ConditionalResolverMergeFiles());
     ConditionalResolverMergeFilesCtx mrCtx =
         new ConditionalResolverMergeFilesCtx(listTasks, condInputPath.toString());
+    if (moveTaskToLink != null) {
+      setStorageHandlerAndProperties(mrCtx, moveTaskToLink.getWork());
+    }
     cndTsk.setResolverCtx(mrCtx);
 
     // make the conditional task as the child of the current leaf task
@@ -1894,7 +1937,7 @@ public final class GenMapRedUtils {
         fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getMoveTaskId(), fsOp.getConf().getAcidOperation());
 
     // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
-    if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
+    if (isInsertTable && hconf.getBoolVar(ConfVars.HIVE_STATS_AUTOGATHER)
         && !fsOp.getConf().isMaterialization()) {
       // mark the MapredWork and FileSinkOperator for gathering stats
       fsOp.getConf().setGatherStats(true);

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
@@ -85,7 +86,7 @@ public class TestSchemaToolForMetastore {
     dbs.add(new Object[] { new Mysql() });
     dbs.add(new Object[] { new Oracle() });
     dbs.add(new Object[] { new Postgres() });
-//    dbs.add(new Object[] { new Mariadb() }); Disabled due to HIVE-27749
+    dbs.add(new Object[] { new Mariadb() });
     dbs.add(new Object[] { new Mssql() });
     return dbs;
   }

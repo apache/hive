@@ -391,7 +391,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           "Vectorized read is unsupported for Hive 2 integration.");
 
       Path path = new Path(task.file().path().toString());
-      Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
+      Map<Integer, ?> idToConstant = constantsMap(task, HiveIdentityPartitionConverters::convertConstant);
       Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
 
       // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
@@ -544,7 +544,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         Types.StructType partitionType = Partitioning.partitionType(table);
         return PartitionUtil.constantsMap(task, partitionType, converter);
       } else if (projectsIdentityPartitionColumns) {
-        return PartitionUtil.constantsMap(task, converter);
+        Types.StructType partitionType = Partitioning.partitionType(table);
+        return PartitionUtil.constantsMap(task, partitionType, converter);
       } else {
         return Collections.emptyMap();
       }

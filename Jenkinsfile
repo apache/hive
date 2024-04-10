@@ -112,7 +112,7 @@ def sonarAnalysis(args) {
       """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
 
       sh """#!/bin/bash -e
-      sw java 11 && . /etc/profile.d/java.sh
+      sw java 17 && . /etc/profile.d/java.sh
       export MAVEN_OPTS=-Xmx5G
       """+mvnCmd
   }
@@ -121,7 +121,7 @@ def sonarAnalysis(args) {
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
+    containerTemplate(name: 'hdb', image: 'wecharyu/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
         resourceLimitCpu: '8000m',
@@ -287,7 +287,6 @@ set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
 sw hive-dev $PWD
-ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 export DBNAME=metastore
 reinit_metastore $dbType

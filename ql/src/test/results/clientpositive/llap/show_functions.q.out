@@ -46,6 +46,8 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
+array_compact
 array_contains
 array_distinct
 array_except
@@ -53,6 +55,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_position
 array_remove
 array_slice
 array_union
@@ -674,6 +677,8 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
+array_compact
 array_contains
 array_distinct
 array_except
@@ -681,6 +686,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_position
 array_remove
 array_slice
 array_union

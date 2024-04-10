@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 
@@ -31,6 +32,7 @@ public class HiveCustomStorageHandlerUtils {
 
     public static final String WRITE_OPERATION_CONFIG_PREFIX = "file.sink.write.operation.";
 
+    public static final String WRITE_OPERATION_IS_SORTED = "file.sink.write.operation.sorted.";
 
     public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
         StringBuilder properties = new StringBuilder();
@@ -70,5 +72,22 @@ public class HiveCustomStorageHandlerUtils {
         }
 
         conf.set(WRITE_OPERATION_CONFIG_PREFIX + tableName, operation.name());
+    }
+
+    public static void setWriteOperationIsSorted(Configuration conf, String tableName, boolean isSorted) {
+        if (conf == null || tableName == null) {
+            return;
+        }
+
+        conf.set(WRITE_OPERATION_IS_SORTED + tableName, Boolean.toString(isSorted));
+    }
+
+    public static boolean getWriteOperationIsSorted(Configuration conf, String tableName) {
+        if (conf == null || tableName == null) {
+            return false;
+        }
+
+        String isSortedString = conf.get(WRITE_OPERATION_IS_SORTED + tableName);
+        return Boolean.parseBoolean(isSortedString);
     }
 }

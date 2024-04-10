@@ -22,8 +22,12 @@ package org.apache.iceberg.mr.hive;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.iceberg.Snapshot;
+import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,10 +55,18 @@ public class TestHiveIcebergStorageHandler {
   @Before
   public void before() {
     when(anySnapshot.snapshotId()).thenReturn(42L);
+
     Mockito.lenient().when(appendSnapshot.snapshotId()).thenReturn(20L);
+    Map<String, String> summary = Maps.newHashMap();
+    summary.put(SnapshotSummary.ADDED_RECORDS_PROP, "12");
+    Mockito.lenient().when(appendSnapshot.summary()).thenReturn(summary);
     when(appendSnapshot.operation()).thenReturn("append");
+
     Mockito.lenient().when(deleteSnapshot.snapshotId()).thenReturn(100L);
     when(deleteSnapshot.operation()).thenReturn("delete");
+    summary = Maps.newHashMap();
+    summary.put(SnapshotSummary.DELETED_RECORDS_PROP, "3");
+    Mockito.lenient().when(deleteSnapshot.summary()).thenReturn(summary);
   }
 
   @Test
@@ -122,5 +134,52 @@ public class TestHiveIcebergStorageHandler {
     Boolean result = storageHandler.hasAppendsOnly(snapshotList, since);
 
     assertThat(result, is(nullValue()));
+  }
+
+  @Test
+  public void testGetSnapshotContextsReturnsEmptyIterableWhenTableIsEmpty() {
+    SnapshotContext since = new SnapshotContext(42);
+
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    Iterable<SnapshotContext> result = storageHandler.getSnapshots(Collections.emptyList(), since);
+
+    assertThat(result.iterator().hasNext(), is(false));
+  }
+
+  @Test
+  public void testGetSnapshotContextsReturnsEmptyIterableWhenTableIsEmptyAndGivenSnapShotIsNull() {
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    Iterable<SnapshotContext> result = storageHandler.getSnapshots(Collections.emptyList(), null);
+
+    assertThat(result.iterator().hasNext(), is(false));
+  }
+
+  @Test
+  public void testGetSnapshotContextsReturnsAllSnapshotsWhenGivenSnapshotIsNull() {
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    Iterable<SnapshotContext> result = storageHandler.getSnapshots(asList(appendSnapshot, deleteSnapshot), null);
+
+    List<SnapshotContext> resultList = IterableUtils.toList(result);
+    assertThat(resultList.size(), is(2));
+    assertThat(resultList.get(0).getSnapshotId(), is(appendSnapshot.snapshotId()));
+    assertThat(resultList.get(0).getOperation(), is(SnapshotContext.WriteOperationType.APPEND));
+    assertThat(resultList.get(0).getAddedRowCount(), is(12L));
+    assertThat(resultList.get(0).getDeletedRowCount(), is(0L));
+
+    assertThat(resultList.get(1).getSnapshotId(), is(deleteSnapshot.snapshotId()));
+    assertThat(resultList.get(1).getOperation(), is(SnapshotContext.WriteOperationType.DELETE));
+    assertThat(resultList.get(1).getAddedRowCount(), is(0L));
+    assertThat(resultList.get(1).getDeletedRowCount(), is(3L));
+  }
+
+  @Test
+  public void testGetSnapshotContextsReturnsEmptyIterableWhenGivenSnapshotNotInTheList() {
+    SnapshotContext since = new SnapshotContext(1);
+    List<Snapshot> snapshotList = Arrays.asList(anySnapshot, appendSnapshot, deleteSnapshot);
+
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    Iterable<SnapshotContext> result = storageHandler.getSnapshots(snapshotList, since);
+
+    assertThat(result.iterator().hasNext(), is(false));
   }
 }

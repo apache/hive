@@ -58,6 +58,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -1918,15 +1919,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException,
       InvalidInputException, InvalidObjectException {
-    return client.get_table_statistics_req(
-        new TableStatsRequest(dbName, tableName, colNames, engine)).getTableStats();
+    TableStatsRequest tsr = new TableStatsRequest(dbName, tableName, colNames);
+    tsr.setEngine(engine);
+    return client.get_table_statistics_req(new TableStatsRequest(tsr)).getTableStats();
   }
 
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(
       String dbName, String tableName, List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
-    TableStatsRequest tsr = new TableStatsRequest(dbName, tableName, colNames, engine);
+    TableStatsRequest tsr = new TableStatsRequest(dbName, tableName, colNames);
+    tsr.setEngine(engine);
     tsr.setValidWriteIdList(validWriteIdList);
 
     return client.get_table_statistics_req(tsr).getTableStats();
@@ -1937,8 +1940,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String dbName, String tableName, List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, TException {
-    return client.get_partitions_statistics_req(
-        new PartitionsStatsRequest(dbName, tableName, colNames, partNames, engine)).getPartStats();
+    PartitionsStatsRequest psr = new PartitionsStatsRequest(dbName, tableName, colNames, partNames);
+    psr.setEngine(engine);
+    return client.get_partitions_statistics_req(new PartitionsStatsRequest(psr)).getPartStats();
   }
 
   @Override
@@ -1946,7 +1950,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       String dbName, String tableName, List<String> partNames,
       List<String> colNames, String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
-    PartitionsStatsRequest psr = new PartitionsStatsRequest(dbName, tableName, colNames, partNames, engine);
+    PartitionsStatsRequest psr = new PartitionsStatsRequest(dbName, tableName, colNames, partNames);
+    psr.setEngine(engine);
     psr.setValidWriteIdList(validWriteIdList);
     return client.get_partitions_statistics_req(
         psr).getPartStats();
@@ -2945,7 +2950,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
       return new AggrStats(new ArrayList<>(),0); // Nothing to aggregate
     }
-    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
+    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+    req.setEngine(engine);
     return client.get_aggr_stats_for(req);
   }
 
@@ -2958,7 +2964,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
       return new AggrStats(new ArrayList<>(),0); // Nothing to aggregate
     }
-    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partName, engine);
+    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partName);
+    req.setEngine(engine);
     req.setValidWriteIdList(writeIdList);
     return client.get_aggr_stats_for(req);
   }
@@ -3895,6 +3902,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void truncateTable(String dbName, String tableName,
       List<String> partNames, String validWriteIds, long writeId)
       throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void truncateTable(TableName table, List<String> partNames) throws MetaException, TException {
     throw new UnsupportedOperationException();
   }
 

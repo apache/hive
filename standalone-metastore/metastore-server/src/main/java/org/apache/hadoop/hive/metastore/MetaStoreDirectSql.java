@@ -32,10 +32,8 @@ import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -302,8 +300,8 @@ class MetaStoreDirectSql {
     try {
       // Force the underlying db to initialize.
       initQueries.add(pm.newQuery(MDatabase.class, "name == ''"));
-      initQueries.add(pm.newQuery(MTableColumnStatistics.class, "dbName == ''"));
-      initQueries.add(pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MTableColumnStatistics.class, "colName == ''"));
+      initQueries.add(pm.newQuery(MPartitionColumnStatistics.class, "colName == ''"));
       initQueries.add(pm.newQuery(MConstraint.class, "childIntegerIndex < 0"));
       initQueries.add(pm.newQuery(MNotificationLog.class, "dbName == ''"));
       initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
@@ -741,14 +739,7 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
-        String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
-        List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName,
-            filter, input, Collections.<String>emptyList(), null);
-        if (partitionIds.isEmpty()) {
-          return Collections.emptyList(); // no partitions, bail early.
-        }
-        return getPartitionsFromPartitionIds(catName, dbName, tblName, null,
-                partitionIds, Collections.emptyList(), false, args);
+        return getPartitionsByNames(catName, dbName, tblName, partNames, false, args);
       }
     });
   }
@@ -772,8 +763,7 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsFromPartitionIds(catName, dbName,
-            tableName, null, input, Collections.emptyList(), isAcidTable, args);
+        return getPartitionsByPartitionIds(catName, dbName, tableName, input, isAcidTable, args);
       }
     });
   }
@@ -927,7 +917,7 @@ class MetaStoreDirectSql {
     List<Partition> result = Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsFromPartitionIds(catName, dbName, tblName, null, input, Collections.emptyList(), false, args);
+        return getPartitionsByPartitionIds(catName, dbName, tblName, input, false, args);
       }
     });
     return result;
@@ -1026,15 +1016,39 @@ class MetaStoreDirectSql {
     }
   }
 
+
   /** Should be called with the list short enough to not trip up Oracle/etc. */
-  private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
-      Boolean isView, List<Long> partIdList, List<String> projectionFields,
-      boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
+  private List<Partition> getPartitionsByNames(String catName, String dbName,
+      String tblName, List<String> partNameList, boolean isAcidTable, GetPartitionsArgs args)
+      throws MetaException {
+    // Get most of the fields for the partNames provided.
+    // Assume db and table names are the same for all partition, as provided in arguments.
+    String quotedPartNames = partNameList.stream()
+        .map(DirectSqlUpdatePart::quoteString)
+        .collect(Collectors.joining(","));
 
-    boolean doTrace = LOG.isDebugEnabled();
+    String queryText =
+        "select " + PARTITIONS + ".\"PART_ID\"," + SDS + ".\"SD_ID\"," + SDS + ".\"CD_ID\","
+        + SERDES + ".\"SERDE_ID\"," + PARTITIONS + ".\"CREATE_TIME\"," + PARTITIONS
+        + ".\"LAST_ACCESS_TIME\"," + SDS + ".\"INPUT_FORMAT\"," + SDS + ".\"IS_COMPRESSED\","
+        + SDS + ".\"IS_STOREDASSUBDIRECTORIES\"," + SDS + ".\"LOCATION\"," + SDS
+        + ".\"NUM_BUCKETS\"," + SDS + ".\"OUTPUT_FORMAT\"," + SERDES + ".\"NAME\","
+        + SERDES + ".\"SLIB\"," + PARTITIONS + ".\"WRITE_ID\"" + " from " + PARTITIONS
+        + " left outer join " + SDS + " on " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\" "
+        + " left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = " + SERDES + ".\"SERDE_ID\" "
+        + " inner join " + TBLS + " on " + TBLS + ".\"TBL_ID\" = " + PARTITIONS + ".\"TBL_ID\" "
+        + " inner join " + DBS + " on " + DBS + ".\"DB_ID\" = " + TBLS + ".\"DB_ID\" "
+        + " where \"PART_NAME\" in (" + quotedPartNames + ") "
+        + " and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS
+        + ".\"CTLG_NAME\" = ? order by \"PART_NAME\" asc";
 
-    int idStringWidth = (int)Math.ceil(Math.log10(partIdList.size())) + 1; // 1 for comma
-    int sbCapacity = partIdList.size() * idStringWidth;
+    Object[] params = new Object[]{tblName, dbName, catName};
+    return getPartitionsByQuery(catName, dbName, tblName, queryText, params, isAcidTable, args);
+  }
+
+  /** Should be called with the list short enough to not trip up Oracle/etc. */
+  private List<Partition> getPartitionsByPartitionIds(String catName, String dbName, String tblName,
+      List<Long> partIdList, boolean isAcidTable, GetPartitionsArgs args) throws MetaException {
     // Get most of the fields for the IDs provided.
     // Assume db and table names are the same for all partition, as provided in arguments.
     String partIds = getIdListForIn(partIdList);
@@ -1049,6 +1063,13 @@ class MetaStoreDirectSql {
             + ".\"SD_ID\" " + "  left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = "
             + SERDES + ".\"SERDE_ID\" " + "where \"PART_ID\" in (" + partIds
             + ") order by \"PART_NAME\" asc";
+    return getPartitionsByQuery(catName, dbName, tblName, queryText, null, isAcidTable, args);
+  }
+
+  private List<Partition> getPartitionsByQuery(String catName, String dbName, String tblName,
+      String queryText, Object[] params, boolean isAcidTable, GetPartitionsArgs args)
+      throws MetaException {
+    boolean doTrace = LOG.isDebugEnabled();
 
     // Read all the fields and create partitions, SDs and serdes.
     TreeMap<Long, Partition> partitions = new TreeMap<Long, Partition>();
@@ -1056,10 +1077,10 @@ class MetaStoreDirectSql {
     TreeMap<Long, SerDeInfo> serdes = new TreeMap<Long, SerDeInfo>();
     TreeMap<Long, List<FieldSchema>> colss = new TreeMap<Long, List<FieldSchema>>();
     // Keep order by name, consistent with JDO.
-    ArrayList<Partition> orderedResult = new ArrayList<Partition>(partIdList.size());
+    ArrayList<Partition> orderedResult;
 
     // Prepare StringBuilder-s for "in (...)" lists to use in one-to-many queries.
-    StringBuilder sdSb = new StringBuilder(sbCapacity), serdeSb = new StringBuilder(sbCapacity);
+    StringBuilder sdSb = new StringBuilder(), serdeSb = new StringBuilder();
     StringBuilder colsSb = new StringBuilder(7); // We expect that there's only one field schema.
     tblName = tblName.toLowerCase();
     dbName = dbName.toLowerCase();
@@ -1068,9 +1089,10 @@ class MetaStoreDirectSql {
 
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       long start = doTrace ? System.nanoTime() : 0;
-      List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+      List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), params, queryText);
       long queryTime = doTrace ? System.nanoTime() : 0;
       Deadline.checkTimeout();
+      orderedResult = new ArrayList<>(sqlResult.size());
 
       for (Object[] fields : sqlResult) {
         // Here comes the ugly part...
@@ -1163,6 +1185,7 @@ class MetaStoreDirectSql {
       }
       MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
     }
+    String partIds = getIdListForIn(partitions.keySet());
     // Now get all the one-to-many things. Start with partitions.
     MetastoreDirectSqlUtils
         .setPartitionParametersWithFilter(PARTITION_PARAMS, convertMapNullsToEmptyStrings, pm,
@@ -1404,12 +1427,13 @@ class MetaStoreDirectSql {
     @Override
     public void visit(LeafNode node) throws MetaException {
       int partColCount = partitionKeys.size();
-      int partColIndex = node.getPartColIndexForFilter(partitionKeys, filterBuffer);
+      int partColIndex = LeafNode.getPartColIndexForFilter(node.keyName, partitionKeys, filterBuffer);
       if (filterBuffer.hasError()) {
         return;
       }
 
-      String colTypeStr = ColumnType.getTypeName(partitionKeys.get(partColIndex).getType());
+      FieldSchema partCol = partitionKeys.get(partColIndex);
+      String colTypeStr = ColumnType.getTypeName(partCol.getType());
       FilterType colType = FilterType.fromType(colTypeStr);
       if (colType == FilterType.Invalid) {
         filterBuffer.setError("Filter pushdown not supported for type " + colTypeStr);
@@ -1422,29 +1446,33 @@ class MetaStoreDirectSql {
         return;
       }
 
+      String nodeValue0 = "?";
       // if Filter.g does date parsing for quoted strings, we'd need to verify there's no
       // type mismatch when string col is filtered by a string that looks like date.
-      if (colType == FilterType.Date && valType == FilterType.String) {
-        // Filter.g cannot parse a quoted date; try to parse date here too.
+      if (colType == FilterType.Date) {
         try {
-          nodeValue = MetaStoreUtils.convertStringToDate((String)nodeValue);
+          nodeValue = MetaStoreUtils.normalizeDate((String) nodeValue);
           valType = FilterType.Date;
-        } catch (Exception pe) { // do nothing, handled below - types will mismatch
+          if (dbType.isPOSTGRES() || dbType.isORACLE()) {
+            nodeValue0 = "date '" + nodeValue + "'";
+            nodeValue = null;
+          }
+        } catch (Exception e) {  // do nothing, handled below - types will mismatch
         }
-      }
-
-      if (colType == FilterType.Timestamp && valType == FilterType.String) {
-        nodeValue = MetaStoreUtils.convertStringToTimestamp((String)nodeValue);
-        valType = FilterType.Timestamp;
-      }
-
-      // We format it so we are sure we are getting the right value
-      if (valType == FilterType.Date) {
-        // Format
-        nodeValue = MetaStoreUtils.convertDateToString((Date)nodeValue);
-      } else if (valType == FilterType.Timestamp) {
-        //format
-        nodeValue = MetaStoreUtils.convertTimestampToString((Timestamp) nodeValue);
+      } else if (colType == FilterType.Timestamp) {
+        if (dbType.isDERBY() || dbType.isMYSQL()) {
+          filterBuffer.setError("Filter pushdown on timestamp not supported for " + dbType.dbType);
+          return;
+        }
+        try {
+          MetaStoreUtils.convertStringToTimestamp((String) nodeValue);
+          valType = FilterType.Timestamp;
+          if (dbType.isPOSTGRES() || dbType.isORACLE()) {
+            nodeValue0 = "timestamp '" + nodeValue + "'";
+            nodeValue = null;
+          }
+        } catch (Exception e) { //nodeValue could be '__HIVE_DEFAULT_PARTITION__'
+        }
       }
 
       boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
@@ -1474,8 +1502,7 @@ class MetaStoreDirectSql {
       // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
 
-      String nodeValue0 = "?";
-      if (node.isReverseOrder) {
+      if (node.isReverseOrder && nodeValue != null) {
         params.add(nodeValue);
       }
       String tableColumn = tableValue;
@@ -1505,14 +1532,9 @@ class MetaStoreDirectSql {
           params.add(catName.toLowerCase());
         }
         tableValue += " then " + tableValue0 + " else null end)";
-
-        if (valType == FilterType.Date) {
-        	tableValue = dbType.toDate(tableValue);
-        } else if (valType == FilterType.Timestamp) {
-          tableValue = dbType.toTimestamp(tableValue);
-        }
       }
-      if (!node.isReverseOrder) {
+
+      if (!node.isReverseOrder && nodeValue != null) {
         params.add(nodeValue);
       }
 
@@ -1520,10 +1542,43 @@ class MetaStoreDirectSql {
       if (node.operator == Operator.LIKE) {
         nodeValue0 = nodeValue0 + " ESCAPE '\\' ";
       }
+      String filter = node.isReverseOrder
+              ? nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue
+              : tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0;
+      // For equals and not-equals filter, we can add partition name filter to improve performance.
+      boolean isOpEquals = Operator.isEqualOperator(node.operator);
+      if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
+        Map<String, String> partKeyToVal = new HashMap<>();
+        partKeyToVal.put(partCol.getName(), node.value.toString());
+        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
+        if (colType == FilterType.Date) {
+          // Some engines like Pig will record both date and time values, in which case we need
+          // match PART_NAME by like clause.
+          escapedNameFragment += "%";
+        }
+        if (colType != FilterType.Date && partColCount == 1) {
+          // Case where partition column type is not date and there is no other partition columns
+          params.add(escapedNameFragment);
+          filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " =? " : " !=? ");
+        } else {
+          if (partColCount == 1) {
+            // Case where partition column type is date and there is no other partition columns
+            params.add(escapedNameFragment);
+          } else if (partColIndex + 1 == partColCount) {
+            // Case where the partition column is at the end of the name.
+            params.add("%/" + escapedNameFragment);
+          } else if (partColIndex == 0) {
+            // Case where the partition column is at the beginning of the name.
+            params.add(escapedNameFragment + "/%");
+          } else {
+            // Case where the partition column is in the middle of the name.
+            params.add("%/" + escapedNameFragment + "/%");
+          }
+          filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " like ? " : " not like ? ");
+        }
+      }
 
-      filterBuffer.append(node.isReverseOrder
-          ? "(" + nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue + ")"
-          : "(" + tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0 + ")");
+      filterBuffer.append("(" + filter + ")");
     }
   }
 
@@ -1546,7 +1601,9 @@ class MetaStoreDirectSql {
     }
     final boolean doTrace = LOG.isDebugEnabled();
     final String queryText0 = "select " + getStatsList(enableBitVector, enableKll) + " from " + TAB_COL_STATS
-          + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
+          + " inner join " + TBLS + " on " + TAB_COL_STATS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
+          + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+          + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ?"
           + " and \"ENGINE\" = ? and \"COLUMN_NAME\" in (";
     Batchable<String, Object[]> b = new Batchable<String, Object[]>() {
       @Override
@@ -1745,11 +1802,15 @@ class MetaStoreDirectSql {
       final List<String> partNames, List<String> colNames, String engine) throws MetaException {
     assert !colNames.isEmpty() && !partNames.isEmpty();
     final boolean doTrace = LOG.isDebugEnabled();
-    final String queryText0  = "select count(\"COLUMN_NAME\") from " + PART_COL_STATS + ""
-        + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
-        + " and \"COLUMN_NAME\" in (%1$s) and \"PARTITION_NAME\" in (%2$s)"
-        + " and \"ENGINE\" = ? "
-        + " group by \"PARTITION_NAME\"";
+    final String queryText0 = "select count(\"COLUMN_NAME\") from " + PART_COL_STATS + ""
+        + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+        + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+        + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ?"
+        + " and " + TBLS + ".\"TBL_NAME\" = ?"
+        + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s) and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+        + " and " + PART_COL_STATS + ".\"ENGINE\" = ?"
+        + " group by " + PART_COL_STATS + ".\"PART_ID\"";
     List<Long> allCounts = Batchable.runBatched(batchSize, colNames, new Batchable<String, Long>() {
       @Override
       public List<Long> run(final List<String> inputColName) throws MetaException {
@@ -1807,8 +1868,13 @@ class MetaStoreDirectSql {
 
   public List<ColStatsObjWithSourceInfo> getColStatsForAllTablePartitions(String catName, String dbName,
       boolean enableBitVector, boolean enableKll) throws MetaException {
-    String queryText = "select \"TABLE_NAME\", \"PARTITION_NAME\", " + getStatsList(enableBitVector, enableKll)
-        + " from " + " " + PART_COL_STATS + " where \"DB_NAME\" = ? and \"CAT_NAME\" = ?";
+    String queryText = "select \"TBLS\".\"TBL_NAME\", \"PARTITIONS\".\"PART_NAME\", "
+        + getStatsList(enableBitVector, enableKll)
+        + " from " + PART_COL_STATS
+        + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+        + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+        + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " where " + DBS + ".\"NAME\" = ? and " + DBS + ".\"CTLG_NAME\" = ?";
     long start = 0;
     long end = 0;
     boolean doTrace = LOG.isDebugEnabled();
@@ -1888,7 +1954,10 @@ class MetaStoreDirectSql {
         + "avg((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
         + "avg((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
         + "sum(\"NUM_DISTINCTS\")" + " from " + PART_COL_STATS + ""
-        + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ? ";
+        + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+        + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+        + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? ";
     String queryText = null;
     long start = 0;
     long end = 0;
@@ -1927,13 +1996,16 @@ class MetaStoreDirectSql {
       // In this case, at least a column status for a partition is missing.
       // We need to extrapolate this partition based on the other partitions
       List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(colNames.size());
-      queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PARTITION_NAME\") "
+      queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PART_COL_STATS\".\"PART_ID\") "
           + " from " + PART_COL_STATS
-          + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
-          + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
-          + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
-          + " and \"ENGINE\" = ? "
-          + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
+          + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+          + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+          + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+          + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+          + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
+          + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
+          + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+          + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\", " + PART_COL_STATS + ".\"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
@@ -2000,11 +2072,15 @@ class MetaStoreDirectSql {
         // get sum for all columns to reduce the number of queries
         Map<String, Map<Integer, Object>> sumMap = new HashMap<String, Map<Integer, Object>>();
         queryText = "select \"COLUMN_NAME\", sum(\"NUM_NULLS\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\"), sum(\"NUM_DISTINCTS\")"
-            + " from " + PART_COL_STATS + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
-            + " and \"COLUMN_NAME\" in (" + makeParams(extraColumnNameTypeParts.size()) + ")"
-            + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
-            + " and \"ENGINE\" = ? "
-            + " group by \"COLUMN_NAME\"";
+            + " from " + PART_COL_STATS
+            + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+            + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+            + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+            + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+            + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (" + makeParams(extraColumnNameTypeParts.size()) + ")"
+            + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
+            + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+            + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\"";
         start = doTrace ? System.nanoTime() : 0;
         try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
           List<String> extraColumnNames = new ArrayList<String>();
@@ -2072,18 +2148,24 @@ class MetaStoreDirectSql {
               // if the aggregation type is min/max, we extrapolate from the
               // left/right borders
               if (!decimal) {
-                queryText = "select \"" + colStatName
-                    + "\",\"PARTITION_NAME\" from " + PART_COL_STATS
-                    + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ?" + " and \"COLUMN_NAME\" = ?"
-                    + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
-                    + " and \"ENGINE\" = ? "
+                queryText = "select \"" + colStatName + "\",\"PART_NAME\" from " + PART_COL_STATS
+                    + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+                    + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+                    + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+                    + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+                    + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" = ? "
+                    + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
+                    + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
                     + " order by \"" + colStatName + "\"";
               } else {
-                queryText = "select \"" + colStatName
-                    + "\",\"PARTITION_NAME\" from " + PART_COL_STATS
-                    + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ?" + " and \"COLUMN_NAME\" = ?"
-                    + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
-                    + " and \"ENGINE\" = ? "
+                queryText = "select \"" + colStatName + "\",\"PART_NAME\" from " + PART_COL_STATS
+                    + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+                    + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+                    + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+                    + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+                    + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" = ? "
+                    + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
+                    + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
                     + " order by cast(\"" + colStatName + "\" as decimal)";
               }
               start = doTrace ? System.nanoTime() : 0;
@@ -2111,10 +2193,14 @@ class MetaStoreDirectSql {
                   + "avg((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
                   + "avg((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
                   + "avg((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\")"
-                  + " from " + PART_COL_STATS + "" + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ?"
-                  + " and \"COLUMN_NAME\" = ?" + " and \"PARTITION_NAME\" in ("
-                  + makeParams(partNames.size()) + ")"
-                  + " and \"ENGINE\" = ? "
+                  + " from " + PART_COL_STATS + ""
+                  + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+                  + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+                  + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+                  + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+                  + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" = ? "
+                  + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
+                  + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
                   + " group by \"COLUMN_NAME\"";
               start = doTrace ? System.nanoTime() : 0;
               try(QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
@@ -2191,12 +2277,16 @@ class MetaStoreDirectSql {
       return Collections.emptyList();
     }
     final boolean doTrace = LOG.isDebugEnabled();
-    final String queryText0 = "select \"PARTITION_NAME\", " + getStatsList(enableBitVector, enableKll) + " from "
-        + " " + PART_COL_STATS + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ? and " +
-        "\"COLUMN_NAME\""
-        + "  in (%1$s) AND \"PARTITION_NAME\" in (%2$s) "
-        + " and \"ENGINE\" = ? "
-        + " order by \"PARTITION_NAME\"";
+    final String queryText0 = "select \"PARTITIONS\".\"PART_NAME\", " + getStatsList(enableBitVector, enableKll)
+        + " from " + PART_COL_STATS
+        + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+        + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+        + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+        + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
+        + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+        + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+        + " order by " + PARTITIONS +  ".\"PART_NAME\"";
     Batchable<String, Object[]> b = new Batchable<String, Object[]>() {
       @Override
       public List<Object[]> run(final List<String> inputColNames) throws MetaException {

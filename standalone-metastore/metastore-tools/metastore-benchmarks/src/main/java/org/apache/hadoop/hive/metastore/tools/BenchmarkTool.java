@@ -57,7 +57,9 @@ import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkDrop
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetNotificationId;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionNames;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitions;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsByFilter;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsByName;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsStat;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetTable;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListAllTables;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListDatabases;
@@ -68,6 +70,7 @@ import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkOpen
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkPartitionManagement;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkRenameTable;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkTableCreate;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkUpdatePartitionsStat;
 import static org.apache.hadoop.hive.metastore.tools.Util.getServerUri;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
@@ -284,6 +287,12 @@ public class BenchmarkTool implements Runnable {
             () -> benchmarkGetPartitionNames(bench, bData, 1))
         .add("getPartitionsByNames",
             () -> benchmarkGetPartitionsByName(bench, bData, 1))
+        .add("getPartitionsByFilter",
+            () -> benchmarkGetPartitionsByFilter(bench, bData, 1))
+        .add("getPartitionsStat",
+            () -> benchmarkGetPartitionsStat(bench, bData, 1))
+        .add("updatePartitionsStat",
+            () -> benchmarkUpdatePartitionsStat(bench, bData, 1))
         .add("renameTable",
             () -> benchmarkRenameTable(bench, bData, 1))
         .add("dropDatabase",
@@ -308,6 +317,12 @@ public class BenchmarkTool implements Runnable {
               () -> benchmarkGetPartitionNames(bench, bData, howMany))
           .add("getPartitionsByNames" + '.' + howMany,
               () -> benchmarkGetPartitionsByName(bench, bData, howMany))
+          .add("getPartitionsByFilter" + '.' + howMany,
+              () -> benchmarkGetPartitionsByFilter(bench, bData, howMany))
+          .add("getPartitionsStat" + '.' + howMany,
+              () -> benchmarkGetPartitionsStat(bench, bData, howMany))
+          .add("updatePartitionsStat" + '.' + howMany,
+              () -> benchmarkUpdatePartitionsStat(bench, bData, howMany))
           .add("addPartitions" + '.' + howMany,
               () -> benchmarkCreatePartitions(bench, bData, howMany))
           .add("dropPartitions" + '.' + howMany,
