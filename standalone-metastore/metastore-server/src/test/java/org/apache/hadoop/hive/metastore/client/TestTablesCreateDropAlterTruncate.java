@@ -63,6 +63,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1196,6 +1197,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
   @Test
   public void testAlterTableExpectedPropertyMatch() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     EnvironmentContext context = new EnvironmentContext();
@@ -1209,6 +1212,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
   @Test(expected = MetaException.class)
   public void testAlterTableExpectedPropertyDifferent() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     EnvironmentContext context = new EnvironmentContext();
@@ -1228,6 +1233,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
    */
   @Test
   public void testAlterTableExpectedPropertyConcurrent() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     originalTable.getParameters().put("snapshot", "0");
