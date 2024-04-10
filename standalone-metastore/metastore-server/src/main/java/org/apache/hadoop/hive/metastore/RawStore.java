@@ -2317,4 +2317,14 @@ public interface RawStore extends Configurable {
     return null;
   }
 
+  /**
+   * Updates a given table parameter with expected value.
+   *
+   * @return the number of rows updated
+   */
+  default long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
+      throws MetaException, NoSuchObjectException {
+    throw new UnsupportedOperationException("This Store doesn't support updating table parameter with expected value");
+  }
+
 }
