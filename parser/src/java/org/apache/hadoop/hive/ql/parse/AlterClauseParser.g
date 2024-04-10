@@ -81,6 +81,7 @@ alterTableStatementSuffix
     | alterStatementSuffixDropTag
     | alterStatementSuffixConvert
     | alterStatementSuffixRenameBranch
+    | alterStatementSuffixReplaceBranch
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -511,6 +512,13 @@ alterStatementSuffixRenameBranch
 @after { gParent.popMsg(state); }
     : KW_RENAME KW_BRANCH sourceBranch=identifier KW_TO targetBranch=identifier
     -> ^(TOK_ALTERTABLE_RENAME_BRANCH $sourceBranch $targetBranch)
+    ;
+
+alterStatementSuffixReplaceBranch
+@init { gParent.pushMsg("alter table replace branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE KW_BRANCH sourceBranch=Identifier KW_WITH KW_SNAPSHOT? (targetBranch=(Identifier | Number))
+    -> ^(TOK_ALTERTABLE_REPLACE_BRANCH KW_SNAPSHOT? $sourceBranch $targetBranch)
     ;
 
 alterStatementSuffixDropBranch

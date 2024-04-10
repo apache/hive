@@ -97,4 +97,19 @@ public class IcebergBranchExec {
     LOG.info("Renaming branch {} to {} on iceberg table {}", sourceBranch, targetBranch, table.name());
     table.manageSnapshots().renameBranch(sourceBranch, targetBranch).commit();
   }
+
+  public static void replaceBranch(Table table,
+      AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec replaceSnapshotrefSpec) {
+    String sourceBranch = replaceSnapshotrefSpec.getSourceBranchName();
+
+    if (replaceSnapshotrefSpec.isReplaceBySnapshot()) {
+      long targetSnapshot = replaceSnapshotrefSpec.getTargetSnapshot();
+      LOG.info("Replacing branch {} with snapshot {} on iceberg table {}", sourceBranch, targetSnapshot, table.name());
+      table.manageSnapshots().replaceBranch(sourceBranch, targetSnapshot).commit();
+    } else {
+      String targetBranch = replaceSnapshotrefSpec.getTargetBranchName();
+      LOG.info("Replacing branch {} with branch {} on iceberg table {}", sourceBranch, targetBranch, table.name());
+      table.manageSnapshots().replaceBranch(sourceBranch, targetBranch).commit();
+    }
+  }
 }

@@ -147,4 +147,52 @@ public class AlterTableSnapshotRefSpec<T> {
           .toString();
     }
   }
+
+  public static class ReplaceSnapshotrefSpec {
+
+    private final String sourceBranch;
+    private String targetBranch = null;
+    private long targetSnapshot;
+
+    boolean replaceBySnapshot = false;
+
+    public String getSourceBranchName() {
+      return sourceBranch;
+    }
+
+    public String getTargetBranchName() {
+      return targetBranch;
+    }
+
+    public boolean isReplaceBySnapshot() {
+      return replaceBySnapshot;
+    }
+
+    public long getTargetSnapshot() {
+      return targetSnapshot;
+    }
+
+    public ReplaceSnapshotrefSpec(String sourceBranch, String targetBranch) {
+      this.sourceBranch = sourceBranch;
+      this.targetBranch = targetBranch;
+    }
+
+    public ReplaceSnapshotrefSpec(String sourceBranch, long targetSnapshot) {
+      this.sourceBranch = sourceBranch;
+      this.targetSnapshot = targetSnapshot;
+      replaceBySnapshot = true;
+    }
+
+    @Override
+    public String toString() {
+      MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
+      stringHelper.add("sourceBranch", sourceBranch);
+      if (replaceBySnapshot) {
+        stringHelper.add("targetSnapshot", targetSnapshot);
+      } else {
+        stringHelper.add("targetBranch", targetBranch);
+      }
+      return stringHelper.toString();
+    }
+  }
 }
