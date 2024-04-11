@@ -430,42 +430,46 @@ public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBu
   }
 
   private CompactionQueryBuilder getMmMajorCompactionQueryBuilderForCreate() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.CREATE, true,
-        RESULT_TABLE_NAME);
+    return getMmMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.CREATE);
   }
 
   private CompactionQueryBuilder getMmMajorCompactionQueryBuilderForInsert() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.INSERT, true,
-        RESULT_TABLE_NAME);
+    return getMmMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.INSERT);
   }
 
   private CompactionQueryBuilder getMmMajorCompactionQueryBuilderForAlter() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.ALTER, true,
-        RESULT_TABLE_NAME);
+    return getMmMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.ALTER);
   }
 
   private CompactionQueryBuilder getMmMajorCompactionQueryBuilderForDrop() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.DROP, true,
-        RESULT_TABLE_NAME);
+    return getMmMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.DROP);
   }
 
   private CompactionQueryBuilder getMmMinorCompactionQueryBuilderForCreate() {
-    return new CompactionQueryBuilder(CompactionType.MINOR, CompactionQueryBuilder.Operation.CREATE, true,
-        RESULT_TABLE_NAME);
+    return getMmMinorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.CREATE);
   }
 
   private CompactionQueryBuilder getMmMinorCompactionQueryBuilderForInsert() {
-    return new CompactionQueryBuilder(CompactionType.MINOR, CompactionQueryBuilder.Operation.INSERT, true,
-        RESULT_TABLE_NAME);
+    return getMmMinorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.INSERT);
   }
 
   private CompactionQueryBuilder getMmMinorCompactionQueryBuilderForAlter() {
-    return new CompactionQueryBuilder(CompactionType.MINOR, CompactionQueryBuilder.Operation.ALTER, true,
-        RESULT_TABLE_NAME);
+    return getMmMinorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.ALTER);
   }
 
   private CompactionQueryBuilder getMmMinorCompactionQueryBuilderForDrop() {
-    return new CompactionQueryBuilder(CompactionType.MINOR, CompactionQueryBuilder.Operation.DROP, true,
-        RESULT_TABLE_NAME);
+    return getMmMinorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.DROP);
+  }
+
+  private CompactionQueryBuilder getMmMajorCompactionBuilder() {
+    CompactionQueryBuilder compactionQueryBuilder =
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(CompactionType.MAJOR, true);
+    return compactionQueryBuilder.setResultTableName(RESULT_TABLE_NAME);
+  }
+
+  private CompactionQueryBuilder getMmMinorCompactionBuilder() {
+    CompactionQueryBuilder compactionQueryBuilder =
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(CompactionType.MINOR, true);
+    return compactionQueryBuilder.setResultTableName(RESULT_TABLE_NAME);
   }
 }

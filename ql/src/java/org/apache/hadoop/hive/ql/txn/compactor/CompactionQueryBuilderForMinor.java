@@ -85,8 +85,7 @@ class CompactionQueryBuilderForMinor extends CompactionQueryBuilder {
     if (isBucketed && sourceTab != null) { // skip if sourceTab is null to avoid NPEs
       int numBuckets = 1;
       try {
-        org.apache.hadoop.hive.ql.metadata.Table t =
-            Hive.get().getTable(sourceTab.getDbName(), sourceTab.getTableName());
+        org.apache.hadoop.hive.ql.metadata.Table t = getTable();
         numBuckets = Math.max(t.getNumBuckets(), numBuckets);
         bucketingVersion = t.getBucketingVersion();
       } catch (HiveException e) {
@@ -97,6 +96,11 @@ class CompactionQueryBuilderForMinor extends CompactionQueryBuilder {
       }
     }
     return bucketingVersion;
+  }
+
+  protected org.apache.hadoop.hive.ql.metadata.Table getTable() throws HiveException {
+    org.apache.hadoop.hive.ql.metadata.Table t = Hive.get().getTable(sourceTab.getDbName(), sourceTab.getTableName());
+    return t;
   }
 
 }

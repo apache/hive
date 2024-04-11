@@ -237,23 +237,25 @@ public class TestCompactionQueryBuilderForMajorCompaction extends CompactionQuer
   }
 
   private CompactionQueryBuilder getMajorCompactionQueryBuilderForCreate() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.CREATE, false,
-        RESULT_TABLE_NAME);
+    return getMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.CREATE);
   }
 
   private CompactionQueryBuilder getMajorCompactionQueryBuilderForInsert() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.INSERT, false,
-        RESULT_TABLE_NAME);
+    return getMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.INSERT);
   }
 
   private CompactionQueryBuilder getMajorCompactionQueryBuilderForAlter() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.ALTER, false,
-        RESULT_TABLE_NAME);
+    return getMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.ALTER);
   }
 
   private CompactionQueryBuilder getMajorCompactionQueryBuilderForDrop() {
-    return new CompactionQueryBuilder(CompactionType.MAJOR, CompactionQueryBuilder.Operation.DROP, false,
-        RESULT_TABLE_NAME);
+    return getMajorCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.DROP);
+  }
+
+  private CompactionQueryBuilder getMajorCompactionBuilder() {
+    CompactionQueryBuilder compactionQueryBuilder =
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(CompactionType.MAJOR, false);
+    return compactionQueryBuilder.setResultTableName(RESULT_TABLE_NAME);
   }
 
 }

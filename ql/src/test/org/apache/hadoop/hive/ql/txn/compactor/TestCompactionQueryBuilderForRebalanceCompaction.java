@@ -119,22 +119,24 @@ public class TestCompactionQueryBuilderForRebalanceCompaction extends Compaction
   }
 
   private CompactionQueryBuilder getRebalanceCompactionQueryBuilderForCreate() {
-    return new CompactionQueryBuilder(CompactionType.REBALANCE, CompactionQueryBuilder.Operation.CREATE, false,
-        RESULT_TABLE_NAME);
+    return getRebalanceCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.CREATE);
   }
 
   private CompactionQueryBuilder getRebalanceCompactionQueryBuilderForInsert() {
-    return new CompactionQueryBuilder(CompactionType.REBALANCE, CompactionQueryBuilder.Operation.INSERT, false,
-        RESULT_TABLE_NAME);
+    return getRebalanceCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.INSERT);
   }
 
   private CompactionQueryBuilder getRebalanceCompactionQueryBuilderForAlter() {
-    return new CompactionQueryBuilder(CompactionType.REBALANCE, CompactionQueryBuilder.Operation.ALTER, false,
-        RESULT_TABLE_NAME);
+    return getRebalanceCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.ALTER);
   }
 
   private CompactionQueryBuilder getRebalanceCompactionQueryBuilderForDrop() {
-    return new CompactionQueryBuilder(CompactionType.REBALANCE, CompactionQueryBuilder.Operation.DROP, false,
-        RESULT_TABLE_NAME);
+    return getRebalanceCompactionBuilder().setOperation(CompactionQueryBuilder.Operation.DROP);
+  }
+
+  private CompactionQueryBuilder getRebalanceCompactionBuilder() {
+    CompactionQueryBuilder compactionQueryBuilder =
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(CompactionType.REBALANCE, false);
+    return compactionQueryBuilder.setResultTableName(RESULT_TABLE_NAME);
   }
 }

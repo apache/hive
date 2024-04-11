@@ -143,8 +143,4 @@ public class CompactionQueryBuilderTest {
     return writeIds;
   }
 
-  protected CompactionQueryBuilder getMmCompactionQueryBuilder(CompactionType compactionType,
-      CompactionQueryBuilder.Operation operation) {
-    return new CompactionQueryBuilder(compactionType, operation, true, RESULT_TABLE_NAME);
-  }
 }
