@@ -99,6 +99,7 @@ public class RelPlanParser {
   private final AtomicInteger noColsMissingStats;
   private final HiveRelJson relJson = new HiveRelJson(null);
   private final Map<String, RelNode> relMap = new LinkedHashMap<>();
+  private final Map<String, String> tabNameToPlKey;
   private RelNode lastRel;
 
   public RelPlanParser(Context ctx, QB qb, RelOptSchema schema, RelOptCluster cluster, HiveConf hiveConf, Hive db,
@@ -114,6 +115,14 @@ public class RelPlanParser {
     this.partitionCache = partitionCache;
     this.colStatsCache = colStatsCache;
     this.noColsMissingStats = noColsMissingStats;
+    this.tabNameToPlKey = partitionCache.entrySet().stream()
+        .map(e -> Pair.of(
+            TableName.getDbTable(
+                e.getValue().getSourceTable().getDbName(),
+                e.getValue().getSourceTable().getTableName()
+            ),
+            e.getKey()))
+        .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
   }
 
   public RelNode parse(String json) throws IOException {
@@ -238,7 +247,7 @@ public class RelPlanParser {
 
       Table tbl = getTable(tableAlias, dbName, tableName);
 
-      return new RelOptHiveTable(
+      RelOptHiveTable relOptHiveTable = new RelOptHiveTable(
           schema,
           cluster.getTypeFactory(),
           qualifiedName,
@@ -254,6 +263,14 @@ public class RelPlanParser {
           colStatsCache,
           noColsMissingStats
       );
+
+      String dbTableName = TableName.getDbTable(dbName, tableName);
+      if (tabNameToPlKey.containsKey(dbTableName)) {
+        String plKey = tabNameToPlKey.get(dbTableName);
+        relOptHiveTable.partitionList = partitionCache.get(plKey);
+      }
+
+      return relOptHiveTable;
     }
 
     private List<VirtualColumn> getVirtualColumns() {
