@@ -98,7 +98,8 @@ public class HiveJoin extends Join implements HiveRelNode {
   public HiveJoin(RelInput input) throws InvalidRelException, CalciteSemanticException {
     this(input.getCluster(), input.getTraitSet(), input.getInputs().get(0),
         input.getInputs().get(1), input.getExpression("condition"),
-        input.getEnum("joinType", JoinRelType.class), ImmutableSet.of(), DefaultJoinAlgorithm.INSTANCE);
+        input.getEnum("joinType", JoinRelType.class), ImmutableSet.of(),
+        (JoinAlgorithm) input.get("joinAlgorithm"));
   }
 
   @Override
