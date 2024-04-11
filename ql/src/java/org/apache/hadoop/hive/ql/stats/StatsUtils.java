@@ -82,6 +82,8 @@ import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.ql.util.NamedForkJoinWorkerThreadFactory;
@@ -1616,6 +1618,17 @@ public class StatsUtils {
         }
       }
 
+      if (isColStatsReusableFunc(engfd) && engfd.getChildren().get(0) instanceof ExprNodeColumnDesc) {
+        ColStatistics stats = parentStats.getColumnStatisticsFromColName(engfd.getCols().get(0));
+        if (stats != null) {
+          ColStatistics newStats;
+          newStats = stats.clone();
+          newStats.setColumnName(colName);
+          newStats.setColumnType(colType.toLowerCase());
+          return newStats;
+        }
+      }
+
       if (conf.getBoolVar(ConfVars.HIVE_STATS_ESTIMATORS_ENABLE)) {
         Optional<StatEstimatorProvider> sep = engfd.getGenericUDF().adapt(StatEstimatorProvider.class);
         if (sep.isPresent()) {
@@ -1734,6 +1747,13 @@ public class StatsUtils {
     }
     return TypeInfoUtils.implicitConvertible(engfd.getChildren().get(0).getTypeInfo(),
             engfd.getTypeInfo());
+  }
+
+  private static boolean isColStatsReusableFunc(ExprNodeGenericFuncDesc engfd) {
+    GenericUDF udf = engfd.getGenericUDF();
+    Class udfClass =
+        (udf instanceof GenericUDFBridge) ? ((GenericUDFBridge)udf).getUdfClass() : udf.getClass();
+    return udfClass == GenericUDFLower.class || udfClass == GenericUDFUpper.class;
   }
 
   public static Long addWithExpDecay (List<Long> distinctVals) {
