@@ -79,6 +79,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * Class responsible for parsing a given plan from a json file.
  */
@@ -238,7 +240,7 @@ public class RelPlanParser {
 
       Table tbl = getTable(tableAlias, dbName, tableName);
 
-      return new RelOptHiveTable(
+      RelOptHiveTable relOptHiveTable = new RelOptHiveTable(
           schema,
           cluster.getTypeFactory(),
           qualifiedName,
@@ -254,6 +256,14 @@ public class RelPlanParser {
           colStatsCache,
           noColsMissingStats
       );
+
+      // set partition list
+      String plKey = (String) jsonRel.get("plKey");
+      if (isNotBlank(plKey) && partitionCache.containsKey(plKey)) {
+        relOptHiveTable.partitionList = partitionCache.get(plKey);
+      }
+
+      return relOptHiveTable;
     }
 
     private List<VirtualColumn> getVirtualColumns() {
