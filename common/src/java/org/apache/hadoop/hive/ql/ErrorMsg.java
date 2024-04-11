@@ -486,6 +486,7 @@ public enum ErrorMsg {
   NON_NATIVE_ACID_UPDATE(10435, "Update and Merge to a non-native ACID table in \"merge-on-read\" mode is only supported when \"" +
           HiveConf.ConfVars.SPLIT_UPDATE.varname + "\"=\"true\""),
   READ_ONLY_DATABASE(10436, "Database {0} is read-only", true),
+  UNEXPECTED_PARTITION_TRANSFORM_SPEC(10437, "Partition transforms are only supported by Iceberg storage handler", true),
 
   //========================== 20000 range starts here ========================//
 
