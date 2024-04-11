@@ -51,6 +51,9 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -440,6 +443,10 @@ public class RelPlanParser {
       if ("getJoinTypesForHiveMultiJoin".equals(tag)) {
         return getJoinTypesForHiveMultiJoin();
       }
+      if ("joinAlgorithm".equals(tag)) {
+        return getJoinAlgorithm();
+      }
+
       return jsonRel.get(tag);
     }
 
@@ -546,6 +553,25 @@ public class RelPlanParser {
           .map(s -> s.split(" : ", 2)[1])
           .map(s -> Util.enumVal(JoinRelType.class, s))
           .collect(Collectors.toList());
+    }
+
+    private HiveCostModel.JoinAlgorithm getJoinAlgorithm() {
+      String algoName = (String) get("algorithm");
+      algoName = algoName == null ? "" : algoName;
+
+      switch (algoName) {
+        case "BucketJoin":
+          return HiveOnTezCostModel.TezBucketJoinAlgorithm.INSTANCE;
+        case "CommonJoin":
+          return HiveOnTezCostModel.TezCommonJoinAlgorithm.INSTANCE;
+        case "MapJoin":
+          return HiveOnTezCostModel.TezMapJoinAlgorithm.INSTANCE;
+        case "SMBJoin":
+          return HiveOnTezCostModel.TezSMBJoinAlgorithm.INSTANCE;
+        case "none":
+        default:
+          return HiveDefaultCostModel.DefaultJoinAlgorithm.INSTANCE;
+      }
     }
   }
 }
