@@ -40,6 +40,7 @@ import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelEnumTypes;
@@ -52,6 +53,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
@@ -217,7 +219,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("insideView", this.isInsideView(),
           pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES ||
               (this.isInsideView() && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES))
-      .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(),
+          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES ||
+              (hasNonDefaultPartitionListKey((RelOptHiveTable) table) &&
+                  pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES))
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
           pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES ||
@@ -229,6 +234,13 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("snapshotRef", ((RelOptHiveTable) table).getHiveTableMD().getSnapshotRef(),
           isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getSnapshotRef()) &&
               pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES);
+  }
+
+  private boolean hasNonDefaultPartitionListKey(RelOptHiveTable table) {
+    String plKey = table.getPartitionListKey();
+    String dbTableName = table.getHiveTableMD().getDbName() + "." + table.getHiveTableMD().getTableName() + ";";
+
+    return !isBlank(plKey) && !plKey.equals(dbTableName);
   }
 
   @Override
