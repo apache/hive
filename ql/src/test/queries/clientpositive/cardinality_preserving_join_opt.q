@@ -1,3 +1,5 @@
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
+
 create table if not exists customer
 (
     c_first_name            string,

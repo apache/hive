@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 -- start query 1 in stream 0 using template query24.tpl and seed 1220860970
 explain cbo
 with ssales as

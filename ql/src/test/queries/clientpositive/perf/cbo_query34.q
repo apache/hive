@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 -- start query 1 in stream 0 using template query34.tpl and seed 1971067816
 explain cbo
 select c_last_name
