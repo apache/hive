@@ -5,6 +5,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
 set hive.stats.column.autogather=true;
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 
 CREATE TABLE `customer_ext_n3`(
   `c_custkey` bigint, 

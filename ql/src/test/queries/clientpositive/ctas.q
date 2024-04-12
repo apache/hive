@@ -1,6 +1,7 @@
 --! qt:dataset:src
 set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 
 create table nzhang_Tmp(a int, b string);
 select * from nzhang_Tmp;

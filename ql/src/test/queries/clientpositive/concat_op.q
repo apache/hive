@@ -1,4 +1,6 @@
 --! qt:dataset:src
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
+
 explain select key || value from src;
 
 select concat('a','b','c');

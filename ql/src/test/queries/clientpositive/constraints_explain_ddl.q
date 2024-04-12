@@ -1,5 +1,6 @@
 set hive.cbo.enable = True;
 set hive.vectorized.execution.enabled = True;
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 
 CREATE TABLE `customer_removal_n0`(
   `c_custkey` bigint,
