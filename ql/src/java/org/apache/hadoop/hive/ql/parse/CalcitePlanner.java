@@ -419,6 +419,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private static final Pattern PATTERN_TIMESTAMP =
       Pattern.compile("TIMESTAMP\\(9\\)");
 
+  private static final int PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT = 1_000_000;
+
   /**
    * This is the list of operators that are specifically used in Hive.
    */
@@ -1762,35 +1764,41 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
-      calcitePlan = serializeAndDeserialize(relOptSchema, perfLogger, calcitePlan);
+      if (conf.getBoolVar(ConfVars.TEST_CBO_PLAN_SERIALIZATION_DESERIALIZATION_ENABLED)) {
+        calcitePlan = testSerializationAndDeserialization(perfLogger, calcitePlan);
+      }
 
       return calcitePlan;
     }
 
     @Nullable
-    private RelNode serializeAndDeserialize(RelOptSchema relOptSchema, PerfLogger perfLogger, RelNode calcitePlan) {
-      if (!canSerializeDeserialize(calcitePlan)) {
+    private RelNode testSerializationAndDeserialization(PerfLogger perfLogger, RelNode calcitePlan) {
+      if (!isSerializable(calcitePlan)) {
         return calcitePlan;
       }
-      perfLogger.perfLogBegin(this.getClass().getName(), "toJsonString");
-      String calcitePlanJson = HiveRelOptUtil.asJSONObjectString(calcitePlan, false);
-      perfLogger.perfLogEnd(this.getClass().getName(), "toJsonString");
+      perfLogger.perfLogBegin(this.getClass().getName(), "plan serializer");
+      String calcitePlanJson = serializePlan(calcitePlan);
+      perfLogger.perfLogEnd(this.getClass().getName(), "plan serializer");
 
-      if (stringSizeGreaterThan(calcitePlanJson, 1_000_000)) {
+      if (stringSizeGreaterThan(calcitePlanJson, PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT)) {
         return calcitePlan;
       }
-      LOG.debug("Size of calcite plan: {}", calcitePlanJson.getBytes(Charset.defaultCharset()).length);
-      LOG.debug("JSON plan: \n{}", calcitePlanJson);
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Size of calcite plan: {}", calcitePlanJson.getBytes(Charset.defaultCharset()).length);
+        LOG.debug("JSON plan: \n{}", calcitePlanJson);
+      }
 
       try {
-        perfLogger.perfLogBegin(this.getClass().getName(), "fromJsonString");
-        RelPlanParser parser =
-            new RelPlanParser(ctx, getQB(), relOptSchema, calcitePlan.getCluster(), conf, db, tabNameToTabObject,
-                partitionCache, colStatsCache, noColsMissingStats);
-        RelNode fromJson = parser.parse(calcitePlanJson);
-        perfLogger.perfLogEnd(this.getClass().getName(), "fromJsonString");
-        LOG.debug("Base plan: \n{}", RelOptUtil.toString(calcitePlan));
-        LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
+        perfLogger.perfLogBegin(this.getClass().getName(), "plan deserializer");
+        RelNode fromJson = deserializePlan(calcitePlan.getCluster(), calcitePlanJson);
+        perfLogger.perfLogEnd(this.getClass().getName(), "plan deserializer");
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Base plan: \n{}", RelOptUtil.toString(calcitePlan));
+          LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
+        }
+
         calcitePlan = fromJson;
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -1808,10 +1816,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return executeProgram(basePlan, searchProgram.build(), mdProvider, executor);
     }
 
-    private boolean canSerializeDeserialize(RelNode plan) {
-      return
-          conf.getBoolVar(ConfVars.CBO_PLAN_SERIALIZATION_DESERIALIZATION_ENABLED) &&
-          !stringSizeGreaterThan(ctx.getCmd(), 1_000_000) &&
+    private String serializePlan(RelNode plan) {
+      return HiveRelOptUtil.asJSONObjectString(plan, false);
+    }
+
+    private RelNode deserializePlan(RelOptCluster cluster, String jsonPlan) throws IOException {
+      RelPlanParser parser =
+          new RelPlanParser(ctx, getQB(), relOptSchema, cluster, conf, db, tabNameToTabObject,
+              partitionCache, colStatsCache, noColsMissingStats);
+      return parser.parse(jsonPlan);
+    }
+
+    private boolean isSerializable(RelNode plan) {
+      return !stringSizeGreaterThan(ctx.getCmd(), PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT) &&
           HiveRelNode.stream(plan)
             .noneMatch(node -> node.getConvention().getName().toLowerCase().contains("jdbc"));
     }
