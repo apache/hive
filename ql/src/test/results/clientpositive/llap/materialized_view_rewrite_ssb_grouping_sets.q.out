@@ -696,7 +696,7 @@ POSTHOOK: Input: default@ssb_mv_n3
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[sum($16)])
-  HiveFilter(condition=[AND(>(2.5E1, $8), =(CAST($18):BIGINT NOT NULL, 29247), =($4, 1993), BETWEEN(false, $7, 1:DOUBLE, 3:DOUBLE))])
+  HiveFilter(condition=[AND(>(25, $8), =(CAST($18):BIGINT NOT NULL, 29247), =($4, 1993), BETWEEN(false, $7, 1:DOUBLE, 3:DOUBLE))])
     HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo

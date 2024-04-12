@@ -3290,7 +3290,7 @@ CBO PLAN:
 HiveProject(i=[$0])
   HiveFilter(condition=[=($2, 2)])
     HiveAggregate(group=[{0, 1}], agg#0=[count($2)])
-      HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+      HiveProject(i=[$0], j=[$1], $f2=[$2])
         HiveUnion(all=[true])
           HiveProject(i=[$0], j=[$1], $f2=[$2])
             HiveAggregate(group=[{0, 1}], agg#0=[count()])
