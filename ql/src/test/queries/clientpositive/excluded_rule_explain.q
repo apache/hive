@@ -1,3 +1,5 @@
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
+
 EXPLAIN CBO SELECT 1;
 EXPLAIN FORMATTED CBO SELECT 1;
 EXPLAIN SELECT 1;

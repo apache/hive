@@ -2,6 +2,7 @@ set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcit
 set hive.auto.convert.join=true;
 set hive.tez.cartesian-product.enabled=true;
 set hive.mapred.mode=nonstrict;
+set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 -- start query 1 in stream 0 using template query6.tpl and seed 1819994127
 explain cbo
 select  a.ca_state state, count(*) cnt
