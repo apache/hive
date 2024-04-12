@@ -492,9 +492,9 @@ public class HiveConf extends Configuration {
                     "Only in effect when the cache is enabled"),
     MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.v2.recordStats", false,
             "This property enables recording metastore client cache stats in DEBUG logs"),
-    CBO_PLAN_SERIALIZATION_DESERIALIZATION_ENABLED("hive.cbo.plan.serialization.deserialization.enabled",
-        true, "This property enables serialization and deserialization for cbo plans. Currently" +
-        "for internal use only."),
+    TEST_CBO_PLAN_SERIALIZATION_DESERIALIZATION_ENABLED("hive.test.cbo.plan.serialization.deserialization.enabled",
+        false, "This property enables serialization and deserialization for cbo plans. This should" +
+        "only be enabled for testing - internal usage only."),
     // QL execution stuff
     DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE("dfs.xattr.supported.only.on.reserved.namespace", false,
       "DFS supports xattr only on Reserved Name space (/.reserved/raw)"),
