@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
@@ -33,6 +34,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.util.Tasks;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,6 +62,12 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   @After
   public void destroyTestSetUp() {
     TestUtilPhaser.destroyInstance();
+  }
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(fileFormat.equals(FileFormat.PARQUET) && isVectorized &&
+        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
   }
 
   @Test
