@@ -151,6 +151,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     }
 
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
+    job.set(InputFormatConfig.GROUPING_PARTITION_COLUMNS, job.get(TableScanDesc.GROUPING_PARTITION_COLUMNS, ""));
     job.setBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS,
             job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
     job.set(InputFormatConfig.AS_OF_TIMESTAMP, job.get(TableScanDesc.AS_OF_TIMESTAMP, "-1"));

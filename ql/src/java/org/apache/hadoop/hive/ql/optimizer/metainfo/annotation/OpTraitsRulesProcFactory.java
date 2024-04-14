@@ -97,10 +97,12 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       int numBuckets = -1;
       int numReduceSinks = 1;
+      List<CustomPartitionFunction> customPartitionFunctions = new ArrayList<>();
       OpTraits parentOpTraits = rs.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
         numReduceSinks += parentOpTraits.getNumReduceSinks();
+        customPartitionFunctions = parentOpTraits.getCustomPartitionFunctions();
       }
 
       List<String> bucketCols = new ArrayList<>();
@@ -160,7 +162,7 @@ public class OpTraitsRulesProcFactory {
 
       listBucketCols.add(bucketCols);
       OpTraits opTraits = new OpTraits(listBucketCols, numBuckets,
-          listBucketCols, numReduceSinks);
+          listBucketCols, customPartitionFunctions, numReduceSinks);
       rs.setOpTraits(opTraits);
       return null;
     }
@@ -224,23 +226,47 @@ public class OpTraitsRulesProcFactory {
       } catch (HiveException e) {
         prunedPartList = null;
       }
-      boolean isBucketed = checkBucketedTable(table,
-          opTraitsCtx.getParseContext(), prunedPartList);
-      List<List<String>> bucketColsList = new ArrayList<List<String>>();
-      List<List<String>> sortedColsList = new ArrayList<List<String>>();
-      int numBuckets = -1;
-      if (isBucketed) {
-        bucketColsList.add(table.getBucketCols());
+
+      final CustomPartitionFunction customPartitionFunction;
+      final int numBuckets;
+      final List<List<String>> bucketColsList = new ArrayList<>();
+      final List<List<String>> sortedColsList = new ArrayList<>();
+      if (table.getStorageHandler() != null && table.getStorageHandler().supportsPartitionAwareOptimization(table)) {
+        final PartitionAwareOptimizationCtx ctx =
+            table.getStorageHandler().createPartitionAwareOptimizationContext(table);
+        // Hive supports Bucket Map Join with only a single bucketed transform now
+        final Optional<CustomPartitionFunction> optionalPartitionFunction = ctx
+            .getPartitionFunctions()
+            .stream()
+            .filter(spec -> spec.getNumBuckets().isPresent())
+            .findFirst();
+        if (optionalPartitionFunction.isPresent()) {
+          customPartitionFunction = optionalPartitionFunction.get();
+          numBuckets = customPartitionFunction.getNumBuckets().orElse(-1);
+          bucketColsList.add(customPartitionFunction.getColumnNames());
+        } else {
+          customPartitionFunction = null;
+          numBuckets = -1;
+        }
+      } else if (checkBucketedTable(table, opTraitsCtx.getParseContext(), prunedPartList)) {
+        customPartitionFunction = null;
         numBuckets = table.getNumBuckets();
-        List<String> sortCols = new ArrayList<String>();
+        bucketColsList.add(table.getBucketCols());
+        List<String> sortCols = new ArrayList<>();
         for (Order colSortOrder : table.getSortCols()) {
           sortCols.add(colSortOrder.getCol());
         }
         sortedColsList.add(sortCols);
+      } else {
+        customPartitionFunction = null;
+        numBuckets = -1;
       }
+
+      List<CustomPartitionFunction> partitionFunctions = customPartitionFunction == null
+          ? Collections.emptyList() : Collections.singletonList(customPartitionFunction);
       // num reduce sinks hardcoded to 0 because TS has no parents
       OpTraits opTraits = new OpTraits(bucketColsList, numBuckets,
-          sortedColsList, 0);
+          sortedColsList, partitionFunctions, 0);
       ts.setOpTraits(opTraits);
       return null;
     }
@@ -265,13 +291,15 @@ public class OpTraitsRulesProcFactory {
       }
 
       List<List<String>> listBucketCols = new ArrayList<>();
+      List<CustomPartitionFunction> customPartitionFunctions = new ArrayList<>();
       int numReduceSinks = 0;
       OpTraits parentOpTraits = gbyOp.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
+        customPartitionFunctions = parentOpTraits.getCustomPartitionFunctions();
         numReduceSinks = parentOpTraits.getNumReduceSinks();
       }
       listBucketCols.add(gbyKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols,
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols, customPartitionFunctions,
           numReduceSinks);
       gbyOp.setOpTraits(opTraits);
       return null;
@@ -307,14 +335,16 @@ public class OpTraitsRulesProcFactory {
       }
 
       List<List<String>> listBucketCols = new ArrayList<>();
+      List<CustomPartitionFunction> customPartitionFunctions = new ArrayList<>();
       int numReduceSinks = 0;
       OpTraits parentOptraits = ptfOp.getParentOperators().get(0).getOpTraits();
       if (parentOptraits != null) {
+        customPartitionFunctions = parentOptraits.getCustomPartitionFunctions();
         numReduceSinks = parentOptraits.getNumReduceSinks();
       }
 
       listBucketCols.add(partitionKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols,
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols, customPartitionFunctions,
           numReduceSinks);
       ptfOp.setOpTraits(opTraits);
       return null;
@@ -384,6 +414,7 @@ public class OpTraitsRulesProcFactory {
       }
 
       int numBuckets = -1;
+      List<CustomPartitionFunction> customPartitionFunctions = null;
       int numReduceSinks = 0;
       OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
@@ -392,9 +423,10 @@ public class OpTraitsRulesProcFactory {
             !(listBucketCols.isEmpty() || listBucketCols.get(0).isEmpty())) {
           numBuckets = parentOpTraits.getNumBuckets();
         }
+        customPartitionFunctions = parentOpTraits.getCustomPartitionFunctions();
         numReduceSinks = parentOpTraits.getNumReduceSinks();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols,
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols, customPartitionFunctions,
           numReduceSinks);
       selOp.setOpTraits(opTraits);
       return null;
@@ -433,7 +465,7 @@ public class OpTraitsRulesProcFactory {
       // The bucketingVersion is not relevant here as it is never used.
       // For SMB, we look at the parent tables' bucketing versions and for
       // bucket map join the big table's bucketing version is considered.
-      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, numReduceSinks));
+      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, Collections.emptyList(), numReduceSinks));
       return null;
     }
 
@@ -496,7 +528,7 @@ public class OpTraitsRulesProcFactory {
         }
       }
       OpTraits opTraits = new OpTraits(null, -1,
-          null, numReduceSinks);
+          null, null, numReduceSinks);
       operator.setOpTraits(opTraits);
       return null;
     }

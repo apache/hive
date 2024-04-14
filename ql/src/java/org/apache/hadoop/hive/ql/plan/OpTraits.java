@@ -24,14 +24,16 @@ public class OpTraits {
 
   private List<List<String>> bucketColNames;
   private List<List<String>> sortColNames;
+  private final List<CustomPartitionFunction> customPartitionFunctions;
   private int numBuckets;
   private int numReduceSinks;
 
   public OpTraits(List<List<String>> bucketColNames, int numBuckets,
-      List<List<String>> sortColNames, int numReduceSinks) {
+      List<List<String>> sortColNames, List<CustomPartitionFunction> customPartitionFunctions, int numReduceSinks) {
     this.bucketColNames = bucketColNames;
     this.numBuckets = numBuckets;
     this.sortColNames = sortColNames;
+    this.customPartitionFunctions = customPartitionFunctions;
     this.numReduceSinks = numReduceSinks;
   }
 
@@ -59,6 +61,9 @@ public class OpTraits {
     return sortColNames;
   }
 
+  public List<CustomPartitionFunction> getCustomPartitionFunctions() {
+    return customPartitionFunctions;
+  }
 
   public void setNumReduceSinks(int numReduceSinks) {
     this.numReduceSinks = numReduceSinks;
@@ -71,6 +76,7 @@ public class OpTraits {
   @Override
   public String toString() {
     return "{ bucket column names: " + bucketColNames + "; sort column names: "
-        + sortColNames + "; bucket count: " + numBuckets + "}";
+        + sortColNames + "; custom partition functions: " + customPartitionFunctions + "; bucket count: "
+        + numBuckets + "}";
   }
 }

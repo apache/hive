@@ -16,22 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.optimizer;
+package org.apache.iceberg.mr.hive.partition;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 
-public class TezBucketJoinProcCtx extends BucketJoinProcCtx {
-  private int numBuckets = -1;
+class SettableDeferredObject implements DeferredObject {
+  private Object value;
 
-  public TezBucketJoinProcCtx(HiveConf conf) {
-    super(conf);
+  @Override
+  public void prepare(int i) {
   }
 
-  public void setNumBuckets(int numBuckets) {
-    this.numBuckets = numBuckets;
+  @Override
+  public Object get() {
+    return value;
   }
 
-  public Integer getNumBuckets() {
-    return numBuckets;
+  void set(Object object) {
+    this.value = object;
   }
 }

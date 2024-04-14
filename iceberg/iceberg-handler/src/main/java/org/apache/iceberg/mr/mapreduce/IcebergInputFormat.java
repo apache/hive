@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +59,7 @@ import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Scan;
+import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotRef;
@@ -95,8 +97,10 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SerializationUtil;
+import org.apache.iceberg.util.TableScanUtil;
 
 /**
  * Generic Mrv2 InputFormat API for Iceberg.
@@ -226,22 +230,18 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
             HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
     Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
 
-
-    try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
-      tasksIterable.forEach(task -> {
-        if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
-            model == InputFormatConfig.InMemoryDataModel.PIG)) {
-          // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
-          checkResiduals(task);
-        }
-        if (allowDataFilesWithinTableLocationOnly) {
-          validateFileLocations(task, tableLocation);
-        }
-        splits.add(new IcebergSplit(conf, task));
-      });
-    } catch (IOException e) {
-      throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
-    }
+    String[] groupingPartitionColumns = conf.getStrings(InputFormatConfig.GROUPING_PARTITION_COLUMNS);
+    generateInputSplits(scan, table, groupingPartitionColumns, task -> {
+      if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
+          model == InputFormatConfig.InMemoryDataModel.PIG)) {
+        // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
+        checkResiduals(task);
+      }
+      if (allowDataFilesWithinTableLocationOnly) {
+        validateFileLocations(task, tableLocation);
+      }
+      splits.add(new IcebergSplit(conf, task));
+    });
 
     // If enabled, do not serialize FileIO hadoop config to decrease split size
     // However, do not skip serialization for metatable queries, because some metadata tasks cache the IO object and we
@@ -253,16 +253,43 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     return splits;
   }
 
-  private static void validateFileLocations(CombinedScanTask split, Path tableLocation) {
-    for (FileScanTask fileScanTask : split.files()) {
+  private static void validateFileLocations(ScanTaskGroup<FileScanTask> split, Path tableLocation) {
+    for (FileScanTask fileScanTask : split.tasks()) {
       if (!FileUtils.isPathWithinSubtree(new Path(fileScanTask.file().path().toString()), tableLocation)) {
         throw new AuthorizationException("The table contains paths which are outside the table location");
       }
     }
   }
 
-  private static void checkResiduals(CombinedScanTask task) {
-    task.files().forEach(fileScanTask -> {
+  private static void generateInputSplits(Scan<?, FileScanTask, CombinedScanTask> scan, Table table,
+      String[] groupingPartitionColumns, Consumer<ScanTaskGroup<FileScanTask>> consumer) {
+    if (groupingPartitionColumns == null) {
+      try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
+        tasksIterable.forEach(consumer);
+      } catch (IOException e) {
+        throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
+      }
+    } else {
+      final StructType groupingKeyType = Partitioning.groupingKeyType(table.schema().select(groupingPartitionColumns),
+          table.specs().values());
+      try (CloseableIterable<FileScanTask> taskIterable = scan.planFiles()) {
+        final List<FileScanTask> tasks = Lists.newArrayList(taskIterable);
+        final List<ScanTaskGroup<FileScanTask>> partitionScanTaskGroups =
+            TableScanUtil.planTaskGroups(
+                tasks,
+                scan.targetSplitSize(),
+                scan.splitLookback(),
+                scan.splitOpenFileCost(),
+                groupingKeyType);
+        partitionScanTaskGroups.forEach(consumer);
+      } catch (IOException e) {
+        throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
+      }
+    }
+  }
+
+  private static void checkResiduals(ScanTaskGroup<FileScanTask> task) {
+    task.tasks().forEach(fileScanTask -> {
       Expression residual = fileScanTask.residual();
       if (residual != null && !residual.equals(Expressions.alwaysTrue())) {
         throw new UnsupportedOperationException(
@@ -316,13 +343,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     @Override
     public void initialize(InputSplit split, TaskAttemptContext newContext) {
       // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
-      CombinedScanTask task = ((IcebergSplit) split).task();
+      ScanTaskGroup<FileScanTask> task = ((IcebergSplit) split).task();
       this.context = newContext;
       this.conf = newContext.getConfiguration();
       this.table = SerializationUtil.deserializeFromBase64(
                 conf.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + conf.get(InputFormatConfig.TABLE_IDENTIFIER)));
       HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
-      this.tasks = task.files().iterator();
+      this.tasks = task.tasks().iterator();
       this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
       this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
       this.expectedSchema = readSchema(conf, table, caseSensitive);

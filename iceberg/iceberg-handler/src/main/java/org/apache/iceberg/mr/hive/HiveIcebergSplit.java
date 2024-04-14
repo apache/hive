@@ -24,17 +24,25 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
+import org.apache.hadoop.hive.ql.io.PartitionAwareSplit;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.StructLike;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
 import org.apache.iceberg.relocated.com.google.common.primitives.Longs;
 import org.apache.iceberg.util.SerializationUtil;
 
 // Hive requires file formats to return splits that are instances of `FileSplit`.
-public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer, HashableInputSplit {
+public class HiveIcebergSplit extends FileSplit
+    implements IcebergSplitContainer, HashableInputSplit, PartitionAwareSplit {
 
   private IcebergSplit innerSplit;
 
@@ -75,7 +83,7 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
 
   @Override
   public byte[] getBytesForHash() {
-    Collection<FileScanTask> fileScanTasks = innerSplit.task().files();
+    Collection<FileScanTask> fileScanTasks = innerSplit.task().tasks();
 
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       for (FileScanTask task : fileScanTasks) {
@@ -86,6 +94,19 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
     } catch (IOException ioe) {
       throw new RuntimeException("Couldn't produce hash input bytes for HiveIcebergSplit: " + this, ioe);
     }
+  }
+
+  @Override
+  public List<ObjectInspector> getObjectInspectors() {
+    final StructLike key = innerSplit.task().groupingKey();
+    Preconditions.checkState(key.size() == 1, "HiveIcebergStorageHandler supports only a single bucket transform");
+    return Collections.singletonList(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+  }
+
+  @Override
+  public List<Object> getPartitionValues() {
+    final StructLike key = innerSplit.task().groupingKey();
+    return Collections.singletonList(key.get(0, Integer.class));
   }
 
   @Override

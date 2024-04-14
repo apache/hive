@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
 import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.plan.CustomPartitionFunction;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -109,6 +110,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
+import org.apache.hadoop.hive.ql.plan.PartitionAwareOptimizationCtx;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -177,6 +179,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
+import org.apache.iceberg.mr.hive.partition.IcebergBucketPartitionFunction;
 import org.apache.iceberg.puffin.Blob;
 import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
@@ -713,6 +716,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     dpCtx.setHasCustomSortExprs(!customSortExprs.isEmpty());
 
     return dpCtx;
+  }
+
+  @Override
+  public boolean supportsPartitionAwareOptimization(org.apache.hadoop.hive.ql.metadata.Table table) {
+    final List<TransformSpec> specs = getPartitionTransformSpec(table);
+    // Currently, we support the only bucket transform
+    return specs.stream().anyMatch(HiveIcebergStorageHandler::isBucket);
+  }
+
+  @Override
+  public PartitionAwareOptimizationCtx createPartitionAwareOptimizationContext(
+      org.apache.hadoop.hive.ql.metadata.Table table) {
+    final List<TransformSpec> specs = getPartitionTransformSpec(table);
+    // Currently, we support the only bucket transform
+    final List<CustomPartitionFunction> partitionFunctions = specs
+        .stream()
+        .filter(HiveIcebergStorageHandler::isBucket)
+        .map(spec -> new IcebergBucketPartitionFunction(spec.getColumnName(), spec.getTransformParam().get()))
+        .collect(Collectors.toList());
+    return partitionFunctions.isEmpty() ? null : new PartitionAwareOptimizationCtx(partitionFunctions);
+  }
+
+  private static boolean isBucket(TransformSpec spec) {
+    return spec.getTransformType() == TransformSpec.TransformType.BUCKET && spec.getTransformParam().isPresent();
   }
 
   private void addCustomSortExpr(Table table,  org.apache.hadoop.hive.ql.metadata.Table hmsTable,

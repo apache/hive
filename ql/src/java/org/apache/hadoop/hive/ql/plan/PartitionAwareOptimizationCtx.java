@@ -15,23 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.plan;
 
-package org.apache.hadoop.hive.ql.optimizer;
+import java.io.Serializable;
+import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+/**
+ * A context to support query optimization leveraging storage layouts.
+ */
+public class PartitionAwareOptimizationCtx implements Serializable {
+  private static final long serialVersionUID = 1L;
 
-public class TezBucketJoinProcCtx extends BucketJoinProcCtx {
-  private int numBuckets = -1;
+  private final List<CustomPartitionFunction> partitionFunctions;
 
-  public TezBucketJoinProcCtx(HiveConf conf) {
-    super(conf);
+  public PartitionAwareOptimizationCtx(List<CustomPartitionFunction> partitionFunctions) {
+    this.partitionFunctions = partitionFunctions;
   }
 
-  public void setNumBuckets(int numBuckets) {
-    this.numBuckets = numBuckets;
-  }
-
-  public Integer getNumBuckets() {
-    return numBuckets;
+  /**
+   * Returns all partition functions for Partition-Aware Optimization.
+   */
+  public List<CustomPartitionFunction> getPartitionFunctions() {
+    return partitionFunctions;
   }
 }

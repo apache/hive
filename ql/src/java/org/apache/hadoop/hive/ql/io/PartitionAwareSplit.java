@@ -16,22 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.optimizer;
+package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import java.util.List;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-public class TezBucketJoinProcCtx extends BucketJoinProcCtx {
-  private int numBuckets = -1;
+/**
+ * An InputSplit which supports Partition-Aware Table Scan.
+ */
+public interface PartitionAwareSplit {
 
-  public TezBucketJoinProcCtx(HiveConf conf) {
-    super(conf);
-  }
+  /**
+   * Returns the ObjectInspectors which interpret the partition values.
+   */
+  List<ObjectInspector> getObjectInspectors();
 
-  public void setNumBuckets(int numBuckets) {
-    this.numBuckets = numBuckets;
-  }
-
-  public Integer getNumBuckets() {
-    return numBuckets;
-  }
+  /**
+   * Returns the partition values to which this input split belong.
+   */
+  List<Object> getPartitionValues();
 }

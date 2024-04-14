@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.OptionalInt;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -58,6 +59,11 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -70,6 +76,7 @@ import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.Ref;
@@ -169,6 +176,29 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     public String inputFormatClassName() {
       return inputFormatClassName;
+    }
+
+    public OptionalInt getBucketId() {
+      if (inputSplit instanceof PartitionAwareSplit) {
+        final PartitionAwareSplit split = (PartitionAwareSplit) inputSplit;
+        final List<ObjectInspector> inspectors = split.getObjectInspectors();
+        if (inspectors.isEmpty()) {
+          return OptionalInt.empty();
+        }
+        Preconditions.checkState(isValidPartitionAwareSplit(inspectors),
+            "Hive currently supports only a single integer column, but actually %s", inspectors);
+        final List<Object> bucketValues = split.getPartitionValues();
+        return OptionalInt.of(((IntObjectInspector) inspectors.get(0)).get(bucketValues.get(0)));
+      }
+
+      final int bucketId = Utilities.parseSplitBucket(inputSplit);
+      return bucketId == -1 ? OptionalInt.empty() : OptionalInt.of(bucketId);
+    }
+
+    private static boolean isValidPartitionAwareSplit(List<ObjectInspector> inspectors) {
+      return inspectors.size() == 1
+          && inspectors.get(0).getCategory() == Category.PRIMITIVE
+          && ((PrimitiveObjectInspector) inspectors.get(0)).getPrimitiveCategory() == PrimitiveCategory.INT;
     }
 
     @Override
@@ -811,6 +841,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           pushDownProjection = true;
           // push down filters and as of information
           pushFiltersAndAsOf(newjob, tableScan, this.mrwork);
+          final List<String> groupingPartitionColumns = tableScan.getConf().getGroupingPartitionColumns();
+          if (groupingPartitionColumns != null) {
+            newjob.setStrings(TableScanDesc.GROUPING_PARTITION_COLUMNS,
+                groupingPartitionColumns.toArray(new String[0]));
+          }
         }
       } else {
         if (LOG.isDebugEnabled()) {

@@ -24,13 +24,13 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import com.google.common.collect.LinkedListMultimap;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.apache.tez.runtime.api.events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -74,7 +74,7 @@ import com.google.protobuf.ByteString;
  */
 public class CustomPartitionVertex extends VertexManagerPlugin {
 
-  public class PathComparatorForSplit implements Comparator<InputSplit> {
+  public static class PathComparatorForSplit implements Comparator<InputSplit> {
 
     @Override
     public int compare(InputSplit inp1, InputSplit inp2) {
@@ -198,7 +198,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     }
 
     boolean dataInformationEventSeen = false;
-    Map<String, Set<FileSplit>> pathFileSplitsMap = new TreeMap<String, Set<FileSplit>>();
+    Map<Integer, Set<HiveInputSplit>> bucketFileSplitsMap = new TreeMap<>();
 
     for (Event event : events) {
       if (event instanceof InputConfigureVertexTasksEvent) {
@@ -220,28 +220,26 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       } else if (event instanceof InputDataInformationEvent) {
         dataInformationEventSeen = true;
         InputDataInformationEvent diEvent = (InputDataInformationEvent) event;
-        FileSplit fileSplit;
+        HiveInputSplit inputSplit;
         try {
-          fileSplit = getFileSplitFromEvent(diEvent);
+          inputSplit = getInputSplitFromEvent(diEvent);
         } catch (IOException e) {
           throw new RuntimeException("Failed to get file split for event: " + diEvent, e);
         }
-        Set<FileSplit> fsList =
-            pathFileSplitsMap.get(Utilities.getBucketFileNameFromPathSubString(fileSplit.getPath()
-                .getName()));
-        if (fsList == null) {
-          fsList = new TreeSet<FileSplit>(new PathComparatorForSplit());
-          pathFileSplitsMap.put(
-              Utilities.getBucketFileNameFromPathSubString(fileSplit.getPath().getName()), fsList);
+        final int bucketId = inputSplit.getBucketId().orElse(-1);
+        Set<HiveInputSplit> inputSplits = bucketFileSplitsMap.get(bucketId);
+        if (inputSplits == null) {
+          inputSplits = new TreeSet<>(new PathComparatorForSplit());
+          bucketFileSplitsMap.put(bucketId, inputSplits);
         }
-        fsList.add(fileSplit);
+        inputSplits.add(inputSplit);
       }
     }
 
-    LOG.debug("Path file splits map for input name: {} is {}", inputName, pathFileSplitsMap);
+    LOG.debug("Bucket splits map for input name: {} is {}", inputName, bucketFileSplitsMap);
 
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
-        getBucketSplitMapForPath(inputName, pathFileSplitsMap);
+        getBucketSplitMapForBucket(inputName, bucketFileSplitsMap);
 
     try {
       int totalResource = context.getTotalAvailableResource().getMemory();
@@ -509,8 +507,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     return UserPayload.create(ByteBuffer.wrap(serialized));
   }
 
-  private FileSplit getFileSplitFromEvent(InputDataInformationEvent event) throws IOException {
-    InputSplit inputSplit = null;
+  private HiveInputSplit getInputSplitFromEvent(InputDataInformationEvent event) throws IOException {
+    final InputSplit inputSplit;
     if (event.getDeserializedUserPayload() != null) {
       inputSplit = (InputSplit) event.getDeserializedUserPayload();
     } else {
@@ -519,19 +517,19 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       inputSplit = MRInputHelpers.createOldFormatSplitFromUserPayload(splitProto, serializationFactory);
     }
 
-    if (!(inputSplit instanceof FileSplit)) {
+    if (!(inputSplit instanceof HiveInputSplit)) {
       throw new UnsupportedOperationException(
-          "Cannot handle splits other than FileSplit for the moment. Current input split type: "
+          "Cannot handle splits other than HiveInputSplit for the moment. Current input split type: "
               + inputSplit.getClass().getSimpleName());
     }
-    return (FileSplit) inputSplit;
+    return (HiveInputSplit) inputSplit;
   }
 
   /*
    * This method generates the map of bucket to file splits.
    */
-  private Multimap<Integer, InputSplit> getBucketSplitMapForPath(String inputName,
-      Map<String, Set<FileSplit>> pathFileSplitsMap) {
+  private Multimap<Integer, InputSplit> getBucketSplitMapForBucket(String inputName,
+      Map<Integer, Set<HiveInputSplit>> bucketSplitsMap) {
 
 
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
@@ -539,15 +537,13 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
     boolean fallback = false;
     Map<Integer, Integer> bucketIds = new HashMap<>();
-    for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
+    for (Map.Entry<Integer, Set<HiveInputSplit>> entry : bucketSplitsMap.entrySet()) {
       // Extract the buckedID from pathFilesMap, this is more accurate method,
       // however. it may not work in certain cases where buckets are named
       // after files used while loading data. In such case, fallback to old
       // potential inaccurate method.
       // The accepted file names are such as 000000_0, 000001_0_copy_1.
-      String bucketIdStr =
-              Utilities.getBucketFileNameFromPathSubString(entry.getKey());
-      int bucketId = Utilities.getBucketIdFromFile(bucketIdStr);
+      int bucketId = entry.getKey();
       if (bucketId == -1) {
         fallback = true;
         LOG.info("Fallback to using older sort based logic to assign " +
@@ -558,8 +554,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       // Make sure the bucketId is at max the numBuckets
       bucketId = bucketId % numBuckets;
       bucketIds.put(bucketId, bucketId);
-      for (FileSplit fsplit : entry.getValue()) {
-        bucketToInitialSplitMap.put(bucketId, fsplit);
+      for (HiveInputSplit inputSplit : entry.getValue()) {
+        bucketToInitialSplitMap.put(bucketId, inputSplit);
       }
     }
 
@@ -567,10 +563,10 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     if (fallback) {
       // This is the old logic which assumes that the filenames are sorted in
       // alphanumeric order and mapped to appropriate bucket number.
-      for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
+      for (Map.Entry<Integer, Set<HiveInputSplit>> entry : bucketSplitsMap.entrySet()) {
         int bucketId = bucketNum % numBuckets;
-        for (FileSplit fsplit : entry.getValue()) {
-          bucketToInitialSplitMap.put(bucketId, fsplit);
+        for (HiveInputSplit inputSplit : entry.getValue()) {
+          bucketToInitialSplitMap.put(bucketId, inputSplit);
         }
         bucketNum++;
       }

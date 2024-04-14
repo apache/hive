@@ -22,8 +22,11 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -56,6 +59,7 @@ import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.CustomPartitionFunction;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
@@ -211,7 +215,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
-        joinOp.getOpTraits().getNumReduceSinks()));
+        null, joinOp.getOpTraits().getNumReduceSinks()));
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
@@ -545,7 +549,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp);
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
-        joinOp.getOpTraits().getSortCols(), numReduceSinks);
+        joinOp.getOpTraits().getSortCols(), joinOp.getOpTraits().getCustomPartitionFunctions(), numReduceSinks);
     mergeJoinOp.setOpTraits(opTraits);
     mergeJoinOp.getConf().setBucketingVersion(joinOp.getConf().getBucketingVersion());
     preserveOperatorInfos(mergeJoinOp, joinOp, context);
@@ -625,7 +629,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       return;
     }
     currentOp.setOpTraits(new OpTraits(opTraits.getBucketColNames(),
-        opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks()));
+        opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getCustomPartitionFunctions(),
+        opTraits.getNumReduceSinks()));
     for (Operator<? extends OperatorDesc> childOp : currentOp.getChildOperators()) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof GroupByOperator)) {
         break;
@@ -652,6 +657,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     ReduceSinkOperator bigTableRS = (ReduceSinkOperator)joinOp.getParentOperators().get(bigTablePosition);
     OpTraits opTraits = bigTableRS.getOpTraits();
     List<List<String>> listBucketCols = opTraits.getBucketColNames();
+    List<CustomPartitionFunction> bigTableBucketFunctions = opTraits.getCustomPartitionFunctions();
     List<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
     boolean updatePartitionCols = false;
     List<Integer> positions = new ArrayList<>();
@@ -684,7 +690,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     // we can set the traits for this join operator
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
-        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
+        tezBucketJoinProcCtx.getNumBuckets(), null, bigTableBucketFunctions,
+        joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -712,6 +719,22 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         rsOp.getConf().setPartitionCols(newPartitionCols);
       }
     }
+    if (!bigTableBucketFunctions.isEmpty()) {
+      // Currently, we support BMJ with only a single bucket function
+      final CustomPartitionFunction bucketFunction = bigTableBucketFunctions.get(0);
+      for (Operator<?> op : mapJoinOp.getParentOperators()) {
+        if (!(op instanceof ReduceSinkOperator)) {
+          continue;
+        }
+
+        ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
+        // Makes small tables be partitioned by the partitioning function of the biggest table
+        rsOp.getConf().setCustomPartitionFunction(bigTableBucketFunctions.get(0));
+      }
+
+      getTableScanOperator(mapJoinOp).ifPresent(tableScanOperator ->
+          tableScanOperator.getConf().setGroupingPartitionColumns(bucketFunction.getColumnNames()));
+    }
 
     // Update the memory monitor info for LLAP.
     MemoryMonitorInfo memoryMonitorInfo = joinDesc.getMemoryMonitorInfo();
@@ -733,6 +756,22 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     // linking these two operator declares that they are representing the same thing
     // currently important because statistincs are actually gather for newOp; but the lookup is done using oldOp
     context.parseContext.getContext().getPlanMapper().link(oldOp, newOp);
+  }
+
+  private static Optional<TableScanOperator> getTableScanOperator(MapJoinOperator mapJoinOperator) {
+    final Queue<Operator<?>> queue = new LinkedList<>();
+    queue.add(mapJoinOperator);
+    while (!queue.isEmpty()) {
+      final Operator<?> operator = queue.poll();
+      if (operator instanceof TableScanOperator) {
+        return Optional.of((TableScanOperator) operator);
+      }
+      if (operator instanceof ReduceSinkOperator) {
+        continue;
+      }
+      queue.addAll(operator.getParentOperators());
+    }
+    return Optional.empty();
   }
 
   /*
@@ -910,8 +949,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       return false;
     }
 
-    boolean shouldCheckExternalTables = tezBucketJoinProcCtx.getConf()
-        .getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
+    final boolean shouldCheckExternalTables = rs.getOpTraits().getCustomPartitionFunctions().isEmpty()
+        && tezBucketJoinProcCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
     if (shouldCheckExternalTables) {
       StringBuilder sb = new StringBuilder();
       for (Operator<?> parentOp : joinOp.getParentOperators()) {
@@ -1569,6 +1608,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
             joinOp.getOpTraits().getBucketColNames(),
             numReducers,
             null,
+            joinOp.getOpTraits().getCustomPartitionFunctions(),
             joinOp.getOpTraits().getNumReduceSinks());
         mapJoinOp.setOpTraits(opTraits);
         preserveOperatorInfos(mapJoinOp, joinOp, context);
