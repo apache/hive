@@ -112,7 +112,7 @@ public class TestHiveIcebergSnapshotOperations {
     assertEquals(4L, result.get(0)[0]);
     // Perform replace branch with snapshot id.
     shell.executeStatement(
-        String.format("ALTER TABLE %s replace branch branch1 with snapshot %s", identifier.name(), id));
+        String.format("ALTER TABLE %s replace branch branch1 as of system_version %s", identifier.name(), id));
     result = shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceBranchWithSnapshot.branch_branch1");
     assertEquals(6L, result.get(0)[0]);
   }

@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.ddl.table.snapshotref.branch.replace;
 
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -36,7 +38,7 @@ import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import static org.apache.hadoop.hive.ql.parse.HiveParser_AlterClauseParser.KW_SNAPSHOT;
+import static org.apache.hadoop.hive.ql.parse.HiveParser_AlterClauseParser.KW_SYSTEM_VERSION;
 
 @DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_ALTERTABLE_REPLACE_BRANCH)
 public class AlterTableReplaceBranchRefAnalyzer extends AbstractAlterTableAnalyzer {
@@ -56,14 +58,42 @@ public class AlterTableReplaceBranchRefAnalyzer extends AbstractAlterTableAnalyz
     inputs.add(new ReadEntity(table));
     validateAlterTableType(table, alterTableType, false);
     AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec replaceSnapshotrefSpec;
-    if (command.getChild(0).getType() == KW_SNAPSHOT) {
-      String sourceBranch = command.getChild(1).getText();
+    String sourceBranch = command.getChild(0).getText();
+    int i;
+    if (command.getChild(1).getType() == KW_SYSTEM_VERSION) {
       long targetSnapshot = Long.parseLong(command.getChild(2).getText());
       replaceSnapshotrefSpec = new AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec(sourceBranch, targetSnapshot);
+      i = 3;
     } else {
-      String sourceBranch = command.getChild(0).getText();
       String targetBranch = command.getChild(1).getText();
       replaceSnapshotrefSpec = new AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec(sourceBranch, targetBranch);
+      i = 2;
+    }
+
+    for (; i < command.getChildCount(); i++) {
+      ASTNode childNode = (ASTNode) command.getChild(i);
+      switch (childNode.getToken().getType()) {
+      case HiveParser.TOK_RETAIN:
+        String maxRefAge = childNode.getChild(0).getText();
+        String timeUnitOfBranchRetain = childNode.getChild(1).getText();
+        long maxRefAgeMs =
+            TimeUnit.valueOf(timeUnitOfBranchRetain.toUpperCase(Locale.ENGLISH)).toMillis(Long.parseLong(maxRefAge));
+        replaceSnapshotrefSpec.setMaxRefAgeMs(maxRefAgeMs);
+        break;
+      case HiveParser.TOK_WITH_SNAPSHOT_RETENTION:
+        int minSnapshotsToKeep = Integer.parseInt(childNode.getChild(0).getText());
+         replaceSnapshotrefSpec.setMinSnapshotsToKeep(minSnapshotsToKeep);
+        if (childNode.getChildren().size() > 1) {
+          String maxSnapshotAge = childNode.getChild(1).getText();
+          String timeUnitOfSnapshotsRetention = childNode.getChild(2).getText();
+          long maxSnapshotAgeMs = TimeUnit.valueOf(timeUnitOfSnapshotsRetention.toUpperCase(Locale.ENGLISH))
+              .toMillis(Long.parseLong(maxSnapshotAge));
+          replaceSnapshotrefSpec.setMaxSnapshotAgeMs(maxSnapshotAgeMs);
+        }
+        break;
+      default:
+        throw new SemanticException("Unrecognized token in ALTER " + alterTableType.getName() + " statement");
+      }
     }
 
     AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.RenameSnapshotrefSpec> alterTableSnapshotRefSpec =

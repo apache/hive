@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 
 public class AlterTableSnapshotRefSpec<T> {
@@ -155,6 +157,9 @@ public class AlterTableSnapshotRefSpec<T> {
     private long targetSnapshot;
 
     boolean replaceBySnapshot = false;
+    private long maxRefAgeMs = -1;
+    private int minSnapshotsToKeep = -1;
+    private long maxSnapshotAgeMs = -1;
 
     public String getSourceBranchName() {
       return sourceBranch;
@@ -183,6 +188,33 @@ public class AlterTableSnapshotRefSpec<T> {
       replaceBySnapshot = true;
     }
 
+    public void setMaxRefAgeMs(long maxRefAgeMs) {
+      Preconditions.checkArgument(maxRefAgeMs > 0);
+      this.maxRefAgeMs = maxRefAgeMs;
+    }
+
+    public void setMinSnapshotsToKeep(int minSnapshotsToKeep) {
+      Preconditions.checkArgument(minSnapshotsToKeep > 0);
+      this.minSnapshotsToKeep = minSnapshotsToKeep;
+    }
+
+    public void setMaxSnapshotAgeMs(long maxSnapshotAgeMs) {
+      Preconditions.checkArgument(maxSnapshotAgeMs > 0);
+      this.maxSnapshotAgeMs = maxSnapshotAgeMs;
+    }
+
+    public long getMaxRefAgeMs() {
+      return maxRefAgeMs;
+    }
+
+    public int getMinSnapshotsToKeep() {
+      return minSnapshotsToKeep;
+    }
+
+    public long getMaxSnapshotAgeMs() {
+      return maxSnapshotAgeMs;
+    }
+
     @Override
     public String toString() {
       MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
@@ -191,6 +223,15 @@ public class AlterTableSnapshotRefSpec<T> {
         stringHelper.add("targetSnapshot", targetSnapshot);
       } else {
         stringHelper.add("targetBranch", targetBranch);
+      }
+      if (maxRefAgeMs != -1) {
+        stringHelper.add("maxRefAgeMs", maxRefAgeMs);
+      }
+      if (minSnapshotsToKeep != -1) {
+        stringHelper.add("minSnapshotsToKeep", minSnapshotsToKeep);
+      }
+      if (maxSnapshotAgeMs != -1) {
+        stringHelper.add("maxSnapshotAgeMs", maxSnapshotAgeMs);
       }
       return stringHelper.toString();
     }

@@ -517,8 +517,8 @@ alterStatementSuffixRenameBranch
 alterStatementSuffixReplaceBranch
 @init { gParent.pushMsg("alter table replace branch", state); }
 @after { gParent.popMsg(state); }
-    : KW_REPLACE KW_BRANCH sourceBranch=Identifier KW_WITH KW_SNAPSHOT? (targetBranch=(Identifier | Number))
-    -> ^(TOK_ALTERTABLE_REPLACE_BRANCH KW_SNAPSHOT? $sourceBranch $targetBranch)
+    : KW_REPLACE KW_BRANCH sourceBranch=Identifier KW_AS KW_OF ((KW_SYSTEM_VERSION snapshotId=Number) | (KW_BRANCH branch=identifier)) refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_REPLACE_BRANCH $sourceBranch KW_SYSTEM_VERSION?  $snapshotId? $branch? refRetain? retentionOfSnapshots?)
     ;
 
 alterStatementSuffixDropBranch
