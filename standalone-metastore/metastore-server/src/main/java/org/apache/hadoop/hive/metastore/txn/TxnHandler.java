@@ -705,15 +705,16 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws MetaException {
     int result = jdbcResource.execute(
-        "UPDATE \"MATERIALIZATION_REBUILD_LOCKS\"" +
-            " SET \"MRL_LAST_HEARTBEAT\" = " + getEpochFn(jdbcResource.getDatabaseProduct()) +
-            " WHERE \"MRL_TXN_ID\" = :txnId" +
-            " AND \"MRL_DB_NAME\" = :dbName" +
-            " AND \"MRL_TBL_NAME\" = :tableName",
-        new MapSqlParameterSource()
-            .addValue("txnId", txnId)
-            .addValue("dbName", dbName)
-            .addValue("tableNane", tableName),
+            "UPDATE \"MATERIALIZATION_REBUILD_LOCKS\"" +
+                    " SET \"MRL_LAST_HEARTBEAT\" = :lastHeartbeat" +
+                    " WHERE \"MRL_TXN_ID\" = :txnId" +
+                    " AND \"MRL_DB_NAME\" = :dbName" +
+                    " AND \"MRL_TBL_NAME\" = :tblName",
+            new MapSqlParameterSource()
+                    .addValue("lastHeartbeat", Instant.now().toEpochMilli())
+                    .addValue("txnId", txnId)
+                    .addValue("dbName", dbName)
+                    .addValue("tblName", tableName),
         ParameterizedCommand.AT_LEAST_ONE_ROW);
     return result >= 1;
   }

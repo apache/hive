@@ -1828,6 +1828,15 @@ public class TestTxnHandler {
     );
   }
 
+  @Test
+  public void testHeartbeatLockMaterializationRebuild() throws MetaException {
+    txnHandler.lockMaterializationRebuild("default", "table1", 1L);
+
+    boolean result = txnHandler.heartbeatLockMaterializationRebuild("default", "table1", 1L);
+
+    assertTrue(result);
+  }
+
   private void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(
           ValidReadTxnList currentValidTxnList, ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
     ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
