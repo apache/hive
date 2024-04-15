@@ -10,15 +10,16 @@ Run Apache Hive inside docker container in pseudo-distributed mode, provide the 
 - Pull the image from DockerHub: https://hub.docker.com/r/apache/hive/tags. 
 
 Here are the latest images:
+- 4.0.0
 - 4.0.0-beta-1
 - 3.1.3
 
 ```shell
-docker pull apache/hive:4.0.0-alpha-2
+docker pull apache/hive:4.0.0
 ```
 ### STEP 2: Export the Hive version
 ```shell
-export HIVE_VERSION=4.0.0-alpha-2
+export HIVE_VERSION=4.0.0
 ```
 
 ### STEP 3: Launch the HiveServer2 with an embedded Metastore.
@@ -59,7 +60,7 @@ If the version is not provided, it will read the version from current `pom.xml`:
 
 For example, the following command uses Hive 3.1.3, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
 ```shell
-./build.sh -hive 4.0.0-alpha-2
+./build.sh -hive 4.0.0
 ```
 If the command does not specify the Hive version, it will use the local `apache-hive-${project.version}-bin.tar.gz`(will trigger a build if it doesn't exist),
 together with Hadoop 3.1.0 and Tez 0.10.1 to build the image,
@@ -71,9 +72,9 @@ After building successfully,  we can get a Docker image named `apache/hive` by d
 #### Run services
 
 Before going further, we should define the environment variable `HIVE_VERSION` first.
-For example, if `-hive 4.0.0-alpha-2` is specified to build the image,
+For example, if `-hive 4.0.0` is specified to build the image,
 ```shell
-export HIVE_VERSION=4.0.0-alpha-2
+export HIVE_VERSION=4.0.0
 ```
 or assuming that you're relying on current `project.version` from pom.xml,
 ```shell
