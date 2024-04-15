@@ -1791,15 +1791,15 @@ public class TestInputOutputFormat {
     assertEquals(3, results.size());
     assertEquals(3, result.getStart());
     assertEquals(400, result.getLength());
-    assertEquals(175168, result.getProjectedColumnsUncompressedSize());
+    assertEquals(167468, result.getProjectedColumnsUncompressedSize());
     result = results.get(1);
     assertEquals(403, result.getStart());
     assertEquals(400, result.getLength());
-    assertEquals(175168, result.getProjectedColumnsUncompressedSize());
+    assertEquals(167468, result.getProjectedColumnsUncompressedSize());
     result = results.get(2);
     assertEquals(803, result.getStart());
     assertEquals(100, result.getLength());
-    assertEquals(43792, result.getProjectedColumnsUncompressedSize());
+    assertEquals(41867, result.getProjectedColumnsUncompressedSize());
 
     // test min = 0, max = 0 generates each stripe
     HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE, 0);
@@ -1815,9 +1815,9 @@ public class TestInputOutputFormat {
       assertEquals("checking stripe " + i + " size",
           stripeSizes[i], results.get(i).getLength());
       if (i == stripeSizes.length - 1) {
-        assertEquals(43792, results.get(i).getProjectedColumnsUncompressedSize());
+        assertEquals(41867, results.get(i).getProjectedColumnsUncompressedSize());
       } else {
-        assertEquals(87584, results.get(i).getProjectedColumnsUncompressedSize());
+        assertEquals(83734, results.get(i).getProjectedColumnsUncompressedSize());
       }
     }
 
@@ -1834,7 +1834,7 @@ public class TestInputOutputFormat {
     result = results.get(0);
     assertEquals(3, result.getStart());
     assertEquals(900, result.getLength());
-    assertEquals(394128, result.getProjectedColumnsUncompressedSize());
+    assertEquals(376804, result.getProjectedColumnsUncompressedSize());
   }
 
   @Test

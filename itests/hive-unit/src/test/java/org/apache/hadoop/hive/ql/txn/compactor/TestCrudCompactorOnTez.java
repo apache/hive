@@ -177,22 +177,22 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":4}\t13\t13",
         },
         {
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t4\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t6\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t3\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t2\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t5\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t2\t4",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t6\t4",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":11}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t5\t4",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":11}\t2\t3",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t3\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t2\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t6\t3",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t4\t3",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":15}\t6\t3",
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":16}\t5\t2",
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t6\t2",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":15}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":16}\t6\t2",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t5\t2",
         },
     };
     verifyRebalance(testDataProvider, tableName, null, expectedBuckets,
@@ -233,22 +233,22 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         },
         {
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":5}\t12\t12",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t4\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":6}\t6\t4",
             "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":7}\t3\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t2\t4",
-            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t5\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
+            "{\"writeid\":7,\"bucketid\":536936448,\"rowid\":9}\t2\t4",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t6\t4",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":11}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t5\t4",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":11}\t2\t3",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":12}\t3\t3",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t2\t3",
+            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":13}\t6\t3",
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":14}\t4\t3",
         },
         {
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":15}\t6\t3",
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":16}\t5\t2",
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t6\t2",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":15}\t5\t3",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":16}\t6\t2",
+            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t5\t2",
         },
     };
     verifyRebalance(testDataProvider, tableName, null, expectedBuckets,
@@ -524,8 +524,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t6\t2",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t6\t3",
             "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t6\t4",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":4}\t5\t2",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":5}\t5\t3",
             "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t12\t12",
             "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t13\t13",
             "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t14\t14",
@@ -534,7 +532,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":0}\t17\t17",
         },
         {
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t2\t4",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t5\t2",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t5\t3",
+            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":2}\t2\t4",
         },
         {
             "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":0}\t3\t3",
@@ -562,7 +562,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Buckets does not match after compaction", Arrays.asList(bucketNames),
         CompactorTestUtil.getBucketFileNames(fs, table, partitionName, folderName));
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
-    for(int i = 0; i < expectedBucketContent.length; i++) {
+    for (int i = 0; i < expectedBucketContent.length; i++) {
       Assert.assertEquals("rebalanced bucket " + i, Arrays.asList(expectedBucketContent[i]),
           testDataProvider.getBucketData(tableName, BucketCodec.V1.encode(options.bucket(i)) + ""));
     }

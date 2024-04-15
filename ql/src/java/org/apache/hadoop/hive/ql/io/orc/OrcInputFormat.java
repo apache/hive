@@ -1727,31 +1727,21 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private long computeProjectionSize(List<OrcProto.Type> fileTypes,
         List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) throws FileFormatException {
       List<Integer> internalColIds = Lists.newArrayList();
+      int rootColumn = 0;
       if (fileIncluded == null) {
         // Add all.
-        for (int i = 0; i < fileTypes.size(); i++) {
+        for (int i = rootColumn + 1; i < fileTypes.size(); i++) {
           internalColIds.add(i);
         }
       } else {
-        for (int i = 0; i < fileIncluded.length; i++) {
-          if (fileIncluded[i]) {
+        for (int i = rootColumn + 1; i < fileIncluded.length; i++) {
+          if (fileIncluded[i] && (isOriginal || i != OrcRecordUpdater.ROW + 1)) {
             internalColIds.add(i);
           }
         }
       }
       return ReaderImpl.getRawDataSizeFromColIndices(internalColIds, fileTypes, stats);
     }
-  }
-
-  public static boolean[] shiftReaderIncludedForAcid(boolean[] included) {
-    // We always need the base row
-    included[0] = true;
-    boolean[] newIncluded = new boolean[included.length + OrcRecordUpdater.FIELDS];
-    Arrays.fill(newIncluded, 0, OrcRecordUpdater.FIELDS, true);
-    for (int i = 0; i < included.length; ++i) {
-      newIncluded[i + OrcRecordUpdater.FIELDS] = included[i];
-    }
-    return newIncluded;
   }
 
   /** Class intended to update two values from methods... Java-related cruft. */
