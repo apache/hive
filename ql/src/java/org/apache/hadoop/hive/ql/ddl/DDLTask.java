@@ -88,14 +88,14 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
         throw new IllegalArgumentException("Unknown DDL request: " + ddlDesc.getClass());
       }
     } catch (Throwable e) {
+      if(work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
+        LOG.warn("Error while table creation: ", e);
+        return 0;
+      }
       int excpErrorCode = ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(),
               work.getMetricCollector(), getName(), conf);
       if(excpErrorCode == ErrorMsg.TABLE_NOT_PARTITIONED.getErrorCode()){
         return excpErrorCode;
-      }
-      if(work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
-        LOG.warn("Error while table creation: ", e);
-        return 0;
       }
       failed(e);
       if(ddlOperation != null) {
