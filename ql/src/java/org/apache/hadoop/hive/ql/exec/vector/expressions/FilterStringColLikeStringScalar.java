@@ -124,11 +124,32 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
       this.type = type;
     }
 
+    private String get(String pattern) {
+      int startIndex = 0;
+      int endIndex = pattern.length();
+
+      switch (type) {
+      case BEGIN:
+        endIndex--;
+        break;
+      case END:
+        startIndex++;
+        break;
+      case MIDDLE:
+        startIndex++;
+        endIndex--;
+        break;
+      default:
+        break;
+      }
+
+      return pattern.substring(startIndex, endIndex);
+    }
+
     public Checker apply(String pattern) {
-      String matche = check(pattern);
-      if (matche != null) {
+      if (matches(pattern)) {
         try {
-          return checker.getConstructor(String.class).newInstance(matche);
+          return checker.getConstructor(String.class).newInstance(get(pattern));
         } catch (Exception e) {
           throw new IllegalArgumentException("unable to initialize Checker");
         }
@@ -137,71 +158,35 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
       return null;
     }
 
-    private String check(String pattern) {
+    private boolean matches(String pattern) {
       UDFLike.PatternType lastType = UDFLike.PatternType.NONE;
       int length = pattern.length();
-      int beginIndex = 0;
-      int endIndex = length;
       char lastChar = 0;
-      StringBuilder strPattern = new StringBuilder();
-      String simplePattern;
 
       for (int i = 0; i < length; i++) {
         char n = pattern.charAt(i);
-        if (n == '_') { // such as "a_b"
-          if (lastChar != '\\') { // such as "a%bc"
-            return null;
-          } else { // such as "abc\%de%"
-            strPattern.append(pattern.substring(beginIndex, i - 1));
-            beginIndex = i;
-          }
+        if (n == '_' && lastChar != '\\') { // such as "a_bc"
+          return false;
         } else if (n == '%') {
           if (i == 0) { // such as "%abc"
             lastType = UDFLike.PatternType.END;
-            beginIndex = 1;
           } else if (i < length - 1) {
             if (lastChar != '\\') { // such as "a%bc"
               lastType = UDFLike.PatternType.CHAINED;
-            } else if (lastChar == '\\') { // such as "a\%bc"
-              strPattern.append(pattern.substring(beginIndex, i - 1));
-              beginIndex = i;
-              if (lastType == UDFLike.PatternType.CHAINED) {
-                lastType = UDFLike.PatternType.COMPLEX;
-              }
-            } else {
-              lastType = UDFLike.PatternType.COMPLEX;
             }
           } else {
             if (lastChar != '\\') {
-              endIndex = length - 1;
               if (lastType == UDFLike.PatternType.END) { // such as "%abc%"
                 lastType = UDFLike.PatternType.MIDDLE;
-              } else if (lastType != UDFLike.PatternType.CHAINED &&
-                         lastType != UDFLike.PatternType.COMPLEX) {
+              } else if (lastType != UDFLike.PatternType.CHAINED) {
                 lastType = UDFLike.PatternType.BEGIN; // such as "abc%"
               }
-            } else { // such as "abc\%"
-              strPattern.append(pattern.substring(beginIndex, i - 1));
-              beginIndex = i;
-              endIndex = length;
             }
           }
         }
         lastChar = n;
       }
-
-      strPattern.append(pattern.substring(beginIndex, endIndex));
-      if (lastType == UDFLike.PatternType.CHAINED) {
-        simplePattern = pattern;
-      } else {
-        simplePattern = strPattern.toString();
-      }
-
-      if (type == lastType) {
-        return simplePattern;
-      } else {
-        return null;
-      }
+      return type == lastType;
     }
   }
 }

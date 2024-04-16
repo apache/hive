@@ -4349,6 +4349,49 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
         expr.checker.getClass());
 
+    expr = new FilterStringColLikeStringScalar(0, "abc_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "abc\\_def_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc".getBytes(StandardCharsets.UTF_8));
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc\\_def".getBytes(StandardCharsets.UTF_8));
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc\\_def_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc_de".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+
     expr = new FilterStringColLikeStringScalar(0,
         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_b".getBytes());
     expr.transientInit(hiveConf);
