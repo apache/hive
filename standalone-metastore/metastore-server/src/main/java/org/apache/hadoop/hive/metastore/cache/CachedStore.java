@@ -1647,6 +1647,12 @@ public class CachedStore implements RawStore, Configurable {
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override public PartitionValuesResponse listPartitionValues(String catName, String dbName, String tblName,
       List<FieldSchema> cols, boolean applyDistinct, String filter, boolean ascending, List<FieldSchema> order,
       long maxParts) throws MetaException {
@@ -1743,28 +1749,14 @@ public class CachedStore implements RawStore, Configurable {
     return hasUnknownPartitions;
   }
 
+  @Override public boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
+      List<String> result, GetPartitionsArgs args) throws MetaException {
+    return rawStore.prunePartitionNamesByExpr(catName, dbName, tblName, result, args);
+  }
+
   @Override public int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
       throws MetaException, NoSuchObjectException {
     return rawStore.getNumPartitionsByFilter(catName, dbName, tblName, filter);
-  }
-
-  @Override public int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
-      throws MetaException, NoSuchObjectException {
-    catName = normalizeIdentifier(catName);
-    dbName = StringUtils.normalizeIdentifier(dbName);
-    tblName = StringUtils.normalizeIdentifier(tblName);
-    if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
-      return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
-    }
-    String defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
-    List<String> partNames = new LinkedList<>();
-    Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
-    if (table == null) {
-      // The table is not yet loaded in cache
-      return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
-    }
-    getPartitionNamesPrunedByExprNoTxn(table, expr, defaultPartName, Short.MAX_VALUE, partNames, sharedCache);
-    return partNames.size();
   }
 
   @VisibleForTesting public static List<String> partNameToVals(String name) {

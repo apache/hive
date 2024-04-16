@@ -700,6 +700,19 @@ public interface RawStore extends Configurable {
       short maxParts) throws MetaException, NoSuchObjectException;
 
   /**
+   * Get partition names with a filter. This is a portion of the SQL where clause.
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @param args additional arguments for getting partition names
+   * @return list of partition names matching the criteria
+   * @throws MetaException Error accessing the RDBMS or processing the filter.
+   * @throws NoSuchObjectException no such table.
+   */
+  List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException;
+
+  /**
    * Get a list of partition values as one big struct.
    * @param catName catalog name.
    * @param db_name database name.
@@ -856,6 +869,20 @@ public interface RawStore extends Configurable {
       throws TException;
 
   /**
+   * Prune the input partition names that match the expressions.
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @param result input list of partition names
+   * @param args additional arguments for pruning
+   * @return true if the result contains unknown partition names.
+   * @throws MetaException error executing the expression
+   */
+  boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
+      List<String> result, GetPartitionsArgs args)
+      throws MetaException;
+
+  /**
    * Get the number of partitions that match a provided SQL filter.
    * @param catName catalog name.
    * @param dbName database name.
@@ -867,19 +894,6 @@ public interface RawStore extends Configurable {
    */
   int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
     throws MetaException, NoSuchObjectException;
-
-  /**
-   * Get the number of partitions that match an already parsed expression.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param expr an already parsed Hive expression
-   * @return number of matching partitions.
-   * @throws MetaException error accessing the RDBMS or working with the expression.
-   * @throws NoSuchObjectException no such table.
-   */
-  int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
-      throws MetaException, NoSuchObjectException;
 
   /**
    * Get the number of partitions that match a given partial specification.

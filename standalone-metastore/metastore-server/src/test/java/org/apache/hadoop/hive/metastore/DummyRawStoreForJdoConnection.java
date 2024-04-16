@@ -459,6 +459,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
+
+  @Override
   public PartitionValuesResponse listPartitionValues(String catName, String db_name,
                                                      String tbl_name, List<FieldSchema> cols,
                                                      boolean applyDistinct, String filter,
@@ -528,14 +534,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
-    throws MetaException, NoSuchObjectException {
-    return -1;
+  public boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
+      List<String> result, GetPartitionsArgs args) throws MetaException {
+    return false;
   }
 
   @Override
-  public int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
-      throws MetaException, NoSuchObjectException {
+  public int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
+    throws MetaException, NoSuchObjectException {
     return -1;
   }
 
