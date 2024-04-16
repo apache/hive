@@ -85,25 +85,31 @@ public class TestHiveCatalog extends HMSTestBase {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_CATALOG_ACTOR_CLASS, "org.apache.iceberg.hive.HiveCatalogActor");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "jwt");
   }
+
   static TableOperations newTableOperations(Catalog catalog, Configuration conf, ClientPool metaClients, FileIO fileIO, String catalogName, String database, String table) {
-    if (catalog instanceof HiveCatalog) {
-      return HiveUtil.newTableOperations(conf, null, null, catalogName, database, table);
-    } else {
-      throw new IllegalArgumentException(table.toString());
-    }
+    return HiveUtil.newTableOperations(conf, catalogName, database, table);
   }
 
-  static TableOperations newTableOps(Catalog catalog, TableIdentifier table) {
-    if (catalog instanceof HiveCatalog) {
-      return ((HiveCatalog) catalog).newTableOps(table);
-    } else {
-      throw new IllegalArgumentException(table.toString());
+  static TableOperations newTableOps(Catalog src, TableIdentifier table) {
+    if (src instanceof HiveCachingCatalog) {
+      src = ((HiveCachingCatalog) src).unwrap();
     }
+    if (src instanceof HiveCatalog) {
+      HiveCatalog catalog = (HiveCatalog) src;
+      return catalog.newTableOps(table);
+    }
+    throw new ClassCastException("not a HiveCatalog");
   }
 
-  static Database convertToDatabase(Catalog catalog, Namespace ns, Map<String, String> meta) {
-    return catalog instanceof HiveCatalog ? HiveUtil.convertToDatabase((HiveCatalog) catalog, ns, meta)
-        : null;
+  static Database convertToDatabase(Catalog src, Namespace ns, Map<String, String> meta) {
+    if (src instanceof HiveCachingCatalog) {
+      src = ((HiveCachingCatalog) src).unwrap();
+    }
+    if (src instanceof HiveCatalog) {
+      HiveCatalog catalog = (HiveCatalog) src;
+      return HiveUtil.convertToDatabase(catalog, ns, meta);
+    }
+    throw new ClassCastException("not a HiveCatalog");
   }
 
   static void illegalArgumentException(String str) {
@@ -1346,7 +1352,7 @@ public class TestHiveCatalog extends HMSTestBase {
     HiveCatalog catalog = new HiveCatalog();
     catalog.setConf(conf);
 
-    Database database = HiveUtil.convertToDatabase(catalog, Namespace.of("database"), ImmutableMap.of());
+    Database database = convertToDatabase(catalog, Namespace.of("database"), ImmutableMap.of());
 
     assertThat(database.getLocationUri()).isEqualTo("s3://bucket/ext/database.db");
   }

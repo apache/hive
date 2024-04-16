@@ -34,24 +34,34 @@ import java.util.Map;
  */
 public class HiveUtil {
 
+  public static final HiveTableOperations newTableOperations(Configuration conf, String catalogName, String database, String table) {
+    return new HiveTableOperations(conf, null, null, catalogName, database, table);
+  }
+
   public static final HiveTableOperations newTableOperations(Configuration conf, ClientPool metaClients, FileIO fileIO, String catalogName, String database, String table) {
     return new HiveTableOperations(conf, null, null, catalogName, database, table);
   }
+
   public static Database convertToDatabase(HiveCatalog catalog, Namespace ns, Map<String, String> meta) {
     return catalog.convertToDatabase(ns, meta);
   }
+
   public static void setSnapshotSummary(HiveTableOperations ops, Map<String, String> parameters, Snapshot snapshot) {
     ops.setSnapshotSummary(parameters, snapshot);
   }
+
   public static void setSnapshotStats(HiveTableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
     ops.setSnapshotStats(metadata, parameters);
   }
+
   public static void setSchema(HiveTableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
     ops.setSchema(metadata, parameters);
   }
+
   public static void setPartitionSpec(HiveTableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
     ops.setPartitionSpec(metadata, parameters);
   }
+
   public static void setSortOrder(HiveTableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
     ops.setSortOrder(metadata, parameters);
   }

@@ -74,7 +74,7 @@ public class HMSCatalogServer {
       properties.put("external-warehouse", cextwarehouse);
     }
     catalog.initialize("hive", properties);
-    return catalog;
+    return org.apache.iceberg.HiveCachingCatalog.wrap(catalog);
   }
 
   public static HttpServlet createServlet(Configuration configuration, Catalog catalog) throws IOException {
@@ -96,7 +96,7 @@ public class HMSCatalogServer {
    * @return the server instance
    * @throws Exception if servlet initialization fails
    */
-  public static Server startServer(Configuration conf, HiveCatalog catalog) throws Exception {
+  public static Server startServer(Configuration conf, Catalog catalog) throws Exception {
     int port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT);
     if (port < 0) {
       return null;
