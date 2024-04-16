@@ -413,12 +413,12 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
   /**
    * Matches each string to a pattern with Java regular expression package.
    */
-  protected static class ComplexChecker implements Checker {
+  protected static final class ComplexChecker implements Checker {
     Pattern compiledPattern;
     Matcher matcher;
     FastUTF8Decoder decoder;
 
-    ComplexChecker(String pattern) {
+    public ComplexChecker(String pattern) {
       compiledPattern = Pattern.compile(pattern);
       matcher = compiledPattern.matcher("");
       decoder = new FastUTF8Decoder();
