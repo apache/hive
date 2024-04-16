@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class CastTimestampToBoolean extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -121,7 +122,7 @@ public class CastTimestampToBoolean extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("timestamp"))
+            VectorExpressionDescriptor.ArgumentType.getType(serdeConstants.TIMESTAMP_TYPE_NAME))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }

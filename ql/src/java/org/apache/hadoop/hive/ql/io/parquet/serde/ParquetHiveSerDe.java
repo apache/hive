@@ -422,7 +422,7 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
       MessageType msg = metadata.getSchema();
       List<FieldSchema> schema = new ArrayList<>();
       String inferBinaryAsStringValue = conf.get(HiveConf.ConfVars.HIVE_PARQUET_INFER_BINARY_AS.varname);
-      boolean inferBinaryAsString = "string".equalsIgnoreCase(inferBinaryAsStringValue);
+      boolean inferBinaryAsString = serdeConstants.STRING_TYPE_NAME.equalsIgnoreCase(inferBinaryAsStringValue);
 
       for (Type field: msg.getFields()) {
         FieldSchema fieldSchema = convertParquetTypeToFieldSchema(field, inferBinaryAsString);

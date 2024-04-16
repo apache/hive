@@ -1309,6 +1309,55 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_ice_double_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"a":null,"b":null}
+PREHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: insert into test_truncate_part_evolution values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: insert into test_truncate_part_evolution values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: alter table test_truncate_part_evolution set partition spec(id)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: query: alter table test_truncate_part_evolution set partition spec(id)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: alter table test_truncate_part_evolution set tblproperties('external.table.purge'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@test_truncate_part_evolution
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: alter table test_truncate_part_evolution set tblproperties('external.table.purge'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: truncate test_truncate_part_evolution partition(id=1)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_truncate_part_evolution@id=1
+POSTHOOK: query: truncate test_truncate_part_evolution partition(id=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_truncate_part_evolution@id=1
+PREHOOK: query: select * from test_truncate_part_evolution
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_truncate_part_evolution
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_truncate_part_evolution
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	two
+3	three
+4	four
+5	five
 PREHOOK: query: drop table test_ice_int
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_ice_int
@@ -1369,3 +1418,13 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_ice_double_date
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_ice_double_date
+PREHOOK: query: drop table test_truncate_part_evolution
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_truncate_part_evolution
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: drop table test_truncate_part_evolution
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_truncate_part_evolution

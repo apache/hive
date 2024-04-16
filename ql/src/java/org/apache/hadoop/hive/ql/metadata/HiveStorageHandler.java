@@ -690,6 +690,20 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Return snapshot metadata of table snapshots which are newer than the specified.
+   * The specified snapshot is excluded.
+   * @param hmsTable table metadata stored in Hive Metastore
+   * @param since the snapshot preceding the oldest snapshot which should be checked.
+   *              The value null means all should be checked.
+   * @return Iterable of {@link SnapshotContext}.
+   */
+  default Iterable<SnapshotContext> getSnapshotContexts(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
+    return Collections.emptyList();
+  }
+
+
+  /**
    * Alter table operations can rely on this to customize the EnvironmentContext to be used during the alter table
    * invocation (both on client and server side of HMS)
    * @param alterTableDesc the alter table desc (e.g.: AlterTableSetPropertiesDesc) containing the work to do
@@ -699,6 +713,18 @@ public interface HiveStorageHandler extends Configurable {
       EnvironmentContext environmentContext) {
   }
 
+  /**
+   * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
+   * @deprecated
+   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
+   *
+   * @param hmsTable table metadata stored in Hive Metastore
+   * @param since the snapshot preceding the oldest snapshot which should be checked.
+   *              The value null means all should be checked.
+   * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s, false otherwise.
+   */
+  @Deprecated
   default Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     return null;
   }

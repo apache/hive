@@ -217,7 +217,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
-    properties.remove("columns.comments");
+    properties.remove(serdeConstants.LIST_COLUMN_COMMENTS);
     if (properties instanceof CopyOnFirstWriteProperties) {
       this.properties = properties;
     } else {
