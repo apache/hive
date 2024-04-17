@@ -59,19 +59,19 @@ public class AlterTableReplaceBranchRefAnalyzer extends AbstractAlterTableAnalyz
     validateAlterTableType(table, alterTableType, false);
     AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec replaceSnapshotrefSpec;
     String sourceBranch = command.getChild(0).getText();
-    int i;
+    int childNodeNum;
     if (command.getChild(1).getType() == KW_SYSTEM_VERSION) {
       long targetSnapshot = Long.parseLong(command.getChild(2).getText());
       replaceSnapshotrefSpec = new AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec(sourceBranch, targetSnapshot);
-      i = 3;
+      childNodeNum = 3;
     } else {
       String targetBranch = command.getChild(1).getText();
       replaceSnapshotrefSpec = new AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec(sourceBranch, targetBranch);
-      i = 2;
+      childNodeNum = 2;
     }
 
-    for (; i < command.getChildCount(); i++) {
-      ASTNode childNode = (ASTNode) command.getChild(i);
+    for (; childNodeNum < command.getChildCount(); childNodeNum++) {
+      ASTNode childNode = (ASTNode) command.getChild(childNodeNum);
       switch (childNode.getToken().getType()) {
       case HiveParser.TOK_RETAIN:
         String maxRefAge = childNode.getChild(0).getText();
@@ -96,8 +96,8 @@ public class AlterTableReplaceBranchRefAnalyzer extends AbstractAlterTableAnalyz
       }
     }
 
-    AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.RenameSnapshotrefSpec> alterTableSnapshotRefSpec =
-        new AlterTableSnapshotRefSpec(alterTableType, replaceSnapshotrefSpec);
+    AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec> alterTableSnapshotRefSpec =
+        new AlterTableSnapshotRefSpec<>(alterTableType, replaceSnapshotrefSpec);
     AbstractAlterTableDesc alterTableDesc =
         new AlterTableSnapshotRefDesc(alterTableType, tableName, alterTableSnapshotRefSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTableDesc)));
