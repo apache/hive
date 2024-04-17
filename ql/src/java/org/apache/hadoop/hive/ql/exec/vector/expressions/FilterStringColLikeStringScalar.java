@@ -58,25 +58,45 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
 
   private enum UDFLikePattern {
     // Accepts simple LIKE patterns like "abc%" and creates corresponding checkers.
-    BEGIN(BeginChecker.class),
+    BEGIN(BeginChecker.class) {
+      @Override
+      public String format(String pattern) {
+        return pattern.substring(0, pattern.length() - 1);
+      }
+    },
     // Accepts simple LIKE patterns like "%abc" and creates a corresponding checkers.
-    END(EndChecker.class),
+    END(EndChecker.class) {
+      @Override
+      public String format(String pattern) {
+        return pattern.substring(1);
+      }
+    },
     // Accepts simple LIKE patterns like "%abc%" and creates a corresponding checkers.
-    MIDDLE(MiddleChecker.class),
-    // Accepts simple LIKE patterns like "abc" and creates corresponding checkers.
-    NONE(NoneChecker.class),
+    MIDDLE(MiddleChecker.class) {
+      @Override
+      public String format(String pattern) {
+        return pattern.substring(1, pattern.length() - 1);
+      }
+    },
+    // Accepts any LIKE patterns and creates corresponding checkers.
+    COMPLEX(ComplexChecker.class) {
+      @Override
+      public String format(String pattern) {
+        return "^" + UDFLike.likePatternToRegExp(pattern) + "$";
+      }
+    },
     // Accepts chained LIKE patterns without escaping like "abc%def%ghi%" and
     // creates corresponding checkers.
     CHAINED(ChainedChecker.class),
-    // Accepts any LIKE patterns and creates corresponding checkers.
-    COMPLEX(ComplexChecker.class);
+    // Accepts simple LIKE patterns like "abc" and creates corresponding checkers.
+    NONE(NoneChecker.class);
 
     Class<? extends Checker> checker;
 
     UDFLikePattern(Class<? extends Checker> checker) {
       this.checker = checker;
     }
-    
+
     private static UDFLikePattern matcher(String pattern) {
       UDFLikePattern lastType = NONE;
       int length = pattern.length();
@@ -108,28 +128,8 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
       return lastType;
     }
 
-    private String format(String pattern) {
-      int startIndex = 0;
-      int endIndex = pattern.length();
-
-      switch (this) {
-        case BEGIN:
-          endIndex--;
-          break;
-        case END:
-          startIndex++;
-          break;
-        case MIDDLE:
-          startIndex++;
-          endIndex--;
-          break;
-        case COMPLEX:
-          return "^" + UDFLike.likePatternToRegExp(pattern) + "$";
-        default:
-          break;
-      }
-
-      return pattern.substring(startIndex, endIndex);
+    public String format(String pattern) {
+      return pattern;
     }
   }
 }
