@@ -1,0 +1,60 @@
+PREHOOK: query: create table emps
+(
+    empid      int,
+    name       varchar(256)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: create table emps
+(
+    empid      int,
+    name       varchar(256)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: EXPLAIN CBO
+SELECT min(name)
+from emps
+UNION ALL
+select distinct(name)
+from emps
+where name IS NOT NULL
+UNION ALL
+select distinct(name)
+from emps
+WHERE name IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT min(name)
+from emps
+UNION ALL
+select distinct(name)
+from emps
+where name IS NOT NULL
+UNION ALL
+select distinct(name)
+from emps
+WHERE name IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject($f0=[$0])
+    HiveAggregate(group=[{}], agg#0=[min($1)])
+      HiveTableScan(table=[[default, emps]], table:alias=[emps])
+  HiveProject(name=[$0])
+    HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
+      HiveProject(name=[$0])
+        HiveAggregate(group=[{1}])
+          HiveFilter(condition=[IS NOT NULL($1)])
+            HiveTableScan(table=[[default, emps]], table:alias=[emps])
+  HiveProject(name=[$0])
+    HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+

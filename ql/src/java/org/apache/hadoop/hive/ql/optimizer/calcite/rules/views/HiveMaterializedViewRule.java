@@ -75,7 +75,8 @@ public class HiveMaterializedViewRule {
               HiveJoinProjectTransposeRule.RIGHT_PROJECT,
               HiveProjectMergeRule.INSTANCE))
       .addRuleInstance(ProjectRemoveRule.Config.DEFAULT.toRule())
-      .addRuleInstance(HiveRootJoinProjectInsert.INSTANCE)
+      .addRuleInstance(new HiveRootProjectInsert(Join.class))
+      .addRuleInstance(new HiveRootProjectInsert(TableScan.class))
       .build();
 
   public static final MaterializedViewProjectFilterRule INSTANCE_PROJECT_FILTER =
@@ -241,34 +242,30 @@ public class HiveMaterializedViewRule {
   }
 
   /**
-   * This rule adds a Project operator on top of the root operator if it is a join.
+   * This rule adds a Project operator on top of the root operator if it is of the specified class.
    * This is important to meet the requirements set by the rewriting rule with
    * respect to the plan returned by the input program.
    */
-  private static class HiveRootJoinProjectInsert extends RelOptRule {
+  private static class HiveRootProjectInsert extends RelOptRule {
 
-    private static final HiveRootJoinProjectInsert INSTANCE =
-        new HiveRootJoinProjectInsert();
-
-    private HiveRootJoinProjectInsert() {
-      super(operand(Join.class, any()),
-          HiveRelFactories.HIVE_BUILDER, "HiveRootJoinProjectInsert");
+    private HiveRootProjectInsert(Class<? extends RelNode> nodeClass) {
+      super(operand(nodeClass, any()), HiveRelFactories.HIVE_BUILDER,
+          "HiveRootProjectInsertOver" + nodeClass.getSimpleName());
     }
 
     @Override
     public void onMatch(RelOptRuleCall call) {
-      final Join join = call.rel(0);
+      final RelNode rel = call.rel(0);
       final HepRelVertex root = (HepRelVertex) call.getPlanner().getRoot();
-      if (root.getCurrentRel() != join) {
+      if (root.getCurrentRel() != rel) {
         // Bail out
         return;
       }
-      // The join is the root, but we should always end up with a Project operator
-      // on top. We will add it.
+      // Add an identity Project operator on top of the matching node.
       RelBuilder relBuilder = call.builder();
-      relBuilder.push(join);
+      relBuilder.push(rel);
       List<RexNode> identityFields = relBuilder.fields(
-          ImmutableBitSet.range(0, join.getRowType().getFieldCount()).asList());
+          ImmutableBitSet.range(0, rel.getRowType().getFieldCount()).asList());
       relBuilder.project(identityFields, ImmutableList.of(), true);
       call.transformTo(relBuilder.build());
     }
