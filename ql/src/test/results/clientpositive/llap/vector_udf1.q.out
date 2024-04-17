@@ -190,13 +190,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [10, 11, 14]
                           selectExpressions: StringUpper(col 1:string) -> 10:string, StringUpper(col 3:varchar(20)) -> 11:varchar(20), StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringUpper(col 1:string) -> 12:string, StringUpper(col 3:varchar(20)) -> 13:varchar(20)) -> 14:boolean
-                      Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -295,13 +295,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [10, 11, 14]
                           selectExpressions: StringLower(col 1:string) -> 10:string, StringLower(col 3:varchar(20)) -> 11:varchar(20), StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringLower(col 1:string) -> 12:string, StringLower(col 3:varchar(20)) -> 13:varchar(20)) -> 14:boolean
-                      Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
