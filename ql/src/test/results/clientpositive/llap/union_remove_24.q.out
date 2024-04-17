@@ -122,7 +122,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: UDFToDouble($f0) (type: double), $f1 (type: bigint)
+                    expressions: UDFToDouble(key) (type: double), $f1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -141,7 +141,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: UDFToDouble(UDFToLong($f0)) (type: double), $f1 (type: bigint)
+                    expressions: UDFToDouble(UDFToLong(key)) (type: double), $f1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -204,7 +204,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cte_suggestion_0
 POSTHOOK: Output: default@outputtbl1_n28
 #### A masked pattern was here ####
-POSTHOOK: Lineage: outputtbl1_n28.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:$f0, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n28.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1_n28.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:$f1, type:bigint, comment:null), ]
 PREHOOK: query: desc formatted outputTbl1_n28
 PREHOOK: type: DESCTABLE

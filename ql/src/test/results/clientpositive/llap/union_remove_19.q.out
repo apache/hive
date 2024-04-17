@@ -122,7 +122,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), values (type: bigint)
+                    expressions: key (type: string), $f1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -141,7 +141,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), values (type: bigint)
+                    expressions: key (type: string), $f1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -205,7 +205,7 @@ POSTHOOK: Output: default@cte_suggestion_0
 POSTHOOK: Output: default@outputtbl1_n1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: outputtbl1_n1.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1_n1.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:values, type:bigint, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n1.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:$f1, type:bigint, comment:null), ]
 PREHOOK: query: desc formatted outputTbl1_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@outputtbl1_n1
@@ -300,10 +300,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n1
+                  filterExpr: (UDFToDouble(key) = 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Filter Operator
+                    predicate: (UDFToDouble(key) = 7.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -354,46 +354,38 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cte_suggestion_0
-                  filterExpr: (UDFToDouble(key) = 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (UDFToDouble(key) = 7.0D) (type: boolean)
+                  Select Operator
+                    expressions: key (type: string), $f1 (type: bigint)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string), values (type: bigint)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.outputtbl1_n1
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.outputtbl1_n1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: cte_suggestion_0
-                  filterExpr: (UDFToDouble(key) = 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (UDFToDouble(key) = 7.0D) (type: boolean)
+                  Select Operator
+                    expressions: key (type: string), $f1 (type: bigint)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string), values (type: bigint)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.outputtbl1_n1
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.outputtbl1_n1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Union 4 
@@ -447,7 +439,7 @@ POSTHOOK: Output: default@cte_suggestion_0
 POSTHOOK: Output: default@outputtbl1_n1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: outputtbl1_n1.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1_n1.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:values, type:bigint, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n1.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:$f1, type:bigint, comment:null), ]
 PREHOOK: query: select * from outputTbl1_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1_n1
@@ -508,10 +500,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n1
+                  filterExpr: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: key
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -562,54 +554,46 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cte_suggestion_0
-                  filterExpr: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)
+                  Select Operator
+                    expressions: key (type: string), $f1 (type: bigint)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string), values (type: bigint)
+                      expressions: CAST( (UDFToDouble(_col0) + UDFToDouble(_col0)) AS STRING) (type: string), _col1 (type: bigint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: CAST( (UDFToDouble(_col0) + UDFToDouble(_col0)) AS STRING) (type: string), _col1 (type: bigint)
-                        outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.outputtbl1_n1
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.outputtbl1_n1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: cte_suggestion_0
-                  filterExpr: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)
+                  Select Operator
+                    expressions: key (type: string), $f1 (type: bigint)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string), values (type: bigint)
+                      expressions: CAST( (UDFToDouble(_col0) + UDFToDouble(_col0)) AS STRING) (type: string), _col1 (type: bigint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: CAST( (UDFToDouble(_col0) + UDFToDouble(_col0)) AS STRING) (type: string), _col1 (type: bigint)
-                        outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.outputtbl1_n1
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.outputtbl1_n1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Union 4 
@@ -669,7 +653,7 @@ POSTHOOK: Output: default@cte_suggestion_0
 POSTHOOK: Output: default@outputtbl1_n1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: outputtbl1_n1.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1_n1.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:values, type:bigint, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n1.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:$f1, type:bigint, comment:null), ]
 PREHOOK: query: select * from outputTbl1_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1_n1

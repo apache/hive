@@ -198,7 +198,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 1ce0bea8-7b15-4005-8147-76bfdec947f7
+                  base file name: dc669e56-b3c7-4404-8308-796e5e605370
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -271,7 +271,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 1ce0bea8-7b15-4005-8147-76bfdec947f7
+                  base file name: dc669e56-b3c7-4404-8308-796e5e605370
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:

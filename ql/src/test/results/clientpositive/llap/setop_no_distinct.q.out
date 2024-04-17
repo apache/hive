@@ -50,11 +50,17 @@ PREHOOK: query: (select * from b_n1 intersect (select * from a_n1)) intersect se
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n1
 PREHOOK: Input: default@b_n1
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: (select * from b_n1 intersect (select * from a_n1)) intersect select * from b_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n1
 POSTHOOK: Input: default@b_n1
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 1	2
 2	3
@@ -62,11 +68,17 @@ PREHOOK: query: select * from b_n1 intersect all select * from a_n1 intersect se
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n1
 PREHOOK: Input: default@b_n1
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select * from b_n1 intersect all select * from a_n1 intersect select * from b_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n1
 POSTHOOK: Input: default@b_n1
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 1	2
 2	3
@@ -74,11 +86,17 @@ PREHOOK: query: (select * from b_n1) intersect all ((select * from a_n1) interse
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n1
 PREHOOK: Input: default@b_n1
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: (select * from b_n1) intersect all ((select * from a_n1) intersect select * from b_n1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n1
 POSTHOOK: Input: default@b_n1
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 1	2
 2	3
@@ -222,11 +240,21 @@ PREHOOK: query: (select * from a_n1) minus (select * from b_n1 minus (select * f
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n1
 PREHOOK: Input: default@b_n1
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@cte_suggestion_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
+PREHOOK: Output: default@cte_suggestion_1
 #### A masked pattern was here ####
 POSTHOOK: query: (select * from a_n1) minus (select * from b_n1 minus (select * from a_n1 minus select * from b_n1))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n1
 POSTHOOK: Input: default@b_n1
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@cte_suggestion_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
+POSTHOOK: Output: default@cte_suggestion_1
 #### A masked pattern was here ####
 0
 PREHOOK: query: drop table a_n1

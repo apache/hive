@@ -137,7 +137,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), values (type: bigint)
+                    expressions: key (type: string), $f1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -164,7 +164,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), values (type: bigint)
+                    expressions: key (type: string), $f1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -252,9 +252,9 @@ POSTHOOK: Output: default@outputtbl1_n0
 POSTHOOK: Output: default@outputtbl2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: outputtbl1_n0.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1_n0.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:values, type:bigint, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n0.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:$f1, type:bigint, comment:null), ]
 POSTHOOK: Lineage: outputtbl2.key EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:values, type:bigint, comment:null), ]
+POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(cte_suggestion_0)cte_suggestion_0.FieldSchema(name:$f1, type:bigint, comment:null), ]
 PREHOOK: query: select * from outputTbl1_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1_n0
@@ -574,7 +574,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: $f0 (type: string), ($f1 * 2L) (type: bigint)
+                    expressions: key (type: string), ($f1 * 2L) (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
@@ -597,7 +597,7 @@ STAGE PLANS:
                   alias: cte_suggestion_0
                   Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: $f0 (type: string), $f1 (type: bigint)
+                    expressions: key (type: string), $f1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator

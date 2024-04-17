@@ -31,14 +31,20 @@ from sketch_input
 join ( select category as c,ds_kll_sketch(cast(id as float)) as ds from sketch_input group by category) q on (q.c=category)
 order by category,id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
 PREHOOK: Input: default@sketch_input
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 POSTHOOK: query: select id,category,cume_dist() over (partition by category order by id),ds_kll_cdf(ds, CAST(id AS FLOAT))[0]
 from sketch_input
 join ( select category as c,ds_kll_sketch(cast(id as float)) as ds from sketch_input group by category) q on (q.c=category)
 order by category,id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@sketch_input
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
 1	a	0.18181818181818182	0.0
 1	a	0.18181818181818182	0.0

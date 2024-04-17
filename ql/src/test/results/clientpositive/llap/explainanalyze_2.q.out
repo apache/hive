@@ -1729,7 +1729,7 @@ Stage-14
                                             Select Operator [SEL_310] (rows=500/0 width=178)
                                               Output:["_col0","_col1"]
                                               TableScan [TS_309] (rows=500/0 width=178)
-                                                default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                         <-Reducer 37 [CONTAINS] llap
                                           Reduce Output Operator [RS_300]
                                             PartitionCols:_col1, _col0
@@ -1744,7 +1744,7 @@ Stage-14
                                                     Select Operator [SEL_306] (rows=500/0 width=178)
                                                       Output:["_col0","_col1"]
                                                       TableScan [TS_305] (rows=500/0 width=178)
-                                                        default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                        default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                                 <-Reducer 35 [CONTAINS] llap
                                                   Reduce Output Operator [RS_296]
                                                     PartitionCols:_col1, _col0
@@ -1768,7 +1768,7 @@ Stage-14
                                                             Select Operator [SEL_302] (rows=500/0 width=178)
                                                               Output:["_col0","_col1"]
                                                               TableScan [TS_301] (rows=500/0 width=178)
-                                                                default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                                default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                           <-Reducer 9 [CONTAINS] llap
                             Reduce Output Operator [RS_258]
                               PartitionCols:_col0, _col1
@@ -1793,14 +1793,14 @@ Stage-14
                                               Select Operator [SEL_37] (rows=500/0 width=178)
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_164] (rows=500/0 width=178)
-                                                  predicate:key is not null
+                                                  predicate:value is not null
                                                   TableScan [TS_35] (rows=500/0 width=178)
                                                     default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                           <-Map 29 [SIMPLE_EDGE] llap
                                             SHUFFLE [RS_59]
                                               PartitionCols:key
                                               TableScan [TS_57] (rows=500/0 width=178)
-                                                default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                       <-Reducer 26 [SIMPLE_EDGE] llap
                                         SHUFFLE [RS_62]
                                           PartitionCols:_col0
@@ -1815,7 +1815,7 @@ Stage-14
                                                   Select Operator [SEL_281] (rows=500/0 width=178)
                                                     Output:["_col0","_col1"]
                                                     TableScan [TS_280] (rows=500/0 width=178)
-                                                      default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                      default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                               <-Reducer 24 [CONTAINS] llap
                                                 Reduce Output Operator [RS_275]
                                                   PartitionCols:_col1, _col0
@@ -1839,7 +1839,7 @@ Stage-14
                                                           Select Operator [SEL_277] (rows=500/0 width=178)
                                                             Output:["_col0","_col1"]
                                                             TableScan [TS_276] (rows=500/0 width=178)
-                                                              default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                              default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                 <-Reducer 7 [CONTAINS] llap
                                   Reduce Output Operator [RS_255]
                                     PartitionCols:_col0, _col1
@@ -1856,7 +1856,7 @@ Stage-14
                                             SHUFFLE [RS_28]
                                               PartitionCols:key
                                               TableScan [TS_26] (rows=500/0 width=178)
-                                                default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                           <-Map 18 [SIMPLE_EDGE] llap
                                             SHUFFLE [RS_29]
                                               PartitionCols:key
@@ -1876,7 +1876,7 @@ Stage-14
                                                   Select Operator [SEL_260] (rows=500/0 width=178)
                                                     Output:["_col0","_col1"]
                                                     TableScan [TS_259] (rows=500/0 width=178)
-                                                      default@cte_suggestion_0,cte_suggestion_0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                                      default@cte_suggestion_1,cte_suggestion_1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                               <-Map 4 [CONTAINS] llap
                                                 Reduce Output Operator [RS_251]
                                                   PartitionCols:_col1, _col0
@@ -1913,7 +1913,7 @@ Stage-14
                     Stage-1
                       Map 1 llap
                       File Output Operator [FS_3]
-                        table:{"name:":"default.cte_suggestion_1"}
+                        table:{"name:":"default.cte_suggestion_0"}
                         Select Operator [SEL_2] (rows=500/500 width=178)
                           Output:["_col0","_col1"]
                           Filter Operator [FIL_4] (rows=500/500 width=178)
@@ -1943,7 +1943,7 @@ Stage-14
                     Stage-7
                       Map 3 llap
                       File Output Operator [FS_13]
-                        table:{"name:":"default.cte_suggestion_0"}
+                        table:{"name:":"default.cte_suggestion_1"}
                         Select Operator [SEL_12] (rows=500/500 width=178)
                           Output:["_col0","_col1"]
                           Filter Operator [FIL_14] (rows=500/500 width=178)

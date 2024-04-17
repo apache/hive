@@ -164,7 +164,7 @@ PREHOOK: Input: default@t1_n13
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cte_suggestion_0
 #### A masked pattern was here ####
-Operator:JOIN_20
+Operator:JOIN_19
 Table:default@cte_suggestion_0
 Keys:key
 
