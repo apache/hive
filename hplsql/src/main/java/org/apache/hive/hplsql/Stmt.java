@@ -789,17 +789,15 @@ public class Stmt {
       int cols = row.expr().size();
       for (int j = 0; j < cols; j++) {
         Var var = evalPop(row.expr(j));
-        String value =  null;
+        String value = var.toString();
         if (var.type == Type.TIMESTAMP) {
-          value = String.format("TIMESTAMP '%s'", var.toString());
+          value = String.format("TIMESTAMP '%s'", value);
         } else if (var.type == Type.DATE) {
-          value = String.format("DATE '%s'", var.toString());
-        } else {
-          value = var.toSqlString();
+          value = String.format("DATE '%s'", value);
+        } else if (!value.startsWith("'")) {
+          value = Utils.quoteString(value);
         }
-        if (value.startsWith("''")) {
-          value = Utils.unquoteString(value);
-        }
+
         if (j == 0 && type == Conn.Type.HIVE && conf.insertValues == Conf.InsertValues.SELECT ) {
           sql.append("SELECT ");
         }

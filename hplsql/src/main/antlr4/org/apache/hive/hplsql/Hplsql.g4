@@ -1049,8 +1049,8 @@ expr :
      | expr_case
      | expr_cursor_attribute
      | expr_agg_window_func
-     | expr_func
      | expr_spec_func
+     | expr_func
      | expr_atom    
      ;
 
@@ -1563,7 +1563,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_TO     
      | T_TOP
      | T_TRANSACTION
-     // | T_TRIM
+     | T_TRIM
      | T_TRUE
      | T_TRUNCATE
      // T_UNION reserved word
