@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -1175,48 +1173,6 @@ public class TestTxnHandler {
         fail("Told there was no lock, when the heartbeat should have kept it.");
       }
     }
-  }
-
-  @Test
-  public void heartbeatTxnRange() throws Exception {
-    long txnid = openTxn();
-    assertEquals(1, txnid);
-    txnid = openTxn();
-    txnid = openTxn();
-    HeartbeatTxnRangeResponse rsp =
-        txnHandler.heartbeatTxnRange(new HeartbeatTxnRangeRequest(1, 3));
-    assertEquals(0, rsp.getAborted().size());
-    assertEquals(0, rsp.getNosuch().size());
-  }
-
-  @Test
-  public void heartbeatTxnRangeOneCommitted() throws Exception {
-    long txnid = openTxn();
-    assertEquals(1, txnid);
-    txnHandler.commitTxn(new CommitTxnRequest(1));
-    txnid = openTxn();
-    txnid = openTxn();
-    HeartbeatTxnRangeResponse rsp =
-      txnHandler.heartbeatTxnRange(new HeartbeatTxnRangeRequest(1, 3));
-    assertEquals(1, rsp.getNosuchSize());
-    Long txn = rsp.getNosuch().iterator().next();
-    assertEquals(1L, (long)txn);
-    assertEquals(0, rsp.getAborted().size());
-  }
-
-  @Test
-  public void heartbeatTxnRangeOneAborted() throws Exception {
-    long txnid = openTxn();
-    assertEquals(1, txnid);
-    txnid = openTxn();
-    txnid = openTxn();
-    txnHandler.abortTxn(new AbortTxnRequest(3));
-    HeartbeatTxnRangeResponse rsp =
-      txnHandler.heartbeatTxnRange(new HeartbeatTxnRangeRequest(1, 3));
-    assertEquals(1, rsp.getAbortedSize());
-    Long txn = rsp.getAborted().iterator().next();
-    assertEquals(3L, (long)txn);
-    assertEquals(0, rsp.getNosuch().size());
   }
 
   @Test
