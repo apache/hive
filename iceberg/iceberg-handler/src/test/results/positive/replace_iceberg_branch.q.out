@@ -1,0 +1,223 @@
+PREHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: alter table ice01 create branch branch1
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch branch1
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: insert into default.ice01.branch_branch1 values (5), (6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into default.ice01.branch_branch1 values (5), (6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+5
+6
+PREHOOK: query: alter table ice01 create branch branch2
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch branch2
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: insert into default.ice01.branch_branch2 values (22), (44)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into default.ice01.branch_branch2 values (22), (44)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: delete from default.ice01.branch_branch2 where id=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from default.ice01.branch_branch2 where id=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+22
+3
+4
+44
+PREHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch2
+PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch2
+POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: Input: default@ice01
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    SnapshotRef Operation
+      table name: default.ice01
+      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_BRANCH, operationParams=ReplaceSnapshotrefSpec{sourceBranch=branch1, targetBranch=branch2}}
+
+PREHOOK: query: alter table ice01 replace branch branch1 as of branch branch2
+PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 replace branch branch1 as of branch branch2
+POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+22
+3
+4
+44
+PREHOOK: query: alter table ice01 create branch branch3
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch branch3
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: insert into default.ice01.branch_branch3 values (45), (32)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into default.ice01.branch_branch3 values (45), (32)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
+PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
+POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: Input: default@ice01
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    SnapshotRef Operation
+      table name: default.ice01
+      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_BRANCH, operationParams=ReplaceSnapshotrefSpec{sourceBranch=branch1, targetBranch=branch3, maxRefAgeMs=432000000}}
+
+PREHOOK: query: alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
+PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
+POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+32
+4
+45
+PREHOOK: query: alter table ice01 create branch branch4
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch branch4
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: insert into default.ice01.branch_branch4 values (11), (78)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into default.ice01.branch_branch4 values (11), (78)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
+PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
+POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: Input: default@ice01
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    SnapshotRef Operation
+      table name: default.ice01
+      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_BRANCH, operationParams=ReplaceSnapshotrefSpec{sourceBranch=branch1, targetBranch=branch4, minSnapshotsToKeep=5, maxSnapshotAgeMs=518400000}}
+
+PREHOOK: query: alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
+PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
+POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+11
+2
+3
+4
+78
