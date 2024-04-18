@@ -1,0 +1,36 @@
+PREHOOK: query: create table t1 (key int, value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (key int, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, t1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, t1]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain cbo
+select * from 
+(select key, value, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED from t1) a join
+(select key, value, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED from t1) b join
+(select key, value, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED from t1) c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from 
+(select key, value, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED from t1) a join
+(select key, value, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED from t1) b join
+(select key, value, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME, ROW__ID, ROW__IS__DELETED from t1) c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], key0=[$12], value0=[$13], BLOCK__OFFSET__INSIDE__FILE0=[$14], INPUT__FILE__NAME0=[$15], ROW__ID0=[$16], ROW__IS__DELETED0=[$17], key1=[$6], value1=[$7], BLOCK__OFFSET__INSIDE__FILE1=[$8], INPUT__FILE__NAME1=[$9], ROW__ID1=[$10], ROW__IS__DELETED1=[$11])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], key0=[$6], value0=[$7], BLOCK__OFFSET__INSIDE__FILE0=[$8], INPUT__FILE__NAME0=[$9], ROW__ID0=[$10], ROW__IS__DELETED0=[$11])
+      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
