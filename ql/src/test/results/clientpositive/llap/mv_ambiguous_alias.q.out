@@ -1,0 +1,69 @@
+PREHOOK: query: create table t1 (key int, value int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (key int, value int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values (1,1), (2,1), (3,3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (1,1), (2,1), (3,3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key SCRIPT []
+POSTHOOK: Lineage: t1.value SCRIPT []
+PREHOOK: query: create materialized view mv1 as
+select * from t1 where key < 6
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 as
+select * from t1 where key < 6
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.value SIMPLE [(t1)t1.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: explain cbo
+select * from 
+  (select * from t1 a where key < 6) subq1 
+    join
+  (select * from t1 a where key < 6) subq2
+  on (subq1.key = subq2.key)
+    join
+  (select * from t1 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from 
+  (select * from t1 a where key < 6) subq1 
+    join
+  (select * from t1 a where key < 6) subq2
+  on (subq1.key = subq2.key)
+    join
+  (select * from t1 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Excluded rules: HiveJoinAddNotNullRule
+
+CBO PLAN:
+HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1], key0=[$2], value0=[$3])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
+      HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
+  HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
+

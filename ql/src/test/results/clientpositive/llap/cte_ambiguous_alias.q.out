@@ -1,0 +1,46 @@
+PREHOOK: query: CREATE TABLE tbl2(key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: CREATE TABLE tbl2(key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: explain cbo
+select * from 
+  (select * from tbl2 a where key < 6) subq1 
+    join
+  (select * from tbl2 a where key < 6) subq2
+  on (subq1.key = subq2.key)
+    join
+  (select * from tbl2 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from 
+  (select * from tbl2 a where key < 6) subq1 
+    join
+  (select * from tbl2 a where key < 6) subq2
+  on (subq1.key = subq2.key)
+    join
+  (select * from tbl2 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1], key0=[$2], value0=[$3])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableSpool(readType=[LAZY], writeType=[LAZY], table=[[cte, cte_suggestion_0]])
+          HiveProject(key=[$0], value=[$1])
+            HiveFilter(condition=[<($0, 6)])
+              HiveTableScan(table=[[default, tbl2]], table:alias=[a])
+      HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+  HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+

@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
+import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.core.Aggregate;
@@ -121,34 +124,38 @@ public class PlanModifierForASTConv {
     return newTopNode;
   }
 
-  private static String getTblAlias(RelNode rel) {
-
-    if (null == rel) {
-      return null;
-    }
-    if (rel instanceof HiveTableScan) {
-      return ((HiveTableScan)rel).getTableAlias();
-    }
-    if (rel instanceof DruidQuery) {
-      DruidQuery dq = (DruidQuery) rel;
-      return ((HiveTableScan) dq.getTableScan()).getTableAlias();
-    }
-    if (rel instanceof HiveJdbcConverter) {
-      HiveJdbcConverter conv = (HiveJdbcConverter) rel;
-      return conv.getTableScan().getHiveTableScan().getTableAlias();
-    }
-    if (rel instanceof HiveTableSpool) {
-      HiveTableSpool spool = (HiveTableSpool) rel;
-      List<String> qname = spool.getTable().getQualifiedName();
-      return qname.get(qname.size() - 1);
-    }
-    if (rel instanceof Project) {
-      return null;
-    }
-    if (rel.getInputs().size() == 1) {
-      return getTblAlias(rel.getInput(0));
-    }
-    return null;
+  private static List<String> findTableAliases(RelNode other) {
+    List<String> aliases = new ArrayList<>();
+    other.accept(new RelHomogeneousShuttle(){
+      @Override
+      public RelNode visit(final RelNode rel) {
+        if (rel instanceof Project) {
+          return rel;
+        }
+        if (rel instanceof HiveTableScan) {
+          aliases.add(((HiveTableScan) rel).getTableAlias());
+          return rel;
+        }
+        if (rel instanceof DruidQuery) {
+          DruidQuery dq = (DruidQuery) rel;
+          aliases.add(((HiveTableScan) dq.getTableScan()).getTableAlias());
+          return rel;
+        }
+        if (rel instanceof HiveJdbcConverter) {
+          HiveJdbcConverter conv = (HiveJdbcConverter) rel;
+          aliases.add(conv.getTableScan().getHiveTableScan().getTableAlias());
+          return rel;
+        }
+        if (rel instanceof HiveTableSpool) {
+          HiveTableSpool spool = (HiveTableSpool) rel;
+          List<String> qname = spool.getTable().getQualifiedName();
+          aliases.add(qname.get(qname.size() - 1));
+          return rel;
+        }
+        return super.visit(rel);
+      }
+    });
+    return aliases;
   }
 
   private static void convertOpTree(RelNode rel, RelNode parent) {
@@ -159,11 +166,10 @@ public class PlanModifierForASTConv {
       if (!validJoinParent(rel, parent)) {
         introduceDerivedTable(rel, parent);
       }
-      String leftChild = getTblAlias(((Join)rel).getLeft());
-      if (null != leftChild && leftChild.equalsIgnoreCase(getTblAlias(((Join)rel).getRight()))) {
-        // introduce derived table above one child, if this is self-join
-        // since user provided aliases are lost at this point.
-        introduceDerivedTable(((Join)rel).getLeft(), rel);
+      Map<String, Long> aliasCnt =
+          findTableAliases(rel).stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+      if (aliasCnt.values().stream().anyMatch(cnt -> cnt > 1)) {
+        introduceDerivedTable(((Join) rel).getLeft(), rel);
       }
     } else if (rel instanceof MultiJoin) {
       throw new RuntimeException("Found MultiJoin");
