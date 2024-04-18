@@ -203,22 +203,20 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   // Also include partition list key to trigger cost evaluation even if an
   // expression was already generated.
   @Override public RelWriter explainTerms(RelWriter pw) {
+    final RelWriter writer = super.explainTerms(pw)
+        .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
+            isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
     if (pw instanceof RelTreeSignatureWriter) {
-      return super.explainTerms(pw)
-          .item("tableScanTrait", this.tableScanTrait)
-          .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
-              isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
+      return writer.item("tableScanTrait", this.tableScanTrait);
     }
-    return super.explainTerms(pw)
+    return writer
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
       .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
-          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
-      .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
-          isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
+          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
   }
 
   @Override
