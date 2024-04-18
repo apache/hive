@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -1082,7 +1083,8 @@ public class ASTConverter {
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
       case SEARCH:
-        RexInputRef ref = (RexInputRef)call.operands.get(0);
+        RexInputRef ref = extractRefFromSearchOperator(call)
+            .orElseThrow(() -> new RuntimeException("Incorrect SEARCH operand."));
         astNodeLst.add(visitInputRef(ref));
         RexLiteral literal = (RexLiteral)call.operands.get(1);
         Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
@@ -1119,6 +1121,21 @@ public class ASTConverter {
       } else {
         return SqlFunctionConverter.buildAST(op, astNodeLst, call.getType());
       }
+    }
+
+    private Optional<RexInputRef> extractRefFromSearchOperator(RexCall call) {
+      RexNode operand0 = call.getOperands().get(0);
+
+      if (operand0 instanceof RexInputRef) {
+        return Optional.of((RexInputRef) operand0);
+      } else if (operand0 instanceof RexCall && operand0.getKind() == SqlKind.CAST) {
+        RexNode operand00 = ((RexCall) operand0).getOperands().get(0);
+        if (operand00 instanceof RexInputRef) {
+          return Optional.of((RexInputRef) operand00);
+        }
+      }
+
+      return Optional.empty();
     }
 
     @Override
