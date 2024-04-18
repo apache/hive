@@ -7220,11 +7220,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (isPartitionLimitEnabled()) {
         // Since partition limit is configured, we need fetch at most (limit + 1) partition names
         int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
-        int max = args.getMax() < 0 ? partitionLimit + 1 : Math.min(args.getMax(), partitionLimit + 1);
+        int requestMax = args.getMax();
+        int max = requestMax < 0 ? partitionLimit + 1 : Math.min(requestMax, partitionLimit + 1);
         args = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).max(max).build();
         List<String> partNames = rs.listPartitionNamesByFilter(catName, dbName, tblName, args);
-        checkLimitNumberOfPartitions(TableName.getQualified(catName, dbName, tblName), partNames.size(), -1);
-        ret = rs.getPartitionsByNames(catName, dbName, tblName, partNames);
+        checkLimitNumberOfPartitions(tblName, partNames.size(), requestMax);
+        ret = rs.getPartitionsByNames(catName, dbName, tblName,
+            new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
       } else {
         ret = rs.getPartitionsByFilter(catName, dbName, tblName, args);
       }
@@ -7354,8 +7356,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
       int max = args.getMax() < 0 ? partitionLimit + 1 : Math.min(args.getMax(), partitionLimit + 1);
       List<String> partNames = rs.listPartitionNames(catName, dbName, tblName, args.getDefaultPartName(), args.getExpr(), null, (short) max);
-      checkLimitNumberOfPartitions(TableName.getQualified(catName, dbName, tblName), partNames.size(), -1);
-      partitions = rs.getPartitionsByNames(catName, dbName, tblName, partNames);
+      checkLimitNumberOfPartitions(tblName, partNames.size(), args.getMax());
+      partitions = rs.getPartitionsByNames(catName, dbName, tblName,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
     } else {
       hasUnknownPartitions = rs.getPartitionsByExpr(catName, dbName, tblName, partitions, args);
     }
