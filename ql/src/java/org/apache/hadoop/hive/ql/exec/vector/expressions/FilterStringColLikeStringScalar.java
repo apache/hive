@@ -60,28 +60,28 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
     // Accepts simple LIKE patterns like "abc%" and creates corresponding checkers.
     BEGIN(BeginChecker.class) {
       @Override
-      public String format(String pattern) {
+      String format(String pattern) {
         return pattern.substring(0, pattern.length() - 1);
       }
     },
     // Accepts simple LIKE patterns like "%abc" and creates a corresponding checkers.
     END(EndChecker.class) {
       @Override
-      public String format(String pattern) {
+      String format(String pattern) {
         return pattern.substring(1);
       }
     },
     // Accepts simple LIKE patterns like "%abc%" and creates a corresponding checkers.
     MIDDLE(MiddleChecker.class) {
       @Override
-      public String format(String pattern) {
+      String format(String pattern) {
         return pattern.substring(1, pattern.length() - 1);
       }
     },
     // Accepts any LIKE patterns and creates corresponding checkers.
     COMPLEX(ComplexChecker.class) {
       @Override
-      public String format(String pattern) {
+      String format(String pattern) {
         return "^" + UDFLike.likePatternToRegExp(pattern) + "$";
       }
     },
@@ -128,7 +128,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
       return lastType;
     }
 
-    public String format(String pattern) {
+    String format(String pattern) {
       return pattern;
     }
   }
