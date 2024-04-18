@@ -1482,7 +1482,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: sys@version
 #### A masked pattern was here ####
-4.0.1
+4.0.0
 PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@funcs
