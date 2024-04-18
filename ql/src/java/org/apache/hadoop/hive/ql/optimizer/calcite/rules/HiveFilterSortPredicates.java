@@ -20,10 +20,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
@@ -31,9 +34,11 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.slf4j.Logger;
@@ -196,6 +201,16 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
     public Double visitCall(RexCall call) {
       if (!deep) {
         return null;
+      }
+
+      if (call.getKind() == SqlKind.SEARCH) {
+        RexCall expandedCall = (RexCall) RexUtil.expandSearch(
+            new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())),
+            null,
+            call.clone(call.getType(), call.getOperands())
+        );
+
+        return visitCall(expandedCall);
       }
 
       Double cost = 0.d;
