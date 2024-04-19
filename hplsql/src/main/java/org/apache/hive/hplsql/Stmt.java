@@ -794,7 +794,7 @@ public class Stmt {
           value = String.format("TIMESTAMP '%s'", value);
         } else if (var.type == Type.DATE) {
           value = String.format("DATE '%s'", value);
-        } else if (!value.startsWith("'")) {
+        } else if (var.type == Type.STRING && !value.startsWith("'")) {
           value = Utils.quoteString(value);
         }
 
