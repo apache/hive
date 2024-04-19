@@ -224,7 +224,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
             }
           }
           side.newInput = relBuilder.push(joinInput)
-              .aggregate(relBuilder.groupKey(belowAggregateKey, null),
+              .aggregate(relBuilder.groupKey(belowAggregateKey, ImmutableList.of(belowAggregateKey)),
                   belowAggCalls)
               .build();
         }
