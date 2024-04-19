@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -322,7 +324,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         // unix_timestamp(args) -> to_unix_timestamp(args)
         calciteOp = HiveToUnixTimestampSqlOperator.INSTANCE;
       }
-      expr = rexBuilder.makeCall(returnType, calciteOp, inputs);
+      expr = getExpression(returnType, calciteOp, inputs);
     }
 
     if (expr instanceof RexCall && !expr.isA(SqlKind.CAST)) {
@@ -330,8 +332,14 @@ public class HiveFunctionHelper implements FunctionHelper {
       expr = rexBuilder.makeCall(returnType, call.getOperator(),
           RexUtil.flatten(call.getOperands(), call.getOperator()));
     }
-
     return expr;
+  }
+
+  private RexNode getExpression(RelDataType returnType, SqlOperator calciteOp, List<RexNode> inputs) {
+    if (Objects.requireNonNull(calciteOp.getKind()) == SqlKind.IN) {
+      return rexBuilder.makeIn(inputs.get(0), inputs.subList(1, inputs.size()));
+    }
+    return rexBuilder.makeCall(returnType, calciteOp, inputs);
   }
 
   private void checkForStatefulFunctions(List<RexNode> exprs)
