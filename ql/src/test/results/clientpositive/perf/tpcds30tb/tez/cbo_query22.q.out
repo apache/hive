@@ -7,7 +7,7 @@ HiveSortLimit(sort0=[$4], sort1=[$0], sort2=[$1], sort3=[$2], sort4=[$3], dir0=[
           HiveProject(inv_date_sk=[$0], inv_item_sk=[$1], inv_quantity_on_hand=[$3])
             HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
           HiveProject(d_date_sk=[$0])
-            HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+            HiveFilter(condition=[SEARCH($3, Sarg[[1212..1223]])])
               HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
         HiveProject(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12], i_product_name=[$21])
           HiveTableScan(table=[[default, item]], table:alias=[item])
