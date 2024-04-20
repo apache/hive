@@ -786,6 +786,10 @@ public class HiveConf extends Configuration {
         "Name of the identifier factory to use when generating table/column names etc. \n" +
         "'datanucleus1' is used for backward compatibility with DataNucleus v1"),
     METASTORE_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy", true, ""),
+    METASTORE_QUERY_SQL_ALLOWALL("datanucleus.query.sql.allowAll", true,
+        "In strict JDO all SQL queries must begin with \"SELECT ...\", and consequently it " +
+        "is not possible to execute queries that change data. This DataNucleus property when set to true allows " +
+        "insert, update and delete operations from JDO SQL. Default value is true."),
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG",
         "Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]"),
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300,

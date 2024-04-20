@@ -78,6 +78,7 @@ import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -1963,5 +1964,14 @@ class MetaStoreDirectSql {
       }
     }
     return ret;
+  }
+
+  long updateTableParam(Table table, String key, String expectedValue, String newValue) {
+    String queryText = String.format("UPDATE \"TABLE_PARAMS\" SET \"PARAM_VALUE\" = ? " +
+            "WHERE \"PARAM_KEY\" = ? AND \"PARAM_VALUE\" = ? AND \"TBL_ID\" IN " +
+            "(SELECT \"TBL_ID\" FROM \"TBLS\" JOIN \"DBS\" ON \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" WHERE \"TBL_NAME\" = '%s' AND \"NAME\" = '%s')",
+        table.getTableName(), table.getDbName());
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    return (long) query.executeWithArray(newValue, key, expectedValue);
   }
 }

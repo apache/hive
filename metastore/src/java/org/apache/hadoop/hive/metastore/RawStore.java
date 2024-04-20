@@ -711,4 +711,12 @@ public interface RawStore extends Configurable {
   void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+
+  /**
+   * Updates a given table parameter with expected value.
+   *
+   * @return the number of rows updated
+   */
+  long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
+      throws MetaException, NoSuchObjectException;
 }

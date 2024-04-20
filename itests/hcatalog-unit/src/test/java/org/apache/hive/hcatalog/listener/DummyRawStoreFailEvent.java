@@ -928,4 +928,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public void addForeignKeys(List<SQLForeignKey> fks)
       throws InvalidObjectException, MetaException {
   }
+
+  @Override
+  public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
+      throws MetaException, NoSuchObjectException {
+    throw new UnsupportedOperationException("This Store doesn't support updating table parameter with expected value");
+  }
 }
