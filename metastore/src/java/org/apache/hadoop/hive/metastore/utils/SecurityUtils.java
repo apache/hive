@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.thrift.DBTokenStore;
 import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
@@ -3771,7 +3771,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Adds the missing scheme/authority for the new partition location
       if (new_part.getSd() != null) {
         String newLocation = new_part.getSd().getLocation();
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(newLocation)) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(newLocation)) {
           Path tblPath = wh.getDnsPath(new Path(newLocation));
           new_part.getSd().setLocation(tblPath.toString());
         }
@@ -4000,7 +4000,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Adds the missing scheme/authority for the new table location
       if (newTable.getSd() != null) {
         String newLocation = newTable.getSd().getLocation();
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(newLocation)) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(newLocation)) {
           Path tblPath = wh.getDnsPath(new Path(newLocation));
           newTable.getSd().setLocation(tblPath.toString());
         }
@@ -4130,11 +4130,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           try {
             if (envContext != null) {
               String addedJars = envContext.getProperties().get("hive.added.jars.path");
-              if (org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
+              if (org.apache.commons.lang3.StringUtils.isNotBlank(addedJars)) {
                 //for thread safe
                 curConf = getConf();
                 orgHiveLoader = curConf.getClassLoader();
-                ClassLoader loader = MetaStoreUtils.addToClassPath(orgHiveLoader, org.apache.commons.lang.StringUtils.split(addedJars, ","));
+                ClassLoader loader = MetaStoreUtils.addToClassPath(orgHiveLoader, org.apache.commons.lang3.StringUtils.split(addedJars, ","));
                 curConf.setClassLoader(loader);
               }
             }

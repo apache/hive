@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore.hbase;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterators;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -1432,7 +1432,7 @@ public class HBaseReadWrite implements MetadataStore {
   String printRolesForUser(String userName) throws IOException {
     List<String> roles = getUserRoles(userName);
     if (roles == null || roles.size() == 0) return noSuch(userName, "user");
-    return org.apache.commons.lang.StringUtils.join(roles, ',');
+    return org.apache.commons.lang3.StringUtils.join(roles, ',');
   }
 
   List<String> printRolesForUsers(String regex) throws IOException {
@@ -1442,7 +1442,7 @@ public class HBaseReadWrite implements MetadataStore {
     while (iter.hasNext()) {
       Result result = iter.next();
       lines.add(new String(result.getRow(), HBaseUtils.ENCODING) + ": " +
-          org.apache.commons.lang.StringUtils.join(
+          org.apache.commons.lang3.StringUtils.join(
             HBaseUtils.deserializeRoleList(result.getValue(CATALOG_CF, CATALOG_COL)), ','));
     }
     if (lines.size() == 0) lines = noMatch(regex, "user");

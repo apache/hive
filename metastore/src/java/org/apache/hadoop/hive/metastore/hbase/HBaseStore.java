@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore.hbase;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheLoader;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.slf4j.Logger;

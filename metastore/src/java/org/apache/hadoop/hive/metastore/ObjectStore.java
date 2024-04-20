@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.join;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -56,7 +56,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -443,7 +443,7 @@ public class ObjectStore implements RawStore, Configurable {
   private static void configureSSL(Configuration conf) {
     // SSL support
     String sslPropString = conf.get(HiveConf.ConfVars.METASTORE_DBACCESS_SSL_PROPS.varname);
-    if (org.apache.commons.lang.StringUtils.isNotEmpty(sslPropString)) {
+    if (org.apache.commons.lang3.StringUtils.isNotEmpty(sslPropString)) {
       LOG.info("Metastore setting SSL properties of the connection to backed DB");
       for (String sslProp : sslPropString.split(",")) {
         String[] pair = sslProp.trim().split("=");
@@ -534,7 +534,7 @@ public class ObjectStore implements RawStore, Configurable {
               dsc.pinAll(true, PINCLASSMAP.get(type));
             }
             else {
-              LOG.warn(type + " is not one of the pinnable object types: " + org.apache.commons.lang.StringUtils.join(PINCLASSMAP.keySet(), " "));
+              LOG.warn(type + " is not one of the pinnable object types: " + org.apache.commons.lang3.StringUtils.join(PINCLASSMAP.keySet(), " "));
             }
           }
         }

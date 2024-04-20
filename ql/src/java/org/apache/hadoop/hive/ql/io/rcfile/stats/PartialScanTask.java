@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -233,7 +233,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
       }
 
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
+      // org.apache.commons.lang3.StringUtils
       console.printError(mesg, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
 

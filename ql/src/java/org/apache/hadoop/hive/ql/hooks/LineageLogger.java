@@ -24,7 +24,7 @@ import com.google.common.hash.Hashing;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.collections.SetUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;

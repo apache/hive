@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
@@ -72,7 +72,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
     for (int num = 1; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       if (format.fillStorageFormat(child)) {
-        if (org.apache.commons.lang.StringUtils
+        if (org.apache.commons.lang3.StringUtils
             .isNotEmpty(format.getStorageHandler())) {
             return ast;
         }

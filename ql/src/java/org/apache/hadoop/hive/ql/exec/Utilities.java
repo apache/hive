@@ -24,8 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -843,7 +842,7 @@ public final class Utilities {
     String rev = StringUtils.reverse(str);
 
     // get the last few words
-    String suffix = WordUtils.abbreviate(rev, 0, suffixlength, "");
+    String suffix = StringUtils.abbreviate(rev, suffixlength);
     suffix = StringUtils.reverse(suffix);
 
     // first few ..

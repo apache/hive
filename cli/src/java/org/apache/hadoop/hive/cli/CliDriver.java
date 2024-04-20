@@ -48,7 +48,7 @@ import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
 import jline.console.completer.ArgumentCompleter.AbstractArgumentDelimiter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

@@ -35,7 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;

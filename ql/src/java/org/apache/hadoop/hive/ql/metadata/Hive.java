@@ -2309,7 +2309,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     alterPartitionSpecInMemory(tbl, partSpec, tpart, inheritTableSpecs, partPath);
     String fullName = tbl.getTableName();
-    if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
+    if (!org.apache.commons.lang3.StringUtils.isEmpty(tbl.getDbName())) {
       fullName = tbl.getDbName() + "." + tbl.getTableName();
     }
     alterPartition(fullName, new Partition(tbl, tpart), null);

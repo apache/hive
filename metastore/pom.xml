@@ -91,9 +91,9 @@
       <version>${commons-cli.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
     </dependency>
     <!-- XXX we probably shouldn't be shipping this but the tests depend on it -->
     <dependency>

@@ -67,7 +67,7 @@ import com.google.common.base.Preconditions;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -1834,7 +1834,7 @@ public class QTestUtil {
   }
 
   private static int executeCmd(String[] args, String outFile, String errFile) throws Exception {
-    System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(args, ' '));
+    System.out.println("Running: " + org.apache.commons.lang3.StringUtils.join(args, ' '));
 
     PrintStream out = outFile == null ?
       SessionState.getConsole().getChildOutStream() :

@@ -110,7 +110,7 @@ public final class PcrOpProcFactory {
         prunedPartList = pctx.getPrunedPartitions(alias, top);
       } catch (HiveException e) {
         // Has to use full name to make sure it does not conflict with
-        // org.apache.commons.lang.StringUtils
+        // org.apache.commons.lang3.StringUtils
         throw new SemanticException(e.getMessage(), e);
       }
 
