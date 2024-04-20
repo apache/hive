@@ -58,7 +58,7 @@ There are some arguments to specify the component version:
 If the version is not provided, it will read the version from current `pom.xml`:
 `project.version`, `hadoop.version` and `tez.version` for Hive, Hadoop and Tez respectively. 
 
-For example, the following command uses Hive 3.1.3, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
+For example, the following command uses Hive 4.0.0, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
 ```shell
 ./build.sh -hive 4.0.0
 ```
