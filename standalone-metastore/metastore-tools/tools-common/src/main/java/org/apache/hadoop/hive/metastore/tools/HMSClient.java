@@ -341,6 +341,11 @@ final class HMSClient implements AutoCloseable {
     return client.get_partitions_by_filter(dbName, tableName, filter, (short) -1);
   }
 
+  List<Partition> getPartitionsByPs(@NotNull String dbName, @NotNull String tableName,
+                                    @NotNull List<String> partVals) throws TException {
+    return client.get_partitions_ps_with_auth(dbName, tableName, partVals, (short) -1, null, null);
+  }
+
   PartitionsStatsResult getPartitionsStats(PartitionsStatsRequest request) throws TException {
     return client.get_partitions_statistics_req(request);
   }

@@ -584,15 +584,30 @@ public final class Util {
                                               @Nullable Map<String, String> parameters,
                                               @NotNull List<String> arguments,
                                               int npartitions) {
-    return IntStream.range(0, npartitions)
-            .mapToObj(i ->
-                    new PartitionBuilder(table)
-                            .withParameters(parameters)
-                            .withValues(
-                                    arguments.stream()
-                                            .map(a -> a + i)
-                                            .collect(Collectors.toList())).build())
-            .collect(Collectors.toList());
+    List<List<String>> values = IntStream.range(0, npartitions)
+        .mapToObj(i -> arguments.stream().map(a -> a + i).collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    return createManyPartitions(table, parameters, values);
+  }
+
+  /**
+   * Create multiple partition objects with list of partition values.
+   *
+   * @param table
+   * @param parameters
+   * @param values list of partition values
+   * @return list of created partitions
+   */
+  static List<Partition> createManyPartitions(@NotNull Table table,
+                                              @Nullable Map<String, String> parameters,
+                                              @NotNull List<List<String>> values) {
+    return values.stream()
+        .map(vals ->
+            new PartitionBuilder(table)
+                .withParameters(parameters)
+                .withValues(vals)
+                .build())
+        .collect(Collectors.toList());
   }
 
   /**
@@ -613,6 +628,25 @@ public final class Util {
                                   int npartitions) throws TException {
     Table table = client.getTable(dbName, tableName);
     client.addPartitions(createManyPartitions(table, parameters, arguments, npartitions));
+    return null;
+  }
+
+  /**
+   * Add many partitions with list of part values in one HMS call
+   *
+   * @param client      HMS Client
+   * @param dbName      database name
+   * @param tableName   table name
+   * @param values      list of partition values
+   * @throws TException if fails to create partitions
+   */
+  static Object addManyPartitions(@NotNull HMSClient client,
+                                  @NotNull String dbName,
+                                  @NotNull String tableName,
+                                  @Nullable Map<String, String> parameters,
+                                  @NotNull List<List<String>> values) throws TException {
+    Table table = client.getTable(dbName, tableName);
+    client.addPartitions(createManyPartitions(table, parameters, values));
     return null;
   }
 
@@ -646,6 +680,15 @@ public final class Util {
                                            int npartitions) {
     throwingSupplierWrapper(() ->
             addManyPartitions(client, dbName, tableName, parameters, arguments, npartitions));
+  }
+
+  static void addManyPartitionsNoException(@NotNull HMSClient client,
+                                           @NotNull String dbName,
+                                           @NotNull String tableName,
+                                           @Nullable Map<String, String> parameters,
+                                           List<List<String>> values) {
+    throwingSupplierWrapper(() ->
+            addManyPartitions(client, dbName, tableName, parameters, values));
   }
 
   static void updateManyPartitionsStatsNoException(@NotNull HMSClient client,
