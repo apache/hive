@@ -24,17 +24,3 @@ WHERE ss_hdemo_sk = hd1.hd_demo_sk AND
       c_current_hdemo_sk = hd2.hd_demo_sk AND
       hd2.hd_income_band_sk = ib2.ib_income_band_sk
 GROUP BY i_product_name, i_item_sk;
-
-EXPLAIN
-SELECT i_product_name, i_item_sk
-FROM store_sales
-    ,customer
-    ,household_demographics hd1
-    ,household_demographics hd2
-    ,income_band ib2
-    ,item
-WHERE ss_hdemo_sk = hd1.hd_demo_sk AND
-      ss_item_sk = i_item_sk and
-      c_current_hdemo_sk = hd2.hd_demo_sk AND
-      hd2.hd_income_band_sk = ib2.ib_income_band_sk
-GROUP BY i_product_name, i_item_sk;

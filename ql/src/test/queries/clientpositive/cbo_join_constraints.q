@@ -9,8 +9,3 @@ EXPLAIN CBO
 SELECT i_item_sk
 FROM store_sales, household_demographics, item
 WHERE ss_item_sk = i_item_sk;
-
-EXPLAIN
-SELECT i_item_sk
-FROM store_sales, household_demographics, item
-WHERE ss_item_sk = i_item_sk;
