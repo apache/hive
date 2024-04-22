@@ -1070,8 +1070,7 @@ public class ASTConverter {
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
       case SEARCH:
-        ASTNode astNode = searchOperandToAST(call.getOperands().get(0))
-            .orElseThrow(() -> new RuntimeException("Incorrect SEARCH operand."));
+        ASTNode astNode = searchOperandToAST(call.getOperands().get(0));
         astNodeLst.add(astNode);
         RexLiteral literal = (RexLiteral)call.operands.get(1);
         Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
@@ -1107,23 +1106,16 @@ public class ASTConverter {
       }
     }
 
-    private Optional<ASTNode> searchOperandToAST(RexNode operand) {
-      if (operand instanceof RexInputRef) {
-        return Optional.of(visitInputRef((RexInputRef) operand));
-      }
-
-      if (operand instanceof RexCall) {
-        if (Objects.requireNonNull(operand.getKind()) == SqlKind.CAST) {
-          RexNode operand0 = ((RexCall) operand).getOperands().get(0);
-          if (operand0 instanceof RexInputRef) {
-            return Optional.of(visitInputRef((RexInputRef) operand0));
-          }
-        } else {
-          return Optional.ofNullable(visitCall((RexCall) operand));
+    private ASTNode searchOperandToAST(RexNode operand) {
+      //handle CAST
+      if (operand instanceof RexCall && operand.getKind() == SqlKind.CAST) {
+        RexNode operand0 = ((RexCall) operand).getOperands().get(0);
+        if (operand0 instanceof RexInputRef) {
+          return operand0.accept(this);
         }
       }
 
-      return Optional.empty();
+      return operand.accept(this);
     }
 
     @Override
