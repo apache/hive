@@ -203,8 +203,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         args.add(operand.accept(this));
       }
     } else if (call.getKind() == SqlKind.SEARCH) {
-      RexInputRef ref = (RexInputRef)call.operands.get(0);
-      args.add(ref.accept(this));
+      RexNode searchOperand = call.getOperands().get(0);
+      args.add(searchOperand.accept(this));
       RexLiteral literal = (RexLiteral)call.operands.get(1);
       Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
       if (sarg.isPoints()) {
