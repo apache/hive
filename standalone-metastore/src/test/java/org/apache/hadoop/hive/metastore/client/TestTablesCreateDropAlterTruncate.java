@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
@@ -56,6 +57,7 @@ import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -105,7 +107,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
   @BeforeClass
   public static void startMetaStores() {
-    Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
+    Map<ConfVars, String> msConf = new HashMap<ConfVars, String>();
     // Enable trash, so it can be tested
     Map<String, String> extraConf = new HashMap<>();
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
@@ -1086,6 +1088,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
   @Test
   public void testAlterTableExpectedPropertyMatch() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     EnvironmentContext context = new EnvironmentContext();
@@ -1099,6 +1103,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
   @Test(expected = MetaException.class)
   public void testAlterTableExpectedPropertyDifferent() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     EnvironmentContext context = new EnvironmentContext();
@@ -1118,6 +1124,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
    */
   @Test
   public void testAlterTableExpectedPropertyConcurrent() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     originalTable.getParameters().put("snapshot", "0");
