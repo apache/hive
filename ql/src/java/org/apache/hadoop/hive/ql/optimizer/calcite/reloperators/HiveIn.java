@@ -37,12 +37,17 @@ public class HiveIn extends SqlSpecialOperator {
   private HiveIn() {
     super(
         "IN",
-        SqlKind.IN,
+        SqlKind.OTHER,
         30,
         true,
         ReturnTypes.BOOLEAN_NULLABLE,
         InferTypes.FIRST_KNOWN,
         null);
+  }
+
+  @Override
+  public SqlKind getKind() {
+    return SqlKind.IN;
   }
 
   @Override
