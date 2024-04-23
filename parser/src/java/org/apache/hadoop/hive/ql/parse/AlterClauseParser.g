@@ -631,3 +631,48 @@ alterDataConnectorSuffixSetUrl
     -> ^(TOK_ALTERDATACONNECTOR_URL $dcName $newUri)
     ;
 
+alterScheduledQueryStatement
+@init { gParent.pushMsg("alter scheduled query statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_ALTER KW_SCHEDULED KW_QUERY name=identifier
+            mod=alterScheduledQueryChange
+    -> ^(TOK_ALTER_SCHEDULED_QUERY
+            $name
+            $mod
+        )
+    ;
+
+alterScheduledQueryChange
+@init { gParent.pushMsg("alter scheduled query change", state); }
+@after { gParent.popMsg(state); }
+    : scheduleSpec
+    | executedAsSpec
+    | enableSpecification
+    | definedAsSpec
+    | KW_EXECUTE -> ^(TOK_EXECUTE)
+    ;
+
+alterColumnConstraint[CommonTree fkColName]
+@init { gParent.pushMsg("alter column constraint", state); }
+@after { gParent.popMsg(state); }
+    : ( alterForeignKeyConstraint[$fkColName] )
+    | ( alterColConstraint )
+    ;
+
+alterForeignKeyConstraint[CommonTree fkColName]
+@init { gParent.pushMsg("alter column constraint", state); }
+@after { gParent.popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
+    -> ^(TOK_FOREIGN_KEY ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
+    ;
+
+alterColConstraint
+@init { gParent.pushMsg("alter column constraint", state); }
+@after { gParent.popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^({$columnConstraintType.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    -> ^({$columnConstraintType.tree} constraintOptsAlter?)
+    ;
