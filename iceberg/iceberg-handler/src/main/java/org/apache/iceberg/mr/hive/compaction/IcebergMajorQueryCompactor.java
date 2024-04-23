@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
+import org.apache.iceberg.relocated.com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,8 +64,7 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.ALL_PARTITIONS.name());
       compactionQuery = String.format("insert overwrite table %s select * from %<s", compactTableName);
     } else {
-      Hive db = Hive.get(conf);
-      org.apache.hadoop.hive.ql.metadata.Table table = db.getTable(context.getTable().getDbName(),
+      org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
           context.getTable().getTableName());
       Map<String, String> partSpecMap = new LinkedHashMap<>();
       Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
@@ -90,13 +90,15 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);
+    String compactionTarget = "table " + compactTableName +
+        (Strings.nullToEmpty(partSpec).isEmpty() ? "" : ", partition " + partSpec);
 
     try {
       DriverUtils.runOnDriver(conf, sessionState, compactionQuery);
-      LOG.info("Completed compaction for table {}", compactTableName);
+      LOG.info("Completed compaction for {}", compactionTarget);
       return true;
     } catch (HiveException e) {
-      LOG.error("Failed compacting table {}", compactTableName, e);
+      LOG.error("Failed compacting {}", compactionTarget, e);
       throw e;
     } finally {
       sessionState.setCompaction(false);

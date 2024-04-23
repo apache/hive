@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -75,6 +74,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -751,7 +751,7 @@ public interface HiveStorageHandler extends Configurable {
     return true;
   }
 
-  default Pair<Boolean, ErrorMsg> isEligibleForCompaction(org.apache.hadoop.hive.ql.metadata.Table table,
+  default Optional<ErrorMsg> isEligibleForCompaction(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec) {
     throw new UnsupportedOperationException("Storage handler does not support validating eligibility for compaction");
   }
@@ -784,7 +784,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table, 
-      Map<String, String> partialPartSpec) throws SemanticException {
+      Map<String, String> partitionSpec) throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions for a table.");
   }
 

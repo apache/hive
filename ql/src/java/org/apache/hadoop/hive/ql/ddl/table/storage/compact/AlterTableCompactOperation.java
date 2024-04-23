@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 
-import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -64,9 +63,9 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     }
     
     if (table.getStorageHandler() != null) {
-      Pair<Boolean, ErrorMsg> result = table.getStorageHandler().isEligibleForCompaction(table, desc.getPartitionSpec());
-      if (!result.getLeft()) {
-        throw new HiveException(result.getRight(), table.getDbName(), table.getTableName());
+      Optional<ErrorMsg> error = table.getStorageHandler().isEligibleForCompaction(table, desc.getPartitionSpec());
+      if (error.isPresent()) {
+        throw new HiveException(error.get(), table.getDbName(), table.getTableName());
       }
     }
 

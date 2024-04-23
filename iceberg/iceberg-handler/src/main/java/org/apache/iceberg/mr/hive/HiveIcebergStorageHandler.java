@@ -1928,18 +1928,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public org.apache.commons.lang3.tuple.Pair<Boolean, ErrorMsg> isEligibleForCompaction(
+  public Optional<ErrorMsg> isEligibleForCompaction(
       org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec) {
     if (partitionSpec != null) {
       Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
       if (hasUndergonePartitionEvolution(icebergTable)) {
-        return org.apache.commons.lang3.tuple.Pair.of(false, ErrorMsg.COMPACTION_PARTITION_EVOLUTION);
+        return Optional.of(ErrorMsg.COMPACTION_PARTITION_EVOLUTION);
       }
       if (!isIdentityPartitionTable(table)) {
-        return org.apache.commons.lang3.tuple.Pair.of(false, ErrorMsg.COMPACTION_NON_IDENTITY_PARTITION_SPEC);
+        return Optional.of(ErrorMsg.COMPACTION_NON_IDENTITY_PARTITION_SPEC);
       }
     }
-    return org.apache.commons.lang3.tuple.Pair.of(true, null);
+    return Optional.empty();
   }
 
   @Override
