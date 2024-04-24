@@ -42,7 +42,8 @@ import static java.time.temporal.ChronoField.YEAR;
 /**
  * This is the internal type for Date. The full qualified input format of Date
  * is "uuuu-MM-dd". For example: "2021-02-11".
- * <table border="2" summary="">
+ * <table border="1">
+ *     <caption></caption>
  * <tr>
  * <th>Field</th>
  * <th>Format</th>
