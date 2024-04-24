@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
-import org.apache.iceberg.relocated.com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,8 +89,8 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);
-    String compactionTarget = "table " + compactTableName +
-        (Strings.nullToEmpty(partSpec).isEmpty() ? "" : ", partition " + partSpec);
+    String compactionTarget = "table " + HiveUtils.unparseIdentifier(compactTableName) +
+        (partSpec != null ? ", partition " + HiveUtils.unparseIdentifier(partSpec) : "");
 
     try {
       DriverUtils.runOnDriver(conf, sessionState, compactionQuery);
