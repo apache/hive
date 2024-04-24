@@ -44,7 +44,8 @@ import static java.time.temporal.ChronoField.YEAR;
  * Timestamp is "uuuu-MM-dd HH:mm:ss[.SSS...]", where the time part is optional.
  * If time part is absent, a default '00:00:00.0' will be used.
  *
- * <table border="2" summary="">
+ * <table border="1">
+ * <caption></caption>
  * <tr>
  * <th>Field</th>
  * <th>Format</th>

@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
  * In addition to accepting format patterns, this parser provides support for
  * three pre-defined formats:
  *
- * <table border="1" summary="">
+ * <table border="1">
+ *     <caption></caption>
  * <thead>
  * <tr>
  * <th>Formatter</th>
