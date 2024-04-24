@@ -47,7 +47,7 @@ import static org.apache.hadoop.hive.metastore.tools.Util.filterMatches;
  * mean +/- margin * delta is removed from the result set. This helps remove random
  * outliers.
  *
- * <h1>Example</h1>
+ * <h2>Example</h2>
  *
  * <pre>
  *   StringBuilder sb = new StringBuilder();
