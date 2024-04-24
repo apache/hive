@@ -39,7 +39,7 @@ import java.util.List;
  * computation in a {@link org.apache.calcite.rel.core.Project} expression. An additional projection
  * may be added on top of the new filter to retain expression equivalence.
  *
- * <h3>Sub-plan before</h3>
+ * <h2>Sub-plan before</h2>
  * <pre>
  * LogicalProject($f0=[true])
  *   LogicalFilter(condition=[=($cor0.DEPTNO, +($7, 30))])
