@@ -266,6 +266,11 @@
 </property>
 
 <property>
+  <name>hive.tez.exec.print.summary</name>
+  <value>true</value>
+</property>
+
+<property>
   <name>hive.orc.splits.ms.footer.cache.enabled</name>
   <value>true</value>
 </property>
