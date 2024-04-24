@@ -3840,7 +3840,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
       throws MetaException, NoSuchObjectException {
-    if (arePartValsEmpty(partVals)) {
+    if (MetaStoreUtils.arePartValsEmpty(partVals)) {
       return getNumPartitionsByFilter(catName, dbName, tblName, HMSHandler.NO_FILTER_STRING);
     }
 
@@ -3882,8 +3882,10 @@ public class ObjectStore implements RawStore, Configurable {
    *          you want results for.  E.g., if resultsCol is partitionName, the Collection
    *          has types of String, and if resultsCol is null, the types are MPartition.
    */
-  private Collection<String> getPartitionPsQueryResults(String catName, String dbName, String tableName, List<String> part_vals,
-      int max_parts, String resultsCol) throws Exception {
+  private Collection<String> getPartitionPsQueryResults(String catName, String dbName,
+                                                        String tableName, List<String> part_vals,
+                                                        int max_parts, String resultsCol)
+      throws MetaException, NoSuchObjectException {
 
     Preconditions.checkState(this.currentTransaction.isActive());
 
@@ -3898,7 +3900,7 @@ public class ObjectStore implements RawStore, Configurable {
     // pattern
     Map<String, String> params = new HashMap<>(4);
     String filter = getJDOFilterStrForPartitionVals(table, part_vals, params);
-    try (Query query = pm.newQuery(MPartition.class)) {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class))) {
       query.setFilter(filter);
       query.declareParameters(makeParameterDeclarationString(params));
       if (max_parts >= 0) {
@@ -3913,25 +3915,6 @@ public class ObjectStore implements RawStore, Configurable {
 
       return Collections.unmodifiableCollection(new ArrayList<>(result));
     }
-  }
-
-  /**
-   * If partVals all the values are empty strings, it means we are returning
-   * all the partitions and hence we can use get_partitions API.
-   * @param partVals The partitions values used to filter out the partitions.
-   * @return true if partVals is empty or if all the values in partVals is empty strings.
-   * other wise false.
-   */
-  private boolean arePartValsEmpty(List<String> partVals) {
-    if (partVals == null || partVals.isEmpty()) {
-      return true;
-    }
-    for (String val : partVals) {
-      if (val != null && !val.isEmpty()) {
-        return false;
-      }
-    }
-    return true;
   }
 
   @Override
@@ -3955,7 +3938,7 @@ public class ObjectStore implements RawStore, Configurable {
       boolean getauth = null != userName && null != groupNames &&
           "TRUE".equalsIgnoreCase(
               mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
-      if (arePartValsEmpty(part_vals) && partNames == null) {
+      if (MetaStoreUtils.arePartValsEmpty(part_vals) && partNames == null) {
         partitions = getPartitions(catName, db_name, tbl_name, args);
       } else  if (partNames != null) {
         partitions = getPartitionsByNames(catName, db_name, tbl_name, args);
@@ -3996,10 +3979,9 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<Partition> getPartitionsByPs(String catName,
-                                            String dbName,
-                                            String tblName,
-                                            GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+  private List<Partition> getPartitionsByPs(String catName, String dbName,
+                                            String tblName, GetPartitionsArgs args)
+      throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -4012,20 +3994,17 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       @Override
-      protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx) throws MetaException {
+      protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
+          throws MetaException, NoSuchObjectException {
         List<Partition> result = new ArrayList<>();
-        try {
-          Collection parts = getPartitionPsQueryResults(catName, dbName, tblName,
-              args.getPart_vals(), args.getMax(), null);
-          boolean isAcidTable = TxnUtils.isAcidTable(ctx.getTable());
-          for (Object o : parts) {
-            Partition part = convertToPart(catName, dbName, tblName, (MPartition) o, isAcidTable, args);
-            result.add(part);
-          }
-          return result;
-        } catch (Exception e) {
-          throw new MetaException(e.getMessage());
+        Collection parts = getPartitionPsQueryResults(catName, dbName, tblName,
+            args.getPart_vals(), args.getMax(), null);
+        boolean isAcidTable = TxnUtils.isAcidTable(ctx.getTable());
+        for (Object o : parts) {
+          Partition part = convertToPart(catName, dbName, tblName, (MPartition) o, isAcidTable, args);
+          result.add(part);
         }
+        return result;
       }
     }.run(true);
   }
@@ -4033,6 +4012,10 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tableName,
       List<String> part_vals, short max_parts) throws MetaException, NoSuchObjectException {
+    if (MetaStoreUtils.arePartValsEmpty(part_vals)) {
+      return listPartitionNames(catName, dbName, tableName, max_parts);
+    }
+
     List<String> partitionNames = new ArrayList<>();
     boolean success = false;
 

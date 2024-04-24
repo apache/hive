@@ -2229,8 +2229,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Partition> listPartitions(String catName, String db_name, String tbl_name,
                                         List<String> part_vals, int max_parts) throws TException {
     // TODO should we add capabilities here as well as it returns Partition objects
-    if (db_name == null || tbl_name == null || part_vals == null) {
-      throw new MetaException("Database name/Table name/partition values should not be null");
+    if (db_name == null || tbl_name == null) {
+      throw new MetaException("Database name/Table name should not be null");
     }
     GetPartitionsPsWithAuthRequest req = createThriftPartitionsReq(GetPartitionsPsWithAuthRequest.class, conf);
     req.setDbName(db_name);
@@ -2345,8 +2345,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   protected List<Partition> listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
       List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
       throws TException {
-    if (dbName == null || tableName == null || partialPvals == null) {
-      throw new MetaException("Database name/Table name/partition values should not be null");
+    if (dbName == null || tableName == null) {
+      throw new MetaException("Database name/Table name should not be null");
     }
     GetPartitionsPsWithAuthRequest req = createThriftPartitionsReq(GetPartitionsPsWithAuthRequest.class, conf);
     req.setTblName(tableName);
