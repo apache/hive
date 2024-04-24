@@ -52,7 +52,7 @@ import java.util.Set;
  * computation over the correlated variables, from the right side of a correlation
  * ({@link org.apache.calcite.rel.core.Correlate}) and places it on the left side.
  *
- * <h3>Plan before</h3>
+ * <h2>Plan before</h2>
  * <pre>
  * LogicalCorrelate(correlation=[$cor0], joinType=[left], requiredColumns=[{7}])
  *   LogicalTableScan(table=[[scott, EMP]])
