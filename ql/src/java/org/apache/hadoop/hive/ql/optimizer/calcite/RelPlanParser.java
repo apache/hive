@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -60,7 +59,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.ParsedQueryTables;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QB;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -92,33 +90,19 @@ public class RelPlanParser {
       new TypeReference<LinkedHashMap<String, Object>>() {
       };
 
-  private final Context ctx;
   private final RelOptCluster cluster;
-  private final QB qb;
-  private final RelOptSchema schema;
-  private final HiveConf hiveConf;
-  private final Hive db;
-  private final ParsedQueryTables tabNameToTabObject;
+  private final RelOptHiveTableFactory relOptHiveTableFactory;
   private final Map<String, PrunedPartitionList> partitionCache;
-  private final Map<String, ColumnStatsList> colStatsCache;
-  private final AtomicInteger noColsMissingStats;
   private final HiveRelJson relJson = new HiveRelJson(null);
   private final Map<String, RelNode> relMap = new LinkedHashMap<>();
   private RelNode lastRel;
 
-  public RelPlanParser(Context ctx, QB qb, RelOptSchema schema, RelOptCluster cluster, HiveConf hiveConf, Hive db,
-                       ParsedQueryTables tabNameToTabObject, Map<String, PrunedPartitionList> partitionCache,
-                       Map<String, ColumnStatsList> colStatsCache, AtomicInteger noColsMissingStats) {
-    this.ctx = ctx;
-    this.qb = qb;
-    this.schema = schema;
+  public RelPlanParser(RelOptCluster cluster,
+                       RelOptHiveTableFactory relOptHiveTableFactory,
+                       Map<String, PrunedPartitionList> partitionCache) {
     this.cluster = cluster;
-    this.hiveConf = hiveConf;
-    this.db = db;
-    this.tabNameToTabObject = tabNameToTabObject;
+    this.relOptHiveTableFactory = relOptHiveTableFactory;
     this.partitionCache = partitionCache;
-    this.colStatsCache = colStatsCache;
-    this.noColsMissingStats = noColsMissingStats;
   }
 
   public RelNode parse(String json) throws IOException {
@@ -232,8 +216,6 @@ public class RelPlanParser {
       List<String> qualifiedName = (List<String>) jsonRel.get("table");
       RelDataType rowType = relJson.toType(cluster.getTypeFactory(), jsonRel.get("rowType"));
       String tableAlias = (String) jsonRel.get("table:alias");
-      String dbName = qualifiedName.get(0);
-      String tableName = qualifiedName.get(1);
 
       Map<Boolean, List<ColumnInfo>> columnInfo = computeColumnInfos(rowType, tableAlias);
       List<ColumnInfo> nonPartitionColumns = columnInfo.getOrDefault(false, new ArrayList<>());
@@ -241,24 +223,11 @@ public class RelPlanParser {
 
       List<VirtualColumn> virtualColumns = getVirtualColumns();
 
-      Table tbl = getTable(tableAlias, dbName, tableName);
+      TableName tableName = new TableName(
+          null, qualifiedName.get(0), qualifiedName.get(1), (String) jsonRel.get("snapshotRef"));
 
-      RelOptHiveTable relOptHiveTable = new RelOptHiveTable(
-          schema,
-          cluster.getTypeFactory(),
-          qualifiedName,
-          rowType,
-          tbl,
-          nonPartitionColumns,
-          partitionColumns,
-          virtualColumns,
-          hiveConf,
-          db,
-          tabNameToTabObject,
-          partitionCache,
-          colStatsCache,
-          noColsMissingStats
-      );
+      RelOptHiveTable relOptHiveTable = relOptHiveTableFactory.createRelOptHiveTable(
+          tableAlias, tableName, rowType, nonPartitionColumns, partitionColumns, virtualColumns);
 
       // set partition list
       String plKey = (String) jsonRel.get("plKey");
@@ -279,64 +248,6 @@ public class RelPlanParser {
       }
 
       return virtualColumns;
-    }
-
-    // TODO: Probably could simplify this method. Maybe we don't need to look in QB.
-    private Table getTable(String alias, String dbName, String tableName) {
-      String fullTableName = TableName.getDbTable(dbName, tableName);
-      // Look in QB
-      Table result = verifyTableName(qb.getTableForAlias(alias), fullTableName);
-
-      // Look in ctx if it's a materialized table
-      if (result == null && jsonRel.containsKey("materializedTable") && (boolean) jsonRel.get("materializedTable")) {
-        result = verifyTableName(
-            getTableUsing(ctx::getMaterializedTable, alias, tableName, fullTableName),
-            fullTableName
-        );
-      }
-
-      // Look in tabNameToTabObject
-      if (result == null) {
-        result = verifyTableName(
-            getTableUsing(tabNameToTabObject::getParsedTable, tableName, fullTableName),
-            fullTableName
-        );
-      }
-
-      if (result == null && jsonRel.containsKey("snapshotRef")) {
-        String nameWithSnapshotRef = fullTableName + "." + jsonRel.get("snapshotRef");
-        result = verifyTableName(
-            getTableUsing(tabNameToTabObject::getParsedTable, nameWithSnapshotRef),
-            fullTableName
-        );
-      }
-
-      // Finally try HMS
-      if (result == null) {
-        try {
-          result = db.getTable(
-              dbName, tableName, null,
-              true, true, false
-          );
-        } catch (HiveException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      return result;
-    }
-
-    private Table getTableUsing(Function<String, Table> function, String... names) {
-      return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
-    }
-
-    private Table verifyTableName(Table table, String fullName) {
-      if (table == null) {
-        return null;
-      }
-      String tableName = TableName.getDbTable(table.getDbName(), table.getTableName());
-
-      return fullName.equals(tableName) ? table : null;
     }
 
     private Map<Boolean, List<ColumnInfo>> computeColumnInfos(RelDataType rowType, String tableAlias) {
