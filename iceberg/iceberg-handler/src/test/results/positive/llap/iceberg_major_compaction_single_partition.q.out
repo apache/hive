@@ -1,0 +1,451 @@
+PREHOOK: query: create table ice_orc_wo_evo (
+    first_name string, 
+    last_name string
+ )
+partitioned by (dept_id bigint, 
+                city string, 
+                registration_date date)
+stored by iceberg stored as orc 
+tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: create table ice_orc_wo_evo (
+    first_name string, 
+    last_name string
+ )
+partitioned by (dept_id bigint, 
+                city string, 
+                registration_date date)
+stored by iceberg stored as orc 
+tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: insert into ice_orc_wo_evo VALUES ('fn1','ln1',1,'London','2024-03-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: insert into ice_orc_wo_evo VALUES ('fn1','ln1',1,'London','2024-03-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: insert into ice_orc_wo_evo VALUES ('fn2','ln2',1,'London','2024-03-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: insert into ice_orc_wo_evo VALUES ('fn2','ln2',1,'London','2024-03-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: insert into ice_orc_wo_evo VALUES ('fn3','ln3',1,'London','2024-03-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: insert into ice_orc_wo_evo VALUES ('fn3','ln3',1,'London','2024-03-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: insert into ice_orc_wo_evo VALUES ('fn4','ln4',1,'London','2024-03-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: insert into ice_orc_wo_evo VALUES ('fn4','ln4',1,'London','2024-03-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: insert into ice_orc_wo_evo VALUES ('fn5','ln5',2,'Paris','2024-02-16')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: insert into ice_orc_wo_evo VALUES ('fn5','ln5',2,'Paris','2024-02-16')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: insert into ice_orc_wo_evo VALUES ('fn6','ln6',2,'Paris','2024-02-16')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: insert into ice_orc_wo_evo VALUES ('fn6','ln6',2,'Paris','2024-02-16')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: insert into ice_orc_wo_evo VALUES ('fn7','ln7',2,'Paris','2024-02-16')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: insert into ice_orc_wo_evo VALUES ('fn7','ln7',2,'Paris','2024-02-16')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln1a' where first_name='fn1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln1a' where first_name='fn1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln2a' where first_name='fn2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln2a' where first_name='fn2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln3a' where first_name='fn3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln3a' where first_name='fn3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln4a' where first_name='fn4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln4a' where first_name='fn4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln5a' where first_name='fn5'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln5a' where first_name='fn5'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln6a' where first_name='fn6'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln6a' where first_name='fn6'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln7a' where first_name='fn7'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln7a' where first_name='fn7'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
+PREHOOK: query: delete from ice_orc_wo_evo where last_name in ('ln1a', 'ln2a', 'ln7a')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+POSTHOOK: query: delete from ice_orc_wo_evo where last_name in ('ln1a', 'ln2a', 'ln7a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+PREHOOK: query: select * from ice_orc_wo_evo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc_wo_evo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+fn3	ln3a	1	London	2024-03-11
+fn4	ln4a	1	London	2024-03-11
+fn5	ln5a	2	Paris	2024-02-16
+fn6	ln6a	2	Paris	2024-02-16
+PREHOOK: query: describe formatted ice_orc_wo_evo
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: query: describe formatted ice_orc_wo_evo
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc_wo_evo
+# col_name            	data_type           	comment             
+first_name          	string              	                    
+last_name           	string              	                    
+dept_id             	bigint              	                    
+city                	string              	                    
+registration_date   	date                	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+dept_id             	IDENTITY            	 
+city                	IDENTITY            	 
+registration_date   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"city\",\"required\":false,\"type\":\"string\"},{\"id\":5,\"name\":\"registration_date\",\"required\":false,\"type\":\"date\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"deleted-data-files\":\"3\",\"deleted-records\":\"3\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"11\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"11\",\"total-delete-files\":\"7\",\"total-position-deletes\":\"7\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1002}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	11                  
+	numRows             	11                  
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	15                  
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#               
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: explain alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: query: explain alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Compact
+      compaction type: major
+      table name: default.ice_orc_wo_evo
+      numberOfBuckets: 0
+      partition spec:
+        city London
+        dept_id 1
+        registration_date 2024-03-11
+      table name: default.ice_orc_wo_evo
+      blocking: true
+
+PREHOOK: query: alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: query: alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: query: select * from ice_orc_wo_evo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc_wo_evo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+fn3	ln3a	1	London	2024-03-11
+fn4	ln4a	1	London	2024-03-11
+fn5	ln5a	2	Paris	2024-02-16
+fn6	ln6a	2	Paris	2024-02-16
+PREHOOK: query: describe formatted ice_orc_wo_evo
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: query: describe formatted ice_orc_wo_evo
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc_wo_evo
+# col_name            	data_type           	comment             
+first_name          	string              	                    
+last_name           	string              	                    
+dept_id             	bigint              	                    
+city                	string              	                    
+registration_date   	date                	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+dept_id             	IDENTITY            	 
+city                	IDENTITY            	 
+registration_date   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"city\":\"true\",\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\",\"registration_date\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"city\",\"required\":false,\"type\":\"string\"},{\"id\":5,\"name\":\"registration_date\",\"required\":false,\"type\":\"date\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"6\",\"removed-position-delete-files\":\"4\",\"removed-delete-files\":\"4\",\"added-records\":\"2\",\"deleted-records\":\"6\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"removed-position-deletes\":\"4\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"6\",\"total-delete-files\":\"3\",\"total-position-deletes\":\"3\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1002}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	6                   
+	numRows             	4                   
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	16                  
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: show compactions
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_orc_wo_evo	dept_id=1/city=London/registration_date=2024-03-11	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: explain alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
+POSTHOOK: query: explain alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Compact
+      compaction type: major
+      table name: default.ice_orc_wo_evo
+      numberOfBuckets: 0
+      partition spec:
+        city Paris
+        dept_id 2
+        registration_date 2024-02-16
+      table name: default.ice_orc_wo_evo
+      blocking: true
+
+PREHOOK: query: alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
+POSTHOOK: query: alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
+PREHOOK: query: select * from ice_orc_wo_evo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc_wo_evo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_wo_evo
+#### A masked pattern was here ####
+fn3	ln3a	1	London	2024-03-11
+fn4	ln4a	1	London	2024-03-11
+fn5	ln5a	2	Paris	2024-02-16
+fn6	ln6a	2	Paris	2024-02-16
+PREHOOK: query: describe formatted ice_orc_wo_evo
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: query: describe formatted ice_orc_wo_evo
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc_wo_evo
+# col_name            	data_type           	comment             
+first_name          	string              	                    
+last_name           	string              	                    
+dept_id             	bigint              	                    
+city                	string              	                    
+registration_date   	date                	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+dept_id             	IDENTITY            	 
+city                	IDENTITY            	 
+registration_date   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"city\":\"true\",\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\",\"registration_date\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"city\",\"required\":false,\"type\":\"string\"},{\"id\":5,\"name\":\"registration_date\",\"required\":false,\"type\":\"date\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"5\",\"removed-position-delete-files\":\"3\",\"removed-delete-files\":\"3\",\"added-records\":\"2\",\"deleted-records\":\"5\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"removed-position-deletes\":\"3\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1002}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	4                   
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	17                  
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: show compactions
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_orc_wo_evo	dept_id=1/city=London/registration_date=2024-03-11	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc_wo_evo	dept_id=2/city=Paris/registration_date=2024-02-16	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 

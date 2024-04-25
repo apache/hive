@@ -57,12 +57,14 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -1918,6 +1920,45 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         table.currentSnapshot().allManifests(table.io()).parallelStream()
         .map(ManifestFile::partitionSpecId)
         .anyMatch(id -> id < table.spec().specId());
+  }
+
+  private boolean isIdentityPartitionTable(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return getPartitionTransformSpec(table).stream().map(TransformSpec::getTransformType)
+        .allMatch(type -> type == TransformSpec.TransformType.IDENTITY);
+  }
+
+  @Override
+  public Optional<ErrorMsg> isEligibleForCompaction(
+      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec) {
+    if (partitionSpec != null) {
+      Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+      if (hasUndergonePartitionEvolution(icebergTable)) {
+        return Optional.of(ErrorMsg.COMPACTION_PARTITION_EVOLUTION);
+      }
+      if (!isIdentityPartitionTable(table)) {
+        return Optional.of(ErrorMsg.COMPACTION_NON_IDENTITY_PARTITION_SPEC);
+      }
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec) throws SemanticException {
+    return getPartitionNames(table, partitionSpec).stream()
+        .map(partName -> new DummyPartition(table, partName, partitionSpec)).collect(Collectors.toList());
+  }
+
+  @Override
+  public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec) throws SemanticException {
+    validatePartSpec(table, partitionSpec);
+    try {
+      String partName = Warehouse.makePartName(partitionSpec, false);
+      return new DummyPartition(table, partName, partitionSpec);
+    } catch (MetaException e) {
+      throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+    }
   }
 
   /**

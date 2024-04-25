@@ -74,6 +74,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -750,6 +751,17 @@ public interface HiveStorageHandler extends Configurable {
     return true;
   }
 
+  /**
+   * Checks if a given table and partition specifications are eligible for compaction.
+   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   * @return Optional of ErrorMsg {@link org.apache.hadoop.hive.ql.ErrorMsg}
+   */
+  default Optional<ErrorMsg> isEligibleForCompaction(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec) {
+    throw new UnsupportedOperationException("Storage handler does not support validating eligibility for compaction");
+  }
+
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
@@ -775,6 +787,30 @@ public interface HiveStorageHandler extends Configurable {
           throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions by expression " +
             "for a table.");
+  }
+
+  /**
+   * Returns partition based on table and partition specification.
+   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   * @return Partition {@link org.apache.hadoop.hive.ql.metadata.Partition} 
+   * @throws SemanticException {@link org.apache.hadoop.hive.ql.parse.SemanticException} 
+   */
+  default Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partition for a table.");
+  }
+
+  /**
+   * Returns a list of partitions based on table and partial partition specification.
+   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
+   * @throws SemanticException {@link org.apache.hadoop.hive.ql.parse.SemanticException}
+   */
+  default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table, 
+      Map<String, String> partitionSpec) throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partitions for a table.");
   }
 
   default boolean supportsMergeFiles() {
