@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec.repl.atlas;
 import org.apache.atlas.ApplicationProperties;
 import org.apache.atlas.AtlasClientV2;
 import org.apache.atlas.AtlasException;
-import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons2.configuration.ConfigurationConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
