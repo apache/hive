@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
@@ -684,6 +685,29 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             .addValue("updateCount", req.getUpdatedCount())
             .addValue("deleteCount", req.getDeletedCount())
             .addValue("tableId", req.getTableId()), null);
+  }
+
+  @Override
+  public boolean hasTransactionalResource(Set<String> dbTable) throws MetaException {
+    if (dbProduct.isDERBY()) {
+      return true;
+    }
+    List<String[]> valuesMap = new ArrayList<>();
+    for (String qualifier : dbTable) {
+      valuesMap.add(TxnUtils.getDbTableName(qualifier));
+    }
+    return jdbcResource.getJdbcTemplate().query(
+      jdbcResource.getSqlGenerator().addLimitClause(1,
+        "1 FROM \"TABLE_PARAMS\" tp " +
+          "INNER JOIN \"TBLS\" t ON tp.\"TBL_ID\" = t.\"TBL_ID\" " +
+          "INNER JOIN \"DBS\" d ON t.\"DB_ID\" = d.\"DB_ID\" " +
+          "WHERE (d.\"NAME\", t.\"TBL_NAME\") IN (values :valuesMap)" +
+          " AND t.\"TBL_TYPE\" = :tableType" +
+          " AND tp.\"PARAM_KEY\" = 'transactional' AND tp.\"PARAM_VALUE\" = 'true'"),
+      new MapSqlParameterSource()
+        .addValue("tableType", TableType.MANAGED_TABLE.toString())
+        .addValue("valuesMap", valuesMap), 
+      ResultSet::next);
   }
 
   /**

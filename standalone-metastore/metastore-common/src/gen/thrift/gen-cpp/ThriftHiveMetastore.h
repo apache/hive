@@ -213,6 +213,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_max_allocated_table_write_id(MaxAllocatedTableWriteIdResponse& _return, const MaxAllocatedTableWriteIdRequest& rqst) = 0;
   virtual void seed_write_id(const SeedTableWriteIdsRequest& rqst) = 0;
   virtual void seed_txn_id(const SeedTxnIdRequest& rqst) = 0;
+  virtual bool has_transactional_resource(const std::set<std::string> & dbTable) = 0;
   virtual void lock(LockResponse& _return, const LockRequest& rqst) = 0;
   virtual void check_lock(LockResponse& _return, const CheckLockRequest& rqst) = 0;
   virtual void unlock(const UnlockRequest& rqst) = 0;
@@ -920,6 +921,10 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   }
   void seed_txn_id(const SeedTxnIdRequest& /* rqst */) override {
     return;
+  }
+  bool has_transactional_resource(const std::set<std::string> & /* dbTable */) override {
+    bool _return = false;
+    return _return;
   }
   void lock(LockResponse& /* _return */, const LockRequest& /* rqst */) override {
     return;
@@ -24649,6 +24654,119 @@ class ThriftHiveMetastore_seed_txn_id_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_has_transactional_resource_args__isset {
+  _ThriftHiveMetastore_has_transactional_resource_args__isset() : dbTable(false) {}
+  bool dbTable :1;
+} _ThriftHiveMetastore_has_transactional_resource_args__isset;
+
+class ThriftHiveMetastore_has_transactional_resource_args {
+ public:
+
+  ThriftHiveMetastore_has_transactional_resource_args(const ThriftHiveMetastore_has_transactional_resource_args&);
+  ThriftHiveMetastore_has_transactional_resource_args& operator=(const ThriftHiveMetastore_has_transactional_resource_args&);
+  ThriftHiveMetastore_has_transactional_resource_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_has_transactional_resource_args() noexcept;
+  std::set<std::string>  dbTable;
+
+  _ThriftHiveMetastore_has_transactional_resource_args__isset __isset;
+
+  void __set_dbTable(const std::set<std::string> & val);
+
+  bool operator == (const ThriftHiveMetastore_has_transactional_resource_args & rhs) const
+  {
+    if (!(dbTable == rhs.dbTable))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_has_transactional_resource_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_has_transactional_resource_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_has_transactional_resource_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_has_transactional_resource_pargs() noexcept;
+  const std::set<std::string> * dbTable;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_has_transactional_resource_result__isset {
+  _ThriftHiveMetastore_has_transactional_resource_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_has_transactional_resource_result__isset;
+
+class ThriftHiveMetastore_has_transactional_resource_result {
+ public:
+
+  ThriftHiveMetastore_has_transactional_resource_result(const ThriftHiveMetastore_has_transactional_resource_result&);
+  ThriftHiveMetastore_has_transactional_resource_result& operator=(const ThriftHiveMetastore_has_transactional_resource_result&);
+  ThriftHiveMetastore_has_transactional_resource_result() noexcept
+                                                        : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_has_transactional_resource_result() noexcept;
+  bool success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_has_transactional_resource_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_has_transactional_resource_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_has_transactional_resource_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_has_transactional_resource_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_has_transactional_resource_presult__isset {
+  _ThriftHiveMetastore_has_transactional_resource_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_has_transactional_resource_presult__isset;
+
+class ThriftHiveMetastore_has_transactional_resource_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_has_transactional_resource_presult() noexcept;
+  bool* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_has_transactional_resource_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_lock_args__isset {
   _ThriftHiveMetastore_lock_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -35281,6 +35399,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void seed_txn_id(const SeedTxnIdRequest& rqst) override;
   void send_seed_txn_id(const SeedTxnIdRequest& rqst);
   void recv_seed_txn_id();
+  bool has_transactional_resource(const std::set<std::string> & dbTable) override;
+  void send_has_transactional_resource(const std::set<std::string> & dbTable);
+  bool recv_has_transactional_resource();
   void lock(LockResponse& _return, const LockRequest& rqst) override;
   void send_lock(const LockRequest& rqst);
   void recv_lock(LockResponse& _return);
@@ -35745,6 +35866,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_max_allocated_table_write_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_seed_write_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_seed_txn_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_has_transactional_resource(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_check_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_unlock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -36025,6 +36147,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_max_allocated_table_write_id"] = &ThriftHiveMetastoreProcessor::process_get_max_allocated_table_write_id;
     processMap_["seed_write_id"] = &ThriftHiveMetastoreProcessor::process_seed_write_id;
     processMap_["seed_txn_id"] = &ThriftHiveMetastoreProcessor::process_seed_txn_id;
+    processMap_["has_transactional_resource"] = &ThriftHiveMetastoreProcessor::process_has_transactional_resource;
     processMap_["lock"] = &ThriftHiveMetastoreProcessor::process_lock;
     processMap_["check_lock"] = &ThriftHiveMetastoreProcessor::process_check_lock;
     processMap_["unlock"] = &ThriftHiveMetastoreProcessor::process_unlock;
@@ -37940,6 +38063,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->seed_txn_id(rqst);
   }
 
+  bool has_transactional_resource(const std::set<std::string> & dbTable) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->has_transactional_resource(dbTable);
+    }
+    return ifaces_[i]->has_transactional_resource(dbTable);
+  }
+
   void lock(LockResponse& _return, const LockRequest& rqst) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -39376,6 +39508,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void seed_txn_id(const SeedTxnIdRequest& rqst) override;
   int32_t send_seed_txn_id(const SeedTxnIdRequest& rqst);
   void recv_seed_txn_id(const int32_t seqid);
+  bool has_transactional_resource(const std::set<std::string> & dbTable) override;
+  int32_t send_has_transactional_resource(const std::set<std::string> & dbTable);
+  bool recv_has_transactional_resource(const int32_t seqid);
   void lock(LockResponse& _return, const LockRequest& rqst) override;
   int32_t send_lock(const LockRequest& rqst);
   void recv_lock(LockResponse& _return, const int32_t seqid);

@@ -1449,6 +1449,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function seed_txn_id(\metastore\SeedTxnIdRequest $rqst);
     /**
+     * @param string[] $dbTable
+     * @return bool
+     * @throws \metastore\MetaException
+     */
+    public function has_transactional_resource(array $dbTable);
+    /**
      * @param \metastore\LockRequest $rqst
      * @return \metastore\LockResponse
      * @throws \metastore\NoSuchTxnException

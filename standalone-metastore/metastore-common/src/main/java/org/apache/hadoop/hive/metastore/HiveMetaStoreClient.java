@@ -50,13 +50,16 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -5317,5 +5320,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     PropertyGetResponse response = client.get_properties(request);
     return response.getProperties();
+  }
+  
+  @Override
+  public boolean hasTransactionalResource(List<Pair<String, String>> dbTablePair, String db) throws TException {
+    Set<String> dbTableSet = dbTablePair.stream().map(e -> 
+      TableName.getDbTable(
+          ObjectUtils.defaultIfNull(e.getKey(), db), e.getValue()))
+      .collect(Collectors.toSet());
+    
+    return client.has_transactional_resource(dbTableSet);
   }
 }

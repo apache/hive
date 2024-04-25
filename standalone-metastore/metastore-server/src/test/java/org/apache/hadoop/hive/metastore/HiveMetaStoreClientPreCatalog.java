@@ -4077,4 +4077,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void seedTxnId(long seedTxnId) throws TException {
     throw new NotImplementedException("");
   }
+  
+  @Override
+  public boolean hasTransactionalResource(List<Pair<String, String>> dbTablePair, String db) throws TException {
+    throw new NotImplementedException("");
+  }
 }

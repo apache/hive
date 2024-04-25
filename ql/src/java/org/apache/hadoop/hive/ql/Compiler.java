@@ -212,9 +212,7 @@ public class Compiler {
       if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())) {
         setLastReplIdForDump(driverContext.getQueryState().getConf());
       }
-      driverContext.setTxnType(AcidUtils.getTxnType(driverContext.getConf(), tree));
-      openTransaction(driverContext.getTxnType());
-
+      openTransaction(driverContext);
       generateValidTxnList();
     }
 
@@ -257,21 +255,33 @@ public class Compiler {
   private void setLastReplIdForDump(HiveConf conf) throws HiveException, TException {
     // Last logged notification event id would be the last repl Id for the current REPl DUMP.
     Hive hiveDb = Hive.get();
-    Long lastReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+    long lastReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
     conf.setLong(ReplUtils.LAST_REPL_ID_KEY, lastReplId);
     LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
-  private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
-    if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
-        !driverContext.getTxnManager().isTxnOpen() && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
-      String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
-      if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())
-         || HiveOperation.REPLLOAD.equals(driverContext.getQueryState().getHiveOperation())) {
-        context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
-      }
-      driverContext.getTxnManager().openTxn(context, userFromUGI, txnType);
+  private void openTransaction(DriverContext driverContext) throws Exception {
+    HiveTxnManager txnManager = driverContext.getTxnManager();
+    if (!DriverUtils.checkConcurrency(driverContext) || !startImplicitTxn(txnManager) 
+        || txnManager.isTxnOpen() || !hasAcidResourceInQuery(Hive.get())) {
+      return;
     }
+    TxnType txnType = AcidUtils.getTxnType(driverContext.getConf(), tree);
+    driverContext.setTxnType(txnType);
+    if (MetaStoreServerUtils.isCompactionTxn(txnType)) {
+      return;
+    }
+    HiveOperation operation = driverContext.getQueryState().getHiveOperation();
+    if (HiveOperation.REPLDUMP.equals(operation) || HiveOperation.REPLLOAD.equals(operation)) {
+      context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
+    }
+    String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
+    txnManager.openTxn(context, userFromUGI, txnType);
+  }
+
+  private boolean hasAcidResourceInQuery(Hive hiveDb) throws TException {
+    return hiveDb.getMSC().hasTransactionalResource(
+        context.getParsedTables(), SessionState.get().getCurrentDatabase());
   }
 
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
