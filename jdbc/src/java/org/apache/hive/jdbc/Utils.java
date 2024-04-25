@@ -618,7 +618,7 @@ public class Utils {
             port = Integer.parseInt(Utils.DEFAULT_PORT);
           }
           connParams.setHost(jdbcBaseURI.getHost());
-          connParams.setPort(jdbcBaseURI.getPort());
+          connParams.setPort(port);
         }
         // We check for invalid host, port while configuring connParams with configureConnParams()
         authorityStr = connParams.getHost() + ":" + connParams.getPort();
