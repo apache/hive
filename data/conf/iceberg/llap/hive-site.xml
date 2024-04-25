@@ -279,6 +279,11 @@
     </property>
 
     <property>
+        <name>hive.tez.exec.print.summary</name>
+        <value>true</value>
+    </property>
+
+    <property>
         <name>hive.llap.cache.allow.synthetic.fileid</name>
         <value>true</value>
     </property>
