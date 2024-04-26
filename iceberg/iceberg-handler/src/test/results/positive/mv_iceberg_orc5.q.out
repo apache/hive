@@ -94,7 +94,7 @@ POSTHOOK: Output: default@mat2
 CBO PLAN:
 HiveProject(b=[$0], c=[$1], _o__c2=[$2], _o__c3=[COALESCE($3, 0:BIGINT)], _o__c4=[/(CAST($2):DOUBLE, COALESCE($3, 0:BIGINT))])
   HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
-    HiveProject(b=[$0], c=[$1], $f2=[$2], $f3=[$3])
+    HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
       HiveUnion(all=[true])
         HiveProject(b=[$0], c=[$1], $f2=[$2], $f3=[$3])
           HiveAggregate(group=[{1, 2}], agg#0=[sum($4)], agg#1=[count($4)])
