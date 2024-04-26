@@ -525,7 +525,7 @@ public class HiveRelJson extends RelJson {
             .collect(Collectors.toList());
         final boolean isDeterministic = (boolean) map.get("deterministic");
         final boolean isDynamicFunction = (boolean) map.get("dynamic");
-        return new org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelJson.CalciteSqlFn(
+        return new CalciteSqlFn(
             op, SqlKind.OTHER_FUNCTION, ReturnTypes.explicit(type),
             InferTypes.explicit(operandsTypes), OperandTypes.family(typeFamily),
             SqlFunctionCategory.USER_DEFINED_FUNCTION, isDeterministic, isDynamicFunction
@@ -829,13 +829,12 @@ public class HiveRelJson extends RelJson {
   }
 
   private RelDataType createMapType(RelDataTypeFactory typeFactory, Map<String, Object> o) {
-    RelDataType type;
     Object key = o.get("key");
     Object value = o.get("value");
     final Boolean nullable = (Boolean) o.get(NULLABLE);
     RelDataType keyType = toType(typeFactory, key);
     RelDataType valueType = toType(typeFactory, value);
-    type = typeFactory.createMapType(keyType, valueType);
+    RelDataType type = typeFactory.createMapType(keyType, valueType);
     if (nullable != null) {
       type = typeFactory.createTypeWithNullability(type, nullable);
     }
@@ -843,10 +842,9 @@ public class HiveRelJson extends RelJson {
   }
 
   private RelDataType createArrayType(RelDataTypeFactory typeFactory, Map<String, Object> o) {
-    RelDataType type;
     final Boolean nullable = (Boolean) o.get(NULLABLE);
     final Object component = o.get("component");
-    type = toType(typeFactory, component);
+    RelDataType type = toType(typeFactory, component);
     type = typeFactory.createArrayType(type, -1);
     if (nullable != null) {
       type = typeFactory.createTypeWithNullability(type, nullable);
