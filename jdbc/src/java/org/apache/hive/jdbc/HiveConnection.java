@@ -400,7 +400,7 @@ public class HiveConnection implements java.sql.Connection {
           if (ZooKeeperHiveClientHelper.isZkDynamicDiscoveryMode(sessConfMap)) {
             errMsg = "Could not open client transport for any of the Server URI's in ZooKeeper: ";
             // Try next available server in zookeeper, or retry all the servers again if retry is enabled
-            while(!Utils.updateConnParamsFromZooKeeper(connParams) && ++numRetries < maxRetries) {
+            while(!Utils.updateConnParamsFromZooKeeper(connParams, info) && ++numRetries < maxRetries) {
               connParams.getRejectedHostZnodePaths().clear();
             }
             // Update with new values

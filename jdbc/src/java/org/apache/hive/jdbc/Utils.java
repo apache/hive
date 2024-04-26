@@ -725,15 +725,21 @@ public class Utils {
    * explored. Also update the host, port, jdbcUriString and other configs published by the server.
    *
    * @param connParams
+   * @param info
    * @return true if new server info is retrieved successfully
    */
-  static boolean updateConnParamsFromZooKeeper(JdbcConnectionParams connParams) {
+  static boolean updateConnParamsFromZooKeeper(JdbcConnectionParams connParams, Properties info) throws JdbcUriParseException {
     // Add current host to the rejected list
     connParams.getRejectedHostZnodePaths().add(connParams.getCurrentHostZnodePath());
     String oldServerHost = connParams.getHost();
     int oldServerPort = connParams.getPort();
     // Update connection params (including host, port) from ZooKeeper
     try {
+      // We should reset sessionVars to the original client configurations to
+      // avoid the rejected server-side sessionVars affecting next server.
+      JdbcConnectionParams originalConnParams = extractURLComponents(connParams.getJdbcUriString(), info);
+      connParams.getSessionVars().clear();
+      connParams.getSessionVars().putAll(originalConnParams.getSessionVars());
       ZooKeeperHiveClientHelper.configureConnParams(connParams);
       connParams.setJdbcUriString(connParams.getJdbcUriString().replace(
           oldServerHost + ":" + oldServerPort, connParams.getHost() + ":" + connParams.getPort()));
