@@ -210,7 +210,7 @@ public class TestRelPlanParser extends TestRuleBase {
   }
 
   private void serializeDeserializeAndAssertEquals(RelNode plan) throws IOException {
-    String planJson = HiveRelOptUtil.asJSONObjectString(plan, false);
+    String planJson = HiveRelOptUtil.serializeToJSON(plan);
     RelPlanParser parser = new RelPlanParser(relOptCluster, relOptHiveTableFactory, new HashMap<>());
     RelNode parsedPlan = parser.parse(planJson);
 

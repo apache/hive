@@ -1081,23 +1081,20 @@ public class HiveRelOptUtil extends RelOptUtil {
    * to parse the string back.
    */
   public static String toJsonString(final RelNode rel) {
-    return toJsonString(rel, true);
+    return serializeWithPlanWriter(rel, new HiveRelJsonImplWithStats());
   }
 
-  public static String toJsonString(final RelNode rel, boolean includeTableAndColumnStats) {
+  private static String serializeWithPlanWriter(RelNode rel, HiveRelJsonImpl planWriter) {
     if (rel == null) {
       return null;
     }
-
-    final HiveRelJsonImpl planWriter = new HiveRelJsonImpl(includeTableAndColumnStats);
     rel.explain(planWriter);
-
     return planWriter.asString();
   }
 
-  public static String asJSONObjectString(final RelNode rel, boolean includeTableAndColumnStats) {
+  public static String serializeToJSON(final RelNode rel) {
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
-    outJSONObject.put("CBOPlan", toJsonString(rel, includeTableAndColumnStats));
+    outJSONObject.put("CBOPlan", serializeWithPlanWriter(rel, new HiveRelJsonImpl()));
 
     return outJSONObject.toString();
   }
