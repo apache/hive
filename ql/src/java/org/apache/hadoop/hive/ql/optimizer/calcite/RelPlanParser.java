@@ -114,6 +114,8 @@ public class RelPlanParser {
       final ObjectMapper mapper = new ObjectMapper();
       o = mapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
           .readValue(parser.getValueAsString(), TYPE_REF);
+    } catch (AssertionError e) {
+      throw new IOException(e);
     }
     @SuppressWarnings("unchecked") final List<Map<String, Object>> rels = (List) o.get("rels");
     readRels(rels);
