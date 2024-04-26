@@ -1,5 +1,3 @@
-set hive.test.cbo.plan.serialization.deserialization.enabled=true;
-
 CREATE TABLE table_16 (
 timestamp_col_19    timestamp,
 timestamp_col_29    timestamp

@@ -1,5 +1,4 @@
 set hive.strict.checks.cartesian.product=false;
-set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 
 CREATE TABLE `customer_removal_n0`(
   `c_custkey` bigint,
