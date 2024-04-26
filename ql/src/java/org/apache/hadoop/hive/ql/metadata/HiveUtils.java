@@ -457,9 +457,11 @@ public final class HiveUtils {
   }
 
   public static String getTableSnapshotRef(String refName) {
-    Matcher ref = SNAPSHOT_REF.matcher(refName);
-    if (ref.matches()) {
-      return ref.group(1);
+    if (refName != null && !refName.isEmpty()) {
+      Matcher ref = SNAPSHOT_REF.matcher(refName);
+      if (ref.matches()) {
+        return ref.group(1);
+      }
     }
     return null;
   }
