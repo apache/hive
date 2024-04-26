@@ -4,7 +4,6 @@
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 
 drop table if exists tbl_ice;
 

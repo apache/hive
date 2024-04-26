@@ -1,4 +1,3 @@
-set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 
 CREATE TABLE INPUT4_n0(KEY STRING, VALUE STRING) STORED AS TEXTFILE;
 EXPLAIN
