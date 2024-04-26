@@ -74,8 +74,6 @@ public class TestHiveRowIsDeletedPropagator extends TestRuleBase {
         .filter(writeIdFilter)
         .build();
 
-//    System.out.println(RelOptUtil.toString(root));
-
     HiveRowIsDeletedPropagator propagator = new HiveRowIsDeletedPropagator(relBuilder);
     RelNode newRoot = propagator.propagate(root);
 
@@ -93,10 +91,10 @@ public class TestHiveRowIsDeletedPropagator extends TestRuleBase {
       "            HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])\n" +
       "              HiveFilter(condition=[IS NOT NULL($0)])\n" +
       "                HiveProject(a=[$0], b=[$1], c=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], _deleted=[AND($4, <(1, $3.writeId))], _inserted=[AND(<(1, $3.writeId), NOT($4))])\n" +
-      "                  HiveTableScan(table=[[]], table:alias=[t1])\n" +
+      "                  HiveTableScan(table=[[default, t1]], table:alias=[t1])\n" +
       "              HiveFilter(condition=[IS NOT NULL($0)])\n" +
       "                HiveProject(d=[$0], e=[$1], f=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], _deleted=[AND($4, <(1, $3.writeId))], _inserted=[AND(<(1, $3.writeId), NOT($4))])\n" +
-      "                  HiveTableScan(table=[[]], table:alias=[t2])\n" +
+      "                  HiveTableScan(table=[[default, t2]], table:alias=[t2])\n" +
       "        HiveFilter(condition=[IS NOT NULL($0)])\n" +
       "          HiveProject(g=[$0], h=[$1], i=[$2], ROW__ID=[$3], ROW__IS__DELETED=[$4], _deleted=[AND($4, <(1, $3.writeId))], _inserted=[AND(<(1, $3.writeId), NOT($4))])\n" +
       "            HiveTableScan(table=[[]], table:alias=[t3])\n";
