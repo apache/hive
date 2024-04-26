@@ -17,11 +17,16 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.TestRuleBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +34,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +50,8 @@ public class TestRelPlanParser extends TestRuleBase {
 
   @Mock
   private RelOptHiveTableFactory relOptHiveTableFactory;
+  private RelNode ts1;
+  private RelNode ts2;
 
   @Override
   public void setup() {
@@ -51,13 +60,12 @@ public class TestRelPlanParser extends TestRuleBase {
         .thenReturn(t1NativeMock);
     when(relOptHiveTableFactory.createRelOptHiveTable(eq("t2"), any(), any(), any(), any(), any()))
         .thenReturn(t2NativeMock);
+    ts1 = createTS(t1NativeMock, "t1");
+    ts2 = createTS(t2NativeMock, "t2");
   }
 
   @Test
   public void testSimpleJoin() throws IOException {
-    RelNode ts1 = createTS(t1NativeMock, "t1");
-    RelNode ts2 = createTS(t2NativeMock, "t2");
-
     RexNode joinCondition = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
         REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0),
         REX_BUILDER.makeInputRef(ts2.getRowType().getFieldList().get(0).getType(), 5));
@@ -82,15 +90,130 @@ public class TestRelPlanParser extends TestRuleBase {
             REX_BUILDER.makeInputRef(ts2.getRowType().getFieldList().get(0).getType(), ts1.getRowType().getFieldCount()))
         .build();
 
-    String planJson = HiveRelOptUtil.asJSONObjectString(planToSerialize, false);
-
-    RelPlanParser parser = new RelPlanParser(relOptCluster, relOptHiveTableFactory, new HashMap<>());
-    RelNode parsedPlan = parser.parse(planJson);
+    serializeDeserializeAndAssertEquals(planToSerialize);
 
     verify(relOptHiveTableFactory, atLeastOnce())
         .createRelOptHiveTable(eq("t1"), any(), any(), any(), any(), any());
     verify(relOptHiveTableFactory, atLeastOnce())
         .createRelOptHiveTable(eq("t2"), any(), any(), any(), any(), any());
-    assertEquals(RelOptUtil.toString(planToSerialize), RelOptUtil.toString(parsedPlan));
+  }
+
+  @Test
+  public void testAggregate() throws IOException {
+    /*
+     * HiveAggregate(group=[{0, 1}], cs=[COUNT()], agg#1=[MIN($2)], agg#2=[SUM($2)])
+     *   HiveTableScan(table=[[default, t1]], table:alias=[t1])
+     */
+    RelNode planToSerialize = REL_BUILDER
+        .push(ts1)
+        .aggregate(
+            REL_BUILDER.groupKey(0, 1),
+            REL_BUILDER.countStar("cs"),
+            REL_BUILDER.min(REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(2).getType(), 2)),
+            REL_BUILDER.sum(REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(2).getType(), 2)))
+        .build();
+
+    serializeDeserializeAndAssertEquals(planToSerialize);
+  }
+
+  @Test
+  public void testAntiJoin() throws IOException {
+    RexNode joinCondition = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
+        REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0),
+        REX_BUILDER.makeInputRef(ts2.getRowType().getFieldList().get(0).getType(), 5));
+
+    /*
+     * HiveAntiJoin(condition=[=($0, $5)], joinType=[anti])
+     *   HiveTableScan(table=[[default, t1]], table:alias=[t1])
+     *   HiveTableScan(table=[[default, t2]], table:alias=[t2])
+     */
+    RelNode planToSerialize = REL_BUILDER
+        .push(ts1)
+        .push(ts2)
+        .join(JoinRelType.ANTI, joinCondition)
+        .build();
+
+    serializeDeserializeAndAssertEquals(planToSerialize);
+  }
+
+  @Test
+  public void testSortExchange() throws IOException {
+    /*
+     * HiveSortExchange(distribution=[any], collation=[[0]])
+     *   HiveFilter(condition=[IS NOT NULL($0)])
+     *     HiveTableScan(table=[[default, t1]], table:alias=[t1])
+     */
+    RelNode planToSerialize = REL_BUILDER
+        .push(ts1)
+        .filter(REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NOT_NULL, REX_BUILDER.makeInputRef(ts1, 0)))
+        .sortExchange(HiveRelDistribution.ANY, RelCollations.of(0))
+        .build();
+
+    serializeDeserializeAndAssertEquals(planToSerialize);
+  }
+
+  @Test
+  public void testSortLimit() throws IOException {
+    /*
+     * HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[10])
+     *   HiveProject(a=[$0], b=[$1])
+     *     HiveTableScan(table=[[default, t1]], table:alias=[t1])
+     */
+    RelNode planToSerialize = REL_BUILDER
+        .push(ts1)
+        .project(
+            REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0),
+            REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(1).getType(), 1))
+        .sortLimit(-1, 10,
+            REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0))
+        .build();
+
+    serializeDeserializeAndAssertEquals(planToSerialize);
+  }
+
+  @Test
+  public void testUnion() throws IOException {
+    /*
+     * HiveUnion(all=[true])
+     *   HiveTableScan(table=[[default, t1]], table:alias=[t1])
+     *   HiveTableScan(table=[[default, t2]], table:alias=[t2])
+     */
+    RelNode planToSerialize = REL_BUILDER
+        .push(ts1)
+        .push(ts2)
+        .union(true)
+        .build();
+
+    serializeDeserializeAndAssertEquals(planToSerialize);
+  }
+
+  @Test
+  public void testValues() throws IOException {
+    List<RexLiteral> values = ImmutableList.of(
+        REX_BUILDER.makeExactLiteral(BigDecimal.ONE),
+        REX_BUILDER.makeExactLiteral(BigDecimal.TEN)
+    );
+
+    List<RelDataType> schema = ImmutableList.of(
+        TYPE_FACTORY.createSqlType(SqlTypeName.INTEGER),
+        TYPE_FACTORY.createSqlType(SqlTypeName.INTEGER)
+    );
+
+    /*
+     * HiveValues(tuples=[[{ 1, 10 }]])
+     */
+    RelNode planToSerialize = REL_BUILDER
+        .values(ImmutableList.of(values), TYPE_FACTORY.createStructType(schema, ImmutableList.of("a", "b")))
+        .build();
+
+    serializeDeserializeAndAssertEquals(planToSerialize);
+  }
+
+  private void serializeDeserializeAndAssertEquals(RelNode plan) throws IOException {
+    String planJson = HiveRelOptUtil.asJSONObjectString(plan, false);
+    RelPlanParser parser = new RelPlanParser(relOptCluster, relOptHiveTableFactory, new HashMap<>());
+    RelNode parsedPlan = parser.parse(planJson);
+
+    assertEquals(RelOptUtil.toString(plan), RelOptUtil.toString(parsedPlan));
   }
 }
