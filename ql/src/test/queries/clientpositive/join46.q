@@ -1,6 +1,5 @@
 set hive.strict.checks.cartesian.product=false;
 set hive.join.emit.interval=2;
-set hive.test.cbo.plan.serialization.deserialization.enabled=true;
 
 CREATE TABLE test1_n2 (key INT, value INT, col_1 STRING);
 INSERT INTO test1_n2 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
