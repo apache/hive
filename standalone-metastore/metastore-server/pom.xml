@@ -720,12 +720,12 @@
         <groupId>org.datanucleus</groupId>
         <artifactId>datanucleus-maven-plugin</artifactId>
         <version>5.2.1</version>
-        <!-- The plexus-contianer-default can be removed once we move to datanucleus-maven-plugin version 6.0.0-release-->
+        <!-- The plexus-contianer-default can be removed once we move to datanucleus-maven-plugin version >= 6.0.0-release-->
         <dependencies>
           <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-container-default</artifactId>
-            <version>1.5.6</version>
+            <version>${plexus.version}</version>
           </dependency>
         </dependencies>
         <configuration>
