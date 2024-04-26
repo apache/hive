@@ -339,7 +339,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.jetbrains.annotations.Nullable;
 import org.joda.time.Interval;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -348,7 +347,6 @@ import java.math.BigDecimal;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -1769,51 +1767,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
-      if (conf.getBoolVar(ConfVars.TEST_CBO_PLAN_SERIALIZATION_DESERIALIZATION_ENABLED)) {
-        calcitePlan = testSerializationAndDeserialization(perfLogger, calcitePlan);
-      }
-
-      return calcitePlan;
-    }
-
-    @Nullable
-    private RelNode testSerializationAndDeserialization(PerfLogger perfLogger, RelNode calcitePlan) {
-      if (!isSerializable(calcitePlan)) {
-        return calcitePlan;
-      }
-      perfLogger.perfLogBegin(this.getClass().getName(), "plan serializer");
-      String calcitePlanJson = serializePlan(calcitePlan);
-      perfLogger.perfLogEnd(this.getClass().getName(), "plan serializer");
-
-      if (stringSizeGreaterThan(calcitePlanJson, PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT)) {
-        return calcitePlan;
-      }
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Size of calcite plan: {}", calcitePlanJson.getBytes(Charset.defaultCharset()).length);
-        LOG.debug("JSON plan: \n{}", calcitePlanJson);
-      }
-
-      try {
-        perfLogger.perfLogBegin(this.getClass().getName(), "plan deserializer");
-        RelNode fromJson = deserializePlan(calcitePlan.getCluster(), calcitePlanJson);
-        perfLogger.perfLogEnd(this.getClass().getName(), "plan deserializer");
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Base plan: \n{}", RelOptUtil.toString(calcitePlan));
-          LOG.debug("Plan from JSON: \n{}", RelOptUtil.toString(fromJson));
-        }
-
-        calcitePlan = fromJson;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
       return calcitePlan;
     }
 
     private RelNode applySearchExpandTransforms(RelNode basePlan, RelMetadataProvider mdProvider,
-        RexExecutor executor) {
+                                                RexExecutor executor) {
       HepProgramBuilder searchProgram = new HepProgramBuilder();
       searchProgram.addRuleCollection(ImmutableList.of(HiveSearchRules.FILTER_SEARCH_EXPAND,
           HiveSearchRules.PROJECT_SEARCH_EXPAND,
@@ -1821,13 +1779,32 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return executeProgram(basePlan, searchProgram.build(), mdProvider, executor);
     }
 
-    private String serializePlan(RelNode plan) {
-      return HiveRelOptUtil.asJSONObjectString(plan, false);
+    private Optional<String> serializePlan(RelNode plan) {
+      if (!isSerializable(plan)) {
+        return Optional.empty();
+      }
+
+      String jsonPlan = HiveRelOptUtil.asJSONObjectString(plan, false);
+      if (stringSizeGreaterThan(jsonPlan, PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT)) {
+        return Optional.empty();
+      }
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan to serialize: \n{}", RelOptUtil.toString(plan));
+        LOG.debug("JSON plan: \n{}", jsonPlan);
+      }
+
+      return Optional.of(jsonPlan);
     }
 
     private RelNode deserializePlan(RelOptCluster cluster, String jsonPlan) throws IOException {
       RelPlanParser parser = new RelPlanParser(cluster, this, partitionCache);
-      return parser.parse(jsonPlan);
+      RelNode deserializedPlan = parser.parse(jsonPlan);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Deserialized plan: \n{}", RelOptUtil.toString(deserializedPlan));
+      }
+      
+      return deserializedPlan;
     }
 
     private boolean isSerializable(RelNode plan) {
