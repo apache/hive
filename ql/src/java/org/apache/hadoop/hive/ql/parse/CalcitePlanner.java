@@ -1784,7 +1784,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return Optional.empty();
       }
 
-      String jsonPlan = HiveRelOptUtil.asJSONObjectString(plan, false);
+      String jsonPlan = HiveRelOptUtil.serializeToJSON(plan);
       if (stringSizeGreaterThan(jsonPlan, PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT)) {
         return Optional.empty();
       }
