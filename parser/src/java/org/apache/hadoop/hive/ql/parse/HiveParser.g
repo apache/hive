@@ -25,7 +25,7 @@ backtrack=false;
 k=3;
 }
 
-import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser;
+import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser, ReplClauseParser;
 
 tokens {
 TOK_INSERT;
@@ -977,13 +977,6 @@ loadStatement
     -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite? inputFileFormat?)
     ;
 
-replicationClause
-@init { pushMsg("replication clause", state); }
-@after { popMsg(state); }
-    : KW_FOR (isMetadataOnly=KW_METADATA)? KW_REPLICATION LPAREN (replId=StringLiteral) RPAREN
-    -> ^(TOK_REPLICATION $replId $isMetadataOnly?)
-    ;
-
 exportStatement
 @init { pushMsg("export statement", state); }
 @after { popMsg(state); }
@@ -1003,64 +996,6 @@ importStatement
          tableLocation?
     -> ^(TOK_IMPORT $path $tab? $ext? tableLocation?)
     ;
-
-replDumpStatement
-@init { pushMsg("Replication dump statement", state); }
-@after { popMsg(state); }
-      : KW_REPL KW_DUMP
-        (dbPolicy=replDbPolicy)
-        (KW_REPLACE oldDbPolicy=replDbPolicy)?
-        (KW_WITH replConf=replConfigs)?
-    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? $replConf?)
-    ;
-
-replDbPolicy
-@init { pushMsg("Repl dump DB replication policy", state); }
-@after { popMsg(state); }
-    :
-      (dbName=identifier) (DOT tablePolicy=replTableLevelPolicy)? -> $dbName $tablePolicy?
-    ;
-
-replLoadStatement
-@init { pushMsg("Replication load statement", state); }
-@after { popMsg(state); }
-      : KW_REPL KW_LOAD
-      (sourceDbPolicy=replDbPolicy)
-      (KW_INTO dbName=identifier)?
-      (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_LOAD $sourceDbPolicy ^(TOK_DBNAME $dbName)? $replConf?)
-      ;
-
-replConfigs
-@init { pushMsg("Repl configurations", state); }
-@after { popMsg(state); }
-    :
-      LPAREN replConfigsList RPAREN -> ^(TOK_REPL_CONFIG replConfigsList)
-    ;
-
-replConfigsList
-@init { pushMsg("Repl configurations list", state); }
-@after { popMsg(state); }
-    :
-      keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_REPL_CONFIG_LIST keyValueProperty+)
-    ;
-
-replTableLevelPolicy
-@init { pushMsg("Replication table level policy definition", state); }
-@after { popMsg(state); }
-    :
-      ((replTablesIncludeList=StringLiteral) (DOT replTablesExcludeList=StringLiteral)?)
-      -> ^(TOK_REPL_TABLES $replTablesIncludeList $replTablesExcludeList?)
-    ;
-
-replStatusStatement
-@init { pushMsg("replication status statement", state); }
-@after { popMsg(state); }
-      : KW_REPL KW_STATUS
-        (dbName=identifier)
-        (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_STATUS $dbName $replConf?)
-      ;
 
 ddlStatement
 @init { pushMsg("ddl statement", state); }
