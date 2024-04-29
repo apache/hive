@@ -132,7 +132,7 @@
     <commons-dbcp2.version>2.9.0</commons-dbcp2.version>
     <commons-text.version>1.10.0</commons-text.version>
     <derby.version>10.14.2.0</derby.version>
-    <dropwizard.version>3.1.0</dropwizard.version>
+    <dropwizard.version>3.2.4</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <druid.version>0.17.1</druid.version>
     <esri.version>2.2.4</esri.version>
@@ -1873,6 +1873,29 @@
         <groupId>org.jamon</groupId>
         <artifactId>jamon-maven-plugin</artifactId>
         <version>${jamon.plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <doclint>none</doclint>
+          <useStandardDocletOptions>false</useStandardDocletOptions>
+          <additionalDependencies>
+            <additionalDependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>3.2.4</version>
+            </additionalDependency>
+          </additionalDependencies>
+        </configuration>
+        <executions>
+          <execution>
+            <id>aggregate</id>
+            <goals>
+              <goal>aggregate</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
