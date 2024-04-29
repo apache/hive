@@ -3402,7 +3402,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNames(final String catName, final String dbName, final String tblName,
       final String defaultPartName, final byte[] exprBytes,
-      final String order, final short maxParts) throws MetaException, NoSuchObjectException {
+      final String order, final int maxParts) throws MetaException, NoSuchObjectException {
     final String defaultPartitionName = getDefaultPartitionName(defaultPartName);
     final boolean isEmptyFilter = exprBytes.length == 1 && exprBytes[0] == -1;
     ExpressionTree tmp = null;
@@ -3454,7 +3454,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (exprTree != null) {
           try {
             result = getPartitionNamesViaOrm(catName, dbName, tblName, exprTree, order,
-                (int) maxParts, true, ctx.getTable().getPartitionKeys());
+                maxParts, true, ctx.getTable().getPartitionKeys());
           } catch (MetaException e) {
             result = null;
           }
@@ -3512,7 +3512,7 @@ public class ObjectStore implements RawStore, Configurable {
         params, isValidatedFilter, partitionKeys);
     if (jdoFilter == null) {
       assert !isValidatedFilter;
-      return null;
+      throw new MetaException("Failed to generate filter.");
     }
 
     try (QueryWrapper query = new QueryWrapper(pm.newQuery(
@@ -4111,8 +4111,7 @@ public class ObjectStore implements RawStore, Configurable {
     return getPartitionsByExprInternal(catName, dbName, tblName, result, true, true, args);
   }
 
-  @Override
-  public boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
+  private boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
       List<String> result, GetPartitionsArgs args) throws MetaException {
     MTable mTable = getMTable(catName, dbName, tblName);
     List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
@@ -4209,10 +4208,8 @@ public class ObjectStore implements RawStore, Configurable {
    * @param result The resulting names.
    * @return Whether the result contains any unknown partitions.
    */
-  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName,
-                                                     List<FieldSchema> partColumns, byte[] expr,
-                                                     String defaultPartName, short maxParts,
-                                                     List<String> result) throws MetaException {
+  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName, List<FieldSchema> partColumns, byte[] expr,
+                                                     String defaultPartName, short maxParts, List<String> result) throws MetaException {
     result.addAll(getPartitionNamesNoTxn(catName, dbName, tblName, (short) -1));
     return prunePartitionNamesByExpr(catName, dbName, tblName, result,
         new GetPartitionsArgs.GetPartitionsArgsBuilder()
@@ -4677,6 +4674,60 @@ public class ObjectStore implements RawStore, Configurable {
       protected Integer getJdoResult(
           GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
         return getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
+      }
+    }.run(false);
+  }
+
+  @Override
+  public int getNumPartitionsByExpr(String catName, String dbName, String tblName,
+                                    byte[] expr) throws MetaException, NoSuchObjectException {
+    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr, null, conf);
+    final byte[] tempExpr = expr; // Need to be final to pass it to an inner class
+
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
+
+    return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
+      private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
+
+      @Override
+      protected String describeResult() {
+        return "Partition count";
+      }
+
+      @Override
+      protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
+      }
+
+      @Override
+      protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
+        return directSql.getNumPartitionsViaSqlFilter(filter);
+      }
+      @Override
+      protected Integer getJdoResult(
+          GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
+        Integer numPartitions = null;
+
+        if (exprTree != null) {
+          try {
+            numPartitions = getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
+          } catch (MetaException e) {
+            numPartitions = null;
+          }
+        }
+
+        // if numPartitions could not be obtained from ORM filters, then get number partitions names, and count them
+        if (numPartitions == null) {
+          List<String> filteredPartNames = new ArrayList<>();
+          getPartitionNamesPrunedByExprNoTxn(catName, dbName, tblName, partitionKeys, tempExpr, "", (short) -1, filteredPartNames);
+          numPartitions = filteredPartNames.size();
+        }
+
+        return numPartitions;
       }
     }.run(false);
   }

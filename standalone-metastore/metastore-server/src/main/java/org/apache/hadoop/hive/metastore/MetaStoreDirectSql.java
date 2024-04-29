@@ -1030,7 +1030,7 @@ class MetaStoreDirectSql {
     return getPartitionsByQuery(catName, dbName, tblName, queryText, params, isAcidTable, args);
   }
 
-  public List<Partition> getPartitionsByPartitionIdsInBatch(String catName, String dbName,
+  private List<Partition> getPartitionsByPartitionIdsInBatch(String catName, String dbName,
       String tblName, List<Long> partIdList, boolean isAcidTable, GetPartitionsArgs args)
       throws MetaException {
     if (partIdList.isEmpty()) {

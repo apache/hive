@@ -697,7 +697,7 @@ public interface RawStore extends Configurable {
    */
   List<String> listPartitionNames(String catName, String dbName, String tblName,
       String defaultPartName, byte[] exprBytes, String order,
-      short maxParts) throws MetaException, NoSuchObjectException;
+      int maxParts) throws MetaException, NoSuchObjectException;
 
   /**
    * Get partition names with a filter. This is a portion of the SQL where clause.
@@ -869,20 +869,6 @@ public interface RawStore extends Configurable {
       throws TException;
 
   /**
-   * Prune the input partition names that match the expressions.
-   * @param catName catalog name
-   * @param dbName database name
-   * @param tblName table name
-   * @param result input list of partition names
-   * @param args additional arguments for pruning
-   * @return true if the result contains unknown partition names.
-   * @throws MetaException error executing the expression
-   */
-  boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
-      List<String> result, GetPartitionsArgs args)
-      throws MetaException;
-
-  /**
    * Get the number of partitions that match a provided SQL filter.
    * @param catName catalog name.
    * @param dbName database name.
@@ -894,6 +880,20 @@ public interface RawStore extends Configurable {
    */
   int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
     throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get the number of partitions that match an already parsed expression.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param expr an already parsed Hive expression
+   * @return number of matching partitions.
+   * @throws MetaException error accessing the RDBMS or working with the expression.
+   * @throws NoSuchObjectException no such table.
+   */
+  @Deprecated
+  int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Get the number of partitions that match a given partial specification.

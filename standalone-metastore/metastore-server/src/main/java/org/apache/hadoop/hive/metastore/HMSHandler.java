@@ -5583,6 +5583,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return partitionLimit > -1;
   }
 
+  // Check request partition limit iff:
+  //  1. partition limit is enabled.
+  //  2. request size is greater than the limit.
+  private boolean needCheckPartitionLimit(int requestSize) {
+    int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
+    return partitionLimit > -1 && (requestSize < 0 || requestSize > partitionLimit);
+  }
+
   private void checkLimitNumberOfPartitions(String tblName, int numPartitions, int maxToFetch) throws MetaException {
     if (isPartitionLimitEnabled()) {
       int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
@@ -7217,14 +7225,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     RawStore rs = getMS();
     try {
       authorizeTableForPartitionMetadata(catName, dbName, tblName);
-      if (isPartitionLimitEnabled()) {
+      if (needCheckPartitionLimit(args.getMax())) {
         // Since partition limit is configured, we need fetch at most (limit + 1) partition names
-        int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
-        int requestMax = args.getMax();
-        int max = requestMax < 0 ? partitionLimit + 1 : Math.min(requestMax, partitionLimit + 1);
+        int max = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST) + 1;
         args = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).max(max).build();
         List<String> partNames = rs.listPartitionNamesByFilter(catName, dbName, tblName, args);
-        checkLimitNumberOfPartitions(tblName, partNames.size(), requestMax);
+        checkLimitNumberOfPartitions(tblName, partNames.size(), args.getMax());
         ret = rs.getPartitionsByNames(catName, dbName, tblName,
             new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
       } else {
@@ -7351,11 +7357,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<Partition> partitions = new LinkedList<>();
     boolean hasUnknownPartitions = false;
     RawStore rs = getMS();
-    if (isPartitionLimitEnabled()) {
+    if (needCheckPartitionLimit(args.getMax())) {
       // Since partition limit is configured, we need fetch at most (limit + 1) partition names
-      int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
-      int max = args.getMax() < 0 ? partitionLimit + 1 : Math.min(args.getMax(), partitionLimit + 1);
-      List<String> partNames = rs.listPartitionNames(catName, dbName, tblName, args.getDefaultPartName(), args.getExpr(), null, (short) max);
+      int max = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST) + 1;
+      List<String> partNames = rs.listPartitionNames(catName, dbName, tblName, args.getDefaultPartName(), args.getExpr(), null, max);
       checkLimitNumberOfPartitions(tblName, partNames.size(), args.getMax());
       partitions = rs.getPartitionsByNames(catName, dbName, tblName,
           new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());

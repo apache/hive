@@ -453,7 +453,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
-      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
+      byte[] exprBytes, String order, int maxParts) throws MetaException, NoSuchObjectException {
 
     return Collections.emptyList();
   }
@@ -534,14 +534,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
-      List<String> result, GetPartitionsArgs args) throws MetaException {
-    return false;
+  public int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
+    throws MetaException, NoSuchObjectException {
+    return -1;
   }
 
   @Override
-  public int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
-    throws MetaException, NoSuchObjectException {
+  public int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
+      throws MetaException, NoSuchObjectException {
     return -1;
   }
 

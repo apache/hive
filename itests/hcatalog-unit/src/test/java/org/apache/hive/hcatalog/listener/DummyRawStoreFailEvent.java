@@ -472,7 +472,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName,
       String defaultPartName, byte[] exprBytes, String order,
-      short maxParts) throws MetaException, NoSuchObjectException {
+      int maxParts) throws MetaException, NoSuchObjectException {
 
     return objectStore.listPartitionNames(catName, dbName, tblName,
         defaultPartName, exprBytes, order, maxParts);
@@ -532,6 +532,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public int getNumPartitionsByFilter(String catName, String dbName, String tblName,
                                       String filter) throws MetaException, NoSuchObjectException {
     return objectStore.getNumPartitionsByFilter(catName, dbName, tblName, filter);
+  }
+
+  @Override
+  public int getNumPartitionsByExpr(String catName, String dbName, String tblName,
+                                    byte[] expr) throws MetaException, NoSuchObjectException {
+    return objectStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
   }
 
   @Override
@@ -1632,12 +1638,6 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public boolean getPartitionsByExpr(String catName, String dbName, String tblName,
                                      List<Partition> result, GetPartitionsArgs args) throws TException {
     return objectStore.getPartitionsByExpr(catName, dbName, tblName, result, args);
-  }
-
-  @Override
-  public boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
-                                           List<String> result, GetPartitionsArgs args) throws MetaException {
-    return objectStore.prunePartitionNamesByExpr(catName, dbName, tblName, result, args);
   }
 
   @Override

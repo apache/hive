@@ -438,7 +438,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
-      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
+      byte[] exprBytes, String order, int maxParts) throws MetaException, NoSuchObjectException {
     return objectStore.listPartitionNames(catName, dbName, tblName,
         defaultPartName, exprBytes, order, maxParts);
   }
@@ -496,6 +496,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public int getNumPartitionsByExpr(String catName, String dbName, String tblName,
+                                      byte[] expr) throws MetaException, NoSuchObjectException {
+    return objectStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
+  }
+
+  @Override
   public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
       throws MetaException, NoSuchObjectException {
     return objectStore.getNumPartitionsByPs(catName, dbName, tblName, partVals);
@@ -525,12 +531,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
                                        List<Partition> result, GetPartitionsArgs args) throws TException {
         return objectStore.getPartitionsByExpr(catName, dbName, tblName, result, args);
     }
-
-  @Override
-  public boolean prunePartitionNamesByExpr(String catName, String dbName, String tblName,
-                                           List<String> result, GetPartitionsArgs args) throws MetaException {
-    return objectStore.prunePartitionNamesByExpr(catName, dbName, tblName, result, args);
-  }
 
   @Override
   public Table markPartitionForEvent(String catName, String dbName, String tblName,
