@@ -701,7 +701,9 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "1 FROM \"TABLE_PARAMS\" tp " +
           "INNER JOIN \"TBLS\" t ON tp.\"TBL_ID\" = t.\"TBL_ID\" " +
           "INNER JOIN \"DBS\" d ON t.\"DB_ID\" = d.\"DB_ID\" " +
-          "WHERE (d.\"NAME\", t.\"TBL_NAME\") IN (values :valuesMap)" +
+          "WHERE (d.\"NAME\", t.\"TBL_NAME\") IN (" + 
+            (dbProduct.isPOSTGRES() ? "values" : "") + 
+          " :valuesMap)" +
           " AND t.\"TBL_TYPE\" = :tableType" +
           " AND tp.\"PARAM_KEY\" = 'transactional' AND tp.\"PARAM_VALUE\" = 'true'"),
       new MapSqlParameterSource()
