@@ -132,8 +132,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
-import org.apache.hadoop.mapred.JobContextImpl;
-import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
@@ -763,7 +761,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> jobContextList = HiveIcebergOutputCommitter
+            .generateJobContext(configuration, tableName, snapshotRef);
     if (jobContextList.isEmpty()) {
       return;
     }
@@ -1569,41 +1568,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return true;
   }
 
-  /**
-   * Generates {@link JobContext}s for the OutputCommitter for the specific table.
-   * @param configuration The configuration used for as a base of the JobConf
-   * @param tableName The name of the table we are planning to commit
-   * @param branchName the name of the branch
-   * @return The generated Optional JobContext list or empty if not presents.
-   */
-  private List<JobContext> generateJobContext(Configuration configuration, String tableName,
-      String branchName) {
-    JobConf jobConf = new JobConf(configuration);
-    Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
-        SessionStateUtil.getCommitInfo(jobConf, tableName);
-    if (commitInfoMap.isPresent()) {
-      List<JobContext> jobContextList = Lists.newLinkedList();
-      for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
-        JobID jobID = JobID.forName(commitInfo.getJobIdStr());
-        commitInfo.getProps().forEach(jobConf::set);
-
-        // we should only commit this current table because
-        // for multi-table inserts, this hook method will be called sequentially for each target table
-        jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
-        if (branchName != null) {
-          jobConf.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, branchName);
-        }
-
-        jobContextList.add(new JobContextImpl(jobConf, jobID, null));
-      }
-      return jobContextList;
-    } else {
-      // most likely empty write scenario
-      LOG.debug("Unable to find commit information in query state for table: {}", tableName);
-      return Collections.emptyList();
-    }
-  }
-
   private String getOperationType() {
     return SessionStateUtil.getProperty(conf, Operation.class.getSimpleName())
         .orElse(Operation.OTHER.name());
@@ -2172,7 +2136,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String tableName = properties.getProperty(Catalogs.NAME);
     String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
     Configuration configuration = SessionState.getSessionConf();
-    List<JobContext> originalContextList = generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> originalContextList = HiveIcebergOutputCommitter
+            .generateJobContext(configuration, tableName, snapshotRef);
     List<JobContext> jobContextList = originalContextList.stream()
             .map(TezUtil::enrichContextWithVertexId)
             .collect(Collectors.toList());

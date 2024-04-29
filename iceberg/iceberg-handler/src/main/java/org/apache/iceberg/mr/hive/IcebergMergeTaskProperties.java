@@ -19,19 +19,20 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
-import org.apache.hadoop.hive.ql.io.StorageFormatFactory;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
-import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.TableProperties;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.mr.Catalogs;
 
 public class IcebergMergeTaskProperties implements MergeTaskProperties {
 
   private final Properties properties;
-  private static final StorageFormatFactory storageFormatFactory = new StorageFormatFactory();
 
   IcebergMergeTaskProperties(Properties properties) {
     this.properties = properties;
@@ -42,14 +43,23 @@ public class IcebergMergeTaskProperties implements MergeTaskProperties {
     return new Path(location + "/data/");
   }
 
-  public StorageFormatDescriptor getStorageFormatDescriptor() throws IOException {
-    FileFormat fileFormat = FileFormat.fromString(properties.getProperty(TableProperties.DEFAULT_FILE_FORMAT,
-            TableProperties.DEFAULT_FILE_FORMAT_DEFAULT));
-    StorageFormatDescriptor descriptor = storageFormatFactory.get(fileFormat.name());
-    if (descriptor == null) {
-      throw new IOException("Unsupported storage format descriptor");
+  @Override
+  public Properties getSplitProperties() throws IOException {
+    String tableName = properties.getProperty(Catalogs.NAME);
+    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
+    Configuration configuration = SessionState.getSessionConf();
+    List<JobContext> originalContextList = HiveIcebergOutputCommitter
+        .generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> jobContextList = originalContextList.stream()
+            .map(TezUtil::enrichContextWithVertexId)
+            .collect(Collectors.toList());
+    if (jobContextList.isEmpty()) {
+      return null;
     }
-    return descriptor;
+    List<ContentFile> contentFiles = HiveIcebergOutputCommitter.getInstance().getOutputContentFiles(jobContextList);
+    Properties pathToContentFile = new Properties();
+    contentFiles.forEach(contentFile ->
+        pathToContentFile.put(new Path(String.valueOf(contentFile.path())), contentFile));
+    return pathToContentFile;
   }
-
 }
