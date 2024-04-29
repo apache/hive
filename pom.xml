@@ -1882,9 +1882,9 @@
           <useStandardDocletOptions>false</useStandardDocletOptions>
           <additionalDependencies>
             <additionalDependency>
-                <groupId>io.dropwizard.metrics</groupId>
-                <artifactId>metrics-core</artifactId>
-                <version>3.2.4</version>
+              <groupId>io.dropwizard.metrics</groupId>
+              <artifactId>metrics-core</artifactId>
+              <version>3.2.4</version>
             </additionalDependency>
           </additionalDependencies>
         </configuration>
