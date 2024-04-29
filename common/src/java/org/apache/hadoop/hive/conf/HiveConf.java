@@ -2695,7 +2695,8 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_REPLACE_DELETE_WITH_TRUNCATE("hive.optimize.delete.all", true,
         "Optimize delete the entire data from table, use truncate instead"),
     HIVE_OPTIMIZE_METADATA_DELETE("hive.optimize.delete.metadata.only", true,
-            "Optimize delete the entire data from table, use truncate instead"),
+        "Optimize delete using filters provided by the query. " +
+        "This uses the metadata of the table provided by table formats like Iceberg."),
     HIVE_OPTIMIZE_LIMIT("hive.optimize.limit", true,
         "Optimize limit by pushing through Left Outer Joins and Selects"),
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
