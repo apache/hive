@@ -472,7 +472,7 @@ STAGE PLANS:
             Select Operator
               expressions: (UDFToInteger(key) * 10) (type: int), upper(value) (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select cast(key as int) * 10, upper(value) from src limit 10
