@@ -81,7 +81,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	2                   
 	rawDataSize         	22                  
-	totalSize           	24                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

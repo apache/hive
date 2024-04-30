@@ -399,7 +399,7 @@ Table Parameters:	NULL	NULL
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	248                 
-	totalSize           	251                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	NULL	NULL
 # Storage Information	NULL	NULL

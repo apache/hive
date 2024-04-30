@@ -66,7 +66,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -116,7 +116,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	7060                
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -409,7 +409,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	55                  
 	rawDataSize         	7005                
-	totalSize           	7060                
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

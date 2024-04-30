@@ -78,7 +78,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	746                 
 	rawDataSize         	133296              
-	totalSize           	4760                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -267,7 +267,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	746                 
 	rawDataSize         	131296              
-	totalSize           	4669                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
