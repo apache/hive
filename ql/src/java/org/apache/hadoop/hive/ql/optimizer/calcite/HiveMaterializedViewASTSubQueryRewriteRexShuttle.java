@@ -40,7 +40,7 @@ public class HiveMaterializedViewASTSubQueryRewriteRexShuttle extends RexShuttle
     RelNode newSubquery = subQuery.rel.accept(relShuttle);
 
     RexNode newSubQueryRex;
-    switch (subQuery.op.kind) {
+    switch (subQuery.op.getKind()) {
       case IN:
         newSubQueryRex = RexSubQuery.in(newSubquery, subQuery.operands);
         break;
@@ -59,7 +59,7 @@ public class HiveMaterializedViewASTSubQueryRewriteRexShuttle extends RexShuttle
         break;
 
       default:
-        throw new RuntimeException("Unsupported op.kind " + subQuery.op.kind);
+        throw new RuntimeException("Unsupported op.kind " + subQuery.op.getKind());
     }
 
     return newSubQueryRex;

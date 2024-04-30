@@ -240,7 +240,7 @@ public class SqlFunctionConverter {
     HiveToken hToken = calciteToHiveToken.get(op);
     ASTNode node;
     if (hToken != null) {
-      switch (op.kind) {
+      switch (op.getKind()) {
         case IN:
         case BETWEEN:
         case ROW:
