@@ -849,7 +849,7 @@ public class SessionState {
   /**
    * Setup authentication and authorization plugins for this session.
    */
-  private void setupAuth() {
+  private synchronized void setupAuth() {
 
     if (authenticator != null) {
       // auth has been initialized
