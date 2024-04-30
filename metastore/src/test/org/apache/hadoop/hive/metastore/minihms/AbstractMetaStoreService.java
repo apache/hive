@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.minihms;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -149,5 +150,9 @@ public abstract class AbstractMetaStoreService {
    * call shutdown on MetaStore. Currently this does nothing :(
    */
   public void stop() {
+  }
+
+  public Configuration getConf() {
+    return configuration;
   }
 }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -136,6 +138,8 @@ public class TestTablesCreateDropAlterTruncate {
 
   @Test
   public void testAlterTableExpectedPropertyMatch() throws Exception {
+    Assume.assumeTrue(HiveConf.getBoolVar(metaStore.getConf(), HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL));
+    Assume.assumeTrue(HiveConf.getBoolVar(metaStore.getConf(), HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     EnvironmentContext context = new EnvironmentContext();
@@ -149,6 +153,8 @@ public class TestTablesCreateDropAlterTruncate {
 
   @Test(expected = MetaException.class)
   public void testAlterTableExpectedPropertyDifferent() throws Exception {
+    Assume.assumeTrue(HiveConf.getBoolVar(metaStore.getConf(), HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL));
+    Assume.assumeTrue(HiveConf.getBoolVar(metaStore.getConf(), HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     EnvironmentContext context = new EnvironmentContext();
@@ -168,6 +174,8 @@ public class TestTablesCreateDropAlterTruncate {
    */
   @Test
   public void testAlterTableExpectedPropertyConcurrent() throws Exception {
+    Assume.assumeTrue(HiveConf.getBoolVar(metaStore.getConf(), HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL));
+    Assume.assumeTrue(HiveConf.getBoolVar(metaStore.getConf(), HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL));
     Table originalTable = testTables[0];
 
     originalTable.getParameters().put("snapshot", "0");

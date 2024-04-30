@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hive.common.util.HiveStringUtils;
 
-import javax.jdo.Constants;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -132,12 +131,7 @@ public class HiveAlterHandler implements AlterHandler {
       String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
               environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
 
-      if (expectedKey != null) {
-        // If we have to check the expected state of the table we have to prevent nonrepeatable reads.
-        msdb.openTransaction(Constants.TX_REPEATABLE_READ);
-      } else {
-        msdb.openTransaction();
-      }
+      msdb.openTransaction();
 
       name = name.toLowerCase();
       dbname = dbname.toLowerCase();
@@ -158,10 +152,20 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidOperationException("table " + dbname + "." + name + " doesn't exist");
       }
 
-      if (expectedKey != null && expectedValue != null
-              && !expectedValue.equals(oldt.getParameters().get(expectedKey))) {
-        throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
-                + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
+      if (expectedKey != null && expectedValue != null) {
+        String newValue = newt.getParameters().get(expectedKey);
+        if (newValue == null) {
+          throw new MetaException(String.format("New value for expected key %s is not set", expectedKey));
+        }
+        if (!expectedValue.equals(oldt.getParameters().get(expectedKey))) {
+          throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
+              + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
+        }
+        long affectedRows = msdb.updateParameterWithExpectedValue(oldt, expectedKey, expectedValue, newValue);
+        if (affectedRows != 1) {
+          // make sure concurrent modification exception messages have the same prefix
+          throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is different");
+        }
       }
 
       // Views derive the column type from the base table definition.  So the view definition

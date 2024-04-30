@@ -608,6 +608,33 @@ public class ObjectStore implements RawStore, Configurable {
     return result;
   }
 
+  @Override
+  public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
+      throws MetaException, NoSuchObjectException {
+    final Table _table = table;
+    final String _key = key;
+    final String _expectedValue = expectedValue;
+    final String _newValue = newValue;
+    return new GetHelper<Long>(table.getDbName(), table.getTableName(), true, false) {
+
+      @Override
+      protected String describeResult() {
+        return "Affected rows";
+      }
+
+      @Override
+      protected Long getSqlResult(GetHelper<Long> ctx) throws MetaException {
+        return directSql.updateTableParam(_table, _key, _expectedValue, _newValue);
+      }
+
+      @Override
+      protected Long getJdoResult(GetHelper<Long> ctx) throws MetaException, NoSuchObjectException {
+        throw new UnsupportedOperationException(
+            "Cannot update parameter with JDO, make sure direct SQL is enabled");
+      }
+    }.run(false);
+  }
+
   /**
    * if this is the commit of the first open call then an actual commit is
    * called.

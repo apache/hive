@@ -902,6 +902,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
   }
+
+  @Override
+  public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
+      throws MetaException, NoSuchObjectException {
+    throw new UnsupportedOperationException("This Store doesn't support updating table parameter with expected value");
+  }
 }
 
 
