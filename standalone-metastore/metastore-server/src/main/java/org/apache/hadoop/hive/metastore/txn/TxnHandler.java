@@ -705,7 +705,9 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             (dbProduct.isPOSTGRES() ? "values" : "") + 
           " :valuesMap)" +
           " AND t.\"TBL_TYPE\" = :tableType" +
-          " AND tp.\"PARAM_KEY\" = 'transactional' AND tp.\"PARAM_VALUE\" = 'true'"),
+          " AND tp.\"PARAM_KEY\" = 'transactional' AND " +
+            dbProduct.toVarChar("tp.\"PARAM_VALUE\"") + 
+          " = 'true'"),
       new MapSqlParameterSource()
         .addValue("tableType", TableType.MANAGED_TABLE.toString())
         .addValue("valuesMap", valuesMap), 

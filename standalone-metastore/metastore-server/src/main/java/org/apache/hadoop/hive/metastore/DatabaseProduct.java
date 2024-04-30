@@ -225,6 +225,17 @@ public class DatabaseProduct implements Configurable {
         || (isDERBY() && "42X05".equalsIgnoreCase(e.getSQLState()));
   }
 
+  public String toVarChar(String column) {
+    switch (dbType) {
+      case DERBY:
+        return String.format("CAST(%s AS VARCHAR(128))", column);
+      case ORACLE:
+        return String.format("to_char(%s)", column);
+      default:
+        return column;
+    }
+  }
+
   /**
    * Whether the RDBMS has restrictions on IN list size (explicit, or poor perf-based).
    */
