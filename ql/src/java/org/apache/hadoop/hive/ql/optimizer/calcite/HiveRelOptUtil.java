@@ -76,6 +76,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -1162,5 +1163,13 @@ public class HiveRelOptUtil extends RelOptUtil {
       distributionKeys.add(m.get(keyIndex));
     }
     return distributionKeys;
+  }
+
+  public static boolean isHiveIN(RexNode node) {
+    if (!(node instanceof RexCall)) {
+      return false;
+    }
+
+     return ((RexCall) node).getOperator() == HiveIn.INSTANCE;
   }
 }

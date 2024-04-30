@@ -50,6 +50,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.graph.DiGraph;
@@ -602,7 +603,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       for (int i = 0; i < operands.size(); i++) {
         RexNode operand = operands.get(i);
-        if (operand.getKind() == SqlKind.IN) {
+        if (HiveRelOptUtil.isHiveIN(operand)) {
           RexCall inCall = (RexCall) operand;
           if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
             continue;
