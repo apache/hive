@@ -1970,7 +1970,29 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
+      basePlan = applyPointLookupOptimization(basePlan, mdProvider, executorProvider, minNumORClauses);
+
       return basePlan;
+    }
+
+    private RelNode applyPointLookupOptimization(RelNode basePlan, RelMetadataProvider mdProvider,
+                                                 RexExecutor executorProvider, int minNumORClauses) {
+      if (!conf.getBoolVar(ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
+        return basePlan;
+      }
+
+      HepProgramBuilder searchExpandProgram = new HepProgramBuilder();
+      generatePartialProgram(searchExpandProgram, true, HepMatchOrder.BOTTOM_UP,
+          new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+              o -> o.operand(Filter.class).anyInputs()).toRule(),
+          new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+              o -> o.operand(Project.class).anyInputs()).toRule(),
+          new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses),
+          new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses),
+          new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses)
+      );
+
+      return executeProgram(basePlan, searchExpandProgram.build(), mdProvider, executorProvider);
     }
 
     /**
