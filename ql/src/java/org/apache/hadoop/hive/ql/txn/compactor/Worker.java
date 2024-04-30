@@ -68,6 +68,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   private String workerName;
   private final CompactorFactory compactorFactory;
+  private CompactionInfo ci;
 
   public Worker() {
     compactorFactory = CompactorFactory.getInstance();
@@ -99,15 +100,16 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException te) {
-          LOG.info("Timeout during executing compaction", te);
+          LOG.error("Timeout during executing compaction", te);
           // Cancel the job, and recreate the Executor as well, so we can be sure that we have an available thread
           // even if we can not interrupt the task somehow. (Trade possible resource hogging for compactor stability)
           singleRun.cancel(true);
+          markFailed(ci, "Timeout during executing compaction");
           executor.shutdownNow();
           executor = getTimeoutHandlingExecutor();
           err = true;
         } catch (ExecutionException e) {
-          LOG.info("Exception during executing compaction", e);
+          LOG.error("Exception during executing compaction", e);
           err = true;
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
@@ -182,7 +184,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     // so wrap it in a big catch Throwable statement.
     PerfLogger perfLogger = SessionState.getPerfLogger(false);
     String workerMetric = null;
-    CompactionInfo ci = null;
     Table table = null;
     CompactionService compactionService = null;
     boolean compactionResult = false;
