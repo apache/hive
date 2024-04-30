@@ -380,7 +380,7 @@ if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
   fi
 fi
 
-# set heap size of hive processes based on HADOOP_HEAPSIZE
+# set heap size of hive processes based on HADOOP_HEAPSIZE env variables
 if [[ -n "${HADOOP_HEAPSIZE_MAX}" ]]; then
   if [[ "${HADOOP_HEAPSIZE_MAX}" =~ ^[0-9]+$ ]]; then
     export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx${HADOOP_HEAPSIZE_MAX}m "
