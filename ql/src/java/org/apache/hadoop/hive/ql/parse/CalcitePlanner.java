@@ -1851,12 +1851,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         rules.add(HiveReduceExpressionsWithStatsRule.INSTANCE);
       }
       rules.add(HiveProjectFilterPullUpConstantsRule.INSTANCE);
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
-        rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-            o -> o.operand(Filter.class).anyInputs()).toRule());
-        rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-            o -> o.operand(Project.class).anyInputs()).toRule());
-      }
+      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+          o -> o.operand(Filter.class).anyInputs()).toRule());
+      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+          o -> o.operand(Project.class).anyInputs()).toRule());
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
@@ -1970,27 +1968,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
-      basePlan = applyPointLookupOptimization(basePlan, mdProvider, executorProvider, minNumORClauses);
+      basePlan = applySearchExpandAndPointLookupOptimization(basePlan, mdProvider, executorProvider, minNumORClauses);
 
       return basePlan;
     }
 
-    private RelNode applyPointLookupOptimization(RelNode basePlan, RelMetadataProvider mdProvider,
-                                                 RexExecutor executorProvider, int minNumORClauses) {
-      if (!conf.getBoolVar(ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
-        return basePlan;
+    private RelNode applySearchExpandAndPointLookupOptimization(RelNode basePlan, RelMetadataProvider mdProvider,
+                                                                RexExecutor executorProvider, int minNumORClauses) {
+      List<RelOptRule> rules = Lists.newArrayList();
+      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+          o -> o.operand(Filter.class).anyInputs()).toRule());
+      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
+          o -> o.operand(Project.class).anyInputs()).toRule());
+
+      if (conf.getBoolVar(ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
+        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
       }
 
       HepProgramBuilder searchExpandProgram = new HepProgramBuilder();
       generatePartialProgram(searchExpandProgram, true, HepMatchOrder.BOTTOM_UP,
-          new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-              o -> o.operand(Filter.class).anyInputs()).toRule(),
-          new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-              o -> o.operand(Project.class).anyInputs()).toRule(),
-          new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses),
-          new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses),
-          new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses)
-      );
+          rules.toArray(new RelOptRule[0]));
 
       return executeProgram(basePlan, searchExpandProgram.build(), mdProvider, executorProvider);
     }
