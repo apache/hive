@@ -24,6 +24,7 @@
   <version>4.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Standalone Metastore</name>
+  <inceptionYear>2008</inceptionYear>
   <modules>
     <module>metastore-common</module>
     <module>metastore-server</module>
@@ -117,6 +118,7 @@
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
     <thrift.args>-I ${thrift.home} -strict --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
+    <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <dependencyManagement>
     <dependencies>
