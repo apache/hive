@@ -24,6 +24,7 @@
   <version>4.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Storage API</name>
+  <inceptionYear>2008</inceptionYear>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -38,6 +39,7 @@
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <dependencies>
     <!-- compile inter-project -->
