@@ -529,6 +529,7 @@ public enum ErrorMsg {
   PARQUET_FOOTER_ERROR(20022, "Failed to read parquet footer:"),
   PARQUET_UNHANDLED_TYPE(20023, "Unhandled type {0}", true),
   ORC_FOOTER_ERROR(20024, "Failed to read orc footer:"),
+  NOT_A_LEAP_YEAR(20025, "not a leap year", true),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),

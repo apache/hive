@@ -13,6 +13,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
@@ -25,6 +27,7 @@ import jodd.time.JulianDate;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 /**
  * Utilities for converting from java.sql.Timestamp to parquet timestamp.
@@ -91,6 +94,7 @@ public class NanoTimeUtils {
   public static Timestamp getTimestamp(NanoTime nt, ZoneId targetZone, boolean legacyConversion) {
     int julianDay = nt.getJulianDay();
     long nanosOfDay = nt.getTimeOfDayNanos();
+    boolean notLeapYear = false;
 
     long remainder = nanosOfDay;
     julianDay += remainder / NANOS_PER_DAY;
@@ -102,10 +106,22 @@ public class NanoTimeUtils {
 
     JulianDate jDateTime;
     jDateTime = JulianDate.of((double) julianDay);
+    LocalDateTime localDateTime;
+    try {
+      localDateTime = jDateTime.toLocalDateTime();
+    } catch (DateTimeException e) {
+      if (e.getMessage().contains(ErrorMsg.NOT_A_LEAP_YEAR.getMsg()) && legacyConversion) {
+        localDateTime = LocalDateTime.ofEpochSecond(jDateTime.toMilliseconds() / 1000,
+            (int) jDateTime.toMilliseconds() % 1000 * 1000000, ZoneOffset.UTC);
+        notLeapYear = true;
+      } else {
+        throw e;
+      }
+    }
     Calendar calendar = getGMTCalendar();
-    calendar.set(Calendar.YEAR, jDateTime.toLocalDateTime().getYear());
-    calendar.set(Calendar.MONTH, jDateTime.toLocalDateTime().getMonth().getValue() - 1); //java calendar index starting at 1.
-    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.toLocalDateTime().getDayOfMonth());
+    calendar.set(Calendar.YEAR, localDateTime.getYear());
+    calendar.set(Calendar.MONTH, localDateTime.getMonth().getValue() - 1); //java calendar index starting at 1.
+    calendar.set(Calendar.DAY_OF_MONTH, localDateTime.getDayOfMonth());
 
     int hour = (int) (remainder / (NANOS_PER_HOUR));
     remainder = remainder % (NANOS_PER_HOUR);
@@ -119,7 +135,11 @@ public class NanoTimeUtils {
     calendar.set(Calendar.SECOND, seconds);
 
     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, targetZone, legacyConversion);
+    if(notLeapYear){
+      ts = TimestampTZUtil.legacyLeapYearConversions(ts, ZoneOffset.UTC, targetZone);
+    } else {
+      ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, targetZone, legacyConversion);
+    }
     return ts;
   }
 }

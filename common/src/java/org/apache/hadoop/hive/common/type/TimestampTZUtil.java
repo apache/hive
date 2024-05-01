@@ -31,6 +31,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
@@ -187,18 +188,9 @@ public class TimestampTZUtil {
   public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone,
       boolean legacyConversion) {
     if (legacyConversion) {
-      try {
-        DateFormat formatter = getLegacyDateFormatter();
-        formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
-        java.util.Date date = formatter.parse(ts.format(TIMESTAMP_FORMATTER));
-        // Set the formatter to use a different timezone
-        formatter.setTimeZone(TimeZone.getTimeZone(toZone));
-        Timestamp result = Timestamp.valueOf(formatter.format(date));
-        result.setNanos(ts.getNanos());
-        return result;
-      } catch (ParseException e) {
-        throw new RuntimeException(e);
-      }
+      Timestamp result = Timestamp.valueOf(formatDate(ts, fromZone, toZone));
+      result.setNanos(ts.getNanos());
+      return result;
     }
 
     // get nanos since [epoch at fromZone]
@@ -212,5 +204,27 @@ public class TimestampTZUtil {
 
   public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
     return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
+  }
+
+  public static Timestamp legacyLeapYearConversions(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
+    DateTimeFormatter dtf = FORMATTER;
+    Timestamp result = Timestamp.valueOf(
+        dtf.format(dtf.withResolverStyle(ResolverStyle.LENIENT).parse(formatDate(ts, fromZone, toZone))));
+    result.setNanos(ts.getNanos());
+    return result;
+  }
+
+  private static String formatDate(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
+    DateFormat formatter = getLegacyDateFormatter();
+    formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
+    java.util.Date date = null;
+    try {
+      date = formatter.parse(ts.format(TIMESTAMP_FORMATTER));
+    } catch (ParseException e) {
+      throw new RuntimeException(e);
+    }
+    // Set the formatter to use a different timezone
+    formatter.setTimeZone(TimeZone.getTimeZone(toZone));
+    return formatter.format(date);
   }
 }
