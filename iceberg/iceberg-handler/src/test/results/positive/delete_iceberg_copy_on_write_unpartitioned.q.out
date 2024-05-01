@@ -1890,3 +1890,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	SDF
 8	POIKL
 9	NULL
+PREHOOK: query: delete from tbl_ice_with_nulls
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_with_nulls
+PREHOOK: Output: default@tbl_ice_with_nulls
+POSTHOOK: query: delete from tbl_ice_with_nulls
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_with_nulls
+POSTHOOK: Output: default@tbl_ice_with_nulls
+PREHOOK: query: select * from tbl_ice_with_nulls
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_with_nulls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_ice_with_nulls
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_with_nulls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
