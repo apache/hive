@@ -95,7 +95,7 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
         LOG.error("DDLTask failed, DDL Operation: " + ddlOperation.getClass().toString(), e);
       }
       return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(),
-              work.getMetricCollector(), getName(), conf);
+                                       work.getMetricCollector(), getName(), conf);
     }
   }
 
