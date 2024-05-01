@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -87,20 +86,16 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
         throw new IllegalArgumentException("Unknown DDL request: " + ddlDesc.getClass());
       }
     } catch (Throwable e) {
-      if (work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
+      if(work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
         LOG.warn("Error while table creation: ", e);
         return 0;
       }
-      int errorCode = ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(),
-              work.getMetricCollector(), getName(), conf);
-      if (errorCode == ErrorMsg.TABLE_NOT_PARTITIONED.getErrorCode()) {
-        return errorCode;
-      }
       failed(e);
-      if (ddlOperation != null) {
+      if(ddlOperation != null) {
         LOG.error("DDLTask failed, DDL Operation: " + ddlOperation.getClass().toString(), e);
       }
-      return errorCode;
+      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(),
+              work.getMetricCollector(), getName(), conf);
     }
   }
 
