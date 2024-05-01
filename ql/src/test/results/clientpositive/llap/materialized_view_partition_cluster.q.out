@@ -301,7 +301,7 @@ Table Parameters:
 	numPartitions       	32                  
 	numRows             	55                  
 	rawDataSize         	9790                
-	totalSize           	11094               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1828,7 +1828,7 @@ Table Parameters:
 	numPartitions       	32                  
 	numRows             	57                  
 	rawDataSize         	11062               
-	totalSize           	17390               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2629,7 +2629,7 @@ Table Parameters:
 	numPartitions       	32                  
 	numRows             	58                  
 	rawDataSize         	11257               
-	totalSize           	17393               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

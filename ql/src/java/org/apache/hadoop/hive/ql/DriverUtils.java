@@ -128,6 +128,9 @@ public final class DriverUtils {
       }
       SessionState.setCurrentSessionState(sessionState);
     }
+    else {
+      sessionState.setConf(conf);
+    }
     return sessionState;
   }
 

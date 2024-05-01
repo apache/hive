@@ -1,4 +1,3 @@
---! qt:replace:/(totalSize\s+)(\S+|\s+|.+)/$1#Masked#/
 -- SORT_QUERY_RESULTS
 
 SET hive.vectorized.execution.enabled=false;

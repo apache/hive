@@ -638,7 +638,8 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     private boolean isSimple(ImmutableBitSet condBits, Filter filter, RelMetadataQuery mq) {
       // Returns whether the filter is only applied on the key columns
       if (constraintsBased) {
-        return mq.areColumnsUnique(filter, condBits);
+        final Boolean isUnique = mq.areColumnsUnique(filter, condBits);
+        return isUnique != null && isUnique;
       }
       return isKey(condBits, filter, mq);
     }

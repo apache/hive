@@ -32,9 +32,7 @@ abstract class MaterializedViewASTBuilder {
     return createAcidSortNodesInternal(inputNode.getText());
   }
 
-  public List<ASTNode> createAcidSortNodes(String tableName) {
-    return wrapIntoSelExpr(createAcidSortNodesInternal(tableName));
-  }
+  public abstract void appendDeleteSelectNodes(ASTNode selectNode, String tableName);
 
   protected abstract List<ASTNode> createAcidSortNodesInternal(String tableName);
 
@@ -55,13 +53,13 @@ abstract class MaterializedViewASTBuilder {
   }
 
   public List<ASTNode> wrapIntoSelExpr(List<ASTNode> expressionNodes) {
-    return expressionNodes.stream().map(expressionNode -> {
-      ASTNode selectExpr = (ASTNode) ParseDriver.adaptor.create(
-              HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    return expressionNodes.stream().map(this::wrapIntoSelExpr).collect(Collectors.toList());
+  }
 
-      ParseDriver.adaptor.addChild(selectExpr, expressionNode);
-      return selectExpr;
-    }).collect(Collectors.toList());
+  public ASTNode wrapIntoSelExpr(ASTNode expressionNode) {
+    ASTNode selectExpr = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    ParseDriver.adaptor.addChild(selectExpr, expressionNode);
+    return selectExpr;
   }
 
   public ASTNode createSortNodes(List<ASTNode> sortKeyNodes) {

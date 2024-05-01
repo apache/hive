@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.orc.OrcProto;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -771,7 +770,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
 
       // The get_splits call should have resulted in a lock on ACIDTBL
       ShowLocksResponse slr = txnHandler.showLocks(new ShowLocksRequest());
-      TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
+      TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
           "default", Table.ACIDTBL.name, null, slr.getLocks());
       assertEquals(1, slr.getLocksSize());
 
@@ -781,7 +780,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
 
       // Should now have new lock on ACIDTBLPART
       slr = txnHandler.showLocks(new ShowLocksRequest());
-      TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
+      TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
           "default", Table.ACIDTBLPART.name, null, slr.getLocks());
       assertEquals(2, slr.getLocksSize());
 
@@ -834,9 +833,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
 
       // The get_splits call should have resulted in a lock on ACIDTBL and materialized view mv_acidTbl
       ShowLocksResponse slr = txnHandler.showLocks(new ShowLocksRequest());
-      TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
+      TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
               "default", Table.ACIDTBL.name, null, slr.getLocks());
-      TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
+      TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
               "default", mvName, null, slr.getLocks());
       assertEquals(2, slr.getLocksSize());
     } finally {

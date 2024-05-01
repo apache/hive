@@ -1,4 +1,3 @@
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#/
 set hive.stats.kll.enable=true;
 set metastore.stats.fetch.bitvector=true;
 set metastore.stats.fetch.kll=true;

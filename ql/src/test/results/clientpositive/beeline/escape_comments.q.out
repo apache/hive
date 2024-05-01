@@ -98,7 +98,7 @@ Table Parameters:	NULL	NULL
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	NULL	NULL
 # Storage Information	NULL	NULL
