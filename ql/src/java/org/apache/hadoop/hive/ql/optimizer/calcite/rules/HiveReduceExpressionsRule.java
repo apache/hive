@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
@@ -64,10 +65,10 @@ public final class HiveReduceExpressionsRule {
   public static final RelOptRule FILTER_INSTANCE = new HiveFilterReduceExpressionsRule(
       (ReduceExpressionsRule.FilterReduceExpressionsRule.FilterReduceExpressionsRuleConfig)
           ReduceExpressionsRule.FilterReduceExpressionsRule.FilterReduceExpressionsRuleConfig.DEFAULT
-          .withOperandFor(HiveFilter.class)
-          .withMatchNullability(false)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.FilterReduceExpressionsRule.Config.class)
+              .withOperandFor(HiveFilter.class)
+              .withMatchNullability(false)
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .as(ReduceExpressionsRule.FilterReduceExpressionsRule.Config.class)
   );
 
   /**
@@ -77,34 +78,36 @@ public final class HiveReduceExpressionsRule {
   public static final RelOptRule PROJECT_INSTANCE = new HiveProjectReduceExpressionsRule(
       (ReduceExpressionsRule.ProjectReduceExpressionsRule.ProjectReduceExpressionsRuleConfig)
           ReduceExpressionsRule.ProjectReduceExpressionsRule.ProjectReduceExpressionsRuleConfig.DEFAULT
-          .withOperandFor(HiveProject.class)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.ProjectReduceExpressionsRule.Config.class)
+              .withOperandFor(HiveProject.class)
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .as(ReduceExpressionsRule.ProjectReduceExpressionsRule.Config.class)
   );
 
   /**
    * Singleton rule that reduces constants inside a
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin}.
    */
-  public static final RelOptRule JOIN_INSTANCE =
-      ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig.DEFAULT
-          .withOperandFor(HiveJoin.class)
-          .withMatchNullability(false)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.JoinReduceExpressionsRule.Config.class)
-          .toRule();
+  public static final RelOptRule JOIN_INSTANCE = new HiveJoinReduceExpressionsRule(
+      (ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig)
+          ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig.DEFAULT
+              .withOperandFor(HiveJoin.class)
+              .withMatchNullability(false)
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .as(ReduceExpressionsRule.JoinReduceExpressionsRule.Config.class)
+  );
 
   /**
    * Singleton rule that reduces constants inside a
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin}.
    */
-  public static final RelOptRule SEMIJOIN_INSTANCE =
-      ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig.DEFAULT
-          .withOperandFor(HiveSemiJoin.class)
-          .withMatchNullability(false)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.JoinReduceExpressionsRule.Config.class)
-          .toRule();
+  public static final RelOptRule SEMIJOIN_INSTANCE = new HiveJoinReduceExpressionsRule(
+      (ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig)
+          ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig.DEFAULT
+              .withOperandFor(HiveSemiJoin.class)
+              .withMatchNullability(false)
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .as(ReduceExpressionsRule.JoinReduceExpressionsRule.Config.class)
+  );
 
   public static class HiveFilterReduceExpressionsRule extends ReduceExpressionsRule.FilterReduceExpressionsRule {
 
@@ -247,6 +250,44 @@ public final class HiveReduceExpressionsRule {
         // New plan is absolutely better than old plan.
         call.getPlanner().prune(project);
       }
+    }
+  }
+
+  public static class HiveJoinReduceExpressionsRule extends ReduceExpressionsRule.JoinReduceExpressionsRule {
+
+    protected HiveJoinReduceExpressionsRule(JoinReduceExpressionsRuleConfig config) {
+      super(config);
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final Join join = call.rel(0);
+      final List<RexNode> expList = Lists.newArrayList(join.getCondition());
+      final int fieldCount = join.getLeft().getRowType().getFieldCount();
+      final RelMetadataQuery mq = call.getMetadataQuery();
+      final RelOptPredicateList leftPredicates =
+          mq.getPulledUpPredicates(join.getLeft());
+      final RelOptPredicateList rightPredicates =
+          mq.getPulledUpPredicates(join.getRight());
+      final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
+      final RelOptPredicateList predicates =
+          leftPredicates.union(rexBuilder,
+              rightPredicates.shift(rexBuilder, fieldCount));
+      if (!reduceExpressions(join, expList, predicates, true,
+          config.matchNullability(), config.treatDynamicCallsAsConstant())) {
+        return;
+      }
+      call.transformTo(
+          join.copy(
+              join.getTraitSet(),
+              getExpanded(expList, join.getCluster().getRexBuilder()).get(0),
+              join.getLeft(),
+              join.getRight(),
+              join.getJoinType(),
+              join.isSemiJoinDone()));
+
+      // New plan is absolutely better than old plan.
+      call.getPlanner().prune(join);
     }
   }
 
