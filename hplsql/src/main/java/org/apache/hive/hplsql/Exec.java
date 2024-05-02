@@ -914,7 +914,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   /**
    * Parse command line arguments
    */
-  boolean parseArguments(String[] args) {
+  public boolean parseArguments(String[] args) {
     boolean parsed = arguments.parse(args);
     if (parsed && arguments.hasVersionOption()) {
       console.printError(VERSION);
