@@ -182,6 +182,10 @@
         <name>hive.tez.auto.reducer.parallelism</name>
         <value>true</value>
     </property>
+    <property>
+        <name>hive.tez.exec.print.summary</name>
+        <value>true</value>
+    </property>
     <!-- Metastore properties -->
     <property>
         <name>hive.metastore.db.type</name>

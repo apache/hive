@@ -1341,7 +1341,7 @@ Table Parameters:
 	numRows             	2                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.kudu.KuduStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

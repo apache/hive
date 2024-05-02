@@ -93,7 +93,7 @@ numFilesErasureCoded	0
 numRows	2
 rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
-totalSize	0
+totalSize	#Masked#        
 #### A masked pattern was here ####
 PREHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
@@ -141,7 +141,7 @@ numFilesErasureCoded	0
 numRows	3
 rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
-totalSize	0
+totalSize	#Masked#        
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 SELECT a, c
@@ -591,7 +591,7 @@ numFilesErasureCoded	0
 numRows	3
 rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
-totalSize	0
+totalSize	#Masked#        
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[10][tables = [cmv_mat_view2_n0, $hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN

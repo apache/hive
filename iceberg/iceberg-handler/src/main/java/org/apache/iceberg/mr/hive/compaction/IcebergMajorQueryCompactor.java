@@ -20,15 +20,26 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,22 +55,52 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
     Map<String, String> tblProperties = context.getTable().getParameters();
     LOG.debug("Initiating compaction for the {} table", compactTableName);
 
-    String compactionQuery = String.format("insert overwrite table %s select * from %<s",
-        compactTableName);
+    HiveConf conf = new HiveConf(context.getConf());
+    String partSpec = context.getCompactionInfo().partName;
+    String compactionQuery;
 
-    SessionState sessionState = setupQueryCompactionSession(context.getConf(),
-        context.getCompactionInfo(), tblProperties);
-    HiveConf.setVar(context.getConf(), ConfVars.REWRITE_POLICY, RewritePolicy.ALL_PARTITIONS.name());
+    if (partSpec == null) {
+      HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.ALL_PARTITIONS.name());
+      compactionQuery = String.format("insert overwrite table %s select * from %<s", compactTableName);
+    } else {
+      org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
+          context.getTable().getTableName());
+      Map<String, String> partSpecMap = new LinkedHashMap<>();
+      Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
+
+      List<FieldSchema> partitionKeys = table.getStorageHandler().getPartitionKeys(table);
+      List<String> partValues = partitionKeys.stream().map(
+          fs -> String.join("=", HiveUtils.unparseIdentifier(fs.getName()),
+              TypeInfoUtils.convertStringToLiteralForSQL(partSpecMap.get(fs.getName()),
+                  ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(fs.getType())).getPrimitiveCategory())
+          )
+      ).collect(Collectors.toList());
+
+      String queryFields = table.getCols().stream()
+          .map(FieldSchema::getName)
+          .filter(col -> !partSpecMap.containsKey(col))
+          .collect(Collectors.joining(","));
+
+      compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) select %4$s from %1$s where %3$s",
+          compactTableName,
+          StringUtils.join(partValues, ","),
+          StringUtils.join(partValues, " and "),
+          queryFields);
+    }
+
+    SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);
+    String compactionTarget = "table " + HiveUtils.unparseIdentifier(compactTableName) +
+        (partSpec != null ? ", partition " + HiveUtils.unparseIdentifier(partSpec) : "");
+
     try {
-      DriverUtils.runOnDriver(context.getConf(), sessionState, compactionQuery);
-      LOG.info("Completed compaction for table {}", compactTableName);
+      DriverUtils.runOnDriver(conf, sessionState, compactionQuery);
+      LOG.info("Completed compaction for {}", compactionTarget);
+      return true;
     } catch (HiveException e) {
-      LOG.error("Error doing query based {} compaction", RewritePolicy.ALL_PARTITIONS.name(), e);
-      throw new RuntimeException(e);
+      LOG.error("Failed compacting {}", compactionTarget, e);
+      throw e;
     } finally {
       sessionState.setCompaction(false);
     }
-
-    return true;
   }
 }

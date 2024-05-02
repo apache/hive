@@ -336,7 +336,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	#Masked#               
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -446,7 +446,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	#Masked#               
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
