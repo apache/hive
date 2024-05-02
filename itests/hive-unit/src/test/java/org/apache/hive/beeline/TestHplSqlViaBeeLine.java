@@ -986,6 +986,27 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 0 got 1.", OutStream.ERR);
   }
 
+  @Test
+  public void testHiveVariableInHplsql() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "DECLARE hivedb_tbl string;\n" +
+            "BEGIN\n" +
+            "SELECT hivedb || '.' || hivetbl into hivedb_tbl;\n" +
+            "INSERT INTO result VALUES(hivedb_tbl);\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;" ;
+    List<String> args = new ArrayList<>(args());
+    args.add("--hivevar");
+    args.add("hivedb=sys");
+    args.add("--hivevar");
+    args.add("hivetbl=tbls");
+    testScriptFile(SCRIPT_TEXT, args, "sys.tbls");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
