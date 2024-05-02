@@ -255,7 +255,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       LOG.info(HADOOP_PROXY_USER + " is set. Using delegation "
           + "token for HiveMetaStore connection.");
       try {
-        UserGroupInformation.getLoginUser().getRealUser().doAs(
+        UserGroupInformation.getRealUserOrSelf(UserGroupInformation.getLoginUser()).doAs(
             new PrivilegedExceptionAction<Void>() {
               @Override
               public Void run() throws Exception {
