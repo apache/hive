@@ -20,6 +20,8 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
@@ -37,6 +39,18 @@ public final class HiveSearchExpandRule extends RelRule<RelRule.Config> {
   private HiveSearchExpandRule(Config config) {
     super(config);
   }
+
+  public static final RelOptRule FILTER_SEARCH_EXPAND =
+      new HiveSearchExpandRule
+          .HiveSearchExpandRuleConfig()
+          .withOperandSupplier(o -> o.operand(Filter.class).anyInputs())
+          .toRule();
+
+  public static final RelOptRule PROJECT_SEARCH_EXPAND =
+      new HiveSearchExpandRule
+          .HiveSearchExpandRuleConfig()
+          .withOperandSupplier(o -> o.operand(Project.class).anyInputs())
+          .toRule();
 
   @Override
   public boolean matches(final RelOptRuleCall call) {

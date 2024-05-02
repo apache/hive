@@ -1851,10 +1851,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         rules.add(HiveReduceExpressionsWithStatsRule.INSTANCE);
       }
       rules.add(HiveProjectFilterPullUpConstantsRule.INSTANCE);
-      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-          o -> o.operand(Filter.class).anyInputs()).toRule());
-      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-          o -> o.operand(Project.class).anyInputs()).toRule());
+      rules.add(HiveSearchExpandRule.FILTER_SEARCH_EXPAND);
+      rules.add(HiveSearchExpandRule.PROJECT_SEARCH_EXPAND);
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
@@ -1976,10 +1974,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode applySearchExpandAndPointLookupOptimization(RelNode basePlan, RelMetadataProvider mdProvider,
                                                                 RexExecutor executorProvider, int minNumORClauses) {
       List<RelOptRule> rules = Lists.newArrayList();
-      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-          o -> o.operand(Filter.class).anyInputs()).toRule());
-      rules.add(new HiveSearchExpandRule.HiveSearchExpandRuleConfig().withOperandSupplier(
-          o -> o.operand(Project.class).anyInputs()).toRule());
+      rules.add(HiveSearchExpandRule.FILTER_SEARCH_EXPAND);
+      rules.add(HiveSearchExpandRule.PROJECT_SEARCH_EXPAND);
 
       if (conf.getBoolVar(ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
@@ -2433,6 +2429,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           programBuilder.addRuleInstance(r);
         }
       }
+    }
+
+    protected void generatePartialProgramWithSearchExpand(HepProgramBuilder programBuilder) {
+      generatePartialProgram(programBuilder, false, HepMatchOrder.DEPTH_FIRST,
+          HiveSearchExpandRule.FILTER_SEARCH_EXPAND,
+          HiveSearchExpandRule.PROJECT_SEARCH_EXPAND);
     }
 
     protected RelNode executeProgram(RelNode basePlan, HepProgram program,
