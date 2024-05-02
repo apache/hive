@@ -103,6 +103,7 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
   boolean isStoredAsSubDirectories = false;
+  private List<String> withColList;
   private boolean replaceMode = false;
   private ReplicationSpec replicationSpec = null;
   private boolean isCTAS = false;
@@ -650,6 +651,20 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
    */
   public void setMaterialization(boolean isMaterialization) {
     this.isMaterialization = isMaterialization;
+  }
+
+  /**
+   * @return the with-column-list of this CTE
+   */
+  public List<String> getWithColList() {
+    return withColList;
+  }
+
+  /**
+   * @param withColList the column list
+   */
+  public void setWithColList(List<String> withColList) {
+    this.withColList = withColList;
   }
 
   /**

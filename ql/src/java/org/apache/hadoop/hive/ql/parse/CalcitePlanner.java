@@ -1048,6 +1048,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     createTable.addChild(tableName);
     createTable.addChild(temporary);
+    if (cte.withColList != null) {
+      createTable.addChild(cte.withColList);
+    }
     createTable.addChild(cte.cteNode);
 
     CalcitePlanner analyzer = new CalcitePlanner(queryState);
