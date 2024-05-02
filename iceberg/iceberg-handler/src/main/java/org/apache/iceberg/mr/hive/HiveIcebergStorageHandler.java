@@ -989,7 +989,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       case CREATE_BRANCH:
         AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createBranchSpec =
             (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
-        IcebergBranchExec.createBranch(icebergTable, createBranchSpec);
+        IcebergSnapshotRefExec.createBranch(icebergTable, createBranchSpec);
         break;
       case CREATE_TAG:
         Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() -> new UnsupportedOperationException(
@@ -998,27 +998,31 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
                 hmsTable.getTableName())));
         AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec =
             (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
-        IcebergTagExec.createTag(icebergTable, createTagSpec);
+        IcebergSnapshotRefExec.createTag(icebergTable, createTagSpec);
         break;
       case DROP_BRANCH:
         AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec =
             (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
-        IcebergBranchExec.dropBranch(icebergTable, dropBranchSpec);
+        IcebergSnapshotRefExec.dropBranch(icebergTable, dropBranchSpec);
         break;
       case RENAME_BRANCH:
         AlterTableSnapshotRefSpec.RenameSnapshotrefSpec renameSnapshotrefSpec =
             (AlterTableSnapshotRefSpec.RenameSnapshotrefSpec) alterTableSnapshotRefSpec.getOperationParams();
-        IcebergBranchExec.renameBranch(icebergTable, renameSnapshotrefSpec);
+        IcebergSnapshotRefExec.renameBranch(icebergTable, renameSnapshotrefSpec);
         break;
-      case REPLACE_BRANCH:
+      case REPLACE_SNAPSHOTREF:
         AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec replaceSnapshotrefSpec =
             (AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec) alterTableSnapshotRefSpec.getOperationParams();
-        IcebergBranchExec.replaceBranch(icebergTable, replaceSnapshotrefSpec);
+        if (replaceSnapshotrefSpec.isReplaceBranch()) {
+          IcebergSnapshotRefExec.replaceBranch(icebergTable, replaceSnapshotrefSpec);
+        } else {
+          IcebergSnapshotRefExec.replaceTag(icebergTable, replaceSnapshotrefSpec);
+        }
         break;
       case DROP_TAG:
         AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec =
             (AlterTableSnapshotRefSpec.DropSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
-        IcebergTagExec.dropTag(icebergTable, dropTagSpec);
+        IcebergSnapshotRefExec.dropTag(icebergTable, dropTagSpec);
         break;
       default:
         throw new UnsupportedOperationException(String.format(
