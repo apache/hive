@@ -1012,6 +1012,28 @@
             </goals>
           </execution>
           <execution>
+            <!-- Restoring Hive exec core jar: HIVE-26220. The core jar is being used by Spark, oozie and trino
+            projects as a result we will need to restore this to prevent downstream projects from breaking.
+            This 'execution' will produce a hive-exec-$version-core.jar which has
+            all classes from ql module, i.e. the same contents as hive-exec-$version.jar would
+            have had if there was shade plugin below.  The way shade was configured since 0.13, is
+            to override the default jar for ql module with the saded one but keep the same name.
+            In other words, ql modules producesd a single uber jar under the module's coordinates,
+            i.e. w/o a classifier.  We also need a slim jar that only has classes from ql.  This
+            jar will now be with a 'core' classifier to ensure that prior behavior is preserved.
+            It would have been better to have a slim jar called hive-exec-$version.jar and a fat
+            jar called hive-exec-$version-shaded.jar but doing this now will cause backwards compat.
+            issues-->
+            <id>core-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>core</classifier>
+            </configuration>
+          </execution>
+          <execution>
             <id>fallbackauthorizer-jar</id>
             <phase>package</phase>
             <goals>
