@@ -2354,6 +2354,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
 
+      generatePartialProgramWithSearchExpand(program);
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
