@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -56,7 +57,9 @@ public class HivePartitionPruneRule extends RelOptRule {
     RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
 
     // Execute partition pruning
-    RexNode predicate = filter.getCondition();
+    RexNode predicate = RexUtil.expandSearch(
+        filter.getCluster().getRexBuilder(), null, filter.getCondition()
+    );
     Pair<RexNode, RexNode> predicates = PartitionPrune
         .extractPartitionPredicates(filter.getCluster(), hiveTableCopy, predicate);
     RexNode partColExpr = predicates.left;
