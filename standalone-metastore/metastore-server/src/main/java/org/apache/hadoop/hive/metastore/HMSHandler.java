@@ -7227,10 +7227,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       authorizeTableForPartitionMetadata(catName, dbName, tblName);
       if (needCheckPartitionLimit(args.getMax())) {
         // Since partition limit is configured, we need fetch at most (limit + 1) partition names
+        int requestMax = args.getMax();
         int max = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST) + 1;
         args = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).max(max).build();
         List<String> partNames = rs.listPartitionNamesByFilter(catName, dbName, tblName, args);
-        checkLimitNumberOfPartitions(tblName, partNames.size(), args.getMax());
+        checkLimitNumberOfPartitions(tblName, partNames.size(), requestMax);
         ret = rs.getPartitionsByNames(catName, dbName, tblName,
             new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
       } else {
