@@ -860,6 +860,12 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
 
+      if (literal.getType().isStruct()) {
+        return rexBuilder
+            .makeCall(SqlStdOperatorTable.ROW, (List<? extends RexNode>) literal.getValue())
+            .accept(this);
+      }
+
       if (RexUtil.isNull(literal) && literal.getType().getSqlTypeName() != SqlTypeName.NULL
           && rexBuilder != null) {
         // It is NULL value with different type, we need to introduce a CAST
