@@ -214,10 +214,6 @@ public class HadoopInputFile implements InputFile, NativelyEncryptedFile {
     return lazyStat();
   }
 
-  public void setStat(FileStatus stat) {
-    this.stat = stat;
-  }
-
   public Path getPath() {
     return path;
   }
