@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -78,6 +77,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
@@ -1076,16 +1076,39 @@ public class ASTConverter {
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
       case SEARCH:
-        ASTNode astNode = searchOperandToAST(call.getOperands().get(0));
+        ASTNode astNode = call.getOperands().get(0).accept(this);
         astNodeLst.add(astNode);
         RexLiteral literal = (RexLiteral)call.operands.get(1);
         Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+
+        // convert Sarg to IN when they are points.
         if (sarg.isPoints()) {
           for (Range<?> range : sarg.rangeSet.asRanges()) {
             astNodeLst.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
                     range.lowerEndpoint(), literal.getType(), true, true)));
           }
           return SqlFunctionConverter.buildAST(HiveIn.INSTANCE, astNodeLst, call.getType());
+          
+          // convert Sarg to BETWEEN when they are
+          // bounded range
+        } else if (isSargBetween(sarg)) {
+          Range<?> range = sarg.rangeSet.asRanges().iterator().next();
+          RexLiteral lower = (RexLiteral) rexBuilder.makeLiteral(
+              range.lowerEndpoint(), literal.getType(), true, true
+          );
+          RexLiteral upper = (RexLiteral) rexBuilder.makeLiteral(
+              range.upperEndpoint(), literal.getType(), true, true
+          );
+
+          return visitCall(
+              (RexCall) rexBuilder.makeCall(
+                  HiveBetween.INSTANCE,
+                  rexBuilder.makeLiteral(false),
+                  call.getOperands().get(0),
+                  lower,
+                  upper
+              )
+          );
         } else {
           return visitCall((RexCall) call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)));
         }
@@ -1112,16 +1135,16 @@ public class ASTConverter {
       }
     }
 
-    private ASTNode searchOperandToAST(RexNode operand) {
-      //handle CAST
-      if (operand instanceof RexCall && operand.getKind() == SqlKind.CAST) {
-        RexNode operand0 = ((RexCall) operand).getOperands().get(0);
-        if (operand0 instanceof RexInputRef) {
-          return operand0.accept(this);
-        }
+    private boolean isSargBetween(Sarg<?> sarg) {
+      if (sarg.rangeSet.asRanges().size() != 1) {
+        return false;
       }
 
-      return operand.accept(this);
+      Range<?> range = sarg.rangeSet.asRanges().iterator().next();
+
+      return range.hasLowerBound()
+          && range.hasUpperBound()
+          && !range.lowerEndpoint().equals(range.upperEndpoint());
     }
 
     @Override
