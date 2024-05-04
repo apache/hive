@@ -860,7 +860,7 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
 
-      if (literal.getType().isStruct()) {
+      if (!RexUtil.isNull(literal) && literal.getType().isStruct()) {
         return rexBuilder
             .makeCall(SqlStdOperatorTable.ROW, (List<? extends RexNode>) literal.getValue())
             .accept(this);
