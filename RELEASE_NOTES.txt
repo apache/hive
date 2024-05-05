@@ -1,16 +1,39 @@
-Release Notes - Hive - Version 2.3.9
+Release Notes - Hive - Version 2.3.10
 
 
 
 ** Bug
-    * [HIVE-17155] - findConfFile() in HiveConf.java has some issues with the conf path
-    * [HIVE-24797] - Disable validate default values when parsing Avro schemas
-    * [HIVE-24608] - Switch back to get_table in HMS client for Hive 2.3.x
-    * [HIVE-21200] - Vectorization: date column throwing java.lang.UnsupportedOperationException for parquet
+    * [HIVE-20016] - Investigate TestJdbcWithMiniHS2.testParallelCompilation3 random failure
+    * [HIVE-28121] - Use direct SQL for transactional altering table parameter
+    * [HIVE-7145]  - Remove dependence on apache commons-lang
+    * [HIVE-25054] - Upgrade jodd-core due to CVE-2018-21234
+    * [HIVE-27468] - Restore original license in PriorityBlockingDeque
+    * [HIVE-27467] - NOTICE files use incorrect wording "developed by" instead of "developed at"
+    * [HIVE-26522] - Test for HIVE-22033 and backport to 3.1 and 2.3
+    * [HIVE-26434] - HMS thrift method recv_get_table_objects_by_name exception list is broken
 
 ** Improvement
-    * [HIVE-21563] - Improve Table#getEmptyTable performance by disabling registerAllFunctionsOnce
-    * [HIVE-19228] - Remove commons-httpclient 3.x usage
+    * [HIVE-25665] - Checkstyle LGPL files must not be in the release sources/binaries
+    * [HIVE-27478] - Remove re2j, SQLLine, ClassNameCompleter entries from LICENSE file
+    * [HIVE-28104] - Move HTTP related methods from Utils to HttpUtils in shims
+    * [HIVE-27172] - Add the HMS client connection timeout config
+    * [HIVE-18586] - Upgrade Derby to 10.14.1.0
+    * [HIVE-27817] - Disable ssl hostname verification for 127.0.0.1
+    * [HIVE-26173] - Upgrade derby to 10.14.2.0
+    * [HIVE-27868] - Backport a subset of HIVE-18755 to branch-2.3 to support reading from catalog in HMS 3+
+    * [HIVE-27815] - Support collect numModifiedRows
+    * [HIVE-27580] - Backport HIVE-20071: Migrate to jackson 2.x and prevent usage
+    * [HIVE-27560] - Enhancing compatibility with Guava
+    * [HIVE-27581] - Backport jackson upgrade related patch to branch-2.3
+    * [HIVE-27579] - Backport HIVE-18433: Upgrade version of com.fasterxml.jackson
+    * [HIVE-25996] - Backport HIVE-25098
+    * [HIVE-27518] - 2.3 - Upgrade log4j2 from 2.17.0 to 2.17.2
+    * [HIVE-25173] - Fix build failure of hive-pre-upgrade due to missing dependency on pentaho-aggdesigner-algorithm
+    * [HIVE-26880] - Upgrade Apache Directory Server to 1.5.7 for release 3.2
+    * [HIVE-26882] - Allow transactional check of Table parameter before altering the Table
+    * [HIVE-25824] - Upgrade branch-2.3 to log4j 2.17.0
+    * [HIVE-25616] - Backport HIVE-24741 to Hive 2.3
+    * [HIVE-25500] - Switch back to alter_partition(s) in HMS client for Hive 2.3.x
 
 ** Test
-    * [HIVE-18147] - Tests can fail with java.net.BindException: Address already in use
+    * [HIVE-26890] - Disable TestSSL#testConnectionWrongCertCN (Done as part of HIVE-22621 in master)
