@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
@@ -1143,7 +1144,9 @@ public class ASTConverter {
       Range<?> range = sarg.rangeSet.asRanges().iterator().next();
 
       return range.hasLowerBound()
+          && range.lowerBoundType() == BoundType.CLOSED
           && range.hasUpperBound()
+          && range.upperBoundType() == BoundType.CLOSED
           && !range.lowerEndpoint().equals(range.upperEndpoint());
     }
 
