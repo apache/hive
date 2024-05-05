@@ -1273,7 +1273,8 @@ public class TestHBaseSerDe {
 
     try {
       // MiniDFSCluster litters files and folders all over the place.
-      miniDfs = new MiniDFSCluster(new Configuration(), 1, true, null);
+      miniDfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).
+          format(true).racks(null).build();
 
       miniDfs.getFileSystem().mkdirs(new Path("/path/to/schema"));
       FSDataOutputStream out = miniDfs.getFileSystem().create(

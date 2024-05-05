@@ -65,7 +65,8 @@ public class MiniCluster {
       if(System.getProperty("hadoop.log.dir") == null) {
         System.setProperty("hadoop.log.dir", "target/tmp/logs/");
       }
-      m_dfs = new MiniDFSCluster(config, dataNodes, true, null);
+      m_dfs = new MiniDFSCluster.Builder(config).numDataNodes(dataNodes).format(true)
+          .racks(null).build();
 
       m_fileSys = m_dfs.getFileSystem();
       m_mr = new MiniMRCluster(taskTrackers, m_fileSys.getUri().toString(), 1);

@@ -92,7 +92,8 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
       // Initialize second mocked filesystem (implement only necessary stuff)
       // Physical files are resides in local file system in the similar location
       jobConf = new HiveConf(conf);
-      miniDfs = new MiniDFSCluster(new Configuration(), 1, true, null);
+      miniDfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true)
+          .racks(null).build();
       fs2 = miniDfs.getFileSystem();
       try {
         fs2.delete(tmppathFs2, true);
