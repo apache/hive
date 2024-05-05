@@ -1,0 +1,411 @@
+PREHOOK: query: CREATE TABLE test (c_numeric STRING, c_non_numeric STRING, c_mix STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test (c_numeric STRING, c_non_numeric STRING, c_mix STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: INSERT INTO test VALUES
+  ('1', 'val1', '1'),
+  ('3', 'val3', 'val3'),
+  ('101', 'val101', '101'),
+  ('-51', 'val-51', '-51'),
+  ('32', 'val32', 'val32'),
+  ('0', 'val0', '0'),
+  ('87', 'val87', '87'),
+  ('55', 'val55', '55')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES
+  ('1', 'val1', '1'),
+  ('3', 'val3', 'val3'),
+  ('101', 'val101', '101'),
+  ('-51', 'val-51', '-51'),
+  ('32', 'val32', 'val32'),
+  ('0', 'val0', '0'),
+  ('87', 'val87', '87'),
+  ('55', 'val55', '55')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.c_mix SCRIPT []
+POSTHOOK: Lineage: test.c_non_numeric SCRIPT []
+POSTHOOK: Lineage: test.c_numeric SCRIPT []
+PREHOOK: query: EXPLAIN CBO
+SELECT
+  ROUND(`$SUM0`(c_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_non_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_mix), 3),
+  ROUND(`$SUM0`(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(AVG(c_numeric), 3),
+  ROUND(AVG(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_non_numeric), 3),
+  ROUND(AVG(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_mix), 3),
+  ROUND(AVG(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_POP(c_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_non_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_mix), 3),
+  ROUND(STDDEV_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_SAMP(c_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_non_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_mix), 3),
+  ROUND(STDDEV_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_POP(c_numeric), 3),
+  ROUND(VAR_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_non_numeric), 3),
+  ROUND(VAR_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_mix), 3),
+  ROUND(VAR_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_SAMP(c_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_non_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_mix), 3),
+  ROUND(VAR_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  -- SUM and COUNT are not converted but used in the transformations
+  ROUND(SUM(c_numeric), 3),
+  ROUND(SUM(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_non_numeric), 3),
+  ROUND(SUM(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_mix), 3),
+  ROUND(SUM(CAST(c_mix AS DOUBLE)), 3),
+
+  COUNT(c_numeric),
+  COUNT(CAST(c_numeric AS DOUBLE)),
+  COUNT(c_non_numeric),
+  COUNT(CAST(c_non_numeric AS DOUBLE)),
+  COUNT(c_mix),
+  COUNT(CAST(c_mix AS DOUBLE))
+FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT
+  ROUND(`$SUM0`(c_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_non_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_mix), 3),
+  ROUND(`$SUM0`(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(AVG(c_numeric), 3),
+  ROUND(AVG(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_non_numeric), 3),
+  ROUND(AVG(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_mix), 3),
+  ROUND(AVG(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_POP(c_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_non_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_mix), 3),
+  ROUND(STDDEV_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_SAMP(c_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_non_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_mix), 3),
+  ROUND(STDDEV_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_POP(c_numeric), 3),
+  ROUND(VAR_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_non_numeric), 3),
+  ROUND(VAR_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_mix), 3),
+  ROUND(VAR_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_SAMP(c_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_non_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_mix), 3),
+  ROUND(VAR_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  -- SUM and COUNT are not converted but used in the transformations
+  ROUND(SUM(c_numeric), 3),
+  ROUND(SUM(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_non_numeric), 3),
+  ROUND(SUM(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_mix), 3),
+  ROUND(SUM(CAST(c_mix AS DOUBLE)), 3),
+
+  COUNT(c_numeric),
+  COUNT(CAST(c_numeric AS DOUBLE)),
+  COUNT(c_non_numeric),
+  COUNT(CAST(c_non_numeric AS DOUBLE)),
+  COUNT(c_mix),
+  COUNT(CAST(c_mix AS DOUBLE))
+FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[round($0, 3)], _o__c1=[round($1, 3)], _o__c2=[round($2, 3)], _o__c3=[round($3, 3)], _o__c4=[round($4, 3)], _o__c5=[round($5, 3)], _o__c6=[round(/($6, $7), 3)], _o__c7=[round(/($8, $9), 3)], _o__c8=[round(/($10, $11), 3)], _o__c9=[round(/($12, $13), 3)], _o__c10=[round(/($14, $15), 3)], _o__c11=[round(/($16, $17), 3)], _o__c12=[round(POWER(/(-($18, /(*($19, $19), $7)), $7), 0.5:DECIMAL(2, 1)), 3)], _o__c13=[round(POWER(/(-($20, /(*($8, $8), $9)), $9), 0.5:DECIMAL(2, 1)), 3)], _o__c14=[round(POWER(/(-($21, /(*($22, $22), $11)), $11), 0.5:DECIMAL(2, 1)), 3)], _o__c15=[round(POWER(/(-($23, /(*($12, $12), $13)), $13), 0.5:DECIMAL(2, 1)), 3)], _o__c16=[round(POWER(/(-($24, /(*($25, $25), $15)), $15), 0.5:DECIMAL(2, 1)), 3)], _o__c17=[round(POWER(/(-($26, /(*($16, $16), $17)), $17), 0.5:DECIMAL(2, 1)), 3)], _o__c18=[round(POWER(/(-($18, /(*($19, $19), $7)), CASE(=($7, 1), null:BIGINT, -($7, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c19=[round(POWER(/(-($20, /(*($8, $8), $9)), CASE(=($9, 1), null:BIGINT, -($9, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c20=[round(POWER(/(-($21, /(*($22, $22), $11)), CASE(=($11, 1), null:BIGINT, -($11, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c21=[round(POWER(/(-($23, /(*($12, $12), $13)), CASE(=($13, 1), null:BIGINT, -($13, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c22=[round(POWER(/(-($24, /(*($25, $25), $15)), CASE(=($15, 1), null:BIGINT, -($15, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c23=[round(POWER(/(-($26, /(*($16, $16), $17)), CASE(=($17, 1), null:BIGINT, -($17, 1))), 0.5:DECIMAL(2, 1)), 3)], _o__c24=[round(/(-($18, /(*($19, $19), $7)), $7), 3)], _o__c25=[round(/(-($20, /(*($8, $8), $9)), $9), 3)], _o__c26=[round(/(-($21, /(*($22, $22), $11)), $11), 3)], _o__c27=[round(/(-($23, /(*($12, $12), $13)), $13), 3)], _o__c28=[round(/(-($24, /(*($25, $25), $15)), $15), 3)], _o__c29=[round(/(-($26, /(*($16, $16), $17)), $17), 3)], _o__c30=[round(/(-($18, /(*($19, $19), $7)), CASE(=($7, 1), null:BIGINT, -($7, 1))), 3)], _o__c31=[round(/(-($20, /(*($8, $8), $9)), CASE(=($9, 1), null:BIGINT, -($9, 1))), 3)], _o__c32=[round(/(-($21, /(*($22, $22), $11)), CASE(=($11, 1), null:BIGINT, -($11, 1))), 3)], _o__c33=[round(/(-($23, /(*($12, $12), $13)), CASE(=($13, 1), null:BIGINT, -($13, 1))), 3)], _o__c34=[round(/(-($24, /(*($25, $25), $15)), CASE(=($15, 1), null:BIGINT, -($15, 1))), 3)], _o__c35=[round(/(-($26, /(*($16, $16), $17)), CASE(=($17, 1), null:BIGINT, -($17, 1))), 3)], _o__c36=[round($6, 3)], _o__c37=[round($8, 3)], _o__c38=[round($10, 3)], _o__c39=[round($12, 3)], _o__c40=[round($14, 3)], _o__c41=[round($16, 3)], _o__c42=[$7], _o__c43=[$9], _o__c44=[$11], _o__c45=[$13], _o__c46=[$15], _o__c47=[$17])
+  HiveAggregate(group=[{}], agg#0=[$SUM0($0)], agg#1=[$SUM0($1)], agg#2=[$SUM0($2)], agg#3=[$SUM0($3)], agg#4=[$SUM0($4)], agg#5=[$SUM0($5)], agg#6=[sum($0)], agg#7=[count($0)], agg#8=[sum($1)], agg#9=[count($1)], agg#10=[sum($2)], agg#11=[count($2)], agg#12=[sum($3)], agg#13=[count($3)], agg#14=[sum($4)], agg#15=[count($4)], agg#16=[sum($5)], agg#17=[count($5)], agg#18=[sum($7)], agg#19=[sum($6)], agg#20=[sum($8)], agg#21=[sum($10)], agg#22=[sum($9)], agg#23=[sum($11)], agg#24=[sum($13)], agg#25=[sum($12)], agg#26=[sum($14)])
+    HiveProject($f0=[$0], $f1=[CAST($0):DOUBLE], $f2=[$1], $f3=[CAST($1):DOUBLE], $f4=[$2], $f5=[CAST($2):DOUBLE], $f00=[CAST($0):DOUBLE], $f7=[*(CAST($0):DOUBLE, CAST($0):DOUBLE)], $f8=[*(CAST($0):DOUBLE, CAST($0):DOUBLE)], $f20=[CAST($1):DOUBLE], $f10=[*(CAST($1):DOUBLE, CAST($1):DOUBLE)], $f11=[*(CAST($1):DOUBLE, CAST($1):DOUBLE)], $f40=[CAST($2):DOUBLE], $f13=[*(CAST($2):DOUBLE, CAST($2):DOUBLE)], $f14=[*(CAST($2):DOUBLE, CAST($2):DOUBLE)])
+      HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: SELECT
+  ROUND(`$SUM0`(c_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_non_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_mix), 3),
+  ROUND(`$SUM0`(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(AVG(c_numeric), 3),
+  ROUND(AVG(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_non_numeric), 3),
+  ROUND(AVG(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_mix), 3),
+  ROUND(AVG(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_POP(c_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_non_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_mix), 3),
+  ROUND(STDDEV_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_SAMP(c_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_non_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_mix), 3),
+  ROUND(STDDEV_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_POP(c_numeric), 3),
+  ROUND(VAR_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_non_numeric), 3),
+  ROUND(VAR_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_mix), 3),
+  ROUND(VAR_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_SAMP(c_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_non_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_mix), 3),
+  ROUND(VAR_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  -- SUM and COUNT are not converted but used in the transformations
+  ROUND(SUM(c_numeric), 3),
+  ROUND(SUM(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_non_numeric), 3),
+  ROUND(SUM(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_mix), 3),
+  ROUND(SUM(CAST(c_mix AS DOUBLE)), 3),
+
+  COUNT(c_numeric),
+  COUNT(CAST(c_numeric AS DOUBLE)),
+  COUNT(c_non_numeric),
+  COUNT(CAST(c_non_numeric AS DOUBLE)),
+  COUNT(c_mix),
+  COUNT(CAST(c_mix AS DOUBLE))
+FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  ROUND(`$SUM0`(c_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_non_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_mix), 3),
+  ROUND(`$SUM0`(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(AVG(c_numeric), 3),
+  ROUND(AVG(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_non_numeric), 3),
+  ROUND(AVG(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_mix), 3),
+  ROUND(AVG(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_POP(c_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_non_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_mix), 3),
+  ROUND(STDDEV_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_SAMP(c_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_non_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_mix), 3),
+  ROUND(STDDEV_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_POP(c_numeric), 3),
+  ROUND(VAR_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_non_numeric), 3),
+  ROUND(VAR_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_mix), 3),
+  ROUND(VAR_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_SAMP(c_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_non_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_mix), 3),
+  ROUND(VAR_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  -- SUM and COUNT are not converted but used in the transformations
+  ROUND(SUM(c_numeric), 3),
+  ROUND(SUM(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_non_numeric), 3),
+  ROUND(SUM(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_mix), 3),
+  ROUND(SUM(CAST(c_mix AS DOUBLE)), 3),
+
+  COUNT(c_numeric),
+  COUNT(CAST(c_numeric AS DOUBLE)),
+  COUNT(c_non_numeric),
+  COUNT(CAST(c_non_numeric AS DOUBLE)),
+  COUNT(c_mix),
+  COUNT(CAST(c_mix AS DOUBLE))
+FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+228.0	228.0	0.0	0.0	193.0	193.0	28.5	28.5	0.0	NULL	24.125	32.167	47.344	47.344	NULL	NULL	48.401	53.524	50.613	50.613	NULL	NULL	51.742	58.632	2241.5	2241.5	NULL	NULL	2342.609	2864.806	2561.714	2561.714	NULL	NULL	2677.268	3437.767	228.0	228.0	0.0	NULL	193.0	193.0	8	8	8	0	8	6
+PREHOOK: query: SELECT
+  ROUND(`$SUM0`(c_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_non_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_mix), 3),
+  ROUND(`$SUM0`(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(AVG(c_numeric), 3),
+  ROUND(AVG(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_non_numeric), 3),
+  ROUND(AVG(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_mix), 3),
+  ROUND(AVG(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_POP(c_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_non_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_mix), 3),
+  ROUND(STDDEV_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_SAMP(c_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_non_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_mix), 3),
+  ROUND(STDDEV_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_POP(c_numeric), 3),
+  ROUND(VAR_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_non_numeric), 3),
+  ROUND(VAR_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_mix), 3),
+  ROUND(VAR_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_SAMP(c_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_non_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_mix), 3),
+  ROUND(VAR_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  -- SUM and COUNT are not converted but used in the transformations
+  ROUND(SUM(c_numeric), 3),
+  ROUND(SUM(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_non_numeric), 3),
+  ROUND(SUM(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_mix), 3),
+  ROUND(SUM(CAST(c_mix AS DOUBLE)), 3),
+
+  COUNT(c_numeric),
+  COUNT(CAST(c_numeric AS DOUBLE)),
+  COUNT(c_non_numeric),
+  COUNT(CAST(c_non_numeric AS DOUBLE)),
+  COUNT(c_mix),
+  COUNT(CAST(c_mix AS DOUBLE))
+FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  ROUND(`$SUM0`(c_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_non_numeric), 3),
+  ROUND(`$SUM0`(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(`$SUM0`(c_mix), 3),
+  ROUND(`$SUM0`(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(AVG(c_numeric), 3),
+  ROUND(AVG(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_non_numeric), 3),
+  ROUND(AVG(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(AVG(c_mix), 3),
+  ROUND(AVG(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_POP(c_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_non_numeric), 3),
+  ROUND(STDDEV_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_POP(c_mix), 3),
+  ROUND(STDDEV_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(STDDEV_SAMP(c_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_non_numeric), 3),
+  ROUND(STDDEV_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(STDDEV_SAMP(c_mix), 3),
+  ROUND(STDDEV_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_POP(c_numeric), 3),
+  ROUND(VAR_POP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_non_numeric), 3),
+  ROUND(VAR_POP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_POP(c_mix), 3),
+  ROUND(VAR_POP(CAST(c_mix AS DOUBLE)), 3),
+
+  ROUND(VAR_SAMP(c_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_non_numeric), 3),
+  ROUND(VAR_SAMP(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(VAR_SAMP(c_mix), 3),
+  ROUND(VAR_SAMP(CAST(c_mix AS DOUBLE)), 3),
+
+  -- SUM and COUNT are not converted but used in the transformations
+  ROUND(SUM(c_numeric), 3),
+  ROUND(SUM(CAST(c_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_non_numeric), 3),
+  ROUND(SUM(CAST(c_non_numeric AS DOUBLE)), 3),
+  ROUND(SUM(c_mix), 3),
+  ROUND(SUM(CAST(c_mix AS DOUBLE)), 3),
+
+  COUNT(c_numeric),
+  COUNT(CAST(c_numeric AS DOUBLE)),
+  COUNT(c_non_numeric),
+  COUNT(CAST(c_non_numeric AS DOUBLE)),
+  COUNT(c_mix),
+  COUNT(CAST(c_mix AS DOUBLE))
+FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+228.0	228.0	0.0	0.0	193.0	193.0	28.5	28.5	NULL	NULL	32.167	32.167	47.344	47.344	NULL	NULL	53.524	53.524	50.613	50.613	NULL	NULL	58.632	58.632	2241.5	2241.5	NULL	NULL	2864.806	2864.806	2561.714	2561.714	NULL	NULL	3437.767	3437.767	228.0	228.0	0.0	NULL	193.0	193.0	8	8	8	0	8	6
