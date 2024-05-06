@@ -152,7 +152,7 @@ public class AlterTableSnapshotRefSpec<T> {
 
   public static class ReplaceSnapshotrefSpec {
 
-    private final String sourceBranch;
+    private final String sourceRef;
     private String targetBranch = null;
     private long targetSnapshot;
 
@@ -160,9 +160,10 @@ public class AlterTableSnapshotRefSpec<T> {
     private long maxRefAgeMs = -1;
     private int minSnapshotsToKeep = -1;
     private long maxSnapshotAgeMs = -1;
+    private boolean isReplaceBranch;
 
-    public String getSourceBranchName() {
-      return sourceBranch;
+    public String getSourceRefName() {
+      return sourceRef;
     }
 
     public String getTargetBranchName() {
@@ -177,13 +178,13 @@ public class AlterTableSnapshotRefSpec<T> {
       return targetSnapshot;
     }
 
-    public ReplaceSnapshotrefSpec(String sourceBranch, String targetBranch) {
-      this.sourceBranch = sourceBranch;
+    public ReplaceSnapshotrefSpec(String sourceRef, String targetBranch) {
+      this.sourceRef = sourceRef;
       this.targetBranch = targetBranch;
     }
 
-    public ReplaceSnapshotrefSpec(String sourceBranch, long targetSnapshot) {
-      this.sourceBranch = sourceBranch;
+    public ReplaceSnapshotrefSpec(String sourceRef, long targetSnapshot) {
+      this.sourceRef = sourceRef;
       this.targetSnapshot = targetSnapshot;
       replaceBySnapshot = true;
     }
@@ -218,7 +219,8 @@ public class AlterTableSnapshotRefSpec<T> {
     @Override
     public String toString() {
       MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
-      stringHelper.add("sourceBranch", sourceBranch);
+      stringHelper.add("sourceRef", sourceRef);
+      stringHelper.add("replace", isReplaceBranch ? "Branch" : "Tag");
       if (replaceBySnapshot) {
         stringHelper.add("targetSnapshot", targetSnapshot);
       } else {
@@ -234,6 +236,14 @@ public class AlterTableSnapshotRefSpec<T> {
         stringHelper.add("maxSnapshotAgeMs", maxSnapshotAgeMs);
       }
       return stringHelper.toString();
+    }
+
+    public void setIsReplaceBranch() {
+      this.isReplaceBranch = true;
+    }
+
+    public boolean isReplaceBranch() {
+      return isReplaceBranch;
     }
   }
 }
