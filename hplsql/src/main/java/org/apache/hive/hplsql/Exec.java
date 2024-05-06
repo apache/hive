@@ -1049,10 +1049,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       }
     }
     // if there are any user defined signals then push them back to signals stack to handle them later.
-    if (userDefinedSignals.size() > 0) {
-      for (int i = userDefinedSignals.size() - 1; i >= 0; i--) {
-        exec.signals.push(userDefinedSignals.get(i));
-      }
+    for (int i = userDefinedSignals.size() - 1; i >= 0; i--) {
+      exec.signals.push(userDefinedSignals.get(i));
     }
   } 
   
