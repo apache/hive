@@ -1007,6 +1007,41 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args, "sys.tbls");
   }
 
+  @Test
+  public void testHplSqlContinueConditionHandler() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            " INSERT INTO result VALUES('Continue CONDITION Handler invoked.');\n" +
+            "END;\n" +
+            "DECLARE cnt_condition CONDITION;\n" +
+            "DECLARE CONTINUE HANDLER FOR cnt_condition\n" +
+            " p1();\n" +
+            "IF 1 <> 2 THEN\n" +
+            " SIGNAL cnt_condition;\n" +
+            "END IF;\n" +
+            "SELECT * FROM result;";
+    testScriptFile(SCRIPT_TEXT, args(), "Continue CONDITION Handler invoked.");
+  }
+
+  @Test
+  public void testHplSqlExitConditionHandler() throws Throwable {
+    String SCRIPT_TEXT =
+        "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            " PRINT('Exit CONDITION Handler invoked.');\n" +
+            "END;\n" +
+            "DECLARE cnt_condition CONDITION;\n" +
+            "DECLARE EXIT HANDLER FOR cnt_condition\n" +
+            " p1();\n" +
+            "IF 1 <> 2 THEN\n" +
+            " SIGNAL cnt_condition;\n" +
+            "END IF;";
+    testScriptFile(SCRIPT_TEXT, args(), "Exit CONDITION Handler invoked.", OutStream.ERR);
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
