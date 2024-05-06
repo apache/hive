@@ -137,6 +137,8 @@ public class HplSqlQueryExecutor implements QueryExecutor {
               return type.cast(((Number) current[columnIndex]).shortValue());
           if (type == Byte.class)
               return type.cast(((Number) current[columnIndex]).byteValue());
+          if (type == String.class)
+            return (T) String.valueOf(current[columnIndex]);
         }
         // RowSet can never return the HiveDecimal instances created on Hive side, nor its BigDecimal representation.
         // Instead, it gets converted into String object in ColumnBasedSet.addRow()...
