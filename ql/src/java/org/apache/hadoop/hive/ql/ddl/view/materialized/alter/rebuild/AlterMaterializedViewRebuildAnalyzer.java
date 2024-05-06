@@ -609,10 +609,11 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ASTNode selectNodeInputROJ = new ASTSearcher().simpleBreadthFirstSearch(
             subqueryNodeInputROJ, HiveParser.TOK_SUBQUERY, HiveParser.TOK_QUERY,
             HiveParser.TOK_INSERT, HiveParser.TOK_SELECT);
-    astBuilder.createAcidSortNodes(TableName.getDbTable(
+    astBuilder.appendDeleteSelectNodes(
+        selectNodeInputROJ,
+        TableName.getDbTable(
             materializationNode.getChild(0).getText(),
-            materializationNode.getChild(1).getText()))
-            .forEach(astNode -> ParseDriver.adaptor.addChild(selectNodeInputROJ, astNode));
+            materializationNode.getChild(1).getText()));
     // 4) Transform first INSERT branch into an UPDATE
     // 4.1) Modifying filter condition.
     ASTNode whereClauseInUpdate = findWhereClause(updateInsertNode);

@@ -103,7 +103,7 @@ Table:              	analyze_srcpart_n0
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -139,7 +139,7 @@ Table:              	analyze_srcpart_n0
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -174,7 +174,7 @@ Table:              	analyze_srcpart_n0
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -209,7 +209,7 @@ Table:              	analyze_srcpart_n0
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -249,7 +249,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	23248               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -373,7 +373,7 @@ Table:              	analyze_srcpart_partial
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -409,7 +409,7 @@ Table:              	analyze_srcpart_partial
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -444,7 +444,7 @@ Table:              	analyze_srcpart_partial
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -479,7 +479,7 @@ Table:              	analyze_srcpart_partial
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

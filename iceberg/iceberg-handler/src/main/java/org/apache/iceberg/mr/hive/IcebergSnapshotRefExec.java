@@ -28,11 +28,11 @@ import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IcebergBranchExec {
+public class IcebergSnapshotRefExec {
 
-  private static final Logger LOG = LoggerFactory.getLogger(IcebergBranchExec.class);
+  private static final Logger LOG = LoggerFactory.getLogger(IcebergSnapshotRefExec.class);
 
-  private IcebergBranchExec() {
+  private IcebergSnapshotRefExec() {
   }
 
   /**
@@ -96,5 +96,75 @@ public class IcebergBranchExec {
 
     LOG.info("Renaming branch {} to {} on iceberg table {}", sourceBranch, targetBranch, table.name());
     table.manageSnapshots().renameBranch(sourceBranch, targetBranch).commit();
+  }
+
+  public static void replaceBranch(Table table,
+      AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec replaceSnapshotrefSpec) {
+    String sourceBranch = replaceSnapshotrefSpec.getSourceRefName();
+    ManageSnapshots manageSnapshots;
+    if (replaceSnapshotrefSpec.isReplaceBySnapshot()) {
+      long targetSnapshot = replaceSnapshotrefSpec.getTargetSnapshot();
+      LOG.info("Replacing branch {} with snapshot {} on iceberg table {}", sourceBranch, targetSnapshot, table.name());
+      manageSnapshots = table.manageSnapshots().replaceBranch(sourceBranch, targetSnapshot);
+    } else {
+      String targetBranch = replaceSnapshotrefSpec.getTargetBranchName();
+      LOG.info("Replacing branch {} with branch {} on iceberg table {}", sourceBranch, targetBranch, table.name());
+      manageSnapshots = table.manageSnapshots().replaceBranch(sourceBranch, targetBranch);
+    }
+    setOptionalReplaceParams(replaceSnapshotrefSpec, manageSnapshots, sourceBranch);
+    manageSnapshots.commit();
+  }
+
+  public static void createTag(Table table, AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec) {
+    String tagName = createTagSpec.getRefName();
+    Long snapshotId = null;
+    if (createTagSpec.getSnapshotId() != null) {
+      snapshotId = createTagSpec.getSnapshotId();
+    } else if (createTagSpec.getAsOfTime() != null) {
+      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, createTagSpec.getAsOfTime());
+    } else {
+      snapshotId = table.currentSnapshot().snapshotId();
+    }
+    LOG.info("Creating tag {} on iceberg table {} with snapshotId {}", tagName, table.name(), snapshotId);
+    ManageSnapshots manageSnapshots = table.manageSnapshots();
+    manageSnapshots.createTag(tagName, snapshotId);
+    if (createTagSpec.getMaxRefAgeMs() != null) {
+      manageSnapshots.setMaxRefAgeMs(tagName, createTagSpec.getMaxRefAgeMs());
+    }
+
+    manageSnapshots.commit();
+  }
+
+  public static void dropTag(Table table, AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropTagSpec) {
+    String tagName = dropTagSpec.getRefName();
+    boolean ifExists = dropTagSpec.getIfExists();
+
+    SnapshotRef snapshotRef = table.refs().get(tagName);
+    if (snapshotRef != null || !ifExists) {
+      LOG.info("Dropping tag {} on iceberg table {}", tagName, table.name());
+      table.manageSnapshots().removeTag(tagName).commit();
+    }
+  }
+
+  public static void replaceTag(Table table, AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec replaceTagRefSpec) {
+    String sourceTag = replaceTagRefSpec.getSourceRefName();
+    long targetSnapshot = replaceTagRefSpec.getTargetSnapshot();
+    LOG.info("Replacing tag {} with snapshot {} on iceberg table {}", sourceTag, targetSnapshot, table.name());
+    ManageSnapshots manageSnapshots = table.manageSnapshots().replaceTag(sourceTag, targetSnapshot);
+    setOptionalReplaceParams(replaceTagRefSpec, manageSnapshots, sourceTag);
+    manageSnapshots.commit();
+  }
+
+  static void setOptionalReplaceParams(AlterTableSnapshotRefSpec.ReplaceSnapshotrefSpec replaceSnapshotrefSpec,
+      ManageSnapshots manageSnapshots, String sourceBranch) {
+    if (replaceSnapshotrefSpec.getMaxRefAgeMs() > 0) {
+      manageSnapshots.setMaxRefAgeMs(sourceBranch, replaceSnapshotrefSpec.getMaxRefAgeMs());
+    }
+    if (replaceSnapshotrefSpec.getMaxSnapshotAgeMs() > 0) {
+      manageSnapshots.setMaxSnapshotAgeMs(sourceBranch, replaceSnapshotrefSpec.getMaxSnapshotAgeMs());
+    }
+    if (replaceSnapshotrefSpec.getMinSnapshotsToKeep() > 0) {
+      manageSnapshots.setMinSnapshotsToKeep(sourceBranch, replaceSnapshotrefSpec.getMinSnapshotsToKeep());
+    }
   }
 }

@@ -429,6 +429,16 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testInvalidCreateWithPartitionTransform() {
+    Assume.assumeTrue("Test on hive catalog is enough", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
+                    "STRING) PARTITIONED BY spec(TRUNCATE(2, last_name)) STORED AS ORC");
+    Assertions.assertThatThrownBy(() -> shell.executeStatement(query))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Partition transforms are only supported by Iceberg storage handler");
+  }
+
+  @Test
   public void testCreateDropTable() throws TException, IOException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 

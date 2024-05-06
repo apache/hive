@@ -60,7 +60,7 @@ POSTHOOK: Input: default@smb_bucket_1_n3
 	numRows             	0                   
 	rawDataSize         	0                   
 	serialization.format	1                   
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 # Detailed Table Information	NULL	NULL
 # Storage Information	NULL	NULL

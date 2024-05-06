@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 
 public class AlterTableSnapshotRefSpec<T> {
@@ -145,6 +147,103 @@ public class AlterTableSnapshotRefSpec<T> {
     public String toString() {
       return MoreObjects.toStringHelper(this).add("sourceBranch", sourceBranch).add("targetBranch", targetBranch)
           .toString();
+    }
+  }
+
+  public static class ReplaceSnapshotrefSpec {
+
+    private final String sourceRef;
+    private String targetBranch = null;
+    private long targetSnapshot;
+
+    boolean replaceBySnapshot = false;
+    private long maxRefAgeMs = -1;
+    private int minSnapshotsToKeep = -1;
+    private long maxSnapshotAgeMs = -1;
+    private boolean isReplaceBranch;
+
+    public String getSourceRefName() {
+      return sourceRef;
+    }
+
+    public String getTargetBranchName() {
+      return targetBranch;
+    }
+
+    public boolean isReplaceBySnapshot() {
+      return replaceBySnapshot;
+    }
+
+    public long getTargetSnapshot() {
+      return targetSnapshot;
+    }
+
+    public ReplaceSnapshotrefSpec(String sourceRef, String targetBranch) {
+      this.sourceRef = sourceRef;
+      this.targetBranch = targetBranch;
+    }
+
+    public ReplaceSnapshotrefSpec(String sourceRef, long targetSnapshot) {
+      this.sourceRef = sourceRef;
+      this.targetSnapshot = targetSnapshot;
+      replaceBySnapshot = true;
+    }
+
+    public void setMaxRefAgeMs(long maxRefAgeMs) {
+      Preconditions.checkArgument(maxRefAgeMs > 0);
+      this.maxRefAgeMs = maxRefAgeMs;
+    }
+
+    public void setMinSnapshotsToKeep(int minSnapshotsToKeep) {
+      Preconditions.checkArgument(minSnapshotsToKeep > 0);
+      this.minSnapshotsToKeep = minSnapshotsToKeep;
+    }
+
+    public void setMaxSnapshotAgeMs(long maxSnapshotAgeMs) {
+      Preconditions.checkArgument(maxSnapshotAgeMs > 0);
+      this.maxSnapshotAgeMs = maxSnapshotAgeMs;
+    }
+
+    public long getMaxRefAgeMs() {
+      return maxRefAgeMs;
+    }
+
+    public int getMinSnapshotsToKeep() {
+      return minSnapshotsToKeep;
+    }
+
+    public long getMaxSnapshotAgeMs() {
+      return maxSnapshotAgeMs;
+    }
+
+    @Override
+    public String toString() {
+      MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
+      stringHelper.add("sourceRef", sourceRef);
+      stringHelper.add("replace", isReplaceBranch ? "Branch" : "Tag");
+      if (replaceBySnapshot) {
+        stringHelper.add("targetSnapshot", targetSnapshot);
+      } else {
+        stringHelper.add("targetBranch", targetBranch);
+      }
+      if (maxRefAgeMs != -1) {
+        stringHelper.add("maxRefAgeMs", maxRefAgeMs);
+      }
+      if (minSnapshotsToKeep != -1) {
+        stringHelper.add("minSnapshotsToKeep", minSnapshotsToKeep);
+      }
+      if (maxSnapshotAgeMs != -1) {
+        stringHelper.add("maxSnapshotAgeMs", maxSnapshotAgeMs);
+      }
+      return stringHelper.toString();
+    }
+
+    public void setIsReplaceBranch() {
+      this.isReplaceBranch = true;
+    }
+
+    public boolean isReplaceBranch() {
+      return isReplaceBranch;
     }
   }
 }

@@ -1,4 +1,3 @@
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#/
 -- SORT_QUERY_RESULTS
 
 set hive.mapred.mode=nonstrict;

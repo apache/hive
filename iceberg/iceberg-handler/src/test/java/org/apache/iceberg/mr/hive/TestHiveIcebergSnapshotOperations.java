@@ -32,7 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
 import static org.junit.Assert.assertEquals;
 
-public class TestHiveIcebergCherryPick {
+public class TestHiveIcebergSnapshotOperations {
 
   private TestTables testTables;
   private TestHiveShell shell;
@@ -80,6 +80,40 @@ public class TestHiveIcebergCherryPick {
     shell.executeStatement("ALTER TABLE default.testCherryPick EXECUTE CHERRY-PICK " + id2);
 
     List<Object[]> result = shell.executeStatement("SELECT COUNT(*) FROM " + identifier.name());
+    assertEquals(6L, result.get(0)[0]);
+  }
+
+  @Test
+  public void testReplaceBranchWithSnapshot() {
+    TableIdentifier identifier = TableIdentifier.of("default", "testReplaceBranchWithSnapshot");
+    shell.executeStatement(
+        String.format("CREATE EXTERNAL TABLE %s (id INT) STORED BY iceberg  %s %s",
+            identifier.name(),
+            testTables.locationForCreateTableSQL(identifier),
+            testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(1),(2),(3),(4)", identifier.name()));
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    icebergTable.refresh();
+    // Create a branch
+    shell.executeStatement(String.format("ALTER TABLE %s create branch branch1", identifier.name()));
+    // Make one new insert to the main branch
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(5),(6)", identifier.name()));
+    icebergTable.refresh();
+    long id = icebergTable.currentSnapshot().snapshotId();
+
+    // Make another insert so that the commit isn't the last commit on the branch
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(7),(8)", identifier.name()));
+
+    // Validate the original count on branch before replace
+    List<Object[]> result =
+        shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceBranchWithSnapshot.branch_branch1");
+    assertEquals(4L, result.get(0)[0]);
+    // Perform replace branch with snapshot id.
+    shell.executeStatement(
+        String.format("ALTER TABLE %s replace branch branch1 as of system_version %s", identifier.name(), id));
+    result = shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceBranchWithSnapshot.branch_branch1");
     assertEquals(6L, result.get(0)[0]);
   }
 }

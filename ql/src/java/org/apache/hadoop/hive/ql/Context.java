@@ -674,7 +674,7 @@ public class Context {
    *
    */
   public Path getMRScratchDir() {
-    return getMRScratchDir(!isExplainSkipExecution());
+    return getMRScratchDir(!isExplainSkipExecution() && !isLoadingMaterializedView());
   }
 
   /**
@@ -850,7 +850,9 @@ public class Context {
   }
 
   public Path getMRTmpPath(URI uri) {
-    return new Path(getStagingDir(new Path(uri), !isExplainSkipExecution()), MR_PREFIX + nextPathId());
+    return new Path(getStagingDir(new Path(uri),
+        !isExplainSkipExecution() && !isLoadingMaterializedView()),
+        MR_PREFIX + nextPathId());
   }
 
   public Path getMRTmpPath(boolean mkDir) {
