@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
@@ -65,6 +66,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getProps;
 
 /**
  * The compiler compiles the command, by creating a QueryPlan from a String command.
@@ -209,10 +212,10 @@ public class Compiler {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(driverContext.getQueryState(), tree);
 
     if (!driverContext.isRetrial()) {
-      if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())) {
+      if (HiveOperation.REPLDUMP == driverContext.getQueryState().getHiveOperation()) {
         setLastReplIdForDump(driverContext.getQueryState().getConf());
       }
-      openTransaction(driverContext);
+      openTransaction();
       generateValidTxnList();
     }
 
@@ -260,7 +263,7 @@ public class Compiler {
     LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
-  private void openTransaction(DriverContext driverContext) throws Exception {
+  private void openTransaction() throws Exception {
     HiveTxnManager txnManager = driverContext.getTxnManager();
     if (!DriverUtils.checkConcurrency(driverContext) || !startImplicitTxn(txnManager) 
         || txnManager.isTxnOpen() || !hasAcidResourceInQuery(Hive.get())) {
@@ -272,7 +275,7 @@ public class Compiler {
       return;
     }
     HiveOperation operation = driverContext.getQueryState().getHiveOperation();
-    if (HiveOperation.REPLDUMP.equals(operation) || HiveOperation.REPLLOAD.equals(operation)) {
+    if (HiveOperation.REPLDUMP == operation || HiveOperation.REPLLOAD == operation) {
       context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
     }
     String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
@@ -280,8 +283,14 @@ public class Compiler {
   }
 
   private boolean hasAcidResourceInQuery(Hive hiveDb) throws TException {
-    return hiveDb.getMSC().hasTransactionalResource(
-        context.getParsedTables(), SessionState.get().getCurrentDatabase());
+    if (HiveOperation.CREATETABLE == driverContext.getQueryState().getHiveOperation()) {
+      ASTNode child = (ASTNode) tree.getFirstChildWithType(HiveParser.TOK_TABLEPROPERTIES);
+      Map<String, String> tblProps = getProps((ASTNode) child.getChild(0));
+      return AcidUtils.isTransactionalTable(tblProps);
+    }
+    return !context.getParsedTables().isEmpty() &&
+      hiveDb.getMSC().hasTransactionalResource(context.getParsedTables(), 
+          SessionState.get().getCurrentDatabase());
   }
 
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
@@ -314,6 +323,8 @@ public class Compiler {
     case SHOW_TRANSACTIONS:
     case ABORT_TRANSACTIONS:
     case KILL_QUERY:
+      
+    case CREATE_SCHEDULED_QUERY:  
       return false;
       //this implies that no locks are needed for such a command
     default:

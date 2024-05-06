@@ -704,12 +704,12 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           "WHERE (d.\"NAME\", t.\"TBL_NAME\") IN (" + 
             (dbProduct.isPOSTGRES() ? "values" : "") + 
           " :valuesMap)" +
-          " AND t.\"TBL_TYPE\" = :tableType" +
+          " AND t.\"TBL_TYPE\" != :tableType" +
           " AND tp.\"PARAM_KEY\" = 'transactional' AND " +
             dbProduct.toVarChar("tp.\"PARAM_VALUE\"") + 
           " = 'true'"),
       new MapSqlParameterSource()
-        .addValue("tableType", TableType.MANAGED_TABLE.toString())
+        .addValue("tableType", TableType.EXTERNAL_TABLE.toString())
         .addValue("valuesMap", valuesMap), 
       ResultSet::next);
   }
