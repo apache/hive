@@ -39,7 +39,7 @@ POSTHOOK: Output: default@dest_j1_n21
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND (`hr` = 11 AND `value` IS NOT NULL)) AS `t0`
+WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2` INNER JOIN (SELECT `key`, `value`
@@ -1109,7 +1109,7 @@ POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t4`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND (`hr` = 11 AND `value` IS NOT NULL)) AS `t0`
+WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2` INNER JOIN (SELECT `key`, `value`
@@ -1608,7 +1608,7 @@ POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND (`hr` = 11 AND `value` IS NOT NULL)) AS `t0`
+WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `value` IS NOT NULL) AS `t2` LEFT JOIN (SELECT `key`

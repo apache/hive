@@ -74,7 +74,7 @@ Stage-0
                     Select Operator [SEL_32] (rows=7 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_31] (rows=7 width=4)
-                        predicate:((u < 10) and (u > 2))
+                        predicate:((u > 2) and (u < 10))
                         TableScan [TS_0] (rows=8 width=4)
                           default@tx_n3,tx_n3,Tbl:COMPLETE,Col:COMPLETE,Output:["u"]
                 <-Map 4 [SIMPLE_EDGE] vectorized, llap
@@ -138,7 +138,7 @@ Stage-0
                     Select Operator [SEL_32] (runtime: rows=5 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_31] (runtime: rows=5 width=4)
-                        predicate:((u < 10) and (u > 2))
+                        predicate:((u > 2) and (u < 10))
                         TableScan [TS_0] (runtime: rows=8 width=4)
                           default@tx_n3,tx_n3,Tbl:COMPLETE,Col:COMPLETE,Output:["u"]
                 <-Map 4 [SIMPLE_EDGE] vectorized, llap
