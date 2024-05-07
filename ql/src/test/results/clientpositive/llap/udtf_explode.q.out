@@ -53,10 +53,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `col`, COUNT(*) AS `$f1`
-FROM (SELECT `col`
 FROM TABLE(EXPLODE(ARRAY[1, 2, 3]))
-LIMIT 3) AS `t1`
 GROUP BY `col`
+LIMIT 3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -324,11 +323,11 @@ POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myKey, a.myVal, count(1) FROM (SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, COUNT(*) AS `$f2`
-FROM (SELECT `key`, `value`
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`, COUNT(*) AS `$f2`
 FROM TABLE(EXPLODE(MAP[1, 'one', 2, 'two', 3, 'three']))
-LIMIT 3) AS `t1`
 GROUP BY `key`, `value`
+LIMIT 3) AS `t3`
 ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
