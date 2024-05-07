@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.google.common.collect.BoundType;
+import com.google.common.collect.Range;
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
@@ -47,7 +50,6 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
-import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -70,11 +72,13 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.calcite.util.Sarg;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
@@ -1356,6 +1360,76 @@ public class HiveCalciteUtil {
 
     rexNode.accept(visitor);
     return rexTableInputRefs;
+  }
+
+  public static boolean isSargBetween(Sarg<?> sarg) {
+    if (sarg.rangeSet.asRanges().isEmpty()) {
+      return false;
+    }
+
+    boolean isBetween = true;
+
+    // check that each range has closed bounds
+    for (Range<?> range: sarg.rangeSet.asRanges()) {
+      isBetween &= range.hasLowerBound()
+          && range.lowerBoundType() == BoundType.CLOSED
+          && range.hasUpperBound()
+          && range.upperBoundType() == BoundType.CLOSED
+          && !range.lowerEndpoint().equals(range.upperEndpoint());
+
+      // return early
+      if (!isBetween) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public static RexCall convertSargToBetween(Sarg<?> sarg, RelDataType type, RexNode operand) {
+    RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+    List<RexCall> betweens = new ArrayList<>();
+
+    for (Range<?> range: sarg.rangeSet.asRanges()) {
+      RexLiteral lower = (RexLiteral) rexBuilder.makeLiteral(
+          range.lowerEndpoint(), type, true, true
+      );
+      RexLiteral upper = (RexLiteral) rexBuilder.makeLiteral(
+          range.upperEndpoint(), type, true, true
+      );
+
+      betweens.add(
+          (RexCall) rexBuilder
+              .makeCall(HiveBetween.INSTANCE, rexBuilder.makeLiteral(false), operand, lower, upper)
+      );
+    }
+
+    return betweens.size() == 1
+        ? betweens.get(0)
+        : (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.OR, betweens);
+  }
+
+  public static RexCall convertSargToNotBetween(Sarg<?> sarg,RelDataType type, RexNode operand) {
+    RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+    List<RexCall> notBetweens = new ArrayList<>();
+
+    for (Range<?> range: sarg.rangeSet.asRanges()) {
+      RexLiteral lower = (RexLiteral) rexBuilder.makeLiteral(
+          range.lowerEndpoint(), type, true, true
+      );
+      RexLiteral upper = (RexLiteral) rexBuilder.makeLiteral(
+          range.upperEndpoint(), type, true, true
+      );
+
+      notBetweens.add(
+          (RexCall) rexBuilder
+              .makeCall(HiveBetween.INSTANCE, rexBuilder.makeLiteral(true), operand, lower, upper)
+      );
+    }
+
+    return notBetweens.size() == 1
+        ? notBetweens.get(0)
+        : (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.AND, notBetweens);
   }
 
   public static RelNode stripHepVertices(RelNode rel) {
