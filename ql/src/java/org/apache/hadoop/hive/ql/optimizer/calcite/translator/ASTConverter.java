@@ -1093,23 +1093,13 @@ public class ASTConverter {
           // convert Sarg to BETWEEN when they are
           // bounded range
         } else if (isSargBetween(sarg)) {
-          Range<?> range = sarg.rangeSet.asRanges().iterator().next();
-          RexLiteral lower = (RexLiteral) rexBuilder.makeLiteral(
-              range.lowerEndpoint(), literal.getType(), true, true
-          );
-          RexLiteral upper = (RexLiteral) rexBuilder.makeLiteral(
-              range.upperEndpoint(), literal.getType(), true, true
-          );
+          return visitCall(convertSargToBetween(sarg, literal.getType(), call.getOperands().get(0)));
 
-          return visitCall(
-              (RexCall) rexBuilder.makeCall(
-                  HiveBetween.INSTANCE,
-                  rexBuilder.makeLiteral(false),
-                  call.getOperands().get(0),
-                  lower,
-                  upper
-              )
-          );
+          // convert Sarg to NOT BETWEEN
+        } else if (isSargBetween(sarg.negate())) {
+          return visitCall(convertSargToNotBetween(sarg.negate(), literal.getType(), call.getOperands().get(0)));
+
+          // Expand SEARCH operator
         } else {
           return visitCall((RexCall) call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)));
         }
@@ -1137,17 +1127,71 @@ public class ASTConverter {
     }
 
     private boolean isSargBetween(Sarg<?> sarg) {
-      if (sarg.rangeSet.asRanges().size() != 1) {
+      if (sarg.rangeSet.asRanges().isEmpty()) {
         return false;
       }
 
-      Range<?> range = sarg.rangeSet.asRanges().iterator().next();
+      boolean isBetween = true;
 
-      return range.hasLowerBound()
-          && range.lowerBoundType() == BoundType.CLOSED
-          && range.hasUpperBound()
-          && range.upperBoundType() == BoundType.CLOSED
-          && !range.lowerEndpoint().equals(range.upperEndpoint());
+      // check that each range has closed bounds
+      for (Range<?> range: sarg.rangeSet.asRanges()) {
+        isBetween &= range.hasLowerBound()
+            && range.lowerBoundType() == BoundType.CLOSED
+            && range.hasUpperBound()
+            && range.upperBoundType() == BoundType.CLOSED
+            && !range.lowerEndpoint().equals(range.upperEndpoint());
+
+        // return early
+        if (!isBetween) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    private RexCall convertSargToBetween(Sarg<?> sarg, RelDataType type, RexNode operand) {
+      List<RexCall> betweens = new ArrayList<>();
+
+      for (Range<?> range: sarg.rangeSet.asRanges()) {
+        RexLiteral lower = (RexLiteral) rexBuilder.makeLiteral(
+            range.lowerEndpoint(), type, true, true
+        );
+        RexLiteral upper = (RexLiteral) rexBuilder.makeLiteral(
+            range.upperEndpoint(), type, true, true
+        );
+
+        betweens.add(
+            (RexCall) rexBuilder
+                .makeCall(HiveBetween.INSTANCE, rexBuilder.makeLiteral(false), operand, lower, upper)
+        );
+      }
+
+      return betweens.size() == 1
+          ? betweens.get(0)
+          : (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.OR, betweens);
+    }
+
+    private RexCall convertSargToNotBetween(Sarg<?> sarg, RelDataType type, RexNode operand) {
+      List<RexCall> notBetweens = new ArrayList<>();
+
+      for (Range<?> range: sarg.rangeSet.asRanges()) {
+        RexLiteral lower = (RexLiteral) rexBuilder.makeLiteral(
+            range.lowerEndpoint(), type, true, true
+        );
+        RexLiteral upper = (RexLiteral) rexBuilder.makeLiteral(
+            range.upperEndpoint(), type, true, true
+        );
+
+        notBetweens.add(
+            (RexCall) rexBuilder
+                .makeCall(HiveBetween.INSTANCE, rexBuilder.makeLiteral(true), operand, lower, upper)
+        );
+      }
+
+      return notBetweens.size() == 1
+          ? notBetweens.get(0)
+          : (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.AND, notBetweens);
     }
 
     @Override
