@@ -22,14 +22,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -41,10 +44,12 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Sarg;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -52,7 +57,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.calcite.sql.fun.SqlStdOperatorTable.NOT_BETWEEN;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.convertSargToBetween;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.convertSargToNotBetween;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.isSargBetween;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
@@ -171,7 +178,38 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
 
-    default:
+    case SEARCH:
+      RexLiteral literal = (RexLiteral) call.operands.get(1);
+      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+
+      // TODO: revisit this to better handle INs
+      if (sarg.isPoints()) {
+        selectivity = computeFunctionSelectivity(call);
+        if (selectivity != null) {
+          selectivity = selectivity * (call.operands.size() - 1);
+          if (selectivity <= 0.0) {
+            selectivity = 0.10;
+          } else if (selectivity >= 1.0) {
+            selectivity = 1.0;
+          }
+        }
+        break;
+
+      } else if (isSargBetween(sarg)) {
+        return convertSargToBetween(sarg, literal.getType(), call.getOperands().get(0))
+            .accept(this);
+
+      } else if (isSargBetween(sarg.negate())) {
+        return convertSargToNotBetween(sarg.negate(), literal.getType(), call.getOperands().get(0))
+            .accept(this);
+
+      } else {
+        return RexUtil
+            .expandSearch(new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())), null, call)
+            .accept(this);
+      }
+
+      default:
       selectivity = computeFunctionSelectivity(call);
     }
 
