@@ -1042,6 +1042,26 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "Exit CONDITION Handler invoked.", OutStream.ERR);
   }
 
+  @Test
+  public void testExecuteImmediateSelectCountStatement() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "execute immediate 'SELECT count(*) from result';";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+  }
+
+  @Test
+  public void testExecuteSelectCountStatement() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "execute 'SELECT count(*) from result';";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
