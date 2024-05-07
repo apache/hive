@@ -65,7 +65,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_1_n1
-                  filterExpr: (struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
+                  filterExpr: (struct(id,lineid)) IN (const struct('eight','1'), const struct('five','2'), const struct('nine','1'), const struct('one','1'), const struct('seven','1'), const struct('six','1'), const struct('ten','1'), const struct('three','1'), const struct('two','3')) (type: boolean)
                   Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -74,7 +74,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterStructColumnInList(structExpressions [col 0:string, col 1:string], fieldVectorColumnTypes [BYTES, BYTES], structColumnMap [0, 1])
-                    predicate: (struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
+                    predicate: (struct(id,lineid)) IN (const struct('eight','1'), const struct('five','2'), const struct('nine','1'), const struct('one','1'), const struct('seven','1'), const struct('six','1'), const struct('ten','1'), const struct('three','1'), const struct('two','3')) (type: boolean)
                     Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: string), lineid (type: string)
@@ -197,7 +197,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: id (type: string), lineid (type: string), (struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
+                    expressions: id (type: string), lineid (type: string), (struct(id,lineid)) IN (const struct('eight','1'), const struct('five','2'), const struct('nine','1'), const struct('one','1'), const struct('seven','1'), const struct('six','1'), const struct('ten','1'), const struct('three','1'), const struct('two','3')) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -332,7 +332,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_2_n1
-                  filterExpr: (struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
+                  filterExpr: (struct(id,lineid)) IN (const struct(1,1), const struct(2,3), const struct(3,1), const struct(5,2), const struct(6,1), const struct(7,1), const struct(8,1), const struct(9,1), const struct(10,1)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -341,7 +341,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterStructColumnInList(structExpressions [col 0:int, col 1:int], fieldVectorColumnTypes [LONG, LONG], structColumnMap [0, 1])
-                    predicate: (struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
+                    predicate: (struct(id,lineid)) IN (const struct(1,1), const struct(2,3), const struct(3,1), const struct(5,2), const struct(6,1), const struct(7,1), const struct(8,1), const struct(9,1), const struct(10,1)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: int), lineid (type: int)
@@ -464,7 +464,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: id (type: int), lineid (type: int), (struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
+                    expressions: id (type: int), lineid (type: int), (struct(id,lineid)) IN (const struct(1,1), const struct(2,3), const struct(3,1), const struct(5,2), const struct(6,1), const struct(7,1), const struct(8,1), const struct(9,1), const struct(10,1)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -599,7 +599,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_3
-                  filterExpr: (struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
+                  filterExpr: (struct(id,lineid)) IN (const struct('eight',1), const struct('five',2), const struct('nine',1), const struct('one',1), const struct('seven',1), const struct('six',1), const struct('ten',1), const struct('three',1), const struct('two',3)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -608,7 +608,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterStructColumnInList(structExpressions [col 0:string, col 1:int], fieldVectorColumnTypes [BYTES, LONG], structColumnMap [0, 1])
-                    predicate: (struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
+                    predicate: (struct(id,lineid)) IN (const struct('eight',1), const struct('five',2), const struct('nine',1), const struct('one',1), const struct('seven',1), const struct('six',1), const struct('ten',1), const struct('three',1), const struct('two',3)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: string), lineid (type: int)
@@ -731,7 +731,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: id (type: string), lineid (type: int), (struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
+                    expressions: id (type: string), lineid (type: int), (struct(id,lineid)) IN (const struct('eight',1), const struct('five',2), const struct('nine',1), const struct('one',1), const struct('seven',1), const struct('six',1), const struct('ten',1), const struct('three',1), const struct('two',3)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -869,7 +869,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_4
-                  filterExpr: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D)) (type: boolean)
+                  filterExpr: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',0.5D), const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(1L,'b',0.5D), const struct(1L,'b',2.5D), const struct(1L,'c',1.5D), const struct(1L,'d',1.5D), const struct(3L,'b',1.5D), const struct(5L,'b',1.5D)) (type: boolean)
                   Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -878,7 +878,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterStructColumnInList(structExpressions [col 0:bigint, col 1:string, col 2:double], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2])
-                    predicate: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D)) (type: boolean)
+                    predicate: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',0.5D), const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(1L,'b',0.5D), const struct(1L,'b',2.5D), const struct(1L,'c',1.5D), const struct(1L,'d',1.5D), const struct(3L,'b',1.5D), const struct(5L,'b',1.5D)) (type: boolean)
                     Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double)
@@ -1004,7 +1004,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double), (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D)) (type: boolean)
+                    expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double), (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',0.5D), const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(1L,'b',0.5D), const struct(1L,'b',2.5D), const struct(1L,'c',1.5D), const struct(1L,'d',1.5D), const struct(3L,'b',1.5D), const struct(5L,'b',1.5D)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
