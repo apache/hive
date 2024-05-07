@@ -982,9 +982,4 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   boolean updateCompactionMetricsData(CompactionMetricsData data) throws MetaException;
 
-  @SqlRetry
-  @Transactional(POOL_TX)
-  @RetrySemantics.ReadOnly
-  boolean hasTransactionalResource(Set<String> dbTable) throws MetaException;
-  
 }

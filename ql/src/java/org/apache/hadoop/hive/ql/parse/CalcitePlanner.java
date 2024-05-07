@@ -1987,6 +1987,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Add views to planner
       List<HiveRelOptMaterialization> materializations = new ArrayList<>();
       try {
+        openTxnAndGetValidTxnList();
         // This is not a rebuild, we retrieve all the materializations.
         // In turn, we do not need to force the materialization contents to be up-to-date,
         // as this is not a rebuild, and we apply the user parameters
@@ -2121,6 +2122,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
         Set<TableName> tablesUsedByOriginalPlan = getTablesUsed(removeSubqueries(originalPlan, metadataProvider));
+        openTxnAndGetValidTxnList();
+        
         RelNode mvScan = getMaterializedViewByAST(
                 expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, getTxnMgr());
         if (mvScan != null) {

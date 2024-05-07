@@ -74,6 +74,7 @@ public abstract class QueryCompactor implements Compactor {
       conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
     }
     Util.disableLlapCaching(conf);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING, false);
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);

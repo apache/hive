@@ -26,7 +26,6 @@ import org.apache.thrift.TException;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This abstract class can be extended by any remote cache that implements HMS APIs.
@@ -1623,11 +1622,6 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     @Override
     public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
         throws MetaException, org.apache.thrift.TException {
-        throw new UnsupportedOperationException("this method is not supported");
-    }
-
-    @Override
-    public boolean has_transactional_resource(Set<String> dbTable) throws MetaException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 }

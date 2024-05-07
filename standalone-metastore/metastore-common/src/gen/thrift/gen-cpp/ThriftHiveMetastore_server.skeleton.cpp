@@ -955,11 +955,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("seed_txn_id\n");
   }
 
-  bool has_transactional_resource(const std::set<std::string> & dbTable) {
-    // Your implementation goes here
-    printf("has_transactional_resource\n");
-  }
-
   void lock(LockResponse& _return, const LockRequest& rqst) {
     // Your implementation goes here
     printf("lock\n");

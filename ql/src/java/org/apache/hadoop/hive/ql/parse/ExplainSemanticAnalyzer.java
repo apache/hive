@@ -177,6 +177,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     //Sharing QueryState between generating the plan and executing the query seems bad
     //BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(new QueryState(queryState.getConf()), input);
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
+    sem.injectTxnHook(openTxnHook);
+    
     sem.analyze(input, ctx);
     sem.validate();
     inputs = sem.getInputs();

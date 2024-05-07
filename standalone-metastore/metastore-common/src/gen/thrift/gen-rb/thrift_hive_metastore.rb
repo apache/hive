@@ -3142,22 +3142,6 @@ module ThriftHiveMetastore
       return
     end
 
-    def has_transactional_resource(dbTable)
-      send_has_transactional_resource(dbTable)
-      return recv_has_transactional_resource()
-    end
-
-    def send_has_transactional_resource(dbTable)
-      send_message('has_transactional_resource', Has_transactional_resource_args, :dbTable => dbTable)
-    end
-
-    def recv_has_transactional_resource()
-      result = receive_message(Has_transactional_resource_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'has_transactional_resource failed: unknown result')
-    end
-
     def lock(rqst)
       send_lock(rqst)
       return recv_lock()
@@ -7002,17 +6986,6 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'seed_txn_id', seqid)
-    end
-
-    def process_has_transactional_resource(seqid, iprot, oprot)
-      args = read_args(iprot, Has_transactional_resource_args)
-      result = Has_transactional_resource_result.new()
-      begin
-        result.success = @handler.has_transactional_resource(args.dbTable)
-      rescue ::MetaException => o1
-        result.o1 = o1
-      end
-      write_result(result, oprot, 'has_transactional_resource', seqid)
     end
 
     def process_lock(seqid, iprot, oprot)
@@ -15019,40 +14992,6 @@ module ThriftHiveMetastore
     O1 = 1
 
     FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Has_transactional_resource_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DBTABLE = 1
-
-    FIELDS = {
-      DBTABLE => {:type => ::Thrift::Types::SET, :name => 'dbTable', :element => {:type => ::Thrift::Types::STRING}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Has_transactional_resource_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

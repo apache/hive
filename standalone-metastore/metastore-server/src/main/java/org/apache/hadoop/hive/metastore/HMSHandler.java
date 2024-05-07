@@ -10816,9 +10816,4 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
       endFunction("get_all_write_event_info", ex == null, ex);
     }
   }
-
-  @Override
-  public boolean has_transactional_resource(Set<String> dbTable) throws MetaException {
-    return getTxnHandler().hasTransactionalResource(dbTable);
-  }
 }

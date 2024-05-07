@@ -67,13 +67,13 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // Replication Scope
-  private ReplScope replScope = new ReplScope();
+  private final ReplScope replScope = new ReplScope();
 
   // Source DB Name for REPL LOAD
   private String sourceDbNameOrPattern;
   // Added conf member to set the REPL command specific config entries without affecting the configs
   // of any other queries running in the session
-  private HiveConf conf;
+  private final HiveConf conf;
 
   // By default, this will be same as that of super class BaseSemanticAnalyzer. But need to obtain again
   // if the Hive configs are received from WITH clause in REPL LOAD or REPL STATUS commands.
@@ -146,7 +146,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     String replScopeType = (replScope == this.replScope) ? "Current" : "Old";
     for (int listIdx = 0; listIdx < childCount; listIdx++) {
       String tableList = unescapeSQLString(replTablesNode.getChild(listIdx).getText());
-      if (tableList == null || tableList.isEmpty()) {
+      if (tableList.isEmpty()) {
         throw new SemanticException(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN);
       }
       if (listIdx == 0) {
@@ -173,10 +173,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (currNode.getType()) {
       case TOK_REPL_CONFIG:
         Map<String, String> replConfigs = getProps((ASTNode) currNode.getChild(0));
-        if (null != replConfigs) {
-          for (Map.Entry<String, String> config : replConfigs.entrySet()) {
-            conf.set(config.getKey(), config.getValue());
-          }
+        for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+          conf.set(config.getKey(), config.getValue());
         }
         break;
       case TOK_REPL_TABLES:
@@ -385,7 +383,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                                                                         DumpMetaData dmd) throws SemanticException {
     ReplicationMetricCollector collector;
     if (dmd.isPreOptimizedBootstrapDump() || dmd.isOptimizedBootstrapDump()) {
-      Database dbToLoad = null;
+      Database dbToLoad;
       try {
         dbToLoad = db.getDatabase(dbNameToLoadIn);
       } catch (HiveException e) {
@@ -395,7 +393,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS, dbNameToLoadIn);
       }
       // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
-      String failoverType = "";
+      String failoverType;
       try {
         // check whether ReplConst.FAILOVER_ENDPOINT is set
         failoverType = MetaStoreUtils.isDbBeingPlannedFailedOver(db.getDatabase(dbNameToLoadIn)) ? ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
@@ -418,7 +416,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     return collector;
   }
 
-  private Path getCurrentLoadPath() throws IOException, SemanticException {
+  private Path getCurrentLoadPath() throws IOException {
     Path loadPathBase = ReplUtils.getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase());
     final FileSystem fs = loadPathBase.getFileSystem(conf);
     // Make fully qualified path for further use.
@@ -446,27 +444,25 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void setConfigs(ASTNode node) throws SemanticException {
     Map<String, String> replConfigs = getProps(node);
-    if (null != replConfigs) {
-      for (Map.Entry<String, String> config : replConfigs.entrySet()) {
-        String key = config.getKey();
-        // don't set the query id in the config
-        if (key.equalsIgnoreCase(HIVE_QUERY_ID.varname)) {
-          String queryTag = config.getValue();
-          if (!StringUtils.isEmpty(queryTag)) {
-            QueryState.setApplicationTag(conf, queryTag);
-          }
-          queryState.setQueryTag(queryTag);
-        } else {
-          conf.set(key, config.getValue());
+    for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+      String key = config.getKey();
+      // don't set the query id in the config
+      if (key.equalsIgnoreCase(HIVE_QUERY_ID.varname)) {
+        String queryTag = config.getValue();
+        if (!StringUtils.isEmpty(queryTag)) {
+          QueryState.setApplicationTag(conf, queryTag);
         }
+        queryState.setQueryTag(queryTag);
+      } else {
+        conf.set(key, config.getValue());
       }
+    }
 
-      // As hive conf is changed, need to get the Hive DB again with it.
-      try {
-        db = Hive.get(conf);
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
+    // As hive conf is changed, need to get the Hive DB again with it.
+    try {
+      db = Hive.get(conf);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
     }
   }
 
@@ -519,5 +515,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ctx.setResFile(ctx.getLocalTmpPath());
     Utils.writeOutput(Collections.singletonList(values), ctx.getResFile(), conf);
+  }
+
+  @Override
+  public boolean hasTransactionalInQuery() {
+    // check DB tags once supported (i.e. ICEBERG_ONLY, ACID_ONLY, EXTERNAL_ONLY)
+    return true;
   }
 }

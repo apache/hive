@@ -80,7 +80,8 @@ public abstract class AbstractCliConfig {
     queryFileRegex = getSysPropValue("qfile_regex");
     runDisabled = getSysPropValue("run_disabled");
     // By default get metastoreType from system properties but allow specific configs to override
-    metastoreType = "postgres";
+    metastoreType = QTestSystemProperties.getMetaStoreDb() == null ? "derby"
+        : QTestSystemProperties.getMetaStoreDb();
   }
 
   protected void setQueryDir(String dir) {

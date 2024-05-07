@@ -211,7 +211,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(MaxAllocatedTableWriteIdRequest rqst)')
     print('  void seed_write_id(SeedTableWriteIdsRequest rqst)')
     print('  void seed_txn_id(SeedTxnIdRequest rqst)')
-    print('  bool has_transactional_resource( dbTable)')
     print('  LockResponse lock(LockRequest rqst)')
     print('  LockResponse check_lock(CheckLockRequest rqst)')
     print('  void unlock(UnlockRequest rqst)')
@@ -1514,12 +1513,6 @@ elif cmd == 'seed_txn_id':
         print('seed_txn_id requires 1 args')
         sys.exit(1)
     pp.pprint(client.seed_txn_id(eval(args[0]),))
-
-elif cmd == 'has_transactional_resource':
-    if len(args) != 1:
-        print('has_transactional_resource requires 1 args')
-        sys.exit(1)
-    pp.pprint(client.has_transactional_resource(eval(args[0]),))
 
 elif cmd == 'lock':
     if len(args) != 1:

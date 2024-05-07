@@ -1769,7 +1769,7 @@ createMaterializedViewStatement
 dropMaterializedViewStatement
 @init { pushMsg("drop materialized view statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? name=tableName -> ^(TOK_DROP_MATERIALIZED_VIEW $name ifExists?)
+    : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? viewName -> ^(TOK_DROP_MATERIALIZED_VIEW viewName ifExists?)
     ;
 
 createScheduledQueryStatement
