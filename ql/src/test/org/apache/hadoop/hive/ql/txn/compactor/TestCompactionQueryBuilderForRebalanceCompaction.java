@@ -19,10 +19,15 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestCompactionQueryBuilderForRebalanceCompaction extends CompactionQueryBuilderTest {
 
@@ -77,6 +82,23 @@ public class TestCompactionQueryBuilderForRebalanceCompaction extends Compaction
   }
 
   @Test
+  public void testInsertWithPartitionedTable() {
+    CompactionQueryBuilder queryBuilder = getRebalanceCompactionQueryBuilderForInsert();
+    Table sourceTable = createSourceTable();
+    queryBuilder.setSourceTabForInsert(COMP_TEST_SOURCE_TABLE_FOR_INSERT);
+    Partition sourcePartition = new Partition();
+    sourcePartition.addToValues("source_part_1");
+    sourceTable.addToPartitionKeys(new FieldSchema("source_part_1", "string", "comment 1"));
+    queryBuilder.setSourceTab(sourceTable);
+    queryBuilder.setSourcePartition(sourcePartition);
+
+    String query = queryBuilder.build();
+    String expectedQuery =
+        "INSERT overwrite table comp_test_result_table select 0, t2.writeId, t2.rowId DIV CEIL(numRows / 0), t2.rowId, t2.writeId, t2.data from (select count(ROW__ID.writeId) over() as numRows, ROW__ID.writeId as writeId, row_number() OVER (order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC) - 1 AS rowId, NAMED_STRUCT('column_1', `column_1`, 'column_2', `column_2`, 'column_3', `column_3`) as data from comp_test_db.comp_test_insert_table order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC) t2";
+    Assert.assertEquals(expectedQuery, query);
+  }
+
+  @Test
   public void testInsertOnlySourceTableIsSet() {
     CompactionQueryBuilder queryBuilder = getRebalanceCompactionQueryBuilderForInsert();
     Table sourceTable = createSourceTable();
@@ -116,6 +138,17 @@ public class TestCompactionQueryBuilderForRebalanceCompaction extends Compaction
     String query = queryBuilder.build();
     String expectedQuery = "DROP table if exists comp_test_result_table";
     Assert.assertEquals(expectedQuery, query);
+  }
+
+  @Test
+  public void testRebalanceCompactionWithBuckets() {
+    CompactionQueryBuilder queryBuilder = getRebalanceCompactionQueryBuilderForInsert();
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+      queryBuilder.setBucketed(true);
+    });
+    String expectedMessage = "Rebalance compaction is supported only on implicitly-bucketed tables!";
+    String actualMessage = exception.getMessage();
+    assertTrue(actualMessage.contains(expectedMessage));
   }
 
   private CompactionQueryBuilder getRebalanceCompactionQueryBuilderForCreate() {

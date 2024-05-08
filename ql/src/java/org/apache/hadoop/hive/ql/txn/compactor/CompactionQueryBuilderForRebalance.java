@@ -68,4 +68,9 @@ class CompactionQueryBuilderForRebalance extends CompactionQueryBuilder {
     query.append(") t2");
   }
 
+  @Override
+  protected void buildWhereClauseForInsert(StringBuilder query) {
+    // No where clause in the insert query of rebalance compaction
+  }
+
 }
