@@ -61,6 +61,13 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, table.getDbName(), table.getTableName());
     }
+    
+    if (table.getStorageHandler() != null) {
+      Optional<ErrorMsg> error = table.getStorageHandler().isEligibleForCompaction(table, desc.getPartitionSpec());
+      if (error.isPresent()) {
+        throw new HiveException(error.get(), table.getDbName(), table.getTableName());
+      }
+    }
 
     Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
         convertPartitionsFromThriftToDB(getPartitions(table, desc, context));

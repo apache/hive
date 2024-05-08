@@ -25,6 +25,7 @@
   <packaging>pom</packaging>
   <name>Hive</name>
   <url>https://hive.apache.org</url>
+  <inceptionYear>2008</inceptionYear>
   <modules>
     <module>storage-api</module>
     <module>accumulo-handler</module>
@@ -178,7 +179,7 @@
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.0.31</mysql.version>
-    <postgres.version>42.5.1</postgres.version>
+    <postgres.version>42.7.3</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>2.3</opencsv.version>
     <orc.version>1.8.5</orc.version>
@@ -194,6 +195,7 @@
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.24.4</protobuf.version>
+    <rat.version>0.16.1</rat.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
@@ -225,6 +227,7 @@
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.21</spring.version>
+    <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -1488,6 +1491,11 @@
           <version>${maven.checkstyle.plugin.version}</version>
         </plugin>
         <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <version>${rat.version}</version>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
           <version>${maven.versions.plugin.version}</version>
@@ -1783,15 +1791,13 @@
         </executions>
         <configuration>
           <excludes>
+            <eclude>.gitattributes</eclude>
             <exclude>*.patch</exclude>
-            <exclude>.github/**</exclude>
+            <exclude>**/pull_request_template.md</exclude>
             <exclude>data/**</exclude>
-            <exclude>conf/**</exclude>
             <exclude>checkstyle/**</exclude>
             <exclude>docs/Gemfile</exclude>
             <exclude>bin/**</exclude>
-            <exclude>itests/**</exclude>
-            <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>
             <exclude>**/*.txt</exclude>
             <exclude>**/*.log</exclude>
@@ -1799,14 +1805,13 @@
             <exclude>**/.classpath</exclude>
             <exclude>**/.project</exclude>
             <exclude>**/.settings/**</exclude>
-            <exclude>**/*.arcconfig</exclude>
             <exclude>**/package-info.java</exclude>
             <exclude>**/*.properties</exclude>
             <exclude>**/*.q</exclude>
             <exclude>**/*.q.out</exclude>
             <exclude>**/*.q.out_*</exclude>
-            <exclude>**/*.xml</exclude>
-            <exclude>**/*.yml</exclude>
+            <exclude>**/test/**/*.xml</exclude>
+            <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/*json</exclude>
             <exclude>**/gen/**</exclude>
             <exclude>**/target/**</exclude>
@@ -1832,6 +1837,7 @@
             <exclude>hcatalog/core/mapred/**/part-m*</exclude>
             <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
             <exclude>**/PriorityBlockingDeque.java</exclude>
+            <exclude>**/StringToDouble.java</exclude>
             <exclude>LICENSE-binary</exclude>
           </excludes>
         </configuration>

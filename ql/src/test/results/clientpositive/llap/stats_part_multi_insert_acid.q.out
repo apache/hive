@@ -81,7 +81,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1483                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

@@ -248,7 +248,7 @@ public class Operation2Privilege {
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_RENAMEBRANCH,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
-    op2Priv.put(HiveOperationType.ALTERTABLE_REPLACEBRANCH,
+    op2Priv.put(HiveOperationType.ALTERTABLE_REPLACESNAPSHOTREF,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_DROPTAG,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));

@@ -914,7 +914,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   /**
    * Parse command line arguments
    */
-  boolean parseArguments(String[] args) {
+  public boolean parseArguments(String[] args) {
     boolean parsed = arguments.parse(args);
     if (parsed && arguments.hasVersionOption()) {
       console.printError(VERSION);
@@ -1028,9 +1028,13 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * Output information about unhandled exceptions
    */
   public void printExceptions() {
+    List<Signal> userDefinedSignals = new ArrayList<>();
     while (!signals.empty()) {
       Signal sig = signals.pop();
-      if (sig.type == Signal.Type.VALIDATION) {
+      // if signal type is user defined then don't handle here
+      if (sig.type == Signal.Type.USERDEFINED) {
+        userDefinedSignals.add(sig);
+      } else if (sig.type == Signal.Type.VALIDATION) {
         error(((HplValidationException)sig.exception).getCtx(), sig.exception.getMessage());
       } else if (sig.type == Signal.Type.SQLEXCEPTION) {
         console.printError("Unhandled exception in HPL/SQL");
@@ -1043,6 +1047,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       } else {
         trace(null, "Signal: " + sig.type);
       }
+    }
+    // if there are any user defined signals then push them back to signals stack to handle them later.
+    for (int i = userDefinedSignals.size() - 1; i >= 0; i--) {
+      exec.signals.push(userDefinedSignals.get(i));
     }
   } 
   

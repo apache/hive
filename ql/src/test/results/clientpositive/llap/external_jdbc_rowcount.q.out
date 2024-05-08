@@ -6,57 +6,57 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: dboutput
 PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE11 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE11 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 0
 PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE12 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE12 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 0
 PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE3 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE13 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE3 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE13 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 0
 PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE4 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE14 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE4 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' )
+'CREATE TABLE SIMPLE_DERBY_TABLE14 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 0
-PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table1
+PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table11
 (
  ikey int,
  bkey bigint,
@@ -70,13 +70,13 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE11",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ext_simple_derby_table1
-POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table1
+PREHOOK: Output: default@ext_simple_derby_table11
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table11
 (
  ikey int,
  bkey bigint,
@@ -90,13 +90,13 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE11",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ext_simple_derby_table1
-PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table2
+POSTHOOK: Output: default@ext_simple_derby_table11
+PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table12
 (
  ikey int,
  bkey bigint,
@@ -111,13 +111,13 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE12",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ext_simple_derby_table2
-POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table2
+PREHOOK: Output: default@ext_simple_derby_table12
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table12
 (
  ikey int,
  bkey bigint,
@@ -132,13 +132,13 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE12",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ext_simple_derby_table2
-PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table3
+POSTHOOK: Output: default@ext_simple_derby_table12
+PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table13
 (
  ikey2 int,
  bkey2 bigint,
@@ -152,13 +152,13 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE3",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE13",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ext_simple_derby_table3
-POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table3
+PREHOOK: Output: default@ext_simple_derby_table13
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table13
 (
  ikey2 int,
  bkey2 bigint,
@@ -172,13 +172,13 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE3",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE13",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ext_simple_derby_table3
-PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table4
+POSTHOOK: Output: default@ext_simple_derby_table13
+PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table14
 (
  ikey2 int,
  bkey2 bigint,
@@ -193,13 +193,13 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE4",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE14",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ext_simple_derby_table4
-POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table4
+PREHOOK: Output: default@ext_simple_derby_table14
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table14
 (
  ikey2 int,
  bkey2 bigint,
@@ -214,20 +214,20 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE4",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE14",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ext_simple_derby_table4
+POSTHOOK: Output: default@ext_simple_derby_table14
 PREHOOK: query: explain cbo
 with t1 as (select fkey, ikey, sum(dkey) as dk_sum, sum(dkey2) as dk2_sum
-            from ext_simple_derby_table1 left join ext_simple_derby_table3
+            from ext_simple_derby_table11 left join ext_simple_derby_table13
             on ikey = ikey2
             where fkey2 is null
             group by fkey, ikey),
 t2 as (select datekey, fkey, ikey, sum(dkey) as dk_sum2, sum(dkey2) as dk2_sum2
-       from ext_simple_derby_table2 left join ext_simple_derby_table4
+       from ext_simple_derby_table12 left join ext_simple_derby_table14
        on ikey = ikey2
        where fkey2 is null
        group by datekey, fkey, ikey)
@@ -237,19 +237,19 @@ on t1.ikey = t2.ikey AND t1.fkey = t2.fkey
 where t2.fkey is null
 group by t2.datekey, t1.fkey, t2.ikey
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ext_simple_derby_table1
-PREHOOK: Input: default@ext_simple_derby_table2
-PREHOOK: Input: default@ext_simple_derby_table3
-PREHOOK: Input: default@ext_simple_derby_table4
+PREHOOK: Input: default@ext_simple_derby_table11
+PREHOOK: Input: default@ext_simple_derby_table12
+PREHOOK: Input: default@ext_simple_derby_table13
+PREHOOK: Input: default@ext_simple_derby_table14
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 with t1 as (select fkey, ikey, sum(dkey) as dk_sum, sum(dkey2) as dk2_sum
-            from ext_simple_derby_table1 left join ext_simple_derby_table3
+            from ext_simple_derby_table11 left join ext_simple_derby_table13
             on ikey = ikey2
             where fkey2 is null
             group by fkey, ikey),
 t2 as (select datekey, fkey, ikey, sum(dkey) as dk_sum2, sum(dkey2) as dk2_sum2
-       from ext_simple_derby_table2 left join ext_simple_derby_table4
+       from ext_simple_derby_table12 left join ext_simple_derby_table14
        on ikey = ikey2
        where fkey2 is null
        group by datekey, fkey, ikey)
@@ -259,10 +259,10 @@ on t1.ikey = t2.ikey AND t1.fkey = t2.fkey
 where t2.fkey is null
 group by t2.datekey, t1.fkey, t2.ikey
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ext_simple_derby_table1
-POSTHOOK: Input: default@ext_simple_derby_table2
-POSTHOOK: Input: default@ext_simple_derby_table3
-POSTHOOK: Input: default@ext_simple_derby_table4
+POSTHOOK: Input: default@ext_simple_derby_table11
+POSTHOOK: Input: default@ext_simple_derby_table12
+POSTHOOK: Input: default@ext_simple_derby_table13
+POSTHOOK: Input: default@ext_simple_derby_table14
 #### A masked pattern was here ####
 CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.DERBY])
@@ -274,18 +274,18 @@ HiveJdbcConverter(convention=[JDBC.DERBY])
             JdbcAggregate(group=[{0, 2}])
               JdbcFilter(condition=[IS NULL($6)])
                 JdbcJoin(condition=[=($0, $4)], joinType=[left])
-                  JdbcHiveTableScan(table=[[default, ext_simple_derby_table1]], table:alias=[ext_simple_derby_table1])
+                  JdbcHiveTableScan(table=[[default, ext_simple_derby_table11]], table:alias=[ext_simple_derby_table11])
                   HiveProject(ikey2=[$0], bkey2=[$1], fkey2=[$2], dkey2=[$3])
                     JdbcFilter(condition=[IS NOT NULL($0)])
-                      JdbcHiveTableScan(table=[[default, ext_simple_derby_table3]], table:alias=[ext_simple_derby_table3])
+                      JdbcHiveTableScan(table=[[default, ext_simple_derby_table13]], table:alias=[ext_simple_derby_table13])
           JdbcProject(datekey=[$2], fkey=[$1], ikey=[$0])
             JdbcAggregate(group=[{0, 2, 4}])
               JdbcFilter(condition=[IS NULL($7)])
                 JdbcJoin(condition=[=($0, $5)], joinType=[left])
                   HiveProject(ikey=[$0], bkey=[$1], fkey=[$2], dkey=[$3], datekey=[$4])
                     JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2))])
-                      JdbcHiveTableScan(table=[[default, ext_simple_derby_table2]], table:alias=[ext_simple_derby_table2])
+                      JdbcHiveTableScan(table=[[default, ext_simple_derby_table12]], table:alias=[ext_simple_derby_table12])
                   HiveProject(ikey2=[$0], bkey2=[$1], fkey2=[$2], dkey2=[$3], datekey2=[$4])
                     JdbcFilter(condition=[IS NOT NULL($0)])
-                      JdbcHiveTableScan(table=[[default, ext_simple_derby_table4]], table:alias=[ext_simple_derby_table4])
+                      JdbcHiveTableScan(table=[[default, ext_simple_derby_table14]], table:alias=[ext_simple_derby_table14])
 

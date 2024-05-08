@@ -42,7 +42,7 @@ public class CompactionExecutorFactory {
                 Utilities.getSessionSpecifiedClassLoader());
 
         compactionService = icebergCompactionService.newInstance();
-        compactionService.init(conf, msc, compactorFactory, collectGenericStats);
+        compactionService.init(conf, msc, compactorFactory, false);
       }
       catch (Exception e) {
         throw new HiveException("Failed instantiating and calling Iceberg compaction executor", e);
