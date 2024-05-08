@@ -697,7 +697,20 @@ public interface RawStore extends Configurable {
    */
   List<String> listPartitionNames(String catName, String dbName, String tblName,
       String defaultPartName, byte[] exprBytes, String order,
-      short maxParts) throws MetaException, NoSuchObjectException;
+      int maxParts) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get partition names with a filter. This is a portion of the SQL where clause.
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @param args additional arguments for getting partition names
+   * @return list of partition names matching the criteria
+   * @throws MetaException Error accessing the RDBMS or processing the filter.
+   * @throws NoSuchObjectException no such table.
+   */
+  List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException;
 
   /**
    * Get a list of partition values as one big struct.
@@ -878,6 +891,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS or working with the expression.
    * @throws NoSuchObjectException no such table.
    */
+  @Deprecated
   int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
       throws MetaException, NoSuchObjectException;
 

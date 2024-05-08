@@ -508,6 +508,66 @@ public class TestObjectStore {
   }
 
   @Test
+  public void testListPartitionNamesByFilter() throws Exception {
+    Database db1 = new DatabaseBuilder()
+        .setName(DB1)
+        .setDescription("description")
+        .setLocation("locationurl")
+        .build(conf);
+    try (AutoCloseable c = deadline()) {
+      objectStore.createDatabase(db1);
+    }
+    StorageDescriptor sd = createFakeSd("location");
+    HashMap<String, String> tableParams = new HashMap<>();
+    tableParams.put("EXTERNAL", "false");
+    FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl1 =
+        new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
+            tableParams, null, null, "MANAGED_TABLE");
+    try (AutoCloseable c = deadline()) {
+      objectStore.createTable(tbl1);
+    }
+    HashMap<String, String> partitionParams = new HashMap<>();
+    partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
+    List<String> value1 = Arrays.asList("US", "CA");
+    Partition part1 = new Partition(value1, DB1, TABLE1, 111, 111, sd, partitionParams);
+    part1.setCatName(DEFAULT_CATALOG_NAME);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part1);
+    }
+    List<String> value2 = Arrays.asList("US", "MA");
+    Partition part2 = new Partition(value2, DB1, TABLE1, 222, 222, sd, partitionParams);
+    part2.setCatName(DEFAULT_CATALOG_NAME);
+    try (AutoCloseable c = deadline()) {
+      objectStore.addPartition(part2);
+    }
+
+    List<String> partNames;
+    try (AutoCloseable c = deadline()) {
+      partNames = objectStore.listPartitionNamesByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().filter("Country = 'US'").build());
+    }
+    Assert.assertEquals(2, partNames.size());
+    Assert.assertEquals("country=US/state=CA", partNames.get(0));
+    Assert.assertEquals("country=US/state=MA", partNames.get(1));
+
+    try (AutoCloseable c = deadline()) {
+      partNames = objectStore.listPartitionNamesByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().filter("State = 'MA'").build());
+    }
+    Assert.assertEquals(1, partNames.size());
+    Assert.assertEquals("country=US/state=MA", partNames.get(0));
+
+    try (AutoCloseable c = deadline()) {
+      partNames = objectStore.listPartitionNamesByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().filter("Country = 'US' and State = 'MA'").build());
+    }
+    Assert.assertEquals(1, partNames.size());
+    Assert.assertEquals("country=US/state=MA", partNames.get(0));
+  }
+
+  @Test
   public void testDropPartitionByName() throws Exception {
     Database db1 = new DatabaseBuilder()
         .setName(DB1)

@@ -5787,15 +5787,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private void checkLimitNumberOfPartitionsByExpr(String catName, String dbName, String tblName,
-                                                  byte[] filterExpr, int maxParts)
-      throws TException {
-    if (isPartitionLimitEnabled()) {
-      checkLimitNumberOfPartitions(tblName, get_num_partitions_by_expr(catName, dbName, tblName,
-          filterExpr), maxParts);
-    }
-  }
-
   private void checkLimitNumberOfPartitionsByPs(String catName, String dbName, String tblName,
                                                 List<String> partVals, int maxParts)
           throws TException {
@@ -5808,6 +5799,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private boolean isPartitionLimitEnabled() {
     int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
     return partitionLimit > -1;
+  }
+
+  // Check request partition limit iff:
+  //  1. partition limit is enabled.
+  //  2. request size is greater than the limit.
+  private boolean needCheckPartitionLimit(int requestSize) {
+    int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
+    return partitionLimit > -1 && (requestSize < 0 || requestSize > partitionLimit);
   }
 
   private void checkLimitNumberOfPartitions(String tblName, int numPartitions, int maxToFetch) throws MetaException {
@@ -7540,13 +7539,22 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     fireReadTablePreEvent(catName, dbName, tblName);
     List<Partition> ret = null;
     Exception ex = null;
+    RawStore rs = getMS();
     try {
-      checkLimitNumberOfPartitionsByFilter(catName, dbName,
-          tblName, args.getFilter(), args.getMax());
-
       authorizeTableForPartitionMetadata(catName, dbName, tblName);
+      if (needCheckPartitionLimit(args.getMax())) {
+        // Since partition limit is configured, we need fetch at most (limit + 1) partition names
+        int requestMax = args.getMax();
+        int max = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST) + 1;
+        args = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).max(max).build();
+        List<String> partNames = rs.listPartitionNamesByFilter(catName, dbName, tblName, args);
+        checkLimitNumberOfPartitions(tblName, partNames.size(), requestMax);
+        ret = rs.getPartitionsByNames(catName, dbName, tblName,
+            new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
+      } else {
+        ret = rs.getPartitionsByFilter(catName, dbName, tblName, args);
+      }
 
-      ret = getMS().getPartitionsByFilter(catName, dbName, tblName, args);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     } catch (Exception e) {
       ex = e;
@@ -7613,9 +7621,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     PartitionsSpecByExprResult ret = null;
     Exception ex = null;
     try {
-      checkLimitNumberOfPartitionsByExpr(catName, dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
-      List<Partition> partitions = new LinkedList<>();
-      boolean hasUnknownPartitions = getMS().getPartitionsByExpr(catName, dbName, tblName, partitions,
+      PartitionsByExprResult result = get_partitions_by_expr_internal(catName, dbName, tblName,
           new GetPartitionsArgs.GetPartitionsArgsBuilder()
               .expr(req.getExpr()).max(req.getMaxParts()).defaultPartName(req.getDefaultPartitionName())
               .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
@@ -7624,8 +7630,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               .build());
       Table table = get_table_core(catName, dbName, tblName);
       List<PartitionSpec> partitionSpecs =
-          MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
-      ret = new PartitionsSpecByExprResult(partitionSpecs, hasUnknownPartitions);
+          MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, result.getPartitions());
+      ret = new PartitionsSpecByExprResult(partitionSpecs, result.isHasUnknownPartitions());
     } catch (Exception e) {
       ex = e;
       rethrowException(e);
@@ -7648,16 +7654,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     PartitionsByExprResult ret = null;
     Exception ex = null;
     try {
-      checkLimitNumberOfPartitionsByExpr(catName, dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
-      List<Partition> partitions = new LinkedList<>();
-      boolean hasUnknownPartitions = getMS().getPartitionsByExpr(catName, dbName, tblName, partitions,
+      ret = get_partitions_by_expr_internal(catName, dbName, tblName,
           new GetPartitionsArgs.GetPartitionsArgsBuilder()
               .expr(req.getExpr()).defaultPartName(req.getDefaultPartitionName()).max(req.getMaxParts())
               .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
               .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
               .includeParamKeyPattern(req.getIncludeParamKeyPattern())
               .build());
-      ret = new PartitionsByExprResult(partitions, hasUnknownPartitions);
     } catch (Exception e) {
       ex = e;
       rethrowException(e);
@@ -7665,6 +7668,24 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       endFunction("get_partitions_by_expr", ret != null, ex, tblName);
     }
     return ret;
+  }
+
+  private PartitionsByExprResult get_partitions_by_expr_internal(
+      String catName, String dbName, String tblName, GetPartitionsArgs args) throws TException {
+    List<Partition> partitions = new LinkedList<>();
+    boolean hasUnknownPartitions = false;
+    RawStore rs = getMS();
+    if (needCheckPartitionLimit(args.getMax())) {
+      // Since partition limit is configured, we need fetch at most (limit + 1) partition names
+      int max = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST) + 1;
+      List<String> partNames = rs.listPartitionNames(catName, dbName, tblName, args.getDefaultPartName(), args.getExpr(), null, max);
+      checkLimitNumberOfPartitions(tblName, partNames.size(), args.getMax());
+      partitions = rs.getPartitionsByNames(catName, dbName, tblName,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
+    } else {
+      hasUnknownPartitions = rs.getPartitionsByExpr(catName, dbName, tblName, partitions, args);
+    }
+    return new PartitionsByExprResult(partitions, hasUnknownPartitions);
   }
 
   @Override
@@ -7690,22 +7711,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       rethrowException(e);
     } finally {
       endFunction("get_num_partitions_by_filter", ret != -1, ex, tblName);
-    }
-    return ret;
-  }
-
-  private int get_num_partitions_by_expr(final String catName, final String dbName,
-                                         final String tblName, final byte[] expr)
-      throws TException {
-    int ret = -1;
-    Exception ex = null;
-    try {
-      ret = getMS().getNumPartitionsByExpr(catName, dbName, tblName, expr);
-    } catch (Exception e) {
-      ex = e;
-      rethrowException(e);
-    } finally {
-      endFunction("get_num_partitions_by_expr", ret != -1, ex, tblName);
     }
     return ret;
   }

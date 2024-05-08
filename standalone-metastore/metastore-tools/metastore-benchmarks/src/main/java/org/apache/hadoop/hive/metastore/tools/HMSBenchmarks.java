@@ -417,14 +417,19 @@ final class HMSBenchmarks {
     String dbName = data.dbName;
     String tableName = data.tableName;
 
-    BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName, createSchema(Arrays.asList("p_a", "p_b", "p_c")));
     try {
       addManyPartitionsNoException(client, dbName, tableName, null,
-              Collections.singletonList("d"), count);
+              Arrays.asList("a", "b", "c"), count);
       return bench.measure(
           () ->
-              throwingSupplierWrapper(() ->
-                  client.getPartitionsByFilter(dbName, tableName, "`date`='d0'"))
+              throwingSupplierWrapper(() -> {
+                  // test multiple cases for get_partitions_by_filter
+                  client.getPartitionsByFilter(dbName, tableName, "`p_a`='a0'");
+                  client.getPartitionsByFilter(dbName, tableName,
+                      "`p_a`='a0' or `p_b`='b0' or `p_c`='c0' or `p_a`='a1' or `p_b`='b1' or `p_c`='c1'");
+              return null;
+              })
       );
     } finally {
       throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
