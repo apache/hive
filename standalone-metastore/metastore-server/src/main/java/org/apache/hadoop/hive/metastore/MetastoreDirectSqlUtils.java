@@ -609,4 +609,16 @@ class MetastoreDirectSqlUtils {
       throw new RuntimeException(e);
     }
   }
+
+  static int getCountOfQuery(PersistenceManager pm, String queryText, Object[] params) {
+    boolean doTrace = LOG.isDebugEnabled();
+    long start = doTrace ? System.nanoTime() : 0;
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      query.setUnique(true);
+      int sqlResult = MetastoreDirectSqlUtils.extractSqlInt(query.executeWithArray(params));
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      return sqlResult;
+    }
+  }
 }
