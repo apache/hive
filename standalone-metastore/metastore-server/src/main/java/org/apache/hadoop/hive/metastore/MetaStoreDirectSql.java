@@ -758,15 +758,8 @@ class MetaStoreDirectSql {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName,
         dbName, tableName, filter.filter, filter.params,
         filter.joins, args.getMax());
-    if (partitionIds.isEmpty()) {
-      return Collections.emptyList(); // no partitions, bail early.
-    }
-    return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
-      @Override
-      public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsByPartitionIds(catName, dbName, tableName, input, isAcidTable, args);
-      }
-    });
+
+    return getPartitionsByPartitionIdsInBatch(catName, dbName, tableName, partitionIds, isAcidTable, args);
   }
 
   /**
@@ -910,18 +903,9 @@ class MetaStoreDirectSql {
       String dbName, String tblName, GetPartitionsArgs args) throws MetaException {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName,
         tblName, null, Collections.<String>emptyList(), Collections.<String>emptyList(), args.getMax());
-    if (partitionIds.isEmpty()) {
-      return Collections.emptyList(); // no partitions, bail early.
-    }
 
     // Get full objects. For Oracle/etc. do it in batches.
-    List<Partition> result = Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
-      @Override
-      public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsByPartitionIds(catName, dbName, tblName, input, false, args);
-      }
-    });
-    return result;
+    return getPartitionsByPartitionIdsInBatch(catName, dbName, tblName, partitionIds, false, args);
   }
 
   private static Boolean isViewTable(Table t) {
@@ -1045,6 +1029,20 @@ class MetaStoreDirectSql {
 
     Object[] params = new Object[]{tblName, dbName, catName};
     return getPartitionsByQuery(catName, dbName, tblName, queryText, params, isAcidTable, args);
+  }
+
+  private List<Partition> getPartitionsByPartitionIdsInBatch(String catName, String dbName,
+      String tblName, List<Long> partIdList, boolean isAcidTable, GetPartitionsArgs args)
+      throws MetaException {
+    if (partIdList.isEmpty()) {
+      return Collections.emptyList(); // no partitions, bail early.
+    }
+    return Batchable.runBatched(batchSize, partIdList, new Batchable<Long, Partition>() {
+      @Override
+      public List<Partition> run(List<Long> input) throws MetaException {
+        return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
+      }
+    });
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */

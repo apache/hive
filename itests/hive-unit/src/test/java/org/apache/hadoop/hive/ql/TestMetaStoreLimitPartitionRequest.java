@@ -160,7 +160,7 @@ public class TestMetaStoreLimitPartitionRequest {
   @Test
   public void testSimpleQueryWithDirectSqlTooManyPartitions() throws Exception {
     String queryString = "select value from %s where ds>'2008-04-20'";
-    executeQueryExceedPartitionLimit(queryString, 8);
+    executeQueryExceedPartitionLimit(queryString, 5);
   }
 
   @Test
@@ -244,20 +244,20 @@ public class TestMetaStoreLimitPartitionRequest {
   public void testQueryWithInWithFallbackToORMTooManyPartitions() throws Exception {
     setupNumTmpTable();
     String queryString = "select value from %s a where a.num in (select value from " + TABLE_NAME + "_num_tmp)";
-    executeQueryExceedPartitionLimit(queryString, 12);
+    executeQueryExceedPartitionLimit(queryString, 5);
   }
 
   @Test
   public void testQueryWithInWithFallbackToORMTooManyPartitions2() throws Exception {
     setupNumTmpTable();
     String queryString = "select value from %s a where a.num in (select value from " + TABLE_NAME + "_num_tmp where value='25')";
-    executeQueryExceedPartitionLimit(queryString, 12);
+    executeQueryExceedPartitionLimit(queryString, 5);
   }
 
   @Test
   public void testQueryWithLikeWithFallbackToORMTooManyPartitions() throws Exception {
     String queryString = "select value from %s where num like '3%%'";
-    executeQueryExceedPartitionLimit(queryString, 6);
+    executeQueryExceedPartitionLimit(queryString, 5);
   }
 
   private void setupNumTmpTable() throws SQLException {
