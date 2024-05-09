@@ -110,7 +110,7 @@ public class NanoTimeUtils {
     try {
       localDateTime = jDateTime.toLocalDateTime();
     } catch (DateTimeException e) {
-      if (e.getMessage().contains(ErrorMsg.NOT_A_LEAP_YEAR.getMsg()) && legacyConversion) {
+      if (e.getMessage().contains(ErrorMsg.NOT_LEAP_YEAR.getMsg()) && legacyConversion) {
         localDateTime = LocalDateTime.ofEpochSecond(jDateTime.toMilliseconds() / 1000,
             (int) jDateTime.toMilliseconds() % 1000 * 1000000, ZoneOffset.UTC);
         notLeapYear = true;
@@ -135,7 +135,7 @@ public class NanoTimeUtils {
     calendar.set(Calendar.SECOND, seconds);
 
     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-    if(notLeapYear){
+    if (notLeapYear) {
       ts = TimestampTZUtil.legacyLeapYearConversions(ts, ZoneOffset.UTC, targetZone);
     } else {
       ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, targetZone, legacyConversion);

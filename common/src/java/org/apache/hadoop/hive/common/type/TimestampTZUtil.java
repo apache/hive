@@ -188,7 +188,7 @@ public class TimestampTZUtil {
   public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone,
       boolean legacyConversion) {
     if (legacyConversion) {
-      Timestamp result = Timestamp.valueOf(formatDate(ts, fromZone, toZone));
+      Timestamp result = Timestamp.valueOf(formatLegacyDate(ts, fromZone, toZone));
       result.setNanos(ts.getNanos());
       return result;
     }
@@ -209,15 +209,16 @@ public class TimestampTZUtil {
   public static Timestamp legacyLeapYearConversions(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
     DateTimeFormatter dtf = FORMATTER;
     Timestamp result = Timestamp.valueOf(
-        dtf.format(dtf.withResolverStyle(ResolverStyle.LENIENT).parse(formatDate(ts, fromZone, toZone))));
+        dtf.format(dtf.withResolverStyle(ResolverStyle.LENIENT)
+            .parse(formatLegacyDate(ts, fromZone, toZone))));
     result.setNanos(ts.getNanos());
     return result;
   }
 
-  private static String formatDate(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
+  private static String formatLegacyDate(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
     DateFormat formatter = getLegacyDateFormatter();
     formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
-    java.util.Date date = null;
+    java.util.Date date;
     try {
       date = formatter.parse(ts.format(TIMESTAMP_FORMATTER));
     } catch (ParseException e) {
