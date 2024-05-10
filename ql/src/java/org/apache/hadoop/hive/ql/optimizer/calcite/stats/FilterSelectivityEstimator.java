@@ -47,19 +47,17 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Sarg;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.convertSargToBetween;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.convertSargToNotBetween;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.isSargBetween;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
@@ -181,6 +179,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case SEARCH:
       RexLiteral literal = (RexLiteral) call.operands.get(1);
       Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+      int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
 
       // TODO: revisit this to better handle INs
       if (sarg.isPoints()) {
@@ -195,18 +195,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         }
         break;
 
-      } else if (isSargBetween(sarg)) {
-        return convertSargToBetween(sarg, literal.getType(), call.getOperands().get(0))
-            .accept(this);
-
-      } else if (isSargBetween(sarg.negate())) {
-        return convertSargToNotBetween(sarg.negate(), literal.getType(), call.getOperands().get(0))
-            .accept(this);
-
       } else {
-        return RexUtil
-            .expandSearch(new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())), null, call)
-            .accept(this);
+        return  visitCall((RexCall) HivePointLookupOptimizerRule
+            .analyzeRexNode(
+                rexBuilder,
+                call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
+                minOrClauses
+            )
+        );
       }
 
       default:

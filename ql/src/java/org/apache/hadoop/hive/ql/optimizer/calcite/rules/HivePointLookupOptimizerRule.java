@@ -92,7 +92,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition, minNumORClauses);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -117,7 +117,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition, minNumORClauses);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -149,7 +149,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
       List<RexNode> newProjects = new ArrayList<>();
       for (RexNode oldNode : project.getProjects()) {
-        RexNode newNode = analyzeRexNode(rexBuilder, oldNode);
+        RexNode newNode = analyzeRexNode(rexBuilder, oldNode, minNumORClauses);
         if (!newNode.toString().equals(oldNode.toString())) {
           changed = true;
           newProjects.add(newNode);
@@ -178,7 +178,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     this.minNumORClauses = minNumORClauses;
   }
 
-  public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
+  public static RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition, int minNumORClauses) {
     // 1. We try to transform possible candidates
     RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
     RexNode newCondition = transformIntoInClause.apply(condition);

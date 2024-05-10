@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
@@ -65,6 +67,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -86,6 +89,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
@@ -207,6 +211,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       args.add(searchOperand.accept(this));
       RexLiteral literal = (RexLiteral)call.operands.get(1);
       Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
+
       if (sarg.isPoints()) {
         for (Range<?> range : sarg.rangeSet.asRanges()) {
           args.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
@@ -214,13 +220,35 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         }
         GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, call.getType(), args.size());
         try {
-          return ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
+          if (sarg.nullAs == RexUnknownAs.UNKNOWN) {
+            return ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
+          } else if (sarg.nullAs == RexUnknownAs.TRUE) {
+            GenericUDF orUdf = SqlFunctionConverter.getHiveUDF(SqlStdOperatorTable.OR, call.getType(), 2);
+            ExprNodeDesc orExprNodeDesc =
+                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, call.getOperands().get(0)));
+            return ExprNodeGenericFuncDesc
+                .newInstance(orUdf, Arrays.asList(orExprNodeDesc, ExprNodeGenericFuncDesc.newInstance(hiveUdf, args)));
+          } else {
+            GenericUDF andUdf = SqlFunctionConverter.getHiveUDF(SqlStdOperatorTable.AND, call.getType(), 2);
+            ExprNodeDesc andExprNodeDesc =
+                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, call.getOperands().get(0)));
+            return ExprNodeGenericFuncDesc
+                .newInstance(
+                    andUdf, Arrays.asList(andExprNodeDesc, ExprNodeGenericFuncDesc.newInstance(hiveUdf, args))
+                );
+          }
         } catch (UDFArgumentException e) {
           LOG.error("Failed to instantiate udf: ", e);
           throw new RuntimeException(e);
         }
       } else {
-        return visitCall((RexCall) call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)));
+        return visitCall((RexCall) HivePointLookupOptimizerRule
+            .analyzeRexNode(
+                rexBuilder,
+                call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
+                minOrClauses
+            )
+        );
       }
     } else {
       for (RexNode operand : call.operands) {
