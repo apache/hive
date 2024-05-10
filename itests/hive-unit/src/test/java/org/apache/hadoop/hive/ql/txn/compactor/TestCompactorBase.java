@@ -168,6 +168,15 @@ class TestCompactorBase {
     driver.run(cmd);
   }
 
+  void dropTables(String... tables) throws Exception {
+    HiveConf queryConf = driver.getQueryState().getConf();
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    for (String table : tables) {
+      executeStatementOnDriver("drop table if exists " + table, driver);
+    }
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+  }
+  
   private void createTestDataFile(String filename, String[] lines) throws IOException {
     FileWriter writer = null;
     try {

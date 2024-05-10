@@ -97,7 +97,7 @@ public class TestCompactor extends TestCompactorBase {
   public void testHeartbeatShutdownOnFailedCompaction() throws Exception {
     String dbName = "default";
     String tblName = "compaction_test";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
             " PARTITIONED BY(bkt INT)" +
             " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
@@ -169,7 +169,7 @@ public class TestCompactor extends TestCompactorBase {
   @Test
   public void schemaEvolutionAddColDynamicPartitioningInsert() throws Exception {
     String tblName = "dpct";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(ds string)" +
       " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
@@ -237,7 +237,7 @@ public class TestCompactor extends TestCompactorBase {
   @Test
   public void schemaEvolutionAddColDynamicPartitioningUpdate() throws Exception {
     String tblName = "udpct";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(ds string)" +
       " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
@@ -341,7 +341,7 @@ public class TestCompactor extends TestCompactorBase {
     String dbName = "default";
     String tblName = "compaction_test";
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(bkt INT)" +
       " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
@@ -456,7 +456,7 @@ public class TestCompactor extends TestCompactorBase {
     String dbName = "default";
     String tblName = "compaction_test";
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
             " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
             " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -501,7 +501,7 @@ public class TestCompactor extends TestCompactorBase {
   @Test
   public void dynamicPartitioningInsert() throws Exception {
     String tblName = "dpct";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(ds string)" +
       " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
@@ -526,7 +526,7 @@ public class TestCompactor extends TestCompactorBase {
   @Test
   public void dynamicPartitioningUpdate() throws Exception {
     String tblName = "udpct";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(ds string)" +
       " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
@@ -554,7 +554,7 @@ public class TestCompactor extends TestCompactorBase {
   @Test
   public void dynamicPartitioningDelete() throws Exception {
     String tblName = "ddpct";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(ds string)" +
       " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
@@ -586,7 +586,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -644,7 +644,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true') ", driver);
@@ -691,7 +691,7 @@ public class TestCompactor extends TestCompactorBase {
     String columnTypesProperty = "string:int";
     String agentInfo = "UT_" + Thread.currentThread().getName();
 
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a STRING) " +
         " PARTITIONED BY (b INT)" + //currently ACID requires table to be bucketed
         " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -802,7 +802,7 @@ public class TestCompactor extends TestCompactorBase {
   public void testNoDataLossWhenMaxNumDeltaIsUsed() throws Exception {
     String dbName = "default";
     String tblName = "cws";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
 
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -865,7 +865,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -908,7 +908,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -940,7 +940,7 @@ public class TestCompactor extends TestCompactorBase {
     driver = DriverFactory.newDriver(conf);
     String dbName = "default";
     String tblName = "cws";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
 
     executeStatementOnDriver(
         "CREATE TABLE " + tblName + "(a INT, b STRING) " + " STORED AS ORC  TBLPROPERTIES ('transactional'='true')",
@@ -1071,7 +1071,7 @@ public class TestCompactor extends TestCompactorBase {
 
     String agentInfo = "UT_" + Thread.currentThread().getName();
 
-    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    dropTables(tableName);
     executeStatementOnDriver("CREATE TABLE " + tableName + "(a STRING, b STRING) " + //currently ACID requires table to be bucketed
             " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("insert into table " + tableName + " values ('1', '2'), ('3', '4') ", driver);
@@ -1373,7 +1373,7 @@ public class TestCompactor extends TestCompactorBase {
   private HiveStreamingConnection prepareTableAndConnection(String dbName, String tblName, int batchSize) throws Exception {
     String agentInfo = "UT_" + Thread.currentThread().getName();
 
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(b STRING) " +
         " PARTITIONED BY (a INT)" + //currently ACID requires table to be bucketed
         " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -1398,7 +1398,7 @@ public class TestCompactor extends TestCompactorBase {
   private HiveStreamingConnection prepareTableTwoPartitionsAndConnection(String dbName, String tblName, int batchSize) throws Exception {
     String agentInfo = "UT_" + Thread.currentThread().getName();
 
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(c STRING) " +
         " PARTITIONED BY (a INT, b INT)" + //currently ACID requires table to be bucketed
         " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
@@ -1436,7 +1436,7 @@ public class TestCompactor extends TestCompactorBase {
     String agentInfo = "UT_" + Thread.currentThread().getName();
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
 
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(b STRING) " +
         " PARTITIONED BY (a INT) STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("alter table " + tblName + " add partition(a=1)", driver);
@@ -1522,7 +1522,7 @@ public class TestCompactor extends TestCompactorBase {
   public void mmTable() throws Exception {
     String dbName = "default";
     String tblName = "mm_nonpart";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS ORC" +
         " TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
         driver);
@@ -1564,7 +1564,7 @@ public class TestCompactor extends TestCompactorBase {
     driver.getConf().setBoolVar(ConfVars.HIVE_MM_ALLOW_ORIGINALS, allowOriginals);
     String dbName = "default";
     String tblName = "mm_nonpart";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " + format
         + " TBLPROPERTIES ('transactional'='false')", driver);
     Table table = msClient.getTable(dbName, tblName);
@@ -1609,7 +1609,7 @@ public class TestCompactor extends TestCompactorBase {
     String dbName = "default";
     String tblName = "mm_nonpart";
     FileSystem fs = FileSystem.get(conf);
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " + format
         + " TBLPROPERTIES ('transactional'='false')", driver);
     Table table = msClient.getTable(dbName, tblName);
@@ -1652,7 +1652,7 @@ public class TestCompactor extends TestCompactorBase {
     String dbName = "default";
     String tblName = "mm_nonpart";
     FileSystem fs = FileSystem.get(conf);
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " + format
         + " TBLPROPERTIES ('transactional'='false')", driver);
     Table table = msClient.getTable(dbName, tblName);
@@ -1678,7 +1678,7 @@ public class TestCompactor extends TestCompactorBase {
   public void mmTableBucketed() throws Exception {
     String dbName = "default";
     String tblName = "mm_nonpart";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) CLUSTERED BY (a) " +
         "INTO 64 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', " +
         "'transactional_properties'='insert_only')", driver);
@@ -1709,7 +1709,7 @@ public class TestCompactor extends TestCompactorBase {
   public void mmTableOpenWriteId() throws Exception {
     String dbName = "default";
     String tblName = "mm_nonpart";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS TEXTFILE" +
         " TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
         driver);
@@ -1785,7 +1785,7 @@ public class TestCompactor extends TestCompactorBase {
   public void mmTablePartitioned() throws Exception {
     String dbName = "default";
     String tblName = "mm_part";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
         " PARTITIONED BY(ds int) STORED AS TEXTFILE" +
         " TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
@@ -1875,7 +1875,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true', "
@@ -1916,7 +1916,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true',"
@@ -1990,7 +1990,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true',"
@@ -2049,7 +2049,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cfs";
     String createQuery = "CREATE TABLE " + tblName + "(a INT, b STRING) " + "STORED AS ORC  TBLPROPERTIES ('transactional'='true',"
             + "'transactional_properties'='default')";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver(createQuery, driver);
 
 
@@ -2097,7 +2097,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "cws";
     String columnNamesProperty = "a,b";
     String columnTypesProperty = "int:string";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true',"
@@ -2154,7 +2154,7 @@ public class TestCompactor extends TestCompactorBase {
     String dbName = "default";
     String tableName = "stats_comp_test";
     List<String> colNames = Collections.singletonList("a");
-    executeStatementOnDriver("drop table if exists " + dbName + "." + tableName, driver);
+    dropTables(dbName + "." + tableName);
     executeStatementOnDriver("create table " + dbName + "." + tableName +
         " (a INT) STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("insert into " + dbName + "." + tableName + " values(1)", driver);
@@ -2197,8 +2197,7 @@ public class TestCompactor extends TestCompactorBase {
     conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, "root.user1");
     String tblName1 = "ttp1"; // plain acid table
     String tblName2 = "ttp2"; // acid table with customized tblproperties
-    executeStatementOnDriver("drop table if exists " + tblName1, driver);
-    executeStatementOnDriver("drop table if exists " + tblName2, driver);
+    dropTables(tblName1, tblName2);
     executeStatementOnDriver("CREATE TABLE " + tblName1 + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC" +
       " TBLPROPERTIES ('transactional'='true', 'orc.compress.size'='2700')", driver);
@@ -2410,9 +2409,7 @@ public class TestCompactor extends TestCompactorBase {
   @Test
   public void testCompactionOnDataLoadedInPath() throws Exception {
     // Setup of LOAD INPATH scenario.
-    executeStatementOnDriver("drop table if exists comp0", driver);
-    executeStatementOnDriver("drop table if exists comp1", driver);
-    executeStatementOnDriver("drop table if exists comp3", driver);
+    dropTables("comp0", "comp1", "comp3");
 
     executeStatementOnDriver("create external table comp0 (a string)", driver);
     executeStatementOnDriver("insert into comp0 values ('1111111111111')", driver);
@@ -2507,8 +2504,7 @@ public class TestCompactor extends TestCompactorBase {
   public void testCompactionDataLoadedWithInsertOverwrite() throws Exception {
     String externalTableName = "test_comp_txt";
     String tableName = "test_comp";
-    executeStatementOnDriver("DROP TABLE IF EXISTS " + externalTableName, driver);
-    executeStatementOnDriver("DROP TABLE IF EXISTS " + tableName, driver);
+    dropTables(externalTableName, tableName);
     executeStatementOnDriver("CREATE EXTERNAL TABLE " + externalTableName + "(a int, b int, c int) STORED AS TEXTFILE",
         driver);
     executeStatementOnDriver(
@@ -2551,7 +2547,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "adc_table";
 
     // First phase, populate the cache
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
             "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
     executeStatementOnDriver("insert into " + tblName + " values ('a')", driver);
@@ -2563,7 +2559,7 @@ public class TestCompactor extends TestCompactorBase {
     executeStatementOnDriver("select * from " + tblName + " order by a", driver);
 
     // Second phase, the previous data should be cleaned
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
             "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
     executeStatementOnDriver("insert into " + tblName + " values ('c')", driver);
@@ -2587,7 +2583,7 @@ public class TestCompactor extends TestCompactorBase {
     String tblName = "adc_part_table";
 
     // First phase, populate the cache
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("create table " + tblName + " (a string) PARTITIONED BY (p string) stored as orc " +
             "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
     executeStatementOnDriver("insert into " + tblName + " values ('a', 'p1')", driver);
@@ -2601,7 +2597,7 @@ public class TestCompactor extends TestCompactorBase {
     executeStatementOnDriver("select a from " + tblName + " order by a", driver);
 
     // Second phase, the previous data should be cleaned
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(tblName);
     executeStatementOnDriver("create table " + tblName + " (a string) PARTITIONED BY (p string) stored as orc " +
             "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
     executeStatementOnDriver("insert into " + tblName + " values ('c', 'p1')", driver);

@@ -2102,7 +2102,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testIsRawFormatFile() throws Exception {
-    dropTable(new String[]{"file_formats"});
+    dropTables("file_formats");
     
     runStatementOnDriver("CREATE TABLE `file_formats`(`id` int, `name` string) " +
       " ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' " +
@@ -2580,7 +2580,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testFetchTaskCachingWithConversion() throws Exception {
-    dropTable(new String[]{"fetch_task_table"});
+    dropTables("fetch_task_table");
     List actualRes = new ArrayList<>();
     runStatementOnDriver("create table fetch_task_table (a INT, b INT) stored as orc" +
             " tblproperties ('transactional'='true')");
