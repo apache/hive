@@ -616,13 +616,13 @@ public class TestCompactor extends TestCompactorBase {
       Path resultFile = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000001_0000004_v0000009")) {
+        if (names[i].equals("delta_0000001_0000004_v0000008")) {
           resultFile = stat[i].getPath();
         }
       }
       Arrays.sort(names);
       String[] expected = new String[]{"delta_0000001_0000002",
-        "delta_0000001_0000004_v0000009", "delta_0000003_0000004", "delta_0000005_0000006"};
+        "delta_0000001_0000004_v0000008", "delta_0000003_0000004", "delta_0000005_0000006"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names) + ",stat="
             + CompactorTestUtil.printFileStatus(stat));
@@ -672,7 +672,7 @@ public class TestCompactor extends TestCompactorBase {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals("base_0000004_v0000009", name);
+      Assert.assertEquals("base_0000004_v0000008", name);
       CompactorTestUtil
           .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
               1);
@@ -784,7 +784,7 @@ public class TestCompactor extends TestCompactorBase {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals("base_0000004_v0000009", name);
+      Assert.assertEquals("base_0000004_v0000008", name);
       CompactorTestUtil
           .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
               1);
@@ -887,13 +887,13 @@ public class TestCompactor extends TestCompactorBase {
     Path resultDelta = null;
     for (int i = 0; i < names.length; i++) {
       names[i] = stat[i].getPath().getName();
-      if (names[i].equals("delta_0000001_0000004_v0000009")) {
+      if (names[i].equals("delta_0000001_0000004_v0000008")) {
         resultDelta = stat[i].getPath();
       }
     }
     Arrays.sort(names);
     String[] expected = new String[]{"delta_0000001_0000002",
-      "delta_0000001_0000004_v0000009", "delta_0000003_0000004"};
+      "delta_0000001_0000004_v0000008", "delta_0000003_0000004"};
     if (!Arrays.deepEquals(expected, names)) {
       Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
     }
@@ -926,7 +926,7 @@ public class TestCompactor extends TestCompactorBase {
       Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
-    if (!name.equals("base_0000004_v0000009")) {
+    if (!name.equals("base_0000004_v0000008")) {
       Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000004");
     }
     CompactorTestUtil
@@ -1326,11 +1326,11 @@ public class TestCompactor extends TestCompactorBase {
 
     FileSystem fs = FileSystem.get(conf);
     verifyDeltaCount(p1.getSd(), fs, 0);
-    verifyHasBase(p1.getSd(), fs, "base_0000002_v0000010");
+    verifyHasBase(p1.getSd(), fs, "base_0000002_v0000009");
     verifyDeltaCount(p2.getSd(), fs, 0);
-    verifyHasBase(p2.getSd(), fs, "base_0000004_v0000012");
+    verifyHasBase(p2.getSd(), fs, "base_0000004_v0000011");
     verifyDeltaCount(p3.getSd(), fs, 0);
-    verifyHasBase(p3.getSd(), fs, "base_0000007_v0000014");
+    verifyHasBase(p3.getSd(), fs, "base_0000007_v0000013");
   }
 
   @Test
@@ -1541,12 +1541,12 @@ public class TestCompactor extends TestCompactorBase {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 1);
-    verifyHasBase(table.getSd(), fs, "base_0000002_v0000006");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000005");
 
     // Make sure we don't compact if we don't need to compact.
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 1);
-    verifyHasBase(table.getSd(), fs, "base_0000002_v0000006");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000005");
   }
 
   @Test public void mmTableOriginalsMajorOrc() throws Exception {
@@ -1586,7 +1586,7 @@ public class TestCompactor extends TestCompactorBase {
 
       runMajorCompaction(dbName, tblName);
       verifyFooBarResult(tblName, 3);
-      verifyHasBase(table.getSd(), fs, "base_0000001_v0000006");
+      verifyHasBase(table.getSd(), fs, "base_0000001_v0000005");
     } else {
       verifyDeltaCount(table.getSd(), fs, 1);
       // 1 delta dir won't be compacted. Skip testing major compaction.
@@ -1629,7 +1629,7 @@ public class TestCompactor extends TestCompactorBase {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 9);
-    verifyHasBase(table.getSd(), fs, "base_0000002_v0000007");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000006");
   }
 
   @Test public void mmMajorOriginalsBaseOrc() throws Exception {
@@ -1697,7 +1697,7 @@ public class TestCompactor extends TestCompactorBase {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 1);
-    String baseDir = "base_0000002_v0000006";
+    String baseDir = "base_0000002_v0000005";
     verifyHasBase(table.getSd(), fs, baseDir);
 
     FileStatus[] files = fs.listStatus(new Path(table.getSd().getLocation(), baseDir),
@@ -1733,7 +1733,7 @@ public class TestCompactor extends TestCompactorBase {
 
     runMajorCompaction(dbName, tblName); // Don't compact 4 and 5; 3 is opened.
     FileSystem fs = FileSystem.get(conf);
-    verifyHasBase(table.getSd(), fs, "base_0000002_v0000010");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000009");
     verifyDirCount(table.getSd(), fs, 1, AcidUtils.baseFileFilter);
     verifyFooBarResult(tblName, 2);
 
@@ -1745,7 +1745,7 @@ public class TestCompactor extends TestCompactorBase {
     msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
     runMajorCompaction(dbName, tblName); // Compact 4 and 5.
     verifyFooBarResult(tblName, 2);
-    verifyHasBase(table.getSd(), fs, "base_0000005_v0000014");
+    verifyHasBase(table.getSd(), fs, "base_0000005_v0000013");
     runCleaner(conf);
     // in case when we have # of accumulated entries for the same table/partition - we need to process them one-by-one in ASC order of write_id's,
     // however, to support multi-threaded processing in the Cleaner, we have to move entries from the same group to the next Cleaner cycle,
@@ -1815,8 +1815,8 @@ public class TestCompactor extends TestCompactorBase {
 
     verifyFooBarResult(tblName, 3);
     verifyDeltaCount(p3.getSd(), fs, 1);
-    verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000012");
+    verifyHasBase(p1.getSd(), fs, "base_0000006_v0000009");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000011");
 
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
@@ -1826,8 +1826,8 @@ public class TestCompactor extends TestCompactorBase {
     // Make sure we don't compact if we don't need to compact; but do if we do.
     verifyFooBarResult(tblName, 4);
     verifyDeltaCount(p3.getSd(), fs, 1);
-    verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000012");
+    verifyHasBase(p1.getSd(), fs, "base_0000006_v0000009");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000011");
 
   }
 
@@ -1901,7 +1901,7 @@ public class TestCompactor extends TestCompactorBase {
       Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
-    Assert.assertEquals("base_0000004_v0000009", name);
+    Assert.assertEquals("base_0000004_v0000008", name);
     CompactorTestUtil
         .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 1, 1L, 4L, null,
             2);
@@ -1950,12 +1950,12 @@ public class TestCompactor extends TestCompactorBase {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000001_0000003_v0000006")) {
+      if (deltas[i].equals("delta_0000001_0000003_v0000005")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000003_v0000006",
+    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000003_v0000005",
       "delta_0000002_0000002_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
@@ -1971,12 +1971,12 @@ public class TestCompactor extends TestCompactorBase {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000003_v0000006")) {
+      if (deleteDeltas[i].equals("delete_delta_0000001_0000003_v0000005")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000003_v0000006", "delete_delta_0000003_0000003_0000"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000003_v0000005", "delete_delta_0000003_0000003_0000"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
@@ -2023,12 +2023,12 @@ public class TestCompactor extends TestCompactorBase {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000001_0000002_v0000005")) {
+      if (deltas[i].equals("delta_0000001_0000002_v0000004")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000002_v0000005",
+    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000002_v0000004",
       "delta_0000002_0000002_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
@@ -2125,13 +2125,13 @@ public class TestCompactor extends TestCompactorBase {
     Path resultFile = null;
     for (int i = 0; i < names.length; i++) {
       names[i] = stat[i].getPath().getName();
-      if (names[i].equals("delta_0000001_0000004_v0000009")) {
+      if (names[i].equals("delta_0000001_0000004_v0000008")) {
         resultFile = stat[i].getPath();
       }
     }
     Arrays.sort(names);
     String[] expected = new String[]{"delta_0000001_0000002",
-      "delta_0000001_0000004_v0000009", "delta_0000003_0000004", "delta_0000005_0000006"};
+      "delta_0000001_0000004_v0000008", "delta_0000003_0000004", "delta_0000005_0000006"};
     if (!Arrays.deepEquals(expected, names)) {
       Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
     }
@@ -2458,7 +2458,7 @@ public class TestCompactor extends TestCompactorBase {
     FileStatus[] files = fs.listStatus(new Path(table.getSd().getLocation()));
     // base dir
     assertEquals(1, files.length);
-    assertEquals("base_0000002_v0000005", files[0].getPath().getName());
+    assertEquals("base_0000002_v0000004", files[0].getPath().getName());
     files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
     // files
     assertEquals(2, files.length);
@@ -2491,7 +2491,7 @@ public class TestCompactor extends TestCompactorBase {
     files = fs.listStatus(new Path(table.getSd().getLocation()));
     // base dir
     assertEquals(1, files.length);
-    assertEquals("base_0000003_v0000009", files[0].getPath().getName());
+    assertEquals("base_0000003_v0000008", files[0].getPath().getName());
     files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
     // files
     assertEquals(2, files.length);

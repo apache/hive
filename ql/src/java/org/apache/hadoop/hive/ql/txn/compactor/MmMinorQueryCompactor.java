@@ -51,7 +51,8 @@ final class MmMinorQueryCompactor extends QueryCompactor {
     StorageDescriptor storageDescriptor = context.getSd();
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
-    HiveConf driverConf = setUpDriverSession(hiveConf);
+    // Set up the session for driver.
+    HiveConf driverConf = new HiveConf(hiveConf);
 
     String tmpTableName = getTempTableName(table);
     String resultTmpTableName = tmpTableName + "_result";
@@ -183,12 +184,5 @@ final class MmMinorQueryCompactor extends QueryCompactor {
         CompactionQueryBuilder.Operation.DROP,
         true,
         tableToDrop).build();
-  }
-
-  private HiveConf setUpDriverSession(HiveConf hiveConf) {
-    HiveConf driverConf = new HiveConf(hiveConf);
-    driverConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
-    driverConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
-    return driverConf;
   }
 }

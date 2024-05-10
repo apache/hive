@@ -268,6 +268,8 @@ public class TestDMLSemanticAnalyzer {
     ASTNode tree = ParseUtils.parse(query, ctx);
 
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
+    sem.injectTxnHook(() -> null);
+
     SessionState.get().initTxnMgr(conf);
     SessionState.get().getTxnMgr().openTxn(ctx, conf.getUser());
     db = sem.getDb();

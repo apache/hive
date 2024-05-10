@@ -98,6 +98,7 @@ class TestCompactorBase {
     conf = hiveConf;
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_MM_ALLOW_ORIGINALS, true);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_EXTERNALTABLE_PURGE_DEFAULT, true);
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
@@ -169,7 +170,13 @@ class TestCompactorBase {
   }
 
   void dropTables(String... tables) throws Exception {
+    dropTables(driver, tables);
+  }
+  
+  static void dropTables(IDriver driver, String... tables) throws Exception {
     HiveConf queryConf = driver.getQueryState().getConf();
+    SessionState.get().initTxnMgr(queryConf);
+    
     queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     for (String table : tables) {
       executeStatementOnDriver("drop table if exists " + table, driver);

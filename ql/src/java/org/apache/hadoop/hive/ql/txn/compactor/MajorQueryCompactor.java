@@ -44,6 +44,7 @@ final class MajorQueryCompactor extends QueryCompactor {
     StorageDescriptor storageDescriptor = context.getSd();
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
+    // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     /*
      * For now, we will group splits on tez so that we end up with all bucket files,

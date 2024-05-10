@@ -51,11 +51,10 @@ final class MinorQueryCompactor extends QueryCompactor {
     StorageDescriptor storageDescriptor = context.getSd();
     AcidDirectory dir = context.getAcidDirectory();
     ValidWriteIdList writeIds = context.getValidWriteIdList();
+    
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
 
     String tmpTableName =
         table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
