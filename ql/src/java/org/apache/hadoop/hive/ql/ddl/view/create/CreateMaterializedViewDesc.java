@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.table.create.TblPropsDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -51,7 +52,7 @@ import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartition
  * DDL task description for CREATE VIEW commands.
  */
 @Explain(displayName = "Create Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
+public class CreateMaterializedViewDesc implements DDLDesc, TblPropsDesc, Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(CreateMaterializedViewDesc.class);
 

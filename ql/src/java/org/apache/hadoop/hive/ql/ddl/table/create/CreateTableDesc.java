@@ -77,7 +77,7 @@ import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartition
  * DDL task description for CREATE TABLE commands.
  */
 @Explain(displayName = "Create Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateTableDesc implements DDLDesc, Serializable {
+public class CreateTableDesc implements DDLDesc, TblPropsDesc, Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(CreateTableDesc.class);
 

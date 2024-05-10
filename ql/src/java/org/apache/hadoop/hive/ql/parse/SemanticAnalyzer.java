@@ -7816,37 +7816,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
+          
+          openTxnAndGetValidTxnList();
+          // Set the location in context for possible rollback.
+          ctx.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix));
+          
           if (isDirectInsert || isMmTable) {
-            destinationPath = getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix);
+            destinationPath = ctx.getLocation();
+            
             if (createTableUseSuffix) {
-              if (tblDesc != null) {
-                tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
-              } else {
-                viewDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
-              }
+              ObjectUtils.defaultIfNull(tblDesc, viewDesc).getTblProps().put(
+                  SOFT_DELETE_TABLE, Boolean.TRUE.toString());
             }
-            // Set the location in context for possible rollback.
-            ctx.setLocation(destinationPath);
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
-            if (tblDesc != null) {
-              tblDesc.setLocation(destinationPath.toString());
-            } else {
-              viewDesc.setLocation(destinationPath.toString());
-            }
-          } else {
-            // Set the location in context for possible rollback.
-            ctx.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix));
+            ObjectUtils.defaultIfNull(tblDesc, viewDesc).setLocation(
+                destinationPath.toString());
           }
         }
-        writeId = ObjectUtils.defaultIfNull(allocateTableWriteId(tableName, true), 0L);
+        writeId = allocateTableWriteId(tableName, true);
         
         if (isMmTable || isDirectInsert) {
-          if (tblDesc != null) {
-            tblDesc.setInitialWriteId(writeId);
-          } else {
-            viewDesc.setInitialWriteId(writeId);
-          }
+          ObjectUtils.defaultIfNull(tblDesc, viewDesc).setInitialWriteId(writeId);
         }
       }
 
@@ -8217,15 +8208,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return output;
   }
-  
+
   private Long allocateTableWriteId(TableName tableName, boolean isAcid) throws SemanticException {
+    if (ctx.getExplainConfig() != null || !isAcid) {
+      return null; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+    }
+    openTxnAndGetValidTxnList();
     try {
-      if (ctx.getExplainConfig() != null || !isAcid) {
-        return null; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
-      } else {
-        openTxnAndGetValidTxnList();
-        return getTxnMgr().getTableWriteId(tableName.getDb(), tableName.getTable());
-      }
+      return getTxnMgr().getTableWriteId(tableName.getDb(), tableName.getTable());
     } catch (LockException ex) {
       throw new SemanticException("Failed to allocate write Id", ex);
     }
@@ -8239,7 +8229,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                boolean createTableWithSuffix) throws SemanticException {
     Path location;
     String[] names;
-    String protoName = null;
+    String protoName;
     Table tbl;
     try {
       if (tblDesc != null) {
